@@ -1,0 +1,565 @@
+- en: Well Log Measurement Prediction Using Neural Networks with Keras
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/well-log-measurement-prediction-using-neural-networks-with-keras-ef7dfed94077](https://towardsdatascience.com/well-log-measurement-prediction-using-neural-networks-with-keras-ef7dfed94077)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An example of predicting bulk density (RHOB) with Keras and illustrating impacts
+    of normalisation on prediction results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://andymcdonaldgeo.medium.com/?source=post_page-----ef7dfed94077--------------------------------)[![Andy
+    McDonald](../Images/df11d647be032aeb3d31852affb33a64.png)](https://andymcdonaldgeo.medium.com/?source=post_page-----ef7dfed94077--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef7dfed94077--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef7dfed94077--------------------------------)
+    [Andy McDonald](https://andymcdonaldgeo.medium.com/?source=post_page-----ef7dfed94077--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef7dfed94077--------------------------------)
+    ·11 min read·Oct 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/529d75975080d8031f4c76ffef5de671.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image representing neural networks combined with natural landscapes. Image generated
+    by DALL-E 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large amounts of data are acquired daily from wells around the world. However,
+    the quality of that data can vary significantly from missing data to data impacted
+    by sensor failure and borehole conditions. This can have knock-on consequences
+    on other parts of a subsurface project, such as delays and inaccurate assumptions
+    and conclusions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As missing data is one of the most common issues we face with well log data
+    quality, numerous methods and techniques have been developed to estimate values
+    and fill in the gaps. This includes the application of machine learning technology
+    — which has increased in popularity over the past few decades with libraries such
+    as TensorFlow and PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, we will be using Keras, which is a high-level neural networks
+    API that runs on top of TensorFlow. We will use it to illustrate the process of
+    building a machine-learning model to allow predictions of bulk density (RHOB).
+    This is a commonly acquired logging measurement, however, it can be significantly
+    impacted by bad hole conditions or, in some cases, tools can fail, resulting in
+    no measurements over key intervals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start with a very simple model, that does not account for normalising
+    the inputs, a common step in the machine learning workflow. Then, we will then
+    build a second model with normalised inputs and illustrate its impact on the final
+    prediction result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importing Libraries and Loading Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first step in this tutorial is to import the libraries we will be working
+    with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this tutorial, we need 4 libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Pandas**](https://pandas.pydata.org/): Loading and manipulating our dataset'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**sklearn.model_selection:**](https://scikit-learn.org/stable/) To create
+    our training and testing data split'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Tensorflow**](https://www.tensorflow.org/): To build and run our neural
+    network'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**matplotlib**](https://matplotlib.org/): To visualise prediction results'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These are imported as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we have imported the libraries, we need to load the data we will train
+    and test our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this tutorial, we will use a dataset containing a series of well log measurements
+    from 3 wells in the Volve Field, located off the west coast of Norway. This data
+    comes from the publically available Equinor Volve Dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full details of this dataset can be found at the end of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To read our CSV file, we simply call upon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we view the dataframe, we can see what logging measurements are contained
+    within it, and also the first and last 5 rows of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/905ce64a12aed9d2cc1ced90d082c4f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataframe view of three selected Volve wells for Neural Network modelling. Image
+    by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this tutorial, we will assume that all data preparation steps have been
+    carried out and that the data has been quality-checked by a petrophysicist/geoscientist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if we want to double-check that we have columns full of data and no
+    null rows, we can call upon `df.describe()`. When we do this, we need to check
+    that we have 24,111 for the count row in all columns/measurements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**It should be noted that ensuring we have quality data before applying machine
+    learning is very important, as it could lead to errors and other issues.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splitting Data into Training and Testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this tutorial, we will attempt to predict Bulk Density (RHOB). This logging
+    measurement can sometimes be missing from well-logging datasets for various reasons.
+    Some of these reasons include the data not being required for the objectives of
+    drilling that well, or it could be simply excluded to save on drilling and logging
+    costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, we often have to use existing well log datasets containing the
+    RHOB measurement to build a machine learning model that can be used to predict
+    the measurement within other wells where it was not acquired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our next step is to split our data in two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data placed in the `X` variable is the data that will be used as input for
+    our model, and `y`, which contains our target output — in this case, RHOB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We could carry on with the data as is and build, train and predict using it,
+    however, we would not really be able to understand how well our model is performing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where we split our data into two subsets. A subset for training the
+    model, and a subset for validating and tuning the model. Ideally, we would have
+    a third dataset for testing how well our model performs on completely unseen data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, for this example, we will stick with two subsets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To split our data, we call upon the `train_test_split` method from sklearn,
+    and pass in our `X` and `y` variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also set the split to be 70% for training, and the remaining 30% for
+    validating and fine-tuning our data. This can be varied depending on the size
+    of your dataset. For example, with smaller datasets, you may want a larger training
+    subset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can check that the split has worked by checking the length of X_train and
+    `X_test`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which returns a tuple with the sizes of the subsets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In a standard workflow, we would normally normalise/standardise our data to
+    account for the varying data ranges. However, for our first model, we will run
+    with un-normalised data and then apply normalisation in our second model to see
+    if it improves the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building and Training a Keras Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When building models with keras there are two main ways of creating a neural
+    network model. These are the Sequential API and Functional API methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the Sequential method, we simply stack layers on top of each other in a
+    linear manner, whereas the Functional API offers more flexibility and can be used
+    to create more complex models which have multiple inputs and outputs and shared
+    layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this tutorial, we will be using the Sequential API, as it is the simplest
+    to use and get started with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining The Keras Neural Network Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To get started with the Sequential API, we first create our model as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is often best to start simple and small when building neural networks, gradually
+    increasing the complexity until you are happy with the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we are going to create a very simple Neural Network consisting
+    of a single hidden layer with 8 neurons and `relu` as the activation function
+    of `relu` . This layer transforms our input data by applying several weights,
+    biases and the activation function and then passes it to the final output layer.
+    This layer is set up to provide a numerical output representing the Acoustic Shear
+    Slowness curve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To find out more about the different activation functions and how they work,
+    I recommend checking out the following page:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compiling The Keras Neural Network Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once we have defined our model, we next need to compile it. This configures
+    and sets up how the model will learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep our model simple, we will use Mean Absolute Error (MAE) as the loss
+    function (which is used to quantify how well the model is performing against the
+    target feature) and the metric (also used to judge how our model is performing
+    — but can be a more human-friendly score if using different loss functions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also set the optimizer to ‘Adam’. This is a common optimszer model and
+    is used to determine how the model will update its weights based on the selected
+    loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fitting / Training The Keras Neural Network Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The final step of creating our model is to “fit” our model to the training data.
+    This will begin the training process of our defined model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also set the number epochs to 30\. This represents a complete pass of
+    the data through the neural network. After each pass, the model weights are updated
+    in order to minimise the selected loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When building models, saving the model fit results to a history variable is
+    a good idea. This will allow us to plot the results and keep a record of the training
+    history.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we start running the model, we will get the following text output detailing
+    the progress of the model and how well each epoch is performing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a49772b62807cfeeccec6777aefff17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Keras Neural Network model training output. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the model has completed, we can view the history in graphical form by generating
+    a matplotlib figure like so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/61e4db38de7410b67f511b721c8ba137.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Keras Neural Network model loss curves during training. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the image above, the blue curve (loss) and the orange curve (mae) represent
+    the training loss and performance metric (MAE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both curves decrease sharply at the beginning, suggesting that the model is
+    learning and improving its performance in the initial epochs. However, as the
+    number of epochs increases, the decrease in the loss and metric becomes more gradual.
+    This may indicate that our model has reached convergence and arrived at its final
+    solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying the Keras Model to the Test Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once our model has been trained, we can apply the model and predict the values
+    within the target feature of the test subset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is done by calling upon the following code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we run this line, we will see Keras making its prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Assessing Model Performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After our model has made its prediction, we can now evaluate how well it performs
+    on the test data by calling upon a couple of metrics available within Keras.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are the Mean Absolute Error (MAE)— which represents the average absolute
+    difference between the actual and predicted values — and the Root Mean Square
+    Error (RMSE) — which represents the average error magnitude between the actual
+    and predicted values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to pass our predicted variable into these metrics, we first need to
+    remove any extra dimensions of size from the generated result. This ensures that
+    the shapes of `y_test` and `y_pred` are the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we view the metrics, we get the following scores back.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: This tells us that, on average, our predicted result is 0.0757 g/cc off from
+    the actual result, and that the RMSE of 0.1105 indicates that we have some instances
+    where our results are significantly different from the actual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualising the Error Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is all good and well to look at metrics. However, judging how well our model
+    performs from just these two numbers alone can be difficult.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way we can visualise our results is with a simple scatter plot of the actual
+    and true measurements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then call upon our plot by passing in the actual and predicted values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we run this, we get back the following plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ebe5480892c2a536022134f4e7fbfbfe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scatter plot of predicted measurements vs actual measurements. Image by the
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, the model is doing a good job of predicting bulk density (RHOB) — based
+    on most data points sitting close to the 1:1 relationship line. However, there
+    are a few areas where we could benefit from some improvement in the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see a higher spread of values between 2.2g/cc and 2.6 g/cc, indicating
+    that our model is under-predicting bulk density in this range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving the Keras Model By Applying MinMaxScaler to the Input Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Some machine learning models, including Neural Networks, perform better when
+    the data is normalised to a standard range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In well log measurements, we sometimes have data scaled from 0 to 0.5, and others
+    that reach the 10s of thousands. This can result in some input curves having more
+    weight compared to others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To give each input curve equal footing when it comes to modelling, we need to
+    change the input data to a standard range. Additionally, it can also improve model
+    training times and model prediction accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to normalise the values is by using the [MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
+    from [sklearn](https://scikit-learn.org/stable/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This function will scale the data between 0 and 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the `MinMaxScaler` has been imported, we can then fit and transform our
+    `X_train` and `X_test` data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do not need to change the target feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then pass in our newly scaled variables and re-run the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again, Keras will report on the model's progress as it is running.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Right away, we notice that the mae values are smaller than the original run.
+    Hopefully, this should mean a better model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a85771be9fa2cb02ef75b22488e41bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Keras progress during prediction with scaled inputs. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And then, we can make a new prediction by re-assessing the key metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives us an MAE of 0.0292 g/cc and an RMSE of 0.0455\. This indicates that
+    our model has improved by applying our MinMaxScaler.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can further confirm this by passing our new prediction results into the scatter
+    plot and comparing the results with the previous model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a6ebe5f7a041fa33090f639e982a30e.png)![](../Images/f05ba3abaa89a2d4c516d4506fd460ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of Keras predictions before (left) and after (right) normalisation
+    with MinMaxScaler. Note the different scales when comparing. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though the plots are on different scales, we can see a significant improvement
+    around the 2.2g/cc and 2.6 g/cc range. This confirms that applying the normalisation
+    to our data has resulted in a better prediction result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this tutorial, we have seen how to build a very simple Keras Neural Network
+    model to predict a common well log measurement using other available well log
+    data. This can be extremely useful when we have missing data or data impacted
+    by poor borehole conditions, such as washout.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though this tutorial stops after one revision to the model, it is always
+    wise to try different variations of the model setup and different combinations
+    of inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember, the whole process of building a successful machine-learning model
+    involves multiple iterations to arrive at the final model. Even after the model
+    has been deployed, it can still be revised when new data becomes available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, making predictions using machine learning technologies should not be
+    seen as a direct substitute for domain expertise. Instead, domain expertise should
+    be used in conjunction with the modelling and prediction process. This ensures
+    that accuracy is maintained and any erroneous results are caught.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset Used
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data used within this tutorial is a subset of the Volve Dataset that Equinor
+    released in 2018\. Full details of the dataset, including the licence, can be
+    found at the link below
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.equinor.com/energy/volve-data-sharing?source=post_page-----ef7dfed94077--------------------------------)
+    [## Volve field data set'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equinor has released a complete set of data from the Volve field, 2008-2016\.
+    Click here to download for study, research…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.equinor.com](https://www.equinor.com/energy/volve-data-sharing?source=post_page-----ef7dfed94077--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Volve data license is based on CC BY 4.0 license. Full details of the license
+    agreement can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://cdn.sanity.io/files/h61q9gi9/global/de6532f6134b9a953f6c41bac47a0c055a3712d3.pdf?equinor-hrs-terms-and-conditions-for-licence-to-data-volve.pdf](https://cdn.sanity.io/files/h61q9gi9/global/de6532f6134b9a953f6c41bac47a0c055a3712d3.pdf?equinor-hrs-terms-and-conditions-for-licence-to-data-volve.pdf=)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thanks for reading. Before you go, you should definitely subscribe to my content
+    and get my articles in your inbox.* [***You can do that here!***](https://andymcdonaldgeo.medium.com/subscribe)*Also,
+    if you have enjoyed this content and want to show your appreciation, consider
+    giving it a few claps.*'
+  prefs: []
+  type: TYPE_NORMAL

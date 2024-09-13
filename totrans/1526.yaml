@@ -1,0 +1,244 @@
+- en: 'MLX vs MPS vs CUDA: a Benchmark'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mlx-vs-mps-vs-cuda-a-benchmark-c5737ca6efc9](https://towardsdatascience.com/mlx-vs-mps-vs-cuda-a-benchmark-c5737ca6efc9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A first benchmark of Apple’s new ML framework MLX
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://tristanbilot.medium.com/?source=post_page-----c5737ca6efc9--------------------------------)[![Tristan
+    Bilot](../Images/64c2628ae710042d80ca2ee2feb3da37.png)](https://tristanbilot.medium.com/?source=post_page-----c5737ca6efc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c5737ca6efc9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c5737ca6efc9--------------------------------)
+    [Tristan Bilot](https://tristanbilot.medium.com/?source=post_page-----c5737ca6efc9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c5737ca6efc9--------------------------------)
+    ·6 min read·Dec 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7da28e0049ecdc0858d1969c4856536.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Javier Allegue Barros](https://unsplash.com/@soymeraki?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re a Mac user and a deep learning enthusiast, you’ve probably wished
+    at some point that your Mac could handle those heavy models, right? Well, guess
+    what? Apple just released [MLX](https://ml-explore.github.io/mlx/build/html/index.html),
+    a framework for running ML models efficiently on Apple Silicon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The recent introduction of the [MPS backend](https://developer.apple.com/metal/pytorch/)
+    in PyTorch 1.12 was already a bold step, but with the announcement of MLX, it
+    seems that Apple wants to make a significant leap into open source deep learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ll put these new approaches through their paces, benchmarking
+    them against the traditional CPU backend on three different Apple Silicon chips,
+    and two CUDA-enabled GPUs. By doing so, we aim to reveal just how much these novel
+    Mac-compatible methods can be used in 2024 for deep learning experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a GNN-oriented researcher, I’ll focus the benchmark on a Graph Convolutional
+    Network (GCN) model. But since this model mainly consists of linear layers, our
+    findings could be insightful even for those not specifically in the GNN sphere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Crafting an environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To build an environment for MLX, we have to specify whether using the i386
+    or arm architecture. With conda, this can be done using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To check if your env is actually using arm, the output of the following command
+    should be **arm**, not **i386**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now simply install MLX using pip, and you’re all set to start exploring:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: GCN implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The GCN model, a type of Graph Neural Network (GNN), works with an adjacency
+    matrix (representing the graph structure) and node features. It calculates node
+    embeddings by gathering info from neighboring nodes. Specifically, each node gets
+    the average of its neighbors’ features. This averaging is done by multiplying
+    the node features with the normalized adjacency matrix, adjusted by node degree.
+    To learn this process, the features are first projected into an embedding space
+    via a linear layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our version, we normalize the adjacency matrix just like in the original
+    paper: during the preprocessing step. While this article won’t go into the preprocessing
+    code, you can find with the full code in this GitHub repo:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/TristanBilot/mlx-GCN?source=post_page-----c5737ca6efc9--------------------------------)
+    [## GitHub - TristanBilot/mlx-GCN'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contribute to TristanBilot/mlx-GCN development by creating an account on GitHub.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/TristanBilot/mlx-GCN?source=post_page-----c5737ca6efc9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll now walk through implementing a GCN layer and a GCN model using MLX:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At a glance, MLX code closely resembles PyTorch code, with a notable difference:
+    here we instantiate `self.gcn_layers` as a list of modules, whereas in PyTorch,
+    you would typically use `nn.Sequential` for such a purpose.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code starts to become quite different within the training loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Immediately apparent is the use of `mx.eval()`. In MLX, computations are lazy,
+    meaning `eval()` is often used to actually compute new model parameters post-update.
+    Another key function, `nn.value_and_grad()`, generates a function that calculates
+    loss with respect to parameters. The first argument is the model holding the current
+    parameters, and the second is a callable function for the forward pass and loss
+    computation. The function it returns takes the same arguments as the forward function
+    (in this case, `forward_fn`). We can define this function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It simply consists in computing a forward pass and calculating the loss. `loss_fn()`
+    and `eval_fn()` are defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: You might observe that the loss function appears quite extensive, but it essentially
+    calculates the cross-entropy between predictions and labels, and includes L2 regularization.
+    Since L2 regularization isn’t a built-in feature yet, I’ve implemented it manually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One cool thing here is the elimination of the need to explicitly assign objects
+    to a specific device, as we often do in PyTorch with .cuda() and .to(device).
+    Thanks to the [unified memory](https://ml-explore.github.io/mlx/build/html/unified_memory.html)
+    architecture of the Apple silicon chip, all variables coexist in the same space,
+    eradicating slow data transfers between CPU and GPU and eliminating those pesky
+    runtime errors related to device mismatches.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Benchmark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In our benchmark, we’ll be comparing MLX alongside MPS, CPU, and GPU devices,
+    using a PyTorch implementation. Our testbed is a 2-layer GCN model, applied to
+    the [Cora dataset](https://graphsandnetworks.com/the-cora-dataset/), which includes
+    2708 nodes and 5429 edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For MLX, MPS, and CPU tests, we benchmark the **M1 Pro**, **M2 Ultra** and
+    **M3 Max** ships. Meanwhile, the GPU benchmarks are carried out on two NVIDIA
+    Tesla models: the **V100 PCIe** and the **V100 NVLINK**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e36ebb6ff7aa9c9b9cfe6e32c663110c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: Benchmark of GCN running time on MLX and other backends (in
+    ms)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MPS**: more than 2x faster than CPU on M1 Pro, not bad. On the two other
+    chips, we notice 30–50% improvement compared to CPU.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MLX**: 2.34x faster than MPS on M1 Pro. On M2 Ultra we get a 24% improvement
+    compared to MPS. No real improvement between MPS and MLX on M3 Pro though.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**CUDA V100 PCIe & NVLINK**: only 23% and 34% faster than M3 Max with MLX,
+    this is some serious stuff!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLX stands out as a game changer when compared to CPU and MPS, and it even comes
+    close to the performance of a TESLA V100\. This initial benchmark highlights MLX’s
+    significant potential to emerge as a popular Mac-based deep learning framework.
+    It’s also worth noting that MLX has only recently been released to the public,
+    and we can expect further enhancements from the open-source community in the coming
+    years. We can also expect even more powerful Apple Silicon chips in the near future,
+    taking performance of MLX to a whole new level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To recap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Cool things:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now run deep learning models locally by leveraging the full power of
+    Apple Silicon.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The syntax is pretty much similar as torch, with some inspirations from Jax.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: No more device, everything lives in unified memory!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What’s missing:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The framework is **very** young, many features are missing yet. Especially for
+    Graph ML, all sparse operations and scattering APIs are not available at the moment,
+    making it complicate to build Message Passing GNNs on top of MLX now.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a new project, it’s worth noting that both the documentation and community
+    discussions for MLX are somewhat limited at present.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In conclusion, MLX made a surprisingly impactful entrance upon its release and
+    demonstrates serious potential. I believe this framework could become a staple
+    for daily research experiments. We’re also eager to see additional experiments,
+    as the GCN tests primarily showcase MLX’s performance on basic linear layers.
+    More comprehensive testing could reveal its full capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Thx for reading!**'
+  prefs: []
+  type: TYPE_NORMAL

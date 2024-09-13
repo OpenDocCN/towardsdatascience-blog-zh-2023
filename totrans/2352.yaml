@@ -1,0 +1,408 @@
+- en: When You Should Prefer “Thompson Sampling” Over A/B Tests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/when-you-should-prefer-thompson-sampling-over-a-b-tests-5e789b480458](https://towardsdatascience.com/when-you-should-prefer-thompson-sampling-over-a-b-tests-5e789b480458)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An in-depth explanation of “Thompson Sampling”, a more efficient alternative
+    to A/B testing for online learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mazzanti.sam?source=post_page-----5e789b480458--------------------------------)[![Samuele
+    Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----5e789b480458--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e789b480458--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5e789b480458--------------------------------)
+    [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----5e789b480458--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e789b480458--------------------------------)
+    ·8 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60b314d2d51bd7843efb9b4b83a13a68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Image by Author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imagine you have two ads to choose from: the red one and the blue one. Of course,
+    you would like to show your users the ad with the highest click rate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5cd3d837f5e6ed49fdc4f49c8260a9a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What to show the user, the red ad or the blue ad? [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how do you find out which ad has the highest click rate?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most common approach to answering this question is doing an A/B test. This
+    implies setting apart some users and showing the first ad to half of them and
+    the second ad to the other half. Finally, you can compute the click rate of each
+    alternative and select the best one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose that, at the end of the A/B test, you have the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b84334906d70bd8d2c818afddfd0fa8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of the A/B test after 10,000 displays. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The blue version is clearly superior to the red one: a click rate of 18% against
+    a click rate of 11%. But **this means that we lost many opportunities: we could
+    have shown the blue ad to many more users, and thus we could have obtained many
+    more clicks**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, what if we stopped the experiment very early, say after only
+    20 users?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ad83c10b4a85d73926df39cba492d97b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of the A/B test after 20 displays. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We know intuitively that, after 20 users, the results are not reliable enough
+    to send the best-performing variant to all the users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, **the problem with A/B tests** is that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**if we set apart too many users, we lose opportunities on the less-performing
+    variants**;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**if we set apart too few users, the test is inconclusive**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In other words, A/B tests are inefficient because they are too static. Ideally,
+    we would need a smart system that is able to learn dynamically as it gets more
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This system should:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: explore the different alternatives when the results are too small to be reliable;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: exploit the results when they start becoming reliable enough, by sending more
+    and more traffic to the best-performing alternative.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Good news: such a system exists and is called Thompson Sampling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using probability distributions rather than numbers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The approach we have seen above tried to evaluate each alternative with a single
+    number: its click rate. The problem with this approach is that a single number
+    doesn’t express the uncertainty associated with the estimate itself.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem, Thompson Sampling proposes to use a full probability
+    distribution rather than a single number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The objective of the probability distribution is to express the uncertainty
+    about the estimate of the metric.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Once we have our distributions — one for each alternative — Thompson Sampling
+    works by drawing a random number from each distribution. Then, the alternative
+    associated with the highest number is shown to the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s the point of doing this? Well, the idea is that if the distributions
+    express a high uncertainty, the outcome depends much on the chance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other terms, the less confidence in our belief, the more the system will
+    explore different alternatives. On the contrary, as confidence increases, the
+    system increasingly exploits the best-performing alternative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see two probability distributions that could be obtained from the results
+    we have seen above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3869ff29dff4c314d0553a7964bebc9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability distributions after 20 impressions. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you try to extract random numbers from these two distributions, you will
+    find out that the number drawn from the red distribution is greater than the number
+    drawn from the blue distribution 24% of the time. This proves numerically our
+    intuition that the difference is still not statistically significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what after 10,000 impressions?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c7f671036e5e764dec4636a61d83509.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability distributions after 10,000 impressions. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are very confident that the blue page performs better than the red page.
+    And, in fact, it’s practically impossible that the number drawn from the red distribution
+    will be greater than the one drawn from the blue distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What distribution should I use?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In our example, since we have a binary outcome (click or miss), the go-to distribution
+    is the Beta distribution. The cool thing about Beta is that it’s entirely based
+    on two parameters, `a` and `b` that can be interpreted in a very straightforward
+    way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`a`: number of successes (in our case number of clicks).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`b`: number of failures (in our case number of misses).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The expected value of the distribution is `a / (a + b)`, which is our quantity
+    of interest: the click-through-rate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Beta distribution is also available in Scipy and so is very easy to calculate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s plot some examples. Take a click rate of 20%: what happens to the Beta
+    distribution when the number of impressions increases?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/818b3ee026a8f76cb25f5d378eade3dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How beta distribution changes when the number of clicks and misses increase
+    proportionally. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we expected, as the number of users increases, the results are more and
+    more certain: this translates to a distribution that is increasingly concentrated
+    around the expected value: 20%.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, **working with probability distributions allows us to assign
+    a quantitative measure of certainty to our qualitative evaluation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why not the Normal distribution?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you took Statistics 101, you may wonder: “Wait a minute. According to the
+    Central Limit Theorem, if we have independent trials we should use the Normal
+    distribution. So why are we using the Beta distribution?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, this is a good point. Let’s see how to compute both the Beta and the
+    Normal probability distribution function in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s repeat this process for different numbers of users and compare the two
+    distributions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ef0131c180ea9a4534739462a68166b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The beta and the normal distributions are almost the same when the number of
+    observations gets bigger. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the Beta distribution and the Normal distribution become more
+    and more similar as the number of impressions grows. And they become practically
+    the same thing after just 50 iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, using the Beta or the Normal distribution wouldn’t make much difference.
+    This is great news because it means that — thanks to CLT — we can always use the
+    Normal distribution, regardless of the metric we choose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Thompson Sampling at work**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s make an example to see Thompson Sampling at work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We want to test 4 versions of an advertisement: grey, red, green, and blue.
+    Suppose that we also know the real click rate for each version.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f225f81b8f87645a60782764305565cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 4 different ads with their true click rate. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As in the previous paragraph, we will use the Beta distribution. But we need
+    a small adjustment. Since the parameters for Beta (`a` and `b`) must be strictly
+    greater than 0, in case at least one between `a` and `b` is zero, then we will
+    add 1 to each of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For each new user, we must do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the current count of clicks and misses for each variant, get the corresponding
+    Beta distribution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Draw a number from each variant’s distribution obtained at point 1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Show the user the variant associated with the highest number.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Update the counter with the outcome obtained on the current user (click or miss).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let’s see a graphical representation of this process for the first 1,000 users:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fff252757a88bb825b585b4f5fc3e188.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thompson Sampling algorithm at work on the first 1,000 users. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see, after 100 iterations, our belief is still not aligned with
+    the truth: the expected value of the green variant is greater than the blue. But
+    this is just due to chance. As the experience sums up, our estimates will converge
+    to the truth. This means that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the mean of the distribution will be closer to the true rate;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the standard deviation of the distribution will be closer and closer to zero.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s see how these two quantities evolve during the first 400 iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca996751c5b8f035451cace467b27dc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First 400 iterations of the algorithm. How standard deviation and mean change
+    as the number of iterations increases. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we have seen, after 1,000 impressions this is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6c1656e8d0f008775c5810864eda6fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of clicks and misses obtained through Thompson sampling. [Image by
+    Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thompson Sampling is so effective that, after only 1,000 iterations, it has
+    already concentrated 50.6% of the displays on the best alternative (blue) and
+    37.7% on the second-best (green).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the contrary, what would happen if we use the A/B testing approach, sending
+    every alternative to the same amount of users? Showing each ad to 250 users would
+    produce the following result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/06c600d57184aa142a6ec6c75742bc88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Expected number of clicks and misses if we assign variants in a purely random
+    way (A/B test approach). [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Thompson Sampling we have 145 clicks, with A/B testing we have instead
+    135 clicks. This means 7.4% more clicks thanks to Thompson Sampling! And the difference
+    would become even bigger if we carry out more iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thompson Sampling is perfect for online learning because it addresses efficiently
+    the exploration/exploitation dilemma.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It does it by assigning a probability distribution to each variant that should
+    be tested. The distribution serves the purpose of expressing the uncertainty associated
+    with the estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fact that Thompson Sampling dynamically adapts to the knowledge accumulated
+    from the previous iterations makes it more efficient than A/B testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, we have seen an example with 4 variants and — in just 1,000 iterations
+    — Thompson Sampling was able to get 7% more clicks than A/B testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All the code used for this article can be found in* [*this notebook*](https://github.com/smazzanti/tds_thompson_sampling/blob/main/tds_thompson_sampling.ipynb)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thank you for reading!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you find my work useful, you can subscribe to* [***get an email every time
+    that I publish a new article***](https://medium.com/@mazzanti.sam/subscribe) *(usually
+    once a month).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you want to support my work, you can* [***buy me a coffee***](https://ko-fi.com/samuelemazzanti)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you’d like,* [***add me on Linkedin***](https://www.linkedin.com/in/samuelemazzanti/)*!*'
+  prefs: []
+  type: TYPE_NORMAL

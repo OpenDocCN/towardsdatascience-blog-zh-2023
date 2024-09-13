@@ -1,0 +1,359 @@
+- en: Urban Accessibility — How to Reach Defibrillators on Time
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/urban-accessibility-how-to-reach-defibrillators-on-time-c865d9194448](https://towardsdatascience.com/urban-accessibility-how-to-reach-defibrillators-on-time-c865d9194448)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/5ca7c57779a98ab7e937dca5ed11f4d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this piece, I combine earlier work on urban accessibility or walkability
+    with open-source data on the location of public defibrillator devices. Additionally,
+    I incorporate global population data and Uber’s H3 grid system to estimate the
+    share of the population within reasonable reach to any device within Budapest
+    and Vienna.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@janosovm?source=post_page-----c865d9194448--------------------------------)[![Milan
+    Janosov](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----c865d9194448--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c865d9194448--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c865d9194448--------------------------------)
+    [Milan Janosov](https://medium.com/@janosovm?source=post_page-----c865d9194448--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c865d9194448--------------------------------)
+    ·11 min read·Oct 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: The root of urban accessibility, or [walkability](https://en.wikipedia.org/wiki/Walkability),
+    lies in a graph-based computation measuring the Euclidean distance (transforming
+    it into walking minutes, assuming constant speed and no traffic jams and obstacles).
+    The results of such analyses can tell us how easy it is to reach specific types
+    of amenities from every single location within the city. To be more precise, from
+    every single node within the city’s road network, but due to a large number of
+    road crossings, this approximation is mostly negligible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this current case study, I focus on one particular type of Point of Interest
+    (POI): the location of defibrillator devices. While the Austrian Government’s
+    Open Data Portal shares official records on this, in Hungary, I could only obtain
+    a less-then-half coverage crowd-sourced data set — which, hopefully, will later
+    grow both in absolute size and data coverage.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first section of my article, I will create the accessibility map for
+    each city, visualizing the time needed to reach the nearest defibrillator units
+    within a range of 2.5km at a running speed of 15km/h. Then, I will split the cities
+    into hexagon grids using Uber’s H3 library to compute the average defibrillator-accessibility
+    time for each grid cell. I also estimate the population level at each hexagon
+    cell following my previous [article](/exploring-large-scale-raster-population-data-72803cf7f2ad).
+    Finally, I combine these and compute the fraction of the population reachable
+    as a function of reachability (running) time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a disclaimer, I want to emphasize that I am not a trained medical expert
+    by any means — and I do not intend to take a stand on the importance of defibrillator
+    devices compared to other means of [life](https://www.youtube.com/watch?v=-A0nAKWTewI)
+    support. However, building on common sense and urban planning principles, I assume
+    that the easier it is to reach such devices, the better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Data source
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As always, I like to start by exploring the data types I use. First, I will
+    collect the administrative boundaries of the cities I study in — Budapest, Hungary,
+    and Vienna, Austria.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, building on a previous article of mine on how to process rasterized population
+    data, I add city-level population information from the WorldPop hub. Finally,
+    I incorporate official governmental data on defibrillator devices in Vienna and
+    my own web-scraped version of the same, though crowded sources and intrinsically
+    incomplete, for Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.1\. Administrative boundaries**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, I query the admin boundaries of Budapest and Vienna from [OpenStreetMap](http://openstreetmap.org/)
+    using the [OSMNx](http://osmnx.readthedocs.io) library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b06a5230c7ccc28b08c4a1f3a9ff2bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. The admin boundaries of Budapest and Vienna. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.2\. Population data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, following the steps in this [article](/exploring-large-scale-raster-population-data-72803cf7f2ad),
+    I created the population grid in vector data format for both cities, building
+    on the WorldPop online Demographic Database. Without repeating the steps, I just
+    read in the output files of that process containing population information for
+    these cities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, to make things look nice, I created a colormap from the color of 2022,
+    Very Peri, using Matplotlib and a quick script from ChatGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b1570bcfebfcede5a0c0448d265d2d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Population density maps based on WordPop data. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.3\. Defibrillator locations**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Third, I collected locational data on the available defibrillators in both cities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Vienna, I downloaded this data set from the [official open data portal
+    of the Austrian government](https://www.data.gv.at/katalog/dataset/96196887-5a20-4e93-a302-72f306f32c9d)
+    containing the point location of 1044 units:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While such an official open data portal does not exist in Budapest/Hungary,
+    the Hungarian National Heart Foundation runs a [crowd-sourced website](http://www.mnsza.hu/hirtelen/aed_db_lista.php)
+    where operators can update the location of their defibrillator units. Their country-wide
+    database consists of 677 units; however, their disclaimer says they know about
+    at least one thousand units operating in the country — and are waiting for their
+    owners to upload them. With a simple web crawler, I downloaded the location of
+    each of the 677 registered units and filtered the data set down to those in Budapest,
+    resulting in a set of 148 units.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45ee080848c2db3de5711b9de6c4605c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Defibrillator locations in Budapest and Vienna. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Accessibilty computation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Next, I wrapped up this great [article](/measuring-pedestrian-accessibility-97900f9e4d56)
+    written by Nick Jones in 2018 on how to compute pedestrian accessibility:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code block outputs the number of road network nodes in Budapest (116,056)
+    and in Vienna (148,212).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now visualize the accessibility maps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code block outputs the following figures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60e490919146bd3a3d324f0000eaad9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Defibrillator accessibility in minutes in Budapest. Image by the
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f6395e53b6dbd221a26908dc5487293.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Defibrillator accessibility in minutes in Vienna. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Mapping to H3 grid cells
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'At this point, I have both the population and the accessibility data; I just
+    have to bring them together. The only trick is that their spatial units differ:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accessibility is measured and attached to each node within the road network
+    of each city
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Population data is derived from a raster grid, now described by the POI of each
+    raster grid’s centroid
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While rehabilitating the original raster grid may be an option, in the hope
+    of a more pronounced universality (and adding a bit of my personal taste), I now
+    map these two types of point data sets into the [H3 grid system of Uber](https://www.uber.com/en-HU/blog/h3/)
+    for those who haven’t used it before, for now, its enough to know that it’s an
+    elegant, efficient spacial indexing system using hexagon tiles. And for more reading,
+    hit this link!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.1\. Creating H3 cells**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, put together a function that splits a city into hexagons at any given
+    resolution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1bd429d66f6f2f958193fdf79ee1bed1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. The H3 hexagon split of Vienna at the resolution of 8\. Image by
+    the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, see a few different resolutions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/761f2237d0c28bc1b65808256c0b57d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. H3 hexagon splitting of Budapest and Vienna at different resolutions.
+    Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s keep resolution 9!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.2\. Map values into h3 cells**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, I have both our cities in a hexagon grid format. Next, I shall map the
+    population and accessibility data into the hexagon cells based on which grid cells
+    each point geometry falls into. For this, the sjoin function of GeoPandasa, doing
+    a nice spatial joint, is a good choice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, as we have more than 100k road network nodes in each city and
+    thousands of population grid centroids, most likely, there will be multiple POIs
+    mapped into each hexagon grid cell. Therefore, aggregation will be needed. As
+    the population is an additive quantity, I will aggregate population levels within
+    the same hexagon by summing them up. However, accessibility is not extensive,
+    so I would instead compute the average defibrillator accessibility time for each
+    tile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of this code block are the following figures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/788c0409f27b32895c77d42cfb6f578b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. Urban features in Budapest. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c441e9f16e1be2b362ef0d8fe2f0e022.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. Urban features in Vienna. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Computing population reach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this final step, I will estimate the fraction of the reachable population
+    from the nearest defibrillator unit within a certain amount of time. Here, I still
+    build on the relatively fast 15km/h running pace and the 2.5km distance limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the technical perspective, I merge the H3-level population and accessibility
+    time data frames and then do a simple thresholding on the time dimension and a
+    sum on the population dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block are the following figures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c3e2f46eb2f5dded2cd55f3c96b6ea1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. The fraction of the population reachable from the nearest defibrillator
+    unit at a running pace. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When interpreting these results, I would like to emphasize that, on the one
+    hand, defibrillator accessibility may not be directly linked to heart-attack survival
+    rate; judging that effect is beyond both my expertise and this project’s scope.
+    Also, the data used for Budapest is knowingly incomplete and crowded sources,
+    as opposed to the official Austrian data source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After the disclaimers, what do we see? On the one hand, we see that in Budapest,
+    about 75–80% of the population can get to a device within 10 minutes, while in
+    Vienna, we reach nearly complete coverage in around 6–7 minutes already. Additionally,
+    we need to read these time values carefully: if we happen to be at an unfortunate
+    incident, we need to get to the device, pick it up, go back (making the travel
+    time double of the reachability time), install it, etc. in a situation where every
+    minute may be a matter of life and death.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So the takeaways, from a development perspective, the takeaways are to ensure
+    we have complete data and then use the accessibility and population maps, combine
+    them, analyze them, and build on them when deploying new devices and new locations
+    to maximize the effective population reached.
+  prefs: []
+  type: TYPE_NORMAL

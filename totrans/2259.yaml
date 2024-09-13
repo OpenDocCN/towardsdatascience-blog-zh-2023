@@ -1,0 +1,645 @@
+- en: User Churn Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/user-churn-prediction-d43c53e6f6df](https://towardsdatascience.com/user-churn-prediction-d43c53e6f6df)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Modern data warehousing and Machine Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)[![💡Mike
+    Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------)
+    [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----d43c53e6f6df--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43c53e6f6df--------------------------------)
+    ·12 min read·Dec 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a9d2bfb8a03495210b04f4972d48852.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Martin Adams](https://unsplash.com/@martinadams?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'No doubt, **user retention** is a crucial performance metric for many companies
+    and online apps. We will discuss how we can use built-in data warehouse machine
+    learning capabilities to run propensity models on user behaviour data to determine
+    the likelihood of **user churn**. In this story, I would like to focus on dataset
+    preparation and model training using standard SQL. Modern data warehouses allow
+    this. Indeed, retention is an important business metric that helps understand
+    user behaviour’s mechanics. It provides a high-level overview of how successful
+    our Application is in terms of retaining users by answering one simple question:
+    Is our App good enough at retaining users? It is a well-known fact that it’s cheaper
+    to retain an existing user than to acquire a new one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In one of my previous articles, I wrote about modern data warehousing [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/modern-data-warehousing-2b1b0486ce4a?source=post_page-----d43c53e6f6df--------------------------------)
+    [## Modern Data Warehousing'
+  prefs: []
+  type: TYPE_NORMAL
+- en: State-of-the-art data platform design
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/modern-data-warehousing-2b1b0486ce4a?source=post_page-----d43c53e6f6df--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modern DWH has a lot of useful features and components which differentiate them
+    from other data platform types [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: ML model support seems to be the foundational DWH component when dealing with
+    big data.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this story, I will use **Binary logistic regression**, one of the fastest
+    models to train. I will demonstrate how we can use it to predict user propensity
+    to churn. Indeed, We don’t need to know every machine-learning model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can’t compete with cloud service providers such as Amazon ang Google in machine
+    learning and data science but we need to know how to use it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'I previously wrote about it in my article here [3]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-become-a-data-engineer-c0319cb226c2?source=post_page-----d43c53e6f6df--------------------------------)
+    [## How to Become a Data Engineer'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A shortcut for beginners in 2024
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-become-a-data-engineer-c0319cb226c2?source=post_page-----d43c53e6f6df--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, we will learn how to transform raw event data to create a
+    training dataset for our ML model. We will use it to generate predictions for
+    our users. I will use **BigQuery ML** as an example but there are a lot of other
+    DWH tools that support this feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BigQuery ML democratizes machine learning operations and model training, so
+    now data analysts or software engineers can train models with ease. All we need
+    is a good knowledge of SQL and an understanding of user retention dataset logic
+    [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data preparation process is straightforward and should be easy to follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use standard SQL for this.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Very often, it helps to reveal some useful facts about the data and user base.
+    Analyzing user behaviour and performing exploratory data analysis helps to detect
+    important user behaviour funnels (open funnels)that can later be used for further
+    feature engineering and to improve the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, we can use one of those free user behaviour datasets with user
+    event data kindly provided by Google. The typical mobile application has two builds
+    — Android and IOS which generate a constant flow of event data. Google Analytics
+    4 is a good example and this data can be used to measure traffic and engagement
+    levels in our application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every model requires a dataset
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We would want to create one. We will need to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perform exploratory data analysis (EDA) on BigQuery export dataset from Firebase
+    (Google Analytics 4).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Split the dataset into two parts for training and tests with categorical and
+    behavioural attributes for the Machine Learning (ML) model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train and Evaluate Machine learning models using BigQuery ML
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Make predictions using the BigQuery ML models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use model insights in practice
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In Firebase or Google Analytics 4 all user-behaviour data is being stored as
+    events, which means that each row within a table corresponds to a single event
+    with additional parameters and properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de2206802fb76a7cda08f3f6d97b2263.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataset prep and model training diag
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use a publicly available Google Analytics dataset [5], it has data for
+    a mobile game app called "Flood It!" (Android, iOS) and there are no associated
+    costs to that. However, Google Cloud Platform (GCP) services are billable and
+    might incur costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e7f7a3247dd443790173bac26e0f466.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataset exaple. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This dataset contains 5.7M events from over 15k users. Open the link above and
+    click Preview.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It won’t cost anything to run a Preview on any table.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Copy this dataset by running this in the command line below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Explore the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Analyzing user behaviour and performing exploratory data analysis [6] helps
+    to understand the user journey better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/exploratory-data-analysis-with-bigquery-sql-easy-69895ac4eb9e?source=post_page-----d43c53e6f6df--------------------------------)
+    [## Exploratory Data Analysis with BigQuery SQL? Easy!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complete Python comparison and Step by Step guide for any dataset. Kaggle User
+    churn data.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/exploratory-data-analysis-with-bigquery-sql-easy-69895ac4eb9e?source=post_page-----d43c53e6f6df--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run this query to check the dataset structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The limitation of this dataset is that user data doesn’t have an actual `user_id`
+    that is often assigned after registration. So working with this dataset, we work
+    only with `device ids`, which is not great in an ideal world as those are constantly
+    updated after re-install or new App version rollout.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, we would want to pre-process raw event data and create a new dataset
+    that has the right structure for the ML model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will label each user as **retained (0)** if they were active during the last
+    30 days.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will use the `user_pseudo_id` (device_id) that is used by GA4\. Firebase
+    by default to identify each user’s device.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Based on our EDA we will exclude some obvious outliers, i.e. spammers (too many
+    events), and `bounced` users (those who spent less than 10 minutes in the App
+    after the `install` event).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will add a few columns with categorical features extracted from raw event
+    data, i.e. `platform`, `device_type`, `country`, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will finally add user behaviour and activity totals for each user within
+    a certain period of time, i.e. `user_engagement`, `spend_virtual_currency`, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These calculations will be used as ML model features, but in a nutshell, they
+    are open event funnels, i.e. user’s steps while using the App.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our **not churned** (returning user) definition is that the user was active,
+    and engaging with the App within the last 30 days from the current date. You can
+    try to tweak this parameter. You can also try to predict something, i.e. the likelihood
+    of spending money in the App (`in_app_purchase`), etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating bounced and churned users
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we’re using `user_pseudo_id` in our model, then we would calculate `bounced
+    = 1` if `last_touch` within 10 min after registration, else 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using ``current_date()`` to identify churned users would be ideal if we have
+    a dynamic dataset that is being updated daily. However, we are working with some
+    sample data and therefore, we should use the last known date in that data, i.e.
+    we imagine we collected the data on that particular day (20181003).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ideally, we would want to track only those users who have passed the registration
+    in the App after they installed it. In that case, we wouldn’t need to calculate
+    ``bounced``, and we will count ``churned = 1`` if ``last_seen_dt`` was before
+    ***24 hr/ 3 day/ 30******day***s from `current_timestamp()`, else 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Adding behavioural quantitative and categorical features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is what we will use to build our model. Categorical features can represent
+    some non-quantifiable demographic values, i.e. male/female, etc. Quantitative
+    is what we can measure and count.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A combination of both types of these features helps to create a more predictive
+    model. There is a lot of information in the Firebase/GA4 dataset extract which
+    might be useful for our model, i.e. app_info, device, event_params, geo etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many events are being collected automatically by Firebase, but keep in mind
+    that there is a way to set custom events and properties. This is important for
+    us as mobile developers can integrate a custom event, i.e. user `tag`. For our
+    example App, it would indicate that a user might have certain in-app privileges
+    (Premium, Influencer, Group Admin, Moderator, etc.).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having said that, we would want to use the following categorical features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: platform (IOS/Android)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: geo.country
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: device.operating_system
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: device.language
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is important to say that users might have different values in these fields,
+    i.e. different devices, changed languages, and VPN settings might affect those.
+    So we would need only the first engagement event and the device setting they used
+    on `install` or `registration`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Adding row_number function will help with that:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, to predict user churn, we would want to count the number of events a
+    user encountered within ***24 hours/3 days/ 7 days*** after registration/installation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our case, we would want to collect and count these events:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: user_engagement
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: level_start_quickplay
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: level_end_quickplay
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: level_complete_quickplay
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: level_reset_quickplay
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: post_score
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: spend_virtual_currency
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ad_reward
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: challenge_a_friend
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: completed_5_levels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: use_extra_steps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For other Apps it might be useful to collect any other events that would describe
+    user behaviour, i.e.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: message_sent
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: chat_open
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: spend_virtual_currency
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: account_topup
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set_avatar
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: group_join
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: broadcast_listened
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: achievement_unlocked
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reputation_update
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate model features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s create a dedicated dataset for our future model and its data: ``sample_churn_model``.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The SQL query in `./sql/churn.sql` below demonstrates how these user metrics
+    can be calculated. We can find this file in the code widget. To create this dataset
+    run this in the command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`./sql/churn.sql:`'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s see how many churned users we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From our dataset, we found that 4030 churned and were inactive during the last
+    30 days:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7c648c05ca2479c4d3ec0899d72617bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Churned users. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model training and classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are different model types [7] available in BigQuery ML at the moment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BOOSTED_TREE_CLASSIFIER
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Neural Networks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: AutoML Tables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Logistic Regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Logistic regression might be a good choice to start with as it is the one that
+    can be trained relatively fast. Other types of models might provide better performance
+    but also require more time to train, i.e. Deep Neural Networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these models will output a probability score (propensity) between 0
+    and 1.0 of how likely the model prediction is based on the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider the file ``./sql/churn_model.sql``. It will create and train the model
+    if we run it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run this query to evaluate the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will see model performance metrics. Analyzing them might help to choose
+    between different models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, with regard to model accuracy, anything that is above 70% is considered
+    to be a strong model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our model has a recall of 0.559 — in other words, it correctly identifies 56%
+    of all churned users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb94cf7248e2a509ffe875dd8836488b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model performance metrics. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use a confusion matrix to see how well our model predicted the labels,
+    compared to the actual labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we run this SQL below it will generate a confusion matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: This can be interpreted as a comparison of `false positive` and `false negative`
+    predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b057e352395c60f9a4a9b62348e78ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For our classification model, the most important metric is the user propensity
+    to churn and be inactive. In other words, it is a probability and the closer this
+    probability is to 1 the more likely this user will not return to the App according
+    to the model’s prediction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ae4b21d5e38c60fa08b8944e23023472.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predictions. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In real-life scenario we would want to create a dataset with predictions that
+    is being updated daily.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Firstly**, we will need Firebase/Analytics users who registered yesterday.
+    We will need to schedule our ``sample_churn_model.churn`` dataset and incrementally
+    add new users from yesterday, i.e.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we would want to generate prediction for them and insert into our new
+    `predictions` dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this model we can better understand user behaviour through patterns, and,
+    of course, we would want to do something with this knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of ways to use prediction data (activate). For instance,
+    we can read data directly from our DWH solution using SDK and client libraries.
+    For example, we might want to **create a data service** that collects predictions
+    every day for new users and then sends that data somewhere else, i.e. **retargeting
+    service**. Yes, we would probably want to retarget users who are likely to churn
+    or users who are likely to stay in the App too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is true that acting on machine learning (ML) model data to retain users proved
+    itself extremely useful and might help to gain a competitive advantage in the
+    fast-changing market environment. That is why it is important to be able to forecast
+    user engagement to predict if users are about to leave. We don’t need to be data
+    scientists to create and train ML models. All we need — is a modern DWH, good
+    knowledge of SQL and a good understanding of user retention logic. Modern data
+    warehouses evolved to that state where we have the luxury of all known ML models
+    and they are already set and ready to be created using standard SQL dialect. With
+    predicted retention numbers, we can create and edit audiences. Using ML capabilities
+    in modern DWH we can tailor user experience by targeting our identified users
+    with relevant information, useful offers and promos. Modern DWH solutions democratize
+    machine learning ops and model training. It is an extremely useful feature for
+    data engineers as all these processes can be easily automated, scheduled and triggered
+    depending on the use case scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommended read
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [https://towardsdatascience.com/modern-data-warehousing-2b1b0486ce4a](/modern-data-warehousing-2b1b0486ce4a)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://towardsdatascience.com/data-platform-architecture-types-f255ac6e0b7](/data-platform-architecture-types-f255ac6e0b7)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [https://towardsdatascience.com/how-to-become-a-data-engineer-c0319cb226c2](/how-to-become-a-data-engineer-c0319cb226c2)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [https://towardsdatascience.com/retention-and-daily-active-users-explained-79c5dab1bf84](/retention-and-daily-active-users-explained-79c5dab1bf84)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [https://console.cloud.google.com/bigquery?p=firebase-public-project&d=analytics_153293282&t=events_20181003&page=table&_ga=2.124992394.-1293267939.1657258995](https://console.cloud.google.com/bigquery?p=firebase-public-project&d=analytics_153293282&t=events_20181003&page=table&_ga=2.124992394.-1293267939.1657258995)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [https://towardsdatascience.com/exploratory-data-analysis-with-bigquery-sql-easy-69895ac4eb9e](/exploratory-data-analysis-with-bigquery-sql-easy-69895ac4eb9e)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [https://cloud.google.com/bigquery-ml/docs/introduction](https://cloud.google.com/bigquery-ml/docs/introduction)'
+  prefs: []
+  type: TYPE_NORMAL

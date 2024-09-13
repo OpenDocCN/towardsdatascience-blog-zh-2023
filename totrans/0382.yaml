@@ -1,0 +1,756 @@
+- en: Beyond NeRFs (Part Two)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/beyond-nerfs-part-two-83af2bd17d0](https://towardsdatascience.com/beyond-nerfs-part-two-83af2bd17d0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tips and tricks for successfully using NeRFs in the wild
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wolfecameron.medium.com/?source=post_page-----83af2bd17d0--------------------------------)[![Cameron
+    R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----83af2bd17d0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----83af2bd17d0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----83af2bd17d0--------------------------------)
+    [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----83af2bd17d0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----83af2bd17d0--------------------------------)
+    ·16 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84d3b26f3db9121dd04bc299b88a98e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Photo by [Ashim D’Silva](https://unsplash.com/@randomlies?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/wild-west?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the domain of representing and rendering 3D scenes, neural radiance fields
+    (NeRFs) provided a massive breakthrough in accuracy. Given several images of an
+    underlying scene, NeRFs can reconstruct high-resolution, 2D renderings of this
+    scene from arbitrary viewpoints. Compared to prior techniques like [local light
+    field fusion (LLFF)](https://cameronrwolfe.substack.com/p/local-light-field-fusion)
+    [5] and [scene representation networks (SRNs)](https://cameronrwolfe.substack.com/p/scene-representation-networks)
+    [6], NeRFs are far more capable of capturing complex components of a scene’s appearance
+    and geometry (e.g., view-dependent reflections and intricate materials).
+  prefs: []
+  type: TYPE_NORMAL
+- en: NeRFs have the potential to revolutionize applications like virtual reality,
+    computer graphics, and more. One could imagine, for example, using NeRFs to reconstruct
+    3D renderings of a house that is for sale given images of the house that are available
+    online, or even designing video game environments using NeRFs trained on real-world
+    scenes. In their original formulation, however, NeRFs were mostly evaluated using
+    images captured in simple, controlled environments. When trained over images of
+    real-world scenes, NeRFs tend to not perform as well (see below), making them
+    less useful in practical applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8ab7a99a383caaa1cf72a5ae255c55a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Within this overview, we will study NeRFs in depth to better understand why
+    they perform poorly in the real world and how this problem can be solved. In particular,
+    we will explore a few recent proposals, called NeRF-W [1] and def-NeRF [2], that
+    modify NeRFs to better handle images that are captured in uncontrolled, noisy
+    environments. Such techniques make NeRFs much more useful by enabling their application
+    over images that more closely match data that will be encountered in most practical
+    applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a47569552b85a66235aa90fde0ae29c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1, 2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This overview is part of our series on deep learning for 3D shapes and scenes.
+    If you haven’t already, I recommend reading the [prior posts](https://cameronrwolfe.substack.com/i/100102968/related-posts)
+    in this series, as they contain a lot of useful background information on NeRFs
+    and related techniques. Here, we will briefly overview NeRFs and a few other relevant
+    concepts (e.g., latent spaces, non-rigid deformations, positional encoding, etc.)
+    that will arise in our discussion of NeRF-W [1] and def-NeRF [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Brief Overview of NeRFs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a prior overview, we have already discussed the idea of neural radiance fields
+    (NeRFS) [3] in depth. Given that this overview explores extending and modifying
+    NeRFs for real-world applications, I recommend reading the overview of NeRFs [here](https://cameronrwolfe.substack.com/p/understanding-nerfs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**quick overview.** To re-hash the basic idea behind NeRFs, they are just [feed-forward
+    neural networks](https://cameronrwolfe.substack.com/i/94634004/feed-forward-neural-networks)
+    that take a 3D coordinate and viewing direction as input and produce a volume
+    density and RGB color as output. By evaluating the NeRF at a variety of different
+    points (and viewing directions) in 3D space, we can accumulate a lot of information
+    about a scene’s geometry and appearance, which can be used to render an image
+    (or view) of that scene; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88182a1c4ca8fc497e64aea572d9496c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [3])
+  prefs: []
+  type: TYPE_NORMAL
+- en: To train a NeRF, we simply need to accumulate several images of a scene and
+    relevant [camera pose information](https://cameronrwolfe.substack.com/i/97472888/background)
+    for each image. Then, we can use these images as a target to train our NeRF! In
+    particular, we repeatedly *i)* use the NeRF to render an image at a known viewpoint
+    and *ii)* compare the NeRF’s output to the actual image using a photometric loss
+    function (i.e., this just measures differences between RGB pixel values); see
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c82a1fb388d13c6afc9f4c656ef5a77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [3])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**problems with NeRFs.** NeRFs were a massive breakthrough in the field of
+    3D scene representation, but they have some limitations. In a [prior overview](https://cameronrwolfe.substack.com/p/beyond-nerfs-part-one),
+    we discussed the computational burden of training and rendering with NeRFs, as
+    well as their need for many images of an underlying scene for training. However,
+    techniques like InstantNGP [7] and PixelNeRF [8] drastically improve the computational
+    and sample efficiency of NeRFs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going further, NeRFs make the assumption that scenes are static. In practice,
+    this assumption is oftentimes not true. Images may contain moving objects (e.g.,
+    people) that occlude relevant portions of the scene or even be taken at different
+    times of day (e.g., at night or in the morning). These are transient components
+    of a scene that may be present in one image but not another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “The central limitation of NeRF … is its assumption that the world is geometrically,
+    materially, and photometrically static. NeRF requires that any two photographs
+    taken at the same position and orientation must be identical. This assumption
+    is violated in many real-world datasets.” *— from [1]*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This static assumption is a large factor that underlies the poor performance
+    of NeRF in uncontrolled environments. Within this overview, we will explore how
+    this assumption can be mitigated, allowing NeRFs to be trained over imperfect,
+    real-world datasets that we encounter in practical applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Primer on Shape Deformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To successfully train NeRFs on noisy smart phone images, recent techniques augment
+    NeRFs with learnable deformation fields. To understand what this means, however,
+    we need to learn about deformations in general. We will briefly cover this idea
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Put simply, a deformation describes a transformation of an initial geometry
+    into a final geometry (e.g., by displacing, translating, or morphing points relative
+    to some [reference frame](https://isaacphysics.org/concepts/cp_frame_reference?stage=all)).
+    There are two basic types of deformations that we will typically encounter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rigid deformation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Non-rigid deformation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For rigid deformations (e.g., rotations and translations), the object being
+    deformed changes with respect to an external frame of reference but remains unchanged
+    with respect to an internal frame of reference. Examples are provided in the image
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ad25b320d5edc3f1aa50a826c5d13ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examples of rigid deformations (from sci.sdsu.edu)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Non-rigid deformations are slightly different. Objects are changed with respect
+    to both internal and external frames of reference. Thus, non-rigid deformations
+    can capture transformations like dilation and shearing; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba37d08698e69bd16c1a871ed046cf91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examples of non-rigid deformations (from sci.sdsu.edu)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**deformation fields.** A deformation field is one way of representing deformations.
+    It simply defines a transformation via a mapping of points in 3D space (i.e.,
+    each point in space is mapped to a new point). By repositioning/transforming an
+    object based on the mapping defined by this field, we can arbitrarily transform
+    the the shape of an object, similar to the deformations shown above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Beyond the discussion above, there are a few concepts that might provide a
+    deeper understanding of the content in this post. Check out the links below to
+    relevant resources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the latent space? [[link](https://www.baeldung.com/cs/dl-latent-space)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction to Positional Encoding [[link](https://machinelearningmastery.com/a-gentle-introduction-to-positional-encoding-in-transformer-models-part-1/)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Volume Rendering [[link](https://www.heavy.ai/technical-glossary/volume-rendering)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Publications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although NeRFs are effective in controlled environments, they struggle to render
+    3D scenes from images captured in the real world. Here, we will overview two recently
+    proposed methods, called NeRF-W [1] and def-NeRF [2], that try to solve this issue.
+    These methods can render accurate 3D scenes from sets of photos that are imperfectly
+    captured (e.g., on a mobile phone) and even contain drastic illumination changes
+    or occluding objects!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[NeRF in the Wild: Neural Radiance Fields for Unconstrained Photo Collections](https://arxiv.org/abs/2008.02268)
+    [1]'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/a971ab584fb7f06926f532d3fe104ebd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real-world images oftentimes have a lot of undesirable properties that make
+    the training of NeRFs quite difficult. Consider, for example, trying to train
+    a NeRF over several images of a major landmark that were taken years apart from
+    each other; see above. The images of this scene may be taken at different times
+    of night or day and contain any number of moving people or objects that are not
+    actually part of the scene’s geometry!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In uncontrolled scenarios, NeRFs tend to fail due to their assumption that scenes
+    are static, thus preventing their use in real-world applications. NeRF-W [1] —
+    an extension to NeRF — mitigates these problems by relaxing the static assumption
+    made by NeRF and allowing accurate modeling of 3D scenes under common, real-world
+    problems (e.g., transient objects and illumination changes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4191703746567fac7b8b3418b6f9532c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**decomposing a scene.** Major problems encountered by NeRFs in the wild can
+    be loosely categorized as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Photometric changes:* time of day and atmospheric conditions impact the illumination/radiance
+    of a scene.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Transient objects:* real-world scenes are rarely captured in isolation. There
+    are usually people or objects that occlude and move through the scene as images
+    are taken.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These problems, both violations to the static assumption, are illustrated in
+    the figure above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**photometric changes.** To address photometric changes, each image is assigned
+    its own “appearance” vector, which is considered (as an extra input) by NeRF-W
+    when predicting the output RGB color. However, the appearance embedding has no
+    impact on the predicted volume density, which captures the 3D geometry of a scene.
+    This change is made by just separating NeRF’s feed-forward network into a few
+    components that take different inputs; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc109e5a629cbdeb3af944f0adf5712a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The appearance embedding impacts color but not volume density (from [1]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By conditioning NeRF-W’s RGB output on this appearance embedding, the model
+    can vary the appearance of a scene based on a particular image, while ensuring
+    that the underlying geometry of the scene is appearance-invariant and shared across
+    images. The unique appearance embeddings assigned to each training image are optimized
+    alongside model parameters throughout training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**static vs. transient components.** To handle transient objects, we should
+    notice that a scene contains two types of entities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image-dependent components (i.e., moving/transient objects)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shared components (i.e., the actual scene)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: NeRF-W uses separate feed-forward network components to model image-dependent
+    (transient) and shared (static) scene components. Both transient and static portions
+    of the network output their own color and density estimations, which allows NeRF-W
+    to disentangle static and transient components of a scene; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b05768b6cdbb48d70989b5dc18e66737.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Static and transient components of NeRF-W (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transient portion of NeRF-W emits an uncertainty field (using a Bayesian
+    learning framework [4]) that allows occluded scene components to be ignored during
+    training. To ensure that transient effects on the scene are image-dependent, each
+    training image is associated with a “transient” embedding vector, which is given
+    as input to the transient component of NeRF-W. Similar to appearance embeddings,
+    transient embeddings are learned during training. See below for a full depiction
+    of the NeRF-W architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de0532dd247f1137f1dce665d9ad52c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: All components of NeRF-W are jointly optimized using a procedure similar to
+    NeRF [3], as described in the link [here](https://cameronrwolfe.substack.com/p/understanding-nerfs#%C2%A7modeling-nerfs).
+    NeRF-W is evaluated using real-world photo collections of notable landmarks, selected
+    from the [Photo Tourism dataset](http://phototour.cs.washington.edu/datasets/).
+    When NeRF-W is trained to represent six landmarks, we see that NeRF-W outperforms
+    baselines quantitatively in most cases; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/05e119f300b13901ef597ec64a871e49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We should recall that, to perform evaluation, we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train a model over images corresponding to a single scene.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sample a hold-out test image (and corresponding camera pose).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Render a viewpoint (with the trained model) using the camera pose information
+    from the hold-out image.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compare the rendering to the ground truth image.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For NeRF-W, we do not have appearance or transient embeddings for test images.
+    As a result, NeRF-W optimizes these embeddings based on one half of the test image
+    and performs evaluation on the other half of the image; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8188c9c47ad277928edd82795bbbe81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we examine the output of different NeRF variants, we see NeRF output tends
+    to contain ghosting artifacts due to transient objects in the training images.
+    In comparison, NeRF-W produces sharp and accurate renderings, indicating that
+    is more capable of handling real-world variation in scene appearance; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/877a1093e345c693798e829bde25e1c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plus, NeRF-W can produce accurate scene renderings given training images with
+    different lighting conditions. Given that NeRF-W can generate output given different
+    appearance embeddings as input, we can tweak NeRF-W’s appearance embedding to
+    modify the appearance of the final rendering; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a37f6b3eeed2bda8022f135660f8cbd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking this idea a step further, we can even interpolate between appearance
+    embeddings of different training images, yielding a smooth change in rendered
+    scene appearance; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5068204217d0160271cc5474393b961e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Nerfies: Deformable Neural Radiance Fields](https://arxiv.org/abs/2011.12948)
+    [2]'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/381faf50b33a9ad8fd0d8b09484bda3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most computer vision data for modern applications is captured on a smart phone.
+    With this in mind, one might wonder whether it’s possible to train a NeRF using
+    this data. In [2], authors explore a specific application along these lines: *converting
+    casually captured “selfie” images/videos into a NeRF that can generates photorealistic
+    renderings of a subject/person*. The authors call these models “Nerfies” (i.e.,
+    a NeRF-based selfie)!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Initially, this application may seem pretty specific and useless. *Do we really
+    care this much about tweaking the viewing angle of our selfie? How much more aesthetic
+    can this make our instagram posts?* However, the methodology proposed in [2] is
+    incredibly insightful for a few reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It gives us an idea of the feasibility of training NeRFs using images and videos
+    from a smart phone.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It improves the ability of NeRFs to handle challenging, detailed, or imperfectly
+    captured materials in a scene.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is not just applicable to capturing self-portraits, but can also be applied
+    to more general scene modeling applications.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using techniques proposed in [2], we can produce high-quality scene representations
+    given noisy, imperfect images captured on a mobile phone. As an example of how
+    such a technique can be used, imagine generating a 3D model of yourself by just
+    taking a quick video on your phone. Current approaches for this require entire,
+    specialized labs with synchronized lights and cameras!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NeRFs + deformation fields.** When we think about using a hand-held camera
+    to build a 3D model of a person, there are a few difficulties that might come
+    to mind:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The camera will move (this violates the static assumption!).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Humans contain a lot of complex geometries and materials that are difficult
+    to model (e.g., hair, glasses, jewelry, etc.).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In [2], authors address these challenges by augmenting NeRFs with a jointly
+    optimized, non-rigid deformation field, which learns to transform the scene’s
+    underlying geometry in 3D space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43b46e16aba5b3137524ed0e71a3fac4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transforming coordinates with a deformation field (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: This deformation field is modeled with a [feed-forward network](https://cameronrwolfe.substack.com/i/94634004/feed-forward-neural-networks)
+    that takes a positionally-encoded, 3D coordinate and per-image latent deformation
+    code as input, then produces a non-rigidly deformed 3D coordinate as output; see
+    above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**how def-NeRF works.** The methodology in [2], which we’ll call a Deformable
+    Neural Radiance Field (def-NeRF), has two components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Deformation field*: models a non-rigid deformation of 3D coordinates using
+    a feed-forward neural network.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*NeRF*: uses a vanilla NeRF architecture to create a template of the underlying
+    scene’s geometry and appearance.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We associate each training image with learnable deformation and appearance vectors.
+    These latent codes, which mimic the per-image embedding approach used by NeRF-W
+    [1], allow deformation and appearance to be image-dependent and enable def-NeRF
+    to handle variance in images of scene (e.g., illumination changes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7e47a6a32e3b7bb8fa4d99697e79f07.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: def-NeRF takes a 3D coordinate as input. This coordinate is positionally-encoded
+    and combined with the latent deformation code (via addition) before being passed
+    into the feed-forward network that models def-NeRF’s deformation field. The output
+    of this network is a transformed 3D coordinate; see above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0b3ff1c04ef38a092a23103806589d1f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: This transformed coordinate is passed as input to the NeRF. Similar to NeRF-W
+    [1], we augment this NeRF with a per-image, learnable appearance vector. Given
+    the transformed coordinate, viewing direction, and an appearance vector as input,
+    the NeRF produces a volume density and RGB color as output; see above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3d8049d21e17a25908d61ba4e5d8c0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full def-NeRF architecture, illustrated above, shares a nearly identical
+    [architecture and training strategy](https://cameronrwolfe.substack.com/i/97915766/modeling-nerfs)
+    compared to vanilla NeRFs. The main differences are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The modeling of a deformation field.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The use of per-image deformation and appearance vectors.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “When rendering, we simply cast rays and sample points in the observation frame
+    and then use the deformation field to map the sampled points to the template.”
+    *— from [2]*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/70ebd9f6d2ede2b208953ad5b62e43a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**why is this necessary?** def-NeRF simply adds a deformation field that non-rigidly
+    deforms input coordinates to the primary NeRF architecture. As a result, this
+    approach decomposes scene representations into two parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A geometric model of the scene.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A deformation of this geometry into the desired viewpoint.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As such, def-NeRFs relax the static assumption of NeRFs and allow the underlying
+    scene geometry to be learned in a manner that is invariant to shifts, translations,
+    viewpoint changes, and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23cb63f6742ecee5901df78b76de65d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Added regularization improves reconstruction quality (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**regularization.** Authors in [2] observe that learned deformation fields
+    are prone to local minima and overfitting. As a solution, we can add extra regularization
+    to the optimization process of def-NeRF; see above. Several different regularization
+    schemes are adopted, as described in Section 3.3–3.5 of [2].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**does it work well?** def-NeRF is primarily evaluated based on its ability
+    to produce “Nerfies” (i.e., photorealistic renderings of a person/subject from
+    arbitrary viewpoints). To create a Nerfie, a user films their face using a smart
+    phone for about 20 seconds. Then, the def-NeRF methodology is trained over this
+    data and used to render selfies from various, novel viewpoints.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3470aa24b0d545ac5f92eb492c416db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: To evaluate the quality of these scene reconstructions from novel viewpoints,
+    the authors construct a camera rig that simultaneously captures a subject from
+    multiple viewpoints. This allows a validation set to be constructed using images
+    that capture the same exact scene from two different viewpoints; see above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f19e6985a5a71db532ff9c80d6536515.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: When quantitatively compared to various baselines, def-NeRF is found to produce
+    higher-quality reconstructions of subjects in most cases. Notably, def-NeRFs seems
+    to struggle with the [PSNR metric](https://www.mathworks.com/help/vision/ref/psnr.html).
+    However, authors claim that this metric favors blurry images and is not ideal
+    for evaluating scene reconstructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a968d151f94faf7ffdac431d3e7129d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Qualitatively, we see that def-NeRF is more capable of capturing fine details
+    within a scene (e.g., hair, shirt wrinkles, glasses, etc.) relative to baselines;
+    see above. Additionally, the method works well for general scenes that go beyond
+    reconstructing human subjects in a Nerfie. Overall, def-NeRF seems to provide
+    high-quality scene reconstructions given images from a mobile phone!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f133741062ab23b6cc955ae6a5f3ded6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although NeRFs produce impressive demos, they are not truly useful unless we
+    can apply them to images encountered in the real world. In this overview, we highlight
+    the main reasons that applying NeRFs in the wild is often difficult (i.e., the
+    static assumption) and overview some recent research that aims to solve this problem.
+    Some of the major takeaways are outlined below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**static assumption.** NeRFs, in their original form, assume that scenes are
+    static, meaning that two images taken of a scene from the same position/direction
+    must be identical. In practice, this assumption rarely holds! People or objects
+    may be moving through the scene, and variable lighting conditions can significantly
+    change the appearance of an image. Deploying NeRFs in the real world requires
+    that this assumption be relaxed significantly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**image-dependent embeddings.** Real-world scenes can be separated into image-independent
+    and image-dependent components. If we want to learn the underlying geometry of
+    a scene without overfitting to image-dependent components, we must customize a
+    NeRF’s output on a per-image basis. For both NeRF-W and def-NeRF, this is largely
+    accomplished via the addition of per-image embeddings vectors (i.e., appearance,
+    transient, and deformation vectors). However, the fact that per-image embedding
+    vectors are not available for unseen/test images may make deploying these models
+    more difficult.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**limitations.** Allowing NeRFs to be applied beyond controlled environments
+    is important, but this is not the only limitation of NeRFs! These models still
+    suffer from poor sample efficiency and computational complexity, as discussed
+    in a [prior post](https://cameronrwolfe.substack.com/p/beyond-nerfs-part-one).
+    Making NeRFs viable for real-time applications will require a combination of techniques
+    that solve each individual issue faced by NeRFs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing Thoughts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thanks so much for reading this article. I am [Cameron R. Wolfe](https://cameronrwolfe.me/),
+    Director of AI at [Rebuy](https://www.rebuyengine.com/). I study the empirical
+    and theoretical foundations of deep learning. You can also check out my [other
+    writings](https://medium.com/@wolfecameron) on medium! If you liked it, please
+    follow me on [twitter](https://twitter.com/cwolferesearch) or subscribe to my
+    [Deep (Learning) Focus newsletter](https://cameronrwolfe.substack.com/), where
+    I help readers build a deeper understanding of topics in deep learning research
+    via understandable overviews of popular papers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bibliography
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Martin-Brualla, Ricardo, et al. “Nerf in the wild: Neural radiance fields
+    for unconstrained photo collections.” *Proceedings of the IEEE/CVF Conference
+    on Computer Vision and Pattern Recognition*. 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Park, Keunhong, et al. “Nerfies: Deformable neural radiance fields.” *Proceedings
+    of the IEEE/CVF International Conference on Computer Vision*. 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Mildenhall, Ben, et al. “Nerf: Representing scenes as neural radiance fields
+    for view synthesis.” *Communications of the ACM* 65.1 (2021): 99–106.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Kendall, Alex, and Yarin Gal. “What uncertainties do we need in bayesian
+    deep learning for computer vision?.” *Advances in neural information processing
+    systems* 30 (2017).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Mildenhall, Ben, et al. “Local light field fusion: Practical view synthesis
+    with prescriptive sampling guidelines.” *ACM Transactions on Graphics (TOG)* 38.4
+    (2019): 1–14.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Sitzmann, Vincent, Michael Zollhöfer, and Gordon Wetzstein. “Scene representation
+    networks: Continuous 3d-structure-aware neural scene representations.” *Advances
+    in Neural Information Processing Systems* 32 (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Müller, Thomas, et al. “Instant neural graphics primitives with a multiresolution
+    hash encoding.” *ACM Transactions on Graphics (ToG)* 41.4 (2022): 1–15.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Yu, Alex, et al. “pixelnerf: Neural radiance fields from one or few images.”
+    *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition*.
+    2021.'
+  prefs: []
+  type: TYPE_NORMAL

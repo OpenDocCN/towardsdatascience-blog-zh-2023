@@ -1,0 +1,742 @@
+- en: Teaching AI to Play Board Games
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/teaching-ai-to-play-board-games-77e5d1749dd9](https://towardsdatascience.com/teaching-ai-to-play-board-games-77e5d1749dd9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using reinforcement learning from scratch to teach a computer to play Tic-Tac-Toe
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://heiko-hotz.medium.com/?source=post_page-----77e5d1749dd9--------------------------------)[![Heiko
+    Hotz](../Images/d08394d46d41d5cd9e76557a463be95e.png)](https://heiko-hotz.medium.com/?source=post_page-----77e5d1749dd9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----77e5d1749dd9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----77e5d1749dd9--------------------------------)
+    [Heiko Hotz](https://heiko-hotz.medium.com/?source=post_page-----77e5d1749dd9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----77e5d1749dd9--------------------------------)
+    ·18 min read·Dec 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60b0afcb68a3b3d4c14f8bdf7964d2ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author (created with ChatGPT)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is this about?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It appears that everyone in the AI sector is currently honing their Reinforcement
+    Learning (RL) skills, especially in Q-learning, following the recent rumours about
+    OpenAI’s new AI model, [*Q**](https://en.wikipedia.org/wiki/OpenAI#Q*)and I’m
+    joining in too. However, rather than speculating about *Q** or revisiting old
+    papers and examples for Q-learning, I’ve decided to use my enthusiasm for board
+    games to give an introduction to Q-learning 🤓
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I will create a simple programme from scratch to teach a
+    model how to play Tic-Tac-Toe (TTT). I will refrain from using any RL libraries
+    like [*Gym*](https://github.com/openai/gym) or [*Stable Baselines*](https://github.com/DLR-RM/stable-baselines3);
+    everything is hand-coded in native Python, and the script is merely 100 lines
+    long. If you’re curious about how to instruct an AI to play games, keep reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find all the code on GitHub at [https://github.com/marshmellow77/tictactoe-q](https://github.com/marshmellow77/tictactoe-q).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is it important?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Teaching an AI to play Tic-Tac-Toe (TTT) might not seem all that important.
+    However, it does provide a (hopefully) clear and understandable introduction to
+    Q-learning and RL, which might be important in the field of Generative AI (GenAI)
+    since there has been speculation that stand-alone GenAI models, such as GPT-4,
+    are insufficient for significant advancements. They are limited by the fact that
+    they can only ever predict the next token and not being able to reason at all.
+    RL is believed to be able to address this issue and potentially enhance the responses
+    from GenAI models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But whether you’re aiming to brush up on your RL skills in anticipation of these
+    advancements, or you’re simply seeking an engaging introduction to Q-learning,
+    this tutorial is designed for both scenarios 🤗
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Understanding Q-Learning**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At its core, Q-learning is an algorithm that learns the value of an action in
+    a particular state, and then uses this information to find the best action. Let’s
+    consider the example of the *Frozen Lake* game, a popular single-player game used
+    to demonstrate Q-learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Frozen Lake, the player (starting at cell 0) navigates across a grid of
+    ice and water cells, aiming to reach a goal (cell 15) without falling into the
+    water. Each cell represents a state, and the player can move in four directions:
+    up, down, left, or right.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/445f990a7fb1ddd8e01d917fc85bd76b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author (created with Stable Diffusion)
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the beginning of the game the ***agent*** (that’s what an AI player is usually
+    called) has no information and will just try out some moves randomly. In the context
+    of Q-learning, this exploration phase is crucial. The agent learns by receiving
+    rewards or penalties based on its actions. In Frozen Lake, reaching the goal earns
+    a high reward, while falling into water results in a penalty. This system of rewards
+    and penalties guides the agent in learning the most effective path to the goal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Q-learning uses a table, known as a Q-table, to record the value of each action
+    in each state. This table is updated continuously as the agent explores the environment.
+    The Q-table entries, known as Q-values, represent the expected utility of taking
+    a certain action in a given state, and they are updated using the [Bellman Equation](https://en.wikipedia.org/wiki/Bellman_equation).
+    This equation considers the immediate reward from an action and the highest possible
+    future rewards (more about this later).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Basically, the Q-table is a cheatsheet or lookup table for the agent: Depending
+    in which state the game is, the agent will look up that state, determine which
+    action has the most utility (i.e. which is the best action to take) and then executes
+    that action. Below an illustration of how the Q-table could look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b92d5b9413528dfdb03ec6cdcf27250.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example the player would choose the action *Right* if it was in state
+    1 (i.e. on cell 1) because it is the action with the highest vale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over time, as the agent explores the environment and updates the Q-table, it
+    becomes more adept at navigating the Frozen Lake, eventually learning an optimal
+    or near-optimal policy to reach the goal reliably. The beauty of Q-learning in
+    this scenario is its model-free nature, meaning it doesn’t require a model of
+    the environment and can learn solely from interaction, making it broadly applicable
+    to various problems in RL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There exist many tutorials that demonstrate how to leverage and implement Q-learning
+    for the Frozen Lake game, for example [https://towardsdatascience.com/q-learning-for-beginners-2837b777741](/q-learning-for-beginners-2837b777741).
+    However, as previously mentioned, my interest as a board game enthusiast lies
+    in adapting this method for two-player games, and potentially even for games with
+    more players.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Challenges in Two-Player Games**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Applying Q-learning to a two-player game such as TTT necessitates a minor modification.
+    In the Frozen Lake game, the next state is determined solely by the agent’s action.
+    However, in TTT, although a player may take a turn, the subsequent state also
+    depends on the opponent’s move. For instance, if I place an ‘X’ in the top-left
+    corner, the next state is uncertain because my opponent has several potential
+    moves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db3bd40a35d9275cb4e3928f83be3e65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Several methods can be employed to tackle this issue. One approach involves
+    simulating all possible actions of the opponent and their respective outcomes.
+    This requires generating a probability distribution for all potential subsequent
+    states and updating the Q-values according to the anticipated results of these
+    states. However, this method can be computationally demanding. In this tutorial
+    we will take a much simpler approach and just take a random action for the opponent
+    and update the Q-table based on the actual outcome of this action. This reflects
+    the unpredictable nature of the opponent quite well as we will see later on. With
+    this approach, Q-learning can be effectively adapted to two-player games, allowing
+    AI to not only learn optimal moves but also (eventually) adapt to the strategies
+    of human opponents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This methodology, in principle, mirrors the approach used to train [AlphaGo
+    Zero](https://en.wikipedia.org/wiki/AlphaGo_Zero). This AI program played 4.9
+    million games of Go against itself in rapid succession. During this process, it
+    continuously improved its skill, learning and adapting strategies autonomously.
+    This self-learning method, bypassing the need to simulate every possible move
+    of the opponent, presents an efficient and effective way for AI systems to learn
+    and adapt to complex tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf55b0ed4cb304a37d134c2305ff771f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Game 2 between Lee Sedol and AlphaGo with famous move 37 by AlphaGo. Image
+    credit: [https://commons.wikimedia.org/wiki/File:Lee_Sedol_(W)_vs_AlphaGo_(B)_-_Game_2.svg](https://commons.wikimedia.org/wiki/File:Lee_Sedol_(W)_vs_AlphaGo_(B)_-_Game_2.svg)
+    (Licence CC BY-SA 4.0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next sections, we will delve into how these principles are applied specifically
+    in the case of Tic-Tac-Toe, illustrating the implementation of Q-learning in an
+    environment with two players.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Q-Learning for Tic-Tac-Toe**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we venture into applying Q-learning to Tic-Tac-Toe, it’s important to understand
+    the setup of our program and the environment in which our AI agent will be operating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The code is designed to train an AI (which we will call *Player 1* or *agent*)
+    to play a Tic-Tac-Toe-like game using Q-learning, a form of reinforcement learning.
+    It begins by setting up the learning parameters and initializing a Q-table to
+    store the value of different actions in different states. The script defines several
+    functions to manage the game’s mechanics, such as determining possible moves,
+    checking for a winner, updating the game state, and calculating the next state
+    and reward after a move.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the main part of the script, a Q-learning algorithm is implemented. It runs
+    through numerous episodes, simulating games between theagent and its opponent
+    (which we will call *player 2*). In each episode, the AI either explores a random
+    move or exploits knowledge from the Q-table to make a move, learning from the
+    outcomes to update the Q-table values. This process involves adjusting the exploration
+    rate over time, shifting from random exploration to more strategic moves as it
+    learns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A key aspect of our setup is the AI’s opponent. Unlike more complex scenarios
+    where the opponent might have a sophisticated strategy, our AI will be playing
+    against an opponent that makes random moves. This choice simplifies the learning
+    environment and allows us to focus on the AI’s learning process rather than the
+    complexity of the opponent’s strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Q-Learning Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our Q-learning setup involves key parameters that will influence how the AI
+    learns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Learning Rate (**`**learning_rate**`**):** This determines how much new information
+    affects existing knowledge. A higher rate accelerates learning but can lead to
+    instability. A rate of 0.2 strikes a balance between learning new strategies and
+    retaining previous learning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Discount Factor (**`**discount_factor**`**):** This reflects the importance
+    of future rewards, influencing how far-sighted the AI''s strategy will be. With
+    a value of 0.9, it places significant emphasis on future rewards, encouraging
+    the AI to think ahead rather than just focus on immediate gains.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Number of Episodes (**`**num_episodes**`**):** This is the number of games
+    the AI will play to learn, providing ample opportunity for the AI to experience
+    various game scenarios. Setting this to 10 million (`1e7`) allows extensive training,
+    giving the AI ample opportunity to learn from a wide range of game scenarios.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Exploration Rate (**`**epsilon**`**):** The exploration rate (epsilon) is
+    initially set high to allow the AI to explore various actions, rather than solely
+    exploiting known strategies. Initially, the AI will explore more (due to `epsilon`
+    being 1.0). Over time, as `epsilon` decays towards `epsilon_min`, the AI will
+    start exploiting its learned strategies more.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Side note on the exploration rate**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The exploration rate in Q Learning, often represented by the symbol ε (epsilon),
+    is a crucial parameter that dictates the balance between exploration (trying new
+    actions) and exploitation (using the best-known actions). Initially, the agent
+    doesn’t have much information about the environment, so it’s beneficial for it
+    to explore widely by trying out different actions. The exploration rate, typically
+    set to a high value at the start (e.g., 1 or close to it), determines the probability
+    of the agent taking a random action instead of the best-known action according
+    to the Q-table.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: However, as the agent learns more about the environment and the Q-table becomes
+    more reliable, it becomes less necessary to explore, and more beneficial to exploit
+    the knowledge gained. This is where the exploration rate decay comes into play.
+    The exploration rate decay is a factor by which the exploration rate is reduced
+    over time. It ensures that as the agent learns and gathers more information, it
+    gradually shifts from exploring the environment to exploiting the learned values
+    in the Q-table.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The reason why this balance is important in Q Learning is to avoid two main
+    issues:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Getting Stuck in Local Optima:** If the agent only exploits known information
+    (low exploration), it might get stuck in local optima. This means it repeatedly
+    chooses actions that seem best based on limited information but might miss out
+    on discovering actions that lead to better long-term rewards.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Inefficient Learning:** On the other hand, if the agent explores too much
+    (high exploration) and for too long, it can lead to inefficient learning. The
+    agent might keep trying suboptimal actions without sufficiently leveraging the
+    knowledge it has already acquired, leading to slower convergence to the optimal
+    policy.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By appropriately setting the exploration rate and its decay, Q-learning algorithms
+    can effectively balance these two aspects, allowing the agent to explore the environment
+    initially and then gradually focus more on exploiting the best strategies it has
+    learned. This balance is key to the efficiency and effectiveness of learning in
+    complex environments.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the next sections, we will dive into the code to see how the AI uses Q-learning
+    to make decisions, update its strategy, and ultimately aim to master Tic-Tac-Toe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code Deep Dive
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Training Script
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a walkthrough of the [train.py](https://github.com/marshmellow77/tictactoe-q/blob/master/train.py)
+    file in the GH repo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training starts with the for loop (roughly in the middle of the script)
+    where we will play a certain number of episodes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Following that, we determine the start player randomly. An even easier approach
+    would have been to just make our agent always the start player. But implementing
+    a random start player is not much more effort and generalises the Q-table mode,
+    i.e. our agent will learn how to play as starting player but also as non-starting
+    player.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If player 2 starts the game, then we start with making a random move for player
+    2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we enter the actual training loop within a game of TTT which will only
+    stop if the game has finished. A key mechanic is the exploitation vs exploration
+    mechanic, which we discussed earlier. This is implemented like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The lower the epsilon value, the less the agent will explore by playing random
+    moves and the more it will leverage the Q-table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the agent’s action has been chosen, we will execute it and determine the
+    next state (and any rewards if applicable):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The function that does all this warrants a closer look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this function we first update the state of the board and check if our agent
+    has won the game. If that is not the case, then we play a random move for the
+    opponent and check again if the opponent has won the game. Depending on the outcome
+    we return a reward of 0 (game still ongoing), 0.1 (draw), +1 (agent won), or -1
+    (opponent won). The reason we choose 0.1 as a reward for a draw is so that the
+    agent is incentivised to end a game quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we have determined the reward come the most crucial part of the entire
+    program: Updating the Q-table via the Bellman equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This Bellman equation is much better explained in other blog posts (again,
+    refer back to [https://towardsdatascience.com/q-learning-for-beginners-2837b777741](/q-learning-for-beginners-2837b777741)).
+    But for a very brief explanation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As discussed earlier, the Q-table is essentially a big cheatsheet: It keeps
+    track of all the possible states in the game and the value of each possible move
+    from that state. It tells the agent how good each move is in a given situation,
+    based on what it has learned so far.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Bellman equation updates this Q-table. It does this by looking at the *immediate*
+    rewards the agent receives (winning, losing, drawing the game) and the quality
+    of future states (i.e. *future* rewards) it can move to. So, after each game,
+    the agent uses the Bellman equation to revise its Q-table, learning which moves
+    are likely to lead to a win, a loss, or a draw.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Lastly, we adjust the exploration rate, so that in future plays the agent uses
+    the Q table more and explores less.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running the Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once we have the training script ready, we can execute it. Fortunately, this
+    process is not computationally demanding and completes very quickly, requiring
+    no special computing power. I executed this on a MacBook M1 Air, for example,
+    and it concluded within 5 minutes for 10 million games. Once the training is complete,
+    we will save the Q table (which is not particularly large) so that we can use
+    it to test the agent, play games against the AI, and potentially continue training
+    at a later stage to further enhance the table. Let’s have a look at it 🧐
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manual Inspection of Q table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The table is relatively easy to understand: Each row represents the board state
+    and the actions that can be taken and their quality. Let’s have a look at some
+    interesting states. Note that your table will probably have different (but hopefully
+    similar) values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f47b55da1649ba7c93d541cd6511960e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The board state shows where each player has placed already (the first 3 numbers
+    represent the first row, the next 3 the second row, and the last 3 the last row.
+    The actions correspond to the positions on the board, and the number for each
+    action indicates the quality of that action. In this example we see a state where
+    it looks like only one move (action 7) is considered good, all other moves seem
+    losing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NB: The indices for the board positions are as follows:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/3d7945604a7896490040cbf64047977d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, let’s visualise the board state for this particular entry in the Q-table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5fd8c1971270157298573d23b371f20c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, the only good move for our agent (player 1) in this position is to choose
+    position 7\. All the other moves might potentially lead to losing the game (remember
+    that player 2 will play a random move on its next turn, so a loss is not guaranteed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at one more example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c365fcb2f84711d6b1ca0d27a1629ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/854666655addde48dd4dfeb51047bb9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example the best move is obviously to play in position 8 (bottom right)
+    and win the game. If the agent were to play any other move, it is likely that
+    it will lose the game. Therefore the Q table will inform our agent to take action
+    8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing the New Agent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we’ve trained the model, we can test it with a the script [test.py](https://github.com/marshmellow77/tictactoe-q/blob/master/test.py)
+    in the GH repo. In it we will let the agent a play a number of games against an
+    opponent that plays random moves and see how well it performs. We start by initialising
+    our agent and load the Q-table to use it for decision-making in a game environment.
+    The `play_game` function simulates a game, using the loaded Q-table to guide the
+    agent's decisions. The game environment here is a simple 3x3 board where each
+    state represents a different configuration of the board.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The agent, which plays as Player 1, makes decisions based on the Q-table — choosing
+    the action with the highest value in the current state. If a state is not found
+    in the Q-table, the agent makes a random move. This combination of learned behaviour
+    and randomness helps to evaluate the robustness of the training. Player 2’s moves
+    are entirely random, providing a varied set of scenarios for the agent to navigate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The outcomes of these games are then tracked, quantifying the number of wins,
+    losses, and draws. This helps in assessing the effectiveness of the trained model.
+    If the `log_lost_games` flag is set, detailed logs of the games where the agent
+    lost are saved, which can be invaluable for further analysis and improvement of
+    the model. This testing process, playing a substantial number of games, gives
+    a comprehensive view of the agent's capabilities post-training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e88dbab492830f205ffd07e030e1ebd6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Playing a Game Against the AI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It looks like the test against a random bot went well. Our AI managed to win
+    more than 95% of the games. Now, we want to play against the AI ourselves. We
+    can use [play.py](https://github.com/marshmellow77/tictactoe-q/blob/master/play.py)
+    in the GH repo to do that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this program, we interact with the AI through a simple console interface.
+    The game board is represented as a 3x3 grid, with each position numbered from
+    0 to 8\. When it’s our turn, we’ll be prompted to enter the number corresponding
+    to the position where we want to make our move.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The AI uses the Q-table loaded from a CSV file to make its decisions. This Q-table,
+    derived from the previous training process, guides the AI to choose the best possible
+    move based on the current state of the game board. If the AI encounters a state
+    not present in the Q-table, it defaults to making a random move.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The game alternates between our turn and the AI’s turn. After each move, the
+    updated board is displayed, and the program checks for a winner. If a player wins
+    or the game results in a draw, the game ends, and the outcome is announced — whether
+    it’s a win for us, a win for the AI, or a draw.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This interactive game provides a great opportunity to test the AI’s capabilities
+    in real-time. Let’s get started:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eac09908ab709e6708a660a156074384.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this game, if we don’t choose action 0 (top left corner) the AI will have
+    a chance to win the game. Will it realise that?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bf5a11009097edc79b18d607d9ef811.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It did! Nice 😊
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we trained our AI agent against a player that plays random moves.
+    This was already good enough to achieve a win rate of more than 95% against an
+    opponent that plays random moves. But there are ways to improve the training process
+    and hopefully also the performance of the AI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Impact of Parameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The journey of applying Q-learning to Tic-Tac-Toe reveals a crucial aspect
+    of RL: the art of fine-tuning parameters. Getting these parameters right, such
+    as the balance between exploitation and exploration, the learning rate, and the
+    discount factor, is key to the success of an RL agent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exploration vs. Exploitation:** Controlled by the `epsilon` value, this balance
+    dictates how often the agent tries new strategies versus relying on known strategies.
+    A high exploration rate encourages the agent to try new things, potentially leading
+    to innovative strategies, while a high exploitation rate makes the agent rely
+    on its existing knowledge, which can be efficient but may miss out on better strategies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Learning Rate:** A high learning rate means the agent quickly adopts new
+    information, which can be beneficial in dynamic environments but may lead to instability
+    if the agent overwrites useful learnings too rapidly. Conversely, a low learning
+    rate means the agent relies more on past knowledge, leading to stable but potentially
+    slower learning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Discount Factor:** This parameter influences how much the agent values future
+    rewards. A high discount factor makes the agent forward-thinking, considering
+    the long-term consequences of its actions. A low discount factor, on the other
+    hand, makes the agent short-sighted, focusing on immediate rewards.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Changes in these parameters can significantly alter the behaviour of the RL
+    agent. For instance, an agent with a low discount factor might play Tic-Tac-Toe
+    aggressively, focusing on immediate wins rather than setting up future strategies.
+    In contrast, an agent with a high discount factor might play more strategically,
+    considering the implications of each move on the future state of the game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, an agent with a high learning rate might rapidly adapt to new strategies,
+    constantly evolving its gameplay, while one with a low learning rate might stick
+    to tried-and-tested strategies, showing less variation in its game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your Turn to Experiment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is where the true excitement lies in reinforcement learning. Each parameter
+    can be tweaked to observe how it affects the learning and performance of the AI
+    agent. I invite you to dive into this world of experimentation. Adjust the learning
+    rate, exploration rate, and discount factor. Observe how these changes impact
+    the AI’s strategy in playing Tic-Tac-Toe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More Advanced Techniques
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To further improve the model’s performance, implementing a self-play mechanism,
+    where the AI plays against versions of itself from different stages of training
+    (rather than playing agains an opponent that makes random moves), could be an
+    effective strategy. This approach has been successfully used in systems like AlphaGo
+    and could lead to a more robust and adaptable AI player.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more complex games, like Chess and Go, maintaining a Q-table will not be
+    feasible any more as it becomes too big. In these games, incorporating techniques
+    like Deep Q-learning could significantly enhance the AI’s learning capability.
+    By using a neural network to approximate the Q-table, the AI can handle more complex
+    states beyond the simple 3x3 Tic-Tac-Toe grid, making it scalable for more complicated
+    games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, the current setup has already shown promising results. These
+    suggested improvements, however, could elevate the AI’s performance further, transforming
+    it from a competent Tic-Tac-Toe player into a sophisticated AI capable of tackling
+    more complex strategic games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further Material on the Topic
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you are interested in learning more about how RL is being used for board
+    games, check out the two videos below. The first one is quite short and dives
+    into how modern chess AI bots are playing the game:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second video is the movie *AlphaGo* (which is free on Youtube), and tells
+    story of how AlphaGo model was developed and how it beat the world champion at
+    the time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Heiko Hotz
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 👋 Follow me on [Medium](https://heiko-hotz.medium.com/) and [LinkedIn](https://www.linkedin.com/in/heikohotz/)
+    to read more about Generative AI, Machine Learning, and Natural Language Processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👥 If you’re based in London join one of our [NLP London Meetups](https://www.meetup.com/nlp_london/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/adb4c021b5bd4b11847ab1787aefa7aa.png)'
+  prefs: []
+  type: TYPE_IMG

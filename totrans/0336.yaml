@@ -1,0 +1,421 @@
+- en: Attention from Alignment, Practically Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/attention-from-alignment-practically-explained-548ef6588aa4](https://towardsdatascience.com/attention-from-alignment-practically-explained-548ef6588aa4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn from what matters, Ignore what doesn’t.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----548ef6588aa4--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----548ef6588aa4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----548ef6588aa4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----548ef6588aa4--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----548ef6588aa4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----548ef6588aa4--------------------------------)
+    ·11 min read·Jul 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fddcbc3132d55c17e2ede623de6dbc4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Armand Khoury](https://unsplash.com/@armand_khoury?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention, as popularized by the landmark paper [Attention Is All You Need](https://arxiv.org/pdf/1706.03762.pdf)
+    (2017), is arguably the most important architectural trend in machine learning
+    right now. Originally intended for sequence to sequence modeling, attention has
+    exploded into virtually every sub-discipline of machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post will describe a particular flavor of attention which proceeded the
+    transforner style of attention. We’ll discuss how it works, and why it’s useful.
+    We’ll also go over some literature and a tutorial implementing this form of attention
+    in PyTorch. By reading this post, you will have a more thorough understanding
+    of attention as a general concept, which is useful in exploring more cutting edge
+    applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Reason For Attention
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The attention mechanism was originally popularized in [Neural Machine Translation
+    by Jointly Learning to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014),
+    which is the guiding reference for this particular post. This paper employs an
+    encoder-decoder architecture for english-to-french translation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/432558a8bcc2a2e465bc2f5c9a4a2dc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The encoder-decoder architecture in a nutshell, for a french to english translation
+    task
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a very common architecture, but the exact details can change drastically
+    from implementation to implementation. For instance, some of the earlier literature
+    in sequence to sequence encoder-decoders were recurrent networks that would incrementally
+    “build” and then “deconstruct” the embedding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96dfa4a443781e07f6d9da7527e13a2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conceptualization of the information flow of a simple sequence to sequence recurrent
+    encoder-decoder. The encoder incrementally embeds the english words, word by word,
+    into the embedding space, which is then deconstructed by the decoder. In this
+    diagram, the circles represent the embeddings throughout the encoder (red) the
+    intermediate embedding space (white) and throughout the decoder (blue). In this
+    case, the embeddings are long and complex vectors with abstract content which
+    isn’t easily human interpretable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This general idea, and minor variations therein, was state of the art for several
+    years. However, one problem with this approach is that the entire input sequence
+    has to be embedded into the embedding space, which is generally a fixed sized
+    vector. As a result, these models can easily forget content from sequences which
+    are too long. **The attention mechanism was designed to alleviate the problem
+    of needing to fit the entire input sequence into the embedding space. It does
+    this by telling the model which inputs are related to which outputs.** Or, in
+    other words, the attention mechanism allows a model to focus on relevant portions
+    of the input, and disregard the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4ae9c6464e1c3f38373ff2d71e00c77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of what an attention based thought process might look like. In french,
+    “je” is exactly identical to the word “I”. “Suis” is a conjugation of the verb
+    “etre” which is “to be” and is conjugated as “suis” based on the subject “I” and
+    the verb “am”. The choice of “directeur” is mostly related to the word “manager”,
+    but is also related to the context in which that word is used. The choice of which
+    inputs relate to which outputs is the task of the attention mechanism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Attention is Done, From a High Level
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Practically, the attention mechanism we will be discussing ends up being a matrix
+    of scores, called “alignment” scores. These alignment scores encode the degree
+    to which a word in an input sequence relates to a word in the output sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b36cb28b5075881824bec01e5bd8eb35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two examples of attention matrices for two different english-to-french examples,
+    from [Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014).
+    This paper only tangentially mentions the term “attention”, and actually called
+    this an “alignment model”. The term “attention” seems to have been popularized
+    after the fact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The alignment score can be computed many ways. We’ll stick with our 2014 paper
+    and pick apart it’s particular alignment function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b353ffc294c4dfe89c46f76613613f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Alignment score calculation from [Neural Machine Translation by Jointly Learning
+    to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014). This is
+    not the only alignment function which exists, but it’s the one we will be focusing
+    on. “Ua” and “Wa” represent a learnable transformations of the previous output
+    embedding (si-1) and a particular input embedding (hj), while “va” represents
+    a learnable reduction of the total embedding down to the final alignment scalar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When calculating the allignment for the ith output, this approach uses the previous
+    embedded state of the decoder (s_i-1), the embedding of an input word (h_j), and
+    the learnable parameters W_a, U_a, and v_a, to calculate the alignment of the
+    ith output with the jth input. The tanh activation function is included to add
+    non-linearity, which is vital in training a model to understand complex relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In other words, the function above calculates a score between the next output
+    word and a single input word, denoting how relevant an input word is to the current
+    output**. This function is run across all input words (h_j) to calculate an alignment
+    score for all input words given the current output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a75c893188cb49be5a9d11a7b5214f29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of how the alignments for a given prediction (word 8) are
+    calculated. The alignment function is calculated between the previous output embedding
+    of the decoder, and all the inputs, to calculate the attention for the current
+    output. Modified from [Neural Machine Translation by Jointly Learning to Align
+    and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A softmax function is applied across all of the computed alignments, turning
+    them into a probability. This is referred to in the literature as a “soft-search”
+    or “soft-alignment”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exactly how attention is used can vary from implementation to implementation.
+    In [Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014),
+    the attention mechanism decides which input embeddings to provide to the decoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e7f321781e6cc80460bf5da0a24d774.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A graphical illustration of the proposed model trying to generate the t-th target
+    word yt given a source sentence (x1, x2, . . . , xT ). Each input embedding is
+    multiplied by it’s respective alignment score, then they are summed together to
+    form the context vector which is used for the current decoder output step. From
+    [Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It does this selection process with a weighted sum. All input embeddings are
+    multiplied by their respective alignment score (in practice most of the alignment
+    scores have a value of zero, while one or two might have a value of 0.8 and 0.2
+    for instance), then those weighted embeddings are added together to create the
+    context vector for a particular output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c99df7138d1f2f612325878df8fb68b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The context vector used for the ith decoder step, ci. This is the weighted sum
+    of all input embeddings based on their alignment score. From [Neural Machine Translation
+    by Jointly Learning to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The context vector is the combination of all of the inputs which are relevant
+    to the current output.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following figure ties together how attention fits into the bigger picture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/97e1a0235e3646bcb0402c2db605abac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A breakdown of the flow of information for a particular output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The inputs are embedded into some initial vector representation (using word2vect,
+    for instance).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Those are passed through a bi-direcional LSTM, to create a bit of context awareness
+    between the embeddings
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Alignment scores are calculated for each input using the previous decoder embedding
+    and the learned parameters within the alignment function.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the soft-maxed alignments are multiplied against each input, added together,
+    and used to construct the context vector
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the decoder uses the previous decoder hidden state, along with the context vector,
+    to generate the prediction of the current word.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the next section we will implement this attention mechanism in PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention in PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While I originally set out to implement the entire english to french example,
+    it became apparent that the implementation would be excessively long, and contain
+    many intricacies which are irrelevant to the explanation of attention itself.
+    As a result, I created a toy problem which mimics the grammatical aspects of english
+    to french translation to showcase the attention mechanism specifically, without
+    the bulk of implementing LSTM’s, embeddings, utility tokens, batching, masking,
+    and other problem specific components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code can be found [here](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/AttentionDemo.ipynb),
+    for those that are interested
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As previously mentioned, english to french translation can be thought of as
+    two subproblems; alignment and translation. The various networks within the encoder
+    and decoder translate values, while the attention mechanism re-orients the vectors.
+    In other words, **Attention is all about alignment.** To emulate the alignment
+    problem of english to french translation the following toy problem was defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: given some shuffled input of values
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Organize them into a sequential output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Practically, the toy question posed to the attention mechanism is: **Given
+    the previous output vector, which output should come next, given a selection of
+    possible outputs?** This is a very similar question to the gramatical question
+    in english to french translation, which is: **Given a previous output word, which
+    inputs are relevant to the next one?** Thus, by solving this toy problem, we can
+    show the power of attention mechanism without getting too far in the weeds.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the Alignment Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall the alignment function
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b353ffc294c4dfe89c46f76613613f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The previously discussed alignment function, from [Neural Machine Translation
+    by Jointly Learning to Align and Translate](https://arxiv.org/pdf/1409.0473v7.pdf)(2014)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This function, essentially, decides the weight (α) of an input (hj) given the
+    previous output (si-1). This can be implemented directly in PyTorch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d579868d41bec4114bcadf359736f305.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example output of the alignment function. A scalar, which corresponds to
+    a specific input-output pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining Attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For a given previous output, the task of the attention mechanism is to calculate
+    which inputs to pay attention to. This can be done by calculating the alignment
+    for all inputs and passing that vector of alignments through a softmax.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5a3559cac202eaa12883cb87f9e29298.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A single attention vector for a given output position.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining A Learnable Attention Module
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we need to wrap the previous function into a PyTorch `nn.Module`. This is
+    implemented in such a way where the computation of attention creates a traceable
+    gradient, allowing the U, W, and V parameters to be updated through back propagation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, this module supports different encoder and decoder embeddings, which may
+    be useful in adapting this module to different applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dca233e2d6285a418dda48b7acd68323.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creates a context vector of length 10\. This makes sense, as the input embeddings
+    are of length 10, and the output of this attention technique is a context vector
+    which is the weighted sum of all the input embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we can train the attention module to solve the toy problem. This is done
+    by generating an X/Y pair (a corresponding shuffled and un-shuffled set), then
+    iterating through what every output should be and adjusting weights if the model
+    is incorrect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/beed80f8b348997931d111ded32c62fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training Loss. As noted in the implementation, the training process could be
+    significantly improved to encourage better convergence, but this serves for our
+    toy example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using the following code, we can generate a randomly shuffled sequence and ask
+    our attention model to sort it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b9dc3234384afa07c1344938c5ca0e24.png)![](../Images/adf7caa77d82635c98feabab743720cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The shuffled input, the model output, and the alignment scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are some artifacts based on the way the output is processed, but as you
+    can see the attention mechanism is properly un-shuffling the input!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We created a general purpose alignment module which can be used within a larger
+    network to focus on key information. This is directly inspired by the one used
+    in english to french translation, but can be used in a variety of applications
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In future posts, I’ll also describing several landmark papers in the ML space,
+    with an emphasis on practical and intuitive explanations. The attention mechanism
+    used in transformers is a bit different than this attention mechanism, which I’ll
+    be covering in a future post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Please like, share, and follow. As an independent author, your support really
+    makes a huge difference!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the images in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any images in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  prefs: []
+  type: TYPE_NORMAL

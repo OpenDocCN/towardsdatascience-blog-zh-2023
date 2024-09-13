@@ -1,0 +1,621 @@
+- en: 'Dynamic Pricing with Contextual Bandits: Learning by Doing'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dynamic-pricing-with-contextual-bandits-learning-by-doing-b88e49f55894](https://towardsdatascience.com/dynamic-pricing-with-contextual-bandits-learning-by-doing-b88e49f55894)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Adding context to your dynamic pricing problem can increase opportunities as
+    well as challenges
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@massi.costacurta?source=post_page-----b88e49f55894--------------------------------)[![Massimiliano
+    Costacurta](../Images/599c3469021c53f116cc67c390db6695.png)](https://medium.com/@massi.costacurta?source=post_page-----b88e49f55894--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b88e49f55894--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b88e49f55894--------------------------------)
+    [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----b88e49f55894--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b88e49f55894--------------------------------)
+    ·17 min read·Oct 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e3e13d9902455d3cb57bfb4f8ba38a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Artem Beliaikin](https://unsplash.com/@belart84?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Multi-armed to Contextual Bandits
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In my [previous article](https://medium.com/towards-data-science/dynamic-pricing-with-multi-armed-bandit-learning-by-doing-3e4550ed02ac),
+    I conducted a thorough analysis of the most popular strategies for tackling the
+    dynamic pricing problem using simple Multi-armed Bandits. If you’ve come here
+    from that piece, firstly, thank you. It’s by no means an easy read, and I truly
+    appreciate your enthusiasm for the subject. Secondly, get ready, as this new article
+    promises to be even more demanding. However, if this is your introduction to the
+    topic, I strongly advise beginning with the previous article. There, I present
+    foundational concepts, which I’ll assume readers are familiar with in this discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Anyway, a brief recap: the prior analysis aimed to simulate a dynamic pricing
+    scenario. The main goal was to assess as quickly as possible various price points
+    to find the one yielding the highest cumulated reward. We explored four distinct
+    algorithms: greedy, ε-greedy, Thompson Sampling, and UCB1, detailing the strengths
+    and weaknesses of each. Although the methodology employed in that article is theoretically
+    sound, it bears oversimplifications that don’t hold up in more complex, real-world
+    situations. The most problematic of these simplifications is the assumption that
+    the underlying process is stationary — meaning the optimal price remains constant
+    irrespective of the external environment. This is clearly not the case. Consider,
+    for example, fluctuations in demand during holiday seasons, sudden shifts in competitor
+    pricing, or changes in raw material costs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this issue, Contextual Bandits come into play. Contextual Bandits are
+    an extension of the Multi-armed Bandit problem where the decision-making agent
+    not only receives a reward for each action (or “arm”) but also has access to context
+    or environment-related information before choosing an arm. The context can be
+    any piece of information that might influence the outcome, such as customer demographics
+    or external market conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s how they work: before deciding which arm to pull (or, in our case, which
+    price to set), the agent observes the current context and uses it to make a more
+    informed decision. The agent then learns over time which actions work best for
+    which contexts, adapting its strategies based on both the rewards received and
+    the contexts in which those rewards were obtained. This continuous learning and
+    adapting mechanism can be used by businesses to dynamically adjust their pricing
+    strategies in response to ever-changing external factors, leading to potentially
+    better performance and increased profits.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Contextual Bandits: Architecture, Modeling, and Challenges'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The architecture of the Contextual Bandit problem can be thought of as a generalization
+    of the Multi-armed Bandit problem. Both approaches have the overarching goal of
+    maximizing rewards over time, that is finding the best balance between exploring
+    new actions and exploiting those already known to yield significant rewards. Furthermore,
+    they both learn from their history: decisions made and the corresponding rewards
+    they receive.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the ways in which they make decisions and learn exhibit fundamental
+    differences. The most striking distinction lies in the concept of context. While
+    decisions in the Multi-armed Bandit problem are made based solely on the historical
+    record of rewards associated with each arm, the contextual bandit incorporates
+    additional external information, or context, into its decision-making framework.
+    This context often provides crucial insights that can significantly influence
+    the outcomes of chosen actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8bae350617de71771a11606ae983f5de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of the Contextual Bandits feedback loop. Notice that the information
+    coming from the customer and/or the environment is now an input to the bandits.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The presence of context in the Contextual Bandit problem, however, necessitates
+    a more sophisticated modeling approach. Here, a predictive model (often referred
+    to as “oracle”) for each arm is needed to help identify the best action based
+    on the given context. This involves leveraging techniques such as linear or logistic
+    regression, neural networks, or other predictive algorithms that can effectively
+    weave in the context to anticipate rewards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given this added dimension of context, it’s evident that Contextual Bandits
+    present a level of complexity surpassing that of the Multi-armed Bandits. Instead
+    of merely tracking rewards, it requires a more sophisticated analysis to learn
+    how varying contexts correlate with rewards for different actions. In essence,
+    while Multi-armed Bandits offer a simpler, history-focused view, Contextual Bandits
+    provide a richer, more adaptive perspective, attuned to changing environments
+    and their implications on potential rewards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And now the bad news. As mentioned earlier, oracles are generally predictive
+    models. They can be any Machine Learning model capable of generating predictions
+    and associated probabilities given a specific context. Unfortunately, while most
+    Machine Learning algorithms excel at making predictions and estimating probabilities,
+    many fall short in providing a measure of uncertainty for their predictions. Uncertainty
+    is crucial for leveraging approaches such as Thompson Sampling or Upper Confidence
+    Bound. With Contextual Bandits, implementing these becomes especially challenging,
+    since creating an uncertainty measure (perhaps through bootstrapping or ensemble
+    methods) would complicate an already non-trivial architecture. Although there
+    are [frameworks](https://contextual-bandits.readthedocs.io/en/latest/) that incorporate
+    these features, I’ll set them aside for this discussion and focus solely on the
+    two primary uncertainty-free algorithms: greedy and ε-greedy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modeling The Context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having gained a clearer understanding of Contextual Bandits, it’s now time to
+    set up the environment to test them. In the previous article, I designed a simple
+    demand curve using the logistic function. The purpose of this function is to provide
+    an expected probability of purchase for a hypothetical customer at any given price
+    point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As previously discussed, the parameter *b* determines the steepness of the
+    demand curve, indicating how quickly the curve converges to 0\. This, in turn,
+    impacts the identification of the optimal price. In the Multi-armed Bandit scenario,
+    we assigned a single value to both *a* and *b*. However, for the contextual setup,
+    while we still are going to keep *a* fixed (equal to 2), we intend to make *b*
+    contingent on the values of our context. Specifically, for our simulation, we’ll
+    define a context made up of two features: geographical area and age. Essentially,
+    we are postulating that our demand curve — represented by the *b* value — varies
+    based on these two parameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To streamline our analysis, we’ll limit the input space. For the geographical
+    area, we’ll consider two regions: ‘EU’ and ‘US’. For age, instead of using a continuous
+    range, we’ll segment it into four distinct buckets. As a result, we’ll have a
+    total of eight unique contexts to work with. Naturally, this is a simplified model,
+    and it serves as a foundation upon which more complicated scenarios can be developed
+    by introducing additional contextual features. Another relevant assumption we’re
+    making is that the context solely dictates the non-stationarity of the demand
+    curve. In other words, while different contexts lead to different demand curves,
+    these demand curves are time-independent, meaning their parameters do not vary
+    based on the time step.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With our contexts clearly defined, the next step is to allocate a specific *b*
+    value for each one. This will enable us to determine the optimal price point tailored
+    to each context (see the previous article for more details about finding the optimal
+    price for a given demand curve).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d463874ebab888d0a260349fdbd61b6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Context mapping with the values related to the demand parameter ‘b’ and the
+    corresponding optimal prices. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The table presented above delineates the combination of context and *b* values,
+    along with the corresponding optimal prices. I’ve selected the *b* values deliberately
+    so as to easily generate a set of candidate prices to test our models. These prices
+    are (15, 20, 25, 30, 35, 40, 45, 50, 55, 60) and they represent our ‘arms’, the
+    possible actions we can choose from to maximize the cumulated reward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To provide you with a clearer understanding of our bandits’ objective, let’s
+    focus on the arm/price set at 30\. The oracle ‘managing’ this arm needs to determine
+    the purchase probabilities for all 8 contexts. Even though these probabilities
+    are not known in practice, in our simulation they can be calculated using the
+    demand curve function provided earlier by setting price=30, *a*=2, and adjusting
+    *b* based on the specific context. As a reference, here is the set of probabilities
+    that the oracle associated with this arm is tasked with learning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a389cf98c839bd12b00940d030db10fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Purchase probabilities per context for price=30\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It goes without saying that all the other arms will cope with their specific
+    set of probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To put this into practice, here’s the code that dynamically generates the context
+    at runtime. Additionally, within this code, we’re also constructing the dictionary
+    that maps the contexts with the related optimal prices. These dictionaries will
+    be particularly useful later when calculating the regret:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Setting up the Oracles: Logistic Regression'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Just as in the simple Multi-armed Bandit scenario, our reward function will
+    return either a 1 or a 0, reflecting whether a customer makes a purchase or not.
+    In essence, for every possible price point, we’ll progressively compile datasets
+    in the format: (geographical area, age bucket, reward). At a glance, this really
+    looks like a typical binary classification problem, which leads us to consider
+    testing one of the most prevalent binary classification models: logistic regression.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, when venturing into the domain of reinforcement learning, the learning
+    methodology differs from the traditional supervised learning paradigm. Specifically,
+    in reinforcement learning the model is updated continuously, every time a new
+    record is introduced. This shift requires the adoption of ‘online’ algorithms,
+    which can be incrementally updated as new records populate the dataset. Such algorithms
+    are crucial not only for optimizing computational efficiency but also for conserving
+    memory resources. Due to this requirement, the conventional implementation of
+    logistic regression provided by `sklearn`— which doesn’t support online training
+    or “partial fit” — becomes less ideal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter the `SGDClassifier`. The Stochastic Gradient Descent (SGD) Classifier
+    is a linear classifier optimized by SGD. Essentially, instead of processing the
+    entire dataset to compute the gradient of the objective function, SGD approximates
+    it using just a single or a few training samples. This makes it highly efficient
+    and suitable for online learning scenarios. To configure `SGDClassifier` to emulate
+    logistic regression, we need to set its loss function to 'log_loss'. By doing
+    this, we essentially employ the logistic regression model, but with the added
+    advantage of SGD's ability to incrementally update the model with each new data
+    point, fitting perfectly into our reinforcement learning framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we’ll create a `Model` helper class. This class will encapsulate not
+    just the `SGDClassifier` instance, but also all the related methods to be utilized
+    during our simulation. Additionally, this setup lays the foundation for swiftly
+    integrating other models into the simulation. And, spoiler alert, we’ll need to
+    do that later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a quick description of the class methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`add_sample`: Takes in new data points and labels and appends them to the existing
+    datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`can_predict`: Determines if the model is capable of making predictions. It
+    ensures that there are both positive and negative examples in the dataset to avoid
+    the “cold start” problem where the model can’t make meaningful predictions due
+    to a lack of diverse data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`get_prob`: Given a data point, this method returns the probability that it
+    belongs to the class labeled ‘1’. This probability represents our estimate of
+    the likelihood of a purchase occurring for the specified context at the price
+    the model is referencing.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`fit`: A partial fitting method specific to the logistic regression model.
+    It incrementally trains the model on the latest data point without having to retrain
+    the entire dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setting Up the Simulation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With the `Model` class ready, we can then create a function that simulates
+    the decision-making process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `run_simulation` code simulates the process of choosing optimal prices
+    in order to maximize the reward. It takes in the following arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`prices`: A list of potential prices to offer.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`nstep`: The number of steps or iterations for the simulation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`strategy`: The decision-making strategy to use, which can be ''random'', ''greedy''
+    or ''epsgreedy''.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`model_type`: The type of predictive model to use, with the default being ''logistic''.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Given these parameters, the function chooses a price (referred to as `arm`)
+    for each iteration based on the selected strategy. At each step, a customer context
+    is generated using the `generate_context()` function. Depending on the strategy,
+    the arm is chosen either randomly (that is our evaluation baseline) or based on
+    the greedy or ε-greedy algorithm. The customer’s response to the chosen price
+    is then simulated using the `get_reward()` function, and the regret (that is the
+    difference between the reward obtained adopting the optimal and the chosen price)
+    is computed and accumulated. The model corresponding to the selected arm is then
+    updated with the new data and retrained. The function also manages the ‘cold start’
+    problem, where, in the early iterations, the predictive models might not have
+    enough data to make a prediction. In such cases, the first arm whose model cannot
+    predict is selected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The greedy and ε-greedy algorithms were described in detail in the previous
+    article. In this section, we will present only the code that implements them in
+    the new contextual scenario. It is largely similar to the one used in the Multi-Armed
+    Bandit case, the main distinction is that here we use model probabilities to calculate
+    the arms’ expected return (that is the product between the probability and the
+    related price).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output of the simulation function is inherently stochastic. To comprehensively
+    evaluate the models and the strategies, we will run this simulation 1,000 times.
+    Each simulation will last for 10,000 time steps, collecting relevant intermediate
+    data to produce aggregated and statistically more reliable results. The two primary
+    metrics of our interest are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Average cumulative regret**: Just like in the Multi-armed Bandit case, this
+    is a metric that gives an aggregated sense of this missed opportunity over each
+    simulation run. We are going to accumulate the regret curves computed at each
+    run and then average them. We can compute this metric since in this simulation
+    we know which is the optimal price for each context. Obviously, this is not the
+    case in any real-world scenario.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Average optimal price estimate per context**: This represents the price with
+    the highest probability among all predictions made by the models, tailored to
+    each context value. In simpler terms, after each simulation run and for every
+    possible context, we “ask” the models to offer their probabilities. We then select
+    the model — or more accurately, the price linked to that model — with the highest
+    expected return. The price estimates generated by each run are then aggregated
+    and averaged. By comparing these estimated prices with the optimal ones, we can
+    assess the overall ability of the models to “understand” the underlying demand
+    curves.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Below is the code that runs the simulation 1,000 times, collects the required
+    data, and computes the aggregated metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we delve into the simulation results, let me make a brief comment about
+    the volume of data in each simulation. Stating that every simulation will run
+    for 10,000 steps indicates that we are collecting 10,000 data points in each run.
+    In the realm of Machine Learning, a dataset of 10,000 entries is often considered
+    the minimum threshold to derive meaningful insights. However, our situation is
+    even more challenging. The 10,000 records are actually “distributed” among the
+    10 models corresponding to each price candidate (our actions). Consequently, each
+    model may have no more than a thousand records for training, which is often insufficient.
+    This brings us to a key insight regarding Contextual Bandits: if you have multiple
+    actions, you may require a substantial amount of data to glean useful information.
+    And by substantial, I mean a lot.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Without further ado, let’s see the plot of the cumulative regret:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2bb9c2bbe9f612aad16891cc86a22c39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By looking at this plot, your initial reaction might be: “This guy messed up
+    the legend labels! the greedy strategy can’t possibly outperform the ε-greedy!”
+    At least, that was my thought the first time I viewed this output. The surprise
+    is that the plot is accurate, even if it’s highly counterintuitive. Let’s get
+    deeper into this and grasp what’s happening by considering the average price estimate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/238475879305b05c76d88b3ff6b22a88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The price estimate plot is essentially “revealing the culprit”. If you observe
+    the first four contexts and compare them to the second one, you’ll easily notice
+    that the prices predicted by the logistic regression are decreasing (as indicated
+    by the two arrows). The root of the issue is straightforward: the logistic regression
+    is essentially a linear model, even if we subject it to a nonlinear transformation.
+    Regrettably, our data is intrinsically nonlinear, as evidenced by the red dots.
+    Hence, the logistic regression is merely striving to accommodate the data, but
+    it’s evidently not the appropriate model for this scenario.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What we’re witnessing is this: adhering to some initial positive outcomes in
+    a ‘greedy’ way is less detrimental than depending on the model probabilities.
+    This is because the more the models learn from the data, the more they **consistently**
+    err in their predictions. At the end of the day, the ‘ε’ exploration merely ensures
+    that some data are utilized to refine the models, but the more these models learn,
+    the more they lead us astray.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For those of you not persuaded by this explanation, consider a simple one-dimensional
+    scenario: only four points (0, 1, 2, 3) with these respective probabilities of
+    yielding a 1: 0.01, 0.08, 0.95, 0.97\. In this case, everybody is happy because
+    the logistic regression functions flawlessly and you can even get a nice “by-the-book”
+    plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a277e9d74063d3c715f84df52a9b72a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The probabilities output by the logistic regression represent the values of
+    the curve at specific points, and here they are quite close to the actual values
+    (the green dots). However, let’s see what happens if we modify the probabilities
+    to (0.1, 0.8, 0.5, 0.3), which more closely mirrors our pricing scenario:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7352a2a65c4c5e273a1d275db3124243.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, things get nasty because three out of four probability predictions
+    will be completely off (those related to inputs 0, 1 and 3). Now, at each iteration,
+    we choose the best arm based on the expected returns, that is the products of
+    the models’ probabilities and the corresponding arms’ prices. If the probabilities
+    are completely off, it should be evident that we’re going to have a big problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, what do we do now? The immediate temptation might be to opt for a complex
+    nonlinear model like neural networks, or even better, go for a sophisticated architecture
+    that ventures into the realm of deep learning. This is certainly an option, and
+    there are indeed companies that are exploring this direction for pricing. However,
+    we first want to consider if there’s a simpler solution for our situation. If
+    only there were an algorithm that could split the input space based on the probability
+    of getting a ‘one’ in any given area…
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Adjusting the Oracles: Decision Trees'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The last sentence should scream into your ears two simple words: decision trees.
+    Why? Because that is precisely the essence of what decision trees do. Decision
+    trees partition the input space by recursively splitting it based on specific
+    feature thresholds, resulting in a hierarchical structure of nodes and branches.
+    Each split, or decision, is made in a manner that best segregates the data according
+    to the target variable — in our context, where the probability of getting a ‘one’
+    is relatively uniform within a certain region.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the tree is constructed, each terminal node (or leaf) represents a specific
+    segment of the input space where the data exhibits similar characteristics. The
+    probability prediction for a given input is then derived from the fraction of
+    ‘ones’ within the data samples that fall into the corresponding leaf. For instance,
+    if a leaf node has 80 samples, and 40 of them are labeled as ‘one’, the predicted
+    probability for an input that reaches this leaf would be 40/80=0.5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, they seem to be exactly what we need for our problem. Unfortunately, decision
+    trees don’t have an online implementation, which means that at every step we need
+    to retrain the model from scratch. On the bright side, decision trees are quite
+    fast at training, but you might want to keep that in mind if you plan to retrain
+    your models in real time for your real-world application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alright, first we need to update our `Model` class to incorporate decision
+    trees as an option. It’s straightforward — just a series of if-then statements
+    to ensure we invoke the appropriate functions based on the initial configuration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we can re-execute the simulation by simply adding ‘dectree’ to the list
+    that the outer loop iterates over. And that’s it, after some time we have our
+    final results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/89f2bb77d30bf2f3246601ba0b2640e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we’re talking. First, decision trees are the top performers, confirming
+    the correctness of our initial intuition. Furthermore, the ε-greedy algorithm
+    significantly outperforms the simple greedy one, as one would expect. This suggests
+    that learning from the context indeed helps the models in making improved predictions
+    and, ultimately, facilitates better decision-making. The plot comparing predicted
+    prices to optimal prices also looks more promising:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fbe308c2d1428cef9dd8a38421ea095f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ε-greedy algorithm essentially identifies all the optimal prices, outperforming
+    the greedy approach in every context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lessons learned and next steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**The More Data, the Better (?):** You might think that if you have data, you
+    should always use it. Generally speaking, that’s true. In the realm of Contextual
+    Bandits, adding data (the context) to your algorithms can lead to more informed
+    decisions and tailored actions. However, there’s a catch. The primary intent behind
+    ‘Bandits’ algorithms is to expedite the process of making optimal decisions. Adding
+    context introduces complexity, and potentially slows down the attainment of desired
+    outcomes. Transitioning to Contextual Bandits might also impede the utilization
+    of effective strategies such as Thompson sampling or UCB. As with many choices
+    in data science, there’s a tradeoff between objectives and constraints.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Know Your Data and Your Algorithms**: It’s imperative to be cautious about
+    the assumptions made regarding your data. The common sentiment is that logistic
+    regression is often apt for machine learning tasks because the “linearity assumption
+    frequently holds.” While this might often be the case, it’s not a given. Making
+    false assumptions can lead to significant pitfalls. This underscores the importance
+    of leveraging metrics, ensuring we can quickly gauge the accuracy of our preliminary
+    assumptions and adjust our strategies if needed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Keep It Simple (for as long as you can)**: Even in data science, it’s easy
+    to get caught up in the latest trends. At the time of this writing, the AI world
+    is abuzz with Deep Learning methodologies. Although powerful, it’s essential to
+    remember that myriad simpler and robust strategies could be perfectly suited to
+    your problem, no more and no less.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In conclusion, Contextual Bandits is an exciting research area that certainly
+    deserves more attention. In this article, we tackled a relatively simple context,
+    but contexts can become incredibly intricate in both data dimensionality and type
+    (like text or images). Even if this seems to contradict the previous point about
+    simplicity, the logical progression for this analysis is to explore more sophisticated
+    algorithms like Deep Learning. While I don’t anticipate adding more chapters to
+    this series, I’m eager to hear about your experiences in this field. If you’ve
+    delved into this area, please drop a comment or reach out to me directly!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Code Repository**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/massi82/contextual_bandits](https://github.com/massi82/contextual_bandits)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://contextual-bandits.readthedocs.io/en/latest/](https://contextual-bandits.readthedocs.io/en/latest/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/watch?v=sVpwtj4nSfI](https://www.youtube.com/watch?v=sVpwtj4nSfI)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/contextual-bandits-and-reinforcement-learning-6bdfeaece72a?source=post_page-----b88e49f55894--------------------------------)
+    [## Contextual Bandits and Reinforcement Learning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you develop personalization of user experience for your website or an app,
+    contextual bandits can help you. Using…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/contextual-bandits-and-reinforcement-learning-6bdfeaece72a?source=post_page-----b88e49f55894--------------------------------)
+    [](https://cloud.google.com/blog/products/ai-machine-learning/how-to-build-better-contextual-bandits-machine-learning-models?source=post_page-----b88e49f55894--------------------------------)
+    [## How to build better contextual bandits machine learning models | Google Cloud
+    Blog
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Contextual bandits: what is it, how businesses can apply it, and how to use
+    AutoML to implement it'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: cloud.google.com](https://cloud.google.com/blog/products/ai-machine-learning/how-to-build-better-contextual-bandits-machine-learning-models?source=post_page-----b88e49f55894--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://courses.cs.washington.edu/courses/cse599i/18wi/resources/lecture10/lecture10.pdf](https://courses.cs.washington.edu/courses/cse599i/18wi/resources/lecture10/lecture10.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Did you enjoy this article? If you’re looking for applications of AI, NLP, Machine
+    Learning and Data Analytics in solving real-world problems, you’ll likely enjoy
+    my other work as well. My goal is to craft actionable articles that show these
+    transformative technologies in practical scenarios. If this is also you, follow
+    me on Medium to stay informed about my latest pieces!
+  prefs: []
+  type: TYPE_NORMAL

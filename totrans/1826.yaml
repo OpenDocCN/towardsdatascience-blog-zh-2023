@@ -1,0 +1,637 @@
+- en: Segmenting Text Into Paragraphs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd](https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A statistical NLP approach based on supervised learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)
+    ·11 min read·Feb 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e2618a1773575c3a2cb635554d5915f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Gordon Johnson](https://pixabay.com/users/gdj-1086657/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=4385160)
+    from [Pixabay](https://pixabay.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a previous post on Medium, we discussed segmenting text into sentences [3].
+    Now we look at a related problem: segmenting text into paragraphs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At first glance, it may seem that the two problems are essentially the same,
+    only at different levels of chunking. The problem of segmenting text into paragraphs
+    is in fact far more interesting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For one thing, sentence boundaries have explicit signals such as periods, question
+    marks, or exclamation points. Generally, the issue is this. Which of these occurrences
+    are actual boundaries versus which are embedded within a sentence? That is the
+    issue of false positives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Segmenting the text into paragraphs is more nuanced. Think this way. Say you
+    have a long sequence of sentences with no paragraph breaks. Where should the paragraph
+    boundaries be? Not an easy problem to solve. Nor does it necessarily have unique
+    solutions. Meaning that there may be more than one good split of a sequence of
+    sentences into paragraphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splitting text into paragraphs may be viewed as a particular case of text segmentation
+    [1]. A text segment is a contiguous segment that preserves some coherency such
+    as being on the same topic. According to this measure of coherency, a segment
+    would transition to another one on a change in topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The broader text segmentation problem is more difficult to solve. For several
+    reasons. Including the fact that it is hard to get labeled data. For paragraph
+    segmentation, plenty of labeled data is available. In the form of web pages and
+    Wikipedia articles with paragraph breaks in them. For the broader text segmentation
+    problem this is not so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we take the view that an algorithm that can suggest reasonable
+    split boundaries can be helpful to someone writing text. In the same way that
+    Grammarly is helpful. In other words, neither the precision nor the recall needs
+    to be particularly high. The precision needs to be reasonable; the recall could
+    be even less.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rest of this post should be read keeping this view in mind. We will be satisfied
+    with a solution that has a reasonable precision, possibly even around 50%, and
+    even low recall, possibly around 10%. The point is that even this is useful in
+    a Grammarly-like setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even if paragraph break suggestions are made rarely, so long as they have reasonable
+    precision, they add to the value of a product such as Grammarly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It goes without saying that if we could get better precision or recall with
+    minimal effort we would take it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Probabilistic Model That Predicts Paragraph Breaks**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start with a formal description, explaining its various components in
+    plain English.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let X1 and X2 denote two adjacent sentences in a document in the training corpus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will associate a binary label Y with (X1, X2). Y will be 1 if there is a
+    paragraph break between X1 and X2 and 0 if not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will track a third predictor *i*. X1 will be the *i*th sentence in the current
+    paragraph. The predictor “*i*” will imbue our model with the ability to pay attention
+    to paragraph lengths.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our training set will comprise instances (X1, X2, *i*, Y).
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the training set, we aim to learn a model *P*(Y | X1, X2, *i*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(Y=1 | X1, X2, *i*) will denote the probability that there is a paragraph
+    break between X1 and X2 when X1 is the *i*th sentence in the current paragraph.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: P(Y=0|X1, X2, *i*) will denote the probability that X2 should extend the current
+    paragraph given X1 as the *i*th sentence in the current paragraph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model P(Y | X1, X2, *i*) is very complex. This is because X1 and X2 are
+    sentences and can be arbitrarily rare or long. Meaning that there won’t be sufficient
+    data to estimate this model even if our training set comprises a few billion labeled
+    instances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will need to make certain assumptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First off, let’s apply the Bayes rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(Y | X1, X2, *i*) = N(X1, X2, *i*, Y)/Z'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where N(X1, X2, *i*, Y) equals *P*(X1, X2, *i* | Y) P(Y).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z is simply N(X1, X2, *i*, 0) + N(X1, X2, *i*, 1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we will factor N(X1, X2, *i*, Y) as below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: N(X1, X2, *i*, Y) = *P*(X1 | Y)**P*(X2 | Y)**P*(*i* | Y)**P*(Y)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(X1 | Y=1) is the distribution of the last sentences in a paragraph. *P*(X1
+    | Y = 0) is the distribution over the non-last sentences in a paragraph.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(X2 | Y = 1) is the distribution over the first sentences in a paragraph.
+    *P*(X2 | Y = 0) is the distribution over the non-first sentences in a paragraph.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider *P*(*i* | Y).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s remind ourselves that X1 is the *i*th sentence in the current paragraph.
+    So *P*(*i* | Y=1) is effectively the distribution of the length of a paragraph
+    as the paragraph must end right after X1, the ith sentence in the current paragraph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*i* | Y = 1) will tend to be biased towards small *i*. This is because
+    most paragraphs are short.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*i* | Y = 0) will tend to be biased towards being even smaller. This is
+    because Y = 0 means that the *i*th sentence X1 in the current paragraph does not
+    end it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The probability models *P*(X1 | Y) and *P*(X2|Y) are each still too complex.
+    This is because the universe of sentences is unbounded. That is, sentences can
+    be arbitrarily long. And arbitrarily rare.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can we make further simplifying assumptions? Specifically use the likelihoods
+    not necessarily of the entire sentences but of the first few words in them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by looking at real examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s see examples of sentences that continue short paragraphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say the next sentence starts with “For example,” “Examples of”, “More precisely,
+    “, etc. If the current paragraph is sufficiently short, e.g. one or two sentences
+    long, these prefixes in the next sentence predict Y = 0, i.e. extending the paragraph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To support this hypothesis, we invite the reader to read these pairs of adjacent
+    sentences from [https://en.wikipedia.org/wiki/Deep_learning](https://en.wikipedia.org/wiki/Deep_learning)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep learning algorithms can be applied to unsupervised learning tasks. This
+    is an important benefit because unlabeled data are more abundant than the labeled
+    data. **Examples of** deep structures that can be trained in an unsupervised manner
+    are deep belief networks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: …
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Deep learning is a class of machine learning algorithms that[8]: 199–200 uses
+    multiple layers to progressively extract higher-level features from the raw input.
+    **For example**, in image processing, lower layers may identify edges, while higher
+    layers may identify the concepts relevant to a human such as digits or letters
+    or faces.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: …
+  prefs: []
+  type: TYPE_NORMAL
+- en: The word “deep” in “deep learning” refers to the number of layers through which
+    the data is transformed. **More precisely**, deep learning systems have a substantial
+    credit assignment path (CAP) depth.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Would you agree that the bolded word sequences in each predict continuing the
+    paragraph?
+  prefs: []
+  type: TYPE_NORMAL
+- en: These examples suggest that it makes sense to consider simplifying *P*(X1 |
+    Y) to *P*(the first few words of X1 | Y).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This begs the question what is the value of “few” above? We’ll tackle this later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s see examples of one-sentence paragraphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this, I asked ChatGPT to give me examples of one-sentence paragraphs. Seems
+    like it took this literally. So I rephrased the question to
+  prefs: []
+  type: TYPE_NORMAL
+- en: Give me examples of sentences that **only** form one-sentence paragraphs.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Now I got good examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Silence.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Stop.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Never again.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Yes!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I’m sorry.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Enough.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Remember.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Help!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Goodbye.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We would expect each of these sentences to have a high likelihood *P*(X1 | Y
+    = 1). That said, for some or all of them *P*(X1 | Y = 0) may also be somewhat
+    high. This would mean the paragraph does not end right after them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nonetheless, we show these examples here, as they do suggest that *P*(X1 | Y
+    = 1) for these sentences is worth modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s see examples of sentences that begin new paragraphs. We picked up
+    some paragraphs from [https://en.wikipedia.org/wiki/Deep_learning](https://en.wikipedia.org/wiki/Deep_learning)
+    and are showing the first few words in their first sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep learning is part of a broader family …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deep-learning architectures such as …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Artificial neural networks (ANNs) were …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In deep learning, each level learns to …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An ANN is based on a collection of …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: DNNs can model complex non-linear …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: These examples suggest that *P*(X2 | Y = 1) could be simplified to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(first few words of X2 | Y = 1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for a suitable choice of “few”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s formalize what we have learned from these examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can simplify *P*(X1 | Y) and *P*(X2 | Y) to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(X1 begins with *w*(1), *w*(2), …, *w*(*k*) | Y)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: and
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(X2 begins with *w*’(1), *w*’(2), …, *w*’(*k*’) |Y)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here *w*(1), *w*(2), …, *w*(k) and *w*’(1), *w*’(2), …, *w*’(*k*’) are sequences
+    of *k* and *k*’ words respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The obvious question is what should *k* and *k*’ be?
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to address this question is to not fix *k* and k’ in advance, but rather
+    delay the decision until inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First some terminology. We will call a sequence of words that begins a sentence
+    as the sentence’s prefix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider *P*(X1 | Y=y). We will approximate this as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will first find the largest prefix of X, call it P, which has sufficient
+    support. We will use P(X1 starts with P | Y) as a proxy for P(X1 | Y).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The support of a prefix P of X1 for the estimation of *P*(X1 | Y) is defined
+    as the number of instances in the training set in which P is a prefix of X1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea behind this approximation procedure is that we should use the longest
+    prefix of X1 that we can, provided it is seen enough times in the training set
+    (as a prefix of X1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, we should estimate *P*(X2 | Y) as *P*(Q | Y) where Q is the largest
+    prefix of X2 whose support is sufficiently large.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does the form our inference has taken mean for a model? We will need to
+    track the probabilities *P*(X1 starts with P | Y) for all prefixes P of X1\. Similarly
+    for *P*(X2 | Y).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Internally, for modeling *P*(X1 |Y) and *P*(X2 | Y), there are lots of word
+    sequences we need to track.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, these word sequences can be collected into so-called Trie data
+    structures. These are optimized for compactly representing a huge set of word
+    sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These Tries are built during the training process as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use four Tries T10, T11, T20, and T21 respectively. T*iy*, *i* = 1 or
+    2, will store the prefix sequences and their counts for Y=*y* for X*i*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each node in the Trie will store a count.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will initialize all the tries to start with a single node, the root node,
+    whose count is set to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider an instance (X1, X2, *y*) in the training set. We have left out
+    *i* as it will not affect the tries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting X1 as a sequence of words, we will look up X1 in T1*y*, extending
+    the trie with a path comprised of new nodes as needed. Any time a new node is
+    created its count will be initialized to 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, in the Trie T1*y*, we will increment the counts of all nodes on the path
+    that represents X1\. By one each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To process X2 we will repeat the same procedure on the Trie T2*y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Numeric Example**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now illustrate this process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The four tries will be initialized to T10, T11, T20, and T21 each being {[]:0}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine that we present the first training instance as ([a,b],[A,B,C],1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: T11’s new state will be {[]:1,[a]:1,[a,b]:1}.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: T21’s new state will be {[]:1,[A]:1, [A,B]:1, [A,B,C]:1}
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now imagine that we present this training instance: ([a,d],[A,B,E],1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: T11’s new state will be {[]:2,[a]:2,[a,b]:1,[a,d]:1}
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: T21’s new state will be {[]:2,[A]:2, [A,B]:2, [A,B,C]:1,[A,B,E]:1}
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the above illustration, for visual convenience, we have represented each
+    Trie as a hashmap, i.e. a Dict in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In reality, we can represent the Trie more compactly as a tree by leveraging
+    the structure of the (repeated) prefixes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The representation of the Trie as a tree is also much more efficient for looking
+    up the counts associated with all the prefixes of a given sequence X in the trie.
+    We simply go down the unique path that the Trie contains for the longest prefix
+    of X. We say “longest prefix” because X may not be fully in the Trie if X was
+    never encountered in the training set in the context in which it would be placed
+    in this Trie. However, there is always a path in the Trie for at least one prefix
+    of X, even if only the empty one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Inference Using The Tries**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say we are done with training. Now for a given (X1, X2, *i*) we want to compute
+    *P*(Y=y|X1,X2,i).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The components of this calculation that involve the tries are *P*(X1|Y=*y*)
+    and *P*(X2|Y=*y*) respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate how to compute one of these, as the other will be similar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s pick *P*(X1|Y=*y*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We run down the tries T10 and T11 to find the longest prefix of X1 that has
+    sufficiently high support. We need to use both tries since the support of a prefix
+    P of X1 is the sum of the counts on the nodes in T10 and T11 at which P ends.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s denote the longest prefix of X1 with sufficient support as P(X1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(P(X1) | Y=*y*) is simply the count at the node where P ends in T1*y* divided
+    by the count on the root node of the trie T1*y*. This is simply the number of
+    instances in the training set whose label is *y* and whose X1 starts with P(X1)
+    divided by the number of instances in the training set whose label is *y*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we covered the NLP problem of segmenting a text into its paragraphs.
+    We noted that this problem is more challenging than the problem of segmenting
+    text into sentences but less challenging than the problem of segmenting text into
+    coherent units such as by topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We framed this problem as one of supervised learning. There is a lot of labeled
+    data readily available. The input is a pair of adjacent sentences. The outcome
+    is whether or not there is a paragraph break between the two. As such this is
+    a supervised learning problem in which the input is a pair of sequences and the
+    outcome is binary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we applied the Bayes rule under the naive Bayes assumption, one of conditional
+    independence of the predictors given the outcome. We then worked out the likelihood
+    and the prior terms in the resulting formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From here we noted that even under the naive assumption the resulting model
+    is too complex. We discussed how to cope with this complexity by modeling each
+    of the two sentences in the input as a collection of prefixes going from the null
+    prefix to the entire sequence. At inference time, we described how to use the
+    “right” prefix for the prediction of the outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We examined several real examples of adjacent sentences in real text to support
+    our case for working off prefixes instead of full sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we noted that working with all prefixes of sentences rather than the
+    sentences themselves potentially blows up the model size. For this, we came up
+    with a scheme using Tries. Sequences in the same context are compactly represented
+    in appropriate tries. We discussed in detail how the Tries would be learned during
+    training, and how the Tries would be used during inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[A Neural Model for Text Segmentation](https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1214/reports/final_reports/report001.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Grammarly
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd](/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Trie](https://en.wikipedia.org/wiki/Trie)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

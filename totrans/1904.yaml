@@ -1,0 +1,644 @@
+- en: 'SquirrelML: Predicting Squirrel Approach in NYC’s Central Park'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/squirrelml-predicting-squirrel-approach-in-nycs-central-park-8c3719d8ff65](https://towardsdatascience.com/squirrelml-predicting-squirrel-approach-in-nycs-central-park-8c3719d8ff65)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Explore squirrel behavior in NYC’s Central Park through ML: Clustering sightings
+    & predicting encounters with interactive insights'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://victormurcia-53351.medium.com/?source=post_page-----8c3719d8ff65--------------------------------)[![Victor
+    Murcia](../Images/0041e70a3e7b6b643338a9570257a719.png)](https://victormurcia-53351.medium.com/?source=post_page-----8c3719d8ff65--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c3719d8ff65--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8c3719d8ff65--------------------------------)
+    [Victor Murcia](https://victormurcia-53351.medium.com/?source=post_page-----8c3719d8ff65--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c3719d8ff65--------------------------------)
+    ·18 min read·Dec 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62f6c3e4ab66223281431921e2943790.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Tj Holowaychuk](https://unsplash.com/@tjholowaychuk?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/brown-and-white-squirrel-on-brown-tree-trunk-D18ZnjlhVqM?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[NYCOpenData](http://opendata.cityofnewyork.us/) has a treasure trove of both
+    interesting and rich datasets to explore related to topics concerning health,
+    environment, business, and education. I stumbled upon the [2018 Central Park Squirrel
+    Census](https://data.cityofnewyork.us/Environment/2018-Central-Park-Squirrel-Census-Squirrel-Data/vfnx-vebw)
+    dataset and I knew immediately that I had to do something with it. This dataset
+    deals with squirrel sightings collected over the course of two weeks by volunteers
+    in Central Park. After looking through the data dictionary, I was drawn to a feature
+    named ‘Approaches’ that denotes whether a squirrel was observed approaching a
+    human. I thought it’d be neat to train a machine learning (ML) model to assist
+    me in determining whether a squirrel located within the bounds of Central Park
+    would approach me. This article will go through this weekend project where I detail
+    the entire process towards building that model. There’s a little bit of everything
+    in this project: there’s work with geospatial data, clustering, visualization,
+    feature engineering, unstructured text, model training, model calibration and
+    model deployment.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I deployed the model in a streamlit app where you can enter your coordinates
+    and other features which will tell you the probability of a squirrel approaching
+    you. You can play with it [here](https://squirrelml.streamlit.app/). Also, if
+    you are interested in looking through some of the code, I’ve posted the .ipynb
+    [here](https://github.com/victormurcia/SquirrelML/blob/main/Squirrel_ML.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading and Initial EDA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data loading was pretty standard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To carry out the initial EDA I used dataprep to rapidly get an initial idea
+    of what sorts of feature distributions, cardinalities, patterns, missing data,
+    and correlations are present in the raw dataset. You can see the report [here](https://github.com/victormurcia/SquirrelML/blob/main/EDA/Initial%20EDA.html).
+    There were several useful insights that I gained from this which allowed me to
+    plan my subsequent feature engineering and remove redundant/unnecessary features.
+    Some of the most notable observations I gleaned from this EDA were as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset is comprised of 3023 unique observations, 31 columns, with 13% of
+    cells missing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Most of the features are categorical and Boolean.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The latitude and longitude entries appear to have an approximately tetramodal
+    distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The “Shift” column is fairly balanced (~55% of observations were made in the
+    afternoon/night)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The “Indifferent” column is fairly balanced (~51% of entries are False)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The vast majority of squirrels are Adults and have a primary fur color of Gray
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The most common location squirrels were observed in were trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Color notes, Specific location, Other Activities, and Other Interactions are
+    text columns that have a lot of missing data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The “Approaches” is HIGHLY imbalanced (94.11% of the observations are negative)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/369879f64a7d1156885c887e688b2f65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Massive class imbalance in the target variable ‘Approaches’. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are all useful observations since now I know that the problem I’m trying
+    to tackle is an imbalanced, binary classification problem. In addition to this,
+    now I know that using clustering methods to group squirrel sightings might be
+    useful moving forward. Furthermore, the text columns may contain information that
+    will enable creation of new, potentially useful features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clustering Squirrel Sightings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As can be seen below the squirrel sightings appeared to have approximately a
+    trimodal or tetramodal distribution. I think it would be interesting to try and
+    group squirrel sightings based on location.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d028fecd94996cacac578a03d36718c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Longitude and Latitude of squirrel sightings within the bounds of Central Park.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Though we can try and establish an optimal number of clusters via silhouette
+    scores or the elbow method, in this case, I wanted to simply partition the sightings
+    into 4 areas. I ran the K-Means algorithm using the Latitude and Longitude as
+    shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results of the K-Means algorithm are shown below. There are some clear boundaries
+    which I’ve accentuated a bit via a Voronoi Diagram. You can also see the centroids
+    of each cluster depicted via red X’s. I’ve also made it so that the points that
+    correspond to an approaching squirrel are not enclosed in a dark circle, while
+    those that didn’t approach are enclosed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db99f61059ea9a7ff11e0536ea3c36c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of K-Means clustering on Latitude and Longitude of Squirrel Census dataset.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Geospatial Visualization of Squirrel Sightings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Geospatial data is fun to work with. If you were to look up an aerial view of
+    Central Park or if you are simply familiar with the layout then you would be able
+    to see the one-to-one correspondence of the layouts. For instance, there are 3
+    major bodies of water in central park which are present in the empty areas of
+    the plot. You can find a labeled layout of Central Park [here](https://en.wikivoyage.org/wiki/Manhattan/Central_Park).
+    For instance, that large ‘empty’ area situated in the ‘Yellow’ cluster is actually
+    ‘The Reservoir’. On the top right, we also see an emptyish area that corresponds
+    to the ‘Harlem Meer’. Finally, in the bottom left of the blue cluster we can see
+    the body water known as ‘The Lake’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To better take advantage of this data, I thought it’d be neat to visualize
+    these sightings directly on a geospatially accurate map of NYC. To do this, I
+    once again turned to NYCOpenData and download the shape (.shp) files for NYC over
+    [here](https://data.cityofnewyork.us/Housing-Development/Shapefiles-and-base-map/2k7f-6s2k).
+    Your download should include 4 different files: a .shp file, .a .prj file, a .dbf
+    file, and a .shx file. Make sure that all those files are in the same directory
+    before you load them. Once I had those files downloaded, I loaded them into my
+    environment with Geopandas. These files are generally quite large and can take
+    a few minutes to load (in my case it took about 5 minutes).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: To make the .shp file a bit more lightweight and faster to work with, I used
+    Geofeather to convert Geopandas frame into a feather object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now I can regenerate the nyc_map from the feather file and plot it which is
+    many times faster than doing it using the original .shp file. We can plot the
+    nyc_map as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the result is below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/107b7c8434c67d8b6d2f0e9e53d704b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Geospatially accurate NYC Map. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That looks great! You can also see Central Park over on the top left of the
+    NYC landmass. As cool as this view is, I want to focus more on the Central Park
+    area. Given that, I also won’t need to have the entire dataset available so I’ll
+    filter it based on the squirrel sighting coordinates. This will also have the
+    added benefit of speeding all subsequent operations since we will be dealing with
+    a much smaller subset of the NYC map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A centroid is the geometric center of a shape. In the context of geospatial
+    data, it refers to the central point of a geographic feature. This point is the
+    average position of all the points in the shape. For simple shapes like polygons
+    (e.g., the boundary of a city or park), the centroid is often inside the shape.
+    For more complex shapes, especially those with concave parts, the centroid might
+    be outside the physical boundaries of the shape. There are a few approaches one
+    can use to calculate centroids. Here I’m simply using the shapely package alongside
+    the nyc_map:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, I can filter the nyc_map using the coordinate ranges of the squirrel sightings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now we can plot the filtered NYC map, which, if we did things correctly
+    should be centered around Central Park.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe0b3a41457a8dea0dbb2fc7cae263d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Geospatially accurate plot of NYC’s Central Park. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Success! However, we have one more thing to do. I want to include the squirrel
+    sightings, colored by cluster and accentuated based on squirrel approach on this
+    plot. We can do that using the code below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the result of this is below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72200bb2070627b37eacc1cb32361170.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Squirrel sightings colored by cluster on geospatially accurate map of NYC’s
+    Central Park. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s pretty cool! I’m pretty happy with this. There was one more visualization
+    that I was thinking of doing. I found a really cool aerial picture of Central
+    Park. I thought it would be neat to try and overlay the squirrel sightings on
+    top of the aerial view, however, there are some other effects that were complicating
+    the plotting so I figured I’d save that for a future time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Engineering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As I alluded to in the introduction, there was a fair bit of feature engineering
+    opportunities available in this dataset. Most of the new features I created were
+    derived from the textual columns. These textual column contained additional descriptions
+    made by the volunteers surrounding each squirrel sighting. I identified a few
+    key categories and terms associated with each category that I used alongside regular
+    expressions to create the new features as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the example above, I was able to create new features like ‘Seen in Tree’,
+    ‘Seen in Shrubbery’, and ‘Seen in Rock’ amongst several others. In addition to
+    this, some of the columns like ‘Primary Fur Color’ and ‘Highlight Fur Color’ for
+    instance, were One Hot Encoded since they had a handful of categories (i.e., Primary
+    Fur Color had Gray, Black, Cinnamon and Unknown). There were others and if you
+    are interested in looking at the full EDA on the added features as well as looking
+    at the full set of features that were created you can check out the report [here](https://github.com/victormurcia/SquirrelML/blob/main/EDA/Preprocessed%20EDA.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/411da7c0708c7f1f0ed85f3d7ce0ca66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dependency plots for various features made from preprocessed dataset. Image
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I created a pipeline to do all the necessary cleaning, formatting, etc. that
+    I decided was necessary after playing with the dataset. You can check out all
+    the work in the notebook I linked in the beginning of the article. A few things
+    worth mentioning are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have 44 features (original dataset had 31)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: No observations were dropped so we still have 3023 rows.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is no missing data anymore. No imputation or dropping of rows was performed.
+    Most of the missing data was present in the textual columns. These columns were
+    dropped after they were used for feature engineering. In columns like Primary
+    Fur Color or Age, I simply treated the NaNs as a new category called ‘Unknown’
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The correlation map below wasn’t particularly helpful. It mostly revealed correlations/relationships
+    that I already anticipated. For instance, most of the strong anticorrelations
+    are between variables associated with Primary Fur Color (i.e., Gray vs Cinnammon)
+    or Squirrel Age (i.e., Adult vs Juvenile).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d94dd866f2561d98908d247898d03d72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pearson Correlation plot for features in preprocessed dataset. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point I wanted to look at dimensionality reduction techniques like Principal
+    Component Analysis (PCA) and t-Distributed Stochastic Neighbor Embedding (tSNE)
+    to try and identify and additional patterns/clusters within my data as well to
+    gauge which features carry the most weight. The tSNE plot wasn’t particularly
+    revealing, though I can sorta see a few groupings in the data. I carried out PCA
+    as well and both the Loading and Explained Variance plots were useful in telling
+    me that 30 features accounted ~90% of the variance as well as seeing that features
+    like Cluster, PFC_Gray, X,Y, PFC_Cinnamon, and HFC_Gray were some of the strongest
+    components in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b7931de60a80d22ef82368f68c1c5e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dimensionality reduction techniques and analysis on Processed Squirrel Data.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'From the moment I decided to take a ML approach for this, I knew that there
+    were really only two algorithms I’d consider: Decision Tree and Random Forest.
+    The reason being… squirrels like trees and that joke is the main reason I decided
+    to do this project. Though other algorithms may perform better, their choice wouldn’t
+    be as funny. If you have any funny suggestions for approaches let me know :)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anyways, let’s get to modeling. First off, here is a view of how my dataframe
+    looks like presently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d09ce873444cf4b512d67ccc1356be3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cleaned, engineered and preprocessed squirrel census dataset. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First thing we need to do is create our train and test sets. One thing to keep
+    in mind when doing the splitting is that we must use stratified splitting using
+    our target variable since the dataset is highly imbalanced. Stratified splitting
+    will preserve the percentage of samples for each class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Given how imbalanced the dataset is, an approach I considered is to use data
+    augmentation techniques. However, this is something I’ll save for a future iteration
+    since introducing synthetic samples can lead to other complications and in my
+    experience, they tend to not generalize well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the meantime, I’ll deal with the imbalance by using balanced weights when
+    training the models. Regarding metrics, I’m going to look into both the Receiver
+    Operating Characteristic Area Under the Curve (ROC-AUC) score and the Precision
+    Recall Area Under the Curve (PR-AUC) score. The PR-AUC score in particular is
+    useful for imbalanced classification problems since it focuses on the minority
+    class while the ROC curve covers both classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I did a grid search on the Decision Tree and Random Forest models. I used a
+    stratified K-fold with 5 splits since I want to preserve the class percentage
+    between splits. I also used both the PR-AUC and ROC-AUC as the metrics to optimize
+    during the hyperparameter tuning. For the random forest, I looked at n_estimators,
+    max_depth, min_samples_split, and min_samples_leaf using a conservative range
+    of values. The code for the random forest hyperparameter tuning is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the Decision Tree, I also used a small range of values for max_depth, min_samples_split,
+    and min_samples_leaf. The code for the hyperparameter tuning of the Decision Tree
+    is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Evaluating and Explaining the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In evaluating the performance of the best Random Forest and Decision Tree models
+    on the highly imbalanced dataset, I observed distinct outcomes in ROC-AUC and
+    PR-AUC scores. The Random Forest model excelled with a ROC-AUC score of 0.91,
+    significantly outperforming the Decision Tree’s respectable score of 0.77\. This
+    indicates its superior ability to distinguish between classes. However, the PR-AUC
+    scores, which are crucial in the context of an imbalanced dataset due to their
+    focus on the precision-recall balance, told a different story. Both models surpassed
+    the baseline performance of a ‘No Skill’ classifier (which predicts the majority
+    class in all cases), yet they showed room for improvement in precision and recall:
+    the Random Forest achieved a PR-AUC score of 0.46, and the Decision Tree only
+    0.20\. These results underscore the importance of focusing on PR-AUC as the target
+    metric in imbalanced scenarios and suggest avenues for future improvement, such
+    as experimenting with different class imbalance mitigation techniques, adjusting
+    decision thresholds, or exploring alternative algorithms better suited for imbalanced
+    data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1312e28a7d41c1c5ef64d228096b8ce0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of training and hyperparameter tuning of Random Forest and Decision
+    Tree models on Squirrel Census data. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The feature importances also show that latitude, longitude, and Indifferent
+    are top features contributing the most towards the prediction made by the model.
+    This is further supported by the SHAP value plots for both models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd874d051cb8f50299af250ce817c980.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SHAP values for Random Forest and Decision Tree models for Squirrel Census dataset.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The probability distributions for the Random Forest and Decision Tree models
+    are shown below. The histogram shows a distribution of predicted probabilities
+    with a peak around 0.1 to 0.2 and a long tail extending towards 0.8\. This suggests
+    that the Random Forest model has a tendency to predict many instances with a low
+    probability of being the positive class, but there’s uncertainty as it does not
+    peak near 0 or 1\. The presence of a tail towards the higher probabilities indicates
+    that the model is somewhat confident about certain predictions, but overall, there
+    seems to be a cautious stance in the predictions, as the probabilities are not
+    clustered near 0 or 1\. The Decision Tree histogram shows an extremely peaked
+    distribution at probability 0 and very few instances with a probability of 1\.
+    This is indicative of a model that is very confident about a large majority of
+    instances belonging to the negative class. The lack of instances with intermediate
+    probabilities suggests that the Decision Tree model makes very certain predictions
+    — it is either very sure an instance is in the positive class or very sure it
+    is not. This is typical for decision trees, as they tend to produce more extreme
+    probability estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fd577b2820219a168b98543583a7ef0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability distributions for Random Forest and Decision Tree models for Squirrel
+    Census Data. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Random Forest model is likely to be better calibrated, as it provides a
+    smoother distribution of probabilities and does not tend towards the extremes
+    as much as the Decision Tree. The Decision Tree’s extreme confidence might be
+    a sign of overfitting, where the model has learned the training data too well,
+    including noise, leading to overly confident predictions. Neither model shows
+    the ideal two-peaked distribution that would indicate high confidence in distinguishing
+    between classes. This might suggest that the models are not capturing the underlying
+    patterns perfectly and might benefit from further tuning, additional features,
+    or more complex modeling techniques. I could certainly play around a bit more
+    with features, however, I’ll save that for a future iteration. Hence, I decided
+    that probability calibration for the better performing Random Forest model would
+    be a good next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calibrating the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Calibrating a machine learning model is the process of adjusting the predicted
+    probabilities to better align with the observed frequencies in the data. It is
+    a step that is often overlooked when training models which limits their usability.
+    Calibrating a model is important because the raw estimates of a machine learning
+    model may not represent the true likelihood of an event. This is crucial to consider
+    if your model is to be used for any kind of decision making process (especially
+    those where stakes are high). In addition to that, if your probabilities are well-calibrated,
+    this can also allow for more meaningful comparisons between different models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do the calibration, I used Platt Scaling (also known as Sigmoid Calibration).
+    This method fits a logistic regression model to the outputs of the classifier.
+    The basic workflow is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train the model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Split the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fit the calibration model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluate the calibration
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The code for this process is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results of the calibration can be seen below. A perfectly calibrated model
+    would have all the points lying exactly on top of the orange curve. The probabilities
+    are overall well calibrated with a notable exception at ~ 0.25 where the model
+    is clearly underestimating. In addition to this, I also calculated Brier Score
+    for the calibration process. Brier Scores range between 0 and 1, where a score
+    of 0 represents perfect accuracy and a score of 1 represents perfect inaccuracy.
+    The Brier Score for this calibration is 0.0445 which is quite low and therefore
+    good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79d9a1f8edf9cbaa36e6ead70ebd4615.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability calibration for Random Forest model using Platt scaling. Image by
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though there are further improvements I can do to this process, this is something
+    that I’ll refine in a future iteration. For now, I’ll simply save my model and
+    continue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploying the Model as Streamlit App
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So many machine learning get made, yet sadly, so many are left to collect dust.
+    I think it is important whenever you are working on a ML project to have a way
+    that your model could be deployed and used by people. This way your work has a
+    chance to be appreciated and serve as a bit more than just a training exercise
+    even if its just a silly application like the one I did here. I find that people
+    usually remember your work more if they get to interact with it somehow (which
+    can be quite useful if you are job hunting). Deploying your model as part of a
+    Streamlit app is a great way to showcase your work in a tangible way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The basic premise of the app is to give the user the ability to play around
+    with the various features used to train the model and give them the probability
+    of a squirrel approaching them as an output. One of the inputs of the model are
+    the Latitude and Longitude of the user. The user can enter them directly in the
+    app, however, I also used Folium to include an interactive map that is initially
+    centered on Central Park that gives you the Latitude and Longitude of the location
+    you click.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ab293d58ad4f78bacf46a90d7511aa0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SquirrelML Streamlit App for predicting squirrel approach in Central Park. Image
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The user can then play around with the different features found in the drop
+    down menus and once they have their desired feature configuration they can click
+    the Predict button. Pressing the Predict button will return the Squirrel Approach
+    Probability (SAP) and an accompanying picture (it’ll be a happy squirrel if the
+    probability is more than 50% and a sad squirrel picture if the probability is
+    equal to or below 50%). You can see an example output below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc5bbec96950639cb8e1764ac6cadeec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This was a fun little project to work on. The model can certainly be improved
+    and I might revisit this in the future to fine tune it further. For instance,
+    I can try and use the results of my PCA analysis alongside the SHAP values to
+    try and reduce the dimensionality of my dataset down to the core features. There
+    are also accompanying datasets to the Squirrel Census that have information like
+    the amount of litter present, the activity levels present, the sighting duration,
+    and the weather conditions amongst others. I found those datasets after I was
+    done with my processing, but I’d be keen on incorporating them into my model since
+    they seem like they’d be informative. Those datasets can be found on NYCOpenData
+    [here](https://data.cityofnewyork.us/Environment/2018-Central-Park-Squirrel-Census-Hectare-Data/ej9h-v6g2)
+    and [here](https://data.cityofnewyork.us/Environment/2018-Central-Park-Squirrel-Census-Stories/gfqj-f768).
+    I can also try and use data augmentation techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, I hope you enjoyed my work and thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: All data from NYCOpenData has no restrictions on their use. Check the following
+    links for their [FAQ](https://opendata.cityofnewyork.us/faq/) and [Terms of Use](https://opendata.cityofnewyork.us/overview/#termsofuse).
+  prefs: []
+  type: TYPE_NORMAL

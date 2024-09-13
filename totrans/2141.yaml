@@ -1,0 +1,279 @@
+- en: Training XGBoost On A 1TB Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/training-xgboost-on-a-1tb-dataset-8790e2bc8672](https://towardsdatascience.com/training-xgboost-on-a-1tb-dataset-8790e2bc8672)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: SageMaker Distributed Training Data Parallel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----8790e2bc8672--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----8790e2bc8672--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8790e2bc8672--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8790e2bc8672--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----8790e2bc8672--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8790e2bc8672--------------------------------)
+    ·7 min read·Feb 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8cc115fe1d75334d1b016c71f5e63cec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/LqKhnDzSF-8) by [Joshua Sortino](https://unsplash.com/@sortino)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As Machine Learning continues to evolve we’re seeing [larger models](https://docs.cohere.ai/docs/introduction-to-large-language-models)
+    with more and more parameters. At the same time we also see incredibly large datasets,
+    at the end of the day any model is only as good as the data that it’s trained
+    on. Working with large models and datasets can be computationally expensive and
+    difficult to iterate or experiment on in a timely manner. For this article we’ll
+    focus on the large dataset portion of the problem. Specifically we will look into
+    something known as [Distributed Data Parallel](https://docs.aws.amazon.com/sagemaker/latest/dg/data-parallel.html)
+    utilizing Amazon SageMaker to optimize and reduce training time across a large
+    real-world dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For today’s example we’ll train the [SageMaker XGBoost algorithm](https://docs.aws.amazon.com/sagemaker/latest/dg/xgboost.html)
+    on an artificially generated **1 TB dataset**. In this example we’ll get a deeper
+    understanding of how to prepare and structure your data source for faster training
+    as well as understand how to kick off **distributed training** with SageMaker’s
+    built in [Data Parallelism Library](https://docs.aws.amazon.com/sagemaker/latest/dg/data-parallel.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: This article will assume basic knowledge of AWS and SageMaker specific
+    sub-features such as SageMaker Training and interacting with SageMaker and AWS
+    as a whole via the [SageMaker Python SDK and Boto3 AWS Python SDK](/sagemaker-python-sdk-vs-boto3-sdk-45c424e8e250).
+    For a proper introduction and overview of SageMaker Training, I would reference
+    this [article](/training-and-deploying-custom-tensorflow-models-with-aws-sagemaker-72027722ad76).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Distributed Data Parallel? Why do we need it?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we can get started with the implementation it’s crucial to understand
+    Distributed Data Training. With large datasets it’s really difficult to optimize
+    training times as this is very computationally intensive. You have to consider
+    both being able to download the dataset into memory as well as whatever training
+    and hyperparameter computations the machine will have to perform. With a single
+    machine this can be possible (if computationally powerful enough), but also inefficient
+    from a time stand point and experimentation becomes a nightmare.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With Distributed Data Parallel you can work with a **cluster of instances**.
+    Each of these instances can contain multiple CPUs/GPUs. Creating this Distributed
+    Data Parallel setup from ground-up can be challenging and there is a lot of overhead
+    with node to node communication that needs to be addressed. To simplify matters
+    we can utilize the built-in SageMaker [Distributed Data Parallel Library](https://docs.aws.amazon.com/sagemaker/latest/dg/data-parallel-intro.html).
+    Here the hard work of building and optimizing node to node communication is abstracted
+    out and you can focus on model development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why does data source matter with SageMaker?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Where and how our data is provided is essential to optimizing training time.
+    With SageMaker the de-facto storage service has always been S3 and that’s still
+    an option here. There’s the vanilla training mode where you can upload your dataset
+    directly into S3, this is known as **File Mode**. Here SageMaker downloads your
+    dataset into the instance memory before training kicks off. For today’s example
+    we will work with an optimized S3 mode known as **Fast File Mode**. With Fast
+    File Mode the dataset is **streamed** into the instance in **real-time** so we
+    can avoid the overhead of downloading the entire dataset. This also leads to the
+    question, how should I provide/split my dataset? For this example we will split
+    our dataset into multiple smaller files that add up to 1TB, this once again will
+    help with download or in our case streaming time as well as our dataset scale
+    is quite large.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outside of S3 there’s also options to work with **Elastic File System (EFS)**
+    and **FsX Lustre** on SageMaker. If your training data already resides on EFS
+    it is easy to mount onto SageMaker. With FsX Lustre you can scale at a greater
+    rate compared to other options, but there is operational overhead of setting up
+    the VPC for this option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the end of the day there’s numerous factors you should consider when deciding
+    between the different training options for the Data Source with SageMaker. The
+    two major points to consider are the dataset size and how you can shard the dataset,
+    these factors combined with the current location of your dataset will help you
+    make the right choice to optimize training time. For a more comprehensive guide
+    please reference this [article](https://aws.amazon.com/blogs/machine-learning/choose-the-best-data-source-for-your-amazon-sagemaker-training-job/)
+    around data sources with SageMaker Training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset Creation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this example we’ll utilize the Abalone dataset and run a SageMaker XGBoost
+    algorithm on it for a regression model. You can download the dataset from the
+    publically available Amazon datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This dataset itself is only a 100KB, so we need to make numerous copies of it
+    to create a 1TB dataset. For this dataset preparation, I utilized an [EC2 instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/get-set-up-for-amazon-ec2.html)
+    (r6a.48xlarge) for development. This is a high memory and compute instance that
+    will allow for quick preparation of our dataset. Once setup we run the following
+    script to make our dataset into a larger 100MB file. You can splice your actual
+    data as needed, this is not a set recipe/size that needs to be followed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the 100MB dataset we can make 10,000 copies to create our 1TB dataset.
+    We then upload these 10,000 copies to S3 which is our Data Source for FastFile
+    mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This script should take about 2 hours to run, but if you would like to speed
+    up the operation you can use some form of multiprocessing Python code with [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+    to speed up the upload time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we can get to running a [SageMaker Training Job](https://docs.aws.amazon.com/sagemaker/latest/dg/how-it-works-training.html)
+    we need to setup the proper clients and configuration. Here we specifically define
+    our **training instance type**, you can find an extensive list of options at the
+    following [page](https://aws.amazon.com/sagemaker/pricing/). In terms of choosing
+    an instance type you want to consider the type of model you are dealing with and
+    the domain you’re in. With NLP and Computer Vision use-cases generally GPU instances
+    have proven to be a better fit, in this case we use a memory optimized instance
+    with our XGBoost algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we prepare our TrainingInput, here we specify that we are utilizing FastFile
+    mode, otherwise it defaults to File mode. We also specify the distribution as
+    “ShardedByS3Key”, this indicates we want to distribute all our different S3 files
+    across all instances. Otherwise all data files will get loaded into each and every
+    single instance leading to a much longer training time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then prepare our XGBoost estimator, to get a deeper understanding of the
+    algorithm and it’s available hyperparameters, please reference this [article](https://aws.plainenglish.io/end-to-end-example-of-sagemaker-xgboost-eb9eae8a5207).
+    The other key here is that we specify our instance count to be 25 (please note
+    you may need to request a limit increase here depending on the instance). Our
+    10,000 data files will be distributed across these 25 ml.m5.24xlarge for instances.
+    Once we specify a count greater than one, SageMaker infers Distributed Data Parallel
+    for our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then kick off a training job by fitting the algorithm on the training
+    input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: With our current setup this training job takes approximately 11 hours to complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f7c9a6e176e2e89dfc784332796880a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distributed Setup (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9644166f2707830e8229638e25b897b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SageMaker Training Job Completed (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we further optimize?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can tune this training time in a few different ways. One option is simply
+    horizontally scaling by increasing the instance count. Another option is going
+    the GPU instance route which may require a smaller instance count, but this is
+    not always a direct science.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outside of tuning the hardware behind the training job we can revisit the data
+    source format we were talking about. You can evaluate FsX Lustre which can scale
+    to 100s of GB/s throughput. Another option is sharding the dataset in a different
+    format to try various combinations of number of files and file size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pricing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For SageMaker Training Jobs you can estimate cost at the following [page](https://aws.amazon.com/sagemaker/pricing/).
+    In essence training jobs are billed by the hour and the instance type. With a
+    ml.m5.24xlarge this comes out to $5.53 per hour. With 25 instances and a run time
+    of 11 hours this training job comes out to approximately **$1500**, so **please
+    keep this in mind** if you run the example. Once again you can further tune this
+    by testing out different instances on smaller subsets of data to estimate an approximate
+    training time before training on your entire corpus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Credits/Additional Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[https://aws.amazon.com/blogs/machine-learning/choose-the-best-data-source-for-your-amazon-sagemaker-training-job/](https://aws.amazon.com/blogs/machine-learning/choose-the-best-data-source-for-your-amazon-sagemaker-training-job/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://docs.aws.amazon.com/sagemaker/latest/dg/distributed-training.html](https://docs.aws.amazon.com/sagemaker/latest/dg/distributed-training.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/distributed-xgboost-sagemaker?source=post_page-----8790e2bc8672--------------------------------)
+    [## GitHub - RamVegiraju/distributed-xgboost-sagemaker: Example of training XGBoost
+    algorithm on a 1TB…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example we'll be scaling the Abalone dataset to 1TB size and training
+    the SageMaker XGBoost algorithm on it…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/distributed-xgboost-sagemaker?source=post_page-----8790e2bc8672--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the entire code for the example above. SageMaker Distributed Training
+    offers the ability to train at scale. I also encourage you to explore [Model Parallel](https://docs.aws.amazon.com/sagemaker/latest/dg/model-parallel.html),
+    as the name indicates this looks into model parallelism across multiple instances.
+    I hope this article was a useful introduction to SageMaker Training and it’s distributed
+    capabilities, please feel free to follow up with any questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

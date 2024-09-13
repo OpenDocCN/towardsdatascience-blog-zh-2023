@@ -1,0 +1,447 @@
+- en: Combining Multiprocessing and Asyncio in Python for Performance Boosts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b](https://towardsdatascience.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using a real-world example to demonstrate a map-reduce program
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----15496ffe96b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15496ffe96b--------------------------------)
+    ·7 min read·May 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77f3f292511afaa667c8f02679022e8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Mitchell Luo](https://unsplash.com/@mitchel3uo?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thanks to GIL, using multiple threads to perform CPU-bound tasks has never been
+    an option. With the popularity of multicore CPUs, Python offers a multiprocessing
+    solution to perform CPU-bound tasks. But until now, there were still some problems
+    with using multiprocess-related APIs directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we start, we still have a small piece of code to aid in the demonstration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method takes one argument and starts accumulating from 0 to this argument.
+    Print the method execution time and return the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems with multiprocessing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As the code shows, we directly create and start multiple processes, and call
+    the start and join methods of each process. However, there are some problems here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The join method cannot return the result of task execution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the join method blocks the main process and executes it sequentially.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Even if the later tasks are executed faster than the earlier ones, as shown
+    in the following figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8364baa442670bc1f8998389c15d561a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The screenshot shows the execution sequence of join. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/537ec0a40a7eaf342614f882c6bc4786.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although process_b finishes executing first, it still has to wait for process_a.
+    Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems of using Pool
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we use `multiprocessing.Pool`, there are also some problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the code shows, Pool’s `apply` method is synchronous, which means you have
+    to wait for the previously apply task to finish before the next `apply` task can
+    start executing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/523e21930db88ead203380d32df96e40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[multiprocessing.Pool.apply](https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool)
+    method is synchronous. Image by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, we can use the `apply_async` method to create the task asynchronously.
+    But again, you need to use the get method to get the result blockingly. It brings
+    us back to the problem with the join method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79d6980e92262ad8805f8cf58dcc1413.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although [apply_async](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async)
+    is asynchronous, get will still block and execute sequentially. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem with using ProcessPoolExecutor directly
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So, what if we use `concurrent.futures.ProcesssPoolExecutor` to execute our
+    CPU-bound tasks?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As the code shows, everything looks great and is called just like `asyncio.as_completed`.
+    But look at the results; they are still fetched in startup order. This is not
+    at all the same as `asyncio.as_completed`, which gets the results in the order
+    in which they were executed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/404cfdbe924ffec96922748bbc22bf1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results are fetched in startup order. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a00805eb01261acdd9f10f48bc4893b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The result of the iteration still maintains the call order and blocks. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use asyncio’s run_in_executor to fix it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Fortunately, we can use asyncio to handle IO-bound tasks, and its `run_in_executor`
+    method to invoke multi-process tasks in the same way as asyncio. Not only unifying
+    concurrent and parallel APIs but also solving the various problems we encountered
+    above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c50f486af901f471331dfea012719094.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Combining asyncio and ProcessPoolExecutor. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the sample code in the previous article was all about simulating what
+    we should call the methods of the concurrent process, many readers still need
+    help understanding how to use it in the actual coding after learning it. So after
+    understanding why we need to perform CPU-bound parallel tasks in asyncio, today
+    we will use a real-world example to explain how to use asyncio to handle IO-bound
+    and CPU-bound tasks simultaneously and appreciate the efficiency of asyncio for
+    our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: Before continuing, if you are interested in the practice of using `asyncio.gather`
+    and `asyncio.as_completed`, you can read this article of mine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----15496ffe96b--------------------------------)
+    [## Use These Methods to Make Your Python Concurrent Tasks Perform Better'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Best practices for asyncio.gather, asyncio.as_completed, and asyncio.wait
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----15496ffe96b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Real-world case: concurrent file reading and map-reduce data processing'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this case today, we will deal with two problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to read multiple datasets concurrently. Especially if the datasets are large
+    or many. How to use asyncio to improve efficiency.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How to use asyncio’s `run_in_executor` method to implement a MapReduce program
+    and process datasets efficiently.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Before we start, I will explain to you how our code is going to be executed
+    using a diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa856454a320b44436788fbe3c4c0a9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The diagram shows how the entire code works. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The yellow part represents our concurrent tasks. Since the CPU can process data
+    from memory faster than IO can read data from disk, we first read all datasets
+    into memory concurrently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the initial data merging and slicing, we come to the green part that represents
+    the CPU parallel task. In this part, we will start several processes to map the
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we get the intermediate results of all the processes in the main process
+    and then use a `reduce` program to get the final results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data preparation and installation of dependencies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this case, we will use the [Google Books Ngram Dataset](https://books.google.com/ngrams/info),
+    which counts the frequency of each string combination in various books by year
+    from 1500 to 2012.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Google Books Ngram dataset is free for any purpose, and today we will use
+    these datasets below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz](http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-b.gz](http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-b.gz)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-c.gz](http://storage.googleapis.com/books/ngrams/
+    books/googlebooks-eng-all-1gram-20120701-c.gz)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We aim to count the cumulative number of times each word is counted by the result
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dependency installation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To read the files concurrently, we will use the `[aiofiles](https://pypi.org/project/aiofiles/)`
+    library, which can support asyncio’s concurrent implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are using pip, you can install it as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you are using Anaconda, you can install it as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Code structure design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since this case is still relatively simple, for the sake of demonstration, we
+    will use a `.py` script to do the whole thing here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an architect, before you start, you should plan your methods according to
+    the flowchart design and try to follow the “single responsibility principle” for
+    each method. Thus, do only one thing once upon each method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next, we will implement each method step by step and finally integrate them
+    to run together in the `main` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: File reading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Method `read_file` will implement reading a single file with `aiofiles`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method `get_all_file_content` will start the file reading task and, after all
+    the files have been read, will merge each line of text into a list and return
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data grouping
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Method `partition` will decompose the list into multiple smaller lists of partition_size
+    length according to the passed partition_size and facilitate subsequent iterations
+    using the generator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Map processing data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Method `map_resource` is the actual map method. Use it to read each line of
+    data from the list, use the word as the key and the sum of the frequencies as
+    the value, and finally return a dict result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrating asyncio with multiprocessing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Method `map_with_process` calls asyncio’s `run_in_executor` method, which starts
+    a pool of processes according to the number of CPU cores and executes the map
+    method in parallel. And the final result is merged into a list by `asyncio.gather`
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing the merged data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the previous map process ends up with a list of word frequencies processed
+    by multiple processes, we also need to use a `reduce` method to merge numerous
+    dicts into a single final result, recording the final frequency of each word.
+    Here we first write the method implementation of the `reduce` process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we call the `functools.reduce` method directly to merge the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, implement the main method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Eventually, we integrate all the methods into the `main` method and call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great! We get the sum of the frequencies of the word Aardvark in all the datasets.
+    Task complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using tqdm to indicate progress
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous article, we explained how to use `[tqdm](https://github.com/tqdm/tqdm)`
+    to indicate the progress of asyncio tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----15496ffe96b--------------------------------)
+    [## Using Tqdm with Asyncio in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An Efficient Way to Monitor Concurrent Tasks Progress
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----15496ffe96b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since in the real world, data processing of large datasets often takes a long
+    time, during which we need to track the progress of code execution, we also need
+    to add `tqdm` progress bars in the right places.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It looks much more professional now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48cd3f1f43cdd935dc5988f93e76d620.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The resulting screenshot after adding the tqdm APIs. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In today’s article, we explored some of the problems with multi-process code,
+    such as the hassle of getting the results of each process and the inability to
+    get the results in the order in which we execute the tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also explored the feasibility of integrating asyncio with `ProcessPoolExecutor`
+    and the advantages that such integration brings to us. For example, it unifies
+    the API for concurrent and parallel programming, simplifies our programming process,
+    and allows us to obtain execution results in order of completion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we explain how we can alternate between concurrent and parallel programming
+    techniques to help us execute our code efficiently in data science tasks through
+    a real-world case study that exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the limited ability of individuals, there are inevitably few places in
+    the case, so I welcome your comments and corrections so that we can learn and
+    progress together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following article, we will explore how to leverage the loop.run_in_execute
+    API to spread many asyncio concurrent tasks across multiple CPU cores to unlock
+    the CPU’s performance potential. Please click here to learn about:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f?source=post_page-----15496ffe96b--------------------------------)
+    [## Harnessing Multi-Core Power with Asyncio in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boost your Python application’s performance by efficiently utilizing multiple
+    CPU cores with asyncio
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f?source=post_page-----15496ffe96b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
+    access to all of my posts and those of thousands of other authors. It only costs
+    you the price of a cup of coffee, but it’s a great encouragement to me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts/](https://www.dataleadsfuture.com/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts/)'
+  prefs: []
+  type: TYPE_NORMAL

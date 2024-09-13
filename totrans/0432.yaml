@@ -1,0 +1,489 @@
+- en: Building a Batch Data Pipeline with Athena and MySQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-batch-data-pipeline-with-athena-and-mysql-7e60575ff39c](https://towardsdatascience.com/building-a-batch-data-pipeline-with-athena-and-mysql-7e60575ff39c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An End-To-End Tutorial for Beginners
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)[![💡Mike
+    Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)
+    [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----7e60575ff39c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7e60575ff39c--------------------------------)
+    ·16 min read·Oct 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/368293b91e4bc0283007a555789b6479.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Redd F](https://unsplash.com/@raddfilms?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this story I will speak about one of the most popular ways to run data transformation
+    tasks — batch data processing. This data pipeline design pattern becomes incredibly
+    useful when we need to process data in chunks making it very efficient for ETL
+    jobs that require scheduling. I will demonstrate how it can be achieved by building
+    a data transformation pipeline using MySQL and Athena. We will use infrastructure
+    as code to deploy it in the cloud.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that you have just joined a company as a Data Engineer. Their data stack
+    is modern, event-driven, cost-effective, flexible, and can scale easily to meet
+    the growing data resources you have. External data sources and data pipelines
+    in your data platform are managed by the data engineering team using a flexible
+    environment setup with CI/CD GitHub integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a data engineer you need to create a business intelligence dashboard that
+    displays the geography of company revenue streams as shown below. Raw payment
+    data is stored in the server database (MySQL). You want to build a batch pipeline
+    that extracts data from that database daily, then use AWS S3 to store data files
+    and Athena to process it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7dc86278ad5d6755486da64418c7b7bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Revenue dashboard. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batch data pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A data pipeline can be considered as a sequence of data processing steps. Due
+    to ***logical data flow connections*** between these stages, each stage generates
+    an **output** that serves as an **input** for the following stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a data pipeline whenever there is data processing between points A
+    and B.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Data pipelines might be different due it their conceptual and logical nature.
+    I previously wrote about it here [1]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----7e60575ff39c--------------------------------)
+    [## Data pipeline design patterns'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the right architecture with examples
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----7e60575ff39c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We would want to create a data pipeline where data is being transformed in
+    the following **steps**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Use a Lambda function that extracts data from MySQL database tables `myschema.users`
+    and `myschema.transactions` into S3 datalake bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Add a State Machine node with Athena resource to start execution (`arn:aws:states:::athena:startQueryExecution.sync`)
+    and create a database called `mydatabase`
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Create another data pipeline node to show existing tables in Athena database.
+    Use the output of this node to perform required data transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If tables don’t exist then we would want our pieline to create them in Athena
+    based on the data from the datalake S3 bucket. We would want to create two **external
+    tables** with data from MySQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: mydatabase.users (LOCATION ‘s3://<YOUR_DATALAKE_BUCKET>/data/myschema/users/’)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: mydatabase.transactions (LOCATION ‘s3://<YOUR_DATALAKE_BUCKET>/data/myschema/transactions/’)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Then we would want to create an **optimized ICEBERG** table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'mydatabase.user_transactions (‘table_type’=’ICEBERG’, ‘format’=’parquet’) using
+    the SQL below:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also use MERGE to update this table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'MERGE is an extremely useful SQL techniques for incremental updates in tables.
+    Check my previous story [3] for more advanced examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/advanced-sql-techniques-for-beginners-211851a28488?source=post_page-----7e60575ff39c--------------------------------)
+    [## Advanced SQL techniques for beginners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a scale from 1 to 10 how good are your data warehousing skills?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/advanced-sql-techniques-for-beginners-211851a28488?source=post_page-----7e60575ff39c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Athena can analyse structured, unstructured and semi-structured data stored
+    in Amazon S3 by running attractive ad-hoc SQL queries with no need to manage the
+    infrastructure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t need to load data and it makes it a perfect choice for our task.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It can be easily integrated with Busines Intelligence (BI) solutions such as
+    Quichksight to generate reports.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ICEBERG is an extremely useful and efficient table format where several separate
+    programs can handle the same dataset concurrently and consistently [2]. I previously
+    wrote about it here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-apache-iceberg-tables-a791f1758009?source=post_page-----7e60575ff39c--------------------------------)
+    [## Introduction to Apache Iceberg Tables'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A few Compelling Reasons to Choose Apache Iceberg for Data Lakes
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-apache-iceberg-tables-a791f1758009?source=post_page-----7e60575ff39c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: MySQL data connector
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s create an AWS Lambda Function that will be able to execute SQL queries
+    in MySQL database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code is pretty simple and generic. It can be used in any serverless application
+    with any cloud service provider.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We will use it to extract revenue data into the datalake. Suggested Lambda
+    folder structure can look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will integrate this tiny service into the pipeline using AWS Step functions
+    for easy **orchestration and visualisation.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To create a Lambda function that can extract data from MySQL database we need
+    to create a folder for our Lambda first. Create a new folder called stack` and
+    then folder called `mysql_connector` in it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we can use this code below (replace database connection settings with
+    yours) to create `app.py`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To deploy our microservice using AWS CLI run this in your command line (assuming
+    you are in the ./stack folder):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Make sure that AWS Lambda role exists before running the next part ` — role
+    arn:aws:iam::<your-aws-account-id>:role/my-lambda-role`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our MySQL instance must have **S3 integration** which enables **data export
+    to S3** bucket. It can be achieved by running this SQL query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to create MySQL instance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can use CloudFormation template and infrastructure as code to create MySQL
+    database. Consider this AWS command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It will use `cfn_mysql.yaml` tempalte file to create CloudFormation stack called
+    MySQLDB. I previously wrote about it here [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a?source=post_page-----7e60575ff39c--------------------------------)
+    [## Create MySQL and Postgres instances using AWS Cloudformation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Infrastructure as Code for database practitioners
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a?source=post_page-----7e60575ff39c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our `cfn_mysql.yaml` should look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If everything goes well we will see a new stack in our Amazon account:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6ff5754b68a1d8279412c0bb82d917b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: CloudFormation stack with MySQL instance. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can use this MySQL instance in our pipeline. We can try our SQL queries
+    in any SQL tool such as SQL Workbench to populate table data. These tables will
+    be used later to create external tables using Athena and can be created using
+    SQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Process data using Athena
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we would want to add a data pipeline workflow that triggers our Lambda function
+    to extract data from MySQL, save it in the datalake and then start data transformation
+    in Athena.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We would want to create two external Athena tables with data from MySQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: myschema.users
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: myschema.transactions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we would want to create an optimized ICEBERG table **myschema.user_transactions**
+    to connect it to our BI solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would want to INSERT new data into that table using MERGE statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When new table is ready we can check it by running `SELECT *`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0067053393a777846c94f0d3acd48e90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: mydatabase.user_transactions. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Orchestrate data pipeline using Step Functions (State Machine)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the previous steps, we learned how to deploy each step of the data pipeline
+    separately and then test it. In this paragraph, we will see how to create a complete
+    data pipeline with required resources using infrastructure such as code and pipeline
+    orchestration tool such as AWS Step Functions (State Machine). When we finish
+    the pipeline graph will look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d6fa66e126398bfe0bd267f57bf7059.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data pipeline orchestration using Step Functions. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data pipeline orchestration is a great data engineering technique that adds
+    interactivity to our data pipelines. The idea was previously explained in one
+    of my stories [5]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/data-pipeline-orchestration-9887e1b5eb7a?source=post_page-----7e60575ff39c--------------------------------)
+    [## Data Pipeline Orchestration'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data pipeline management done right simplifies deployment and increases the
+    availability and accessibility of data for…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/data-pipeline-orchestration-9887e1b5eb7a?source=post_page-----7e60575ff39c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To deploy the complete **orchestrator solution** including all required resources
+    we can use CloudFormation (infrastructure as code). Consider this shell script
+    below that can be run from the command line when we are in the `/stack` folder.
+    Make sure <YOUR_S3_BUCKET> exists and replace it with your actual S3 bucket::'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: It will use stack.yaml to create a CloudFormation stack called BatchETLpipeline.
+    It will package our Lambda function, create a package and upload it into S3 bucket.
+    If this bucket doesn’t exist it will create it. It will then deploy the pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If everything goes well the stack for our new data pipeline will be deployed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b97e39b295eadfc8d179a499197fad0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: BatchETLpipeline stack and resources. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we click the State Machine resource, then click ‘Edit’ we will see our ETL
+    pipeline as a graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb9292383481ab8b5951980275a644a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workflow studio for Batch data pipeline. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can execute the pipeline to run all required data transformation steps.
+    Click ‘Start execution’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d6fa66e126398bfe0bd267f57bf7059.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Successful execution. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can connect our Athena tables to our **BI solution**. Connect our final
+    Athena dataset `mydataset.user_transactions` to create a dashboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3427a98727ee0bbf52ef9d94f868f567.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Connecting a dataset in Quicksight. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We just need to adjust a couple of settings to make our dashboard look like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2fc0d03bb10de92d3b88a7f4a7a3b3ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quicksight dashboard. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would want to use `dt` as dimension and `total_cost_usd` as metric. We also
+    can set a breakdown dimension for each `user_id`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Batch data pipelines are popular because historically workloads were primarily
+    batch-oriented in data environments. We have just built an ETL data pipeline to
+    extract data from MySQL and transform it in datalake. This pattern works best
+    for datasets that aren’t very large and require continuous processing because
+    Athena charges according to the volume of data scanned. The method works well
+    when converting data into columnar formats like Parquet or ORC, combining several
+    tiny files into bigger ones, or bucketing and adding partitions. I previously
+    wrote about these big data file formats in one of my stories [6]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/big-data-file-formats-explained-275876dc1fc9?source=post_page-----7e60575ff39c--------------------------------)
+    [## Big Data File Formats, Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parquet vs ORC vs AVRO vs JSON. Which one to choose and how to use them?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/big-data-file-formats-explained-275876dc1fc9?source=post_page-----7e60575ff39c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We learned how to use Step Functions to orchestrate the data pipeline and visualise
+    the data flow from source to final consumer and deploy it using infrastructure
+    as code. This setup makes it possible to use CI/CD techniques for our data pipelines
+    [7].
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this tutorial was useful for you. Let me know if you have any questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommended read
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [https://towardsdatascience.com/data-pipeline-design-patterns-100afa4b93e3](/data-pipeline-design-patterns-100afa4b93e3)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://medium.com/towards-data-science/introduction-to-apache-iceberg-tables-a791f1758009](https://medium.com/towards-data-science/introduction-to-apache-iceberg-tables-a791f1758009)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [https://medium.com/towards-data-science/advanced-sql-techniques-for-beginners-211851a28488](https://medium.com/towards-data-science/advanced-sql-techniques-for-beginners-211851a28488)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [https://medium.com/towards-data-science/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a](https://medium.com/towards-data-science/create-mysql-and-postgres-instances-using-aws-cloudformation-d3af3c46c22a)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [https://medium.com/towards-data-science/data-pipeline-orchestration-9887e1b5eb7a](https://medium.com/towards-data-science/data-pipeline-orchestration-9887e1b5eb7a)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [https://medium.com/towards-data-science/big-data-file-formats-explained-275876dc1fc9](https://medium.com/towards-data-science/big-data-file-formats-explained-275876dc1fc9)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [https://medium.com/towards-data-science/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1](https://medium.com/towards-data-science/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1)'
+  prefs: []
+  type: TYPE_NORMAL

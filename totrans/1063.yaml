@@ -1,0 +1,502 @@
+- en: How Data Science Helped Sherlock Holmes Find a Murderer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-data-science-helped-sherlock-holmes-find-a-murderer-5cff72a5c98a](https://towardsdatascience.com/how-data-science-helped-sherlock-holmes-find-a-murderer-5cff72a5c98a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Solve the “Who Killed the Duke of Densmore” mystery using graph theory, constraint
+    programming, and mixed-integer linear programming
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bernardovf?source=post_page-----5cff72a5c98a--------------------------------)[![Bernardo
+    Furtado](../Images/fa4e7e408135319d0531ef364acca8f6.png)](https://medium.com/@bernardovf?source=post_page-----5cff72a5c98a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5cff72a5c98a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5cff72a5c98a--------------------------------)
+    [Bernardo Furtado](https://medium.com/@bernardovf?source=post_page-----5cff72a5c98a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5cff72a5c98a--------------------------------)
+    ·14 min read·Apr 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dec485cff44fa5de03d7ae2f2233fda4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Volodymyr Hryshchenko](https://unsplash.com/@lunarts?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/ZT9gjcJog6U?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inventory management, portfolio optimization, machine scheduling, vehicle routing,
+    and many other real-life problems are excellent examples of how data science and
+    analytical techniques can be employed. It’s no surprise that these are some of
+    the first problems we learn in university. However, I’m fascinated by the numerous
+    other problems that can be represented as an abstract entity called *model*, which
+    can be a graph, a schedule, or a set of mathematical equations and solved utilizing
+    appropriate techniques. Once you acquire modeling skills, it is straightforward
+    to apply these techniques to both a supply-chain problem and a simple puzzle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will demonstrate how the mystery of the Duke of Densmore’s
+    murder can be solved using ***Graph Theory***, ***Constraint Programming***, and
+    ***Mixed-Integer Linear Programming***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The book “*Who Killed the Duke of Densmore*” by Claude Berge is a mystery story
+    that focuses on identifying the person who planted a bomb in Densmore Castle on
+    the Isle of White, leading to the Duke’s death. Despite the passage of ten years,
+    the case remained unsolved until Sherlock Holmes and Watson decided to delve into
+    the matter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the Duke of Densmore met his demise due to a bomb explosion at his castle
+    on the Isle of White, his six ex-wives — *Ann*, *Betty*, *Charlotte*, *Edith*,
+    *Felicia*, *Georgia*, and *Helen* — became the primary suspects. Complicating
+    matters was the destruction of the Duke’s will in the blast, rumored to be harsh
+    against one of the former spouses. However, it was revealed that all six women
+    had received invitations to the castle before the tragedy occurred.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of his ex-wives swore they had been to the castle only once. They also did
+    not remember how long they stayed there but knew who they met during the visit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Ann* met *Betty*, *Charlotte*, *Felicia* and *Georgia*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Betty* met *Ann*, *Charlotte*, *Edith*, *Felicia* and *Helen*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Charlotte* met *Ann*, *Betty* and *Edith*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Edith* met *Betty*, *Charlotte* and *Felicia*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Felicia* met *Ann*, *Betty*, *Edith* and *Helen*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Georgia* met *Ann* and *Helen*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Helen* met *Betty*, *Felicia* and *Georgia*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Based on the information provided, Holmes and Watson believe that the killer
+    had visited the castle on multiple occasions, which contradicts the ex-wives’
+    claims of only having visited once. The detectives suspects that one of the former
+    spouses is be lying about the number of visits she made to the castle. Identifying
+    which of the ex-wives lied about the frequency of their visits is the key to solving
+    the mystery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’ll show three ways to solve this puzzle: using Graph Theory, Constraint Programming
+    and Mixed-Integer Linear Programming.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph Theory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is how Berge ultimately solved the mystery, and it appears to be the most
+    straightforward approach. Each of the ex-wives had a specific duration of stay
+    at the castle, with a defined arrival and departure time. Although the exact duration
+    of their visits and the order in which they arrived and departed remain unknown,
+    we know from the interrogation that some of their visits overlapped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the sake of simplicity, let’s focus on *Helen* and her interactions with
+    *Betty*, *Felicia*, and *Georgia* during their respective visits to the castle.
+    To illustrate their visits, we can use horizontal lines, with the endpoints representing
+    their arrival and departure times, as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c6732ac05bd52ce0db5a35c7da9762d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of intervals and overlaps
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If two intervals overlap, it means that the corresponding individuals were
+    at the castle simultaneously and thus must have met. We can represent the intervals
+    as a graph, where each node corresponds to a person. If two intervals intersect,
+    we draw an edge between the corresponding nodes. In the case of *Helen*, *Betty*,
+    *Felicia*, and *Georgia*, the resulting graph looks like the one below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1ac57886d42b44e08d7396642043aec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interval graph example
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This type of graph is called an *Interval Graph*, which can be used to model
+    any set of intervals. However, not all graphs can be represented as intervals.
+    For instance, consider the graph below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f470b3082f555fe561899a7572afed8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cycle graph C4
+  prefs: []
+  type: TYPE_NORMAL
+- en: It cannot be decomposed into intervals, as it is impossible to find four intervals,
+    such that *A-B*, *B-C*, *C-D*, and *D-A* intersect. This graph is called *C4*.
+    If a graph has *C4* as a subgraph, certainly it is not an interval graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, if the graph is not an interval graph, we know that at least one
+    person has lied about their visit to the castle. We can use this fact to identify
+    the true culprit by constructing the graph from the interrogation and checking
+    whether it is an interval graph or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e0a64d264e7c9ed6ffd54d9434dc762.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Graph based on the interrogation. If two people met, there is an edge between
+    them
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s use library [*networkx*](https://networkx.org/)in python, and create
+    the graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that graph is defined, two following steps are required:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generate all the simple cycles of the graph, using *simple_cycles* function
+    of *networkx* (see doc [here](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.cycles.simple_cycles.html)).
+    All elementary cycles of all lengths will be generated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For all cycles with length equal to 4, generate the subgraph using *subgraph*
+    [function](https://networkx.org/documentation/stable/reference/generated/networkx.classes.function.subgraph.html#subgraph).
+    And check if it is not [*chordal*](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.chordal.is_chordal.html#is-chordal).
+    In other words, check if the cycle is a *C4* — a cycle of length 4 where all nodes
+    have degree equal to 2 (see [here](https://en.wikipedia.org/wiki/Cycle_graph)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *C4* subgraphs are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Ann*, *Charlotte*, *Edith*, *Felicia*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Ann*, *Felicia*, *Edith*, *Charlotte*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Georgia*, *Ann*, *Betty*, *Helen*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Georgia*, *Ann*, *Felicia*, *Helen*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Georgia*, *Helen*, *Betty*, *Ann*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Georgia*, *Helen*, *Felicia*, *Ann*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Ann*** is present in all cycles, if she is eliminated from the set, an interval
+    graph can be generated perfectly, indicating that she may be lying and could be
+    deemed as the killer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Constraint Programming
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Constraint Programming (CP) is a problem-solving approach that addresses combinatorial
+    and logical problems by focusing on finding feasible solutions that satisfy given
+    constraints. CP algorithms achieve convergence by progressively reducing the set
+    of feasible solutions through the addition of new constraints. Given its ability
+    to handle complex logical statements and constraints, CP is particularly effective
+    in tackling problems like the one at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve our problem, we can use a CP model, which involves defining *N* as
+    the set of people, *s_i* as the arrival time of person *i* at the castle, *d_i*
+    as the duration of their visit, and *e_i* as the end of their visit. We can also
+    introduce a logic variable *v_i*, which is *TRUE* if person *i* cannot be included
+    in the visit schedule, and *FALSE* otherwise. Additionally, *met_i* is the set
+    of people that person *i* met during their visit. The integer variables *s*, *d*,
+    and *e* have a high upper bound (1000) and must be non-negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll use the [*ortools*](https://developers.google.com/optimization/cp/cp_solver)library
+    to solve this problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The initial step is to determine if two individuals overlap or not, which means
+    verifying if the intervals *(s_i, e_i)* and *(s_j, e_j)* intersect at any moment.
+    This can be achieved by satisfying either one of the two following conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*s_j < e_i* AND *s_i < e_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*s_i < e_j* AND *s_i > s_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'It is also necessary to define when two intervals DO NOT overlap. It should
+    respect one of the two conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*e_i ≤ s_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*s_i ≥ e_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Essentially, for two people to have met, their intervals must overlap, or else
+    they must not overlap. However, what if a person cannot be included in the schedule?
+    This is where the variable *v_i* comes into play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, for every pair of people *i* and *j*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9519ea042495bb5cefa968635b851b6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'When two individuals *i* and *j* meet, they must respect to either of the two
+    overlapping conditions: (*s_j < e_i* AND *s_i < e_j*) OR (*s_i < e_j* AND *s_i
+    > s_j*). If they fail to comply, one or both of them will not be included in the
+    schedule (*v_i = True* OR *v_j = True*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, if two individuals *i* and *j* do not meet, they should follow
+    the non-overlapping condition (*e_i ≤ s_j* OR *s_i ≥ e_j*). If they do not follow
+    this condition, one or both of them will not be included in the schedule (*v_i
+    = True* OR *v_j = True*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To represent each of these conditions, we will use the Boolean variables *b1*,
+    *b2*, *b3*, and *b4*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*b1 =* *s_j < e_i* AND *s_i < e_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*b2 =* *s_i < e_j* AND *s_i > s_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*b3 =* *e_i ≤ s_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*b4 =* *s_i ≥ e_j*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Duration of person’s visit (*d_i*) is *0* is value *v_i* is True. Which means
+    it is not included. If *v_i* is False, *d_i* must be strictly positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/86dd247aa1ace7721166888002808855.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, the last constraint ensures that arrival time plus duration is equal
+    to the end time, for each person
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a32ebeed9f8ad7d339cf934484e4b01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our objective function is maximizing the number of people included, which is
+    the same as minimizing the sum of variable *v_i*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7aece2dd6b2948820732e23a23c23d0f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Solving the model and plotting the gantt chart we have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ba27d1d442240f376c648cb9ff69e4de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gantt Chart generated by running CP Model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Who’s again the person who could not be included and has duration equal to 0?
+    **Ann**!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixed-Integer Linear Programming
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'While it may not be the simplest approach, my favorite way to solve this puzzle
+    is by using *MILP*. To learn more about how to model and solve *MILP*, you can
+    refer to my article below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://medium.com/towards-data-science/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f](https://medium.com/towards-data-science/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We still have the set *N*, which represents the people involved, and *met_i*,
+    which is the set of people who *i* has met. In this scenario, we will adopt a
+    time-indexed method where we define a set of periods *T* beforehand (let’s assume
+    *T = 6*). The variables are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*y_i*: binary. 1 if person *i* is included. 0 otherwise'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*x_(i, t)*: binary. 1 if person *i* is in the castle at *t*. 0 otherwise'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*z_(i, j, t)*: binary. 1 if person *i* and *j* are in the castle simultaneously
+    at *t*. 0 otherwise'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*w_(i, t)*: binary. 1 if person *i* arrives in the castle at *t*. 0 otherwise'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s also use [*ortools*](https://developers.google.com/optimization/mip)to
+    solve it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Constraints are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e400b4a70435d240dbf7ad91ae5e996.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*(1)* guarantees that any individual included in the schedule must have been
+    in the castle at least once. *(2)* ensures that if a person is included, they
+    must have been present in the castle at the same time as other individuals they
+    met. *(3)* and *(4)* ensure that two individuals were simultaneously present in
+    the castle at a given time if and only if they were both included and present
+    at the time. *(5)* ensures that two individuals who did not meet cannot be present
+    in the castle at the same time. *(6)* defines the arrival time for each person.
+    *(7)* disallows any person from being present in the castle during periods 0 and
+    T (for simplicity). Finally, *(8)* guarantees that any person included in the
+    schedule has only one recorded arrival time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Objective function is maximizing the number of people included
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b32dcc928520003da0bf3f373147262.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Solving the model and plotting the gantt chart we have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4d23949d49ee818e426b056d0a6a6db2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gantt Chart generated by running MIP Model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Who’s again not included? **Ann**!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This example demonstrates how a problem can be approached and solved in various
+    ways using different techniques, yet all methods produce the same outcome. It’s
+    possible that if you attempted to solve the problem yourself, you might develop
+    an alternative approach or model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although, while considering this specific problem, ***Graph theory*** appears
+    to be the most straightforward method, it cannot be universally applied to all
+    problems since it’s an adhoc approach. The differences between ***Mathematical
+    programming*** (MILP) and ***Constraint programming*** could be the subject of
+    an entire article or even a book. Nevertheless, the main disparities are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Mathematical programming*** models support both discrete and continuous
+    decision variables, whereas ***constraint programming*** only supports discrete
+    decision variables (integer or Boolean).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Constraint programming*** supports logical constraints as well as arithmetic
+    expressions, including modulo, integer division, minimum, maximum, and an expression
+    that indexes an array of values by a decision variable. It can also utilize specialized
+    constraints, such as the *all different* and *no overlap* constraint, that can
+    simplify modeling, whereas ***mathematical programming*** only supports *≥*, *≤*
+    and *=* constraints.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] B. Claude and W. Ian, Who killed the Duke of Densmore (1994), Biblioteque
+    Oulipienne #67'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author
+  prefs: []
+  type: TYPE_NORMAL

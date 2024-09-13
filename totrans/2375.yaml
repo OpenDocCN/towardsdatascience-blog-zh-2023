@@ -1,0 +1,383 @@
+- en: Why OpenAI’s API Is More Expensive for Non-English Languages
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/why-openais-api-is-more-expensive-for-non-english-languages-553da4a1eecc](https://towardsdatascience.com/why-openais-api-is-more-expensive-for-non-english-languages-553da4a1eecc)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Beyond words: How byte pair encoding and Unicode encoding factor into pricing
+    disparities'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie?source=post_page-----553da4a1eecc--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----553da4a1eecc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----553da4a1eecc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----553da4a1eecc--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----553da4a1eecc--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----553da4a1eecc--------------------------------)
+    ·7 min read·Aug 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7dbc785874f6574c212f692b9a203709.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How can it be that the phrase “Hello world” has two tokens in English and 12
+    tokens in Hindi?
+  prefs: []
+  type: TYPE_NORMAL
+- en: After publishing [my recent article on how to estimate the cost for OpenAI’s
+    API,](https://medium.com/towards-data-science/easily-estimate-your-openai-api-costs-with-tiktoken-c17caf6d015e)
+    I received an interesting comment that someone had noticed that the OpenAI API
+    is much more expensive in other languages, such as ones using Chinese, Japanese,
+    or Korean (CJK) characters, than in English.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e0c5de69c8cc1d758147b74a591882f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comment by a reader on [my recent article on how to estimate the cost for OpenAI’s
+    API with the](https://medium.com/towards-data-science/easily-estimate-your-openai-api-costs-with-tiktoken-c17caf6d015e)
+    `[tiktoken](https://medium.com/towards-data-science/easily-estimate-your-openai-api-costs-with-tiktoken-c17caf6d015e)`
+    [library](https://medium.com/towards-data-science/easily-estimate-your-openai-api-costs-with-tiktoken-c17caf6d015e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I wasn’t aware of this issue, but quickly realized that this is an active research
+    field: At the beginning of this year, a paper called “Language Model Tokenizers
+    Introduce Unfairness Between Languages” by Petrov et al. [2] showed that the “same
+    text translated into different languages can have drastically different tokenization
+    lengths, with differences up to 15 times in some cases.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a refresher, tokenization is the process of splitting a text into a list
+    of tokens, which are common sequences of characters in a text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac4b4aa8e2cd8f729c9e7e3c10d1efb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example for Tokenization
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference in tokenization lengths is an issue because [the OpenAI API is
+    billed in units of 1,000 tokens](https://openai.com/pricing). Thus, if you have
+    up to 15 times more tokens in a comparable text, this will result in 15 times
+    the API costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Experiment: Number of Tokens in Different Languages'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s translate the phrase “Hello world” into Japanese (こんにちは世界) and transcribe
+    it into Hindi (हैलो वर्ल्ड). When we tokenize the new phrases with the `cl100k_base`
+    tokenizer used in OpenAI’s GPT models, we get the following results (you can find
+    the [Code](#12fb) I used for these experiments at the end of this article):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f059cf750b6225d0a8ef3e7f86a468e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of letters and tokens (`cl100k_base`) for the phrase “Hello world” in
+    English, Japanese, and Hindi
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the above graph, we can make two interesting observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of letters for this phrase is highest in English and lowest in Hindi,
+    but the number of resulting tokens is lowest in English but highest in Hindi.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In Hindi, there are more tokens than there are letters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How can that happen?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fundamentals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To understand why we end up with more tokens for the same phrase in languages
+    other than English, we need to review two fundamental concepts of byte pair encoding
+    and Unicode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Byte Pair Encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Byte Pair Encoding (BPE) algorithm was originally invented as a compression
+    algorithm by Gage [1] in 1994.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “The [BPE] algorithm compresses data by finding the most frequently occurring
+    pairs of adjacent **bytes** in the data and replacing all instances of the pair
+    with a byte that was not in the original data. The algorithm repeats this process
+    until no further compression is possible, either because there are no more frequently
+    occurring pairs or there are no more unused bytes to represent pairs.” [1]
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s go through the example from the original paper [1]. Let’s say you have
+    the smallest corpus of text consisting of the string “ABABCABCD”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. For every pair of bytes (in this example, characters), you will count its
+    occurrences in the corpus as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Take the pair of bytes with the highest number of occurrences and replace
+    it with an unused character. In this case, we will replace the pair “AB” with
+    “X”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Repeat step 2 until no further compression is possible or no more unused
+    bytes (in this example, characters) are available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Unicode
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Unicode is an encoding standard that defines how different characters are represented
+    in unique numbers called **code points**. In this article, we are not going to
+    cover all details of Unicode. Here is an [excellent StackOverflow answer](https://stackoverflow.com/a/15128103)
+    if you need a refresher.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What you need to know for the following explanation is that if your text is
+    encoded in UTF-8, characters of different languages will require different amounts
+    of bytes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see from the table below, letters of the English language can be
+    represented with ASCII characters and only require 1 byte. But, e.g., Greek characters
+    require 2 bytes, and Japanese characters require 3 bytes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e989e7dfa70068946456ec6be4fa7f6f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Inspired by [Wikipedia article on UTF-8](https://en.wikipedia.org/wiki/UTF-8)
+    and [StackOverflow answer](https://stackoverflow.com/a/15128103))
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking Under The Hood
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we understand that characters of different languages require different
+    amounts of bytes to be represented numerically and that the tokenizer used by
+    OpenAI’s GPT models is a BPE algorithm, which tokenizes on the byte level, let’s
+    have a deeper look at our opening experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: English
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, let’s look at the vanilla example of tokenization in English:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d8734f317677eb4a8e87496351c34e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tokenizing the phrase “Hello world”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the above visualization, we can make the following observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One letter equals one code point
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One Unicode code point equals 1 byte
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The BPE tokenizes 5 bytes for “Hello” and 6 bytes for “ world” into two separate
+    tokens
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This observation matches the statement on the [OpenAI’s tokenizer’s site](https://platform.openai.com/tokenizer):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “A helpful rule of thumb is that one token generally corresponds to ~4 characters
+    of text for common English text.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Notice how it says “for common English text”? Let’s look at texts that are not
+    English.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Japanese
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now what happens in languages in which a letter does not correspond to one
+    byte but multiple bytes? Let’s look at the phrase “Hello world” translated into
+    Japanese, which uses CJK characters that are 3 bytes long in UTF-8 encoding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/841162a2359180fcae0c32e3248f8102.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tokenizing the phrase “こんにちは世界”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the above visualization, we can make the following observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One letter equals one code point
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One Unicode code point equals 3 bytes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The BPE tokenizes 15 bytes for こんにちは (Japanese for “Hello”) into a single token
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But the letter 界 is tokenized into a single token
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The letter 世 is tokenized into two tokens
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hindi
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'It becomes even crazier in languages where one letter doesn’t equal one code
+    point but is made of multiple code points. Let’s look at the phrase “Hello world”
+    transcribed into Hindi. The Devanāgarī alphabet used for Hindi has characters
+    that have to be split into multiple code points with each code point requiring
+    3 bytes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47dcfd843ce0d3de1a0bd7bf8b200432.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tokenizing the phrase “हैलो वर्ल्ड”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the above visualization, we can make the following observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One letter can be made up of multiple Unicode code points (e.g., the letter
+    है is made from combining the code points ह and ै)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One Unicode code point equals 3 bytes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Similarly to the Japanese letter 世, one code point can be divided into two tokens
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Some tokens span more than one but less than two letters (e.g., token id 31584)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article explored how the same phrase “Hello world” translated to Japanese
+    and transcribed to Hindi is tokenized. First, we learned that the tokenizer used
+    in OpenAI’s GPt models tokenizes on the byte level. Additionally, we saw that
+    Japanese and Devanāgarī characters require more than one byte to represent a character
+    in contrast to English. Thus, we saw that the UFT-8 encoding and BPE tokenizer
+    play a big role in the resulting number of tokens and impact the API costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, different factors, such as the fact that GPT models are not trained
+    equally on multilingual texts, influence tokenization. At the time of writing,
+    this issue is an active research field, and I am curious to see different solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enjoyed This Story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
+    when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----553da4a1eecc--------------------------------)
+    [## Get an email whenever Leonie Monigatti publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
+    a Medium account if you don’t already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----553da4a1eecc--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
+    and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Image References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If not otherwise stated, all images are created by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web & Literature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Gage, P. (1994). A new algorithm for data compression. *C Users Journal*,
+    *12*(2), 23–38.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Petrov, A., La Malfa, E., Torr, P. H., & Bibi, A. (2023). Language Model
+    Tokenizers Introduce Unfairness Between Languages. [*arXiv preprint arXiv:2305.15425*](https://arxiv.org/abs/2305.15425).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the code I used to calculate the number of tokens and decode the tokens
+    for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE

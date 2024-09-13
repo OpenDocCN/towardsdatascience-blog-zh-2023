@@ -1,0 +1,421 @@
+- en: Python Dictcomp Pipelines in Examples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/python-dictcomp-pipelines-in-examples-4c4ec4e66f3](https://towardsdatascience.com/python-dictcomp-pipelines-in-examples-4c4ec4e66f3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PYTHON PROGRAMMING
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: See the power of dictcomp pipelines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nyggus?source=post_page-----4c4ec4e66f3--------------------------------)[![Marcin
+    Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----4c4ec4e66f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c4ec4e66f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4c4ec4e66f3--------------------------------)
+    [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----4c4ec4e66f3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c4ec4e66f3--------------------------------)
+    ·11 min read·Apr 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d7b967369a43cb84c51293abe58fee0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pipelines process tasks one after another. Photo by [Daniel Schludi](https://unsplash.com/fr/@schluditsch?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article is motivated by a task I contributed to in a real life project
+    a couple of years ago. After [proposing the concept of comprehension pipelines](/building-comprehension-pipelines-in-python-ec68dce53d03),
+    I noticed the solution could be nicely implemented using a dictcomp pipeline,
+    with additional help of the `OptionalBool` data structure I proposed in [yet another
+    article](https://medium.com/pythoniq/an-optionalbool-type-for-python-none-false-or-true-7667e9cc6dd8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article aims to show you how we can implement such a pipeline. I will go
+    into some of the details, so that the code becomes clear and convincing. You can
+    consider it a case study showing the implementation of a dictcomp pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have already discussed the power of generator pipelines in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/building-generator-pipelines-in-python-8931535792ff?source=post_page-----4c4ec4e66f3--------------------------------)
+    [## Building Generator Pipelines in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article proposes an elegant way to build generator pipelines
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/building-generator-pipelines-in-python-8931535792ff?source=post_page-----4c4ec4e66f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Later on, I proposed a Python-specific concept of comprehension pipelines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/building-comprehension-pipelines-in-python-ec68dce53d03?source=post_page-----4c4ec4e66f3--------------------------------)
+    [## Building Comprehension Pipelines in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comprehension pipelines are a Python-specific idea for building pipelines
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/building-comprehension-pipelines-in-python-ec68dce53d03?source=post_page-----4c4ec4e66f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Comprehension pipelines constitute the generalization of generator pipelines.
+    They are similar to generator pipelines, but while the former create a generator
+    with results, the latter output results in a form of any type of comprehension:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a generator, from a generator pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a list, from a listcomp pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a dictionary, from a dictcomp pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a set, from a setcomp pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the above article, I focused on presenting how such pipelines work and how
+    to construct them. When doing so, I used a bit simplistic examples. Here, we will
+    use a more sophisticated example, in which we will use a dictcomp pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The task: Document filtering'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Imagine your company has a large number of [Standard Operating Procedures](https://en.wikipedia.org/wiki/Standard_operating_procedure)
+    (SOPs). They are in a mess, organized using an old and out-of-date system. You
+    need to filter them using a particular key. For instance, you need to find which
+    of them include the word “Python”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Surely, such filtering can be far more complex, so you’re expected to write
+    a program that will enable one to change the filtering logic in a close future.
+    What’s more, for the moment the standards are stored as local file sin a shared
+    drive into which you have access from your local machine. However, this should
+    change soon, so you need to make the reading logic easy to change, too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, out filtering task is also simple. The next task, however,
+    can require more advanced parsing logic, like of particular fields or tables and
+    the like. Again, the general mechanism will be similar, and we would simply need
+    to rewrite the parser. You should take this into account in the implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can describe the algorithm for the task as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have a list (or another sequence) of `documents`; each `document` from `documents`
+    can be read to a string (which depends on the type of documents). In our first
+    case, this will be a list of paths to the files. But the documents can be accessed
+    in another way, for example, from a database.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After reading a `document`, parse the text and apply the filtering logic. In
+    our example, this boils down to checking if the text contains the word “Python”.
+    If it does, return `True`; otherwise, return `False`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Do the above step for all the documents from `documents`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As output, return a dictionary with string representation of documents as keys
+    (paths as strings in our example) and these Boolean values as the corresponding
+    values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The code block below shows the contents of a `dictcomp_pipeline` module. It
+    implements the above logic in a general way, as described above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In Appendix 1, you will find this code with extended versions of docstrings,
+    which explain some critical details, which we also cover below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The generalization is in two aspects: the way the data reader is implemented,
+    and the way the data parser is implemented. We will discuss these aspects in the
+    next section, in which we will discuss each of these three functions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Reading data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This particular implementation takes one argument, `path`, being a `pathlib.Path`
+    instance. Although we have implemented the `read_text()` function in a particular
+    way, the pipeline function (`get_dictcomp_pipeline()`) is not fixed on this very
+    implementation. You can re-implement `read_text()` to meet your needs; it can,
+    for instance, read documents from PDF files, web pages, or a database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You are free to change the function, but you have to keep several things unchanged:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function must take an element of `documents` from `get_dictcomp_pipeline()`
+    as the first argument. It’s run as a positional argument, so you can name it however
+    suits the task the function is to accomplish. In this particular implementation,
+    it’s `path`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the function takes more arguments, they must work as keyword arguments and
+    should be the same for all runs of `read_text()`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The function should return the text as a string.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Parsing data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although in our task, we look for the word “Python” in the documents, the pipeline
+    enables the user to look for any word, thanks to the signature of the `parse_data()`
+    function. It takes two arguments, `text` and `word`, both being strings. If `word`
+    is found in `text`, the function returns `True`; and `False` otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This parsing logic ignores the case of words, which is done in a simple way
+    via the `.lower()` string method for both the text and the word searched for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As was the case with `read_data()`, you can change the logic of the function
+    as well as its signature, again keeping in mind the following conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first argument, used as a positional argument, is the text returned by `read_text()`,
+    as `str`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the function takes more arguments, they should be the same for all runs of
+    `parse_text()`. These additional arguments must work as keyword arguments.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The function returns a Boolean value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `run_dictcomp_pipeline()` function is implemented in a way so that the two
+    functions discussed above can have varying implementations, depending on the data
+    source and parsing logic. This is done thanks to providing arguments to these
+    two functions as keywords arguments, so by unpacking the corresponding dictionaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One limitation, as mentioned in the two subsections above, is that any additional
+    arguments must have the same value for all documents. If you find this too restricting,
+    you would need to reimplement the `run_dictcomp_pipeline()` function, at a cost
+    of additional complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unit tests: The pipeline in action'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To check out whether the pipeline works, let’s implement some unit tests, using
+    `pytest`. I will skip here unit tests for `read_text()` and `parse_text()` functions,
+    but feel free to add them as an exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And here, we have a test to check whether the app works as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see what the test does. The fixture `files` creates 11 text files, the
+    contents of six of which includes the word “Python”. These files are created when
+    `test_get_dictcomp_pipeline()` is invoked. Then the test runs the pipeline function
+    and asserts whether the output is as expected. After all, the testing text files
+    are removed, which you will see in the last two lines of the fixture’s code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After running the test, you should see a thumbs-up from `pytest`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/618a3cb94d91e01b8770f2ad9ef3628c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A pipeline integrates several functionalities into one, so the above test for
+    our pipeline function can be considered, at least to some extent, an integration
+    test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even with very many documents, a dictionary should be fine to keep the output,
+    as its type is `dict[str, bool]`, and such a dictionary does not require too much
+    memory. Surely, you may wish to process it as a generator anyway; in that case,
+    you should revise the pipeline function into a generator pipeline. One solution
+    would be to make the generator yield the values of type `tuple[str, bool]`. So,
+    it’d be a tuple with a string representing a document and the corresponding Boolean
+    value informing whether the parsing function found the word searched for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extending the example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the example above, we used a `bool` value, but in some tasks, it could be
+    too limiting. For instance, you may want to take into account that not all documents
+    are SOPs. In other words, you have a number of documents some of which are SOPs
+    and some are not; the task is to check whether a document is an SOP, and if it
+    is, check if it contains a particular word, phrase, or a number of words/phrases.
+    In such a case, you may either use a more complex data structure, such as the
+    `OptionalBool` data structure and type, proposed in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/pythoniq/an-optionalbool-type-for-python-none-false-or-true-7667e9cc6dd8?source=post_page-----4c4ec4e66f3--------------------------------)
+    [## An OptionalBool Type for Python: None, False or True'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use OptionalBool instead of Optional[bool].
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/pythoniq/an-optionalbool-type-for-python-none-false-or-true-7667e9cc6dd8?source=post_page-----4c4ec4e66f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our task, an `OptionalBool` value of `None` would mean the corresponding
+    document is not an SOP; `False`, that it is an SOP but does not contain the searched
+    phrase(s); and `True`, that it is an SOP and contains the searched phrase(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article is motivated by a real life example in which I had a situation
+    similar to this one. Back then, I implemented the solution completely differently,
+    but today I’d definitely consider doing it using `OptionalBool` and a dictcomp
+    pipeline. In order to use `OptionalBool`, however, the signature of the `run_dictcomp_pipeline()`
+    needs to be changed a little bit, as instead of `bool` we would work with `OptionalBool`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will find the revised version of the code, including the test file, in Appendix
+    2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have discussed a real life example of using a dictcomp pipeline. While the
+    task we implemented was rather simple, the solution is more general, enabling
+    the user to re-implement the two functions creating the pipeline — without a necessity
+    to change the pipeline function itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may have noticed that the dictcomp pipeline we have implemented simply
+    looks like a dictionary comprehension. Because it simply *is* a dictionary comprehension.
+    Just like a generator pipeline is a generator. The pipeline is hidden inside of
+    what is being done: input → function → function → … → function → output. In our
+    case, the pipeline was very short, but in many other scenarios, it can contain
+    many more steps.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wanted to show you in what sort of scenarios such a comprehension pipeline
+    could work. This particular task, however, could be implemented in various ways.
+    Which to choose should largely depend on what sort of code you want to produce.
+    If you need a mere implementation of a particular task, there is no need to generalize
+    functions the way we did. If you aim to write a framework to be used by others,
+    you would likely generalize it even more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The code of `run_dictcomp_pipeline()` from the first example, with full docstrings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Appendix 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this Appendix, you will find the extended code of the solution that works
+    with `OptionalBool` values. You will also need the code for the `OptionalBool`
+    class, located in the `optionalbool` module, which you can copy-paste from the
+    following article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/pythoniq/an-optionalbool-type-for-python-none-false-or-true-7667e9cc6dd8?source=post_page-----4c4ec4e66f3--------------------------------)
+    [## An OptionalBool Type for Python: None, False or True'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use OptionalBool instead of Optional[bool].
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/pythoniq/an-optionalbool-type-for-python-none-false-or-true-7667e9cc6dd8?source=post_page-----4c4ec4e66f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the test file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Thanks for reading. If you enjoyed this article, you may also enjoy other articles
+    I wrote; you will see them [here](https://medium.com/@nyggus). And if you want
+    to join Medium, please use my referral link below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nyggus/membership?source=post_page-----4c4ec4e66f3--------------------------------)
+    [## Join Medium with my referral link - Marcin Kozak'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Marcin Kozak (and thousands of other writers on Medium).
+    Your membership fee directly supports…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@nyggus/membership?source=post_page-----4c4ec4e66f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

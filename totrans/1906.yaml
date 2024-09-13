@@ -1,0 +1,399 @@
+- en: 'Stable Diffusion: Mastering the Art of Interior Design'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/stable-diffusion-mastering-the-art-of-interior-design-9fb4214544b0](https://towardsdatascience.com/stable-diffusion-mastering-the-art-of-interior-design-9fb4214544b0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into Stable Diffusion and its inpainting variant for interior design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rjguedes?source=post_page-----9fb4214544b0--------------------------------)[![Rafael
+    Guedes](../Images/b3d000b3bce0113d2b2727e84db04870.png)](https://medium.com/@rjguedes?source=post_page-----9fb4214544b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9fb4214544b0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9fb4214544b0--------------------------------)
+    [Rafael Guedes](https://medium.com/@rjguedes?source=post_page-----9fb4214544b0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9fb4214544b0--------------------------------)
+    ·9 min read·Dec 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this fast-paced world that we live in and after the pandemic, many of us
+    realised that having a pleasant environment like home to escape from reality is
+    priceless and a goal to be pursued.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whether you are looking for a Scandinavian, minimalist, or a glamorous style
+    to decorate your home, it is not easy to imagine how every single object will
+    fit in a space full of different pieces and colours. For that reason, we usually
+    seek for professional help to create those amazing 3D images that help us understand
+    how our future home will look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, these 3D images are expensive, and if our initial idea does not look
+    as good as we thought, getting new images will take time and more money, things
+    that are scarce nowadays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I explore the Stable Diffusion model starting with a brief
+    explanation of what it is, how it is trained and what is needed to adapt it for
+    inpainting. Finally, I finish the article with its application on a 3D image from
+    my future home where I change the kitchen island and cabinets to a different colour
+    and material.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a2fbf68e14d0e4d69be676ac27fb9c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Interior Design ([source](https://unsplash.com/photos/brown-wooden-framed-yellow-padded-chair-_HqHX3LBN18))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the code is available on [Github](https://github.com/rjguedes8/stable_diffusion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stable Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is it?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Stable Diffusion [1] is a generative AI model released in 2022 by CompVis Group
+    that produces photorealistic images from text and image prompts. It was primarily
+    designed to generate images influenced by text descriptions but it can be used
+    for other tasks such as inpainting or video creation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Its success comes from the **Perceptual Image Compression** step that converts
+    a high dimensional image into a smaller latent space. This compression enables
+    the use of the model in low-resourced machines making it accessible to everyone,
+    something that was not possible with the previous state-of-the-art models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79fe033603707036fea343f9ec147dc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Stable Diffusion architecture ([source](https://arxiv.org/pdf/2112.10752.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does it learn?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Stable Diffusion is a **Latent Diffusion Model** (LDM) with three main components
+    (**variational autoencoder** (VAE) [2], **U-Net** [3] and an optional **text encoder**)
+    that learns how to denoise images conditioned by a prompt (text or other image)
+    in order to create a new image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training process of Stable Diffusion has 5 main steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1.The **Perceptual Image Compression** step consists in an **Encoder** that
+    receives an image with a dimension of *512x512x3* and encodes it into a smaller
+    latent space *Z* with a dimension of *64x64x4\.* To better preserve the details
+    of an image (for example, the eyes in human face),the latent space *Z* is regularized
+    using a low-weighted Kullback-Leibler-term to make it zero centered and to obtain
+    a small variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f30de379460e03b36399513a035cca84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Perceptual Image Compression process where the Encoder converts a
+    512x512x3 image to a latent space of 64x64x4 (image made by the author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. The **Diffusion Process** is responsible to progressively add Gaussian noise
+    to the latent space *Z,* until all that remains is random noise, generating a
+    new latent space ***Zt.*** ***t*** is the number of times the diffusion process
+    occurred to achieve a full noisy latent space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This step is important because Stable Diffusion has to learn how to go from
+    noise to the original image as we will see in the next steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08685adba6bacd6db70f947657a72950.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: Diffusion Process where Gaussian noise is added gradually to the
+    latent space (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. The **Denoising** **Process** trains a U-Net architecture to estimate the
+    amount of noise in the latent space ***Zt*** in order to subtract it and restore
+    *Z*. This process is able to recover the original latent space *Z* by gradually
+    denoise *Zt,* basically, the inverse of the Diffusion Process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5778395079858775325368a96391d2aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Denoising Process where U-Net predicts the noise in a latent space
+    and removes it until it completely restores the original latent space (image made
+    by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. During the **Denoising** **Process** a prompt, usually text and/or other
+    image, can be concatenated to the latent space *Zt.* This concatenation will condition
+    the Denoising Process which allows the creation of new images. The authors added
+    cross-attention mechanisms in the backbone of U-Net to handle these prompts since
+    they are effective for learning attention-based models of various inputs types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it comes to text, the model uses a trained text encoder **CLIP** [4] that
+    encodes the prompt into a 768-dimensional vector which is then concatenated to
+    *Zt* and received by U-Net as input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see in Figure 6, we concatenated to *Zt* the text prompt *“remove
+    the lamp”,* which conditioned the Diffusion Process restoring a *Zt* without the
+    lamp near the chair that the original *Zt* had.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b95fd7017e1a2147e6be92de15bf4f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: Condition the denoising process with a text prompt to remove the
+    lamp in the original image (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Finally, the **Decoder** receives the denoised latent space *Z* as input
+    and it learns how to estimate the component-wise variance used to encode the image
+    into a smaller latent space. After estimating the variance, the Decoder can generate
+    a new image with the same dimension of the original one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa1d17e8e78ea64e86b60bc59ec9046e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: Decoder restores the original image without the lamp and with the
+    original size of 512x512x3 (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inpainting Variant of Stable Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Inpainting is the task of filling masked regions of an image with new content
+    either because we want to uncorrupt the image or because we want to replace some
+    undesired content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stable Diffusion can be trained to generate new images based on an image, a
+    text prompt and a mask. This type of model is already available in HuggingFace
+    🤗 and its called *runwayml/stable-diffusion-inpainting*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To train Stable Diffusion to perform inpainting, we need to go through the same
+    steps mentioned in the section above but with a slightly change on the input data.
+    In this case apart from having the original image and text, we also have a mask
+    (another image). For that, the U-Net needs to be adapted to receive an additional
+    input channel for the mask.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During training, the area that is not under the mask remains untouched and it
+    is only encoded to the latent space, while the masked area goes through the all
+    process of encoding, diffusion and denoising. This way, the Stable Diffusion model
+    knows which area should remain the same and which area should change (Figure 8
+    illustrates this process).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a22262eba205e0bec3179cef1acab740.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: Training process of Inpainting Diffusion Stable model (image made
+    by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Figure 9, we have an example of what is needed to perform inpaitining on
+    our own uses cases. We give the original image together with a mask of what we
+    want to change and a text prompt with the change we want to see and Stable Diffusion
+    generates a new image. In the next section, we will see how to do it in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/134c22d473a948035e00308ece16a734.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9: Process to train Stable Diffusion for image inpainting (image made
+    by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interior Design using Stable Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section I will cover how to use Stable Diffusion in an inpainting scenario
+    for interior design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it comes to buy a new house or apartment that is still under construction,
+    usually we have access to 3D images of how it will look. Based on those images
+    we can request to change colours or materials to make it tailored to our taste.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it is not easy to imagine if the changes that we are requesting will
+    fit the rest of the house or not, and asking for a new 3D might be expensive and
+    time consuming. Therefore, we can use stable diffusion to quickly iterate and
+    get a sense of how things will look if we apply the changes we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For that we can use Python and HuggingFace 🤗 to build our own Stable Diffusion
+    Interior Designer!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by importing the libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we load the Stable Diffusion Inpainting model available in HuggingFace
+    🤗:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the model loaded, we load the original image and the mask of what we want
+    to change:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The white part of the mask is what will change while the black part is what
+    will remain untouched.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The mask was manually created, but we can also use a segmentation model to create
+    it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b3f7c5c57a1d1d2bb992b2409a31eb42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10: 3D image of a kitchen (purchased by the author) and a mask to change
+    the island and the black wall (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With both image and mask loaded, it is time to create the prompt to condition
+    the image generation to what we want and generate new images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, I want to replace the black island and the black wall to a marble
+    island and a marble wall.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/09742ef89e90a9391e0f55615bcffa7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11: Comparison between original and my favourite generated image (they
+    have different sizes because the model was trained with 512x512 images)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result looks good, but I also want to replace the wooden kitchen cabinets
+    with white ones, so let’s redo the process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load the last image generated and a new mask:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c99eebffd0a561b6c60a0e14d261b659.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12: Previous generated image and new mask (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2\. Create a new prompt and generate new images:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0b7e996ee6af90b86a437dc19e4ed3d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 13: Generated image with white kitchen cabinets (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result looks really good and I would like you to notice the details that
+    Stable Diffusion is able to reproduced such as the kitchen tap or the reflection
+    of lights in the cabinets. Although the reflection on the left is not aligned
+    is incredible how it managed to take the lights into consideration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: AI is not only useful for organisations with large amounts of data, it can be
+    applied to anything we can think of!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we explored Stable Diffusion for a non-traditional use case
+    but for a traditional job that exists for decades. With a few lines of code we
+    managed to generate as many different images as we wanted for each prompt which
+    gives us a lot of possibilities to choose from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, like everything else, Stable Diffusion and, in particular the model
+    we used, has its own limitations such as not achieving perfect photorealism as
+    we saw in the light reflection or in Figure 14 where one of the chairs is inside
+    of the kitchen island.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, the future of AI looks bright and some of this limitations can
+    be overcome with a fine-tune in our own data and for our own use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc6bc6cb87942b845703843d69171247.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 14: Generated image with some quality problems (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Keep in touch:** [LinkedIn](https://www.linkedin.com/in/rafaelguedes97/),
+    [Medium](https://medium.com/@rjguedes97)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, Björn
+    Ommer. High-Resolution Image Synthesis with Latent Diffusion Models. arXiv:2001.08210,
+    2022'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Diederik P. Kingma, Max Welling. An Introduction to Variational Autoencoders.
+    arXiv:1906.02691, 2019'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Olaf Ronneberger, Philipp Fischer, Thomas Brox. U-Net: Convolutional Networks
+    for Biomedical Image Segmentation. arXiv:1505.04597, 2015'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh,
+    Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen
+    Krueger, Ilya Sutskever. Learning Transferable Visual Models From Natural Language
+    Supervision. arXiv:1911.02116, 2021'
+  prefs: []
+  type: TYPE_NORMAL

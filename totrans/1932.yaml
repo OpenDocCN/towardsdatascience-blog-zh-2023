@@ -1,0 +1,422 @@
+- en: 'Streamlit and MongoDB: Storing Your Data in the Cloud'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/streamlit-and-mongodb-storing-your-data-in-the-cloud-c28663313ade](https://towardsdatascience.com/streamlit-and-mongodb-storing-your-data-in-the-cloud-c28663313ade)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Streamlit Cloud has no local storage so data created is lost when the app
+    terminates — unless you use third-party storage like MongoDB**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alan-jones?source=post_page-----c28663313ade--------------------------------)[![Alan
+    Jones](../Images/359379fab1d6685ff08080b98173e67c.png)](https://medium.com/@alan-jones?source=post_page-----c28663313ade--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c28663313ade--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c28663313ade--------------------------------)
+    [Alan Jones](https://medium.com/@alan-jones?source=post_page-----c28663313ade--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c28663313ade--------------------------------)
+    ·12 min read·Aug 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f90175fb704850839f3927b973483025.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An vintage NoSQL database — Photo by [Jan Antonin Kolar](https://unsplash.com/@jankolar?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streamlit lets you deploy your public apps to their cloud for free, but any
+    files or databases you create locally will cease to exist when the app finishes.
+    This may not be the behaviour that you want, so we are going to explore a solution
+    using MongoDB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For many apps losing this data is no problem. For example, if you have designed
+    a dashboard that reads data from an external source any data that you generate
+    is likely to be temporary and only needed while the app is running.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, as I noted when developing my app for the article, [Simple Surveys with
+    Streamlit](https://medium.com/towards-data-science/simple-surveys-with-streamlit-and-databutton-d027586f1c71),
+    if the app itself is generating data that needs to be stored, it’s not so straightforward.
+    In that app, I stored the data in a local file but in a cloud-based deployment
+    these will cease to exist when the app stops running — the proper solution is
+    to use an external data store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are going to see how we can achieve this with MongoDB, but there are alternatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the choices?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the Streamlit documentation, there are guides for connecting to various
+    databases and cloud storage suppliers. They basically break down into three areas:
+    data buckets such as AWS S3 and Google Cloud Storage, where you can store anything;
+    SQL databases like Microsoft’s SQL Server, MySQL, PostgreSQL; and NoSQL databases
+    of which Firestore and MongoDB are examples. For each type, you obviously need
+    access to a server that hosts that particular database.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be perfectly honest, I’m not the biggest fan of SQL. It seems to me that
+    there is a disjoint between SQL code and Python that feels uncomfortable. (Having
+    said that I definitely appreciate the power and convenience of SQL and have written
+    about it [here](https://medium.com/towards-data-science/python-pandas-and-sqlite-a0e2c052456f),
+    [here](https://medium.com/towards-data-science/duckdb-sqlite-for-data-analysis-a279bdf94399)
+    and [here](https://medium.com/towards-data-science/sql-pandas-or-both-analysing-the-uk-electoral-system-24fa01d33d05).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, NoSQL databases like MongoDB feel like they fit more neatly into the Python
+    way of doing things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m sure there are all sorts of arguments about speed, efficiency, ease of use,
+    security and I don’t know what else. But I’m not going there. I’m going to use
+    MongoDB because of my own likes and prejudices and you can decide for yourself
+    whether it’s a good choice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The survey app
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I’m going to use a version of the app that I developed to illustrate simple
+    survey construction in Streamlit. I intentionally wrote it with the idea of porting
+    it to use a different data store so all of the data storage code is in a single
+    library. The idea is that in order to move from using a local data store to a
+    cloud-based database all you need to do is re-write the library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, we need access to a MongoDB database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MongoDB Atlas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can download MongoDB and run an instance of it on your own server. Or you
+    can use a hosted service such as MongoDB Atlas. We’ll do the latter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[MongoDB Atlas](https://www.mongodb.com/) is the first hosting service that
+    comes up in a search — there are others but, I’m not aware of any others with
+    a free tier, so this is what we will use. As a freemium service, you can start
+    for nothing and this gives you pretty much all you need for a simple (or indeed,
+    not so simple) application but limits you to 0.5 gigs of stored data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use MongoDB you need to sign up for an account (using the link above) and
+    you should also read their comprehensive getting started guides in the resources
+    tab on their webpage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you are set up you have the information to create a connection string
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Replace the `<user>`, `<password>` and `<cluster-url>` with your own details
+    and keep this as a Streamlit secret.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A MongoDB database
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: MongoDB consists of *clusters* of *databases.* Inside the databases are *collections*
+    (a bit like a table) and inside the collections are *documents* (the actual data
+    in a JSON-like format).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the sake of this tutorial, I’ve created one database and two collections.
+    The collections will store the questions that comprise the survey and the results
+    that will be generated by the users. I’ve called them `survey1` and `results1`—
+    not very original, I know.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the results collection, each document will represent a question. In the results
+    table, each document will represent an individual response to all of the questions
+    in the survey.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39454eebce1fd58cfa907061c144fc20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of the **survey** *database*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clicking on one of the collection names with show you the documents, if there
+    are any.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f709b41a2864c7af6bb996964295fbdd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Questions in the survey1 collection
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see the entries are very similar to Python dictionaries. Note the
+    `_id` field: this is a unique identifier and is obligatory for a MongoDB document;
+    you can specify it when you create a document or, if not, MongoDB will automatically
+    create it for you.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The app
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can read about the details of the implementation in the original article.
+    Here, we will concentrate on the database code. (There will be a link to all of
+    the code on my [web page](http://alanjones2.github.io) shortly after this article
+    is published.) But let’s quickly review what the app does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The original application consists of three pages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first page allows a user to create a simple questionnaire by specifying
+    individual questions and storing them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The second page presents the questionnaire to a user, collects the responses
+    and adds them to previous responses.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The third page presents the results; it reads the responses and performs some
+    simple analysis on them — it draws an overview bar chart and lets the user select
+    a single question for a closer look at the responses to that question. The data
+    can also be downloaded as a CSV file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each of the pages uses a library, *DButils*, to access the data. In the original
+    app, the data was stored as JSON files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep things simple I’m going to concentrate on the presentation of the survey
+    and the presentation of the data that has been gathered. This means we need to
+    both read and write to the database. (My thinking here is that creating the survey
+    might best be done locally and the result stored in a file that would be later
+    uploaded to MongoDB in its entirety — so, for the sake of this article we won’t
+    look at that aspect of the app .)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The DB library
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The original library uses some helper functions but the functions used by this
+    version of the app are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`get_survey()` — this retrieves the entire questionnaire'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`append_results(value)` — this adds a new response to the existing ones'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`get_results()` — this retrieves all of the responses'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the MongoDB version, we need a little preamble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We clearly need to import *Streamlit*; we also need *MongoClient* from the *pymongo*
+    library. We then set up some convenience constants that hardwire the database
+    and collection names into the code. This, of course, makes the library specific
+    to this app which is something we might avoid if we wanted to use the library
+    again in a different app. Rather we would set these values within the app and
+    pass them to the library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The variable `uri` is the connection string that we created earlier and with
+    this, we create a MongoDB client from which we can access our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data is quite easy. First, you need to specify the database
+    and the collection within that database. You can then use functions like `find()`
+    to read data, and `insert_one()` or `insert_many()` to add data to a collection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll illustrate the simple use of read and write functions, here, but to use
+    MongoDB in anger you will need to consult the documentation on their website,
+    e.g. [How to Use Python with MongoDB](https://www.mongodb.com/languages/python).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To read all of the data from a MongoDB collection we use the `find()` function.
+    The code below will read all of the data from one of our collections — the `key`
+    parameter should be one of `SURVEY_KEY` or `RESULTS_KEY.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The value returned from `find()` is a cursor that we could iterate over to retrieve
+    the data. However, since we are only dealing with a small amount of data here,
+    it is perfectly acceptable to convert it to a Python list so that all of the data
+    is kept in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this is not quite what we want. As you will recall, each of the documents
+    in a collection has a unique identifier that is automatically provided by MongoDB.
+    For this application, we don’t need, or indeed want, that attribute. So, let’s
+    look a little more closely at this function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MongoDB queries and filters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As you might expect, we can perform queries on a MongoDB database. To facilitate
+    this, the `find()` function can take parameters that modify its behaviour. Each
+    of the parameters is optional and, as we have seen by leaving them unspecified
+    we retrieve all of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we can see a snippet of a small survey. It is an array of all of the documents
+    in the collection and each document consists of the id field plus three survey
+    questions and a response to each question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we only require the response to one of the questions we can add a query parameter.
+    In the code below we specify that we want documents that contain the response
+    ‘R’ to the question ‘What programming language do you use most?’. The parameter
+    is in the form of a Python dictionary and you can see the response immediately
+    below the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you would expect, the return value is the set of documents that match the
+    query — it’s the equivalent of the `SELECT * WHERE …` in SQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This gives us a useful insight into how MongoDB queries work but doesn’t solve
+    the problem of omitting the id field. For this, we need a second parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second parameter is also in the form of a Python dictionary and acts as
+    a filter, e.g. `{'_id':False}`. This tells MongoDB that we do not want the id
+    field. We could specify a list of fields in this parameter, each labelled `True`
+    or `False` depending on whether we want them included or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we were to add this second parameter to our previous query the result would
+    be this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The same entries as before but with the id field omitted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: OK, let’s go back to what we actually want, which is *all* of the documents
+    but with the id field omitted. We still need to specify both parameters but the
+    first one needs to tell MongoDB that we want all documents and we do this by passing
+    an empty dictionary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives us what we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we read the survey questions we want to do exactly the same thing — return
+    all documents but without the id fields — so this function serves to read both
+    databases. We just need to provide the correct key, either `SURVEY_KEY` or `RESULTS_KEY`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appending data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this version of the app, we add data to the results collection, only. This
+    is done as follows, using the `insert_one()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again, we select the collection with the appropriate key and add the value which
+    is in the form of a list of Python dictionaries representing the survey questions
+    and the response to each one. MongoDB, as we mentioned before, automatically adds
+    a unique id. We end up with a collection like the ones we have seen, above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you need to append a list of documents to the collection the function `insert_many()`
+    will do that job for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The complete code for the library is shown below — it’s really quite small!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope that you can see that using MongoDB is pretty straightforward and provides
+    a neat solution to the problem of permanent storage in a Streamlit app. We could
+    have used a hosted SQL solution but, as I mentioned earlier, the NoSQL solution
+    seems to me to be more in keeping with the Python way of doing things — the mapping
+    of Python lists to MongoDB collections is completely natural.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I should add one thing, though: the code in this article was written before
+    the new `st.experimental_connection()` feature was introduced in Streamlit and
+    this, or another class-based solution, may represent a better way forward for
+    production code, particularly if MongoDB is going to be used over a number of
+    different projects. However, for a one-off project like this, the approach that
+    I have used here seems simple and adequate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading and I hope it has been useful. If you have any queries about
+    the code or my approach, or you have any comments, or if you just want to say
+    ‘hello’, please add a comment below — I always reply.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the time you read this, there should be a link to the code for the complete
+    app from my [website](http://alanjones2.github.io). There you can find links to
+    other articles and books on Streamlit, Data Visualisation, Data Science and coding
+    generally — please take a look.
+  prefs: []
+  type: TYPE_NORMAL

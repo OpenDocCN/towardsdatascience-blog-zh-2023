@@ -1,0 +1,360 @@
+- en: 'Beam Search: the Most Used Algorithm in Sequence Models'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/beam-search-the-most-used-algorithm-in-sequence-models-107d56b23556](https://towardsdatascience.com/beam-search-the-most-used-algorithm-in-sequence-models-107d56b23556)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn the working principles of the most famous algorithm for text translation
+    and speech recognition.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@riccardo.andreoni?source=post_page-----107d56b23556--------------------------------)[![Riccardo
+    Andreoni](../Images/5e22581e419639b373019a809d6e65c1.png)](https://medium.com/@riccardo.andreoni?source=post_page-----107d56b23556--------------------------------)[](https://towardsdatascience.com/?source=post_page-----107d56b23556--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----107d56b23556--------------------------------)
+    [Riccardo Andreoni](https://medium.com/@riccardo.andreoni?source=post_page-----107d56b23556--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----107d56b23556--------------------------------)
+    ·6 min read·Dec 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c11105c573f0bc16e297b233f7f830a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Beam Search allows to consider multiple streams of candidates. Image source:
+    [unsplash.com](https://unsplash.com/photos/multi-colored-light-streaks-on-white-background-ylMP3TetKoQ).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you’re an [AI](https://en.wikipedia.org/wiki/Artificial_intelligence)
+    language model, like [ChatGPT](https://chat.openai.com/), completing a sentence.
+    How do you choose the next word to make it not just **grammatically correct**
+    but also **contextually relevant**? This is where [**Beam Search**](https://en.wikipedia.org/wiki/Beam_search#:~:text=In%20computer%20science%2C%20beam%20search,that%20reduces%20its%20memory%20requirements.)
+    steps in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By efficiently **exploring multiple possibilities** in parallel and maintaining
+    top candidates at each step, Beam Search plays a crucial role in the task of predicting
+    **subsequent elements**. Being an effective and powerful algorithm, it ensures
+    output aligns with grammatical constraints and the context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand Beam Search's impact, think about all the applications requiring
+    precise sequence generation, like **language translation**, **text completion**,
+    and **chatbots**. In all these applications, Beam Search plays a critical role.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will introduce the theory and guide you through a practical
+    step-by-step example of the Beam Search algorithm. I will also present several
+    Beam Search variants, and detail all the pros and cons of this fundamental algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Beam Search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Imagine you need to **translate the following sentence** from Spanish to English:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pablo estará en Nueva York la próxima semana.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We don’t only want to obtain a correct translation, we want to obtain **the
+    best one**. For a language model, the best output coincides with the **most probable
+    one**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To achieve this task, most [sequence-to-sequence](https://blog.keras.io/a-ten-minute-introduction-to-sequence-to-sequence-learning-in-keras.html)
+    models employ Beam Search. It serves as an heuristic algorithm, systematically
+    exploring multiple possibilities in parallel. At each step, a defined “beam width”
+    maintains a fixed number of top candidates. This allows the algorithm to explore
+    several candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach **mimics decision-making** processes, with the model evaluating
+    and selecting the most promising options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beam Search Step-by-Step
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Consider a standard sequence-to-sequence model, represented by the simple network
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f30ec7ec395dd7ba0d5daf116c16fa72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At each timestep *t*, the model outputs a single word, used to compose the final
+    sequence. The final sequence will be nothing other than the provided translated
+    sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are not familiar with RNNs, I suggest to check the simple introduction
+    I included in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/use-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa?source=post_page-----107d56b23556--------------------------------)
+    [## Use Deep Learning to Generate Fantasy Names: Build a Language Model from Scratch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can a language model invent unique fantasy character names? Let’s build it from
+    scratch
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/use-deep-learning-to-generate-fantasy-character-names-build-a-language-model-from-scratch-792b13629efa?source=post_page-----107d56b23556--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For text translation, we commonly use an [**encoder**](https://en.wikipedia.org/wiki/Autoencoder),
+    which is a portion of the network dedicated to converting the input sequence into
+    a vectorial form. In this case, the input sequence is the Spanish sentence to
+    be translated. The encoder is followed by a [**decoder**](/understanding-encoder-decoder-sequence-to-sequence-model-679e04af4346)which,
+    at each timestep, returns a piece of the output sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c22140aaa9030a1b12bf7442f2ae743f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s check the first step out in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The encoder (green part) receives the Spanish sentence “*Pablo estará en Nueva
+    York la próxima semana.*” and provides a vector form of it to the decoder (blue
+    part).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/813e02a670fadefd147d385a91780466.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At timestep 1, the decoder will output the first word of the translation. The
+    key question is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does the decoder choose the word?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The decoder chooses the most probable word, given the input sequence *x*. In
+    other words, for each word in the dictionary, the model computes the corresponding
+    probability to be the first word of the output sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d29dfed795ada8b4109d9fa595966254.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The one word that maximizes this probability is chosen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is where **Beam Search enters the game**: it introduces a parameter *B*,
+    called **beam width**, which represents the number of words chosen by the model
+    at each step.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By setting, for instance, *B=3*, the model will return not only one but three
+    candidate words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s suppose the most probable first words of the translation are “*Pablo*”,
+    “*Next*”, and “*During*”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdbd7809adab6b8f5451474fdd5113cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each of these 3 candidate words, the model proceeds by guessing the second
+    word *y²* in the English translation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3dc070b8deac6b450540965ee725c72d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As always, the model picks the words that maximize a given probability. In
+    this case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1044a9040734cae32188e67e621830c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can clearly see the reason for the name Beam Search now. Starting from a
+    narrow set of 3 candidates, the algorithm will enlarge it at each step, considering
+    the probabilities of all these combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output of step 2 consists of 9 candidate sequences: “*Pablo will*”, “*Pablo
+    is*”, …, “*During next*”, and “*During one*”. The model associates each one of
+    them with a probability. By setting the parameter *B=3*, the model will keep only
+    the three candidate sequences with the higher probability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that the candidates with higher probabilities are “*Pablo will*”, “*Pablo
+    is*”, and “*Next week*”. During the 3-rd step, the decoder will guess 3 subsequent
+    word for each candidate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7347f2060245e60d484a2605eef72f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The same process is iterated all over again until the model predicts as the
+    most likely word the **End of Sentence** token. The [EOS](https://forum.opennmt.net/t/end-and-start-tokens/4570)
+    token states that the sequence reached its end and it is now considered complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beam Search Variants
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Beam Search adaptability can be enhanced by several variants of the algorithm.
+    They provide options that may be more or less adequate for diverse sequence generation
+    tasks. The most common variants are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Length-Normalized Beam Search**: It adjusts for sentence length disparities
+    by normalizing the probability scores, mitigating biases towards shorter sequences.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Diverse Beam Search**: It introduces diversity in candidate selection to
+    prevent the algorithm from converging prematurely, promoting exploration of a
+    broader solution space.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Top-*k* Beam Search**: It restricts the number of candidates considered at
+    each step to the top-*k* most probable, offering computational efficiency without
+    compromising performance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Alpha-Diverse Beam Search**: It controls the trade-off between diversity
+    and optimization by introducing an alpha parameter, enabling fine-tuning based
+    on specific task requirements.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Nucleus Sampling**: It defines a probability threshold (nucleus) and samples
+    from the set of most probable candidates, enhancing the algorithm’s focus on high-quality
+    sequences.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/25a6fb15f2f6331af55ee0af61654934.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image source: [unsplash.com](https://unsplash.com/photos/multicolored-light-passage-in-dark-area-d3Zu34NBg7A).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In summary, in this post we understood why Beam Search is the **most used algorithm**
+    in the field of sequence generation, particularly in the context of **language
+    translation** models, but also for **chatbot responses**. Its systematic exploration
+    of multiple possibilities in parallel, guided by a defined beam width, enhances
+    the precision and the contextualize of the generated sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am confident that the step-by-step example I provided will make the abstract
+    concept of Beam Search more concrete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As I always do in my posts, I will now recap some pros and cons of Beam Search.
+    The main advantages of this algorithm are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Precision**: Beam Search excels in generating precise and contextually relevant
+    sequences.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Flexibility**: Variants like Diverse Beam Search and Top-*k* Beam Search
+    offer adaptability to diverse task requirements.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Efficiency**: It efficiently explores a solution space, balancing computational
+    complexity with performance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'However, in Machine Learning there are **no free meals**. It is then important
+    to clarify the drawbacks of each algorithm. In the case of Beam Search, I identified
+    these possible issues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Computational Cost**: The exhaustive exploration of possibilities can incur
+    computational overhead.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Potential Convergence**: In standard configurations, Beam Search might converge
+    prematurely to suboptimal solutions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2d758ea19408ece539193d8e6d922ae1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, I invite you to explore the provided resources to get a deeper understanding
+    of this algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you liked this story, consider following me to be notified of my upcoming
+    projects and articles!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Deep Learning for Natural Language Processing, Brownlee, J. (2019)](https://oku.ozturkibrahim.com/docs_python/Deep_Learning_for_Natural_Language_Processing.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Long short-term memory, Hochreiter, S., & Schmidhuber, J. (1997)](https://ieeexplore.ieee.org/abstract/document/6795963/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Neural Turing Machines, Graves, A., et al. (2014)](https://arxiv.org/abs/1410.5401)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[A Diversity-Promoting Objective Function for Neural Conversation Models, Li,
+    J., et al. (2016)](https://aclanthology.org/N16-1014)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Neural Machine Translation by Jointly Learning to Align and Translate, Bahdanau,
+    D., et al. (2015)](https://arxiv.org/abs/1409.0473)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

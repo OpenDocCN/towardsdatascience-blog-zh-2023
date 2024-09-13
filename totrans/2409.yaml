@@ -1,0 +1,604 @@
+- en: 'XGBoost: The Definitive Guide (Part 2)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/xgboost-the-definitive-guide-part-2-c38ef02f74d0](https://towardsdatascience.com/xgboost-the-definitive-guide-part-2-c38ef02f74d0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Implementation of the XGBoost algorithm in Python from scratch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@roiyeho?source=post_page-----c38ef02f74d0--------------------------------)[![Dr.
+    Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----c38ef02f74d0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c38ef02f74d0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c38ef02f74d0--------------------------------)
+    [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----c38ef02f74d0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c38ef02f74d0--------------------------------)
+    ·14 min read·Aug 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/798f47ae83cd1fe10d15404d5b3ca636.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [StockSnap](https://pixabay.com/users/stocksnap-894430/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2557468)
+    from [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2557468)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [previous article](https://medium.com/towards-data-science/xgboost-the-definitive-guide-part-1-cc24d2dcd87a)
+    we discussed the XGBoost algorithm and showed its implementation in pseudocode.
+    In this article we are going to implement the algorithm in Python from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The provided code is a concise and lightweight implementation of the XGBoost
+    algorithm (with only about 300 lines of code), intended to demonstrate its core
+    functionality. As such, it is not optimized for speed or memory usage, and does
+    not include the full spectrum of options provided by the XGBoost library (see
+    [https://xgboost.readthedocs.io/](https://xgboost.readthedocs.io/) for more details
+    on the features of the library). More specifically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code is written in pure Python, whereas the core of the XGBoost library
+    is written in C++ (its Python classes are only thin wrappers over the C++ implementation).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It does not include various optimizations that allow XGBoost to deal with huge
+    amounts of data, such as weighted quantile sketch, out-of-core tree learning,
+    and parallel and distributed processing of the data. These optimizations will
+    be discussed in more detail in the next article in the series.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The implementation currently supports only regression and binary classification
+    tasks, whereas the XGBoost library also supports multi-class classification and
+    ranking problems.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The implementation provides only a small subset of the hyperparameters that
+    exist in the XGBoost library. Specifically, it supports the following hyperparameters:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*n_estimators* (default = 100): the number of regression trees in the ensemble
+    (which is also the number of boosting iterations).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*max_depth* (default = 6): the maximum depth (number of levels) of each tree.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*learning_rate* (default = 0.3): the step size shrinkage applied to the trees.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*reg_lambda* (default = 1): L2 regularization term applied to the weights of
+    the leaves.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*gamma* (default = 0): minimum loss reduction required to split a given node.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For consistency, I have kept the same names and default values of these hyperparameters
+    as they are defined in the XGBoost library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite the above limitations, the results obtained by the provided implementation
+    are comparable to those obtained by the XGBoost library on a number of benchmark
+    data sets (as will be demonstrated later in the article).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Code Structure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The source code consists of five classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBNode represents a single node in the regression tree.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: XGBTree represents a regression tree in the ensemble.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: XGBBaseModel is a base estimator for the XGBoost models.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: XGBRegressor is a subclass of XGBBaseModel that provides an estimator for regression
+    tasks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: XGBClassifier is a subclass of XGBBaseModel that provides an estimator for binary
+    classification tasks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For better readability and easy maintenance, each class is written in its own
+    module (.py) file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The complete source code can be found on my github: [https://github.com/roiyeho/medium/tree/main/xgboost/xgboost_from_scratch](https://github.com/roiyeho/medium/tree/main/xgboost/xgboost_from_scratch)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now go through each piece of the code step-by-step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The XGBNode Class
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This class represents a node in the regression tree. It implements the core
+    functionality of the algorithm for finding the best split at a given node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the constructor of the class, we initialize the node to be a non-leaf node,
+    and set the pointers to its left and right child nodes to be None:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *build*() method recursively builds the node until one of the following
+    stopping criteria is reached:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is only one sample left at the node.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The current level of the tree has reached the maximum depth.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The best gain (reduction in the loss) we can obtain from splitting the node
+    is less than *gamma*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If one of the stopping criteria has been reached, we turn the current node
+    into a leaf node and then calculate its weight (score) by calling the helper method
+    *calc_leaf_weight*():'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On the other hand, if the node can be split, we call the helper method *find_best_split*(),
+    which iterates over every possible split and returns the split with the highest
+    gain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *find_best_split*() function uses the following helper function to compute
+    the gain obtained by a given split:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lastly, the *predict*() method returns the score of a given sample according
+    to the weight of the leaf to which it is mapped to by the tree. It uses the best
+    split thresholds saved in the tree nodes in order to determine which path in the
+    tree to follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The XGBTree Class
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This class represents a single regression tree. In the constructor of the class
+    we initialize the root node of the tree to None:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the *build*() method, we simply call the *build*() method of the root node
+    and pass to it the hyperparameters of the training algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, the *predict*() method returns the score of a given sample by delegating
+    the call to the *predict*() method of the root node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The XGBBaseModel Class
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now build the base class for the XGBoost estimators. To make this class compatible
+    with the Scikit-Learn estimator API, we make it a subclass of BaseEstimator (from
+    sklearn.base) and also implement the *fit*() and *predict*() methods. This will
+    allow us to integrate this estimator with other Scikit-Learn mechanisms such as
+    pipelines and grid search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We first import the required libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the constructor of the class, we initialize the hyperparameters of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *fit*() method builds an ensemble of XGBoost trees for the given data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *fit*() method uses a helper method called *get_output_values*() to get
+    the predictions of the current ensemble for the given data set. Note that the
+    output values are not necessarily the same as the final predicted labels of the
+    model. For example, in classification tasks the output values of the ensemble
+    are the predicted log odds and not the the class labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we define several abstract methods that need to be implemented by
+    the concrete estimators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The XGBRegressor Class
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is a subclass of XGBBaseModel that is used to solve regression tasks.
+    To implement this class, we first import the required libraries and functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The constructor of the class simply passes the hyperparameters to the constructor
+    of the base estimator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The base prediction of the regressor is simply the mean of the target values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The gradients and Hessians of the square loss are computed using the equations
+    given in the [previous article](https://medium.com/towards-data-science/xgboost-the-definitive-guide-part-1-cc24d2dcd87a)
+    (see the section “XGBoost for Regression”):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *predict*() method returns the output values from the ensemble (in regression
+    tasks the predicted labels are the same as the output values from the ensemble):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, we add a *score*() method to return the *R*² score of the model on
+    a given data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Regression Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After all this hard work, we are now ready to test our XGBoostRegressor!
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we will use the [make_regression](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_regression.html)()
+    function from Scikit-Learn to generate a synthetic data set. The default settings
+    of this function generate a random linear regression data with 100 samples and
+    100 features, out of which only 10 are informative (i.e., correlated with the
+    target).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that tree-based models such as XGBoost do not require scaling or normalization
+    of the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we split the data set into 80% training and 20% test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For evaluating different models on this data set, let’s write a general utility
+    function to train a given model, measure its training time and evaluate its performance
+    both on the training and test sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s start by evaluating our implementation of XGBRegressor on the data set.
+    We will use the default hyperparameter settings defined in the class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results we get are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our model obtains a perfect *R*² score on the training set but a relatively
+    low score on the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s compare its performance to the XGBClassifier from the xgboost library.
+    First, make sure that you have the library installed by running the following
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now create an instance from the XGBRegressor class defined in this package.
+    Since it has the same name as our class, we will use its fully qualified name
+    (including the module name):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results we get are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Surprisingly, our model achieves a slightly better *R*² test score than the
+    original XGBoost! However, its training time is much slower (about 14 times slower).
+    This is due to the fact that we have not implemented any runtime optimizations
+    (and our code is written in Python rather than C++).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For completeness, let’s also compare these models to the classical gradient
+    boosting and histogram-based gradient boosting provided by Scikit-Learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case, the best test score is obtained by the classical gradient boosting
+    algorithm. Note that all models have been used with their default hyperparameters,
+    thus these results may change after hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s also evaluate our implementation on a real-world data set, namely the
+    [California housing data set](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_california_housing.html),
+    available from Scikit-Learn. This time we will write the evaluation code a bit
+    more succinctly by defining all the models in a list and then calling the evaluation
+    function inside a loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We get the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: The test *R*² score of our model is slightly worse than the score of the XGBoost
+    library (0.825 compared to 0.836), but is significantly higher than the score
+    of the classical gradient boosting algorithm (0.777). As expected, the training
+    time of our model is much longer compared to the other models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The XGBClassifier Class
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is also a subclass of XGBBaseModel, which is used to solve classification
+    tasks (only binary classification is currently supported). To implement this class,
+    we first import the required libraries and functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The constructor of the class simply passes the hyperparameters to the constructor
+    of the base estimator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The base prediction of the classifier is the log odds of the positive class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To compute the gradients of log loss we will need the sigmoid function, so
+    let’s implement it first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The gradients and Hessians of the log loss are computed using the equations
+    given in the [previous article](https://medium.com/towards-data-science/xgboost-the-definitive-guide-part-1-cc24d2dcd87a)
+    (see the section “XGBoost for Classification”):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similar to other probabilistic classifiers in Scikit-Learn (such as LogisticRegression),
+    our classifier will provide both *predict_proba*() and *predict*() methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The method *predict_proba*() returns the predicted probabilities of the positive
+    class for the given samples. These probabilities are computed as the sigmoid of
+    the log odds returned from the ensemble:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The method *predict*() returns class labels for the samples in the given data
+    set, using 0.5 as the threshold for assigning a sample to the positive class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, we add a *score*() method that returns the accuracy of the model on
+    a given data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Classification Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For evaluating our XGBoostClassifier, we will use the [make_classification](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_classification.html)()
+    function from Scikit-Learn. This function creates clusters of normally distributed
+    points (100 points by default) around vertices of an *n*-dimensional hypercube
+    (*n* = 2 by default) with sides of length defined by a hyperparameter called *class_sep*
+    (equal to 1.0 by default).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we will use the function to generate 1,000 sample points with a class
+    separation of 0.1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similar to the regression example, we will write a general utility function
+    to evaluate a given model and measure its training time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will compare the following algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results we get are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our model achieves the highest accuracy on the test set! On the down side, it
+    is significantly slower than the other models (about 36 times slower than the
+    XGBoost library).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exercises
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The provided implementation can be improved and extended in many ways. For
+    example, you can try to add the following features to the codebase:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add support for multi-class classification.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add support for categorical features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Implement early stopping, i.e., stop the boosting once the score on the validation
+    set does not improve for a specified number of rounds.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add support for subsampling, i.e., train each tree only on a random subset of
+    the training data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add additional hyperparameters, such as *min_class_weight* that defines the
+    minimum sum of instance weight (Hessian) needed in a child node.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the next article we will discuss the various hardware and software optimizations
+    implemented by the XGBoost library that allow it to run so fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system.
+    *Proceedings of the 22nd acm sigkdd international conference on knowledge discovery
+    and data mining*, 785–794.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'California housing data set info:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Citation**: Pace, R. Kelley and Ronald Barry (1997), Sparse Spatial Autoregressions,
+    Statistics and Probability Letters, 33, 291–297.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**License**: Creative Commons CC0: Public Domain.'
+  prefs: []
+  type: TYPE_NORMAL

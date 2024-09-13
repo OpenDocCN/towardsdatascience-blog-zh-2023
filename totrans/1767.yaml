@@ -1,0 +1,421 @@
+- en: Ranking Diamonds with PCA in PySpark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/ranking-diamonds-with-pca-in-pyspark-a59cab7f4f1a](https://towardsdatascience.com/ranking-diamonds-with-pca-in-pyspark-a59cab7f4f1a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The challenges of running Principal Component Analysis in PySpark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)[![Gustavo
+    Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------)
+    [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a59cab7f4f1a--------------------------------)
+    ·8 min read·Dec 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/829083190a338cf53e34959cadcae252.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Edgar Soto](https://unsplash.com/@edgardo1987?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/two-diamond-studded-silver-rings-gb0BZGae1Nk?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here we go for another post about PySpark. I have been enjoying writing about
+    this subject, as it feels to me that we are lacking of good blog posts about PySpark,
+    especially when we talk about Machine Learning in MLlib — by the way, that is
+    Spark’s **M**achine **L**earning **Lib**rary, designed to work with Big Data in
+    a parallelized environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can tell that the Spark Documentation is excellent. It is super organized
+    and easy to follow the examples. But working with machine learning in Spark is
+    not the most friendly thing to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I work on a PCA model to help me creating a ranking of diamonds,
+    and I had to face a couple of challenges that we will go over in the next lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have already [written about PCA before](https://medium.com/towards-data-science/pca-beyond-the-dimensionality-reduction-e352eb0bdf52)
+    and how it’s useful for dimensionality reduction, as well as for [creating rankings](https://medium.com/towards-data-science/creating-scores-and-rankings-with-pca-c2c3081fdb26).
+    However, this is the first time I do this using Spark, aiming to reproduce the
+    technique on a Big Data environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coding
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start our coding with the modules to import.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The dataset to be used in this exercise is the *Diamonds*, from the ggplot2
+    package and licensed under Creative Commons 4.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, I am loading it from the Databricks sample datasets and removing two known
+    outliers from one of the variables. PCA is affected by outliers. They tend to
+    dominate a component due to very large and distorted variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, since PCA is a technique to be used for numerical values, I have chosen
+    to work with the `carat` , `table` and `depth` variables from the data. I am not
+    working with `price` as it dominates completely the variance of the components,
+    making the model ineffective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, as the scales are different, I am also transforming the data to
+    a logarithmic value, so they’re all in the same scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s how it looks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9f6f8279d56fb62280c8091697ab265.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log values of the selected variables. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to vectorize our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vectorization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the challenges we face when working with Big Data in Spark is that the
+    machine learning algorithms require that the data is inputted as a vector. This
+    could be more straightforward, but unfortunately it adds a couple of steps to
+    our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we had other steps to perform prior to the vectorization, we could create
+    a `Pipeline` that can take the *steps* previously coded and run them at once.
+    In our case, this step is not necessary, as we only have one step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, next we are creating a `VectorAssembler`. As the name intuitively tells
+    us, it will get the numbers and gather them as a single vector by observation,
+    putting all of them in a column named `features`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result will look like this, as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d05a7c4344e5a6cb9fcd9d467729696f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vectorized data. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PCA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To run the algorithm is fairly simple using MLlib. We instantiate PCA and fit
+    the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we want to see how is the explained variance per Principal Component after
+    we ran PCA, we will need Pandas to make our life easier and be able to quickly
+    create a data frame out of the `model.explainedVariance` and then we `insert`
+    a new column with the PC names.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In Databricks, it is as simple as clicking a couple of buttons to create this
+    plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2657123b6ded48fb951b31ac504b5a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PC1 explains 96% of the variance. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting the Transformed Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that Spark is designed for Big Data, it lacks a more complete output for
+    the Principal Components. Numbers like *eigenvectors, eigenvalues* and *loadings*
+    are not easily found as attributes of the PCA model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All we get as output is the explained variance by PC and the table with the
+    transformed data. Those numbers can give us the information of: (1) direction,
+    being positive for those data points varying in the same direction of the PC and
+    negative when their variation is to the opposite direction; (2) value, where the
+    higher it means that it is varies more in that component.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the code snippet to get the transformed data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the resulting vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a174bff70fa7f982249040fe289c085b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PCA results. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Look how the observation #5 is the one with the most variance in the opposite
+    direction of PC1, as well as the most variance in PC3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These numbers can give us the base to rank these observations. Since we know
+    how much they are varying in each component and how much variance is explained
+    by component, we can quickly create a score by multiplying the values in each
+    PC by the respective explained variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cleaning the Transformed Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here, there is another challenge. Those vectors are not very manipulation friendly.
+    So we must workaround the problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s just collect the transformed values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Good. But they don’t come ready for use. Each row is still a `DenseVector`.
+    A solution I found to deal with that was casting the temporary dataset to string,
+    so I can split that into 3 separate columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since the values are now strings, the `[]` must be removed from the first and
+    last characters. Using the `split` function, we can break the lines by the `,`
+    as our separator. To remove the square brackets, we just slice the first character
+    in the PC1 and the last from PC3\. All the columns are `cast('float')` to make
+    it numerical again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Voilà*. We have our data ready for the ranking.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ffb11eede93dd3ff4f2bf8e38f31f6ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Clean transformed data. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating Scores
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The scores can be calculated by multiplying the transformed data from each PC
+    by the respective explained variance and adding all together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PC1 * Explained Var PC1 +
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PC2 * Explained Var PC2 +
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PC3 * Explained Var PC3
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Then, we will create a column with an index, using `row_number` and `Window`,
+    so we can join the results to the original data. And finally a column with a `dense_rank`,
+    which is our ranking of diamonds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e854679e57592f8c1bcdb35f6977bf38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 10 in the ranking. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The previous table is the rank of diamonds based on the combination of `carat`
+    , `table` and `depth` variables. It looks pretty good. We can see, at least in
+    these top 10 results, that even though the categorical columns were not considered,
+    we still see better colors and clarity better ranked. The colors go from D (best)
+    to J (worst) and the clarity follows this sequence: (I1 (worst), SI2, SI1, VS2,
+    VS1, VVS2, VVS1, IF (best)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example: rank 1 has a better color than 2, but smaller carat and worse
+    clarity. Rank 5 has a better color and better clarity than 6 and 7, with a better
+    price, but smaller carat. Certainly the `depth, table` are getting a role in those.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before You Go
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have reached the end of this post. I found a couple of challenges performing
+    PCA in Spark. It is not one of the most friendly methods I worked with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I believe that there is a lot missing, way far from statistical tools like R,
+    where you can get a much superior implementation of the algorithm. On the other
+    hand, Spark is not meant to be a statistical tool. It is a Big Data tool initially
+    created for ETL and that has been growing and adding more functionalities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, PCA can be used for dimensionality reduction when we change the
+    `k` value of components to extract. For that use with Big Data, it can be a helper
+    to reduce the dimensions of the dataset and serve as input for other steps in
+    an analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you liked this content, follow my blog for more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)
+    [## Gustavo Santos - Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read writing from Gustavo Santos on Medium. Data Scientist. I extract insights
+    from data to help people and companies…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: gustavorsantos.medium.com](https://gustavorsantos.medium.com/?source=post_page-----a59cab7f4f1a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, find me on [LinkedIn](https://www.linkedin.com/in/gurezende/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Complete code in GitHub:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/gurezende/Studying/tree/master/PySpark/PCA?source=post_page-----a59cab7f4f1a--------------------------------)
+    [## Studying/PySpark/PCA at master · gurezende/Studying'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a repository with my tests and studies of new packages - Studying/PySpark/PCA
+    at master · gurezende/Studying
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/gurezende/Studying/tree/master/PySpark/PCA?source=post_page-----a59cab7f4f1a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interested in learning more about PySpark?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/dce6d84bd912c6135a9ce6930bc033b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Enroll here: Master Data Wrangling With PySpark](https://www.udemy.com/course/master-data-processing-pyspark/?couponCode=WEBINAR70).
+    Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a link to my course with a discount coupon applied: [**Mater Data Wrangling
+    With PySpark**](https://www.udemy.com/course/master-data-processing-pyspark/?couponCode=WEBINAR70)
+    **in Udemy.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/creating-scores-and-rankings-with-pca-c2c3081fdb26?source=post_page-----a59cab7f4f1a--------------------------------)
+    [## Creating Scores and Rankings with PCA'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use R Language to create scores for observations based on many variables
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/creating-scores-and-rankings-with-pca-c2c3081fdb26?source=post_page-----a59cab7f4f1a--------------------------------)
+    [](/pca-beyond-the-dimensionality-reduction-e352eb0bdf52?source=post_page-----a59cab7f4f1a--------------------------------)
+    [## PCA: Beyond Dimensionality Reduction'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to use PCA algorithm to find variables that vary together
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/pca-beyond-the-dimensionality-reduction-e352eb0bdf52?source=post_page-----a59cab7f4f1a--------------------------------)  [##
+    PCA - PySpark 3.5.0 documentation
+  prefs: []
+  type: TYPE_NORMAL
+- en: pyspark.sql.SparkSession.builder.getOrCreate
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: spark.apache.org](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.ml.feature.PCA.html?source=post_page-----a59cab7f4f1a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

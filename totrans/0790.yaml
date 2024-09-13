@@ -1,0 +1,497 @@
+- en: Efficient k-Nearest Neighbors (k-NN) Solutions with NumPy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971](https://towardsdatascience.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy-58cbac2a0971)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[FAST COMPUTING](https://medium.com/@qtalen/list/fast-computing-2a37a7e82be5)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Leveraging NumPy’s broadcasting, fancy Indexing, and sorting for performance
+    computing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)[](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----58cbac2a0971--------------------------------)
+    ·9 min read·Jul 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf4eee960dbacc8212da2d156f4d85d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I have a friend who is a city planner. One day, he was tasked with reassessing
+    the location suitability of thousands of gas stations in the city, needing to
+    find the positions of the k-nearest gas stations to each one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we find the nearest k stations with little time? This is a practical
+    application scenario of the k-nearest neighbors problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As such, he came to me for help, hoping I could provide a high-performance solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So I write down this article and which will guide you on efficiently solving
+    the k-nearest neighbors problem using NumPy. By comparing it with a Python iterative
+    solution, we will demonstrate the powerful performance of NumPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will delve into utilizing advanced NumPy features, such
+    as broadcasting, fancy indexing, and sorting, to implement a high-performance
+    k-nearest neighbors algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After reading this article, you will able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understand the k-nearest neighbors problem and its practical application scenarios
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn how to use the NumPy library to solve the k-nearest neighbors problem
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understand in-depth how features such as NumPy broadcasting, fancy indexing,
+    and sorting play a role in the algorithm
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the performance of NumPy with a Python iterative solution, exploring
+    why NumPy is superior
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s delve into the high-performance world of NumPy together, exploring how
+    we can solve the k-nearest neighbors problem more quickly and effectively using
+    only NumPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Geometric Principles of Solving the k-NN Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s review the gas station problem my friend faced from a geometric perspective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assuming we place all the gas stations on a two-dimensional plane, the distance
+    between two gas stations is actually the Euclidean distance between two points
+    on the plane. The solution formula is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Created by Author, [Embed Fun](https://math.embed.fun/rRSmbcSLxxXy6eWM6c4jA5)
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how should the distance between any two points be calculated?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can imagine the two-dimensional plane as a chessboard, simplify the gas
+    stations to six, and sequentially arrange these six points along the horizontal
+    and vertical edges of the chessboard, as shown in the figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e0c545c87996c5f964fcf419b66d0504.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Arrange these six points on the chessboard. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then the grid where the extensions of any two points intersect can represent
+    the distance between these two points. When i=j, the two points are the same,
+    and the distance should be 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assuming that k=2 here, we only need to sort the distances from each point to
+    other points in ascending order and take the points corresponding to the first
+    three distances (including itself), which are the two closest other points to
+    this point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b02e6d957d86857a3839e922545dc380.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After sorting, we can get the 3 points that are closest to each other. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditional Python Iterative Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a performance benchmark, let’s first look at how the traditional Python iterative
+    solution works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea of this solution is relatively simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To calculate the Euclidean distance between the coordinate point itself and
+    other coordinate points in the list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then compare the distances from the current point to other points.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Take the top k points that meet the requirements.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Next is the code part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we randomly generate six coordinate points. Since we will use the same
+    coordinates as a comparison later, we need to add a `seed` to the `random` package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, start calculating the distance of each point to all points (including
+    itself) in the list, which requires two iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, sort the distances between each point and other points and find the index
+    of the point corresponding to the distance in the original list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The final return should be a two-dimensional array, where the first item in
+    each row of the array is the current point, and the other items are the indexes
+    of each point in the list after sorting the distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we find each point that meets the conditions in the original coordinate
+    list based on the index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result is a two-dimensional array, and each row of the array is the current
+    point and the other two closest points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To facilitate our evaluation of the results, we use `Matplotlib` to draw all
+    coordinate points and the lines from each coordinate to the two nearest coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10016b77e5fb93c2d5eedd1a6932e790.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Traditional Python Iterative Solution. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, six coordinates and corresponding lines have appeared on the
+    chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chart will serve as a benchmark and will be compared with the results of
+    using NumPy later to confirm the correctness of the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic Knowledge of Using NumPy Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next, let’s see how to solve this problem using NumPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before writing the code, we need to do some preheating on some basic concepts
+    of NumPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Broadcasting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since it involves placing a set of coordinate points on the chessboard horizontally
+    (`shape=(1, 6)`) and vertically (`shape=(6, 1)`), and forming a `(6, 6)` matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After calculating the distance, it involves operations between two arrays of
+    different sizes, so we need to use the broadcasting mechanism of NumPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, when a (1, 6) array and a (6, 1) array are added, the resulting
+    shape is (6, 6).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the specific principles, please refer to the [official documentation](https://numpy.org/doc/stable/user/basics.broadcasting.html).
+    The schematic diagram is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbdcb2a55b2993720e8b6e83782ead8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How broadcasting works. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sorting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After solving the distance between any two points, we also need to sort the
+    distances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Like the `sort()` function in the Python standard library, NumPy also has a
+    function for sorting: `np.sort()`. Alternatively, the `ndarray.sort()` function
+    can also be used for sorting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we are sorting the distances, we also need to find the index of each
+    item in the original array after sorting. In NumPy, we can use `np.argsort()`
+    to get it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of course, we only need to focus on the k-nearest points, and we don’t need
+    to know the order of distances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we can use NumPy’s `[argpartition()](https://numpy.org/doc/stable/reference/generated/numpy.argpartition.html)`
+    API, which can return the index of the smallest few points without sorting, which
+    will perform better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fancy Indexing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the traditional Python list, if we want to find a set of data by index, we
+    need to iterate separately through the data list and index list, which has very
+    poor performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But NumPy provides fancy indexing to quickly find data corresponding to the
+    index. Here is an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f2c1f6b887edad23302debc54220fd71.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fancy indexing can quickly find data corresponding to the index array. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because fancy indexing is a set of integer arrays, there is a rule to follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data indexed reflects the shape of the broadcasted index array, which is
+    unrelated to the shape of the data array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NumPy Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After understanding some basics of NumPy, let’s see how to solve the k-NN problem
+    using NumPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since here we are using a set of coordinate points to form an array, we need
+    to use NumPy’s [structured_array](https://numpy.org/doc/stable/user/basics.rec.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, add an extra dimension to the original one-dimensional array in the horizontal
+    and vertical directions, turning it into two sides of a two-dimensional chessboard:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then use the broadcasting mechanism to calculate the distance between each point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, get a (6, 6) two-dimensional array:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, use the `argpartition` method to find out the indexes of the two points
+    with the smallest distance in each row:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We still need two `Matplotlib` drawing methods to evaluate the correctness
+    of the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, write a main method to integrate all the code together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Just looking at the code, it’s already much simpler than the Python iterative
+    version. Next, we compare the results with the chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3716625ab3efab808886cdf3961a6e7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The k-NN result of the NumPy solution. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: See, the results are exactly the same!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Comparison of the Two Solutions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Finally, let’s compare the execution performance of the two solutions. Here
+    we still use `%timeit` for evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First is the Python iterative way. Let’s see how long it takes to expand to
+    1,000 coordinates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ac92f11637d29373c84df999832de2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The execution time of Python Iterative solution. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then it’s the NumPy implementation. See how long it takes for 1,000 coordinates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58640d6d712878b195c483f2423e0978.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The execution time of NumPy solution. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Surprised, right? The performance has improved hundreds of times, so my friend
+    doesn’t have to worry about being unable to calculate it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article taught us how to use NumPy’s broadcasting, fancy indexing, and
+    sorting to efficiently solve the k-nearest neighbors problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also compared the performance of NumPy with the Python iterative solution
+    and deeply understood why NumPy can perform better in solving such problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To recap, we learned the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The definition and practical application scenarios of the k-nearest neighbors
+    problem
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to use the NumPy library to solve the k-nearest neighbors problem
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The application of NumPy’s broadcasting, fancy indexing, sorting, and other
+    features in algorithm implementation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The performance comparison analysis between NumPy and the Python brute force
+    solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Although this article provides an efficient k-nearest neighbors solution, this
+    is just a starting point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In future articles, I will reinterpret the solution to this problem using advanced
+    algorithms and data structures, showing you more efficient and usable algorithm
+    skills.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stay tuned for future articles. If you are interested in this article, feel
+    free to comment, and I will answer them individually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let me start with the basics and walk you through the best scientific computing
+    practices at work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Peng Qian](../Images/fa6bd24b4781f623be8ea40c4e6bdb78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Peng Qian](https://qtalen.medium.com/?source=post_page-----58cbac2a0971--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fast Computing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[View list](https://qtalen.medium.com/list/fast-computing-2a37a7e82be5?source=post_page-----58cbac2a0971--------------------------------)4
+    stories![How to Optimize Multidimensional Numpy Array Operations with Numexpr.](../Images/dd4c34ca6ee3502debdeac4c5e73eb46.png)![Use
+    Numexpr to help me find the most livable city.](../Images/edbec8eba0dc95e2b00d5f1092f80529.png)![Efficient
+    k-Nearest Neighbors (k-NN) Solutions with NumPy](../Images/1e1af2eb2245576645f411b9b5a36a20.png)[](https://medium.com/@qtalen/membership?source=post_page-----58cbac2a0971--------------------------------)
+    [## Join Medium with my referral link - Peng Qian'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@qtalen/membership?source=post_page-----58cbac2a0971--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy/](https://www.dataleadsfuture.com/efficient-k-nearest-neighbors-k-nn-solutions-with-numpy/)'
+  prefs: []
+  type: TYPE_NORMAL

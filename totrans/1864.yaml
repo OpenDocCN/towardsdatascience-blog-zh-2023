@@ -1,0 +1,516 @@
+- en: Simulating Physical Systems with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/simulating-physical-systems-with-python-dd5751e80b5c](https://towardsdatascience.com/simulating-physical-systems-with-python-dd5751e80b5c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Must-Have Skill for any Engineer or Scientist
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nhemenway2013?source=post_page-----dd5751e80b5c--------------------------------)[![Nick
+    Hemenway](../Images/a38cade9fe4f81c7e43e5d3155a21d78.png)](https://medium.com/@nhemenway2013?source=post_page-----dd5751e80b5c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd5751e80b5c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dd5751e80b5c--------------------------------)
+    [Nick Hemenway](https://medium.com/@nhemenway2013?source=post_page-----dd5751e80b5c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd5751e80b5c--------------------------------)
+    ·20 min read·Mar 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/379eaf6912584be658e3fa37c4f517b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [NASA](https://unsplash.com/@nasa?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ability to simulate the behavior of a physical system has incredible utility
+    in nearly all fields of science and engineering. Simulations allow us to understand
+    the time evolution of a system, and they do so in a manner that cannot typically
+    be paralleled (even by physical testing). Whereas physical testing can be time
+    consuming, expensive, and possibly dangerous, simulations are fast, cheap, and
+    don’t pose any risks of equipment damage or bodily injury. Experiments are also
+    limited in the sense that they only provide you access to data that you can actually
+    measure — unmeasured system states will either not be available, or will have
+    to be estimated in post processing. Simulations on the other hand, act as windows
+    that allow us peer into the entire internal state of a system. This ability to
+    essentially look into the inner workings of a system can provide invaluable design
+    insight in engineering applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The intent of this article is to provide a quick primer on how to get started
+    with simulating physical systems in the Python programming language. To accomplish
+    this, we’re going to walk through a comprehensive example of how to simulate a
+    bouncing ball. I’ve specifically chosen this system because it’s intuitive and
+    not too difficult, but still has some nuances that make simulating it a little
+    more interesting than other simple examples you’ll find on the internet (the equations
+    that govern the motion of the ball change depending on whether the ball is in
+    the air, or in contact with the ground). Along the way, we’ll look at how to convert
+    a mathematical model to the correct format needed for simulating, show how we
+    can leverage pre-existing code libraries (`solve_ivp` from SciPy) to make our
+    lives easier, and give rationale as to why we’re structuring our code the way
+    we are. By the end of this article, we’ll not only have a working simulation of
+    a bouncing ball (like the animation shown below) but a foundational knowledge
+    that can be extended to simulate any kind of physical system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af2b26da88b758ec371e38029058f03b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Maths
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Almost all systems in the physical world can be modeled by differential equations.
+    These equations arise naturally from the physical laws that govern the world around
+    us. Take Newton’s second law for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb17a82067ee02b8a742800b77b8899c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Newton’s second law tells us that the second derivative of the position of a
+    mass is proportional to the net force applied to that mass. And thus we get a
+    differential equation — an equation, that when solved gives us a function. For
+    our problem, given a forcing function f(t), solving the above differential equation
+    gives us the position of the mass as a function of time, x(t).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great, so how do we go about solving the above differential equation? Unfortunately,
+    there’s no general analytic method that we can use, as the solution is completely
+    dependent on the forcing function, f(t). Depending on the form of the forcing
+    function, solving the above differential equation can either be incredibly easy,
+    or intractably difficult. This is where simulation comes into the picture. Simulation
+    gives us a general purpose method for solving arbitrarily difficult differential
+    equations!
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how does simulation work? When I say simulation, I’m essentially just referring
+    to the numerical integration of a differential equation. There are ton’s of algorithms
+    that exist to do this, such as the incredibly simple, but sometimes inaccurate
+    [Euler’s method](https://en.wikipedia.org/wiki/Euler_method), or [Runge-Kutta](https://lpsa.swarthmore.edu/NumInt/NumIntFourth.html)
+    methods, which are incredibly popular and more accurate. Rather than diving into
+    the specifics of how these algorithms work, we’re going to treat them as a black
+    box and leverage pre-existing code libraries that already have them implemented.
+    To do this, however, we need to formulate our problem in a manner that fit’s the
+    format required by these algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numerical integration algorithms typically require that we input our equations
+    as a system of first order differential equations. The general format for this
+    is shown below, where t is time and x is a vector of system variables/states.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51c2f17cec900cf63e23cfeb8b234311.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Looking at the above equation, we can see that the rate of change of each state
+    in our system is influenced by the current state of the system and the instantaneous
+    time. More often than not though, our system’s differential equations won’t naturally
+    fall into this form (Newton’s second law, for example, is not a first order differential
+    equation). Instead, we will typically have to massage our system’s equations into
+    this format using some algebraic manipulation. This is all pretty abstract right
+    now, so in the next section we’ll solidify the concept by applying the methodology
+    to our bouncing ball problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bouncing Ball Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For the case of a bouncing ball, we have two scenarios that we need to consider:
+    1) when the ball is in the air, and 2) when the ball is in contact with the ground.
+    In both cases, we’ll use Newton’s second law, but the form that the equations
+    take will change a bit because the external forces applied to the ball change.
+    To formulate the equations of motion, we will use the coordinate system shown
+    below, where x represents the height of the center of the ball from the ground.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7f2f6692a64f2656049bb7e26deac7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Derive the System’s Equations'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Case 1) the ball is in the air:* When the ball is in the air the only force
+    acting on the ball is gravity, and thus we get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d12fbd00dccd659a8b56d8fd728c38da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Case 2) the ball is in contact with the ground:* Many different contact models
+    exist for colliding objects, but for this example, we’re going to assume that
+    the ball acts like a mass-spring-damper system. That is, we’ll assume that all
+    of mass of the ball is concentrated at the center of the ball and the ball compresses
+    on impact with some amount of stiffness (k) and damping (b). This is depicted
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3fc464f1ef3f86a30f29bd8d28154d42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Drawing the free body diagram for the ball in contact with the ground, we get
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/76594eeae6b2a9519ce9a207828ebe75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The three forces acting on the ball are gravity, damping, and the spring force
+    produced within the ball. Note that the amount the spring (ball) compresses is
+    equal to the radius of the ball (R), minus the position of the ball (x). Rearranging
+    the equation a bit, we get the well known mass-spring-damper differential equation
+    with forcing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ad545ed56eb1a89990b2610987be386.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Step 2: Convert the Equations to the Correct Format for Simulation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ve derived a set of differential equations that govern the motion of the
+    ball both in flight and in contact with the ground. Unfortunately, they’re not
+    usable for simulation in their current form — we must convert them to a set of
+    first order equations. To do this, we’ll introduce two new variables, x1 and x2,
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43f548d649604e8d8b53ac7c50e4d297.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Variables x1 and x2 are known as state variables and the vector containing them
+    is called the state vector. The state vector, by definition, contains all of the
+    information required to completely define the state of the system (in our case,
+    the position and velocity of the ball). In general, if we have an nth order differential
+    equation, we will have to introduce n new state variables (one for x and each
+    of its derivatives, up to but not including the highest order derivative). We
+    introduce two state variables in our example because we have a second order differential
+    equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Differentiating the state vector yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9970b494e7c13a8d4dbfa8fce746f584.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that the derivative of x1 is, by definition, x2\. I’ve purposely left the
+    x-double-dot term as it is because it’s expression depends on whether the ball
+    is in the air or in contact with the ground.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the case of the ball being in flight, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33ed54c63ff84cd93da429495f49ca24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And for the case of the ball being in contact with the ground, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c6748038db65f25efc0a60f63a4edc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Substituting the two x-double-dot expressions into the state derivative equation
+    above yields the following two, vector-valued, state-derivative equations, applicable
+    when the ball is in the air and in contact, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b9cdad87bea8db7cc562c3f88760efe.png)![](../Images/8ca166bb84d6e9a5745c2c041d81ecab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: At this point we’ve successfully converted our higher-order differential equations
+    into systems of first order equations and are ready to start coding up our simulation!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: The Code'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To begin, we will import the necessary modules, as well as set some plotting
+    settings to personal preference. The key line of code below is the `from scipy.integrate
+    import solve_ivp` line, which imports the solver we’ll be using for our simulation
+    (Note that `ivp` stands for “initial value problem” i.e. a differential equation
+    with a given initial value).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will organize our code by creating a `BouncingBall` class — a template for
+    which is shown below with notes for what needs to be implemented in each method.
+    We will populate each of these methods one-by-one
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, we will look at the `__init__` method. As can be seen in the code below,
+    the `__init__` method simply takes in and stores the various physical parameters
+    of the ball. If no value is given for gravity, the standard value of 9.81 m/s²
+    is assigned by default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we’ll populate the two physics methods (`in_air` and `in_contact`). Both
+    of the methods (below) take in an array `x` and the current time `t`, unpack the
+    `x` array into `x1` and `x2` and then compute and return the state derivative
+    vector according to the equations we derived in Step 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can populate the `simulate` method of the bouncing ball class, which
+    will actually perform all of the interesting work. This method needs to integrate
+    the physics of the ball forward in time, being sure to switch between the in-air
+    and in-contact physics model when appropriate. Note that with how we’ve defined
+    our coordinate system, the ball will be in contact with the ground when the position
+    of the ball (x) is less than the ball’s radius (R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The simplest way to switch between the two physics models would be to define
+    an intermediate method that switches between the two previously defined methods
+    depending on the position of the ball. It could look something like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We would then pass this single function to the numerical integrator `solve_ivp`
+    and solve the system forward in time. There is one major issue with this approach
+    though, and that is that it will not precisely capture the moments of contact
+    when the physics model needs to change. The figure below clarifies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb02d5d50680f929804cabc11ef74499.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: At time step tn, the ball is just above the ground and moving downward. The
+    numerical integrator will then integrate the ball’s trajectory forward in time
+    to time step tn+1\. Note that the time difference between tn and tn+1 depends
+    on the type of solver being used (fixed or variable step) and the corresponding
+    error tolerance settings. Regardless, at time tn+1, the physics model will change
+    to the in-contact model, but there’s an issue — the ball is already well into
+    contact with the ground before the model changes. We don’t want the physics model
+    to change any time the ball’s position (x) is less than the ball’s radius (R),
+    we want the physics model to change at the EXACT instant the ball comes into contact,
+    i.e. when the ball’s position equals the ball’s radius (x = R). To do this, we
+    need another approach, we must use “events”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Intuitively, “events” are exactly as they sound — a point in time of particular
+    interest, where “something” happens. In our case, we will be trying to capture
+    two different events 1) the instant the ball comes into contact with the ground
+    and 2) the instant the ball leaves contact with the ground. The way we mathematically
+    describe an event is by defining a function that equals zero when an event occurs
+    (for those familiar with Simulink, this is the same concept as “zero-crossings”).
+    For our bouncing ball problem, this is simply the difference between the ball’s
+    position and radius, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41f2ff68050e62a9598d449a495c704d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When the above function is zero, the height of the ball equals the ball’s radius,
+    and thus we have a contact event. Furthermore, we can see looking at the figure
+    below that when the event function crosses zero in the negative direction (going
+    from positive to negative), this signals that the ball is coming into contact
+    with the ground. Likewise, when the event function crosses zero in the positive
+    direction (going from negative to positive), this signals that the ball is leaving
+    contact with the ground.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ddad56dea6e70ce8150b5107de2a8df1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great, but how do we use this? Luckily for us, the notion of an event is already
+    implemented in the solver we want to use (`solve_ivp`)— we just have to use it
+    correctly! Looking at the SciPy [documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
+    for `solve_ivp`, we see that there’s an optional argument `events` that takes
+    in an arbitrary object. This object must be callable, meaning that we can call
+    it like a function (this is exactly the event function that we defined above).
+    The object also has additional attributes `terminal` and `direction`. If the `terminal`
+    attribute is set to `True`, the simulation will terminate when an event occurs.
+    The `direction` attribute is an additional flag that can be set to determine which
+    of the zero-crossing directions to pay attention to. For example, if `direction=-1`,
+    only the negative direction crossing (e.g. ball coming into contact with the ground)
+    will count as an event, the positive crossing will just be ignored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can construct a class called `ContactEvent` that does exactly what the documentation
+    is requiring. Looking at the code below, we see that the class takes in the ball’s
+    radius and uses it for the event function, which is defined in the `__call__`
+    method (we have to implement it in the `__call__` method because `solve_ivp` requires
+    that the event object is callable). The `ContactEvent` class also contains the
+    attributes `direction` and `terminal`. Note that terminal is set to `True` meaning
+    the simulation will stop when an event occurs. The `direction` attribute is set
+    at instantiation as it depends on the type of event we are trying to capture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To use the `ContactEvent` class, we will create two `ContactEvent` objects
+    (one for the ball coming into contact and one for the ball leaving contact) and
+    store them in the `BouncingBall` object. To do this, we’ll add two more lines
+    of code to the `__init__` method as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: With our contact event functions defined, we can finally look at the `simulate`
+    method code (below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As can be seen in the code above, the `simulate` method takes in the initial
+    conditions and a time span that we would wish to solve for. It first check’s if
+    the ball is starting in the air, or in contact with the ground to determine which
+    physics model to use initially. The code that follows then works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create two lists (`t_lst` and `x_lst`) that we can keep appending the piecewise
+    simulation solutions to.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Simulate the ball forward in time, passing the appropriate physics model and
+    event object to `solve_ivp` (Note that`solve_ivp` takes in a function that returns
+    the state derivative vector (as discussed in step 2), initial conditions, and
+    a time span to solve for). Simulate forward in time until a contact event happens,
+    at which point the simulation stops. Append the simulation time and solutions
+    to `t_lst` and `x_lst` respectively.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Switch the physics model (every event signals the switching of the physics model)
+    and reset the initial conditions and starting time to equal the final conditions
+    and time of the previous solve.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat 2 and 3 until the desired final simulation time is reached.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Concatenate all of the time and solution vectors into single arrays and return
+    the solution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The complete `BouncingBall` class is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point all of the hard work is done and we’re ready to run a simulation!
+    We can do so using the following few lines of code, which create a `BouncingBall`
+    object, simulate the ball bouncing for eight seconds after being dropped from
+    2 meters, and then plot the trajectory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9c88ced46961bdeaa49ad2eee5874f02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pretty satisfying! If we wanted, we could even post-process the data to create
+    an animation of the ball bouncing (like the one at the beginning of the post and
+    repeated here).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af2b26da88b758ec371e38029058f03b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating animations in `matplotlib` is beyond the scope of this article, but
+    for those interested, the code to create the animation is included in this articles
+    accompanying Github [repository](https://github.com/Nick-Hemenway/medium-simulating_physical_systems).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The ability to simulate a physical system can provide invaluable utility in
+    nearly all fields of science and engineering. The highlighted example, though
+    rather specific, covered a much more general workflow that can be extended to
+    simulating any type of physical system. Regardless of the system, you will always
+    have to determine the governing equations, convert them to a system of first order
+    differential equations, and then pass the equations to a numerical integration
+    routine of some sort. Of course, there are some nuances that couldn’t be discussed
+    in this article — sometimes the system contains constraint equations and we get
+    a set of differential algebraic equations (DAEs) instead of ordinary differential
+    equations (ODEs). Or you may not be able to solve for your state vector derivative
+    explicitly in terms of the systems states. Regardless, the content covered in
+    this article still serves as a necessary foundation that must be mastered before
+    moving onto more involved studies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to leave any comments or questions you may have or connect with me
+    on Linkedin — I’d be more than happy to clarify any points of uncertainty. Finally,
+    I encourage you to play around with the code yourself (or even use it as a starting
+    template for your own workflows ) — all code for this article can be found on
+    my [Github](https://github.com/Nick-Hemenway/medium-simulating_physical_systems).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nicholas Hemenway
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '***If you enjoyed this, please f***[***ollow me on Medium***](/@nhemenway2013)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Consider subscribing to*** [***email updates***](/subscribe/@nhemenway2013)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Interested in collaborating? Let’s*** [***connect on LinkedIn***](https://www.linkedin.com/in/nicholas-hemenway/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

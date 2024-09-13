@@ -1,0 +1,254 @@
+- en: Rotating Rasters with Rasterio
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/rotating-rasters-with-rasterio-dc36e42b01dd](https://towardsdatascience.com/rotating-rasters-with-rasterio-dc36e42b01dd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using Python to rotate satellite images while maintaining geolocation accuracy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/?source=post_page-----dc36e42b01dd--------------------------------)[![Conor
+    O''Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----dc36e42b01dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc36e42b01dd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc36e42b01dd--------------------------------)
+    [Conor O''Sullivan](https://conorosullyds.medium.com/?source=post_page-----dc36e42b01dd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc36e42b01dd--------------------------------)
+    ·6 min read·Aug 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2f08f5cf0abfedc0fe7d88da8e9039b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '(source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Raster data is similar to normal image data. Except every pixel is linked to
+    a location on the Earth’s surface. This complicates things. If we want to rotate
+    the data we must also consider the underlying coordinate reference system (CRS).
+    Distorting a raster without adjusting its geolocation will lead to inaccurate
+    spatial analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Adjusting geolocation is not straightforward. Thankfully, [Rasterio](https://rasterio.readthedocs.io/en/stable/)
+    can help. It is a popular Python library for geospatial data analysis. We will
+    use the package to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**rotate** a raster'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and **reproject** the image to the correct CRS.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Along the way, we will discuss the Python code and you can find the full project
+    on [GitHub](https://github.com/conorosully/medium-articles/blob/master/src/remote%20sensing/rotating_rasters.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article assumes basic knowledge of raster data and working with their CRS.
+    Check out the article below if you want to brush up. It goes into more detail
+    on reprojecting raster data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-plot-coordinates-on-landsat-satellite-images-with-python-5671613887aa?source=post_page-----dc36e42b01dd--------------------------------)
+    [## How to Plot Coordinates on Landsat Satellite Images with Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mapping pixel positions to geographic coordinates using Landsat metadata and
+    Rasterio
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-plot-coordinates-on-landsat-satellite-images-with-python-5671613887aa?source=post_page-----dc36e42b01dd--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading Landsat scenes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For our raster data, we’ll be working with satellite images. Specifically,
+    Landsat scenes. You can download one of these using the [EarthExplorer](https://earthexplorer.usgs.gov/)
+    portal. Alternatively, if you want to use Python, the article below takes you
+    through the process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/downloading-landsat-satellite-images-with-python-a2d2b5183fb7?source=post_page-----dc36e42b01dd--------------------------------)
+    [## Downloading Landsat Satellite Images with Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streamline Landsat scene downloads with the landsatxplore Python package
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/downloading-landsat-satellite-images-with-python-a2d2b5183fb7?source=post_page-----dc36e42b01dd--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the end, you should have a folder containing all the files available for
+    a [Landsat level 2 science product](https://www.usgs.gov/landsat-missions/landsat-collection-2-level-2-science-products).
+    We’ll be working with the red visible light band. For Landsat 8 or 9 scenes, this
+    is given by band B4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Opening a raster file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We use the code below to open and display this band. ID gives the Landsat scene
+    ID for this particular scene (line 8). All the available bands will be in a folder
+    with this ID as a name. We open the red band using rasterio (line 11) and display
+    it using matplotlib (lines 14–15). As seen in **Figure 1,** it is typical for
+    Landsat scenes to be rotated inside their bounding box.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7ff4672b4e2738ffe7c4eccd8eeb6259.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: visualisation of the red visible light band (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rotating a raster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The key to rotating a raster is its transform function. Rasterio uses an Affine
+    transformation to convert array positions to geolocations. For our Landsat scene,
+    the geolocations are given in UTM coordinates. If we rotate pixels in a raster
+    we must also adjust this transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The affine transformation matrix for our satellite image is given below (line
+    2). The xy() function uses this matrix to convert array positions to UTM coordinates.
+    The output in Figure 2 shows the array position (1000,2000) is linked to the geolocation
+    (222900,-3617400) on the Earth’s surface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e8d1aa7cb721aedbbdeef3c5bcb407c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: output from the above code snippet (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We adjust the matrix in the **rotate_raster** function. The most important parameter
+    is the **angle** of rotation. We use this by first creating a rotate affine matrix
+    (line 22). We then multiply this with the original transform matrix (line 27).
+    Now, when points are converted to UTM they will also be rotated and visa versa.
+    The new raster is then reprojected with this CRS (lines 52–58). We’ll discuss
+    the other parameters in the next sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: For now, let’s see how the function works. Our input file is the same red band
+    as shown in Figure 1 (line 1). We define a new file path in this location (line
+    2). We input these into our **rotate_raster** function along with a 12-degree
+    angle of rotation (line 4). You can see the resulting raster in Figure 3\. It
+    is no longer rotated within its bounding box. Importantly, you will still be able
+    to [plot coordinates](/how-to-plot-coordinates-on-landsat-satellite-images-with-python-5671613887aa)
+    on the new raster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/257c62e5f901a277e1fd8389f414ba95.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: rotated Landsat image (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shifting the raster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You may have noticed the **shift_x** and **shift_y** parameters in the above
+    code. These move the raster in the x and y directions within its bounding box.
+    We need these parameters as the raster is rotated around its top left corner.
+    At the same time, the original height and width are used. The result is part of
+    the satellite image being rotated out of its bounding box. You can see what we
+    mean in **Figure 4**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/56513aa770aca09f65fb41e5b8563ebb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: comparison of rasters that have and have not been shifted (source:author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adjusting the dimensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In some cases, we may also have to adjust the height and width of the raster.
+    This can happen if we rotate it in a way that it does not fit the original dimensions.
+    You can see this in Figure 5 where the raster has been rotated by 30 degrees.
+    Unless we add 800 pixels to the width and height, it will not fit in its bounding
+    box.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/16d83820b3e36525003b988533a7521e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: comparison of rasters that have and have not been adjusted (source:author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the rotate_raster function, we change the dimensions of the raster by updating
+    its metadata (**dst_kwargs).** Along with the width and height, you will see that
+    we change the transform function (**dst_transform**). This will be the original
+    transform multiplied by the **rotation**, **trans_x** and **trans_y** affine matrices.
+    The final change is the **nodata** element. Setting this to 0 ensures that any
+    new bounding box pixels will be black.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is possible to adjust the rotation, shift and dimension adjustment parameters
+    so the entire bounding box is removed. However, keep in mind that any transformations
+    will “warp” the pixels. Pixel values are resampled using the nearest neighbour
+    method (i.e. **Resampling.nearest).** Unless necessary for visualisations, it
+    is better to do spatial analysis with the original rasters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you enjoyed this article! You can find me on [Mastodon](https://sigmoid.social/@conorosully)
+    | [Twitter](https://twitter.com/conorosullyDS) | [YouTube](https://www.youtube.com/channel/UChsoWqJbEjBwrn00Zvghi4w)
+    | [Newsletter](https://mailchi.mp/aa82a5ce1dc0/signup) — sign up for FREE access
+    to a [Python SHAP course](https://adataodyssey.com/courses/shap-with-python/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/membership?source=post_page-----dc36e42b01dd--------------------------------)
+    [## Join Medium with my referral link — Conor O’Sullivan'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: conorosullyds.medium.com](https://conorosullyds.medium.com/membership?source=post_page-----dc36e42b01dd--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Rasterio documentation **Reprojection** [https://rasterio.readthedocs.io/en/stable/topics/reproject.html](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
+  prefs: []
+  type: TYPE_NORMAL

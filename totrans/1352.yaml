@@ -1,0 +1,368 @@
+- en: 'Introduction to ML Deployment: Flask, Docker & Locust'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/introduction-to-ml-deployment-flask-docker-locust-b87b5bd78a17](https://towardsdatascience.com/introduction-to-ml-deployment-flask-docker-locust-b87b5bd78a17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to deploy your models in Python and measure the performance using
+    Locust
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@antonsruberts?source=post_page-----b87b5bd78a17--------------------------------)[![Antons
+    Tocilins-Ruberts](../Images/363a4f32aa793cca7a67dea68e76e3cf.png)](https://medium.com/@antonsruberts?source=post_page-----b87b5bd78a17--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b87b5bd78a17--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b87b5bd78a17--------------------------------)
+    [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----b87b5bd78a17--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b87b5bd78a17--------------------------------)
+    ·9 min read·Feb 27, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b57994b78fc248ef65b80754cfd3deaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [İsmail Enes Ayhan](https://unsplash.com/@ismailenesayhan?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You’ve spent a lot of time on EDA, carefully crafted your features, tuned your
+    model for days and finally have something that performs well on the test set.
+    Now what? Now, my friend, we need to deploy the model. After all, any model that
+    stays in the notebook has a value of zero, regardless of how good it is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It might feel overwhelming to learn this part of the data science workflow,
+    especially if you don’t have a lot of software engineering experience. Fear not,
+    this post’s main purpose is to get you started by introducing one of the most
+    popular frameworks for deployment in Python — Flask. In addition, you’ll learn
+    how to containerise the deployment and measure its performance, two steps that
+    are frequently overlooked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is “deployment” anyway?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First thing first, let’s clarify what I mean by deployment in this post. ML
+    deployment is the process of taking a trained model and integrating it into a
+    production system (server in the diagram below), making it available for use by
+    end-users or other systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/184017a1e42ba74800745abcd5f11ed5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model deployment diagram. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep in mind that in reality, deployment process is much more complicated than
+    simply making the model available to end-users. It also involves service integration
+    with other systems, selection of an appropriate infrastructure, load balancing
+    and optimisation, and robust testing of all of these components. Most of these
+    steps are out-of-scope for this post and should ideally be handled by experienced
+    software/ML engineers. Nevertheless, it’s important to have some understanding
+    around these areas which is why this post will cover containerisation, inference
+    speed testing, and load handling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All the code can be found in this GitHub [repo](https://github.com/aruberts/tutorials/tree/main/deployment).
+    I’ll show fragments from it, but make sure to pull it and experiment with it,
+    that’s the best way to learn. To run the code you’ll need — `docker` , `flask`
+    , `fastapi` , and `locust` installed. There might be some additional dependencies
+    to install, depending on the environment you’re running this code in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To make the learning more practical, this post will show you a simple demo deployment
+    of a loan default prediction model. The model training process is out of scope
+    for this post, so already trained and serialised CatBoost model is available in
+    the GitHub [repo](https://github.com/aruberts/tutorials/tree/main/deployment).
+    The model was trained on the pre-processed [U.S. Small Business Administration
+    dataset](https://www.kaggle.com/datasets/mirbektoktogaraev/should-this-loan-be-approved-or-denied)
+    (CC BY-SA 4.0 license). Feel free to explore the data dictionary to understand
+    what each of the columns mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This project focuses mostly on the serving part i.e. making the model available
+    to other systems. Hence, the model will actually be deployed on your local machine
+    which is good for testing but is suboptimal for the real world. Here are the main
+    steps that deployments for Flask and FastAPI will follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create API endpoint (using Flask or FastAPI)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Containerise the application (endpoint) using Docker
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the Docker image locally, creating a server
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Test the server performance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/65fedce1efd4c8aa8517cdbb8b8f4f9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Project flow diagram. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sounds exciting, right? Well, let’s get started then!
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Flask?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Flask is a popular and widely adopted web framework for Python due to its lightweight
+    nature and minimal installation requirements. It offers a straightforward approach
+    to developing REST APIs that are ideal for serving machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The typical workflow for Flask involves defining a prediction HTTP endpoint
+    and linking it to specific Python functions that receive data as input and generate
+    predictions as output. This endpoint can then be accessed by users and other applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create Flask App
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’re interested in simply creating a prediction endpoint, it’s going to
+    be quite simple. All you need to do is to deserialise the model, create the `Flask`
+    application object, and specify the prediction endpoint with `POST` method. More
+    information about `POST` and other methods you can find [here](https://pythonbasics.org/flask-http-methods/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most important part of the code above is the `predict` function. It reads
+    the json input which in this case is a bunch of attributes describing a loan application.
+    It then takes this data, transforms it to the DataFrame, and passes it through
+    the model. The resulting probability of a default is then formatted back into
+    json and returned. When this app is deployed locally, we can get the prediction
+    by sending a request with json-formatted data to `http://0.0.0.0:8989/predict`
+    url. Let’s try it out! To launch the server, we can simply run the Python file
+    with the command below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ad4f024964d8a4c64e23625f5694ea5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Expected output. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When this command is run you should the message that you app is running at the
+    `[http://0.0.0.0:8989/](http://0.0.0.0:8989/)` address. For now, let’s ignore
+    a big red warning and test the app. To check if the app is working as expected,
+    we can send a test request (loan application data) to the app and see if we get
+    a response (default probability prediction) in return.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you managed to get a response with probability — congrats! You’ve deployed
+    the model using your own computer as a server. Now, let’s kick it up a notch and
+    package your deployment app using Docker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Containerise Flask App
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Containerisation is the process of encapsulating your application and all of
+    its dependencies (including Python) into a self-contained, isolated package that
+    can run consistently across different environments (e.g. locally, in the cloud,
+    on your friend’s laptop, etc.). You can achieve this with Docker, and all you
+    need to do is to correctly specify the Dockerfile, build the image and then run
+    it. Dockerfile gives instructions to your container e.g. which version of Python
+    to use, which packages to install, and which commands to run. There’s a great
+    [video tutorial](https://www.youtube.com/watch?v=0qG_0CPQhpg&t=138s) about Docker
+    if you’re interested to find out more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s how it can look like for the Flask application above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we can build the image using `docker build` command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`-t` gives you a option to name your docker image and provide a tag for it,
+    so this image’s name is `deafult-service` with a tag of `v01` . The dot at the
+    end refers to the PATH argument that needs to be provided. It’s the location of
+    your model, application code, etc. Since I assume that you’re building this image
+    in the directory with all the code, PATH is set to `.` which means current directory.
+    It might take some time to build this image but once it’s done, you should be
+    able to see it when you run `docker images` .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s run the Dockerised app using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`-it` flag makes the Docker image run in an interactive mode, meaning that
+    you’ll be able to see the code logs in the shell and to stop the image when needed
+    using Ctrl+C. `--rm` ensures that the container is automatically removed when
+    you stop the image. Finally, `-p` makes the ports from inside Docker image available
+    outside of it. The command above maps port 8989 from within Docker to the localhost,
+    making our endpoint available at the same address.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Test Flask App
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that our model is successfully deployed using Flask and the deployment container
+    is up and running (at least locally), it’s time to evaluate its performance. At
+    this point, our focus is on serving metrics such as response time and the server’s
+    capability to handle requests per second, rather than ML metrics like RMSE or
+    F1 score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing Using Script
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To obtain a rough estimation of response latency, we can create a script that
+    sends several requests to the server and measure the time taken (usually in milliseconds)
+    for the server to return a prediction. However, it’s important to note that the
+    response time is not constant, so we need to measure the median latency to estimate
+    the time users usually wait to receive a response, and the 95th latency percentile
+    to measure the worst-case scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This code resides in `measure_response.py` , so we can simply run this python
+    file to measure these latency metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3cdd4664fe35f46545d8d239bdfda2e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Latency metrics. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The median response time turned out to be 9 ms, but the worst case scenario
+    is more than 10x this time. If this performance is satisfactory or not is up to
+    you and the product manager but at least now you’re aware of these metrics and
+    can work further to improve them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing Using Locust
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Locust](https://docs.locust.io/en/stable/what-is-locust.html) is a Python
+    package designed to test the performance and scalability of web applications.
+    We’re going to use Locust to generate a more advanced testing scenario since it
+    allows to configure parameters like the number of users (i.e. loan applicants)
+    per second.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First things first, the package can be installed by running `pip install locust`
+    in your terminal. Then, we need to define a test scenario which will specify what
+    our imaginary user will perform with our server. In our case it’s quite straightforward
+    — the user will send us a request with the (json formatted) information about
+    their loan application and will receive a response from our deployed model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the Locust task is very similar to a test ping that we did above.
+    The only difference is that it needs to be wrapped in a class that inherits from
+    `locust.HttpUser` and the performed task (send data and get response) needs to
+    be decorated with `@task` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: To statrt load testing we simply need to run the command below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: When it launches, you’ll be able to access the testing UI at `http://0.0.0.0:8089`
+    where you’ll need to specify the application’s URL, number of users and spawn
+    rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb95bf598de56bb0f574b4d1665673a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Locust UI. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spawn rate of 5 and with 100 users means that every second there will be 5 new
+    users sends requests to your app, until their number reaches 100\. This means
+    that at its peak, our app will need to handle 100 requests per second. Now, let’s
+    click the **Start swarming** button and move to the charts section of the UI.
+    Below I’m going to present results for my machine but they’ll certainly be different
+    to yours, so make sure to run this on your own as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24e3d0775540ab8e8c6629b8fbeadd81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Locust 100 users test visualisation. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You’ll see that as the traffic builds up, your response time will get slower.
+    There are going to be some occasional peaks as well, so it’s important to understand
+    when they happen and why. Most importantly, Locust helps us understand that our
+    local server can handle 100 requests per second with median response time of ~250ms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can keep stress testing our app and identify the load that it cannot manage.
+    For this, let’s increase the number of users to 1000 to see what happens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ee590e409dd2cdb7b504ea5118f2e3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Locust 1000 users test visualisation. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looks like the breaking point of my local server is ~ 180 concurrent users.
+    This is an important piece of information that we were able to extract using Locust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Good job for getting this far! I hope that this post has provided you with a
+    practical and insightful introduction to model deployment. By following this project
+    or adapting it to your specific model, you should now have a thorough comprehension
+    of the essential steps involved in model deployment. Specifically, you have gained
+    knowledge on creating REST API endpoints for your model using Flask, containerising
+    them with Docker, and systematically testing these endpoints using Locust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next post, I’ll be covering FastAPI, BentoML, cloud deployment and much
+    more so make sure to subscribe, clap, and leave a comment if something is unclear.
+  prefs: []
+  type: TYPE_NORMAL

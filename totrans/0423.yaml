@@ -1,0 +1,447 @@
+- en: Build a Transparent Question-Answering Bot for Your Documents with LangChain
+    and GPT-3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/build-a-transparent-question-answering-bot-for-your-documents-with-langchain-and-gpt-3-7f6a71f379f8](https://towardsdatascience.com/build-a-transparent-question-answering-bot-for-your-documents-with-langchain-and-gpt-3-7f6a71f379f8)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Guide to developing an informative QA bot with displayed sources used
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://konstantin-rink.medium.com/?source=post_page-----7f6a71f379f8--------------------------------)[![Konstantin
+    Rink](../Images/41bfc069d7382a0fd56f081eea7eb2d9.png)](https://konstantin-rink.medium.com/?source=post_page-----7f6a71f379f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7f6a71f379f8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7f6a71f379f8--------------------------------)
+    [Konstantin Rink](https://konstantin-rink.medium.com/?source=post_page-----7f6a71f379f8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7f6a71f379f8--------------------------------)
+    ·11 min read·Jul 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c24d8ab8c013ee7e02974a92cc9beff8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Justin Ha](https://unsplash.com/@mekanizm?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/de/fotos/XNn3SpMhiNE?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Question Answering system can be of great help in analyzing large amounts
+    of your data or documents. However, the sources (i.e., parts of your document)
+    that the model used to create the answer are usually not shown in the final answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the context and origin of responses is valuable not only for users
+    seeking accurate information, but also for developers wanting to continuously
+    improve their QA bots. With the sources included in the answer, developers gain
+    valuable insights into the model’s decision-making process, facilitating iterative
+    improvements and fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article shows how to use LangChain and GPT-3 (text-davinci-003) to create
+    a transparent Question-Answering bot that displays the sources used to generate
+    the answer by using two examples.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first example, you’ll learn how to create a transparent QA bot that leverages
+    your website’s content to answer questions. In the second example, we’ll explore
+    the use of transcripts from different YouTube videos, both with and without timestamps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Process the Data and Create a Vector Store
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we can leverage the capabilities of an LMM like GPT-3, we need to process
+    our documents (e.g., website content or YouTube transcripts) in the correct format
+    (first chunks, then embeddings) and store them in a vector store. Figure 1 below
+    shows the process flow from left to right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa6564c71496116719665fdfbd9b4f15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Process flow of data processing and the creation of a vector store
+    (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Website content example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this example, we’ll process the content of the web portal, [*It’s FOSS*](https://itsfoss.com/),
+    which specializes in Open Source technologies, with a particular focus on Linux.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we need to obtain a **list of all the articles** we wish to process and
+    store in our vector store. The code below reads the *sitemap-posts.xml* file,
+    which contains a list of links to all the articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: At the time of this article, the list contains over 969 links to articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the list of links, we can now write a little **helper function** called
+    `extract_content` that uses `BeautifulSoup` to extract specific elements from
+    the article’s page containing the relevant content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As a final step, we iterate over the list of links and apply our helper function
+    `extract_content` to each URL. For demonstration purposes, I have limited the
+    list to 10 elements. If you want to crawl all articles, simply remove `[0:10]`
+    from `article_links[0:10]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `articles` list now contains, for each article, a dictionary with the `"source"`
+    (link to the article) and `"content"` (content of the article). The link to the
+    article will be displayed later as the source in the final answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since GPT-3 comes with a **token limit** (4,096 tokens), it makes sense to split
+    long articles into **chunks**. These chunks will later be combined with a prompt
+    and sent to GPT-3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code below splits up the content of the articles into several chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use the `RecursiveCharacterTextSplitter` here because it aims to keep **semantically
+    relevant content together** for as long as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once this is done, all we have to do is execute the following line to store
+    the articles and their sources in our vector store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: For this example, we use [FAISS](https://github.com/facebookresearch/faiss)
+    as a **vector store** and `OpenAIEmbeddings` as our embedding model. Of course,
+    it would also be possible to explore other options for vector storage, such as
+    [Chroma](https://github.com/chroma-core/chroma), and for embedding models, try
+    out solutions from Hugging Face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: You can also store your vector store by running `article_store.save_local("your_name")`
+    so you don’t have to recreate it every time you use it. See [here](https://python.langchain.com/docs/modules/data_connection/vectorstores/integrations/faiss#saving-and-loading)
+    for more details.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In case you are **not interested in processing YouTube transcripts**, you can
+    **skip the part below** and **proceed to the next section** “Run Transparent Question
+    Answering”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: YouTube transcript example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The transcripts can be processed in two different and independent ways. The
+    **first option** demonstrates how to process YouTube transcripts while **preserving
+    the links to the videos** as sources (e.g., `[https://youtu.be/XYZ](https://youtu.be/XYZ).)`[).](https://youtu.be/XYZ).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **second part** does the same but illustrates how to **preserve the links,**
+    **including the timestamps** e.g., `https://youtu.be/XYZ&t=60`) for more granular
+    information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For both ways, the transcripts of the following YouTube videos from the channel
+    [StatQuest](https://www.youtube.com/@statquest/featured) are used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[XGBoost Part 1 (of 4): Regression](https://youtu.be/OtD8wVaFm6E)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[XGBoost Part 2 (of 4): Classification](https://youtu.be/8b1JEDvenQU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[XGBoost Part 3 (of 4): Mathematical Details](https://www.youtube.com/watch?v=ZVFeW798-2I)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[XGBoost Part 4 (of 4): Crazy Cool Optimizations](https://youtu.be/oRrKeUCEbq8)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**YouTube transcript example (without timestamps)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first part is very straightforward. The code below utilizes LangChain’s
+    DocumentLoader `YoutubeLoader`, which incorporates [youtube-transcript-api](https://pypi.org/project/youtube-transcript-api/)
+    and [pytube](https://pytube.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: To avoid any conflicts with the token limit, we split the data into several
+    chunks by using the `CharacterTextSplitter`. The `add_video_info` is set to *True*
+    to also **receive the title and author information** of the video.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The returned chunked transcripts are [document](https://api.python.langchain.com/en/latest/schema/langchain.schema.document.Document.html?highlight=document#langchain.schema.document.Document)
+    objects. Before creating embeddings and storing them in a vector store, we manipulate
+    or extend their metadata by adding information about the *title*, *author*, and
+    *link to the video*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: YouTube transcript example (with timestamps)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The second way is a bit **more sophisticated**. Here we retrieve the transcript
+    with a different package called [youtube-transcript-api](https://pypi.org/project/youtube-transcript-api/).
+    The output is a list of dictionaries containing the text, start time, and duration.
+    We needed to switch to a different package here, as the `YoutubeLoader` package
+    does not return the timestamps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An example can be seen here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating a document object out of each text entry would not make much sense,
+    as the entries are **too short** (e.g., 8 words per entry in the example above)
+    to be useful later. When searching in a vector store, only a limited number of
+    matching documents (e.g., 4) are returned, and the information content is insufficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, we need to aggregate or join the text entries into a proper chunk
+    of text first. The code snippet below contains a custom helper function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The helper applies **resampling** to adjust the frequency of the time **dimension
+    to 3 minute steps**. In other words, it **merges the transcripts into 3-minute
+    parts of text**. With this function in hand, we can now start fetching and processing
+    the transcriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: An excerpt of the outcome can be seen in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b617d92c19e8202d6e68ff670ca554d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Excerpt of transcripts_df (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the merged 3-minute parts could now cause issues with the token limits,
+    we need to process them with a **splitter** again before generating embeddings
+    and storing them in our vector store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Run Transparent Question Answering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With our filled vector store, we now can focus on the **transparent question
+    answering**. The figure below gives an overview of the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/011b144a50c651d7977825ab220ddd86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Overview of Transparent Question Answering Process (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by **defining a question**, which is then **converted** by the embedding
+    model or API **into an embedding**. The vector store utilizes this question embedding
+    to search for ’n’ (default: 4) **similar documents or chunks** in the storage.
+    Subsequently, the content of **each document or chunk is combined with a prompt**
+    and sent to GPT-3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results returned from GPT-3 are then **combined with another prompt** in
+    a **final step and sent back to GPT-3** once more to obtain the final answer,
+    including sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Website content example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before using `RetrievalQAWithSourcesChain`, we ensure our bot **memorizes**
+    previous conversations by implementing a memory. This enhances contextually relevant
+    interactions with users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: To integrate previous chat history into the used prompts, we need to modify
+    the existing template.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Afterward, we can utilize the `RetrievalQAWithSourcesChain` to ask questions.
+    In this example, we set **k=4**, which means we would query the vector store for
+    the 4 most similar documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is returned as a dictionary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can observe that the result contains the sources used to answer the given
+    question. To generate this final answer, the API was called **5 times**: 4 times
+    to extract relevant information from the 4 most similar chunks, and 1 additional
+    time to produce the conclusive answer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also ask questions referring to the **previous question**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The outcome would then look as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Keep in mind that for this questions the API was also called 5 times.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: YouTube transcript example (with and without timestamps)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The code for the YouTube transcript example looks quite similar to the one for
+    the website. First, we initialize the ConversationBufferMemory and create a custom
+    question prompt template.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then we create the QA chain with sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s ask a question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result for the example without timestamps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result for the example with timestamps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The combination of LangChain’s RetrievalQAWithSourcesChain and GPT-3 is excellent
+    for enhancing the transparency of Question Answering. As the process figure illustrates
+    (figure 3), **multiple calls** to OpenAI are necessary to obtain the final answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on your service usage and the number of similar documents you need
+    to process, the number of calls can increase, **resulting in higher costs**. It’s
+    definitely worth keeping an eye on that. However, for your hobby projects, this
+    shouldn’t be too critical. To keep a better eye on the costs and sent prompts,
+    one could consider using [Promptlayer](https://promptlayer.com/home) or [TruLens](https://medium.com/towards-artificial-intelligence/evaluate-and-monitor-the-experiments-with-your-llm-app-df391c0f51c9).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Colab notebooks can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Website example](https://github.com/darinkist/Medium-Article-Transparent-Question-Answering-Bot/blob/main/CodeForArticleWebsiteExample.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[YouTube example](https://github.com/darinkist/Medium-Article-Transparent-Question-Answering-Bot/blob/main/CodeForArticleYouTubeExample.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**LangChain RetrievalQAWithSourcesChain API documentation** [https://api.python.langchain.com/en/latest/chains/langchain.chains.qa_with_sources.retrieval.RetrievalQAWithSourcesChain.html](https://api.python.langchain.com/en/latest/chains/langchain.chains.qa_with_sources.retrieval.RetrievalQAWithSourcesChain.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Owners or creators have been asked in advance whether I am allowed to use
+    their content/data as examples for this article.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s FOSS., “It’s FOSS”, [https://itsfoss.com/](https://itsfoss.com/)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'StatQuest. “XGBoost Part 1 (of 4): Regression” *YouTube,* Joshua Starmer, 16
+    Dec. 2019, [https://youtu.be/OtD8wVaFm6E](https://youtu.be/OtD8wVaFm6E) .'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'StatQuest. “XGBoost Part 2 (of 4): Classification” *YouTube,* Joshua Starmer,
+    13 Jan. 2020, [https://youtu.be/8b1JEDvenQU](https://youtu.be/8b1JEDvenQU) .'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'StatQuest. “XGBoost Part 3 (of 4): Mathematical Details” *YouTube,* Joshua
+    Starmer, 10 Feb. 2020, [https://youtu.be/ZVFeW798-2I](https://youtu.be/ZVFeW798-2I)
+    .'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'StatQuest. “XGBoost Part 4 (of 4): Crazy Cool Optimizations” *YouTube,* Joshua
+    Starmer, 02 Mar. 2020, [https://youtu.be/oRrKeUCEbq8](https://youtu.be/oRrKeUCEbq8)
+    .'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

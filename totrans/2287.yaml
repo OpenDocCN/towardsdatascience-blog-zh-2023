@@ -1,0 +1,694 @@
+- en: Variational Autoencoder (VAE) with Discrete Distribution using Gumbel Softmax
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e](https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Theory and PyTorch Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[![Alexey
+    Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)
+    [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)
+    ·17 min read·Aug 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/596f70c179f4ea59a15aa4591018200b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://unsplash.com/photos/sbVu5zitZt0](https://unsplash.com/photos/sbVu5zitZt0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since this article is going to be extensive, I will provide the reader with
+    an index for better navigation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Brief Introduction to Variational Autoencoders (VAEs)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Kullback–Leibler (KL) divergence
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: VAE loss
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Reparameterization Trick
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sampling from a categorical distribution & the Gumbel-Max Trick
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generative models have become very popular nowadays thanks to their ability
+    to generate novel samples with inherent variability by learning and capturing
+    the underlying probability distribution of the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can identify two prominent families of generative models that are Generative
+    Adversarial Networks (GANs), Variational Autoencoders (VAEs) and Diffusion models.
+    In this article, we are going to dive deep into VAEs with a particular focus on
+    VAEs with categorical latent space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brief Introduction to Variational Autoencoders (VAEs)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Variational Autoencoders (VAEs) are a type of deep neural network used in unsupervised
+    machine learning. They belong to the family of autoencoders, which are neural
+    networks designed to learn efficient representations of data by compressing and
+    then reconstructing it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main idea behind VAEs is to learn a probability distribution of the data
+    in a **latent space**. This latent space is a lower-dimensional representation
+    of the input data, where each point corresponds to a particular data sample. For
+    example, given a vector in the latent space of dimension 3, we can think that
+    the first dimension to represent the eyes shape, 2nd the amount of beard and 3rd
+    the tan on a face of a generated picture of a person.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'VAEs have two key components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Encoder**: The encoder network takes in the input data and maps it to the
+    *parameters* of a probability distribution (usually Gaussian) in the latent space.
+    Instead of directly producing a single point in the latent space, the encoder
+    outputs the mean and variance of the distribution.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Outputting a distribution instead of a single point in the latent space acts
+    as regularization, so that when we pick a random point in the latent space, we
+    always have a meaningful image once this data point is decoded.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Decoder**: The decoder network takes samples from the latent space and reconstructs
+    them back into the original data space. It converts the latent representation
+    back to the data space using a process similar to that of the encoder but in reverse.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let’s illustrate this process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/745da0cc208b7e5fa82197ca2ab10402.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VAE encoder-decoder diagram, Image by Author (1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where *x* is the input image, *z* is a sampled vector in the latent space, μ
+    and σ are latent space parameters where μ is the means vector and σ is the standard
+    deviations vector. Finally, *x’* is the reconstructed image from the latent variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We want this **latent space to have 2 properties**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Close points in the latent space should output similarly looking pictures.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Any sampled point from the latent space should produce something similar to
+    the training data, i.e., if we train on peoples faces it should not produce any
+    face with 3 eyes or 4 ears.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To enforce the first, we need the encoder to map similar pictures to close latent
+    space parameters and then the decoder to map them back to similarly looking pictures
+    — this is achieved via image reconstruction loss. To enforce the second, we need
+    to add a regularization term. This regularization term is the Kullback–Leibler
+    (KL) divergence between the parameters returned by the encoder and the standard
+    Gaussian with mean of 0 and variance of 1 — N(0,1). By keeping the latent space
+    close to N(0,1) we make sure that the encoder does not produce distributions too
+    far apart from each other for each sample (by making means very different and
+    variances very small) that would lead to overfitting. If this happened, sampling
+    a value far away from any training point in the latent space would not produce
+    a meaningful image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kullback–Leibler (KL) divergence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'KL divergence, short for Kullback-Leibler divergence, is a measure of how one
+    probability distribution differs from another. Given two probability distributions
+    P(X) and Q(X), where X is a random variable, the KL divergence from Q to P, denoted
+    as KL(Q || P), is a non-negative value that indicates how much information is
+    lost when using Q to approximate P. It is not a symmetric measure, meaning KL(Q
+    || P) is generally different from KL(P || Q). The formula for continuous and discrete
+    variables are given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d925d61babf5602d7c28342fe39e0162.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: KL divergence, discrete case (2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1da2cc52851d5249b2f4572ed7ee776.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: KL divergence, continuous case (3)
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what is the intuition behind this formula and how is it derived?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose we have a dataset with observations **sampled from a distribution P(x)**
+    — {x1, x2, …, xn}, and we want to compare how likely these observations are generated
+    under the true distribution P(x) versus the approximation distribution Q(x). The
+    likelihood of observing the entire dataset under a probability distribution can
+    be calculated as the product of the individual probabilities of each observation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Likelihood of the data under P(x): L_P = P(x1) * P(x2) * … * P(xn)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Likelihood of the data under Q(x): L_Q = Q(x1) * Q(x2) * … * Q(xn)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Taking the ratio L_P / L_Q, we can compare how similar they are. If the ratio
+    is close to 1, the approximation distribution is similar to the true one, while
+    if this ratio is high, which means that the likelihood of a sequence sampled from
+    the true distribution according to the approximate distribution is significantly
+    lower, the two distributions are different. Obviously, it cannot be less than
+    1 because the data are sampled from the true distribution P(x).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Taking the logarithm of this ratio on both sides, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/37a19f28e5644d510762a16d5cbb911d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log of the ratio L_P / L_Q (4)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, if we take the expectation of this logarithm with respect to the true
+    distribution P(x) over the dataset, we get the expected log-likelihood ratio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1bd1eeab67eb14b2f85429f027752773.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The expectation of the log of the ratio L_P / L_Q (5)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is nothing else but the KL divergence! As a bonus, let’s now dive a bit
+    deeper to also understand how KL divergence is linked to cross-entropy. An attentive
+    reader has probably recognized that
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Σ P(x) * log(P(x)) in the formula is the **negative** **of the** **entropy**
+    of P(x), while — Σ P(x) * log(Q(x)) is the **cross-entropy** between P(x) and
+    Q(x). So, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3eeec6f0f9318a43e40865df35097504.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: KL divergence as the difference between cross-entropy and entropy (6)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, the entropy of the true data distribution P(x) is a constant that does
+    not depend on the approximation distribution Q(x). Therefore, **minimizing the
+    expected log-likelihood ratio E[log(L_P / L_Q)] is equivalent to minimizing the
+    cross-entropy H(P, Q)** between the true distribution P(x) and the approximation
+    distribution Q(x).
+  prefs: []
+  type: TYPE_NORMAL
+- en: VAE loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the “Brief Introduction to Variational Autoencoders (VAEs)” section, we provided
+    some intuition about how VAEs are optimized and that the latent space should satisfy
+    2 properties to generate meaningful images when we sample **any** random data
+    point from the latent space that is enforced by the reconstruction loss and KL
+    divergence regularization. In this section, we are going to dive into the mathematics
+    of these two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given some training data x = {x1, x2, …, xn} generated from a latent variable
+    z, our goal is to maximize the likelihood of this data to train our Variational
+    Autoencoder model. The likelihood of the data is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f98b29c80a96f7f1e29681632ad2c9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data likelihood (7)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We integrated out the latent variable because its not observable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, *p(x|z)* can be easily computed with the decoder network, and *p(z)* was
+    assumed to be a Gaussian. However, we have one big problem here — computing this
+    integral is actually impossible in the finite amount of time because we need to
+    integrate over all the latent space. Thus, we use the Bayesian rule to compute
+    our *p(x)* differently:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a095bb9c8190c00a58ea3acda96b43d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian rule for p(x) (8)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, *p(z|x)* is intractable. The intractability of *p*(*z*∣*x*) arises because
+    we need to compute the integral of *p*(*z*∣*x*) over all possible values of *z*
+    for each data point *x*. Formally, this integral can be expressed as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c6a7e03a33344edff066e8d510cb7d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian rule for p(z|x) (9)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because of this intractability, in VAEs, we resort to using an approximate
+    distribution (Gaussian in our case) *q*(*z*∣*x*) that is easier to work with and
+    is computationally tractable. This approximate distribution is learned through
+    the encoder network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c34075d614ffec6788852560fd3b6af3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Approximated distribution of p(z|x) (10)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we have all the elements in place and we can approximate *p(x)* with *p(x|z)*
+    computed with the decoder network and *p(z|x)* approximated by the encoder *q*.
+    Applying the log to both sides of equation 9 and doing some algebraic manipulations,
+    we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a67fee274a602f33d0ead044f9567330.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: log probability of p(x) (11)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, applying the Expectation operator on both sides :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95fe391e4083a11e2668293d20855f46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Expectation of log probability of p(x) (12)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which is equal to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b88ef402aaa0d9bc5ad6bafc1ca00bb7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Expectation of log probability of p(x) — different form (13)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the above figure, the first term is the reconstruction term, i.e., how well
+    our model can reconstruct the training data *x* from the latent variable. The
+    second term is the KL divergence between the prior of *z* — *N(0,1)* and the samples
+    from the encoder. The third term is the KL divergence between the encoder and
+    the posterior of the decoder, which is intractable. If we drop the last term,
+    we get the lower bound on the data likelihood as KL is always ≥ 0 which is called
+    Evidence Lower Bound (ELBO). Thus we finally have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39c838302f2a69166a13a8911c5db4e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evidence Lower Bound (ELBO) (14)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So when training VAE, we are trying to maximize ELBO, which is equivalent to
+    maximizing the probability of our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reparameterization Trick
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with understanding what the reparameterization trick is, as it will
+    be crucial to understand that Gumbel-Softmax uses something similar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we have seen in the first section, the encoder outputs the mean and the variance
+    parameters of the Normal distribution, then we sample a random vector from the
+    Normal variable with those parameters and pass this latent vector through the
+    decoder to reconstruct the initial image. To minimize the reconstruction loss
+    and make the network learn, we need to backpropagate from this reconstruction
+    loss, but there is a problem — the **latent variable Z, which is a sample from
+    a Gaussian is not differentiable**. Think about it — how can you differentiate
+    a sample? Thus, we cannot use back-propagation. The solution to this is to use
+    the reparameterization trick.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make the random variable *Z* differentiable, we need to split it into a
+    deterministic part which is differentiable, and a stochastic part which is not
+    differentiable. Any sample from a random Normal *Z ~ N(μ, σ)* can be written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Z = μ + N(0,1) = σ = μ +* ***ε*** *σ* where ***ε ~*** *N(0,1)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So **μ and σ are deterministic,** and we can use back-propagation on it, while
+    **ε is the stochastic part** which we cannot backpropagate. Thus, we can differentiate
+    with respect to μ and σ:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9b9b06ced534d58c16a07b86cb1633b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Derivatives of random variable Z wrt mean and std (15)
+  prefs: []
+  type: TYPE_NORMAL
+- en: …to **learn the mean and the standard deviation of the Normal distribution in
+    the latent space we sample from**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sampling from a categorical distribution & the Gumbel-Max Trick
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What if, instead of having a continuous latent distribution, we want to model
+    the latent space as a Categorical distribution? What is even the reason someone
+    wants to do this, you will ask? Well, discrete representations can be useful in
+    many cases, for example sampling discrete action in reinforcement learning problems,
+    generation of discrete tokens in text, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how can we sample from a categorical distribution and learn its parameters,
+    making it differentiable? We can reuse the idea of the reparameterization trick,
+    adapting it to this problem!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firstly though, let’s try to understand how to sample from a categorical distribution.
+    Say we have the following vector of probabilities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*theta* = [0.05, 0.25, 0.7] that represent the following categories — [Red,
+    Blue, White]. To sample, we need a source of randomness where Uniform distribution
+    between 0 and 1 is normally used. Recall that with a Uniform distribution, sampling
+    between 0 and 1 is equally likely. Thus, we sample from a Uniform, and to transform
+    it to Categorical, we can slice it according to our probabilities *theta.* Let’s
+    define a cumulative sum vector *theta_cum* = [0.05, 0.3, 1] which represents the
+    graph below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given this sample from a Uniform distribution, e.g., 0.31, we choose the category
+    whose cumulative probability exceeds the generated random number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*argmax(theta_cum ≥ U(0,1)) = argmax([False, True, True])* Which corresponds
+    to “Blue” in the example as argmax takes the first index corresponding to *True*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78639204643d738e3d159d9df564b1e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cumulative probability categorical distribution, Image by Author (16)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, there is another way we can sample from a categorical distribution — instead
+    of using Uniform distribution, we use Gumbel distribution defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1204860db192dcdbb6204338cf568cdf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gumbel distribution (17)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assuming we have a vector of (log) probabilities like before
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*theta = [log(alpha1), log(alpha2), log(alpha3)],* which are parameters that
+    we want to estimate using backpropagation. To use backpropagation, we replicate
+    what was done in the reparameterization trick section — have a deterministic part,
+    i.e., class log probabilities that are our parameters and a stochastic part given
+    by a random standard Gumbel noise.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To sample from a categorical distribution using Gumbel, we do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*argmax([log(alpha1) + G1, log(alpha2) + G2, log(alpha3) + G3])*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where *theta* is the deterministic part, and Gumbel noise is the stochastic
+    part. We can propagate through this sum of deterministic and stochastic parts.
+    However, **argmax is not a differentiable** function. Thus we replace it with
+    **Softmax** with a temperature **τ** to make everything differentiable. So the
+    probability of a category *yi* becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/246ae82a400b4a423d499e52ab89d585.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample with Gumbel-Softmax distribution (18)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Low **τ** will make the Softmax more similar to argmax, while higher **τ** will
+    make it closer to the Uniform distribution. Indeed, as we decrease the temperature
+    to very low values like 1e-05, the probabilities become almost like selecting
+    an argmax, i.e., we basically sample from a discrete distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We take as an example the MNIST dataset (License: Public Domain / Source: [http://yann.lecun.com/exdb/mnist/](http://yann.lecun.com/exdb/mnist/),
+    also available in *torchvision.datasets*) with the objective of learning a generative
+    model assuming binary images. The latent variable size is assumed to be 20 with
+    10 categorical variables (10 numbers). The prior is a categorical distribution
+    over 10 categories with a Uniform prior probability of 1/10.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.** Let’s start from implementing the Gumbel softmax function `gumbel_softmax`.
+    As we said previously, this is given by the sum of log probabilities (logits)
+    of each category + some randomness given by the Gumbel distribution. In case of
+    3 categories we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*softmax([log(alpha1) + G1, log(alpha2) + G2, log(alpha3) + G3])* Softmax is
+    used instead instead of argmax for differentiability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**One additional note:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can notice one small trick in `gambel_softmax` function — if the parameter
+    `hard` is True, we take *argmax* instead of softmax. When evaluating, we normally
+    take the *argmax* (this is what we do in. `model.samle_img`), while during training,
+    we use softmax because of the non-differentiability of the *argmax* operation.
+    However, this is not necessary, and we can take *argmax* during training too,
+    by **skipping** the gradient of `y_hard` in `gumbel_softmax` function and differentiating
+    w.r.t. softmax `y`. A short example will clarify:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When *skip_d = False* we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/df = 3
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/dd = dl/df * df/dd = (3) * (4) = 12
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/dc = dl/df * df/dd * dd/dc = (3) * (4) * (2 * c) = 144
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/da = dl/df * df/dd * dd/dc * dc/da = (3) * (4) * (2 * c) * (2) = 288
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/db = dl/df * df/dd * dd/dc * dc/db = (3) * (4) * (2 * c) * (2) = 288
+  prefs: []
+  type: TYPE_NORMAL
+- en: While when *skip_d = True:* dl/df = 3
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/dd = dl/df * df/dd = (3) * (4) = 12
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/dc = dl/df * df/dd = (3) * (4) = 12
+  prefs: []
+  type: TYPE_NORMAL
+- en: From now on we skip dd/dc, i.e. we set the gradient dl/dc = dl/dd.
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/da = dl/df * df/dd * dc/da = (3) * (4) * (2) = 24
+  prefs: []
+  type: TYPE_NORMAL
+- en: dl/db = dl/df * df/dd * dc/db = (3) * (4) * (2) = 24
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the example above, the value of the *loss* is the same but the gradients
+    are different. In our model the value will not be the same though as we are setting
+    `latent_z` equal to `y_hard` when `hard=True` and equal to softmax `y` when `hard=False`,
+    but the backpropagated gradients of `y` will be the same in both cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.** Now let’s define our VAE model. The encoder, which takes an image and
+    maps it to the log probabilities of the categorical variables, is given by 3 linear
+    layers with ReLU non-linearities. The decoder, that maps back the latent space
+    vector to the image space, is given by 3 linear layers with 2 ReLU non-linearities
+    and last sigmoid non-linearity. Sigmoid outputs directly the probability, which
+    is convenient as we model our MNIST images (each pixel) as a Bernoulli variable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the forward function, we first compute the logits from the encoder with
+    the Gumbel Softmax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we decode them that gives us the probability of a Bernoulli for each
+    pixel. We can then sample from it to generate an image with the probabilities
+    parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, let’s compute the ELBO loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/032116c92edcb9705e44c512e2016738.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: EBLO loss (19)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For first term (reconstruction loss), we need to compute the log-likelihood
+    of the real data under our estimated model, which this tells us how likely is
+    the real image under our model. We have computed before `dist_x` from the decoder,
+    which is what we are going to use to estimate this probability:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we compute the regularization given by the KL divergence between the prior
+    given by categorical distribution over 10 categories with a Uniform prior probability
+    1/10 and the latent space categorical parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The full code, including the training function and plotting utilities are given
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At the beginning of the training we have high loss and bad reconstruction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6eea522101524ea859835100680bee4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reconstruction vs Real, **start** of training, Image by Author (20)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Towards the end of the training, we get quite a good reconstruction and much
+    lower loss. Obviously, we could train for longer to get even better reconstruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab7e7a269ee0d79347bb11222c85e9be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reconstruction vs Real, **end** of training, Image by Author (21)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we discovered that VAE can also be modeled with categorical
+    latent space. This becomes very useful when we want to sample discrete actions
+    in reinforcement learning problems or generate discrete tokens for text. We encountered
+    a problem when trying to differentiate the *argmax* operation to select the categorical
+    variable, as *argmax* is not differentiable, but this was solved thanks to the
+    Gumbel Softmax inspired by the reparameterization trick.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alexml0123/membership?source=post_page-----b3f749b3417e--------------------------------)
+    [## Join Medium with my referral link — Alexey Kravets'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@alexml0123/membership?source=post_page-----b3f749b3417e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [https://jhui.github.io/2017/03/06/Variational-autoencoders/](https://jhui.github.io/2017/03/06/Variational-autoencoders/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://blog.evjang.com/2016/11/tutorial-categorical-variational.html](https://blog.evjang.com/2016/11/tutorial-categorical-variational.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [https://www.youtube.com/watch?v=Q3HU2vEhD5Y&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=19](https://www.youtube.com/watch?v=Q3HU2vEhD5Y&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=19)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [https://arxiv.org/pdf/1611.01144.pdf](https://arxiv.org/pdf/1611.01144.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [https://github.com/shaabhishek/gumbel-softmax-pytorch](https://github.com/shaabhishek/gumbel-softmax-pytorch)'
+  prefs: []
+  type: TYPE_NORMAL

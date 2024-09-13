@@ -1,0 +1,352 @@
+- en: Augmenting LLMs with RAG
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/augmenting-llms-with-rag-f79de914e672](https://towardsdatascience.com/augmenting-llms-with-rag-f79de914e672)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An End to End Example Of Seeing How Well An LLM Model Can Answer Amazon SageMaker
+    Related Questions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----f79de914e672--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----f79de914e672--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f79de914e672--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f79de914e672--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----f79de914e672--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f79de914e672--------------------------------)
+    ·9 min read·Oct 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/553cc94765b38c8f5437dbc15e3856a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/lUSFeh77gcs)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve written quite a few blogs on Medium around different technical topics,
+    and more heavily around [Machine Learning (ML) Model Hosting on Amazon SageMaker](https://ram-vegiraju.medium.com/list/amazon-sagemaker-f1b06f720fba).
+    I’ve also lately developed an interest for the growing Generative AI/Large Language
+    Model ecosystem (like everyone else in the industry lol).
+  prefs: []
+  type: TYPE_NORMAL
+- en: These two different verticals led me to an interesting question. **How good
+    are my Medium articles at teaching Amazon SageMaker?** To answer this I decided
+    to implement a Generative AI solution that utilizes [Retrieval Augmented Generation
+    (RAG)](https://docs.aws.amazon.com/sagemaker/latest/dg/jumpstart-foundation-models-customize-rag.html)
+    with access to some of my articles to see how well it could answer some SageMaker
+    related questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article we’ll take a look at building an end to end Generative AI solution
+    and utilize a few different popular tools to operationalize this workflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**LangChain**](https://www.langchain.com/): LangChain is a popular Python
+    framework that helps simplify Generative AI applications by providing ready made
+    modules that help with Prompt Engineering, RAG implementation, and LLM workflow
+    orchestration.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**OpenAI**](https://openai.com/): LangChain will take care of the orchestration
+    of our Generative AI App, the brains however is still the model. In this case
+    we use an OpenAI provided LLM, but LangChain also integrates with different model
+    sources such as SageMaker Endpoints, Cohere, etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**NOTE**: This article assumes an intermediate understanding of Python and
+    a basic understanding of LangChain in specific. I would suggest following this
+    [article](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c)
+    for understanding LangChain and building Generative AI applications better.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DISCLAIMER**: I am a Machine Learning Architect at AWS and my opinions are
+    my own.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) by themselves are incredibly powerful and can often
+    answer many questions without assistance from fine-tuning or additional knowledge/context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This however can become a bottleneck when you need access to other specific
+    sources of data and especially recent data. For example, while OpenAI has been
+    trained on a large corpus of data it does not have knowledge of my recent Medium
+    articles that I have written.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case we want to check how well my Medium articles can help assist with
+    answering questions about Amazon SageMaker. OpenAI’s models already do have some
+    knowledge of Amazon SageMaker from the corpus they have been trained on. What
+    we want to see is how much performance we can gain by providing these LLMs with
+    access to my Medium articles. These can serve almost as a cheat sheet of sort
+    for LLMs that already have a large knowledge bank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we provide these LLMs access to this additional knowledge and information?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why We Need RAG
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is where [Retrieval Augmented Generation (RAG)](https://aws.amazon.com/blogs/machine-learning/question-answering-using-retrieval-augmented-generation-with-foundation-models-in-amazon-sagemaker-jumpstart/)
+    comes into play. With RAG we provide an information retrieval system that gives
+    us access to the additional data that we need. This will help us answer more advanced
+    SageMaker questions and augment our LLMs knowledge base. To implement a basic
+    RAG system we need a few components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Embeddings Model**](https://medium.com/@ryanntk/choosing-the-right-embedding-model-a-guide-for-llm-applications-7a60180d28e3):
+    For the data we provide access to, this can’t simply be just a bunch of text or
+    images, rather they need to be captured in a numeric/vector format for all NLP
+    models (including LLMs) to understand. To transform our data, we utilize the [OpenAI
+    Embeddings Model](https://platform.openai.com/docs/guides/embeddings), but there
+    are a variety of different choices such as Cohere, Amazon Titan, etc that you
+    can evaluate for performance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Vector Store**](https://aws.amazon.com/blogs/database/the-role-of-vector-datastores-in-generative-ai-applications/):
+    Once we have our embeddings, we need to utilize a vector datastore that not only
+    stores these vectors but also provides an efficient manner in which we can index
+    and retrieve relevant data. When a user has a query, we want to return any relevant
+    context that contains similarity to this input. Most of these vector stores are
+    powered by KNN and other nearest neighbor algorithms to provide relevant context
+    for the initial question. In the case of this solution we utilize the Facebook
+    library [FAISS](https://github.com/facebookresearch/faiss), which can be utilized
+    for efficient similarity search and clustering of vectors.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**LLM Model**: We have two models in this case, the embeddings model to create
+    the embeddings, but we still also need the main LLM that takes these embeddings
+    and the user input to return an output. In this case also we use the default [ChatOpenAI
+    model](https://platform.openai.com/docs/guides/gpt).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/52f11376cdf9d37a40cb69cc03dc207c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RAG Flow (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Essentially you can think of RAG as a performance enhancer of LLMs by providing
+    extra knowledge that the base LLM might not already have. In the next section
+    we’ll take a look at how we can implement these concepts utilizing LangChain and
+    OpenAI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generative AI Application & Sample Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To get started you need an OpenAI API Key, which you can find and install at
+    the following [link](https://platform.openai.com/docs/api-reference). Note the
+    charges per rate/API limit so that you have an understanding of the pricing structure.
+    For development we work in a [SageMaker Classic Notebook Instance](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html),
+    but any environment with OpenAI and LangChain installed should be sufficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: After setting up LangChain and OpenAI, we create a local directory with ten
+    of my popular Medium articles stored as PDFs. This will be the additional data/information
+    we are making available to my LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6236ef526322058a90cadb9927e65e01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Medium Articles (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As next steps we need to be able to load this data and also create a directory
+    for where we can store the embeddings that we generate. LangChain has lots of
+    utilities that will automatically load and also split/chunk your data for you.
+    [Chunking](https://www.pinecone.io/learn/chunking-strategies/) is specifically
+    important as we don’t want larger sets of data for the embeddings we generate.
+    The larger the data the more potential noise that can be introduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case we use the LangChain provided [PDF loader](https://python.langchain.com/docs/modules/data_connection/document_loaders/pdf)
+    to load and split our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then instantiate our OpenAI Embeddings Model. We use the Embeddings model
+    to create our embeddings and populate the local Cache directory we have created.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/40cb3e81281f6644ffa9e9b5ee5447c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Embeddings Generated (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then create our FAISS Vector Store and push our embedded documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then use a [RetrievalQA Chain](https://python.langchain.com/docs/use_cases/question_answering/how_to/vector_db_qa)
+    to bring all these moving parts together. We specify our vector store we have
+    created above and also pass in the ChatOpenAI default LLM as our model that will
+    recive both the input and the relevant documents for context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then can compare performance of the model without RAG as opposed to our RAG
+    based chain by passing in the same prompts and observing results. Let’s run a
+    loop of sample prompts of varying difficulties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We see the first question itself is very specific to my writing. We know the
+    OpenAI model does not have any access or knowledge of my articles, thus it outputs
+    a pretty random and inaccurate description.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/877944bd4385e258faa94879d793f6b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: OpenAI Response (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively, our RAG chain has had access to some of my Medium articles and
+    produces a somewhat accurate summary of my writing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf7aeab9513869d39110eec827a8a987.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RAG Response (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can then test both approaches by asking some SageMaker specific questions.
+    We start with a very basic question: What is Amazon SageMaker? As the OpenAI LLM
+    has knowledge of this matter it responds with a fairly accurate and comparable
+    response to our RAG based approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7afbc2d5452eb56315db8d8e37ce6e14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: OpenAI vs RAG Response (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where we start seeing the real benefits of RAG is as the questions start getting
+    more specific and difficult. An example of this is the prompt comparing the two
+    advanced hosting options: [Multi-Model Endpoints (MME)](https://docs.aws.amazon.com/sagemaker/latest/dg/multi-model-endpoints.html)
+    and [Multi-Container Endpoints (MCE)](https://aws.amazon.com/blogs/machine-learning/part-5-model-hosting-patterns-in-amazon-sagemaker-cost-efficient-ml-inference-with-multi-framework-models-on-amazon-sagemaker/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30fcd243656d7712a3246e49bb5f1451.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MME vs MCE (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we see that the Vanilla OpenAI response gives a completely inaccurate answer,
+    it has no knowledge of these two recent capabilities. My [specific Medium article
+    around MCE vs MME](/sagemaker-multi-model-vs-multi-container-endpoints-304f4c151540),
+    however gives the model context around these offerings and it’s thus able to answer
+    the query accurately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With RAG we can augment the basic knowledge our LLM already has around SageMaker.
+    In the next section we can look at different methods to improve this prototype
+    that we have built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Can We Improve Performance?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While this is a neat solution, there’s still a lot of room for improvement
+    to scale this up. A few potential methods you can use to improve RAG based performance
+    include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data Size and Quality**: In this case we’ve only provided ten Medium articles
+    and still see solid performance. To boost this we could also provide access to
+    my entire set of Medium articles or anything with the tag “SageMaker” for instance.
+    We’ve also directly copied my articles without any formatting and the PDFs themselves
+    are very unstructured, cleaning up the data format can help make chunking and
+    therefore performance more optimal. **NOTE:** It’s also essential that the data
+    you use should only rely on resources/articles that you are allowed to use for
+    your purpose. In this example there’s no issue with my Medium articles as the
+    source, but always make sure to ensure that you are using data in an authorized
+    manner.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Vector Store Optimization**: In this case we’ve utilized the default FAISS
+    vector store setup. Items you can tune are the speed of the vector store indexing
+    as well as the number of documents to retrieve and provide to your LLM.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fine-Tuning vs RAG**: While RAG helps attain domain specific knowledge, fine-tuning
+    is also another method to help an LLM attain a specific knowledge set. You want
+    to evaluate your use-case here as well to see if fine-tuning makes more sense
+    or a combination of both. Generally fine-tuning is very performant if you have
+    quality data available. In this case with RAG we didn’t even necessarily format
+    or shape our data, yet we were still able to yield strong results. With fine-tuning
+    data availability AND quality is essential. For a full breakdown of both options
+    please refer to the following [article](/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/LangChain-Samples/tree/master/Medium-SageMaker-Analyzer?source=post_page-----f79de914e672--------------------------------)
+    [## LangChain-Samples/Medium-SageMaker-Analyzer at master · RamVegiraju/LangChain-Samples'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples integrating with LangChain for GenAI. Contribute to RamVegiraju/LangChain-Samples
+    development by creating an…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/LangChain-Samples/tree/master/Medium-SageMaker-Analyzer?source=post_page-----f79de914e672--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for the entire example can be found at the link above. This was a fun
+    project to evaluate the value of my articles while also showing how to integrate
+    RAG into your Generative AI applications. In coming articles we’ll continue to
+    explore more Generative AI and LLM driven capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always thank you for reading and feel free to leave any feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.*'
+  prefs: []
+  type: TYPE_NORMAL

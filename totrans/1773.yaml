@@ -1,0 +1,416 @@
+- en: Reduce your Cloud Composer bills (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/reduce-your-cloud-composer-bills-f03e112df689](https://towardsdatascience.com/reduce-your-cloud-composer-bills-f03e112df689)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Use Scheduled CICD pipelines to shut down environments and restore them to their
+    previous state
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)[![Marc
+    Djohossou](../Images/096f7877d14b7671e48500175931dbea.png)](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------)
+    [Marc Djohossou](https://marcgeremie.medium.com/?source=post_page-----f03e112df689--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f03e112df689--------------------------------)
+    ·9 min read·Mar 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/527a433072b680b844334d17b96d7046.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Sasun Bughdaryan](https://unsplash.com/@sasun1990?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Cloud Composer](https://cloud.google.com/composer) is an managed and scalable
+    installation of the popular sophisticated job orchestrator [Airflow](https://airflow.apache.org/).
+    The service is available from the Google Cloud Platform (GCP) in 2 flavors: Cloud
+    Composer 1 and Cloud Composer 2, the main difference being Workers Autoscaling
+    that is available only in Cloud Composer 2.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For having been using the service for many years, I can definitely say that
+    it’s worth the try. Yet, some companies would steer clear of the service and the
+    reason for that might not surprise you that much. **Money**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this writing, I’ll be sharing an **efficient way to reduce the bill of Cloud
+    Composer**. Though, the code snippets will only work for Cloud Composer 2, the
+    strategy advocated still applies for Cloud Composer 1 users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please, note that this is the first part of 2 parts series. The second article
+    can be consulted [here](/reduce-your-cloud-composer-bills-part-2-af63da03806f).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Following are the main topics that will be covered:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Cloud Composer 2 pricing (Part 1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Snapshots as a way to shut down Composer and still preserve its state (Part
+    1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Creating Composer Environments using Snapshots (Part 1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Summing Up (Part 1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Destroying Composer Environments To Save Money (Part 2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Updating Composer Environments (Part 2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Automating Composer Environments Creation and Destruction (Part 2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Summing Up (Part 2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Understanding Cloud Composer 2 pricing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main concept in Cloud Composer is that of an [Environment](https://cloud.google.com/composer/docs/composer-2/composer-overview).
+    Basically, an environment corresponds to an instance of Airflow, with a name and
+    a version. Each Environment is made of a set of Google Cloud services which usage
+    incurs some cost. For instance, the Airflow metadata database is available inside
+    each Environment as a [Cloud SQL instance](https://cloud.google.com/sql?hl=en)
+    and the Airflow Scheduler is deployed in each Environment as a [Google Kubernetes
+    Engine Pod](https://cloud.google.com/kubernetes-engine/docs/concepts/network-overview?hl=en#pods).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are 3 main parts to Cloud Composer pricing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Compute Cost**: This is the cost of the Google Kubernetes Engine Nodes
+    that run the Airflow Scheduler, Airflow Workers, Airflow Triggerers, Airflow Web
+    Servers and other Cloud Composer components.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Database Storage Cost**: This corresponds to the Cloud SQL Storage cost
+    for the Airflow metadata database storage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Environment Scale Cost**: The environment scale is related to certain
+    Cloud Composer components that are entirely controlled by Google Cloud. Those
+    components’ scale is automatically adjusted depending on the value that is set
+    for the *environment size* parameter (small | medium | large). The Cloud SQL Instance
+    for the Airflow metadata database, the Cloud SQL proxy and the Redis Task Queue
+    are examples of those components.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A more detailed documentation on Cloud Composer 2 pricing is available [here](https://cloud.google.com/composer/pricing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/157df62cfc992dca3e8a099c18a4539c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image By Author, Cloud Composer pricing
+  prefs: []
+  type: TYPE_NORMAL
+- en: Snapshots as a way to shut down Composer and still preserve its state
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When it comes to lowering the cost of using Cloud Composer, there aren’t tons
+    of ideas to try. The common route people would go is to try to adjust the size
+    of the Environment in a way that there are no waste of resources. This implies
+    using the minimum required amount of GKE Nodes for Airflow Workers and the smallest
+    possible Cloud SQL instance, regarding the actual workloads that will be deployed
+    on the Composer Environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Frankly, that’s easier said than done. With its autoscaling feature, Cloud Composer
+    2 simplifies our life by making it possible to automatically downscale the Airflow
+    Workers count to 1, when there is no much demand on the Environment. However,
+    downscaling to zero is not supported and there is no way to stop or disable a
+    Cloud Composer environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a serious pain point for many Cloud Composer users who might be under
+    the impression of spending more money on Cloud Composer than they actually benefit.
+    Actually, in most cases, development and test Composer Environments do not need
+    to stay up in the night and in the weekend. What I mean is that keeping the non-production
+    Environments up at all time is not economical but is what Cloud Composer users
+    end up doing because there is not a native *start & stop feature*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google introduced [Environments Snapshots](https://cloud.google.com/composer/docs/composer-2/save-load-snapshots)
+    in April 2022 as a preview feature which become Generally Available in December
+    2022\. As the name implies, Environments Snapshots create snapshots of Cloud Composer
+    Environments which can then be loaded to restore the Environment to the state
+    when the snapshots were created.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using this feature, it becomes possible to simulate a *start & stop feature*
+    as the Environment can be destroyed and recreated without losing its state.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Note:** Please, be aware of the fact that Cloud Composer Snapshots do not
+    preserve the Airflow tasks logs'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Here is the 3-steps secret recipe of how to drastically cut the Cloud Composer
+    bill on the non-production environment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create the environment and load the latest snapshot if any (There will be no
+    snapshot to load when you first create the environment)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform any update that you need on the environment
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Save a snapshot and destroy the environment, when you no longer needs it
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In a professional context, the afore-mentioned steps would be executed using
+    a CICD pipeline and this is exactly what will be covered in the upcoming sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e6467aa70b26ce1a6cfd7a0e4c6ae9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author, Cloud Composer Start & Stop with Snapshots
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating Composer Environments using Snapshots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s say we want to create the Composer development Environment each day of
+    the week, except the weekend, at 7 a.m and then destroy it each day at 9 p.m.
+    We will need to follow the steps below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create the Cloud Storage Backup Bucket and the Environment Service Account
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a repository in Cloud Source Repositories to hold the Environment Creation
+    pipeline
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Configure a Cloud Build Trigger to run the Environment Creation Pipeline
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Note:** You need to have gcloud installed before proceeding. If that is not
+    the case, please, refer to the the [gcloud installation guide](https://cloud.google.com/sdk/docs/install?hl=en)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Step 1: Create the Cloud Storage Backup Bucket and the Environment Service
+    Account**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are you asking why ? The Cloud Storage bucket will store the Environment snapshots
+    and tasks logs, which are not saved as part of a snapshot
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As for the environment service account, it is a good practice to use a user
+    created service account with the minimum required permissions, following the so-called
+    *least privilege principle*. The account will be given the Composer Worker role.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Note:** In addition, the Cloud Composer Service Agent is given the Service
+    Agent V2 Ext Role on the user-created environment service account'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This is it for the pre-requisites. The next step is to create a repository in
+    Cloud Source Repositories to hold the Environment Creation pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2: Create a repository in Cloud Source Repositories to hold the Environment
+    Creation pipeline**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take a detour and introduce [Cloud Source Repositories](https://cloud.google.com/source-repositories/docs)
+    (CSR), which is a private Git repository hosting service offered by Google Cloud.
+    Actually, in order to run the Environment creation CICD pipeline, we need to create
+    a [Cloud Build Trigger](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers),
+    which works by cloning the content of a Git repository. Cloud Build supports many
+    popular Git repository hosting services like [BitBucket](https://bitbucket.org/),
+    [Github](https://docs.github.com/en/get-started/quickstart/hello-world) and [Gitlab](https://about.gitlab.com/).
+    For the sake of simplicity, this article uses CSR as the Cloud Build Git repositories
+    source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before being able to create any Git repository inside CSR, some pre-requisites
+    have to be taken care of. In a nutshell, we need to enable the CSR API and configure
+    Git to be able to interact with CSR
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can go ahead and create the CSR Git repository *reduce_composer_bill*
+    which will hold the Environment creation CICD pipeline. For that we need to go
+    to *source.cloud.google.com* and click on *Get started* and then *Create repository*
+    button
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8cc85f1d709d5ea3e082207964f35f95.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image By Author, Create a CSR Repository
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then Choose *Create new repository* andClick *Continue*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c90d6c6a86b3ed369fb23a3dfaf26fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image By Author, Create a CSR Repository
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then Name the repository *reduce_composer_bill* and Choose the GCP project where
+    you want the CSR Git repository to be created.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Warning**: Please do not use composer-environment-mgmt as that won’t work
+    for you. Use your own GCP project.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/715e8a21ba56bbc3f24e6a9e72b14911.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image By Author, Create a CSR Repository
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next thing to do is to clone this [Gitlab repository](https://gitlab.com/marcdjoh/reduce_composer_bill)
+    on your computer and push its content to the CSR repository *reduce_composer_bill*.
+    Before pushing to the CSR repository, edit the 3 files *create_environment.yaml*,
+    *destroy_environment.yaml* and *update_environment.yaml* by replacing the *PROJECT_ID*
+    and *ENV_NAME* variables by the name of the GCP project and the name you wish
+    to give the Composer Environment respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: The variables PROJECT_ID and ENV_NAME might appear multiple times
+    in some of the 3 files'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 3: Configure a Cloud Build Trigger to run the Environment Creation Pipeline**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Cloud Build](https://cloud.google.com/build) is the Google Cloud service for
+    Continuous Integration and Continuous Deployment (CICD). The Environment Creation
+    Pipeline does 3 things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It creates an Environment
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It loads the latest snapshot available if any
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It restores the Environment tasks’ logs
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The build is triggered by the Cloud Build service account. Thus, we add the
+    Project Editor role to the Cloud Build service account so that it can create,
+    (and also destroy and update) the Composer Environment and also copy files to
+    Cloud Storage buckets. Finally, we create a Cloud Build trigger to run the environment
+    creation pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summing Up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This article is the first part of a 2 parts series which is goal is to elaborate
+    on an efficient way to reduce Cloud Composer bill for all Cloud Composer users.
+    The strategy relies heavily on saving and loading Environments Snapshots to be
+    able to shut down non-production Environments without losing their state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The CICD pipelines code is available in this [Gitlab repository](https://gitlab.com/marcdjoh/reduce_composer_bill).
+    Feel free to check it out. Also, the second part of the series can be consulted
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for your time and stay tuned for more.
+  prefs: []
+  type: TYPE_NORMAL

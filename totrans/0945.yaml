@@ -1,0 +1,294 @@
+- en: 'From GeoJSON to Network Graph: Analyzing World Country Borders in Python'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/from-geojson-to-network-graph-analyzing-world-country-borders-in-python-ab81b5a8ce5a](https://towardsdatascience.com/from-geojson-to-network-graph-analyzing-world-country-borders-in-python-ab81b5a8ce5a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Utilizing NetworkX for Graph-Based Country Border Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://amandaiglesiasmoreno.medium.com/?source=post_page-----ab81b5a8ce5a--------------------------------)[![Amanda
+    Iglesias Moreno](../Images/7a2662fb88127b1a7203c27916e15a71.png)](https://amandaiglesiasmoreno.medium.com/?source=post_page-----ab81b5a8ce5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ab81b5a8ce5a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ab81b5a8ce5a--------------------------------)
+    [Amanda Iglesias Moreno](https://amandaiglesiasmoreno.medium.com/?source=post_page-----ab81b5a8ce5a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ab81b5a8ce5a--------------------------------)
+    ·7 min read·Oct 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77bc3f84ad2518f2a0543607dcb80e36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Maksim Shutov](https://unsplash.com/es/@maksimshutov) in Unsplash'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python offers a wide range of libraries that allow us to easily and quickly
+    address problems in various research areas. **Geospatial data analysis and graph
+    theory are two research areas where Python provides a powerful set of useful libraries**.
+    In this article, **we will conduct a simple analysis of world borders**, specifically
+    exploring which countries share borders with others. We will begin by utilizing
+    information from a GeoJSON file containing polygons for all countries worldwide.
+    The ultimate goal is to create a graph representing the various borders using
+    NetworkX and utilize this graph to perform multiple analyses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GeoJSON Data Ingestion: Reading and Loading Global Country Data'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**GeoJSON files enable the representation of various geographical areas and
+    are widely used in geographical analysis and visualizations**. The initial stage
+    of our analysis involves reading the `countries.geojson` file and converting it
+    into a `GeoDataFrame` using `GeoPandas`. This file has been sourced from the following
+    GitHub repository and contains polygons representing different countries worldwide.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/datasets/geo-countries/tree/master?source=post_page-----ab81b5a8ce5a--------------------------------)
+    [## GitHub - datasets/geo-countries: Country polygons as GeoJSON in a datapackage'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Country polygons as GeoJSON in a datapackage. Contribute to datasets/geo-countries
+    development by creating an account…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/datasets/geo-countries/tree/master?source=post_page-----ab81b5a8ce5a--------------------------------)
+    ![](../Images/ead5062faa333fd24721c725d9bd8f0d.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: GeoDataFrame with Comprehensive Country Information (Image created by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As shown above, the `GeoDataFrame` contains the following columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`ADMIN`: Represents the administrative name of the geographical area, such
+    as the country or region name.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`ISO_A3`: Stands for the ISO 3166–1 alpha-3 country code, a three-letter code
+    uniquely identifying countries.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`ISO_A2`: Denotes the ISO 3166–1 alpha-2 country code, a two-letter code also
+    used for country identification.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`geometry`: This column contains the geometrical information that defines the
+    shape of the geographical area, represented as `MULTIPOLYGON` data.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You can visualize all the multi polygons that make up the `GeoDataFrame` using
+    the`plot`method, as demonstrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f0564c8fa7797be724b2d76f811b1bed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visual Representation of the GeoDataFrame (Image created by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Calculating Multipolygon Coordinates: Latitude and Longitude'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The multi polygons within the `geometry` column belong to the class `shapely.geometry.multipolygon.MultiPolygon`.
+    These objects contain various attributes, one of which is the `centroid` attribute.
+    The `centroid` attribute provides the geometric center of the `MULTIPOLYGON` and
+    returns a `POINT` that represents this center.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subsequently, we can use this `POINT` to extract the latitude and longitude
+    of each `MULTIPOLYGON` and store the results in two columns within the `GeoDataFrame`.
+    We perform this calculation because we will later use these latitude and longitude
+    values to visualize the nodes on the graph based on their real geographic positions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a Country Border Network Graph
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now it’s time to proceed with **the construction of the graph that will represent
+    the borders between different countries worldwide**. In this graph, **the** **nodes
+    will represent countries**, while **the edges will indicate the existence of a
+    border between these countries**. If there is a border between two nodes, the
+    graph will have an edge connecting them; otherwise, there will be no edge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function `create_country_network` processes the information within the `GeoDataFrame`
+    and constructs a `Graph` representing country borders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially, the function iterates through each row of the `GeoDataFrame`, where
+    each row corresponds to a different country. Then, it creates a node for the country
+    while adding latitude and longitude as attributes to the node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the event that the geometry is not valid, it rectifies it using the `buffer(0)`
+    method. This method essentially fixes invalid geometries by applying a small buffer
+    operation with a distance of zero. This action resolves problems such as self-intersections
+    or other geometric irregularities in the multipolygon representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After creating the nodes, the next step is to populate the network with the
+    relevant edges. To do this, we iterate through the different countries, and if
+    there is an intersection between the polygons representing both countries, it
+    implies they share a common border, and, as a result, an edge is created between
+    their nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Visualizing the Constructed Network of Country Borders**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next step involves visualizing the created network, where nodes represent
+    countries worldwide, and edges signify the presence of borders between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function `plot_country_network_on_map` is responsible for processing the
+    nodes and edges of the graph `G` and displaying them on a map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29fb71e836616248341f13088b856b92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Network of Country Borders (Image created by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The positions of the nodes on the graph are determined by the latitude and
+    longitude coordinates of the countries**. Additionally, a map has been placed
+    in the background to provide a clearer context for the created network. This map
+    was generated using the `boundary` attribute from the `GeoDataFrame`. This attribute
+    provides information about the geometrical boundaries of the represented countries,
+    aiding in the creation of the background map.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s important to note one detail: in the used GeoJSON file, there are islands
+    that are considered independent countries, even though they administratively belong
+    to a specific country. This is why you may see numerous points in maritime areas.
+    Keep in mind that the graph created relies on the information available in the
+    GeoJSON file from which it was generated. If we were to use a different file,
+    the resulting graph would be different.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exploring Insights: Answering Questions with the Country Border Network**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**The country border network we’ve created can swiftly assist us in addressing
+    multiple questions**. Below, we will outline three insights that can easily be
+    derived by processing the information provided by the network. However, there
+    are many other questions that this network can help us answer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Insight 1: Examining Borders of a Chosen Nation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, **we will visually assess the neighbors of a specific country**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `plot_country_borders` function enables quick visualization of the borders
+    of a specific country. This function generates a subgraph of the country provided
+    as input and its neighboring countries. It then proceeds to visualize these countries,
+    making it easy to observe the neighboring countries of a specific nation. In this
+    instance, the chosen country is Mexico, but we can easily adapt the input to visualize
+    any other country.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/976bdf9eeb114631b0d7d9a510e55eca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Network of Country Borders in Mexico (Image created by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see in the generated image, Mexico shares its border with three
+    countries: the United States, Belize, and Guatemala.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Insight 2: Top 10 Countries with the Most Borders'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, **we will analyze which countries have the highest number of
+    neighboring countries** and display the results on the screen. To achieve this,
+    we have implemented the `calculate_top_border_countries`function. This function
+    assesses the number of neighbors for each node in the network and displays only
+    those with the highest number of neighbors (top 10).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1571df8e76e853cc4ae48816c722a927.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 10 Nations with the Most Borders (Image created by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We must reiterate that the results obtained are dependent on the initial GeoJSON
+    file. In this case, the Siachen Glacier is coded as a separate country, which
+    is why it appears as sharing a border with China.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Insight 3: Exploring the Shortest Country-to-Country Routes'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We conclude our analysis with a route assessment. In this case, **we will evaluate
+    the minimum number of borders one must cross when traveling from an origin country
+    to a destination country**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `find_shortest_path_between_countries` function calculates the shortest
+    path between an origin country and a destination country. However, it’s important
+    to note that this function provides only one of the possible shortest paths. This
+    limitation arises from its use of the `shortest_path` function from `NetworkX`,
+    which inherently finds a single shortest path due to the nature of the algorithm
+    used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To access all possible paths between two points, including multiple shortest
+    paths, there are alternatives available. In the context of the `find_shortest_path_between_countries`
+    function, one could explore options such as `all_shortest_paths` or `all_simple_paths`.
+    These alternatives are capable of returning multiple shortest paths instead of
+    just one, depending on the specific requirements of the analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We employed the function to find the shortest path between Spain and Poland,
+    and the analysis revealed that the minimum number of border crossings required
+    to travel from Spain to Poland is 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3da8b3bf6a901f58dc330c475fbc0835.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finding the Optimal Route from Spain to Poland (Image created by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Python offers a plethora of libraries spanning various domains of knowledge,
+    which can be seamlessly integrated into any data science project. In this instance,
+    we have utilized libraries dedicated to both geometric data analysis and graph
+    analysis to create a graph representing the world’s borders. Subsequently, we
+    have demonstrated use cases for this graph to rapidly answer questions, enabling
+    us to conduct geographical analysis effortlessly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amanda Iglesias
+  prefs: []
+  type: TYPE_NORMAL

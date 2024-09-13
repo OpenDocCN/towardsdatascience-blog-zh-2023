@@ -1,0 +1,288 @@
+- en: How to Securely Connect Synapse Pipelines to Azure Functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150](https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn to use Synapse exfiltration protection, private endpoints and Azure AD
+    authentication to create a secure connection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[![René
+    Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)
+    [René Bremer](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)
+    ·4 min read·Jan 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d78113d8329f6775a3e9d8a438128b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Alina Grubnyak](https://unsplash.com/@alinnnaaaa) on [Unsplash](https://unsplash.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Azure Functions is a popular tool to create REST APIs. Teams can use APIs to
+    expose their applications, which can then be consumed by other teams. A common
+    pattern is to connect Synapse pipelines to Azure Functions, for instance, to run
+    small computations provided by other teams, create metadata or send notifications.
+    In this blog, security aspects of connecting Synapse to Azure Functions are discussed
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synapse **data exfiltration protection** to prevent insider attacks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Private endpoints** to limit exposure of Azure Function to internal only'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Azure AD authentication** using identity to access Azure Function'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Whitelisting **Synapse managed identity** as only allowed identity to access
+    Azure Function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this blogpost and git repo `[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`,
+    it is discussed how Synapse can be securely connected to Azure Functions, see
+    also overview below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2444848155d3bf646f68b368594e0698.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 1\. Securely consume Azure Functions in Synapse Pipelines
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the remaining of this blog, a project is deployed in which a Synapse pipeline
+    is connected to an Azure Function. In the next chapter, the project is deployed
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2\. Deploy project: Securely connect Synapse to Azure Function'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, the following steps are executed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.0 Prerequisites
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.1 Deploy Synapse and Azure Functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.2 Setup private endpoints connections
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.3 Setup Azure AD authentication
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.4 Deploy Synapse pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.0 Prerequisites
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following resources are required in this tutorial:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Azure Account](https://azure.microsoft.com/en-us/free/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-9.2.0)
+    (only 2.3 needs Powershell, CLI commands of other paragraphs can easily modified
+    to bash)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, clone the git repo below to your local computer. In case you don’t
+    have git installed, you can just download a zip file from the web page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2.1 Deploy Synapse and Azure Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this part, a Synapse Workspace and Azure Functions are created with the
+    following properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synapse workspace is deployed with a managed VNET that enables a team to create
+    private endpoints to other PaaS services in Azure (e.g storage, SQL, but also
+    Azure Functions)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Synapse workspace is deployed with data exfiltration protection enabled. This
+    implies that that data can only flow through private endpoints that were approved
+    beforehand (e.g. private endpoints to services in the same Azure AD tenant where
+    Synapse is deployed)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Azure Function is created in Python and deployed on a basic SKU
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See `[Scripts/1_deploy_resources.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/1_deploy_resources.ps1)`
+    for Azure CLI script this part
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Setup private endpoints connections
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this part, a private link connection is setup between Synapse workspace
+    and Azure Function with the following properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initiate private endpoint from Synapse Managed VNET to Azure Function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Approve private endpoint in Azure Function. After approving private endpoint,
+    Azure Function is not exposed to public internet anymore. The deployment scm interface
+    is still open to internet, it can be decided to limit expose of this fqdn as well
+    by adding this link, see [here](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/ADF/AzureFunction_private_endpoint.json#L4)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See `[Scripts/2_Setup_private_endpoint_Synapse_FunctionApp.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/2_setup_private_endpoint_Synapse_FunctionApp.ps1)`
+    for Azure PowerShell script this part. After deployment, you will find an approved
+    private endpoint in Synapse, see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45d5c68756d424d9080966a664331498.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2.2 Approved Managed Private endpoint in Synapse to Azure Function
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 Setup Azure AD auth whitelisting Synapse Manged Identity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this part, authentication is setup between Synapse and the Azure Function
+    with the following properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Azure AD authentication is setup for Azure Function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Synapse managed identity is whitelisted as only Azure AD object ID allowed to
+    trigger Azure Function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See `[Scripts/3_Setup_AzureAD_auth_Synapse_FunctionApp.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/3_setup_AzureAD_auth_Synapse_FunctionApp.ps1)`
+    for Azure CLI script this part. After deployment, you will find the Synapse managed
+    identity as allowed user to access function, see also below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/672ed483f663e096f69730ffeea0699a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2.3 Azure AD authentication for Azure Function, only allows Synapse Managed
+    Identity to access
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Deploy Synapse pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this part, a Synapse pipeline is deployed with the following properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synapse pipeline accesses Azure Function using a web activity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In web activity, the private endpoint is used to connect the function, hence,
+    call is not blocked by Synapse data exfiltration protection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In web activity, the system assigned managed identity is used to authenticate
+    to Azure function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See `[Scripts/4_deploy_synapse_pipeline.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/4_deploy_synapse_pipeline.ps1)`
+    for Azure CLI script this part. After deployment, Azure Function URL and Azure
+    AD resource ID is filled in correctly, see also below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dab8ea661e6155679671cb74050628c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2.4 Synapse pipeline connecting to Azure Function using Azure AD authentication
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Azure Functions is a popular tool to create REST APIs to expose services, both
+    internally and externally. Synapse workspace is an example where APIs from other
+    teams can be leveraged. Data engineers can use Synapse pipelines to ingest metadata,
+    send notifications and/or run small computations exposed by other teams. In this
+    blog, security aspects of connecting Synapse to Functions are discussed as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synapse **data exfiltration protection** to prevent insiders attacks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Private endpoints** to limit exposure of Azure Function'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Azure AD authentication provider** to limit credentials management'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Synapse **Managed Identity** whitelisted to access Azure Function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See also this git repo `[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`
+    and architecture below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2444848155d3bf646f68b368594e0698.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3\. Securely consume Azure Functions in Synapse Pipelines
+  prefs: []
+  type: TYPE_NORMAL

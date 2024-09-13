@@ -1,0 +1,392 @@
+- en: Fine-Tune Your Own Llama 2 Model in a Colab Notebook
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32](https://towardsdatascience.com/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A practical introduction to LLM fine-tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne?source=post_page-----df9823a04a32--------------------------------)[![Maxime
+    Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----df9823a04a32--------------------------------)[](https://towardsdatascience.com/?source=post_page-----df9823a04a32--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----df9823a04a32--------------------------------)
+    [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----df9823a04a32--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----df9823a04a32--------------------------------)
+    ·12 min read·Jul 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/deab49c0869889d83573906da9f2c40b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the release of LLaMA v1, we saw a Cambrian explosion of fine-tuned models,
+    including [Alpaca](https://github.com/tatsu-lab/stanford_alpaca), [Vicuna](https://huggingface.co/lmsys/vicuna-13b-v1.3),
+    and [WizardLM](https://huggingface.co/WizardLM/WizardLM-13B-V1.1), among others.
+    This trend encouraged different businesses to launch their own base models with
+    licenses suitable for commercial use, such as [OpenLLaMA](https://github.com/openlm-research/open_llama),
+    [Falcon](https://falconllm.tii.ae/), [XGen](https://github.com/salesforce/xgen),
+    etc. The release of Llama 2 now combines the best elements from both sides: it
+    offers a **highly efficient base model along with a more permissive license**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'During the first half of 2023, the software landscape was significantly shaped
+    by the **widespread use of APIs** (like OpenAI API) to create infrastructures
+    based on Large Language Models (LLMs). Libraries such as [LangChain](https://python.langchain.com/docs/get_started/introduction.html)
+    and [LlamaIndex](https://www.llamaindex.ai/) played a critical role in this trend.
+    Moving into the latter half of the year, the process of **fine-tuning (or instruction
+    tuning) these models is set to become a standard procedure** in the LLMOps workflow.
+    This trend is driven by various factors: the potential for cost savings, the ability
+    to process confidential data, and even the potential to develop models that exceed
+    the performance of prominent models like ChatGPT and GPT-4 in certain specific
+    tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will see why instruction tuning works and how to implement
+    it in a Google Colab notebook to create your own Llama 2 model. As usual, the
+    code is available on [Colab](https://colab.research.google.com/drive/1PEQyJO1-f6j0S_XJ8DV50NkpzasXkrzd?usp=sharing)
+    and [GitHub](https://github.com/mlabonne/llm-course).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**🔧** Background on fine-tuning LLMs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/a0c0ab9d87266afc92a4a41531b2f70f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLMs are pretrained on an extensive corpus of text. In the case of [Llama 2](https://arxiv.org/abs/2307.09288),
+    we know very little about the composition of the training set, besides its length
+    of 2 trillion tokens. In comparison, [BERT](https://arxiv.org/abs/1810.04805)
+    (2018) was “only” trained on the BookCorpus (800M words) and English Wikipedia
+    (2,500M words). From experience, this is a **very costly and long process** with
+    a lot of hardware issues. If you want to know more about it, I recommend reading
+    [Meta’s logbook](https://github.com/facebookresearch/metaseq/blob/main/projects/OPT/chronicles/OPT175B_Logbook.pdf)
+    about the pretraining of the OPT-175B model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When the pretraining is complete, auto-regressive models like Llama 2 can **predict
+    the next token** in a sequence. However, this does not make them particularly
+    useful assistants since they don’t reply to instructions. This is why we employ
+    instruction tuning to align their answers with what humans expect. There are two
+    main fine-tuning techniques:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised Fine-Tuning** (SFT): Models are trained on a dataset of instructions
+    and responses. It adjusts the weights in the LLM to minimize the difference between
+    the generated answers and ground-truth responses, acting as labels.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reinforcement Learning from Human Feedback** (RLHF): Models learn by interacting
+    with their environment and receiving feedback. They are trained to maximize a
+    reward signal (using [PPO](https://arxiv.org/abs/1707.06347)), which is often
+    derived from human evaluations of model outputs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, RLHF is shown to capture **more complex and nuanced** human preferences,
+    but is also more challenging to implement effectively. Indeed, it requires careful
+    design of the reward system and can be sensitive to the quality and consistency
+    of human feedback. A possible alternative in the future is the [Direct Preference
+    Optimization](https://arxiv.org/abs/2305.18290) (DPO) algorithm, which directly
+    runs preference learning on the SFT model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our case, we will perform SFT, but this raises a question: why does fine-tuning
+    work in the first place? As highlighted in the [Orca paper](https://mlabonne.github.io/blog/notes/Large%20Language%20Models/orca.html),
+    our understanding is that fine-tuning **leverages knowledge learned during the
+    pretraining** process. In other words, fine-tuning will be of little help if the
+    model has never seen the kind of data you’re interested in. However, if that’s
+    the case, SFT can be extremely performant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the [LIMA paper](https://mlabonne.github.io/blog/notes/Large%20Language%20Models/lima.html)
+    showed how you could outperform GPT-3 (DaVinci003) by fine-tuning a LLaMA (v1)
+    model with 65 billion parameters on only 1,000 high-quality samples. The **quality
+    of the instruction dataset is essential** to reach this level of performance,
+    which is why a lot of work is focused on this issue (like [evol-instruct](https://arxiv.org/abs/2304.12244),
+    Orca, or [phi-1](https://mlabonne.github.io/blog/notes/Large%20Language%20Models/phi1.html)).
+    Note that the size of the LLM (65b, not 13b or 7b) is also fundamental to leverage
+    pre-existing knowledge efficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another important point related to the data quality is the **prompt template**.
+    Prompts are comprised of similar elements: system prompt (optional) to guide the
+    model, user prompt (required) to give the instruction, additional inputs (optional)
+    to take into consideration, and the model’s answer (required). In the case of
+    Llama 2, the authors used the following template for the **chat models**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are other templates, like the ones from Alpaca and Vicuna, and their impact
+    is not very clear. In this example, we will reformat our instruction dataset to
+    follow Llama 2’s template. For the purpose of this tutorial, I’ve already done
+    it using the excellent `[timdettmers/openassistant-guanaco](https://huggingface.co/datasets/timdettmers/openassistant-guanaco)`
+    dataset. You can find it on Hugging Face under the name `[mlabonne/guanaco-llama2-1k](https://huggingface.co/datasets/mlabonne/guanaco-llama2-1k)`.
+    Note that you don’t need to follow a specific prompt template if you’re using
+    the base Llama 2 model instead of the chat version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🦙 How to fine-tune Llama 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we will fine-tune a Llama 2 model with 7 billion parameters
+    on a T4 GPU with high RAM using Google Colab (2.21 credits/hour). Note that a
+    T4 only has 16 GB of VRAM, which is barely enough to **store Llama 2–7b’s weights**
+    (7b × 2 bytes = 14 GB in FP16). In addition, we need to consider the overhead
+    due to optimizer states, gradients, and forward activations (see [this excellent
+    article](https://huggingface.co/docs/transformers/perf_train_gpu_one#anatomy-of-models-memory)
+    for more information). This means that a full fine-tuning is not possible here:
+    we need parameter-efficient fine-tuning (PEFT) techniques like [LoRA](https://arxiv.org/abs/2106.09685)
+    or [QLoRA](https://arxiv.org/abs/2305.14314).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To drastically reduce the VRAM usage, we must **fine-tune the model in 4-bit
+    precision**, which is why we’ll use QLoRA here. The good thing is that we can
+    leverage the Hugging Face ecosystem with the `transformers`, `accelerate`, `peft`,
+    `trl`, and `bitsandbytes` libraries. We'll do this in the following code based
+    on Younes Belkada's [GitHub Gist](https://gist.github.com/younesbelkada/9f7f75c94bdc1981c8ca5cc937d4a4da).
+    First, we install and load these libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s talk a bit about the parameters we can tune here. First, we want to load
+    a `llama-2-7b-chat-hf` model (**chat** model) and train it on the `mlabonne/guanaco-llama2-1k`
+    (1,000 samples), which will produce our fine-tuned model `llama-2-7b-miniguanaco`.
+    If you’re interested in how this dataset was created, you can check [this notebook](https://colab.research.google.com/drive/1Ad7a9zMmkxuXTOh1Z7-rNSICA4dybpM2?usp=sharing).
+    Feel free to change it: there are many good datasets on the [Hugging Face Hub](https://huggingface.co/datasets),
+    like `[databricks/databricks-dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k)`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: QLoRA will use a rank of 64 with a scaling parameter of 16 (see [this article](https://rentry.org/llm-training#low-rank-adaptation-lora_1)
+    for more information about LoRA parameters). We’ll load the Llama 2 model directly
+    in 4-bit precision using the NF4 type and train it for one epoch. To get more
+    information about the other parameters, check the [TrainingArguments](https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments),
+    [PeftModel](https://huggingface.co/docs/peft/package_reference/peft_model), and
+    [SFTTrainer](https://huggingface.co/docs/trl/main/en/sft_trainer) documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now load everything and start the fine-tuning process. We’re relying
+    on multiple wrappers, so bear with me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, we want to **load the dataset** we defined. Here, our dataset
+    is already preprocessed but, usually, this is where you would reformat the prompt,
+    filter out bad text, combine multiple datasets, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then, we’re configuring `bitsandbytes` for 4-bit quantization.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next, we're loading the Llama 2 model in 4-bit precision on a GPU with the corresponding
+    tokenizer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, we're loading configurations for QLoRA, regular training parameters,
+    and passing everything to the `SFTTrainer`. The training can finally start!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7a4459b066e68e7cd3002cd3113c8876.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training can be very long, depending on the size of your dataset. Here,
+    it took less than an hour on a T4 GPU. We can check the plots on tensorboard,
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0961e701ded34f0fb82b7c66fcdad85f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s make sure that the model is behaving correctly. It would require a more
+    exhaustive evaluation, but we can use the **text generation pipeline** to ask
+    questions like “What is a large language model?” Note that I’m formatting the
+    input to match Llama 2’s prompt template.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The model outputs the following response:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: From experience, it is **very coherent** for a model with only 7 billion parameters.
+    You can play with it and ask harder questions from evaluation datasets like [BigBench-Hard](https://github.com/suzgunmirac/BIG-Bench-Hard).
+    Guanaco is an excellent dataset that has produced high-quality models in the past.
+    You can train a Llama 2 model on the entire dataset using `[mlabonne/guanaco-llama2](https://huggingface.co/datasets/mlabonne/guanaco-llama2)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How can we store our new `llama-2-7b-miniguanaco` model now? We need to merge
+    the weights from LoRA with the base model. Unfortunately, as far as I know, there
+    is no straightforward way to do it: we need to reload the base model in FP16 precision
+    and use the `peft` library to merge everything. Alas, it also creates a problem
+    with the VRAM (despite emptying it), so I recommend **restarting the notebook**,
+    re-executing the three first cells, and then executing the next one. Please contact
+    me if you know a fix!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our weights are merged and we reloaded the tokenizer. We can now push everything
+    to the Hugging Face Hub to save our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can now use this model for inference by loading it like any other Llama
+    2 model from the Hub. It is also possible to reload it for more fine-tuning —
+    perhaps with another dataset?
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re serious about fine-tuning models, **using a script** instead of a
+    notebook is recommended. You can easily rent GPUs on Lambda Labs, Runpod, Vast.ai,
+    for less than 0.3$/h. Once you’re connected, you can install libraries, import
+    your script, log in to Hugging Face and other tools (like Weights & Biases for
+    logging your experiments), and start your fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `trl` script is currently very limited, so I made my own based on the previous
+    notebook. You can [**find it here on GitHub Gist**](https://gist.github.com/mlabonne/8eb9ad60c6340cb48a17385c68e3b1a5).
+    If you’re looking for a comprehensive solution, check out [Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl)
+    from the OpenAccess AI Collective, which also natively handles multiple datasets,
+    Deepspeed, Flash Attention, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we saw how to fine-tune a Llama 2 7b model using a Colab notebook.
+    We introduced some necessary background on LLM training and fine-tuning, as well
+    as important considerations related to instruction datasets. In the second section,
+    we **successfully fine-tuned the Llama 2 model** with its native prompt template
+    and custom parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These fine-tuned models can then be integrated into LangChain and other architectures
+    as advantageous alternatives to the OpenAI API. Remember, in this new paradigm,
+    instruction datasets are the new gold, and the quality of your model heavily depends
+    on the data on which it’s been fine-tuned. So, good luck with building high-quality
+    datasets!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in more content about LLMs, follow me on Twitter [@maximelabonne](https://twitter.com/maximelabonne).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Hugo Touvron, Thomas Scialom, et al. (2023). [Llama 2: Open Foundation and
+    Fine-Tuned Chat Models](https://arxiv.org/abs/2307.09288).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Philipp Schmid, Omar Sanseviero, Pedro Cuenca, & Lewis Tunstall. Llama 2 is
+    here — get it on Hugging Face. [https://huggingface.co/blog/llama2](https://huggingface.co/blog/llama2)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Rohan Taori, Ishaan Gulrajani, Tianyi Zhang, Yann Dubois, Xuechen Li, Carlos
+    Guestrin, Percy Liang, & Tatsunori B. Hashimoto. (2023). [Stanford Alpaca: An
+    Instruction-following LLaMA model](https://crfm.stanford.edu/2023/03/13/alpaca.html).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Jacob Devlin, Ming-Wei Chang, Kenton Lee, & Kristina Toutanova. (2019). [BERT:
+    Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, & Luke Zettlemoyer. (2023). [QLoRA:
+    Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Related articles
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----df9823a04a32--------------------------------)
+    [## 4-bit Quantization with GPTQ'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantize your own LLMs using AutoGPTQ
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----df9823a04a32--------------------------------)
+    [](/decoding-strategies-in-large-language-models-9733a8f70539?source=post_page-----df9823a04a32--------------------------------)
+    [## Decoding Strategies in Large Language Models
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Guide to Text Generation From Beam Search to Nucleus Sampling
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/decoding-strategies-in-large-language-models-9733a8f70539?source=post_page-----df9823a04a32--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Learn more about machine learning and support my work with one click — become
+    a Medium member here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne/membership?source=post_page-----df9823a04a32--------------------------------)
+    [## Join Medium with my referral link - Maxime Labonne'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@mlabonne/membership?source=post_page-----df9823a04a32--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you’re already a member, you can* [*follow me on Medium*](https://medium.com/@mlabonne)*.*'
+  prefs: []
+  type: TYPE_NORMAL

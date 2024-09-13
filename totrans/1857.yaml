@@ -1,0 +1,234 @@
+- en: Simplify Data Cleaning With BigQuery SQL User-Defined Functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/simplify-data-cleaning-with-bigquery-sql-user-defined-functions-41c0560ea6](https://towardsdatascience.com/simplify-data-cleaning-with-bigquery-sql-user-defined-functions-41c0560ea6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introduction and use cases
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)[![Vicky
+    Yu](../Images/54a32f45ebd13a18811912877f60f2f7.png)](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)
+    [Vicky Yu](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)
+    ·5 min read·Apr 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e4af66655e15b1d6abe99b4aae5a16c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Brooke Cagle](https://unsplash.com/@brookecagle?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A large portion of any data-related job is data cleaning but often times writing
+    SQL statements can be tedious, especially coding the same SQL logic over multiple
+    columns in a table. This is until I discovered I could create [user-defined functions
+    (UDFs) in BigQuery](https://cloud.google.com/bigquery/docs/reference/standard-sql/user-defined-functions)
+    to meet my specific data cleaning use case. Today I’d like to share a few data
+    cleaning use cases where you can apply UDFs to simplify your SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since database permissions differ across companies, I’ll be discussing data
+    cleaning examples using temporary UDFs because permanent ones may require additional
+    access not allowed by your database administrator. Temporary UDFs expire when
+    the SQL query is completed while persistent UDFs are saved in the database and
+    can be used across multiple SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll be using fake movie data I created and uploaded into [BigQuery sandbox](https://cloud.google.com/bigquery/docs/sandbox)that’s
+    free to anyone with a Google account. I received similar data for a data analyst
+    interview take-home assignment a few years ago and will use data cleaning examples
+    I performed in the assignment but using UDFs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use Case 1: Grouping Values For Reporting'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I started by counting movies grouped by year but that was not useful since there
+    were many movies prior to 1980 with a count of less than 5\. I decided to group
+    the movies by decade instead to get a better idea of the frequency distribution
+    of movies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the temporary UDF below **ReleaseYearCategory (** rows 1 to 10 ), the **CASE**
+    statement in rows 3 to 8 groups movies into 5 categories based on the field **release_year**.
+    Note the prefix I added to the **CASE** statement in rows 3 to 7, i.e. **1\. <
+    1980**. The numeric prefix will force the **release_year_category** to be ordered
+    from the earlier to the most recent decade.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this was a one-time assignment, using a UDF still has many advantages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **release_year** field is a string but needs to be numeric for the date
+    range check. Instead of casting to integer in every reference to the **release_year**
+    field, I just need to pass in ***cast(*release_year *as int)*** once to the UDF
+    and the **field** variable will be replaced with ***cast(*release_year *as int).***
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the **release_year** field is changed to an integer, I just need to remove
+    the cast statement when calling the **ReleaseYearCategory** UDF.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The UDF is reusable ( assuming it’s saved as a persistent UDF ). If I want to
+    apply the same year grouping logic to another table, I just need to pass a different
+    field name to the UDF.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If I want to group by 5-year increments instead of by decade, I just need to
+    modify one UDF instead of changing multiple SQL statements.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/9e552ec635ff53828c4c55ef13c541a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of temporary UDF ReleaseYearCategory example created by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grouping the movies into 5 categories shows most were released after 2000\.
+    If you have too many rows of data when grouping by a field, consider collapsing
+    the data into fewer rows as I did above. A common example is grouping data by
+    week or month instead of daily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use Case 2: Converting String Values to Numeric**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I wanted to see the count of movies by the number of genres each movie was assigned
+    to. An easy way was to sum the genre fields and use that as the field to group
+    by but the genre fields had to be converted from **TRUE** to **1** and **FALSE**
+    to **0**. For example, in the data example below **Movie Title 355** in row 1
+    would add up to 3 because the TRUE values for action, adventure, and scifi genre
+    fields would be converted to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12a033ddb87d0f6a6d275cacdffd0466.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot example of movie genre fields with TRUE and FALSE values created
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A UDF makes the conversion easier to code because I won’t need to type a CASE
+    statement for each genre field. I just need to pass the field name to the UDF.
+    In the **ConvertTrueFalse** UDF below ( rows 1 to 8 ), I have an **ELSE -1** statement
+    in row 6 to capture any values that do not match the expected values of **TRUE**
+    or **FALSE**. The ELSE is not necessary since I previously confirmed there were
+    only TRUE or FALSE values in the genre fields but as a best practice, you can
+    add an ELSE statement in case you map to an unintended value. For example, if
+    a genre field was NULL I would’ve set it to 0 without the ELSE statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I also added the UPPER function in rows 4 and 5 in case **TRUE** or **FALSE**
+    were spelled with mixed cases such as **True** or **false**. It’s good practice
+    to add an UPPER function in case you have mixed cased string. If the field had
+    a value of **True** I would’ve set it to 0 without the UPPER function and caused
+    an error in my analysis. Although this was a one-time assignment, see how the
+    UDF calls in rows 11 to 15 reduce the SQL code and make it easier to read.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b3b6dffaf115b452841be0ec1c99a96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of temporary UDF ConvertTrueFalse example created by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use Case 3: Calculating Returns'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I wanted to analyze the returns of each movie by genre to see what kind of movies
+    were more profitable. To calculate returns, I needed to use the **movie_gross**
+    and **movie_budget** fields that were type string. Instead of writing the cast
+    statement multiple times, I just needed to pass in the cast statement to the **CalcReturn**
+    UDF shown in row 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this was a one-time calculation if you often have to calculate returns
+    or other common calculations in your analysis, consider using UDFs to simplify
+    your coding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab03a02571e6a7c58d224a7906e8d1a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of temporary UDF CalcReturn example created by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While data cleaning may not be your favorite activity as a data professional,
+    I hope you see how creating UDFs can help simplify your SQL coding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While I’ve only discussed temporary UDFs, saving frequently used SQL logic as
+    persistent UDFs can help centralize code and allow reusability across SQL queries.
+    This may require discussion with your database administrator depending on database
+    permissions for UDF creation and usage for SQL users. Documentation will be helpful
+    as well to view the UDF code and usage instructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve given a brief introduction to UDFs and highly recommend you review the
+    [documentation](https://cloud.google.com/bigquery/docs/reference/standard-sql/user-defined-functions)
+    to learn more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: All queries above were run on* [*BigQuery sandbox*](https://cloud.google.com/bigquery/docs/sandbox)
+    *that’s free to anyone with a Google account.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might also like…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](/bigquery-functions-for-data-cleaning-4b96181fbc3?source=post_page-----41c0560ea6--------------------------------)
+    [## BigQuery SQL Functions For Data Cleaning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use cases and functions to apply
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/bigquery-functions-for-data-cleaning-4b96181fbc3?source=post_page-----41c0560ea6--------------------------------)
+    [](/bigquery-sql-procedural-language-to-simplify-data-engineering-66ecfc47f3ac?source=post_page-----41c0560ea6--------------------------------)
+    [## BigQuery SQL Procedural Language to Simplify Data Engineering
+  prefs: []
+  type: TYPE_NORMAL
+- en: An introduction
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/bigquery-sql-procedural-language-to-simplify-data-engineering-66ecfc47f3ac?source=post_page-----41c0560ea6--------------------------------)
+    [](/6-bigquery-sql-functions-every-user-should-know-9ed97b1cf72e?source=post_page-----41c0560ea6--------------------------------)
+    [## 6 BigQuery SQL Functions Every User Should Know
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check if your database has them too
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/6-bigquery-sql-functions-every-user-should-know-9ed97b1cf72e?source=post_page-----41c0560ea6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

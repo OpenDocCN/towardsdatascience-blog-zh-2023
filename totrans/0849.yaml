@@ -1,0 +1,811 @@
+- en: 'Exploratory Data Analysis: What Do We Know About YouTube Channels (Part 1)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/exploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438](https://towardsdatascience.com/exploratory-data-analysis-what-do-we-know-about-youtube-channels-3688c5cbc438)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Getting statistical insights using Pandas and the YouTube Data API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----3688c5cbc438--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3688c5cbc438--------------------------------)
+    ·20 min read·Oct 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c687fb3e4373288c8b36bfc7df3c92ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by Glenn Carstens-Peters, [Unsplash](https://unsplash.com/photos/turned-on-flat-screen-television-EOQhsfFBhRk)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nowadays, there are more than 2.7 billion active YouTube users, and for many
+    people, YouTube is not only entertainment but an important source of income. But
+    how does it work? How many views or subscribers can different YouTube channels
+    get? With the help of Python, Pandas, and the YouTube Data API, we can get some
+    interesting insights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This article will be divided into several parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the YouTube Data API. With this API, we will be able to get a list of
+    YouTube channels for different search requests. For each channel, we will get
+    information about the number of videos, views, and subscribers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Getting the list of channels we are interested in. This can be done only once.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collecting the channel data. To get statistical insights, we need to collect
+    the data for some period of time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data analysis.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Without further ado, let’s get into it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. YouTube Data API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, a piece of good news for everyone who is interested in collecting data
+    from large networks like YouTube: the YouTube API is free, and we don’t need to
+    pay for it. To start using this API, we need two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open [https://console.cloud.google.com](https://console.cloud.google.com/) and
+    create a new project. I already had an old project there, but after some period
+    of inactivity, all its API limits were set to zeros, and I did not find a way
+    to reset them. So, it’s just easier to make a new one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b173f36a2e5811de9b0692c9d4cafd68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Google Cloud Console, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Go to “APIs and Services” and enable “YouTube Data API”. Open the API, go to
+    “Credentials,” and create an API key. If everything is done correctly, the Quotas
+    page will look like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ef34c53ab0a0f1402e4f96845865be04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: YouTube API Quotas, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it; after that, we can start making API requests to get YouTube data.
+    As for limits, a free quota is 10,000 queries per day. Calculating this quota
+    is a bit tricky because it’s based on “internal” YouTube queries and not just
+    on the number of API calls. Search requests are “heavy”, and for example, getting
+    a list of 500 channels for the phrase “smartphone review” will cost us about 7,000
+    “units”. So, we can do only one search like this per day with one API key. But
+    a free tier allows us to have **12 projects**, with a separate quota for each
+    project. So the task is easy, but we still need to keep the number of requests
+    reasonably limited.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data collection pipeline will consist of two types of API calls:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we will create a list of YouTube channels for different topics. This
+    needs to be done only once.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second, we can get the number of views and subscribers for each channel. I will
+    be using Apache Airflow to run this task for at least a week, twice per day.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**2\. Getting YouTube Channels**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the first step, we enabled the YouTube API. Now, let’s create a list of
+    channels we are interested in. To do the search, I will be using the `search_by_keywords`
+    method of the [python-youtube](https://github.com/sns-sdks/python-youtube) library.
+    As an example, the output for the query “cats” looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we are interested in a `title`, `channelId`, and `publishedAt` parameters.
+    We can also see the `totalResults` value, which is equal to 19544\. Alas, the
+    YouTube API was made for end-users and not for analytics. We cannot get *all*
+    YouTube channels for a search query “cats”; this API returns only a list of 400–500
+    channels, somehow made by the YouTube recommender system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use a simple program that makes the YouTube query for a specific phrase
+    and saves the result into a CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As an output, we will get a CSV like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can do a search with different queries. This can be done only once;
+    channel IDs are not changing. For the purpose of this article, I used these queries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Cats”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Dogs”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Makeup tutorial”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Photography”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Smartphone review”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Street photography”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a result, I saved a list of channels (about 500 records for each query) in
+    a CSV file, and I had about 3000 YouTube channels in total.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Getting Channel Details**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As a next step, we need to get statistics for each channel. To do this, I will
+    use the method `get_channel_info` from the same [python-youtube](https://github.com/sns-sdks/python-youtube)
+    library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A method can be used this way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As an output, we will have a CSV file with the needed values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Collecting The Data** Now, we know how to get a list of YouTube channels
+    and how to get channel details, like the number of views and subscribers. But
+    it is interesting to see the *dynamics* and how these values are changing over
+    time. YouTube has a separate [Analytics API](https://developers.google.com/youtube/analytics/channel_reports),
+    which can be used for reports. However, as written in the API documentation, “the
+    user authorizing the request must be the owner of the channel”, so for our task,
+    it is useless. The only way for us is to collect data for some time; 1–2 weeks
+    looks like a good period of time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Collecting the data can be done in different ways, and I decided to use **Apache
+    Airflow** for that, which I installed on my Raspberry Pi. It turned out that the
+    Raspberry Pi is an excellent data science tool for collecting data, which I have
+    already used in several hobby projects. This $50 single-board computer has only
+    2W power consumption, is silent, has no fans, and runs a full-fledged Ubuntu on
+    a 4-core CPU. The Raspbian OS configuration details are out of the scope of this
+    article; those who are interested are welcome to read my previous TDS post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/collecting-data-with-apache-airflow-on-a-raspberry-pi-0ac3f72e377f?source=post_page-----3688c5cbc438--------------------------------)
+    [## Collecting Data with Apache Airflow on a Raspberry Pi'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Raspberry Pi is All You Need
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/collecting-data-with-apache-airflow-on-a-raspberry-pi-0ac3f72e377f?source=post_page-----3688c5cbc438--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Exploratory Data Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Preprocessing**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we are approaching the fun part of this article: let’s see what kind
+    of insights we can get from the collected data. I will use Pandas for data processing,
+    Matplotlib, and Seaborn for drawing the graphs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s load the data we collected before. Files can be copied from the
+    Raspberry Pi using the `scp` command (here, *10.14.24.168* is the device address,
+    and “pi” is a standard Raspbian user name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Apache Airflow was executing the code twice per day, saving a separate CSV
+    file with timestamps after each run. After a week, I got a bunch of CSV files
+    with about 80K total records. Let’s load all files and combine them together into
+    the Pandas dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/572024de9b398f9380e8e5d9a42b1856.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataframe with time series data, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, at the beginning of the article, I also collected a **list of
+    channels** for different search requests (“Smartphones,” “Cats,” “Dogs,” etc.).
+    Let’s load this list into a second dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading the channel list could be automated, but I have only 6 categories, so
+    it was straightforward to simply hardcode them all. I also added a “subject” column
+    to keep the category name (it is important to mention that the “subject” is not
+    the “official” channel category given by its owner, but the name I used during
+    the search request).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this moment, we have two Pandas data frames: one contains the basic channel
+    data (id, title, and creation date), and the second has time-series data with
+    the number of views, videos, and subscribers. Let’s **merge** these data frames
+    together, using the `channelId` as a key:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we are ready to have fun! Let’s visualize different types of data and draw
+    them with Seaborn and Matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.1 Number of Views and Subscribers** As a warm-up, let''s sort YouTube channels
+    by the number of views:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e941a9ef19f0f168ab98408acc5a7253.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: YouTube channels, sorted by number of views, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see a very large difference between values. The top channels on the list
+    have literally billions of views and millions of subscribers. The numbers were
+    actually so large that I had to add a thousand “,” separators to the column!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an aside note, why did I not use a [Pandas Styler](https://pandas.pydata.org/docs/user_guide/style.html)
+    object for that? Indeed, it is easy to write this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: It turned out that it works well on a small dataframe. But at least, in Visual
+    Studio Code, after changing the style, the dataframe is not displayed as a head,
+    tail, and “…” anymore, and Visual Studio always shows all 3030 rows. If someone
+    knows a solution, please write it in the comments below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s nice to see a dataframe, but the result will be much more clear in graphical
+    form. Let’s draw the **number of views** using a barplot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The drawing is easy, but some small tweaks were required. Again, I used a `FuncFormatter`
+    to add “,” thousand dividers; otherwise, numbers are too large and not convenient
+    to read. I also added a `decimation=10` parameter to reduce the number of records
+    in the dataframe; otherwise, the vertical bars were too small. Still, we can see
+    that the area is almost empty:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3f6c3e9788795815e6da07adad0d9a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Obviously, it is easy to adjust the vertical scale by using a `ylim` parameter,
+    but I specifically left it like this so readers can see the real difference between
+    “top” and “other” channels. The distribution is very strongly skewed. Several
+    top channels have literally billions of views, and others compared to them are
+    just not visible. From my list of about 3,000 channels, 5% of the top channels
+    have 95% of total views.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also draw the **number of subscribers**, and its shape looks the same
+    as the previous one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ddeb56d2b4856c2ac9e8b38ec901935a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s get more quantitatively accurate data using **percentiles**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2057ac1778aba71a17e7044ddd03b52d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quantiles data, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A 50th percentile (or 0.5 quantile) is a number, showing us that 50% of all
+    values lie below that number. For example, the 50th percentile for all subscriber
+    values is only 16\. It means that despite these Googleplex-like figures in the
+    top, 50% of the channels in my list have less than 16 subscribers! It can be surprising,
+    but we can easily verify this by sorting the dataframe by the number of subscribers
+    and looking at the middle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result confirmed that the table above is correct:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74aa6de843a5361b21e3a9035c5d695e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A middle part of the dataframe, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: All these values can give us an idea of the number of views and subscribers
+    we can expect. But here, I analyzed only the 3030 channels I collected. Can we
+    get a *total number* of YouTube channels with, let’s say, 1M and 100K subscribers?
+    I did not find an answer, and it’s probably one of the YouTube secrets, the same
+    as the real ratio between male and female users on Tinder;) Apparently, the YouTube
+    recommender system has an algorithm for mixing “top” and “other” channels together
+    in search results, giving newbies a chance to be seen by viewers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.2 Number of Subscribers per Registration Date** It is interesting to know
+    that a particular YouTube channel has 1,000,000 views or subscribers, but how
+    fast can channel owners reach this value? In the YouTube Data API, every channel
+    has a “[publishedAt](https://developers.google.com/youtube/v3/docs/channels)”
+    parameter, which represents a channel’s creation date. We cannot get historical
+    data for a particular channel, but we can compare channels with different creation
+    dates using a **scatter plot**. I will also separate different categories with
+    different colors and add average lines.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is much more informative compared to a previous bar chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a366aa929e53508dd203a80304e9739.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of subscribers distribution, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 million subscribers is a sort of “landmark” for many YouTube channels, and
+    I set this value as a clipping limit for the graph. We can see that the “youngest”
+    YouTube channel in my list reached this point at the beginning of 2022, so it
+    took almost two years for the channel owners to do it (this analysis was made
+    at the end of 2023). At the same time, there are some “old” channels, made even
+    before 2010, that still do not reach 100,000 subscribers today.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for the average values, they are also interesting. As we can see, more people
+    are subscribed to the “Smartphone”-related channels, and the second popular category
+    is “Makeup”. Let’s “zoom” a graph a bit more:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1c9ed19ae24ac3bbc3032147cfd942e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of subscribers distribution, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we can see that the categories “Cats” and “Dogs” are on average much less
+    popular (almost 10 times). Categories “Photography” and “Street photography” are
+    even more niche, and even getting 100,000 subscribers can be a challenging goal
+    for these channels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.3 Number of Subscribers per Video** This question can be interesting for
+    those who want to start their own YouTube channel. How many videos should be published
+    to get a certain number of views or subscribers? We know the number of videos
+    and subscribers per channel and can find the answer by using **a** scatter plot.
+    I will also use a linear regression model to draw average lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, I limited the values to 100,000 subscribers and 1,000 videos. I also excluded
+    the top 10 channels from the linear interpolation to make the average results
+    more realistic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4852d4ddf8dae0a4753c93919228a74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of subscribers within 0–100K range, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we can see that the “Makeup” and “Smartphones” channels are getting the
+    highest number of subscribers per video. Average lines for “Cats” and “Dogs” are
+    almost horizontal. How can it be? First, as we saw in the previous picture, the
+    average number of subscribers for this category is generally lower. Second, I
+    can guess that more people are publishing videos with cats and dogs, and the distribution
+    is more skewed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How about the top of the distribution? Well, there are enough channels, with
+    >1M subscribers and less than 1000 videos:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69c9d9f7ac102a616704fbb242e9a3b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of subscribers within 0–10M range, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I suppose these are professional studios with high-end cinematic equipment,
+    and their budgets are pretty high. And how about the low part of the distribution?
+    Let’s see another graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dfb34d12e663b43eb1cf8b415c375405.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of subscribers within the lowest range, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: I was surprised to see YouTube channels with 1,000–5,000 videos and only 10–50
+    subscribers. It turned out that many of these channels are probably auto-generated
+    by bots; they have only playlists and no videos, mostly no views, and no subscribers
+    at all. What is the purpose of these channels? I don’t know. Some other channels
+    belong to real people, and it is a bit sad to see when someone has posted >1000
+    videos and each one has only 10–20 views per year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.4 Channel Dynamics — Views per Day** As we know, using the public YouTube
+    API, we can only get the number of views and subscribers at the current moment,
+    and only the owner can get the historical data. As a workaround, I collected data
+    for a week with a Raspberry Pi and Apache Airflow. Now, it’s time to see what
+    we can get.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The processing in this case is a bit more tricky. I need to get every channel,
+    sort its data by the timestamp, and calculate differential values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, I use the `apply` method to calculate the difference between the first
+    and other values in the dataframe. Then, I can draw the data with a `lineplot`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: (the full code is longer; for clarity reasons, I keep only the essential parts)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we already know, the distribution is skewed. The result for the top 50 channels
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dce935fc10f386882f0bc3bea47a6c33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 50 channel views per week, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, top channels can have more than several million views per day!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How is it going at the right part of the distribution? In total, I collected
+    3,030 channels, and this is the same graph for the 1,000 of them from the right
+    side:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6b978bf153f01134c7d91e6177e4698.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 1000 YouTube channel views per week, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results here are much less encouraging. Some channels got 50–100 new views
+    per week, but most of the channels got only 10–20 views at all. The YouTube search
+    is limited to about 500 items, but I can guess that most YouTube users never scroll
+    to more than the first 1–2 pages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.5 Channel Dynamics — Subscribers per Day** Let’s see how the number of
+    subscribers is changing. The code is the same, except that I used a “subscribers”
+    column instead of “views”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are interesting. First, let''s see the top 50 channels from my
+    list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e3e9f173b4b5fe9d896e789b0f52eb18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New channel subscribers per week, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we can see, top channels can get several thousand new subscribers per day!
+    At the right part of the distribution, the results are not so exciting again but
+    still interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a29b12586e145c1743142ac14ddfa798.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New channel subscribers per week, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the channels “suddenly” got 100 subscribers per day, but this value did
+    not increase anymore. Maybe the owner paid for the promotion, or one of the videos
+    went viral — who knows? Other channels got only 5–10 new subscribers per week.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.6 Channel Dynamics — Videos per Day** It is also interesting to know how
+    many videos per day are published by different channels. We can easily find an
+    answer using the same code. First, let’s see a number of new videos from the top
+    50 channels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2921a2344fcae7a12b4d03c49512e6bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New videos per day, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the 1000 channels from the right part of my list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdbd1fddbfabd72380bfafe01140c291.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New videos per day, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly, the numbers are not drastically different. But the top channels
+    are apparently publishing fewer videos, and they definitely prefer quality to
+    quantity. They can make only one video per week, and each video may have >1M views.
+    However, there are some YouTube channels that have 5000+ videos in total; they
+    publish several videos per day. Anyway, none of these channels are at the top,
+    which is interesting to think about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A “spaghetty graph” can show us a general trend, but it’s hard to read values
+    from it. To get more precise data, we can draw a histogram for the top 50 channels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96ace92e341ed0671f7fb4aa22ec945d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New videos per week, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, some channels are publishing more than one video per day, but
+    the majority of the top channels are making only one or even fewer videos per
+    week. Obviously, there is no universal formula that fits all the genres, and videos
+    about cats or about smartphone or camera reviews may require absolutely different
+    times of preparation. Readers are welcome to filter channels by different categories
+    and do more detailed analysis on their own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '5\. Bonus: Anomaly Detection'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, a small bonus for readers who were patient enough to read until this
+    part. Let’s apply the anomaly detection algorithm and see if we can find some
+    unusual YouTube channels. I will be using the unsupervised [IsolationForest](https://scikit-learn.org/stable/auto_examples/ensemble/plot_isolation_forest.html)
+    algorithm for that. The algorithm itself is based on binary decision trees. At
+    every step, the tree is branching using the random feature and a random threshold
+    until each point is completely isolated or the maximum depth is reached. After
+    that, the “anomaly score” is assigned to each point according to the depth of
+    the tree required to achieve that point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will use the number of views and subscribers per video as a metric. I also
+    set a `contamination` value to 0.05; this is our desired proportion of outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s sort the channels by anomaly score. The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8c0c8ce77a93813f65ed6c33cb262c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the first place of our “anomaly rating”, we see a channel from the category
+    “Cats”, which indeed has a high number of subscribers per video. I watched this
+    channel; I am not a fan of videos about cats, but technically it was indeed good.
+    This was also probably the first time I saw a video that has 193M views (I must
+    admit that no video about math or machine learning will ever get to this point;).
+    The second channel in my “rating” was about makeup. I am absolutely not an expert
+    in that area, and I was going to skip it, but one video still got my attention.
+    The author was asking ChatGPT to write the makeup procedure. I was never thinking
+    about using AI for makeup, though it is interesting to see how AI affects more
+    and more areas of our lives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sometimes it is easy to guess why the item has a high anomaly rating, but if
+    the number of features is large, it can be complicated. In such cases, we can
+    use the [**SHAP**](https://shap.readthedocs.io/en/latest/index.html) library to
+    visualize the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `explainer` method uses [Shapley values](https://en.wikipedia.org/wiki/Shapley_value)
+    to explain different machine learning models, and it can work with the `IsolationForest`
+    as well. After initialization, we can check different items in our list. Let’s
+    examine the first one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1dea2db9846285ae0aa666fba2a523cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Shapley Explainer results, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this another example, the `views_per_video` parameter looks normal, but
+    the `subscribers_per_video` value is high:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/491350f38481c3fd3e312b1de3f4b140.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Shapley Explainer results, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we can see that both metrics are unusually high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, I explained how to get YouTube channel data using the YouTube
+    Data API and a [python-youtube](https://github.com/sns-sdks/python-youtube) library.
+    This data allows us to make YouTube search requests for different categories and
+    get interesting statistical insights about YouTube channels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I suppose every reader of this story has watched at least one YouTube video
+    today or yesterday. According to [demandsage.com](https://www.demandsage.com/youtube-stats/),
+    YouTube is the second-biggest search engine after Google, with 2.7B active users
+    in 2023\. It is a part of our modern society and a part of everyday life. Thus,
+    from cultural and research perspectives, it is interesting to know which categories
+    are most popular and how many views and subscribers different channels can get.
+    In this article, I used “neutral” categories like “Cats” or “Dogs”, but the same
+    approach can be used for collecting data about politics, war, medicine, conspiracy
+    theories, or any other topics. Last but not least, for many content creators,
+    YouTube is an important source of income, and it can be crucial to know what kind
+    of views or subscribers different categories can get. So, I encourage you, as
+    a reader, to do the same tests on the topics you are interested in. Anyway, statistics
+    is a science *about us*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the second part of this story, I will focus on individual videos. We will
+    see how often different YouTube channels publish the videos, and how many views
+    these videos can get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/exploratory-data-analysis-what-do-we-know-about-youtube-channels-part-2-754fab840e65?source=post_page-----3688c5cbc438--------------------------------)
+    [## Exploratory Data Analysis: What Do We Know About YouTube Channels (Part 2)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting statistical insights using Pandas and the YouTube Data API
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/exploratory-data-analysis-what-do-we-know-about-youtube-channels-part-2-754fab840e65?source=post_page-----3688c5cbc438--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Those who are interested in social data analysis are also welcome to read other
+    articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Housing Rental Market in Germany: Exploratory Data Analysis with Python](https://medium.com/towards-data-science/housing-rental-market-in-germany-exploratory-data-analysis-with-python-3975428d07d2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[What People Write about Climate: Twitter Data Clustering in Python](https://medium.com/towards-data-science/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Finding Temporal Patterns in Twitter Posts: Exploratory Data Analysis with
+    Python](https://medium.com/towards-data-science/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-8aac618c8699)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Python Data Analysis: What Do We Know About Pop Songs?](https://blog.devgenius.io/python-data-analysis-what-do-we-know-about-pop-songs-b6197d85d4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors. If you want
+    to get the full source code for this and my next posts, feel free to visit my
+    [Patreon page](https://www.patreon.com/deliuseev).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

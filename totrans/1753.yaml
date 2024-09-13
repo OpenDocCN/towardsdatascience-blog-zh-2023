@@ -1,0 +1,491 @@
+- en: Quantisation and co. Reducing inference times on LLMs by 80%
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb](https://towardsdatascience.com/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)[![Christopher
+    Karg](../Images/9d163d59e0c3167732f55d497caf9db2.png)](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)
+    [Christopher Karg](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)
+    ·12 min read·Oct 27, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c44c0f469d07bf09ab4e359dd48265fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: [https://www.pexels.com/photo/cropland-in-autumn-18684338/](https://www.pexels.com/photo/cropland-in-autumn-18684338/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantisation is a technique used for a range of different algorithms but has
+    gained prevalence with the fairly recent influx of Large Language Models (LLMs).
+    In this article, I aim to provide information on the quantisation of LLMs and
+    the impact this technique can have on running these models locally. I’ll cover
+    a different strategy outside quantisation that can further reduce computational
+    requirements of running these models. I’ll go on to explain why these techniques
+    may be of interest to you and will show you some benchmarks with code examples
+    as to how effective these techniques are. I also briefly cover hardware requirements/recommendations
+    and the modern tools available to you for achieving your LLM goals on your machine.
+    In a later article I plan to provide step-by-step instructions and code for fine-tuning
+    your own LLM so keep an eye out for that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR — by quantising our LLM and changing the tensor *dtype*, we are able to
+    run inference on an LLM with 2x the parameters whilst also reducing *Wall time*
+    by 80%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, if you wish to discuss anything I cover here please [reach out](http://www.linkedin.com/in/-christopherkarg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: All opinions in this article are my own. This article is not sponsored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is quantisation (of LLMs)?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Quantisation allows us to reduce the size of our neural networks by converting
+    the network’s weights and biases from their original floating-point format (e.g.
+    32-bit) to a lower precision format (e.g. 8-bit). The original floating point
+    format can vary depending on several factors such as the model’s architecture
+    and training processes. The ultimate purpose of quantisation is to reduce the
+    size of our model, thereby reducing memory and computational requirements to run
+    inference and train our model. Quantisation can very quickly become fiddly if
+    you are attempting to quantise the models yourself. This largely comes down to
+    lacking hardware support from particular vendors. Thankfully this can be bypassed
+    through use of specific 3rd party services and software.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Personally I have had to jump through a fair few hoops to quantise LLMs such
+    as Meta’s Llama-2 on my Mac. This largely comes down to the lack of support for
+    standard libs (or anything with custom CUDA kernels). 3rd party tools such as
+    [optimum](https://github.com/huggingface/optimum) and [onnx](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
+    do however exist to make our lives a little easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The quick and easy option is to download any of the pre-quantised models that
+    are available on [HuggingFace](https://huggingface.co/) (HF). I specifically wish
+    to shout-out [TheBloke](https://huggingface.co/TheBloke) for providing quantised
+    versions of a whole host of popular LLMs including the LLama-2 models I’ll be
+    demonstrating in this article. Instructions on how to run inference on each model
+    can be found on the respective model cards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want to run quantised models yourself and don’t have access to your
+    own GPU, I’d suggest renting NVIDIA hardware on either of the following sites:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [**Runpod.io**](https://www.runpod.io/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [**Lambdalabs.com**](https://lambdalabs.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [**Vast.ai**](https://vast.ai/)— DISCLAIMER — use at your own discretion.
+    Here you are essentially renting a random person’s GPU. I’d suggest not sharing
+    any sensitive information when using this service. It is however very cheap.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you wish to buy NVIDIA hardware and want the best bang for buck, I would
+    suggest buying 2x used RTX3090’s. Whilst the newer RTX4090 has [better benchmark
+    performance](https://technical.city/en/video/GeForce-RTX-3090-vs-GeForce-RTX-4090)
+    , LLMs require high memory read/write speed rather than the higher speed of the
+    processor. There is not a huge difference in memory read/write speed between the
+    3090 and 4090 models so, in my opinion, the older model provides better value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have cash to spend, the sky is your limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As free options I’d suggest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [**Google colab**](https://colab.google/)— offer free GPUs at runtime with
+    certain restrictions (RAM is also restricted in the free tier however you can
+    pay for more)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [**Kaggle**](https://www.kaggle.com/) also offer GPUs within their notebooks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you insist on using Mac hardware, my suggestion would be the M2 Ultra with
+    as much RAM as you can afford (ideally 64GB+). This will still be slower than
+    the above NVIDIA options but is definitely viable if you wish to just run inference
+    on LLMs rather than training your own. If you are having trouble quantising your
+    own models on Mac hardware, I can only recommend [Georgi Greganov’s llama.cpp](https://github.com/ggerganov/llama.cpp).
+    Using this repo you can download and compile Meta’s llama 2 models in C++ and
+    quantise them to 4-bit precision. We can then run inference on these models. The
+    README of the repo gives clear instructions as to how you can do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So why on earth do we want to run/host our own LLMs locally?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The short answer is, as always, it depends. As of writing this article, Openai’s
+    GPT4 (available via ChatGPT) is widely [considered the best performing LLM available](https://paperswithcode.com/paper/gpt-4-technical-report-1).
+    The pricing I would argue is also very reasonable and the model itself is no doubt
+    easier interact with than using the strategies I alluded to above. The only dependencies
+    you need to install are your account info and credit card number ;).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I do however believe a strong case can be made for running your own LLM locally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Asking questions about proprietary documents/data.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You have the ability to fine-tune your own LLM using your own contexts and data.
+    By doing this yourself you are not sharing any of this information 3rd parties
+    which is a huge plus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Asking questions about topics after September 2021 knowledge cut-off** **(GPT4).**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have seen some cases of GPT4 providing detail on topics after this time period,
+    however the model frequently states the knowledge cut-off exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fine-tune a model to solve problems that are specific to your scenario.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again this links to the first point, you can tune your own LLM model to suit
+    your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You get to see how these LLM’s work under the hood. You can inspect the model
+    architecture and further develop your understanding of a technology that.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**It’s free (provided you have your own hardware already and don’t count the
+    electricity to run it)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantisation will ultimately aid you in running your own LLM locally by using
+    less computational resources than if you were to run inference on the un-quantised
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmark comparison Llama-2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I will now demonstrate the effect of quantisation on Meta’s Llama-2 7B and 13B
+    models. I ran these experiments on a rented GPU as described above but have also
+    tested them in a google colab notebook to confirm the results are reproducible.
+    The only edit we have to make is run an 8-bit quantised version of the 7B parameter
+    model as our baseline in the colab notebook otherwise it exceeds memory limits
+    when running inference (which in my eyes already makes a perfect case for using
+    quantisation when running LLMs!). Feel free to follow along though — the code
+    examples are pulled directly from the free version of my colab notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are using the colab notebook — when installing dependencies such as *accelerate*
+    and *bitsandbytes*, use regular pip installs within the notebook. Once installed,
+    restart the runtime. Otherwise the packages will not be recognised. Also don’t
+    forget to change your runtime to GPU by selecting runtime > change runtime type
+    > T4 GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I should add, a pre-requisite for this is to have been granted access to the
+    models by Meta and HF. In order to do so you must first sign-up via a request
+    form to Meta via this link :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://ai.meta.com/resources/models-and-libraries/llama-downloads/](https://ai.meta.com/resources/models-and-libraries/llama-downloads/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can take anywhere from 2 minutes to 2 days to receive confirmation of access.
+    Please note the email addresses you use for the Meta form and your HF account
+    must match in order to use the models via the HF API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once confirmation has been received, you can login to hugging face and start
+    working with the models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s begin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference on Llama2–7B base with 8-bit quantisation.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s first handle our imports — at this stage if you get any error messages
+    just run the pip installs as needed — don’t forget to restart your runtime once
+    installed (as above).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we copy the model name from hugging face so the API can download the relevant
+    one. We also need to enter our HF access token. This can be found by selecting
+    your profile in the top right of the HF site > Settings > Access Tokens > either
+    generate a token or copy your existing one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now let’s download the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we use the *device_map* argument to select the hardware we wish to use.
+    In this case it selects the first GPU available. It is possible to load custom
+    *device_maps* here but that falls outside the scope of this article. Note also
+    the *load_in_8bit* argument. This is the quantisation step we are taking to reduce
+    the memory requirements of running inference. If you are looking to build bigger
+    projects/products using LLMs, this simple technique can be useful for model deployment
+    on devices with limited resources (edge devices or mobile phones etc.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next we set-up our tokeniser:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Enter whichever prompt you wish. The base model we are using is trained for
+    text completion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s run inference on our tokenised prompt. Feel free to review the HF
+    documentation if any of the syntax is new to you. Essentially we are unpacking
+    the contents of our *toks* object and passing it to our GPU. The output is restricted
+    to a maximum of 15 tokens (you can edit this parameter if you wish). The *model.generate()*
+    method is used to generate our output using our Llama2 model. Once done, we transfer
+    the output to CPU memory again so we can view our output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s break down these timing metrics to better understand what we are seeing.
+    The *CPU time* is broken down into 3 main components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. *user* — this represents the time spent in user-mode code. Or in other words,
+    the time spent it takes for the CPU to execute the python code. In this case it
+    took 7.47 seconds. This metric is often also referred to as user time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. *sys* — this represents the amount of CPU time spent in system calls or
+    kernel-mode code. It is the the time the CPU spends executing operating system-related
+    tasks on behalf of our Python code. In our case it’s 1.17 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. *total* — is the total of our user and sys times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next is the *Wall time*. This refers to the amount of ‘real-world’ time it took
+    to run our block of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The discrepancy between *CPU times* and *Wall time* (7.76 seconds) is due to
+    the other memory intensive operations involved with running inference on our model.
+    These include but are not limited to GPU memory transfers, scheduling, I/O operations
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s decode our result to see the output of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Awesome. We’ve successfully run inference on a base quantised LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A further technique we can use to speed up inference fairly drastically is to
+    assign a different *dtype* to the tensors used within our Llama2 model during
+    computation. Where we previously quantised the model’s parameters by using the
+    *load_in_8bit=True* argument, we will now use the *torch_dtype=torch.bfloat16*
+    argument to reduce memory usage of our model during inference. This 2nd method
+    is not considered a quantisation technique as it only changes the data type used
+    by our model’s tensors, whereas the first involves quantisation by reducing the
+    precision of the model’s parameters to 8-bits during loading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both are considered effective techniques for reducing the computational requirements
+    of running our LLMs. Let’s see just how effective the 2nd technique is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s update our model with the new parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this stage colab may complain saying you have run out of memory. Simply restart
+    the runtime by selecting Runtime > Restart runtime and re-run all relevant cells
+    within the notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we run inference on our model with updated tensor *dtypes*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Wow. So by adjusting the tensor *dtypes,* we reduced our total CPU time by
+    6.66 seconds. Our Wall time was reduced by ~71%. Let’s decode our output to see
+    if we notice any impact of the changed *dtype*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are a range of metrics and tests we can use to evaluate and compare the
+    outputs of our model. In this article I will simply employ human evaluation. Both
+    outputs are passable, coherent and relevant. Considering the 71% reduction in
+    wall time in our 2nd example, I’d say our techniques so far were a success.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how quickly we can run inference on a pre-quantised Llama2–7B model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference on pre-quantised Llama2–7B with updated tensor dtypes.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Courtesy of [TheBloke](https://huggingface.co/TheBloke) we are able to access
+    pre-quantised versions of Meta’s Llama-2 models. Details on the quantisation process
+    can be found on the [model card](https://huggingface.co/TheBloke/Llama-2-7b-Chat-GPTQ)
+    .
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the same tensor *dtype* technique that provided us with the impressive
+    reduction in wall time. This time with the pre-quantised model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s update the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Q at the end of the name is indicative of the quantisation already performed
+    on the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we download the model with the updated tensor *dtypes*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Update the tokeniser:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run inference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ve made even further improvements. As you can see, the total CPU times are
+    reduced by ~14%. The wall time isreduced by ~8%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s check the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now it is fairly clear the final word has been trimmed due to our token limit
+    being set to 15\. I confirm I increased the token limit and the final word evaluated
+    to hobby. In terms of human validation I still give this a pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s combine everything we’ve learned and run inference on the larger Llama-2–13B
+    model. This model has almost 2x the number of parameters as those we’ve been testing
+    earlier. We’ll benchmark the outcomes against the first model we trained (the
+    base Llama-2–7B with 8-bit quantisation) and see how the two compare.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference on pre-quantised Llama2–13B with updated tensor dtypes.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ll use all the same syntax but update the model name of course.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Download model with updated tensor *dtypes*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Update tokenizer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run inference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s put this into context:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f5fc6baf18fce88c907b6bd95e07efa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inference times Meta-Llama-2–7B (8-bit quantisation) vs. Pre-quantised LLama-2–13B
+    with float16 tensors
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve almost doubled the number of parameters (from 7B to 13B). We’ve reduced
+    the total CPU time by 81% and Wall time by 80%. I won’t lie I’m pretty happy with
+    this outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s get the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Not only have we considerably reduced inference times by reducing computational
+    requirements, I would argue the output of the 13B model also is more coherent
+    than the first 7B model on which we ran inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article shows you how effective these techniques are in drastically
+    reducing inference times on these LLMs. In our first example, it wasn’t even possible
+    to load the model in our notebook without first applying our own quantisation.
+    Essentially by using these techniques, we are able to deploy a much larger LLM
+    (number of parameters), decrease inference times by circa 80% and improve the
+    output. If this isn’t a positive outcome I don’t know what is!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m happy to discuss and exchange ideas on any of the topics covered here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images belong to the author unless otherwise stated.*'
+  prefs: []
+  type: TYPE_NORMAL

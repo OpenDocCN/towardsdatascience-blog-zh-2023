@@ -1,0 +1,345 @@
+- en: Towards Understanding the Mixtures of Experts Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/towards-understanding-the-mixtures-of-experts-model-45d11ee5d50d](https://towardsdatascience.com/towards-understanding-the-mixtures-of-experts-model-45d11ee5d50d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: New research reveals what happens under the hood when we train MoE models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)[![Samuel
+    Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)
+    [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)
+    ·8 min read·Nov 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84a6c24700294b529c1ea0523bea9a2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by the author with Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Mixtures of Expert (MoE) models](/machine-learning-with-expert-models-a-primer-6c74585f223f)
+    have rapidly become one of the most powerful technologies in modern ML applications,
+    enabling breakthroughs such as the Switch Transformer and GPT-4\. Really, we’re
+    just starting to see their full impact!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, surprisingly little is known about why exactly MoE works in the first
+    place. When does MoE work? Why does the gate not simply send all training examples
+    to the same expert? Why does the model not collapse into a state in which all
+    experts are identical? How exactly do the experts specialize, and in what? What
+    exactly does the gate learn?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckily, research has started to shed some light into these questions. Let’s
+    take a look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoE models — a lighting primer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/6243d227d3ea0a06796504c80d1766a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image source: [Adaptive Mixtures of Local Experts](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a brief reminder, MoE was invented in the 1991 paper “[Adaptive Mixtures
+    of Local Experts](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)”, co-authored
+    by none other than the godfather of AI himself, Geoffrey Hinton. The key idea
+    in MoE is to model an output y given an input x by combining a number of “experts”
+    E, the weight of each is being controlled by a “gating network” G,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33ad77c8a93a0cd9e48dc9fbcc6050e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where the gating network G is given a simple linear model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0750b269485499fe93bfa9f468f750d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where W is a learnable matrix that assigns training examples to experts. When
+    training MoE models, the learning objective is therefore two-fold:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the experts will learn to process the input they’re given into the best possible
+    output (i.e., a prediction), and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the gate will learn to “route” the right training examples to the right experts,
+    that is, learn the routing matrix W.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: MoE has been shown to be particularly powerful when we run the computation over
+    just the single expert with the largest gating value, that is, we approximate
+    y as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa24fac900e196cc948008b72ece8c54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where *I* is the index of the maximum value of G. We call this “hard routing”
+    or “sparse gating”, and it has been the key technique behind breakthroughs such
+    as the Switch Transformer: it allows us to scale models with a computational complexity
+    of O(1)!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that background, let’s next take a look at a few particular use-cases and
+    what the experts actually learned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoE in vowel discrimination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to get a better understanding of what exactly the experts are learning,
+    let’s first go back to the original 1991 MoE paper, which indeed has some clues.
+    Here, the authors build a 4-expert MoE model on a vower discrimination task, that
+    is, distinguish [A] from [a] and [I] from [i] in voice recordings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following plot shows their data (i and I in the top left, a and A in the
+    bottom right) as a function of [formant values](https://en.wikipedia.org/wiki/Formant)
+    (acoustic features that describe the sound of the vowel):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8eb5fdd7572a95dddf6933e1e1f8ef01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image source: [Adaptive Mixtures of Local Experts](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How to read this plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The “points” plotted are the data: i, I, a, and A. (It’s a little hard to read
+    because this is an old paper.)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The lines “Net 0”, “Net 1”, and “Net 2” show the decision boundaries that are
+    learned by 3 of the 4 experts. What about the 4th expert? The authors report that
+    it failed to learn any useful decision boundary!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The line “Gate 0:2” shows the gate’s decision boundary between sending inputs
+    to expert 0 (to left) vs expert 2 (to the right).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See what’s happening here? Expert 1 specialized in discriminating [i] from [I],
+    while both experts 0 and 2 specialized in [a] vs [A], probably because that data
+    was a bit harder to classify and not as easily separable as [i] vs [I].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The take-away: the gate learns to cluster the data, and the experts learn the
+    decision boundaries within a cluster. More difficult regions of the data will
+    end up with more experts allocated to them. Some experts, though, may bring not
+    much to the table.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoE in translation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s consider another example that demonstrates pretty well what the experts
+    are actually learning. This examples comes from the 2017 paper “[Outrageously
+    large neural networks](https://arxiv.org/abs/1701.06538)”, again from Hinton’s
+    lab, this time at Google Brain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, the authors apply MoE to a natural language problem: translation of sentences
+    from English to French. Technically, they add an MoE layer with 2048 experts in
+    between a stack of 2 LSTM modules, hypothesizing that different experts would
+    end up specializing on different kinds of inputs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And indeed, that’s what appears to be happening. The following table lists
+    the top input tokens, ranked by gate value, for 3 of the 2048 experts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f62613d6b52074c10817e1ad5da48f8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot from [Outrageously large neural networks](https://arxiv.org/abs/1701.06538)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Again, we see the same sort of clustering behavior that we’ve seen earlier:
+    Expert 381 specializes in a word cluster spanned by words like “research”, “innovation”,
+    science”, while Expert 2004 specializes in a word cluster spanned by words like
+    “rapid”, “static”, “fast”, and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And again, just like in the previous example, there’s at least one expert that
+    doesn’t appear to add much to the table, Expert 752, which (who?) exclusively
+    looks at the token “a”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is fascinating behavior: we didn’t teach the model that these are related
+    words, nor did we ask the model cluster words, nor did we specifically allocate
+    experts to certain words. All of this is *emerging* behavior, and the only things
+    that we specified ahead of time were the number of experts and the learning objective.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoE in synthetic data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, let’s take a look at a very recent paper that did a lot to help understand
+    what happens inside the MoE layer, “[Towards Understanding the Mixture-of-Experts
+    Layer in Deep Learning](https://arxiv.org/abs/2208.02813)” by researchers Zixiang
+    Chen et al from UCLA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the authors apply a very simple 4-expert MoE model on a synthetic toy
+    dataset consisting of 4 clusters of datapoints that belong to either of 2 classes.
+    The learning objective is simply to separate these classes across all 4 clusters.
+    The experts in this model are 2-layer CNNs with either linear or non-linear (cubic)
+    activation function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is a visualization of what happens during the training process, showing
+    the MoE model with nonlinear activation at the top, and linear activation at the
+    bottom. This graph shows the datapoints consisting of the two classes (crosses
+    and circles), which of the 4 experts the datapoint is being routed to by the gate
+    (yellow, blue, green, red), and the model’s learned decision boundaries (jagged
+    lines).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b3dad7e32ac35306cf24882ae2f2aa0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plot from the paper [Towards Understanding the Mixture-of-Experts Layer in Deep
+    Learning](https://arxiv.org/abs/2208.02813)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The take-aways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Specialization takes time.** In the beginning of model training, there’s
+    no specialization at all! All experts are everywhere all over the place. As the
+    training progresses, slowly the clusters get allocated to certain experts.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Expert allocation is random**. There is no particular rule as to which clusters
+    get assigned to which expert — it’s random. If you look closely, you see that
+    the top right cluster happens to have a few more datapoints that are being routed
+    to the “blue” expert, and that random perturbation may be the reason that the
+    entire cluster ends up blue.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Non-linear beats linear.** Linear experts don’t work as well, as seen by
+    comparing the top right (non-linear) to the bottom right (linear) plot: the decision
+    boundaries from the linear experts aren’t as good, and the clusters are also not
+    as well segregated. This shows that expert non-linearity is one of the keys to
+    make MoE work.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'It is also insightful to track the “dispatch entropy” of the gate, which is
+    largest if each expert receives training example from all clusters, and lowest
+    (0) if each expert only receives training examples from a single cluster. As training
+    progresses (from left to right in the plot below), dispatch entropy drops until
+    it reaches a stable point — the point with a near-1:1 correspondence between clusters
+    and experts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4e7383f35c8d1d6c88b25c6ed64a0b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plot from the paper [Towards Understanding the Mixture-of-Experts Layer in Deep
+    Learning](https://arxiv.org/abs/2208.02813)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which is, once again, telling us the same story: the gate learns to segregate
+    the data into clusters, and the experts specialize in their (randomly assigned)
+    clusters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 papers, 3 decades, 1 story.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take-aways
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With all that context, let’s revisit — and answer — the questions we asked
+    earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: When does MoE work?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A: MoE works best when the data is naturally clustering — we saw that in the
+    vowel problem, the translation problem, and in the synthetic data.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Q: Why does the gate not simply send all training examples to the same expert?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A: Because the performance would be bad: a single expert cannot learn each
+    of the cluster’s decision boundaries equally well. And, as in all neural networks,
+    bad performance creates large gradients to pull the model in the opposite way.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Q: Why does the model not collapse into a state in which all experts are identical?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A: Again, this is because the performance in this case would be bad: we get
+    better performance when different experts specialize in different regions of the
+    data.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Q: How exactly do the experts specialize, and in what?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A: Experts specialize in different regions of the data, and that specialization
+    is random: it depends on the (random) initialization of the gate.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Q: What exactly does the gate learn?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A: The gate learns to cluster the data, and to assign each cluster to one (or
+    more) experts.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: MoE remains one of the most scientifically interesting and practically useful
+    modeling paradigms in ML, and we’re just starting to see its implications on modern
+    ML applications. Understanding what exactly happens under the hood is a critical
+    step to make them even better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Want to impress your peers with in-depth knowledge of the latest ML technologies
+    and breakthroughs?* [*Subscribe to my Newletter.*](https://mlfrontiers.substack.com)'
+  prefs: []
+  type: TYPE_NORMAL

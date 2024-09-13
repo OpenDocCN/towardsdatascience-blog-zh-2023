@@ -1,0 +1,229 @@
+- en: Storing Images in TensorFlow Record Files
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/storing-images-in-tensorflow-record-files-166d030269fb](https://towardsdatascience.com/storing-images-in-tensorflow-record-files-166d030269fb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to use TFRecord files, a TensorFlow-specific data format for efficient data
+    storage and reading, when dealing with images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pascaljanetzky.medium.com/?source=post_page-----166d030269fb--------------------------------)[![Pascal
+    Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----166d030269fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----166d030269fb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----166d030269fb--------------------------------)
+    [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----166d030269fb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----166d030269fb--------------------------------)
+    ·6 min read·Mar 2, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Did you know that TensorFlow has a custom format to store data? It’s called
+    TensorFlowRecords — or TFRecords for short—and builds upon a simple principle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Store data sequentially (within a file) to access continuous chunks quickly.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'This approach is based on [protocol buffers](https://protobuf.dev), a cross-platform
+    approach to storing structural data. We do not need to dive deeper into the background
+    here; what we need to know is that data is stored in a dictionary-like mapping:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A single file may hold many such “dictionaries,” called *Examples* in TensorFlow,
+    as depicted in the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69cbaf7ba9b6ffb094a9c292aeea5fa9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An overview of the concept behind TensorFlow record files. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Within each *Example* — or dictionary — the individual data entries are stored.
+    This format is highly flexible: you can store images, text, audio, and any data
+    that can be cast to a byte representation. Further, data types can be mixed, letting
+    us keep, e.g., images and bounding boxes along with a textual description. However,
+    before going too far too soon, we’ll focus on a single modality: images. The remaining
+    modalities, audio and text data, will be covered in upcoming posts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on my experience, I have found it best to cover such an advanced topic
+    with simple examples that best showcase the underlying workflow. In this case,
+    we use random (image-shaped) matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Creating random data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Consider a dataset of 1000 images, each size 224 by 224 with three color channels.
+    Each sample of this imaginary dataset is labeled into one of ten classes, 0 to
+    9\. Using only the numpy-library, we can create such a dataset easily:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result of this code snippet is a dataset (here: the numpy array) full of
+    image-like data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Helper functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After we have a working dataset, we must convert it into byte data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To this end, we create four helper functions (see also [here](https://www.tensorflow.org/tutorials/load_data/tfrecord#data_types_for_tftrainexample)).
+    The first three helper functions convert certain data types, such as float, to
+    a TFRecord-compatible representation. The last helper function turns an array
+    into a string of binary data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating the TFRecord dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'These functions come into play once we begin creating the TFRecords files.
+    Here, we need a function that creates the layout of a single *Example*, that is,
+    the layout for the internal representation of the image we want to store. Using
+    our simplified visual representation from before, such an *Example* has multiple
+    slots with data, called *Features*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1faab92c2b453e66337e78ef1bb1583c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual overview of how data is stored within an *Example. Image by the
+    author.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: For first-time users, creating such a condensed representation can be overwhelming,
+    so let's cover it one by one. First, we need to store information to recover the
+    input’s data dimensions. For our image use case, this is the height, width (224),
+    and number of channels (3). Each number is an integer, meaning we can store them
+    as integer data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, we need to store an image’s byte representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And third, we need to store the label, which, like the data dimensions, is
+    stored as integer data. In code, these three requirements are modeled as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we need a function that takes the dataset, consisting of the random images
+    and their equally random labels, and prepares them for storage. First, we open
+    a writer-object that handles writing the data to disk. Afterward, we use a for-loop
+    that goes over the numpy arrays, creates image-label pairs, and stores them in
+    a TFRecord file using the previously described method. Finally, after we finish
+    iterating over the dataset, we close the writer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is it! After calling this function, we have a single file that stores our
+    entire dataset!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieving images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Extract the byte data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When, at a later point, we want to work with the TFRecords, we need to retrieve
+    the stored data. Conceptually, we are now *inversing* the process of storing.
+    Here, we prepare the structure but don’t fill it with data yet. Be cautious: the
+    placeholders must have the same name and an appropriate data type; otherwise,
+    the extraction will fail. Then, for each *Example* in the TFRecord file, we extract
+    the content and reshape the image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After coding the routine for extracting data, we need a way to apply it to
+    each sample in the TFRecord file. This process, where we parse the data — i.e.,
+    bring it into the correct format — is done by mapping the extraction function
+    to each *Example*. Here, we rely on TensorFlow’s *tf.data* API, which has such
+    functionality on board:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Afterward, we point this function to the previously created TFRecord file (here:
+    “*random_images.tfrecords*”) and retrieve the data. Then, as a sanity check, we
+    can compare an image’s shape and see if it has been recovered correctly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Caveats
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'What we have covered in this post is how to get image data into a TFRecord
+    file. There are two caveats, and respectively assumptions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we began with images already loaded into the memory (our numpy arrays).
+    And second, in our setup, all examples had the same shape — which is unlikely
+    in real-world applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first point is straightforward to solve: use one of the many excellent
+    libraries that do that. Examples here are the [*imageio*](https://pypi.org/project/imageio/)
+    library or [Pillow](https://pypi.org/project/Pillow/). For these libraries, plenty
+    of tutorials exist, showing you the steps necessary for loading data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second point is a bit more tricky. The challenge is not the creation of
+    the TFRecord files but the data loading i*n combination* with batching. Remember
+    that we stored the raw image data and its shape via the previous functions? When
+    parsing the TFRecord file, this information allows us to restore the image’s appropriate
+    shape. However, now, when combining multiple examples into a batch, we face the
+    possibility of having various data dimensions: Image 1 might be 224 by 224 pixels,
+    but the next might be 124 by 356 pixels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have a solution for such cases: TensorFlow’s [*padded_batch()*](https://www.tensorflow.org/api_docs/python/tf/data/Dataset#padded_batch)
+    method. To get you started, here’s the previous dataset creation code (which initially
+    did not use any batching; samples were just returned one by one) but this time
+    with padded batching:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The interesting part begins in line 10, which pads each batch in the dataset
+    to a fixed shape specified by the padded_shapes argument. The first element of
+    the tuple is padded to [256, None, 3], meaning that the first dimension of the
+    tensor is fixed to 256, the second dimension is padded to the minimum supported
+    length that fits all examples of this batch, and the third dimension is fixed
+    to 3\. The second element of the batch tuple, the labels, do not require padding,
+    which is why we write [], meaning that no padding should be applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this post, we covered storing one data modality — images — into TFRecord
+    files, a TensorFlow-specific data format for efficient data storage and reading.
+    In covering the workflow behind it, we generated a dataset of random “images”
+    and equally random labels. We then used this dataset to show how to prepare the
+    data for storage using three helper functions. Finally, after writing the data
+    to disk using TensorFlow-native methods, we also coded the reverse: extracting
+    the data from the file. Conceptually, this involved inversing the storage process
+    by filling a placeholder dictionary. In the end, we also briefly discussed two
+    caveats and how to solve them.'
+  prefs: []
+  type: TYPE_NORMAL

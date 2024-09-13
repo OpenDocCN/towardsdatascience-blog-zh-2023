@@ -1,0 +1,557 @@
+- en: Thread Summarization Using NLP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4](https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Extractive summarization using POS tagging, NER, and sentiment analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
+    ·13 min read·Jan 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2df0e0ffea8820634c8b6f6285b32460.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Holger](https://pixabay.com/users/hodihu-84128/) from [Pixabay](https://pixabay.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a thread of text (or email) messages involving multiple people. Below
+    is a sample involving two people planning a trip together. Individual messages
+    are separated by empty lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The back-and-forth can surface a lot of information, albeit spread out over
+    the various text messages. When this thread unfolds over a text messaging app
+    on a smartphone, the back-and-forth scrolling to stay looped into the conversation,
+    as more messages keep streaming in can be a challenge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wouldn’t it be great if an NLP bot could read all the messages in the thread,
+    and summarize them into a single new message? Which can then be posted as a new
+    message on the same thread.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post addresses this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First let’s observe the recurring patterns in this thread, some of which may
+    generalize to other threads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Person A suggests some specific places to stay. Person B gives some opinions.
+    And suggests another. One of them asks a question about food. The other responds
+    with specific restaurants. The conversation then moves to bars. Some specific
+    suggestions are offered. Followed by opinions. And a follow-up question. And responses.
+    And opinions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NLP Approaches**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is there an existing NLP approach that lends itself to this use case? At a high
+    level, yes. It’s called *extractive summarization*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s first understand it at a basic level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The approach does not necessarily attempt to make the summary readable, only
+    to have it capture the key pieces of information in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we dive into extractive summarization, there is a second summarization
+    approach from NLP called *abstractive summarization* that deserves consideration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The summary this approach produces is a summarized paraphrase of the original
+    text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extractive summarization seems a better fit for our use case because our primary
+    aim is to create an abbreviated version of the text in the thread with all the
+    key content preserved. Not a paraphrase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, note that abstractive summarization is a more challenging problem to solve
+    as it seems to involve deeper natural language understanding and generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Extractive Summarization In Our Setting**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s consider the following basic approach, described in [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tokenize the text into sentences.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Tokenize each sentence into words.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove stopwords. Words such as *is*, *a*, *an*, *the*, *to*, *for*, *of*,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Somehow score the remaining text in each sentence using word frequencies.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In our thread setting, we will replace “sentences” with “messages”. That is,
+    tokenizing the text into sentences will mean tokenizing it into messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How well might this approach work on our thread?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tokenizing into words helps for sure. To identify and drop the stop words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, later we will see a different extractive approach that avoids removing
+    stopwords at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Our Thread Tokenized**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we will tokenize the thread into a sequence of messages, and next each
+    message into a sequence of words. In python terms, this is just a list of lists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most importantly, in this representation, we are not retaining the identity
+    of the person who sent a particular message.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Is Removing Stopwords Effective Enough?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is a version of the text with stopwords struck out. In doing so, we had
+    to decide what was a stopword and what was not. We followed common practice, which
+    tends to err on the conservative side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The stopwords to be removed are demarcated in /…/.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The words in italics and bold are the stopwords we dropped. Clearly, this didn’t
+    help much. Also, note that the *at the* in the lodge name *Inn at the Pier* got
+    dropped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Towards A Better Solution**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we just saw, removing stopwords alone is ineffective. First, it doesn’t remove
+    enough words. Second, it sometimes removes stopwords that appear inside entity
+    names.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s think a bit more generally. It would be great if there were some way to
+    figure out which words to drop and which words to keep. One might say, well isn’t
+    this just restating the problem description?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, yes. However, looking at it this way opens up new ways of thinking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, the NLP method we cover next, part-of-speech tagging, will lead
+    to a significant improvement over removing stopwords alone. In fact, it will obviate
+    the need for removing stopwords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Part-of-speech Analysis**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An NLP method that has found widespread use is to tag each word in the text
+    with its part-of-speech category. Such as *nouns*, *verbs*, *adjectives*, …
+  prefs: []
+  type: TYPE_NORMAL
+- en: So why do we think this will help with our thread summarization needs? This
+    is because we think that the part of speech of a word will serve as a good predictor
+    of whether we should keep it in the summary or drop it. We would expect to want
+    to drop verbs, articles, and pronouns. We would expect to want to retain nouns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s test this idea out on our example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We applied the part-of-speech tagger service at [https://parts-of-speech.info/](https://parts-of-speech.info/)
+    on the text of our thread. (All messages are concatenated, with message boundaries
+    represented as para breaks.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is what we got.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15f2fbdd1c195cc230d404ae3358c9de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The map from color to part-of-speech tag is below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6544fa4cfa8074a6ed2b8ad28c44751.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The POS tags of the various words do indeed seem useful for summarization. We’d
+    want to keep all the nouns in. Perhaps also the adjectives, as two of the four
+    carry definitive sentiment (price, good).
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, while an improvement over removing only the stopwords, simple filtering
+    based on the POS tags alone is likely not enough. For the following reasons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, even if we retain only nouns, too many words still remain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, as happened when we were dropping stopwords, we ended up dropping *at
+    the* in the lodge name *Inn at the Pier*. This is not good. We obscured the name
+    of a lodge potentially worth researching further.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Third, the adjective POS tag, while offering some signal towards sentiment is
+    not sufficiently strongly correlated with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Different Approach**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We begin with the observation that nearly all of the salient information in
+    the thread falls into one of three NLP categories: *named entities*, *sentiment*,
+    and *salient phrases*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we will see soon, being able to tell these apart will help improve our thread
+    summarizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start with named entities as that is the dominant category in this thread.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Named Entities**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In NLP, any short piece of text, usually one-to-three words, that is (i) a “thing”
+    and (ii) can be named is called a *named entity*. Examples are person names, country
+    names, restaurant names, hotel names, and many, many more. For a detailed post
+    on named entity recognition in NLP, see [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Armed with a named entity recognizer that can recognize city names, restaurant
+    names, and hotel names, we would be able to summarize better. We could make this
+    happen by training an off-the-shelf named entity recognizer so long as we could
+    assemble a rich enough set of city names, restaurant names, and hotel names.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is what the summarized text would look like with the aforementioned named
+    entities recognized and the rest of the text dropped. We’ve also dropped the para
+    breaks, adding periods where needed. (The para breaks add no value to the summarized
+    text.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Since our text summarizer does named entity recognition, we could take advantage
+    of this to present the summary with named entities annotated if that is preferable.
+    Something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Not bad. That said, I’m not sure that adding the entity names adds value or
+    adds clutter in this thread. It does inform us that this is possible. On longer
+    threads, this may work better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still, there is room for improvement. We’ll group the improvements into the
+    types below. In no particular order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Oyster loft* is mentioned twice. Fortunately, deduping it is easy (in this
+    exact case) as it has already been recognized as a named entity.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The sentiments have not been picked up. Such as *looks good*, *a bit pricey*,
+    +1, and *Not close enough to where we are going*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The salient phrases, aka tags, have not been picked up. Specifically, *seafood
+    restaurants, bars, breweries, lodge (lodging)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Nothing more to say on 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sentiments**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On 2), this falls in the NLP category of sentiment analysis. More specifically,
+    of aspect-based sentiment analysis, which is the problem of detecting which sentiment
+    applies to which portions of the text. As opposed to sentiment classification,
+    which is the problem of determining whether the overall sentiment in the text
+    is positive, negative, or neutral.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See [3] for a detailed post on sentiment analysis in NLP. It covers both aspect-based
+    sentiment analysis and sentiment classification in considerable detail, with illustrative
+    examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, in the context of our specific thread, let’s try to better understand
+    what we really need, what assumptions we can make, and think about how far we
+    might take them. In short, let’s (i) examine our specific use case and (ii) proceed
+    incrementally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s narrow our focus to the messages that have the sentiments we want
+    to extract and the messages that immediately precede them. We pick the latter
+    because the sentiment in a message might be on the message that is just before
+    it. We’ve annotated the sentiment-carrying regions within /…/
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, let’s imagine that we detected the sentiment-carrying terms. Even a dictionary-based
+    approach would be a good starting point here, though how well it scales is an
+    open question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our first thought is to keep the detected terms in the summary in exactly the
+    positions they are. Let’s see what the end result looks like. As before, the sentiment-carrying
+    terms are demarcated in /…/
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first point to make, a small one, is that since we know which chunks of
+    text are the sentiment-carrying terms, we could visually distinguish them from
+    the entities. This is illustrated above in /…/.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second point is that we could more explicitly link a sentiment-carrying
+    term, specifically to the entity that immediately precedes it. Sure there is some
+    risk our linkage is wrong. Let’s see how the result would look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Good in this case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Salient Phrases**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now focus on the salient phrases we want to be detected and added to the
+    summary. In our thread, these are *seafood restaurants, bars, breweries, lodge
+    (lodging)*. Again, let’s imagine these have somehow been detected and see the
+    result with them. This time we demarcate the detected salient phrases in /…/.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hmm. The injected salient phrases don’t add as much value as the injected sentiments
+    did.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s the difference? Let’s analyze. First, adding the sentiments enriches
+    the summary as sentiments are not predictable from the surrounding text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our thread, the detected salient phrases don’t add as much information. For
+    example, the reader can see the entities close to *lodging* are hotels, so adding
+    that word does not enrich the summary. The same point applies to *seafood restaurants*,
+    *bars*, and *breweries*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the language of data science, we can say that the information gained from
+    adding sentiments to the summary is higher than that from adding the salient phrases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A second point is that in the setting of threads of text messages at least,
+    sentiment will tend to be about the entity that was just mentioned prior to it,
+    in the same message or the preceding message. Salient phrases by contrast are
+    more open-ended. In our thread, the salient phrases appear in questions, whose
+    answers come later and may be spread out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A third point is from the perspective of readers of such summaries. These will
+    generally be some of the participants in the thread. The sentiments of other people
+    on the thread on the specific entities will be important to them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, the issue is not black-and-white as one could make the case that
+    adding in the salient phrases does add some information. Consider *seafood restaurants*.
+    We now know that someone in the conversation is interested in seafood restaurants.
+    Should there have been sentiment from someone else on this suggestion, the information
+    carried by this phrase would only increase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, we can still say that relatively speaking the named entities and
+    the sentiments are more important to retain in the summary than the salient phrases.
+    We could use this as follows. Retain the salient phrases initially but drop them
+    if the summary becomes too long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Retrospective**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now look back and reflect on POS Tagging versus the combination of named
+    entity recognition, sentiment analysis, and salient phrase extraction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dropping stopwords alone is very coarse. Deciding which words to drop and which
+    to retain based on their part of speech is finer. Replacing POS analysis with
+    the combination of named entity recognition, sentiment analysis, and salient phrase
+    extraction is even finer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So the quality of the summary improves as we progress from the simplest to the
+    most elaborate of these approaches. Of course, the effort also increases. For
+    the third approach, we need to use or train a suitable named entity recognizer.
+    Plus use a sentiment analyzer and possibly improve it further. Recognizing salient
+    phrases is another issue. We didn’t dive into this in our post as somewhere along
+    the way the case for retaining such phrases in the summary weakened.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Post-publishing Update**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In threads such as the one in our example, a recurring theme we missed out on
+    previously is a discussion of the times that work for the various people involved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our thread example, let’s add the below as the first few messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The “…” in the above is an indicator that there are other messages between the
+    two flanking it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s work towards integrating the key pieces of information from the above
+    messages into our summary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we would want to extend our named entity recognizer to recognize dates.
+    Below are the same messages, with the chunks we want to recognize as dates highlighted
+    in bold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What days work for you all? For me, **April 10–11**, **17–18**, or **May 21–22**
+    work. None of these work for me. How about **April 2–3**? Yup, **Apr 2–3** works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recognizing *date* entities as they appear in the above messages is not hard.
+    A hybrid of dictionary-based, sequence-based, and pattern-based mechanisms would
+    be an effective start and could be refined over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, the pattern <*month*> <*num*>-<*num*> would catch some of the
+    above dates. <*month*> from a dictionary, including fuzzy entries such as *Apr*,
+    and <*num*> could be to match a one or two-digit number using a regex.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This won’t detect that the *17–18* inside *April 10–11, 17–18, or May 21–22*
+    is a date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detecting dates as named entities also suggests the following idea. We can take
+    those messages that have date entities detected in them and group them in a separate
+    section of the summary, which we can aptly call *Dates*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is a version of the summary enhanced with this information injected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: It would be even better if we could infer that *Apr* *2*–*3* works for everyone.
+    We won’t pursue it here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we discussed the problem of constructing a summary text message
+    that summarizes the content of the various messages in a particular conversation
+    thread.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We took a realistic example of such a thread and discussed some NLP methods
+    that might help here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We observed that removing stop-words combined with scoring based on word frequencies
+    is not adequate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From here, we progressed to using part-of-speech information on the various
+    words in the text. This worked better, but still not well enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We progressed from here to using named entity recognition and sentiment analysis.
+    This worked out fairly well on our thread, which was packed with threads named
+    entities. We were able to recognize these named entities and include them in the
+    summary. Together with the sentiments attached to them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, while we saw that the named entities and the sentiments attached to
+    them are essential to detect and add to the summary, at least on our thread, expanding
+    this to detecting additional salient phrases and adding them to the summary has
+    less value. We also explained why this is the case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Extractive Text Summarization using NLTK in Python](https://www.mygreatlearning.com/blog/text-summarization-in-python/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Named Entity Recognition in NLP. Real-world use cases, models, methods…](/named-entity-recognition-in-nlp-be09139fa7b8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Text Sentiment Analysis in NLP. Problems, use-cases, and methods](/text-sentiment-analysis-in-nlp-ce6baba6d466)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

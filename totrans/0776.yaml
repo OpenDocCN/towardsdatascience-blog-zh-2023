@@ -1,0 +1,306 @@
+- en: Tuning RL HyperParameters with Hydra's Optuna sweeper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/easily-tune-rl-hyperparameters-with-hydras-optuna-sweeper-1cb816db302](https://towardsdatascience.com/easily-tune-rl-hyperparameters-with-hydras-optuna-sweeper-1cb816db302)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Configure your Stable-Baselines3 tuning pipeline with ease using Hydra and Optuna
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://marc-velay.medium.com/?source=post_page-----1cb816db302--------------------------------)[![Marc
+    Velay](../Images/ef35818b774bacf6739cfdd51d851549.png)](https://marc-velay.medium.com/?source=post_page-----1cb816db302--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1cb816db302--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1cb816db302--------------------------------)
+    [Marc Velay](https://marc-velay.medium.com/?source=post_page-----1cb816db302--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1cb816db302--------------------------------)
+    ·8 min read·Feb 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reinforcement Learning (RL) agents are very susceptible to their hyperparameters.
+    The same agent can go from utterly worthless after training to the top of the
+    leaderboard with the correct hyperparameters! Yet finding the correct combination
+    can be very time-consuming or even futile without the right tools. The main goal
+    of this article is to share with you *how* you can tune your RL hyperparameters
+    through some theory and application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can catch the code for this project on my [GitHub](https://github.com/Marc-Velay/hydra_optuna_tutorial):
+    fork me!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/287f7595e51b7ca3130686d9eb26f4db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Leonel Fernandez](https://unsplash.com/@leonelfdez?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Reinforcement Learning is a type of Machine Learning that involves training
+    agents to interact with an environment. Agents make sequences of actions, following
+    strategies that dictate how they should react in each situation. They aim to maximize
+    the rewards they accumulate by interacting with the environment and slowly learning
+    the best actions from experience. In a [previous post](https://velaylearning.com/markov-decision-process-in-plain-english/),
+    I go into more depth about the concepts of Reinforcement Learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RL algorithms rely on MANY hyperparameters, some for learning, some for the
+    underlying Neural Networks. There are many levers to make learning more stable,
+    faster, or save some memory. Just by looking at a widespread [implementation of
+    SAC](https://stable-baselines3.readthedocs.io/en/master/modules/sac.html), from
+    stable-baselines3, they have 25 parameters, most of which depend on your own use
+    case and contribute to the success of optimizing a strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This difficulty is attracting a lot of attention, with recent popular answers
+    to the problem from the likes of [Google's research team](https://github.com/google-research/tuning_playbook).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The breadth of the search space requires you to systematically sweep the combinations
+    of hyperparameters to find the best combination to optimize the agent's performance.
+    This is done by training the agent with a set of hyperparameters and evaluating
+    the average reward obtained from validation episodes. The sweep requires knowing
+    the useful range or values of all parameters, creating the agent and its models,
+    and then training them enough to see if learning converges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77aeb4319101b87d3c473b267d54189d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two combinations of HPs lead to very different outcomes, image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With such a complex setup, you can not hard-code parameters in your python code.
+    It would help if you had a modular framework to handle configurations and, for
+    a cherry on top, that abstracts the sweeping procedure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing Hydra
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Hydra](https://hydra.cc/) is a library from the Facebook Research team designed
+    for managing complex applications, including Machine Learning pipelines. It shines
+    in its configuration flexibility and modularity. By design, you separate the different
+    components and can switch them out from yaml config files. It has made it much
+    easier to experiment with different learning algorithms, models, settings, and
+    environments. Storing my setup in static config files means I can share them with
+    my team, and they can repeat the experiment in the same conditions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hydra uses a combination of command line options, hierarchical configuration
+    files, and some code to manage the components of your pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: While the command line can go into a lot of [depth](https://hydra.cc/docs/advanced/hydra-command-line-flags/)
+    and has a broad scope, I'll focus on a few ideas. The above command is similar
+    to launching your regular ML training script but has a few more parameters. I
+    can specify which configuration files I want to use from the command line. These
+    are caught in the main function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I assume that there is a "configs" folder at the root of my project, specified
+    by "config_path" in the Hydra decorator. It contains yaml files describing my
+    experiment (default.yaml) and folders for agent and environment configurations.
+    These hierarchical files are called from the root and can be passed as attributes:
+    in default.yaml, the desired agent is passed as "agent: ddpg" and the content
+    of ddpg.yaml is added as a dict to the run''s config.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The base setup to run the experiment in the main config file, called by the
+    decorator, only has links to other yaml files containing model and environment
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at the values in ddpg.yaml:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We access these values in our code as "cfg.agent.*". We can train our model
+    using those hyperparameters, with a small setup to translate them into the expected
+    parameters for Stable-Baselines3 (SB3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The parameters are simple floats and strings, while SB3 expects classes or
+    instantiated objects. We use some dictionaries to solve this translation. Let''s
+    take the example of the model''s activation and noise functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Having boilerplate code that translates discrete choices into the expected implementation
+    allows us to prepare a broad array of options we can select from. This makes sweeping
+    hyperparameters directly from the Hydra configurations easier, especially with
+    the hypra-optuna-sweeper plug-in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hydra's Optuna Sweeper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Optuna is an excellent library for automatic parameter optimization. It relies
+    on very few components: parameter iteration and evaluation. Optuna gives you a
+    set of values to test and expects a score as output, using your pipeline as a
+    black box.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the hood, the library uses a few tricks to suggest parameters it estimates
+    will have a better outcome, allowing you to save time compared to basic grid searches.
+    The usual approach requires implementing Optuna's trials right into your main
+    training function, handling search spaces, trials, and pruning yourself. With
+    the Hydra approach, most things are abstracted, with only knobs to tune.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of Optuna''s key features is running searches in parallel, which Hydra
+    enhances. The two libraries work hand-in-hand: Optuna selects hyperparameters
+    to trial, and Hydra efficiently sets up your pipeline. Let''s see how to combine
+    the two in your code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main changes occur in your Hydra configs, default.yaml:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And you now need to configure your hyperparameters'' search spaces in "agent/search_spaces/ddpg.yaml":'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's walk through those two config files. In the main file, we have added the
+    link to the file containing the space Optuna can sweep for each hyperparameter.
+    In our case, "${agent}" means that our file has the same name as the agent's configuration
+    file, defined above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have a few options to specify which range of values we want to explore for
+    each hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Choice allows us to select discrete options from a fixed list of values. This
+    is perfect for textual or restricting options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next range specifier is the classic linear interval. A random value will
+    be picked inside the interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, when sampling from intervals ranging through multiple orders of magnitude,
+    it is interesting to use logarithmic distributions. This is not included by default
+    in the hydra-optuna-sweeper plug-in, but you can tag it as such.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find more use cases directly from the [documentation](https://hydra.cc/docs/1.2/plugins/optuna_sweeper/#search-space-configuration),
+    along with some examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to specify which sweeper we want Hydra to use. There are plug-ins
+    for the Ax, Nevergrad, and Optuna sweepers. We then need to define some custom
+    parameters for Optuna, such as the best direction to optimize for our problem.
+    In the case of RL, we often desire to maximize rewards. For classic ML problems,
+    we'd often want to minimize errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of trials we explore is the total set of hyperparameters we desire
+    to test. In this case, we only run 20 combinations for a quick sweep, with a single
+    job at a time. The selection of hyperparameters from the sweep will override the
+    ones specified in the agent/ddpg.yaml file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1dec45cbea8d63b2a603de07b39478a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Launching an Optuna trial with sampled hyperparameters, image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This concludes the first component from Optuna: the parameter iteration. Now,
+    we need to evaluate it. For this, we exploit Stable-Baseline3''s Callbacks. We
+    define "TrialEvalCallback" to run validation sets every N timestep, getting our
+    agent''s average performance at a given time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a1ecfa1dd40406334e95ad36e505232.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: TrialEvalCallback output during training, image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once training ends, we return the best average performance our agent has reached
+    from the function decorated by Hydra's main. At the end of the sweep, Hydra outputs
+    the set of hyperparameters with the best evaluation. Bellow is the best set from
+    a sweep of DDPG over the pendulum environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ade0cf23770160b1a8dfb5a6c026438f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Best hyperparameters found for the Pendulum environment, image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an added benefit, SB3 comes with a quick built-in implementation of TensorBoard.
+    From the TB dashboard, we can see the combination's relative performance throughout
+    their training phases. The best hyperparameters are selected from average performance
+    over validation episodes, but you may be interested in further details. Some sets
+    may reach plateaus, while others swing back and forth from good to bad.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75ae92ce145898cd8cbdd06fdc2a7724.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multirun comparison inside a sweep, in TensorBoard, image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, we have used Hydra to greatly simplify setting up our Stable-Baselines3
+    agent, adding some flexibility and the ability to quickly change components directly
+    from yaml files. The added benefit is that you can save past experiments and rerun
+    them with the same hyperparameters, or share them with your team.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While Optuna is traditionally run directly from your main training script, the
+    hydra-optuna-sweeper takes the approach of abstracting it. You can launch your
+    hyperparameter sweep from your pre-existing configuration, by specifying the search
+    spaces alongside your agent parameters. Optuna takes care of the rest, so you
+    can focus on your use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you'll have fun with hydra-optuna-sweeper! Find the whole project on
+    my [GitHub](https://github.com/Marc-Velay/hydra_optuna_tutorial). Reach out to
+    me on [Twitter](https://twitter.com/marc_velay) or [LinkedIn](https://www.linkedin.com/in/marc-velay/).
+  prefs: []
+  type: TYPE_NORMAL

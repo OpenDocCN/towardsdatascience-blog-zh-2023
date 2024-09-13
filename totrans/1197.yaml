@@ -1,0 +1,294 @@
+- en: How to Implement Random Forest Regression in PySpark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-implement-random-forest-regression-in-pyspark-9582f4964285](https://towardsdatascience.com/how-to-implement-random-forest-regression-in-pyspark-9582f4964285)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A PySpark tutorial on regression modeling with Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@yazihejazi?source=post_page-----9582f4964285--------------------------------)[![Yasmine
+    Hejazi](../Images/1c280c78e49f62345b3cd0c30b185482.png)](https://medium.com/@yazihejazi?source=post_page-----9582f4964285--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9582f4964285--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9582f4964285--------------------------------)
+    [Yasmine Hejazi](https://medium.com/@yazihejazi?source=post_page-----9582f4964285--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9582f4964285--------------------------------)
+    ·6 min read·Sep 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/68a991e06a39b6a7830a528d8b9a5fb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jachan DeVol](https://unsplash.com/@jachan_devol?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PySpark is a powerful data processing engine built on top of Apache Spark and
+    designed for large-scale data processing. It provides scalability, speed, versatility,
+    integration with other tools, ease of use, built-in machine learning libraries,
+    and real-time processing capabilities. It is an ideal choice for handling large-scale
+    data processing tasks efficiently and effectively, and its user-friendly interface
+    allows for easy code writing in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the [Diamonds data](https://ggplot2.tidyverse.org/reference/diamonds.html)
+    found on ggplot2 ([source](https://plotly.com/ggplot2/), [license](https://ggplot2.tidyverse.org/LICENSE.html)),
+    we will walk through how to implement a random forest regression model and analyze
+    the results with PySpark. If you’d like to see how linear regression is applied
+    to the same dataset in PySpark, you can [check it out here](/beginners-guide-to-linear-regression-with-pyspark-bfc39b45a9e9)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This tutorial will cover the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load and prepare the data into a vectorized input
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train the model using RandomForestRegressor from MLlib
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluate model performance using RegressionEvaluator from MLlib
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Plot and analyze feature importance for model transparency
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/4d00e29513e00e4411be59bec39d5745.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Martin de Arriba](https://unsplash.com/@martindearriba?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prepare the Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The `diamonds` dataset contains features such as `carat`, `color`, `cut`, `clarity`,
+    and more, all listed in the [dataset documentation](https://ggplot2.tidyverse.org/reference/diamonds.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The target variable that we are trying to predict for is `price`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b51ffc95c7f7ec22a5d4386007d4501e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Just like the [linear regression tutorial](/beginners-guide-to-linear-regression-with-pyspark-bfc39b45a9e9),
+    we need to preprocess our data so that we have a resulting vector of numerical
+    features to use as our model input. We need to encode our categorical variables
+    into numerical features and then combine them with our numerical variables to
+    make one final vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the steps to achieve this result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Separate numerical and categorical features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Preprocess categorical features with [StringIndexer](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.ml.feature.StringIndexer.html):
+    This is essentially assigning a numeric value to each category (i.e.; Fair: 0,
+    Ideal: 1, Good: 2, Very Good: 3, Premium: 4).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Preprocess categorical features with [OneHotEncoder](https://spark.apache.org/docs/3.1.1/api/python/reference/api/pyspark.ml.feature.OneHotEncoder.html):
+    This converts categories into binary vectors. The result is a SparseVector that
+    indicates which index from StringIndexer has the one-hot value of 1.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Combine your numerical features with your new categorical encoded features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assemble feature vector with [VectorAssembler](https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.ml.feature.VectorAssembler.html).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You can use the following code to index and one-hot encode your categorical
+    features. This will complete steps 1–3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can use the following code to assemble your final feature vector. This will
+    complete steps 4–5\. Then, we can run the stages as a pipeline. This runs the
+    data through all the feature transformations we’ve defined so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, we need to split our dataset into train and test sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, let’s import the Random Forest Regressor ([pyspark.ml.regression.**RandomForestRegressor**](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.ml.regression.RandomForestRegressor.html))
+    model from MLlib. Some of the default of some parameters to pay attention to are:
+    `maxDepth=5`, `numTrees=20`. You can adjust these during cross-validation or manually
+    in order to get the best set of parameters for your problem. Then call `fit()`
+    to fit the model to the training data. After fitting the model to our train data,
+    we can start predicting. To get predictions on the data, call `transform()`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, you can use MLlib’s [RegressionEvaluator](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.ml.evaluation.RegressionEvaluator.html)
+    to evaluate the model. There are multiple evaluation metrics to choose from for
+    your use case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RMSE — Root mean squared error (Default)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MSE — Mean squared error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: R2 — R-squared
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MAE — Mean absolute error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Var — Explained variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Train R2: 0.9092 | Test R2: 0.9069'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analyze Feature Importance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While building the Random Forest, the algorithm tries to minimize **entropy**,
+    which is a measure of uncertainty. Entropy is maximized in uniform distribution
+    (i.e.; we don’t know if a coin will flip heads or tails), and more uncertainty
+    requires more information. The Random Forest algorithm uses Information Gain (IG)
+    which is equal to the entropy before minus the entropy after, weighted by the
+    number of examples. This helps the algorithm decide which feature should be used
+    to split the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing you’ll want to look into is which features are most relevant in your
+    model. The Random Forest algorithm has built-in feature importance which can be
+    [calculated in different ways](https://mljar.com/blog/feature-importance-in-random-forest/).
+    PySpark Random Forest follows the scikit-learn implementation that uses **Gini
+    importance** (or mean decrease impurity). Scikit-learn also provides an implementation
+    of permutation-based feature importance, but this is not built into PySpark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As described in the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.ml.regression.RandomForestRegressionModel.html#pyspark.ml.regression.RandomForestRegressionModel.featureImportances),
+    the feature importance is calculated by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: importance(feature j) = sum (over nodes which split on feature j) of the gain,
+    where the gain is scaled by the number of instances passing through the node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Normalize feature importances to sum to 1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can extract the feature importance from a fitted Random Forest model using
+    `rf_model.featureImportances`. Then, use this feature importance and match it
+    to the extracted feature names to make it available to view or plot. This view
+    is especially of high interest to key stakeholders who want to understand the
+    key drivers of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e542d71810a8bbc5e317b0a3698839f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this tutorial, we covered the following steps for implementing Random Forest
+    with PySpark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One-hot encode categorical features using StringIndexer and OneHotEncoder
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create input feature vector column using VectorAssembler
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Split data into train and test
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Initialize and fit the RandomForestRegressor model on train data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Transform model on test data to make predictions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluate the model with RegressionEvaluator
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Analyze feature importance to understand and improve the model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These steps allow us to prepare the data into a vectorized input so that we
+    can implement a random forest model in PySpark with Apache Spark’s scalable machine
+    learning library, MLlib. We can evaluate the model performance and plot and analyze
+    the random forest feature importance to understand our model better. This allows
+    us to take advantage of the scalability, speed, and versatility that PySpark provides.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,575 @@
+- en: Fill-in-the-blanks Self-Supervision in NLP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd](https://towardsdatascience.com/fill-in-the-blanks-self-supervision-in-nlp-f0afb16dc7fd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why it's powerful and how to solve it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----f0afb16dc7fd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0afb16dc7fd--------------------------------)
+    ·14 min read·May 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/03be7b5832a9d134961e51b08dd7a5a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Patrick Tomasso](https://unsplash.com/@impatrickt?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/Oaqk7qqNh_c?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Predicting the next word has a long and successful history in language modeling,
+    most recently in large language models. It leverages the existence of huge corpora
+    of text: Wikipedia, public web pages strewn over the globe, and others. It is
+    more powerful than other types of unsupervised learning on these corpora, as the
+    learning is supervised. Furthermore, because it is self-supervised, no human effort
+    is needed to create labeled data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: exposure to sunlight causes __
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From a rich enough corpus of English sentences, machine learning should be able
+    to learn a language model that can fill in the blanks sensibly, in this case with
+    the term “skin cancer”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why do we call this supervision? Because we start from a complete sequence of
+    tokens, blur out the last word, ask our model to predict what it is, reward it
+    if it predicts correctly, and penalize it if it gets it wrong. So this is supervised
+    learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, this self-supervision approach has been extended in a simple yet powerful
+    way. Specifically, the blanks to be filled in may be anywhere in the text. In
+    view of this, we might call it the text reconstruction task, not merely the text
+    completion task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are some examples. Each instance is a sequence of words (in bold) followed
+    by one or more sequences in which some of these words have been masked. The model’s
+    aim is to fill in the blanks correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the subtitle of this post, we claimed that this extension turbo-charges predicting
+    the next word. Here we explain why we said so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sure, predicting the next word can force the model to learn from a wide range
+    of scenarios as it is easy to assemble a data set comprising billions of real
+    word sequences. That said, generalizing this to predicting any subset of masked
+    words in a sequence can amplify the set of learning scenarios a lot. This is why
+    such masking-off plays a central role in BERT [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a sequence comprising *n* words. If we allow only the last word to
+    be masked off, we generate only one labeled instance — fill in the last word —
+    from it. If we allow any suffix to be masked off, we can generate up to *n* labeled
+    instances — fill in a suffix — from it. If we allow any subset of words to be
+    masked off, we can generate an order of 2^*n* labeled instances from it. This
+    is because there are this-many subsets that can be masked off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, as we can see in our example above, masking off different words will
+    force the model to learn representations for the remaining words that predict
+    the masked-off words when possible. In our example, filling in blanks on the right
+    tail forces the model to understand what exposure to sunlight causes whereas masking
+    off the two words on the left tail forces the model to learn what causes skin
+    cancer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is another example, we covered in [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that we have a list of names of cars. Such as
+  prefs: []
+  type: TYPE_NORMAL
+- en: Honda Civic, Toyota Celica, Ford Mustang, Jeep Wrangler, …
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Predicting the next word will certainly help the model learn models of particular
+    makes. Such as *Cherokee* and *Wrangler* (among others) for *Jeep*. However, additional
+    self-supervision in the form of masking off any word will help the model also
+    learn that model names tend to be strongly predictive of the make. For example,
+    *Celica* is a *Toyota*, *Mustang* is a *Ford*, *Wrangler* is a *Jeep*, and so
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such learning would serve downstream use cases better. Such as answering the
+    question
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the make of Celica?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the remainder of this post, we will present a few different ways to model
+    this problem, followed by some discussion on their benefits and limitations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approaches we will discuss are much more limited than state-of-the-art large
+    language models for nuanced versions of this task. Such as entire paragraphs being
+    masked off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, they are easier to understand, perhaps more familiar to some readers,
+    and also can be tried out using widely available NLP toolkits or in some cases
+    building from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say we have a corpus of text documents. A document is a sequence of tokens
+    (words, punctuation symbols, etc). In this post, we will assume that whatever
+    learning tasks we define do not cross document boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the most part, we will focus on documents comprising single English sentences.
+    We can imagine that this corpus of sentences has been derived from a corpus of
+    longer documents by segmenting long documents into sentences using NLP. That said,
+    the approaches we discuss will work for longer multi-sentence documents as well.
+    They are just more convenient to describe for single-sentence documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will describe a method that is conceptually simple to understand,
+    simple to implement, and fast during training and inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, its scope is limited to filling in blanks in a single masked-off
+    region, whether it be on the left tail, the right tail, or in the middle. A large
+    language model could fill in blanks in multiple masked-off regions. Moreover,
+    an LLM would generally be more accurate, especially on long sequences such as
+    full paragraphs or even pages of text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Method**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our method will comprise two tries, a forward trie, and a backward trie, fused
+    together in a particular way. We will call this data structure a forward-backward
+    trie (FB-Trie).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the following example to illustrate the forward-backward trie data
+    structure. Imagine that we have just two sentences in our training set to build
+    the trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, let’s see just the usual forward Trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e89c30bc4a0035dfb07eba8f6e495aac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1 (By Author): Forward Trie On Our Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This Trie just captures the two sequences of words on the two root-to-leaf paths
+    shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A node in the Trie implicitly represents the sequence of words in the root-to-node
+    path that ends there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s fill in an important detail that was not depicted in Figure 1\. A node
+    stores the number of sequences in the training set whose prefix matches it. So
+    the root node in our example will store 2 since there are two sequences in our
+    training set. Imagining a richer training set, the node representing [*work*,
+    *causes*] would store 15 were there this-many sequences in it that began with
+    *work causes*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let *i* denote a node and *n*(i) the count on it. Let *j* denote a child of
+    *i*. The probability of taking the arc from *i* to *j* is *n*(*j*)/*n*(*i*) which
+    we will refer to as *P*(*i*, *j*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this Trie, we can fill in a single blank on the right tail if there is
+    a high-probability extension in an obvious way. Let’s illustrate this with examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider *work ____.* Wewouldn’t fill in the blanks as we can imagine that there
+    are many different sentences that begin with *work*. If on the other hand, we
+    had *work causes* ___*,* filling in the blank with stress would be more reasonable*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filling In Blanks On The Left Tail**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if the fill-in-the-blank query was ___ *causes stress*? To extend our model
+    to answer such queries, we’ll add a backward Trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The backward Trie is the trie we would get if we reversed the sequences in our
+    training set. Its structure is the same as that of the forward trie (Fig 1). It
+    also includes counts on its nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Left tail blanks can now be filled in (when possible) by following the same
+    inference procedure, except that we look up the backward Trie on the reversed
+    version of the sequence in which blanks have to be filled in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a fill-in-the-blanks input, we will know whether the blank is on the left
+    or right tail, so we will know whether to look up the forward trie on the input
+    or the backward trie on the input’s reverse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filling In Blanks In The Middle**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider when the blank to be filled in is not on either tail. As in *work __
+    stress*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this task, we will design a new data structure, a special fusion of our
+    forward and backward tries, with parent arcs added to both tries and with bridge
+    edges added to jump from one Trie to the other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by adding parent arcs to the forward Trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c647f09fa299380c643294711c5dc7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2 (By Author): Forward Trie On Our Data With Parent Arcs Added'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We were able to add parent arcs because by definition each non-root node in
+    the trie has a unique parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we’ll add parent arcs to the backward trie as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fusing The Forward And The Backward Trie**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we will fuse the two tries. We depict the fused tries below for our example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7862aa84681368de6c41c5711c653a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3 (By Author): The forward-backward trie in our example'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The nodes and arcs of the forward trie are shown in solid, while those in the
+    backward trie in dashed. Parent arcs are shown in the forward trie with dotted
+    curves. Parent arcs are not shown in the backward trie to reduce clutter, but
+    they do exist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two tries are fused together using bridge edges. These are dashed edges
+    with no arrows on them. Each edge can be implemented as a pair of arcs between
+    the two nodes, covering the two directions (this is not depicted).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Figure 3, only a few — in fact, two — of the many bridge edges are shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now explain how these bridge edges are added. Once this is understood,
+    the reader can imagine where the rest of the bridge edges are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine training on a new sequence. For concreteness say it is the tokenized
+    version of *work causes stress*. First, we insert this sequence into the forward
+    trie as well as the backward trie. Now we consider all possible (*prefix*, *suffix*)
+    splits of this sequence. Next, we reverse the suffixes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are the (*prefix*, *suffix*, *reverse suffix*) triples we would get for
+    *work causes stress,* excluding those in which the prefix or the suffix is empty*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we process each triple (*prefix*, *suffix*, *reverse suffix*) as follows.
+    We look up the prefix in the forward trie to find the node it ends at. Similarly,
+    we look up the reverse suffix in the backward trie to find the node it ends at.
+    We now connect the two nodes by a bridge edge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model Size And Training Time**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before describing inference, let’s take some time to reflect on the size of
+    the model and the time it takes to train.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First off, the model can be huge because we have two tries — a forward trie
+    and a backward trie. Additionally, we have bridge edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we take the viewpoint that the size of the model in itself is
+    not a concern. State-of-the-art technologies easily accommodate huge models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The more interesting question is how long it takes to train the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, the training can be incremental. That is, a new sequence can be
+    added to the FB-Trie at any time. As it turns out, training in fact is very fast.
+    This is because (i) it's fast to insert a new sequence into the forward trie and
+    its reverse into the backward trie, and (ii) it's fast to enumerate all splits
+    of this sequence, do the lookups needed for discovering the nodes to be bridged,
+    and add the various bridge edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Illustrating Filling-In-The-Blanks Using The Forward-Backward Trie**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate this for *work __ stress*. First, we look up the forward trie
+    to find the node, call it *u*, at which [*work*] ends. Then we look up the backward
+    trie to find the node, call it *v*, at which [*stress*] ends. Next, we walk over
+    this bridge edge from the backward trie into the forward trie. Next, we walk over
+    [*work*, *causes*]’s parent in the forward arc and end up at [*work*]. So now
+    we have reached the same node in both directions. The sequence of labels on the
+    parent arcs we walked during this process will, after reversing this sequence,
+    be the value of the blanks. In our example, we walked only one backward arc, which
+    was labeled *causes.* So our answer is *“causes”.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Inference: A More General Description**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our *work __ stress* example, the blank had a unique solution. In the general
+    case, *L* __ *R,* there may be multiple solutions*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: (We’ve switched terminology slightly because it will be helpful in this section.
+    L and R are token sequences, not strings.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we discuss how to treat the general case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we look up the largest prefix of L, call it L’, in the forward trie.
+    Next, we look up the largest suffix of R, call it R’, using the backward trie.
+    Let *u* denote the node that L’ ends at in the forward trie and *v* the node that
+    the reverse of R’ ends up in the backward trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This situation is depicted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ea12264b8dd2b4c9dd51f0790753e84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4 (By Author): Inference in the general — multiple solutions — case'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since v is not a leaf in the backward trie — otherwise there is no blank to
+    fill in —there must be at least one bridge edge touching *v*, as depicted in the
+    callout in Figure 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider any one such bridge edge and let *w* denote the node in the forward
+    trie at its other end. We follow the parent arcs in the forward trie in sequence,
+    starting from *w*. We stop when we first arrive on a node, call it *x,* that is
+    on the path L’ in the forward Trie. This condition will always be met (see next
+    paragraph).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best-case scenario is that *x* equals *v*. The worst-case scenario is that
+    *x* is the forward trie’s root.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reversing the sequence of labels on the path from *w* to *x* yields one solution
+    to this inference. More accurately, this solution is for fill-in-the-blanks problem
+    *L’’* __ *R’,* which may be (much) wider than the problem *L* __ *R* we started
+    with*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Expanding Further On The Solutions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every bridge edge touching *v* generates a unique solution. So the number of
+    solutions of the form *L*’’ __ *R*’ is the number of bridge edges that touch *v*.
+    Note that *L*” depends on *w*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can reverse the inference direction by starting from *u* instead of *v,*
+    walking a bridge edge from *u* to *w.* This time *w* is a node in the backward
+    trie*.* We then sequentially walk parent arcs in the backward Trie from *w* until
+    the first time we hit a nodeon *R’* in the backward trie, which we will call *x.*
+    (This time *x* is a node in the backward trie, not the forward one.)We get another
+    set of solutions of the form *L*’ __ *R*’’. Note that R’’ depends on *w*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two sets of solutions can overlap. The sets are easy to dedupe as a solution
+    is uniquely identified by the endpoints of the paths that represent the filled-in
+    portion. Note that the paths themselves can be different, but the endpoints (after
+    ignoring which is the starting point and which is the ending one) will be the
+    same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate this in the example of “*work* __ *stress”* in Figure 3*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e99a6dd7e2a062d131ec69be8b99e437.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5 (By Author): Two ways to fill in “causes” in “work __ stress”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we follow the algorithm described, there are two ways to fill in “causes”
+    into “work __ stress”. One starts from the bridge edge from [*stress*] in the
+    backward trie, and the other starts from the bridge edge from [*work*] in the
+    forward trie. While the two solutions are found by walking different paths, the
+    endpoints on the two paths, after ignoring which starts the path and which ends
+    it, are the same: [*work*] in the forward trie and [*stress*] in the backward
+    trie.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we only allowed starting from one of the tries, we wouldn’t get dupes. But
+    we cannot rule out the possibility that we might miss some solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is an example. Say we trained on the tokenized versions of the following
+    two strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Consider the prompt “*work* __ *stress”*. Starting from the bridge edge touching
+    [*stress*] in the backward trie we would get the solution “*work* ***causes***
+    *stress”*. Starting from the bridge edge touching [*work*] in the forward trie
+    we would get the solution “*work* ***causes burnout”***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s very reasonable to wonder whether the second answer should even be deemed
+    a solution as it ignores the word *stress*. That’s a decision for the modeler
+    to make. It can be argued both ways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, our point is that should someone want to deem the second answer
+    as a valid solution, this is achievable by enumerating all solutions in both directions
+    and then deduping them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Scoring The Solutions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When there are many solutions to a fill-in-the-blanks prompt, it makes sense
+    to score them, so they can be presented in the order of better solution first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve already seen an example where scoring makes sense. For the prompt “*work*
+    __ *stress”* if we deem that “*work* ***causes burnout”*** *i*s also a solution
+    then it should score lower than *“work* ***causes*** *stress”.* This is because
+    the former ignores the word stress in the prompt but the latter doesn’t*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fact that the former solution in this example has more words in bold than
+    in the latter one plays no role in this*.* The number of words in the answer is
+    in itself immaterial, its the amount of information from the prompt that is ignored
+    that is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now consider this prompt: “*work* __”. Assuming the training set comprises
+    only the two strings'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: both “*work* ***causes burnout”*** and “*work* ***causes stress”***are good
+    solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine that the training set in fact contains multiple copies of these
+    two strings, and the string “*work causes stress”* occurs much more frequently
+    than *work causes burnout*. It would make sense to score “*work* ***causes stress”***
+    as a better solution to *“work __”* than *“work* ***causes burnout”***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the scenario of the previous paragraph, a scoring that delivers the desired
+    rank order is easy to achieve. From the node [*work*, *causes*] on the forward
+    tries, the probability of taking the arc labeled “*stress”* is higher than the
+    probability of taking the arc labeled *“burnout”.* These probabilitiesare easy
+    to compute from information stored on the forward trie as discussed earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a prompt in which the blank to be filled in is on the left tail, we can
+    rank the solutions similarly. This time we use the backward trie instead of the
+    forward trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only remaining case is when the blank is in the middle and two solutions
+    use the same information from the prompt. That is the two solutions take the form
+    L M1 R and L M2 R where L and R are identical in both solutions but the M1 and
+    M2 are different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To cover this scenario, we will define the score of a solution L M R as follows.
+    Write M = [*m*1] M’ [*m*2] where *m*1 and *m*2 are the first and the last tokens
+    in M. It's possible that M’ is empty in which case *m*1 equals *m*2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll define the score of L M R as P(m1|L) in the forward trie multiplied by
+    P(m2|R) in the backward trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we started by covering the problem of fill-in-the-blanks self-supervision
+    as a powerful way to train a large language model. We then presented a solution
+    using a custom fusion of a forward and a backward trie for this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This solution, while not competitive with modern deep learning and transformer-based
+    large language models, is likely to be quite effective in somewhat small versions
+    of the problem, specifically in answering fill-in-the-blank questions in a single
+    sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's also relatively easy to understand implement from scratch, and fast to
+    train. It also accommodates incremental training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://towardsdatascience.com/contextual-text-correction-using-nlp-81a1363c5fc3](/contextual-text-correction-using-nlp-81a1363c5fc3)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://arxiv.org/pdf/1810.04805.pdf](https://arxiv.org/pdf/1810.04805.pdf)
+    [BERT]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://medium.com/towards-data-science/multi-task-learning-4531eb32d77b](https://medium.com/towards-data-science/multi-task-learning-4531eb32d77b)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

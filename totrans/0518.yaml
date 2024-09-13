@@ -1,0 +1,438 @@
+- en: Co-operative Graph Neural Networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/co-operative-graph-neural-networks-34c59bf6805e](https://towardsdatascience.com/co-operative-graph-neural-networks-34c59bf6805e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: New GNN architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***A large majority of Graph Neural Networks (GNNs) follow the message-passing
+    paradigm, where node states are updated based on aggregated neighbour messages.
+    In this post, we describe Co-operative GNNs (Co-GNNs), a new type of message-passing
+    architecture where every node is viewed as a player that can choose to either
+    ‘listen’, ‘broadcast’, ‘listen & broadcast’, or to ‘isolate.’ Standard message
+    passing is a special case where every node ‘listens & broadcasts’ to all neighbours.
+    We show that Co-GNNs are asynchronous, more expressive, and can address common
+    plights of standard message-passing GNNs such as over-squashing and over-smoothing.***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-bronstein.medium.com/?source=post_page-----34c59bf6805e--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----34c59bf6805e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----34c59bf6805e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----34c59bf6805e--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----34c59bf6805e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----34c59bf6805e--------------------------------)
+    ·11 min read·Dec 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2870ac967748470424f265c9e2a651e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Illustration of node actions in Co-GNNs: standard, listen, broadcast, and
+    isolate. Image credit: DALL-E 3.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post was co-authored with Ben Finkelshtein, Ismail Ceylan, and Xingyue
+    Huang and is based on the paper B. Finkelshtein et al., [Cooperative Graph Neural
+    Networks](https://arxiv.org/abs/2310.01267) (2023) arXiv:2310.01267.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph Neural Networks (GNNs) are a popular class of architectures used for learning
+    on graph-structured data such as molecules, biological interactomes, and social
+    networks. The majority of GNNs follow the message-passing paradigm [1], where
+    at every layer graph nodes exchange information along the edges of the graph.
+    The state of every node is updated using a permutation-invariant aggregation operation
+    (typically, a sum or a mean) on the messages sent from adjacent nodes [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the message-passing paradigm has been very influential in graph ML, it
+    has well-known theoretical and practical limitations. The formal equivalence of
+    message-passing graph neural networks (MPNNs) to graph isomorphism tests [3] provides
+    a theoretical upper bound on their expressive power. As a result, distinguishing
+    between even very simple non-isomorphic graphs (such as a 6-cycle and two triangles
+    in the example below) is impossible by means of message passing without additional
+    information such as positional or structural encoding [4] or more complex information
+    propagation mechanisms [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/373c33892be7725f428431c22828700c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Example of two non-isomorphic graphs indistinguishable by 1-WL (and consequently,
+    by message-passing) without additional information.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Message Passing & Information bottlenecks**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A practical limitation of message passing is related to the information flow
+    on a graph. In order to receive information from *k*-hop neighbours, an MPNN needs
+    at least *k* layers, which often leads to an exponential growth of a node’s receptive
+    field. The growing amount of information must then be compressed into fixed-sized
+    node embeddings, possibly leading to information loss, referred to as *over-squashing*
+    [6].
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have recently shown that whether over-squashing occurs in an MPNN depends
+    on the task, architectural choices (e.g., the number of layers), and the graph
+    [7]. Making the graph “friendlier” for message passing is a common technique of
+    coping with over-squashing known in graph ML literature under the generic name
+    *“graph rewiring.”*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fact that every node both *sends* and *receives* information from its neighbours
+    is another limitation of classical message passing. Mechanisms such as dynamic
+    graph rewiring [8], attention [9], or gating [10] allow to modify the node’s neighbourhood
+    or downweight neighbour messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Co-operative Graph Neural Networks**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In a recent paper [11], we propose a learnable generalisation of message passing
+    by allowing each node to decide how to propagate information from or to its neighbours,
+    thus enabling a more flexible flow of information. We regard the nodes as players
+    that can each take the following action in each layer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**STANDARD:** Broadcast to neighbors that listen *and* listen to neighbors
+    that broadcast. Having all nodes choose this action yields the classical message-passing
+    scheme.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**LISTEN:** Listen to neighbors that broadcast.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**BROADCAST:** Broadcast to neighbors that listen.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**ISOLATE:** Neither listen nor broadcast. With all nodes isolating, no information
+    is propagated on the graph and predictions are made in a node-wise manner, similar
+    to DeepSets [12].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23235dc00c77bb64c839f05888858f2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Examples of node actions on a graph: all nodes broadcast & listen (standard
+    message passing denoted by “S”), all nodes isolating (node-wise prediction, denoted
+    by “I”), and a general case with mixed actions (listen “L”, broadcast “B”, listen
+    & broadcast “S”, and isolate “I”).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The interplay between these actions and the ability to change them locally and
+    dynamically makes the overall approach richer than standard message passing. It
+    allows us to decouple the input graph from the computational in a way that is
+    learnable (non-heuristic) and task-dependant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To implement this novel message-passing scheme, we introduce a new class of
+    GNN architectures called *Co-operative GNNs* (“Co-GNNs”). The main difference
+    compared to traditional MPNNs is an additional *“action network”* choosing one
+    of the four actions for every node at every layer. The chosen actions influence
+    the way node features are then updated by another *environment network,* which
+    is trained jointly with the action one [13].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advantages of Co-GNNs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Task-specific:** Standard message-passing updates nodes based on their local
+    neighborhood, which is completely task-agnostic. By allowing each node to listen
+    to the information only from relevant neighbours, Co-GNNs can determine a computation
+    graph best suited for the target task [14].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Directed:**The outcome of the actions that the nodes can take amounts to
+    a special form of “directed rewiring” of the input graph. An edge can be dropped
+    (e.g., if two neighbors listen without broadcasting); remain undirected (e.g.,
+    if both neighbors apply the standard action of listening and broadcasting); or
+    become directed (e.g., if one neighbor listens while its neighbor broadcasts).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dynamic:** Co-GNNs do not operate on a pre-fixed computational graph, but
+    rather on a computational graph learned through the choice of node actions, which
+    is dynamic across layers. Each node learns to interact with the relevant neighbours
+    and does so only as long as they remain relevant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/290902180e6fb5078723411b7594642e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of the computational graph in a classical MPNN (a special case of our
+    architecture where all nodes choose the “STANDARD” action, denoted by black outline)
+    and a Co-GNN. This example illustrates the possibility of routing messages from
+    source node w directly to target node v.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Both feature- and structure-based:** Standard message-passing is completely
+    determined by the structure of the graph: two nodes with the same neighborhood
+    receive the same aggregated message. This is not necessarily the case in Co-GNNs,
+    which can learn different actions for two nodes with different node features.
+    This allows to pass different messages for different nodes even if their neighborhoods
+    are identical.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Asynchronous:** Standard message-passing updates all nodes synchronously
+    at every iteration, which is not always optimal [15]. By design, Co-GNNs enable
+    asynchronous updates across nodes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More expressive than 1-WL:** Fora pair of nodes indistinguishable by 1-WL,
+    there is a non-trivial probability of sampling different actions, which in turn
+    makes their direct neighborhood differ [16]. This yields unique node identifiers
+    with high probability and allows us to distinguish any pair of graphs assuming
+    an injective graph pooling function [17].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Suitable for long-range tasks:** Long-range tasks necessitate to propagate
+    information between distant nodes. Our message-passing paradigm can efficiently
+    filter irrelevant information by learning to focus on the shortest path connecting
+    these two nodes, hence maximising the information flow to the target node [18].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Can prevent over-squashing:** In our previous works [19–20], we formalised
+    over-squashing as the *lack of sensitivity* of the *r*-layer MPNN output at a
+    node *u* to the input at a distant node *v*. This can be quantified by a bound
+    on the partial derivative (*Jacobian*) of the form'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|∂**x***ᵤ*⁽*ʳ*⁾/∂**x***ᵥ*⁽⁰⁾| < *c*(**A***ʳ*)*ᵤᵥ,*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where **x***ᵤ*⁽*ʳ*⁾ denotes the features at node *u* at layer *r*, *c* encapsulates
+    architecture-related constants (e.g., Lipschitz regularity of the activation function,
+    width, etc.), and **A** is the normalised adjacency matrix capturing the effect
+    of the graph. Graph rewiring techniques amount to modifying **A** so as to increase
+    the upper bound and thereby reduce the effect of over-squashing. In Co-GNNs, the
+    actions of every node result in an effective graph rewiring that that transmit
+    the features from one node to another (as illustrated in the above example), resulting
+    in the maximization of the bound on the Jacobian [21].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Can prevent over-smoothing: “**Over-smoothing” is the tendency of node embeddings
+    to become increasingly similar across the graph with the increase in the number
+    of message-passing layers. We showed in [10] that over-smoothing can be mitigated
+    through the gradient gating mechanism, which adaptively disables the update of
+    a node from neighbors with similar features. Co-GNNs, through the choice of BROADCAST
+    or ISOLATE actions, allow mimicking this mechanism.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To better understand the effect of the learned computational graph in our new
+    message-passing scheme and how it adapts to different tasks, we observe the ratio
+    of the directed edges that are kept across different layers of a Co-GNN (a classical
+    MPNN performing message passing on the input graph has the ratio of 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/598c08e0cf91dbd328d0f149d16a225b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*The ratio of directed edges that are kept in a homophilic graph Cora (blue)
+    a heterophilic graph Roman-empire (red) in each layer shows different adaptive
+    behaviour in different types of graphs.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We trained a 10-layer Co-GNN on two datasets: homophilic *Cora* and heterophilic
+    *Roman-Empire* [22]. We observe *opposite trends* in terms of the evolution of
+    the ratio of edges that are kept across layers. On the homophilic dataset, the
+    ratio of edges that are kept gradually *decreases* with depth, whereas on the
+    heterophilic dataset, it *increases*. The decrease in the ratio of kept edges
+    implies that information is propagated among fewer nodes, which we see as a way
+    of coping with the phenomenon of oversmoothing, similarly to gradient gating [10].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On heterophilic datasets [23], which are considered a hard test case for GNNs,
+    Co-GNNs achieve state-of-the-art results across the board, despite using relatively
+    simple architectures as their action and environment networks, surpassing the
+    performance of more complex models such as Graph Transformers. These results are
+    reassuring as they establish Co-GNNs as a strong method in the heterophilic setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/961bb14be374653b691623e684fc278d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Performance results (accuracy %) on heterophilic node classification. Top
+    three models are colored by Red, Blue, Gray, respectively.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing the actions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We visualize the topology in each layer of Co-GNN using the *Minesweepers* dataset
+    [23], a semi-supervised node classification task on a regular 100×100 grid where
+    each node is connected to eight neighboring nodes. Each node has an input feature
+    of one-hot-encoded representations, showing the number of adjacent mines. A randomly
+    chosen 50% subset of the nodes has an unknown feature, indicated by a separate
+    binary feature. The task is to correctly identify if a node is a mine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/187b36d7e584352e26d9efd6b2c41d28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We observe that in the early layers (1–4), the action network learns to isolate
+    the right section of the black node, similar to how humans would play this game:
+    the bulk of the nodes without neighboring mines (0 labeled nodes) initially do
+    not help in determining whether the black node is a mine or not. Thus, the action
+    network prioritizes the information flowing from the left sections of the grid
+    where more mines are present, thus initially focusing mostly on nodes that are
+    more informative for the task.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After identifying the most crucial information and propagating it through the
+    network, it then requires this information to also be communicated with the nodes
+    that initially were labeled with 0\. This leads to an almost fully connected grid
+    in the deeper layers (7–8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our novel message-passing scheme where every node can adaptively choose its
+    action and its architectural incarnation in the form of Co-GNNs offers multiple
+    advantages and helps overcome known drawbacks of traditional message-passing used
+    in the majority of modern GNNs. We believe this is a promising direction from
+    both theoretical and practical perspectives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] J. Gilmer et al., [Neural message passing for quantum chemistry](https://arxiv.org/abs/1704.01212)
+    (2017) *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] This makes the layer permutation-equivariant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] K. Xu et al., How powerful are graph neural networks? (2019) *ICLR*, and
+    C. Morris et al., Weisfeiler and Leman go neural: Higher-order graph neural networks
+    (2019) *AAAI* established the equivalence between message passing and the graph
+    isomorphism test described in the classical paper of B. Weisfeiler and A. Lehman,
+    The reduction of a graph to canonical form and the algebra which appears therein
+    (1968) *Nauchno-Technicheskaya Informatsia* 2(9):12–16\. See our [previous blog
+    post](https://medium.com/towards-data-science/expressive-power-of-graph-neural-networks-and-the-weisefeiler-lehman-test-b883db3c7c49)
+    on this topic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] See our [previous blog post](/beyond-weisfeiler-lehman-using-substructures-for-provably-expressive-graph-neural-networks-d476ad665fa3?sk=bc0d14c28a380b4d51debc4935345b73)
+    on structural encoding in GNNs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] For a few examples of such constructions, see our previous blog posts on
+    [subgraph GNNs](/using-subgraphs-for-more-expressive-gnns-8d06418d5ab?sk=8806ffcd9ecf74c440d40df53528c1c7)
+    and [topological message passing](/a-new-computational-fabric-for-graph-neural-networks-280ea7e3ed1a?sk=3d4185067ef3c1cf81793deada08e18f).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] U. Alon and E. Yahav, [On the bottleneck of graph neural networks and its
+    practical implications](https://openreview.net/pdf?id=i80OPhOCVH2) (2021) *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Theoretical analysis of oversquashing from the geometric perspective was
+    first done by J. Topping, F. Di Giovanni *et al.*, [Understanding over-squashing
+    and bottlenecks on graphs via curvature](https://arxiv.org/pdf/2111.14522.pdf)
+    (2022), *ICLR,* and further extended by F. Di Giovanni *et al.*, [On over-squashing
+    in Message Passing Neural Networks: The impact of width, depth, and topology](https://arxiv.org/abs/2302.02941)
+    (2023), *ICML*. Oversquashing was more recently linked to expressive power by
+    F. Di Giovanni *et al.*, [How does over-squashing affect the power of GNNs?](https://arxiv.org/abs/2306.03589)
+    (2023), arXiv:2306.03589.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Wang et al. [Dynamic graph CNN for learning on point clouds](https://arxiv.org/pdf/1801.07829.pdf)
+    (2019) *ACM Trans. Graphics* 38(5):146, and also see our [blog post](/manifold-learning-2-99a25eeb677d?sk=1c855a020f09b72edfa50a8aba5f24a0)
+    on latent graph learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] P. Veličković et al., [Graph Attention Networks](https://arxiv.org/abs/1710.10903)
+    (2018) *ICLR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] K. Rusch et al., [Gradient Gating for deep multi-rate learning on graphs](https://arxiv.org/pdf/2210.00513.pdf)
+    (2023) *ICLR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] B. Finkelshtein et al., [Cooperative Graph Neural Networks](https://arxiv.org/abs/2310.01267)
+    (2023) arXiv:2310.01267.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] M. Zaheer *et al.*, [DeepSets](https://proceedings.neurips.cc/paper_files/paper/2017/file/f22e4747da1aa27e363d86d40ff442fe-Paper.pdf)
+    (2017), *NIPS*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] The action network predicts the action probability for each node (equation
+    1 in our paper [11]), from which a node action is sampled using the straight-through
+    Gumbel-softmax estimator. Then, the environment network is used to update the
+    state of each node in accordance with the sampled actions, according to equation
+    1 in our paper [11].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] For example, if the task requires information only from the neighbors
+    with a certain degree, then the action network can learn to listen only to these
+    nodes (see an experiment in Section 6.1 of our paper [11).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] L. Faber and R. Wattenhofer, [Asynchronous neural networks for learning
+    in graphs](https://arxiv.org/abs/2205.12245) (2022), arXiv:2205.12245.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] Proposition 5.1 in our paper [11]. The variance introduced by the sampling
+    process helps to discriminate nodes that are 1-WL indistinguishable but also makes
+    Co-GNN models invariant only in expectation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[17] See e.g. A. Loukas, [What graph neural networks cannot learn: depth vs
+    width](https://arxiv.org/abs/1907.03199) (2020) *ICLR* and R. Abboud, R. Dimitrov,
+    and I. Ceylan, [Shortest path networks for graph property prediction](https://arxiv.org/abs/2206.01003)
+    (2022) *LoG*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[18] Theorem 5.2 in our paper [11].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[19] J. Topping *et al.*, Understanding over-squashing and bottlenecks on graphs
+    via curvature (2022), *ICLR.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[20] F. Di Giovanni *et al.*, [On over-squashing in message passing neural
+    networks: The impact of width, depth, and topology](https://arxiv.org/pdf/2302.02941.pdf)
+    (2023), *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[21] Theorem 5.2 in our paper [11].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[22] *Homophily* implies that the neighbours of a node have similar properties
+    to the node itself. Early GNN benchmarks such as *Cora* and *Pubmed* were predominantly
+    homophilic. The more recent evaluations include heterophilic graphs, which are
+    more challenging for GNNs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[23] O. Platonov *et al.*, [A critical look at the evaluation of GNNs under
+    heterophily: Are we really making progress?](https://arxiv.org/pdf/2302.11640.pdf)
+    (2023), *ICLR.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*For additional articles about deep learning on graphs, see Michael’s* [*other
+    posts*](https://towardsdatascience.com/graph-deep-learning/home) *in Towards Data
+    Science,* [*subscribe*](https://michael-bronstein.medium.com/subscribe) *to his
+    posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
+    get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
+    or follow* [*Michael*](https://twitter.com/mmbronstein), [*Ben*](https://twitter.com/benfinkelshtein)*,*
+    [*Xingyue*](https://twitter.com/hxyscott)*, and* [*Ismail*](https://twitter.com/ismaililkanc)
+    *on Twitter.*'
+  prefs: []
+  type: TYPE_NORMAL

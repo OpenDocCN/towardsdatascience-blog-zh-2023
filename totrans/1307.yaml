@@ -1,0 +1,259 @@
+- en: Image Search in 5 Minutes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/image-search-in-5-minutes-9bc4f903b22a](https://towardsdatascience.com/image-search-in-5-minutes-9bc4f903b22a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Cutting-edge image search, simply and quickly
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----9bc4f903b22a--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----9bc4f903b22a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9bc4f903b22a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9bc4f903b22a--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----9bc4f903b22a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bc4f903b22a--------------------------------)
+    ·6 min read·Oct 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d9c99b64e20fb41c0c5e490ec885fea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Weighing Vectors” by the author using MidJourney. All images by the author
+    unless otherwise specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’ll implement Text-to-image search (allowing us to search for
+    an image via text) and Image-to-image search (allowing us to search for an image
+    based on a reference image) using a lightweight pre-trained model. The model we’ll
+    be using to calculate image and text similarity is inspired by Contrastive Language
+    Image Pre-Training (CLIP), which I discuss in [another article](/clip-intuitively-and-exhaustively-explained-1d02c07dbf40).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bea61be8f62b0093fbdd23ecc4392b46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The results when searching for images with the text “a rainbow by the water”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Any developers who want to implement image search,
+    data scientists interested in practical applications, or non-technical readers
+    who want to learn about A.I. in practice.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** This post will walk you through implementing
+    image search as quickly and simply as possible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-requisites:** Basic coding experience.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What We’re Doing, and How We’re Doing it
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This article is a companion piece to my article on “Contrastive Language-Image
+    Pre-Training”. Feel free to check it out if you want a more thorough understanding
+    of the theory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/clip-intuitively-and-exhaustively-explained-1d02c07dbf40?source=post_page-----9bc4f903b22a--------------------------------)
+    [## CLIP, Intuitively and Exhaustively Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating strong image and language representations for general machine learning
+    tasks.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/clip-intuitively-and-exhaustively-explained-1d02c07dbf40?source=post_page-----9bc4f903b22a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: CLIP models are trained to predict if an arbitrary caption belongs with an arbitrary
+    image. We’ll be using this general functionality to create our image search system.
+    Specifically, we’ll be using the image and text encoders from CLIP to condense
+    inputs into a vector, called an embedding, which can be thought of as a summary
+    of the input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33a133e53bc9fd1700e73ba5bf2338ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The job of an encoder is to summarize an input into a meaningful representation,
+    called an embedding. [Image from my article on CLIP](https://medium.com/towards-data-science/clip-intuitively-and-exhaustively-explained-1d02c07dbf40).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The whole idea behind CLIP is that similar text and images will have similar
+    vector embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e77e1691f86be1d55c21e599abf4ea1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: CLIP tries to get the embeddings for similar things to be close together. [Image
+    from my article on CLIP](https://medium.com/towards-data-science/clip-intuitively-and-exhaustively-explained-1d02c07dbf40).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The specific model we’ll be using is called [uform](https://huggingface.co/unum-cloud/uform),
+    which is conceptually similar to CLIP. uform is a permissively licensed, pretrained,
+    and resource efficient model which promises superior performance to CLIP. Uform
+    comes in 3 flavors, we’ll be using the “late fusion” variant which is conceptually
+    similar to CLIP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88a4673fb97673615ececd8f89965228.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The three model flavors in the uform library. As you can see the “Late Fusion
+    Model” is very similar to CLIP in that it returns two separate vectors from two
+    encoders. [source](https://github.com/unum-cloud/uform#mid-fusion)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actual similarity between embeddings will be calculated using cosine similarity.
+    The essence of cosine similarity is that two things can be defined as “similar”
+    if the angle between their embedding is small. Thus, we can calculate how similar
+    text and images are to each other by first embedding both the text and the images,
+    then calculating the cosine similarity between the embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca66932c013fb805e42bcb5a3f5bf7c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cosine similarity uses the angle between vectors to determine similarity. the
+    angle between A and B is small, and thus A and B are similar. C would be considered
+    very different from both A and B. [Image from my article on CLIP](https://medium.com/towards-data-science/clip-intuitively-and-exhaustively-explained-1d02c07dbf40).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And that’s the idea in a nutshell: we download the CLIP inspired model (uform),
+    use the encoders to embed images and text, then use cosine similarity to search
+    for similarities. Feel free to refer to the [companion article](/clip-intuitively-and-exhaustively-explained-1d02c07dbf40)
+    for a deeper dive on the theory. Now we just need to put it into practice.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I’ll be skipping through some of the unimportant stuff. The full code can be
+    found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/ImageSearch.ipynb?source=post_page-----9bc4f903b22a--------------------------------)
+    [## MLWritingAndResearch/ImageSearch.ipynb at main · DanielWarfield1/MLWritingAndResearch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notebook Examples used in machine learning writing and research - MLWritingAndResearch/ImageSearch.ipynb
+    at main ·…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/ImageSearch.ipynb?source=post_page-----9bc4f903b22a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is super easy, just `pip install` the `uform` module, then use the module
+    to download the model from Hugging Face. We’ll be using the english version, but
+    versions in other languages are also available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0a61b598c6dd6cb1a3627cc9b44b2edc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Defining a Database of Images to Search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I downloaded a few images from [a dataset](https://www.kaggle.com/datasets/jehanbhathena/weather-dataset)
+    for us to play with, which is a derivative of a dataset form the [harvard dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910%2FDVN%2FM8JQCR)
+    (licensed under creative commons), and put them in a public [github repo](https://github.com/DanielWarfield1/MLWritingAndResearch/tree/main/Assets/Images/Weather).
+    The following pseudo code downloads those images to the list `images` . This list
+    of images is what we’ll ultimately be searching through.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3e726ca8ebc3109cb4e0b063efee95d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A few examples from the dataset of images we’ll be searching
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing Text-to-Image Search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here’s where the rubber meets the road. First we’ll define some search text,
+    in this example `a rainbow by the water`. Then we can embed that text and compare
+    it to the embeddings for all images. We can then sort by the cosine similarity
+    to display the top five images which are most similar to the search text. Keep
+    in mind, a CLIP style model has a separate image and text encoder, So text gets
+    encoded with the text encoder, and images get encoded with the image encoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bea61be8f62b0093fbdd23ecc4392b46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Implementing Image-to-Image Search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Image to image search behaves similarly to the text to image search previously
+    discussed; we embed the image we’re using to search, and embed all other images.
+    The embedding of our search image is compared to the embedding of all other images
+    (using cosine similarity), allowing us to find the most similar images to our
+    search image. Naturally, the most similar image in this example is the image itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/49bd125901e1b370ae68e754890b31ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And that’s it! We successfully used a CLIP style model’s image and text encoder
+    to implement two types of image search; one based on input text, and one based
+    on an input image. We did this by using the text encoder to calculate an embedding
+    for the text, the image encoder to calculate an embedding of the images, and searched
+    by sorting the similarity of embeddings using cosine similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to check out the [companion article](/clip-intuitively-and-exhaustively-explained-1d02c07dbf40)
+    for a deeper dive on CLIP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I describe papers and concepts in the ML space, with an emphasis on practical
+    and intuitive explanations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the resources in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any resource in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both. An explicit
+    commercial license may be granted upon request.'
+  prefs: []
+  type: TYPE_NORMAL

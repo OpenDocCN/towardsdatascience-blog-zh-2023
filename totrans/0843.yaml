@@ -1,0 +1,386 @@
+- en: Experiment Orchestration From Scratch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/experiment-orchestration-from-scratch-4a9e460944d8](https://towardsdatascience.com/experiment-orchestration-from-scratch-4a9e460944d8)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Developing a custom experiment orchestrator to solve complex modeling problems.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----4a9e460944d8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a9e460944d8--------------------------------)
+    ·9 min read·Jul 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2306ab1174fda8c768e328e89117e1b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Orchestration by Daniel Warfield using p5.js. All images are created by the
+    author unless otherwise stated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we will explore why experiment orchestration is important, existing
+    orchestration solutions, how to build your own orchestrator with MongoDB, and
+    why that might be beneficial in some use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Anyone trying to fit models to data; and consequently
+    needs a way to organize those experiments.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** The idea of orchestration is fairly simple,
+    and is accessible to virtually any skill level. The example should be accessible
+    to backend developers or data scientists trying to branch out.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-requisites:** A working understanding of core networking principles,
+    like databases and servers, as well as core data science concepts, like hyperparameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Code:** Full code can be found [here](https://github.com/DanielWarfield1/TabularExperimentTracker).
+    Note: this repo is a WIP at the time of writing this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Experiment Orchestration?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'By “experiment orchestration” I am referring to a wide number of tasks consisting
+    of the same general concept. The most common form of experiment orchestration
+    is hyperparameter sweeps: where, given some range of hyperparameter values, you
+    want to sweep through that range and find the best hyperparameter set for a given
+    modeling problem. The organization of these types of planned experiments is generally
+    referred to as orchestration.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4110d35dcbb4c31ec93fc29049be2cdb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of a hyperparameter sweep. A space of hyperparameters is defined.
+    Then, specific hyperparameter sets are extracted from that hyperparameter space
+    and tested in some way. The best combination of hyperparameters can then be identified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simple sweeps get the job done most of the time, but as modeling problems become
+    more complex it is common to have more complex experiments. You may find yourself
+    needing to experiment with multiple model types, each with their own hyperparameter
+    space, across multiple datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, I’m currently conducting research on the performance of different
+    modeling strategies within non-homogenous modeling applications. I’m not interested
+    in “what is the best set of hyperparameters to solve a particular problem”, but
+    rather “how do multiple model types, each with their own hyperparameter space,
+    perform across numerous classification and regression tasks”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of an experiment orchestrator is to function as a central hub of the
+    experiment, no matter how complex the experiment’s definition is, such that a
+    single worker, or perhaps a group of workers, can run sub-sets of the experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d56ccad55e0f9e12b5d6659b6d01bb0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The goal of the experiment orchestrator, which allows workers to know what to
+    work on, and allows workers to record results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will be building a system like this using MongoDB Data Services to store
+    results, and MongoDB Application Services as the server which hosts the logic
+    and networking of the system. While this is incredibly powerful, it’s also incredibly
+    simple; I had the whole thing tied up over a single weekend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What Solutions Exist?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Weights and Biases](https://wandb.ai/site) is an obvious choice.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For [W&B Sweeps](https://wandb.ai/site/sweeps), you define a sweep, an agent
+    (training and validation code), and log results while the agent is running. Those
+    steps are pretty straightforward, and look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining A Sweep
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Defining an Agent
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Log Results
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is sufficient for 90% of use cases, and is the generally recommended approach
+    for experiment orchestration. This approach didn’t work with my use case, however.
+    The following section presents my solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Case for Building Your Own Orchestrator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Again for 90% of applications (especially business applications) the method
+    described above is more than adequate. Relying on an existing system means relying
+    on robustness and feature maturity which surpasses any feasible quick and dirty
+    solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, systems like W&B seem designed to find “solutions”. They operate
+    under the assumption that you have a specific dataset and want to explore solutions
+    with the objective of finding a specific solution which is best for that dataset.
+    For me, and my research needs, managing things like multiple datasets, multiple
+    models, and the compatibility between the two, was frustratingly cumbersome in
+    W&B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16e1d9c9e0bfefcbe948e708fb72c7fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A square peg in a round hole. In software it’s incredibly common for a minor
+    design incongruity to cause massive issues later down the line. That’s why, in
+    some applications, remaking a technology can be easier than integrating with existing
+    implementation, even if the original “mostly” fits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to use W&B it seemed like I would have to build an orchestrator of orchestrators
+    by somehow organizing and managing multiple sweeps across multiple datasets. On
+    top of an already complex task, I would need to deal with integration issues as
+    well. It was around this point I decided that building W&B sweeps from scratch,
+    paired with a few minor modifications for my needs, would be the best fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a Custom Orchestrator in a Weekend
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I implemented an orchestrator for my specific problem. While the solution is
+    problem specific, the general idea should be flexible to most machine learning
+    experimentation needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining The Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I have a collection of around 45 tabular datasets across a variety of domain
+    spaces. Each of these datasets can be considered a “task” that any given model
+    could be good or bad at. some tasks might be regression tasks, while others might
+    be classification tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The general idea is to build an orchestrator which can manage the application
+    of a family of models to a family of datasets. This orchestrator should aggregate
+    these results for further analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, naturally, the objective of this orchestrator is to solve problems, not
+    become a problem. The idea is to cut some corners where I can while solving the
+    problems that I have. As a result, this solution is pretty bare-bones, and a bit
+    hacky.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choice of Technology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this solution I used MongoDB Application Services and MongoDB Data Service,
+    or whatever it’s called. MongoDB has been going through a lot of re-branding in
+    the last year. The system I’m using used to be called MongoDB Atlas and Realm,
+    but now Realm might be part of Atlas? I’m not sure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless, MongoDB on the cloud is essentially a backend in a box. You can
+    set up a database, application layer, and api layer super quickly with minimal
+    overhead. In my experience, because of confusing documentation, getting something
+    production ready can be an uphill battle. However, for rapid prototyping of backend
+    resources, I have yet to find a better alternative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next few sections describe how I broke the problem of orchestration into
+    Experiments and Runs, and what those practically look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbc1e5ea85d25e84c012b482ce892f34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A screenshot of the database, which includes a collection for “Experiments”,
+    “Runs”, and “UserData”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3876d51f09814a5a41c164c8a478e381.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simple HTTP API allowing for communication with the orchestrator
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining an Experiment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this custom approach I essentially co-opted W&B’s design of sweeps and added
+    some of my own ideas. The core system runs on an “Experiment”, which describes
+    models, hyperparameter spaces, datasets, and how the three should be associated
+    together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This experiment then gets broken down into a list of tasks: individual explorations
+    which some worker needs to run. These are done by looking through all associations
+    and listing all model/dataset pairs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9bbe1b1687cab651ddd17668bbb48106.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: each task called an mtpair (model-task pair) in the implimentation. This keeps
+    track of the model, the task (an individual dataset), and all the successful and
+    completed runs for that mtpair. This image contains 2 mtpairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This all gets created by calling the “/registerExperiment” api endpoint, and
+    passing it the model definition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I opted to make experiments “declarative”, kind of like a terraform script if
+    you’re familiar with that. When you register an experiment you either create a
+    new one, or get an existing one, on a experiment-name basis. That way you can
+    use the same script on multiple workers. The first one will create the experiment,
+    and others will simply use the one which has already been created. (or, at least
+    that’s the idea. You have to be careful about race conditions with this line of
+    thinking).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Runs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that the experiment has been defined, along with individual model/task
+    pairs which need to be run, we can start runs. This is where the rubber meets
+    the road for the orchestrator. We have to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decide which model/task pair a worker should work on
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 2\. Get hyperparameters from that models hyperparameter space for the worker
+    to use
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Record ongoing results
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Manage runs which have been completed (separating those which might have
+    failed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “run” construct exists within the orchestrator to record this information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14669f31f336c089e5e6ef60d59a1262.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of a run in the “Runs” collection
+  prefs: []
+  type: TYPE_NORMAL
+- en: A run is directly associated with a model/task pair (mtpair), the experiment
+    that mtpair exists in, who created the experiment, the model, the task, the specific
+    hyperparameter space point, and the logged results on a per-epoch basis. This
+    is done with the “/beginRun”, “/updateRun”, and “/endRun” endpoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**/beginRun** looks at all the existing runs and creates a new run on the mtpair
+    with the least amount of completed and initated runs. /beginRun, after deciding
+    which model-task pair to prioritize, uses random search to convert that models
+    hyperparameter space into a specific set of hyperparameters. It then passes a
+    handler for that run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**/updateRun** allows you to register metrics on a per-epoch basis. Every epoch
+    you call /updateRun and pass a dictionary of metrics for that run. Those can be
+    pretty much whatever the user feels is appropriate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**/endRun** does a few quality of life things. ended runs can’t be continued,
+    so it allows the code to declare when a run has been completed. It also updates
+    the record for the run within the experiment, and marks the run as successfully
+    completed. Runs which unexpectedly fail will not be marked as ended, and thus
+    implimenting this webhook allows the orchestrator to be tollerant of faulty workers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Security
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This system uses JSON web tokens (JWTs) to create some rudamentary authentication.
+    Realistically the risk profile of a project like this, from a research perspective,
+    is pretty low. That said this system does validate API tokens associated on a
+    per-user basis, and provides some security measures to ensure data integrity while
+    allowing for collaboration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, in terms of security for my wallet, I’m using the free tier and got that
+    set up without needing to register a payment method. (MongoDB on the cloud is
+    quirky, but it really is pretty amazing for prototyping)
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s it!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Normally I include code, but it’s a whole repo which would kind of be a slog
+    to put in an article. Again, if you want to check out the repo you can look [here](https://github.com/DanielWarfield1/TabularExperimentTracker).
+    Specifically, you can look at the [function definitions here](https://github.com/DanielWarfield1/TabularExperimentTracker/tree/master/functions),
+    which are essentially the whole thing in a nutshell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updates
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I added a webhook called **beginRunSticky** which begins a new run, but accepts
+    a dataset to be “stuck” to. It prioritizes giving workers a new run with the specified
+    task, thus allowing multiple runs to execute without needing to load a new dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In future posts, I’ll also describing several landmark papers in the ML space,
+    with an emphasis on practical and intuitive explanations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the images in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any images in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  prefs: []
+  type: TYPE_NORMAL

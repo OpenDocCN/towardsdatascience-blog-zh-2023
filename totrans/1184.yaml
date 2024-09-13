@@ -1,0 +1,736 @@
+- en: How to Fine-Tune Llama2 for Python Coding on Consumer Hardware
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92](https://towardsdatascience.com/how-to-fine-tune-llama2-for-python-coding-on-consumer-hardware-46942fa3cf92)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Enhancing Llama2’s proficiency in Python through supervised fine-tuning and
+    low-rank adaptation techniques*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----46942fa3cf92--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46942fa3cf92--------------------------------)
+    ·18 min read·Aug 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: About me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serial entrepreneur and leader in the AI space. I develop AI products for businesses
+    and invest in AI-focused startups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Founder @ ZAAI](http://zaai.ai) | [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)
+    | [X/Twitter](https://x.com/luisbrasroque)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our previous article covered Llama 2 in detail, presenting the family of Large
+    Language models (LLMs) that Meta introduced recently and made available for the
+    community for research and commercial use. There are variants already designed
+    for specific tasks; for example, Llama2-Chat for chat applications. Still, we
+    might want to get an LLM even more tailored for our application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following this line of thought, the technique we are referring to is transfer
+    learning. This approach involves leveraging the vast knowledge already in models
+    like Llama2 and transferring that understanding to a new domain. Fine-tuning is
+    a subset or specific form of transfer learning. In fine-tuning, the weights of
+    the entire model, including the pre-trained layers, are typically allowed to adjust
+    to the new data. It means that the knowledge gained during pre-training is refined
+    based on the specifics of the new task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we outline a systematic approach to enhance Llama2’s proficiency
+    in Python coding tasks by fine-tuning it on a custom dataset. First, we curate
+    and align a dataset with Llama2’s prompt structure to meet our objectives. We
+    then use Supervised Fine-Tuning (SFT) and Quantized Low-Rank Adaptation (QLoRA)
+    to optimize the Llama2 base model. After optimization, we combine our model’s
+    weights with the foundational Llama2\. Finally, we showcase how to perform inference
+    using the fine-tuned model and how does it compare against the baseline model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cfb419c3a9c7606b26c5f499751a59fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Llama2, the Python coder ([image source](https://unsplash.com/photos/Z5Yha3jIHnc))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One important caveat to recognize is that fine-tuning is sometimes unnecessary.
+    Other approaches are easier to implement and, in some cases, better suited for
+    our use case. For example, semantic search with vector databases efficiently handles
+    informational queries, leveraging existing knowledge without custom training.
+    The use cases where fine-tuning is required is when we need tailored interactions,
+    like specialized Q&A or context-aware responses that use custom data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Supervised Fine-Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Modern machine learning paradigms commonly leverage pre-trained models. These
+    pre-trained models have already undergone training on large datasets. The goal
+    with SFT is to adapt them to specific tasks using minimal training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way SFT works is by adjusting an LLM, such as Llama2, based on labeled examples
+    that specify the data the model should generate. The dataset for SFT consists
+    of prompts and their associated responses. Developers can either manually create
+    this dataset or generate it using other LLMs. In fact, the open-source community
+    frequently adopts this practice. A review of the top LLMs on the Open LLM Leaderboard
+    [1] shows that almost all of them undergo some form of fine-tuning with an Orca-styled
+    dataset. An Orca-style dataset contains numerous entries, each with a question
+    and a corresponding response from GPT-4 or GPT-3.5\. In essence, SFT sharpens
+    the knowledge within Llama2 using a specific set of examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Researchers now explicitly fine-tune many LLMs for instruction-following capabilities.
+    This fine-tuning helps the models understand and act on user instructions better.
+    For example, a fine-tuned model can produce a concise summary when a user instructs
+    it to create a summary. A non-fine-tuned model might struggle with the task and
+    become more verbose. As LLMs evolve, this kind of fine-tuning can produce more
+    specialized models that fit the intended use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LoRA and QLoRA: An Efficient Approach to Fine-tuning Large Models'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To understand LoRA’s operation, we must first know the meaning of a matrix’s
+    rank. The rank of a matrix shows the number of its independent rows or columns.
+    For instance, an NxN matrix filled with random numbers has a rank of N. Nevertheless,
+    if every column of this matrix is just a multiple of the first column, the rank
+    becomes 1\. Thus, we can represent a rank 1 matrix as the product of two matrices:
+    an Nx1 matrix times a 1xN matrix, creating an NxN matrix with a rank of 1\. In
+    the same way, we can express a rank ‘r’ matrix as the product of an (Nxr) and
+    an (rxN) matrix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LoRA uses the concept of matrix rank to fine-tune using less memory. Instead
+    of adjusting all weights of an LLM, LoRA fine-tunes low-rank matrices and adds
+    them to the existing weights [2]. The existing weights (or the large matrices)
+    stay the same, while training adjusts only the low-rank matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is this efficient? A low-rank matrix has significantly fewer parameters.
+    Instead of managing N² parameters, with LoRA, one only needs to handle 2*r*N parameters.
+    Intuitively, fine-tuning is like making slight adjustments to the original matrix.
+    LoRA determines these adjustments in a computationally cheaper way, trading off
+    some accuracy for efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training with LoRA still requires the entire pre-trained model for the forward
+    pass, accompanied by additional LoRA computations. Nevertheless, during the backward
+    propagation, calculations are focused mainly on the gradients of the LoRA section.
+    This approach results in computational savings, especially in GPU memory requirements.
+    That is why it is currently one of the most popular methods for adapting models
+    to new tasks without the extensive computational overhead of traditional fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make it even more memory efficient, we can use QLoRA [3]. It builds on top
+    of LoRA and enables the usage of these adapters with quantized pre-trained models.
+    In practical terms, this method allows for fine-tuning a 65B parameter model on
+    a 48GB GPU while retaining the performance of a full 16-bit fine-tuning task.
+    QLoRA also introduced other features to enhance memory efficiency. The 4-bit NormalFloat
+    (NF4) data type offers a more compact representation for normally distributed
+    weights. It also employed Double Quantization to further minimize memory usage
+    by quantizing the quantization constants themselves (think of turtles all the
+    way down but with quantization). The last feature was the Paged Optimizers to
+    manage memory spikes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curating a Dataset Suited for Python Programming Tasks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We start by defining a Config class that serves as a centralized repository
+    for configuration settings and metadata related to our fine-tuning process. It
+    stores various constants, such as the model and dataset names, output directories,
+    and several parameters, which we will discuss in the upcoming sections. Let’s
+    see the relevant variables for our data pre-processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The dataset selection is quite important when tailoring a model like Llama2
+    for Python-centric tasks. We are using the [Python Questions from StackOverflow
+    Dataset](https://www.kaggle.com/datasets/stackoverflow/pythonquestions) ([CC-BY-SA
+    3.0](https://creativecommons.org/licenses/by-sa/3.0/)) dataset, which comprises
+    a vast selection of coding interactions with the Python tag. Since we want to
+    fine-tune our model in coding in Python, we refined this dataset, focusing specifically
+    on Python-related exchanges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the next step, we ensure our data aligns with Llama2’s prompt structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*<s>[INST] <<SYS>> {{ system_prompt }} <</SYS>> {{ user_message }} [/INST]*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The above structure aligns with the training procedure of the model, and thus
+    it significantly impacts the fine-tuning quality. Recall that ‘system_prompt’
+    represents the instructions or context for the model. The user’s message follows
+    the system prompt and seeks a specific response from the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We tailor each data entry to carry explicit system instructions, guiding the
+    model during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we’ve transformed our dataset to align with Llama2’s prompt structure,
+    we leverage the Hugging Face platform to store it. We split the dataset, setting
+    1,000 entries for validation purposes, which will be helpful later. For enthusiasts
+    and researchers, we’ve encapsulated our refined dataset under the name [*luisroque/instruct-python-llama2–20k*](https://huggingface.co/datasets/luisroque/instruct-python-llama2-20k)and
+    a bigger one under the name [*luisroque/instruct-python-llama2–500k*](https://huggingface.co/datasets/luisroque/instruct-python-llama2-500k),
+    which are publicly available on the Hugging Face Hub.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fine-tuning Llama2 Using Supervised Fine-Tuning (SFT) and Quantized Low-Rank
+    Adaptation (QLoRA)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When selecting hyperparameters for fine-tuning Llama2, we want to balance efficiency
+    and effectiveness. We want to ensure a quick experimentation cycle and, thus,
+    we defined just one `epoch` and a modest `batch size` of 2\. After some tests,
+    we chose a `learning rate` of 2e-4, since it converges well for our use case.
+    The `weight decay` of 0.001 helps in regularizing and preventing overfitting.
+    Given the complexity of the LLM, we've opted for a maximum gradient norm of 0.3
+    to prevent excessively large updates during training. The scheduler's `cosine`
+    nature ensures learning rate annealing for stable convergence, while our optimizer,
+    `paged_adamw_32bit`, introduced by the QLoRA paper, offers fewer memory spikes.
+    We also employed 4-bit quantization to enhance memory efficiency further, selecting
+    the `nf4` type for quantization (another addition of the QLoRA paper). Lastly,
+    the LoRA-specific parameters, with an `alpha` of 16, `dropout` of 0.1, and `rank`
+    of 64, were also selected based on empirical experimentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the `initialize_model_and_tokenizer` function, we set the compute datatype
+    using `Config.BNB_4BIT_COMPUTE_DTYPE` to optimize for 4-bit quantization. We then
+    configure this quantization using `BitsAndBytesConfig`. We load the base pre-trained
+    Llama2 model with `AutoModelForCausalLM` and initialize it with our quantization
+    configuration, turning off caching to conserve memory. We map the model to a single
+    GPU, but we could easily modify this configuration for a multi-GPU setup. We then
+    fetch the tokenizer, which translates the inputs for the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can print our models to make sure that we loaded them correctly. Let’s start
+    by loading the pre-trained Llama2 model with 4-bit quantization. Note that the
+    all the layers were quantized correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: As a side note, we can get an idea of the Llama2 architecture by the printing
+    information above. It uses an embedding layer transforming up to 32,000 tokens
+    into 4,096-dimensional vectors. The model’s computational engine comprises 32
+    sequential `LlamaDecoderLayer` modules. Within each decoder layer, the `LlamaAttention`
+    mechanism operates with 4-bit precision linear projections for the query, key,
+    value, and output. The attention mechanism uses rotary embeddings, which are used
+    to dynamically capture positional information in sequence data. Alongside the
+    attention mechanism, it features 4-bit linear projections and leverages the Sigmoid
+    Linear Unit (SiLU) activation function for non-linear transformations. To ensure
+    consistent activations across layers, the model incorporates `LlamaRMSNorm` for
+    layer normalization for post-input and post-attention. The last linear layer transforms
+    the high-dimensional representations back to the 32,000-token vocabulary size,
+    which is what enables the token prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now ready to use QLoRA to fine-tune Llama2 on our dataset. First, we
+    configure the model with the previously defined LoRA settings. We then prepare
+    the model for 4-bit training and integrate it with the LoRA configurations. We
+    set the training parameters and feed them into the SFTTrainer for fine-tuning.
+    The `configure_training_args` function defines the training parameters for the
+    model, referencing the `Config` class that we already discussed. After training,
+    we save the model and tokenizer in a specified directory and test the model’s
+    performance using a generation task. Following good practices, we clear the model
+    from memory and empty the GPU cache. We also decorated our function to monitor
+    both the execution time and the memory consumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, we can print our model to ensure we have correctly set up the LoRA
+    parameters and the quantization. Recall that by introducing a set of new, low-rank
+    trainable parameters, LoRA creates a bottleneck in the model where representations
+    are channeled through these parameters. Note that the LoRA components, notably
+    the `lora_A` and `lora_B` linear layers, are integrated into the attention mechanism.
+    Only these LoRA parameters are actively trained during fine-tuning, preserving
+    the model’s original knowledge while optimizing it for the new task. The default
+    configuration for LoRA applies them to the`q_proj` (query projection) and `v_proj`
+    (value projection) within the attention mechanism to make the process more efficient.
+    The LoRA paper [3] actually applied it to all the layers, so these can also be
+    experimented with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can quickly get the number of trainable parameters and check how it compares
+    to the overall number of parameters in the pre-trained model. We can see that
+    we are training less than 1% of the parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The final step is to merge the new weights with the base model. This can be
+    accomplished simply by loading both instances and calling the `merge_and_unload()`
+    method .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: After fine-tuning, the trained model and tokenizer can be easily shared in the
+    Hugging Face Hub, promoting collaboration and reusability. You can find our fine-tuned
+    model at [*luisroque/Llama-2-7b-minipython-instruct*](https://huggingface.co/luisroque/Llama-2-7b-minipython-instruct)*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Inference Process Using Llama2 and Fine-Tuned Models**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The final step in our long task of fine-tuning Llama2 is to test it. We have
+    implemented an easy way to run inference for the base model and for the fine-tuned
+    one to help compare the two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function `generate_response` is responsible for the actual inference. It
+    employs Hugging Face’s pipeline utility to generate text based on a given prompt,
+    model, and tokenizer. If the fine-tine model is already in the Hugging Face Hub
+    or stored locally, we don’t need to merge them once again, you can just access
+    it directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We defined the script’s entry point to be command-line based. Users can specify
+    their model preference through arguments, either “new_model” or “llama2”, enabling
+    easy toggling between models and directly comparing their inference outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Simplifying the Workflow with a Makefile**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Automation plays a big role in streamlining complex processes, especially in
+    machine learning tasks with multiple sequential steps. A makefile is a great tool
+    to help us provide a clear, structured, and easy-to-execute workflow for users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the provided makefile, each step of the fine-tuning process, from setting
+    up the environment to running inference, is defined as a separate target. This
+    abstraction allows users to execute specific tasks with a single, concise command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s an example of how the user can run the different tasks using the provided
+    makefile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This command will execute the setup target, creating a new conda environment
+    named fine_tune_llama2 with Python 3.10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The install target will install the necessary packages from the requirements.txt
+    file. The same applies for the rest of the commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For running the complete process from setup to inference in one
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `all` target, as defined, will sequentially run all the specified targets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The use of the makefile not only simplifies the execution of tasks but also
+    provides a standardized way to run the process, ensuring consistency and reproducibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now it is time to compare the results from the baseline model and the new model
+    that we just fine-tuned using a Python instructions dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The prompt that we defined is the same for both models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[INST] <<SYS>>'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Given a puzzle-like code question, provide a well-reasoned, step-by-step Python
+    solution.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: <</SYS>>
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Write a function that reverses a linked list. [/INST]
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The answer from the base model is below. It did not follow the step-by-step
+    approach giving the proper context for the solution provided. Also, there is a
+    minor bug with the function itself with what the function returns. Finally, the
+    model continues generating random requests similar to the one we provided in the
+    prompt. It simulates a new one to “Write a function that counts the number of
+    nodes in a linked list.” and answers it. Then, it goes on with the same prompt
+    and answer until the token limit that we defined was reached.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: <</SYS>>
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write a function that counts the number of nodes in a linked list. [/INST]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write a function that counts the number of nodes in a linked list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"`python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'def count_nodes(head):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: count = 0
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: curr = head
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'while curr:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: count += 1
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: curr = curr.next
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: return count
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: The new model answered quite differently. Notice that it follows our request
+    much closer. While there are also inconsistencies with the code (e.g., the circular
+    reference current.next = current), it provides a much more elegant solution. It
+    uses classes to build the node and the linked list and defines a method on the
+    latter to reverse it. Notice that it also explains each code step as we prompt
+    it to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'class Node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'def __init__(self, data):'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.data = data
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.next = None
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'class LinkedList:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'def __init__(self):'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.head = None
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'def reverse(self):'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: current = self.head
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: next = None
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'while current:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: next = current.next
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: current.next = current
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: current = next
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.head = current
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE21]python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: linked_list = LinkedList()
+  prefs: []
+  type: TYPE_NORMAL
+- en: linked_list.append(1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: linked_list.append(2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: linked_list.append(3)
+  prefs: []
+  type: TYPE_NORMAL
+- en: linked_list.append(4)
+  prefs: []
+  type: TYPE_NORMAL
+- en: linked_list.reverse()
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(linked_list.head)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '4'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'These results show that we have successfully fine-tuned Llama2 as a better
+    Python coding assistant model. There are still inconsistencies, but we need to
+    consider the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are using the smallest Llama2 model (7b);
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have fine-tuned it for only 2,500 steps;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have used the maximum quantization possible (4-bit);
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have only retrained a very small percentage of the model weights.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feel free to test the model yourself, it is stored at [https://huggingface.co/luisroque/Llama-2-7b-minipython-instruct](https://huggingface.co/luisroque/Llama-2-7b-minipython-instruct).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our quest to fine-tune Llama2 for coding tasks in Python, we first curated
+    a dataset tailored for Python interactions. We then employed SFT since this type
+    of fine-tuning allows for more instruction-following capabilities. Instead of
+    adjusting all model weights, we used LoRA that offers a more efficient approach
+    by fine-tuning low-rank matrices instead. With Quantized LoRA, we achieved further
+    memory efficiency, making it possible to fine-tune large models on standard GPU
+    configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After optimization, we merged our model’s weights with the foundational Llama2
+    and also implemented a makefile to simplify our workflow while ensuring replicability
+    and ease of execution for new users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After having our fine-tuned Llama2 model, we performed inference using the same
+    prompt for both models. Our side-by-side comparison clearly showed the impact
+    of the fine-tuning process. The refined model adhered more accurately to instructions,
+    produced better-structured code, and offered explanations for each implementation
+    step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Large Language Models Chronicles: Navigating the NLP Frontier'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This article belongs to “Large Language Models Chronicles: Navigating the NLP
+    Frontier”, a new weekly series of articles that will explore how to leverage the
+    power of large models for various NLP tasks. By diving into these cutting-edge
+    technologies, we aim to empower developers, researchers, and enthusiasts to harness
+    the potential of NLP and unlock new possibilities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Articles published so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Summarizing the latest Spotify releases with ChatGPT](https://medium.com/towards-data-science/summarizing-the-latest-spotify-releases-with-chatgpt-553245a6df88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Master Semantic Search at Scale: Index Millions of Documents with Lightning-Fast
+    Inference Times using FAISS and Sentence Transformers](https://medium.com/towards-data-science/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Unlock the Power of Audio Data: Advanced Transcription and Diarization with
+    Whisper, WhisperX, and PyAnnotate](https://medium.com/towards-data-science/unlock-the-power-of-audio-data-advanced-transcription-and-diarization-with-whisper-whisperx-and-ed9424307281)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Whisper JAX vs PyTorch: Uncovering the Truth about ASR Performance on GPUs](https://medium.com/towards-data-science/whisper-jax-vs-pytorch-uncovering-the-truth-about-asr-performance-on-gpus-8794ba7a42f5)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Vosk for Efficient Enterprise-Grade Speech Recognition: An Evaluation and
+    Implementation Guide](https://medium.com/towards-data-science/vosk-for-efficient-enterprise-grade-speech-recognition-an-evaluation-and-implementation-guide-87a599217a6c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Testing the Massively Multilingual Speech (MMS) Model that Supports 1162 Languages](https://medium.com/towards-data-science/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Harnessing the Falcon 40B Model, the Most Powerful Open-Source LLM](https://medium.com/towards-data-science/harnessing-the-falcon-40b-model-the-most-powerful-open-source-llm-f70010bc8a10)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[The Power of OpenAI’s Function Calling in Language Learning Models: A Comprehensive
+    Guide](https://medium.com/towards-data-science/the-power-of-openais-function-calling-in-language-learning-models-a-comprehensive-guide-cce8cd84dc3c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Document-Oriented Agents: A Journey with Vector Databases, LLMs, Langchain,
+    FastAPI, and Docker](/document-oriented-agents-a-journey-with-vector-databases-llms-langchain-fastapi-and-docker-be0efcd229f4)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Leveraging Llama 2 Features in Real-world Applications: Building Scalable
+    Chatbots with FastAPI, Celery, Redis, and Docker](https://medium.com/towards-data-science/leveraging-llama-2-features-in-real-world-applications-building-scalable-chatbots-with-fastapi-406f1cbeb935)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As always, the code is available on my [Github](https://github.com/luisroque/large_laguage_models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] — HuggingFace. (n.d.). Open LLM Leaderboard. Retrieved August 14, 2023,
+    from [https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] — Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang,
+    L., & Chen, W. (2021). LoRA: Low-Rank Adaptation of Large Language Models. *arXiv
+    preprint arXiv:2106.09685*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] — Dettmers, T., Pagnoni, A., Holtzman, A., & Zettlemoyer, L. (2023). QLoRA:
+    Efficient Finetuning of Quantized LLMs. *arXiv preprint arXiv:2305.14314*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep in touch: [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)'
+  prefs: []
+  type: TYPE_NORMAL

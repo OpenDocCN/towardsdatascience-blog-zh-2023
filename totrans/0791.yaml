@@ -1,0 +1,426 @@
+- en: Efficient Model Fine-Tuning with Bottleneck Adapter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/efficient-model-fine-tuning-with-bottleneck-adapter-5162fcec3909](https://towardsdatascience.com/efficient-model-fine-tuning-with-bottleneck-adapter-5162fcec3909)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to fine-tune Transformer-based models with bottleneck adapters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@marcellusruben?source=post_page-----5162fcec3909--------------------------------)[![Ruben
+    Winastwan](../Images/15ad0dd03bf5892510abdf166a1e91e1.png)](https://medium.com/@marcellusruben?source=post_page-----5162fcec3909--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5162fcec3909--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5162fcec3909--------------------------------)
+    [Ruben Winastwan](https://medium.com/@marcellusruben?source=post_page-----5162fcec3909--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5162fcec3909--------------------------------)
+    ·14 min read·Nov 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b79802cb5528fbfe5bb1a2f50166d41b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo by Karolina Grabowska: [https://www.pexels.com/photo/set-of-modern-port-adapters-on-black-surface-4219861/](https://www.pexels.com/photo/set-of-modern-port-adapters-on-black-surface-4219861/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fine-tuning is one of the most common things that we can do to gain better
+    performance from a deep learning model on our specific task. The time we need
+    to fine-tune a model normally corresponds to its size: the bigger the size of
+    the model, the longer the time needed to fine-tune it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I think we can agree that nowadays, deep learning models such as Transformer-based
+    models are becoming increasingly sophisticated. Overall, this is a good thing
+    to see but it comes with a caveat: they tend to have huge number of parameters.
+    Thus, fine-tuning large models is becoming more challenging to manage and we need
+    a more efficient way to do it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’re going to discuss one of several efficient fine-tuning
+    methods called bottleneck adapter. Although you can apply this method to any deep
+    learning model, we’ll only focus our attention to its application on Transformer-based
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The structure of this article is as follows: first, we’re going to do a normal
+    fine-tuning of a BERT model on a specific dataset. Then, we will insert some bottleneck
+    adapters into our BERT model with the help of `adapter-transformers` library to
+    see how they can help us to make fine-tuning process more efficient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we fine-tune the model, let’s start with the dataset that we’re going
+    to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The dataset we about to use contains [**different types of text related to mental
+    health collected from Reddit**](https://huggingface.co/datasets/mrjunos/depression-reddit-cleaned)
+    (licensed under CC-BY-4.0). The dataset itself is suitable for text classification
+    tasks, where we can predict whether any given text has a depressive sentiment
+    in it or not. Let’s take a look at a sample of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, the dataset is very straightforward as we only have two fields:
+    one for the text and another for the label. The label itself contains only two
+    possible values: 1 if the text has a depressive sentiment and 0 otherwise. Our
+    task is to fine-tune a pretrained BERT model to predict the sentiment of each
+    text.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In total, there are around 7731 texts, and we’re going to use 6500 of them for
+    training and the rest 1231 for validation during fine-tuning process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s create a dataloader to load the dataset in batch during fine-tuning process
+    that we’ll see in the next section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have our data, we can start to talk about the main topic of this
+    article. However, the concept behind bottleneck adapters will be easier to understand
+    if we already familiar with the standard process of a normal fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, in the next section, we‘ll start with the concept of a normal fine-tuning
+    process before expanding the concept to the application of bottleneck adapters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll be using `adapter-transformers` library to do both normal fine-tuning
+    and adapter-based fine-tuning. This library is a direct fork from the famous `transformers`
+    library from HuggingFace, which means that it contains all of the functionality
+    of `transformers` with several addition of model classes and methods so that we
+    can apply adapters into models easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can install `adapter-transformers` with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s start with the common procedure of a normal fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Normal BERT Fine-Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Fine-tuning is a common technique in deep learning in order to gain better
+    performance from a pretrained model on a specific data and/or task. The main idea
+    is simple: we take the weights of a pretrained model, and then update those weights
+    based on a new domain-specific data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e2d0faa76ec52acef09f4a5e5226d0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Normal fine-tuning process. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The common procedure of a normal fine-tuning is as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we pick a pretrained model, which in our case would be a BERT-base model.
+    As a side note, we’re not going to focus our attention on BERT in this article,
+    but if you’re new to BERT and want to find out more about it, you can check my
+    article that talks about BERT here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/text-classification-with-bert-in-pytorch-887965e5820f?source=post_page-----5162fcec3909--------------------------------)
+    [## Text Classification with BERT in PyTorch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to leverage a pre-trained BERT model from Hugging Face to classify text
+    of news articles
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/text-classification-with-bert-in-pytorch-887965e5820f?source=post_page-----5162fcec3909--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a nutshell, BERT-base contains 12 stacks of Transformer-encoder layer. During
+    fine-tuning process, we need to add a linear layer on top of the last stack that
+    will act as a classifier. Since the label in our dataset only consists of two
+    possible values, then the output of our linear layer will also be two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/87b1418a06ca1585d96c7a2b9555b198.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: BERT architecture. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have defined our model, we need to create the fine-tuning script.
+    Below is the code snippet to fine-tune the model on our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will fine-tune our BERT model for around 10 epochs and the learning rate
+    is set to 10e-7\. I fine-tuned the model on a T4 GPU with batch size of 2\. Below
+    is a snapshot of how the training and validation accuracy should look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s it! We achieved a validation accuracy of 97.3% with BERT on our dataset.
+    We can then proceed to use the fine-tuned model to make a prediction on unseen
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, normal fine-tuning of a pretrained model wouldnt’be a problem if our
+    model has ‘small*’* number of parameters, as we can see with BERT model above.
+    Let’s check the total number of parameters that our BERT-base model has.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This model has in total close to 110 million parameters. Although it looks like
+    a lot, but it’s still nothing compared to most Large Language Models nowadays,
+    as they can have billions of paramaters. If you notice as well, the number of
+    trainable parameters is the same as the total number of parameters of our BERT
+    model. This means that during a normal fine-tuning process, we update the weight
+    of all of the parameters of our BERT model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the help of a T4 GPU and the fact that our training dataset contains only
+    6500 entries, we fortunately only need around 12 minutes per epoch to update all
+    of the weights. Now imagine if we use larger models and larger dataset, the computation
+    time to do normal fine-tuning would be costly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, normal fine-tuning is commonly associated with a risk of the so-called
+    catastrophic forgetting if we’re not careful with how we choose a learning rate,
+    or when we try to fine-tune a pretrained model on several tasks/datasets. Catastrophic
+    forgetting refers to a condition when a pretrained model ‘*forgets*’ the task
+    it was trained on when we fine-tune it on a new task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, we definitely need a more efficient procedure to do a fine-tuning process.
+    And this is where we can use different types of efficient fine tuning method,
+    with bottleneck adapter being one of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Bottleneck Adapter Works
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main idea behind an adapter is that we introduce small subset of layers
+    and place them inside of the original architecture of pretrained models. During
+    the fine-tuning process, we freeze all of the parameters of original pretrained
+    models and thus, only the weights of these additional subset of layers will be
+    updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bottleneck adapter specifically is an adapter that consists of two normal feed-forward
+    layers, with an optional normalization layer before and/or after them. The functionality
+    of one feed-forward layer is to downscale the output, while the other is to upscale
+    the output. This is why this adapter is called bottleneck adapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fd52a6f95d490e9e5b4240441622681.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Common bottleneck adapters. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can apply this adapter on any deep learning model, but as mentioned earlier,
+    we’ll focus our attention to its application on Transfomer-based models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Transformer-based models normally consist of several stacks of Transformer
+    layers. BERT-based model that we use in this article, for example, has 12 stacks
+    of Transformer-encoder layer. Each stack consists of the following components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c91ba9179360f97f8dd2a6368efdcab5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer encoder stack. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are several different ways we can put a bottleneck adapter into this
+    stack. However, there are two common configurations in which the adapter can be
+    inserted: one is proposed by Pfeiffer and another is proposed by Houlsby.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The bottleneck adapter proposed by Pfeiffer is inserted after the final norm
+    layer, while the bottleneck adapter proposed by Houlsby is inserted in two different
+    places: one after multi-head attention layer and another after the feed-forward
+    layer, as you can see from the visualization below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a783afeb3413b95c3f3f9c8cfc4dc457.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Difference between Pfeiffer and Houlsby adapter configuration. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since our BERT-base model has 12 stacks of Transformer-encoder layer, then
+    we will have a total of 12 bottleneck adapters if we use Pfeiffer configuration:
+    one adapter in each stack. Meanwhile, we’ll have a total of 24 bottleneck adapters
+    with Houlsby configuration: two adapters in each stack.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although Pfeiffer configuration leads to fewer parameters compared to Houlsby,
+    their performances have shown to be on par with each other across 8 different
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now the question is: how does this bottleneck adapter make fine-tuning process
+    more efficient?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned previously, we freeze the weights of our pretrained model and only
+    update the weights of our adapter during fine-tuning process. This means that
+    we can speed up the fine-tuning process by considerable margin and we will see
+    this in the next section. The experiments have also shown that the performance
+    of fine-tuning with adapters are mostly comparable with normal fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, imagine the situation where we want to use the same pretrained model for
+    two different datasets. Instead of having two copies of the same model fine-tuned
+    on different datasets to avoid the risk of catastrophic forgetting, we can have
+    just one model with two different adapters fine-tuned on different datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62629350bae3af2e6b01722fad762b61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this approach, we save a lot of storage space. As an illustration, the
+    size of a single BERT-base model is 440 MB, which translates to 880 MB if we have
+    two models. Meanwhile, if we have one BERT-base model with two adapters, the size
+    would only be roughly around 450 MB, since bottleneck adapters only take small
+    size of memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bottleneck Adapter Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we’ll implement Pfeiffer’s version of bottleneck adapter. To
+    do this, we only need to change the script of model architecture, while the scripts
+    related to fine-tuning process and dataloading remain the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s define the model architecture with Pfeiffer’s adapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, it’s pretty straightforward to implement the adapter version
+    of a model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define the adapter configuration we want to apply with `AdapterConfig.load('pfeiffer')`
+    . If you want to use Houlsby configuration, just change it to `'houlsby'` .
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Insert adapters into our BERT model with `add_adapter()` method. Common practice
+    is to give adapters the name according to task or dataset that we want our model
+    to be fine-tuned on.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Freeze all the weights of pretrained model with `train_adapter()` method.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Add a linear layer that will act as a prediction head on top of our BERT model
+    with `add_classification_head()` method. Common practice is to give prediction
+    head the same name as our adapters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Activate our adapters and prediction head to make sure that they’re used in
+    every forward pass with `set_active_adapters()` method.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Now let’s check the total number of parameters and the proportion of trainable
+    parameters after the inclusion of adapters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The model with adapters have more parameters than our original BERT-base model,
+    but only 1.35% of them are trainable, since we’ll only update the weights of our
+    adapters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now it’s time to train the model. Since the weights of our adapter are initialized
+    randomly, then we’ll go with a slightly higher learning rate this time. We’ll
+    also train this model for 10 epochs. If everything goes well, you’ll get more
+    or less similar outputs like below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, the performance of our model with adapters is comparable with
+    the full fine-tuning version of the model. Also, the time it needs to complete
+    one epoch is 4.5 minutes faster than full fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have trained it, we can save the adapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And then we can load the adapter and use it for inference as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we’ve seen how bottleneck adapters can be helpful in fine-tuning
+    process of a large model. With bottleneck adapters, we’re able to speed up fine-tuning
+    while still maintaining the end performance of the model. These adapters are also
+    useful to avoid the risk of catastrophic forgetting commonly associated to a fine-tuned
+    model. Moreover, these adapters don’t take a lot of space in the memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article is helpful for you to get your hands dirty with bottleneck
+    adapters. If you want to access all of the code implemented in this article, you
+    can check it out via [**this notebook**](https://github.com/marcellusruben/medium-resources/blob/main/Bottleneck_Adapters/Bottleneck_Adapters_Medium.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://huggingface.co/datasets/mrjunos/depression-reddit-cleaned](https://huggingface.co/datasets/mrjunos/depression-reddit-cleaned)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

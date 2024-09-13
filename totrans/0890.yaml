@@ -1,0 +1,371 @@
+- en: Finding Optimal Solutions with Branch and Bound
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/finding-optimal-solutions-with-branch-and-bound-70a64692a0dd](https://towardsdatascience.com/finding-optimal-solutions-with-branch-and-bound-70a64692a0dd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/fb71f12a4ae02bdeddd651a2c8aa6cd8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Robocat and cat playing together. Image created with Dall·E by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A powerful algorithm for solving discrete optimization problems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://hennie-de-harder.medium.com/?source=post_page-----70a64692a0dd--------------------------------)[![Hennie
+    de Harder](../Images/3e4f2cccd6cb976ca3f8bf15597daea8.png)](https://hennie-de-harder.medium.com/?source=post_page-----70a64692a0dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70a64692a0dd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----70a64692a0dd--------------------------------)
+    [Hennie de Harder](https://hennie-de-harder.medium.com/?source=post_page-----70a64692a0dd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70a64692a0dd--------------------------------)
+    ·8 min read·Dec 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Branch and bound is the core algorithm behind many mixed integer programming
+    (MIP) solvers. It is a great addition to your mathematical optimization toolkit,
+    particularly useful for smaller problems or when the problem has numerous constraints.
+    Additionally, its straightforward nature makes it accessible, no hard math formulas
+    needed.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this hands-on article, we will delve into a mathematical optimization problem.
+    We will tackle it with the branch and bound algorithm, a great technique for solving
+    such problems. Our focus will be on a cat-themed problem — because let’s face
+    it, who doesn’t love cats? However, if you’re more of a dog person, feel free
+    to mentally substitute ‘dog’ every time you come across ‘cat’ in our discussion.
+    The principles and methods apply just the same!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Imagine you are the owner of a cat shelter. Every day, pet owners can bring
+    their cats and you take care of them. Many people adopted a cat during COVID,
+    but now everyone needs to be back at the office. Because of this your company
+    is doing great.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actually, a bit too great. You are having difficulties with placing all the
+    cats in the rooms of your building. Sometimes you need to decline people because
+    there are too many requests. That is why you decided to create an optimization
+    algorithm to help you find the lowest number of rooms possible for all the cat
+    registrations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at an example. Imagine that 3 cats requested to stay at your
+    shelter. Their names are Lily, Charlie, and Meowster. How can we divide these
+    three cats in different rooms? We need at most three rooms, and here are all the
+    possible solutions of grouping the cats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95ca1284edc5dddf5dd800545a610ffa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Partitions of cats. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partitions and the Bell number
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As you can see, there are 5 possible ways to group the 3 cats. In math, the
+    name for one way of grouping elements of a set is a *partition*. The *Bell number*
+    corresponds to the total number of possible partitions for a given set (in our
+    case, with the three cats we can create 5 partitions). It’s from the field of
+    combinatorics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The recursive formula for calculating the next Bell number looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ed22f8af5f2572795ad31d7697cea54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Recursive formula for calculating the Bell number. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This number increases rapidly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7870c242809ffb7f7b3fe0ae2571380.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bell number and calculation for different set sizes. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A question arises: How can we find the smallest number of rooms we need for
+    the cats in a smart way? It makes no sense to loop over all possible solutions
+    when the number of cats grows. This will take a lot of time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Problem to Tree
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, let’s reformulate the problem. Then, we will solve it with the branch
+    and bound algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead of creating all possible solutions and calculating their scores (how
+    many rooms we use), we can start without cats, and then add all the cats one by
+    one. This looks like a tree with nodes and edges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d96631a7cb9a0a2e625166142c38591.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Solution tree. On every row a cat is added. This gives us all the possible partitions.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Do you see how it’s possible to create all possible solutions (partitions)
+    if one new cat (element) arrives? Let’s add another cat: Pawsanova. This is easy,
+    because we can add him to all the existing groups, and as a separate group in
+    every partition. This corresponds to the red dots in the picture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a5bc1e311affd039762c3c97bcdf390.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adding another cat, Pawsanova. It’s possible to ‘insert’ him at 15 places. Image
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are exactly 15 possible ways to create partitions with the fourth cat.
+    This corresponds to the Bell number for a set with 4 elements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use this tree with possible solutions while solving the problem with
+    the branch and bound algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Branch and Bound
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we created a tree from the original problem, we can use this to run
+    the branch and bound algorithm. How does branch and bound work? The intuition
+    is easy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Branch and bound divides the problem into smaller, more manageable subproblems
+    (branching) and then determines bounds for these subproblems to efficiently find
+    the optimal solution.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Branching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Dividing the problem into smaller subproblems is exactly what we did by creating
+    a tree with cats. We start without cats, the root node, and then we add cats one
+    by one. Every subproblem is represented by one node of the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bounds
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'An important part of branch and bound is determining *bounds* for the problem.
+    It works like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *upper bound* corresponds with the best score found so far.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The *lower bound* is the best score we can find continuing with this branch
+    of the tree. It’s an optimistic score and shouldn’t take too long to calculate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pruning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By comparing the *lower bound* of our current node with the *upper bound*, we
+    can decide if we want to continue searching the current part of the tree. If the
+    lower bound is worse than the upper bound, we candiscard this part of the tree.
+    By discarding subproblems that cannot yield better solutions, the algorithm reduces
+    the number of solutions it needs to examine. This process is known as *pruning*
+    and is crucial for the efficiency of the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another way to prune the tree is by checking if the current subproblem is feasible.
+    E.g. if we already know that two cats can’t be together in one room, because they
+    both have short-tempered characters, and the current node combines these two cats,
+    we can prune this part of the tree as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploration Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are different ways possible to explore the tree to find the best solution.
+    You might be familiar with Depth First Search (DFS) and Breadth First Search (BFS).
+    The depth-first search explores a branch as far down as possible. Breadth-first
+    explores all the nodes at the current depth (adding cats one by one, like we did
+    when creating the tree). Another strategy is Best First Search, this method prioritizes
+    nodes based on a certain criterion, such as the lowest bound in optimization problems.
+    Below you can see the difference between BFS and DFS (check the node numbers for
+    the sequence):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de0906ce3a0666d1e70b75db77edb1c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Breadth first search and depth first search. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solving the Cat Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With this knowledge, let’s get back to our initial problem. Let’s code branch
+    and bound in Python. We will use breadth first search, but feel free to reuse
+    this code to try other exploration strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some rules we will implement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The score of a solution will be equal to the number of rooms we use. Obviously
+    we want to minimize this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Feasibility: A room can never have more than 5 cats, and the total weight of
+    the cats in a room should not exceed 25 kilograms. Also, a room can have at most
+    one cat with an ‘angry’ character, otherwise we will have cat fights…'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The lower bound of a node is calculated by the current score of the node plus
+    the minimum number of extra rooms we need based on the number of angry cats.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: The only package you need to install is `numpy`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s start with a `Cat` class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the `generate_n_cats` function, we can generate as many cats as we like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next code snippet, we will code the branch and bound algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `branch_and_bound.py` file consists of two classes: the `Node` class and
+    the `BranchAndBound` class.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Node` class contains all the information necessary for one node of the
+    tree. It has a `partition` attribute, here you can find the groups with cats for
+    this node. The methods from the class are used to calculate the weight, the number
+    of angry cats, the lower bound of this node and the feasibility check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`BranchAndBound` contains the algorithm. It starts with a valid solution (all
+    cats in separated rooms) and calculates the score for that solution to use as
+    upper bound. Then, it starts without cats, and it adds cats one by one. It adds
+    new nodes, and checks if a branch can be pruned by checking for feasibility and
+    comparing the lower bound with the upper bound.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example of a result with 15 cats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The algorithm created 5 groups, every group has at most 5 cats, at most 1 angry
+    cat and at most 25 kilograms of weight. Also, the algorithm is quite fast, it
+    took less than 0.032 seconds to find (one of) the optimal solution(s). The 15th
+    Bell number is almost 1.4 billion, imagine how long that would take if we would
+    loop over all the 1.4 billion possible partitions!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pros and Cons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Branch and bound is an easy-to-understand algorithm. The pruning of the tree
+    makes it a lot more efficient than algorithms like dynamic programming or brute
+    force, just because it skips evaluating solutions that are not interesting. Branch
+    and bound is guaranteed to find the optimal solution, which is a huge benefit.
+    But of course, there are cons too. If we change the algorithm to optimize for
+    50 cats instead of 15, it will take long to run. In case of 50 cats the tree has
+    many nodes and is really deep. To make it more efficient, we should maybe look
+    at other algorithms, like metaheuristics. An important thing to note here is that
+    the strength of the lower bound calculation has a huge impact on performance.
+    The stricter the better, but make sure it *is* a lower bound (not higher than
+    the actual best solution from that branch). And probably for your specific problem
+    it might be worth to try different exploration methods. In the cat example, we
+    started with a bad first solution (all cats in different rooms), while it is better
+    to start with a good solution (e.g. greedily adding cats to existing rooms if
+    the cat fits). This can speed up the algorithm run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope you enjoyed this cat shelter story! Now you know how branch and bound
+    works, and you learned something about combinatorics, like partitions and the
+    Bell number. Branch and bound is a fundamental technique used in discrete optimization
+    problems. Many MIP solvers use branch and bound as their core algorithm. By pruning
+    the tree you don’t have to go through all the possible solutions. This saves a
+    lot of time, but beware, for problems with a big solution tree it can still take
+    (too) long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading, until next time!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Related
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](/why-every-data-scientist-should-learn-mathematical-optimization-3ac102663456?source=post_page-----70a64692a0dd--------------------------------)
+    [## Why Every Data Scientist Should Learn Mathematical Optimization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data science courses are focusing on data visualization, feature engineering,
+    data processing, (un)supervised learning…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/why-every-data-scientist-should-learn-mathematical-optimization-3ac102663456?source=post_page-----70a64692a0dd--------------------------------)
+    [](/mathematical-optimization-heuristics-every-data-scientist-should-know-b26de0bd43e6?source=post_page-----70a64692a0dd--------------------------------)
+    [## Mathematical Optimization Heuristics Every Data Scientist Should Know
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local search, genetic algorithms and more.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/mathematical-optimization-heuristics-every-data-scientist-should-know-b26de0bd43e6?source=post_page-----70a64692a0dd--------------------------------)
+    [](/how-to-handle-optimization-problems-daf97b3c248c?source=post_page-----70a64692a0dd--------------------------------)
+    [## How to Handle Optimization Problems?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Easy examples with solutions and code.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-handle-optimization-problems-daf97b3c248c?source=post_page-----70a64692a0dd--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

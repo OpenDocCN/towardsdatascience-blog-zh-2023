@@ -1,0 +1,536 @@
+- en: 'Memory Management in Apache Spark: Disk Spill'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c](https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What it is and how to handle it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[![Tom
+    Corbin](../Images/e410c9b88920cd3a221538e08eebe6f0.png)](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)
+    [Tom Corbin](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)
+    ·12 min read·Sep 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96049b2bcf518a5a2922df320a077a51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [benjamin lehman](https://unsplash.com/@benjaminlehman?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the world of big data, Apache Spark is loved for its ability to process massive
+    volumes of data extremely quickly. Being the number one big data processing engine
+    in the world, learning to use this tool is a cornerstone in the skillset of any
+    big data professional. And an important step in that path is understanding Spark’s
+    memory management system and the challenges of “disk spill”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disk spill is what happens when Spark can no longer fit its data in memory,
+    and needs to store it on disk. One of Spark’s major advantages is its in-memory
+    processing capabilities, which is much faster than using disk drives. So, build
+    applications that spill to disk somewhat defeats the purpose of Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disk spill has a number of undesirable consequences, so learning how to deal
+    with it is an important skill for a Spark developer. And that’s what this article
+    aims to help with. We’ll delve into what disk spill is, why it happens, what its
+    consequences are, and how to fix it. Using Spark’s built-in UI, we’ll learn how
+    to identify signs of disk spill and understand its metrics. Finally, we’ll explore
+    some actionable strategies for mitigating disk spill, such as effective data partitioning,
+    appropriate caching, and dynamic cluster resizing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Memory Management in Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into disk spill, it’s useful to understand how memory management
+    works in Spark, as this plays a crucial role in how disk spill occurs and how
+    it is managed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark is designed as an in-memory data processing engine, which means it primarily
+    uses RAM to store and manipulate data rather than relying on disk storage. This
+    in-memory computing capability is one of the key features that makes Spark fast
+    and efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Spark has a limited amount of memory allocated for its operations, and this
+    memory is divided into different sections, which make up what is known as Unified
+    Memory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb9b64d711552c03f8bb0613d9002cab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storage Memory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is where Spark stores data to be reused later, like [cached data](https://medium.com/me/stats/post/31a2bd7be277)
+    and broadcast variables. By keeping this data readily available, Spark can improve
+    the performance of data processing tasks by retrieving it quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of reading the sales data from disk for each separate analysis, you
+    can cache a DataFrame in Storage Memory after the first read. This way, for subsequent
+    analyses, Spark can quickly access the cached data, making the entire process
+    more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Execution Memory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This part of the memory is what Spark uses for computation. So when you perform
+    a join or aggregation, Spark uses the Execution Memory. For example, to calculate
+    the average value of a column in a DataFrame, Spark would:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the relevant portions of the DataFrame into Execution Memory (perhaps taking
+    it from a cached DataFrame in Storage Memory).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform the aggregation, storing intermediate sums and counts in Execution Memory.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the final average, still using Execution Memory for the computation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Output the final result, freeing up the Execution Memory used for the operation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: User Memory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is used for custom data structures or variables that you create but are
+    not directly managed by Spark. It’s like a workspace for your own use within the
+    Spark application. Where Execution Memory is used for data that is actively being
+    processed by Spark, User Memory typically contains metadata, custom hash tables,
+    or other structures you might need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you have a DataFrame with a column of ages, and you want to keep track
+    of the maximum age for some custom logic later in your application. You would
+    read in the DataFrame, calculate the max age, and then store that age as a variable,
+    which would be stored in User Memory. This variable is a piece of information
+    you’ll use later, but it’s not being actively processed by Spark’s built-in operations,
+    so it therefore belongs in User Memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike Storage Memory which primarily stores cached DataFrames/RDDs, User Memory
+    isn’t managed by Spark. That means it’s up to you to ensure that you aren’t using
+    more User Memory than allocated to avoid Out Of Memory (OOM) errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reserved Memory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Reserved Memory is set aside for system-level operations and Spark’s internal
+    objects. Unlike Execution Memory, Storage Memory, or User Memory, which are used
+    for specific tasks or data within your Spark application, Reserved Memory is used
+    by Spark itself for its own internal operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The memory is “reserved” in the sense that it’s not available for your data
+    or tasks. It’s like the operating system on your computer that reserves some disk
+    space for system files and operations — you can’t use that space for your own
+    files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic Allocation Between Storage and Execution Memory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In Spark, the relationship between Storage Memory and Execution Memory is like
+    two people sharing a pie. The pie represents the total available memory, and each
+    type of memory — Storage and Execution — wants a slice of this pie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If Execution Memory has more tasks to perform and needs more resources, it
+    can take a larger slice of the pie, leaving a smaller slice for Storage Memory.
+    Conversely, if Storage Memory needs to cache more data, it can take a larger slice,
+    leaving less for Execution Memory. Like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1a6ba97c3d0741ac2a4b00b122e631b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both Execution Memory and Storage Memory can potentially eat the whole pie (total
+    available memory) if the other doesn’t need it. However, Execution Memory has
+    “first dibs” on taking slices from Storage Memory’s portion when it needs more.
+    But there’s a limit — it can’t take so much that Storage Memory is left with less
+    than a minimum slice size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In more technical terms, Execution Memory and Storage Memory share a unified
+    memory region, where either can occupy the entire region if the other is unused;
+    however, Execution Memory can evict data from Storage Memory up to a certain threshold,
+    beyond which eviction is disallowed, while Storage Memory cannot evict Execution
+    Memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The eviction of data from Storage Memory is generally governed by a Least Recently
+    Used (LRU) policy. This means that when Execution Memory needs more space and
+    decides to evict data from Storage Memory, it will typically remove the data that
+    has been accessed least recently. The idea is that the data you haven’t used in
+    a while is probably less likely to be needed immediately compared to data that
+    was recently accessed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disk Spill in Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Spark likes to do most of its work in memory, since this is the fastest way
+    to process data. But what happens when your data is bigger than your memory? What
+    happens when your total memory is 100GB, but your DataFrame is 110GB? Well, when
+    data is too large to fit in memory, it gets written to disk. This is known as
+    disk spill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Disk spill can come from either Storage Memory (when the cached DataFrames
+    are too big) or Execution Memory (when operations require significant amounts
+    of intermediate data storage). Recall that when Execution Memory needs additional
+    space for tasks like joins or shuffles, it can borrow from Storage Memory — but
+    only up to a certain limit. If the Execution Memory reaches this limit and still
+    needs more space, Spark will spill the excess data to disk:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/779044b6ecd5788c9f538231fc4431db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The same is true when Storage Memory requires more space but hits the limit
+    it can borrow from Execution Memory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02390fa1d0a8e083951948847ead62d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Impact of Partition Size on Disk Spill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When you load a table into Spark, it gets broken down into manageable chunks
+    called partitions which are divided among the worker nodes. Spark will automatically
+    divide your data into 200 partitions, but you can also tell Spark how many partitions
+    to split your data into. Understanding how many partitions to use is an important
+    thing to understand about Spark in general, but it also has implications for disk
+    spill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Unified Memory we discussed in the previous section exists on a per-node
+    basis. Each worker node has its Unified Memory, comprised of Storage Memory, Execution
+    Memory, User Memory, and Reserved Memory. And each worker node fits as many partitions
+    into its Unified Memory as it can. But if these partitions are too big, you some
+    of them spill to disk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you are working with a DataFrame that’s 160GB in size, and you’ve told
+    Spark to divide it into 8 partitions. Each partition would therefore be 20GB in
+    size. Now, if you have 10 worker nodes in your cluster, each with 16GB of memory
+    in total, then not a single partition would be able to fit in the memory of a
+    single node. We could fit 16GB of a partition at most in memory, and the other
+    4GB would have to be spilled to disk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if we increased the number of partitions to 10, then each partition
+    would be 16GB in size — precisely enough to fit in memory! Understanding partitioning
+    is crucial to understanding disk spill, as well as Spark more generally. Choosing
+    the right number of partitions for your Spark jobs is essential to speedy execution
+    times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Cost of Disk Spill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Disk spill is very inefficient. Not only does Spark have to spend time writing
+    the data to disk, but it also has to spend more time reading it back in when the
+    data is needed again. These read/write operations are expensive and can impact
+    your Spark applications significantly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Performance Impact** Disk I/O (read/write) is significantly slower than memory
+    access, which can lead to slower job completion times.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Resource Utilisation** Disk spill can lead to inefficient use of resources.
+    CPU cycles that could be used for computations are instead spent on read/write
+    operations to disk.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Operational Complexity** Managing a Spark application that frequently spills
+    to disk can be more complex. You’ll need to monitor not just CPU and memory usage,
+    but also disk usage, adding another layer to your operational considerations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cost Implications** In cloud-based environments, you’re generally billed
+    for the compute resources you use, which includes storage, CPU, memory, and sometimes
+    network utilisation. If disk spill is causing your Spark tasks to run more slowly,
+    you’ll need to run your cloud instances for a longer period to complete the same
+    amount of work, which will increase your costs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Causes of Disk Spill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here are some common scenarios that cause a lack of available memory, and therefore,
+    disk spill:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Large Datasets:** When the data being processed is larger than the available
+    memory, Spark will spill the excess data to disk.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Complex Operations:** Tasks that require a lot of intermediate data, such
+    as joins, aggregations, and shuffles, can cause disk spill if the Execution Memory
+    is insufficient.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Inappropriate Partitioning:** When you have too few partitions, and the partition
+    sizes are larger than the available memory, Spark will spill the parts of the
+    partitions that don’t fit to disk.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Multiple Cached DataFrames/RDDs:** If you’re caching multiple large DataFrames
+    or RDDs and the Storage Memory fills up, the least recently used data will be
+    spilled to disk.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Concurrent Tasks:** Running multiple tasks that each require a large amount
+    of memory can lead to disk spill as they compete for limited memory resources.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Skewed Data:** Data skew can cause some partitions to have a lot more data
+    than others. The worker nodes responsible for these “heavy” partitions can run
+    out of memory, forcing them to write excess data to disk.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Inadequate Configuration:** Sometimes, the default or user-defined Spark
+    configurations don’t allocate enough memory for certain operations, leading to
+    disk spill.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Identifying Disk Spill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The easiest way to identify disk spill is through the Spark UI. Head to the
+    “Stages” tab, and click on a stage. In the below image I have ordered the stages
+    by ‘Duration’ and selected the stage with the longest duration. A long duration
+    doesn’t necessarily mean that disk spill is happening, but long-running stages
+    are often a good place to start investigating in general, as these can indicate
+    long shuffle operations or data skew.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99bd0168da8714b081959cbf30452255.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we can see various metrics about this stage, including the amount of disk
+    spill (if any):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41b716deaf07b21cbf4b6e89d66035b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Spill (Memory)” displays the size of the data in memory before it gets spilled
+    to disk. “Spill (Disk)”, on the other hand, displays the size of the spilled data
+    as it exists on disk *after* being spilled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason “Spill (Disk)” is smaller than “Spill (Memory)” is because when the
+    data is written to disk, it is serialised and compressed. Serialisation is the
+    process of converting data objects into a byte stream so that they can be easily
+    stored or transmitted, while compression involves reducing the size of data to
+    save storage space or speed up transmission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mitigating Disk Spill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once you have identified disk spill, the next step is to mitigate it. How you
+    deal with disk spill will depend on your particular case and what is causing the
+    spill. Here are some general recommendations for common causes of disk spill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Understand the root cause** Before taking any action to mitigate disk spill,
+    you need to understand why it’s happening in the first place. Use the Spark UI
+    to identify the operations causing the spill, looking at metrics like “Spill (Disk)”
+    and “Spill (Memory)” in the “Stages” tab. Once you have identified the root cause,
+    proceed to administer the appropriate solution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Partition your data effectively** Effective data partitioning is a key strategy
+    to minimize disk spill in Spark, particularly because of shuffle operations. Shuffling
+    is an expensive operation that redistributes data across partitions and often
+    requires a large amount of intermediate storage. If it can’t store this intermediate
+    data in memory it will spill to disk. Better partitioning of your data can reduce
+    the need for shuffling (which is a computationally expensive operation even if
+    there is no disk spill).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By optimising the way data is partitioned and reducing the need for data to
+    be moved around during tasks like joins or aggregations, you can reduce the risk
+    of disk spill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can’t always avoid shuffling, but you can partition effectively. The recommended
+    partition size is less than 1GB — any bigger and you may encounter long shuffles
+    and disk spill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For strategies to optimise partition shuffling in Spark, see this guide:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tomhcorbin/boosting-efficiency-in-pyspark-a-guide-to-partition-shuffling-9a5af77703ea?source=post_page-----59385256b68c--------------------------------)
+    [## PySpark: A Guide to Partition Shuffling'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boost your Spark performance by employing effective shuffle partition strategies
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@tomhcorbin/boosting-efficiency-in-pyspark-a-guide-to-partition-shuffling-9a5af77703ea?source=post_page-----59385256b68c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cache your data appropriately** Caching data in Spark can significantly speed
+    up iterative algorithms by keeping the most frequently accessed data in memory.
+    However, it’s a double-edged sword. Caching too much data can quickly fill up
+    your Storage Memory, leaving less room for Execution Memory and increasing the
+    likelihood of disk spill.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Knowing when to cache data and when not to is crucial. Be selective about what
+    you cache and consider the trade-offs of caching versus recomputing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more on caching, read this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tomhcorbin/unlocking-faster-spark-operations-caching-in-pyspark-31a2bd7be277?source=post_page-----59385256b68c--------------------------------)
+    [## Unlocking Faster Spark Operations: Caching in PySpark'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bridging the Gap Between Heavy Computations and Speedy Results in Apache Spark
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@tomhcorbin/unlocking-faster-spark-operations-caching-in-pyspark-31a2bd7be277?source=post_page-----59385256b68c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Address data skew** Data skew occurs when a disproportionate amount of data
+    is concentrated in a few partitions, causing an imbalance in memory usage across
+    the cluster. This can lead to disk spill as those few overloaded partitions may
+    not fit into memory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Strategies like salting can help redistribute data more evenly across partitions,
+    reducing the risk of spill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To learn how to fix data skew and stop it causing disk spill, see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tomhcorbin/taming-data-skew-in-pyspark-a-simple-guide-2dfdf9fc1e1b?source=post_page-----59385256b68c--------------------------------)
+    [## Taming Data Skew in PySpark: A Simple Guide'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Strategies and Techniques for Handling Skewed Data in PySpark
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@tomhcorbin/taming-data-skew-in-pyspark-a-simple-guide-2dfdf9fc1e1b?source=post_page-----59385256b68c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Resizing your cluster** Adding more memory to your cluster can help reduce
+    disk spill since Execution Memory and Storage Memory have more room to work in.
+    This is an easy but expensive solution — it can immediately alleviate memory pressure
+    but will increase your compute costs, which may or may not be worth it depending
+    on how bad the disk spill is.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative to simply adding more memory to the cluster is to enable dynamic
+    scaling, which allows Spark to add or remove nodes as needed. This means that
+    when Spark needs more memory, it can add an extra worker node, and then remove
+    it once it is no longer needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it’s best to identify the cause of the spill and resolve it with the
+    appropriate solution. Only consider sizing up your cluster if this isn’t possible
+    — sometimes you just need more memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Disk spill in Spark is a complex issue that can significantly impact the performance,
+    cost, and operational complexity of your Spark applications. Understanding what
+    it is, why it happens, and how to mitigate it is an important skill for a Spark
+    developer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monitor your applications in the Spark UI and keep an eye out for spill. When
+    you spot it, diagnose the cause, and from there you can apply the appropriate
+    solutions, whether it involves salting for data skew or repartitioning for large
+    shuffle operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It might be tempting to simply add more memory to your cluster or enabling dynamic
+    scaling, as these can be quick fixes. However, they often come with increased
+    costs. It’s therefore important to identify the root cause of disk spill and address
+    that specific problem. For more information on how to deal with a particular cause
+    of disk spill discussed, read the posts suggested throughout this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By taking a proactive approach to managing disk spill, you can make sure that
+    your Spark applications run as efficiently as possible, saving money and time
+    in the long run.
+  prefs: []
+  type: TYPE_NORMAL

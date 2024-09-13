@@ -1,0 +1,513 @@
+- en: 'TensorFlow Decision Forests: A Comprehensive Introduction'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tensorflow-decision-forests-a-comprehensive-introduction-3b6056a6d6b0](https://towardsdatascience.com/tensorflow-decision-forests-a-comprehensive-introduction-3b6056a6d6b0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Train, tune, evaluate, interpret and serve the tree-based models using TensorFlow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@antonsruberts?source=post_page-----3b6056a6d6b0--------------------------------)[![Antons
+    Tocilins-Ruberts](../Images/363a4f32aa793cca7a67dea68e76e3cf.png)](https://medium.com/@antonsruberts?source=post_page-----3b6056a6d6b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b6056a6d6b0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b6056a6d6b0--------------------------------)
+    [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----3b6056a6d6b0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b6056a6d6b0--------------------------------)
+    ·11 min read·Apr 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5366f2a6d39c66852d1ebbf295e77b6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Javier Allegue Barros](https://unsplash.com/pt-br/@soymeraki?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Two years ago, TensorFlow (TF) team has open-sourced a library to train tree-based
+    models called [TensorFlow Decision Forests (TFDF)](https://github-com.translate.goog/tensorflow/decision-forests?_x_tr_sl=en&_x_tr_tl=ru&_x_tr_hl=ru&_x_tr_pto=sc).
+    Just last month they’ve finally [announced](https://blog.tensorflow.org/2023/02/updates-tensorflow-decision-forests-is-production-ready.html)
+    that the package is production ready, so I’ve decided that it’s time to take a
+    closer look. The aim of this post is to give you a better idea about the package
+    and show you how to (effectively) use it. Below you can see the structure of this
+    post, feel free to skip to any part that interests you the most.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is TFDF and why use it?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train Random Forest (RF) and Gradient Boosted Trees (GBT) models using TFDF
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hyper-parameter tuning with TFDF and Optuna
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Model inspection
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Serving GBT model using TF Serving
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You can find all the code in my [repo](https://github.com/aruberts/tutorials/tree/main/tfdf/notebooks),
+    so make sure to star it if you haven’t already. In this post we’ll be training
+    a few models for loan default prediction using the [U.S. Small Business Administration
+    dataset](https://www.kaggle.com/datasets/mirbektoktogaraev/should-this-loan-be-approved-or-denied)
+    (CC BY-SA 4.0 license) dataset. Models will be trained using already pre-processed
+    data but you can find a [notebook](https://github.com/aruberts/tutorials/blob/main/tfdf/notebooks/data_preprocessing.ipynb)
+    in the repo that describes the processing and feature engineering steps. Make
+    sure to follow them if you want to directly replicate my code here. Alternatively,
+    use this code as a starting point and adapt it to your dataset (my recommended
+    approach).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing TensorFlow Decision Forests is quite straightforward, just run `pip
+    install tensorflow_decision_forests` and most of the time this should work. There
+    are some [issues](https://github.com/tensorflow/decision-forests/issues/152) reported
+    with M1 and M2 Macs but it worked fine for me personally with the latest version
+    of TFDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TensorFlow Decision Forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is TFDF?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: TensorFlow Decision Forest is actually built on top of the C++ library called
+    Yggdrasil Decision Forests which also developed by Google. The original C++ algorithms
+    are designed to build scalable decision tree models that can handle large datasets
+    and high-dimensional feature spaces. By integrating this library into the wider
+    TF ecosystem, users are able now to easily build scalable RF and GBT models without
+    having to learn another language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why use it?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main advantage of this library over e.g. XGBoost or LightGBM is its tight
+    integration with the other TF ecosystem components. It might be particularly interesting
+    for teams who already have other TensorFlow models as part of their pipeline or
+    use TFX. TFDF can be quite easily integrated with e.g. NLP models making multi-modal
+    pipelines easier. Also, if you are serving models using TF Serving you might also
+    want to consider this library due to its native support (no need for ONNX or other
+    cross-package serialisation methods). Finally, this library gives you truly a
+    ton parameters that you can adjust to approximate models from XGBoost, LightGBM,
+    and many other Gradient Boosted Machine (GBM) methods. This means that you don’t
+    need to switch between different GBM libraries in the training process which can
+    be quite nice from code maintainability perspective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Make sure to pull [this notebook](https://github.com/aruberts/tutorials/blob/main/tfdf/notebooks/model_training.ipynb)
+    and follow along as below you can only see parts of the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As said in the setup section, I’m going to be using a pre-processed version
+    of this dataset. To prepare it for TFDF, we first need to read it in as usual
+    with pandas and decide which columns we’re going to treat as categorical and which
+    are going to be numerical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Usage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To ensure a well-structured project and avoid unexpected behaviour, it is considered
+    a good practice to specify a `FeatureUsage` for each feature, although it’s not
+    mandatory. Fortunately, it’s an easy task: you simply need to decide which feature
+    types to assign to each one from the six supported types — `BOOLEAN`, `CATEGORICAL`,
+    `CATEGORICAL_SET`, `DISCRETIZED_NUMERICAL`, `HASH`, and `NUMERICAL`. Some of these
+    types come with additional parameters, so make sure to read more about them [here](https://www.tensorflow.org/decision_forests/api_docs/python/tfdf/keras/FeatureSemantic).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While we’ll keep things simple in this example and stick to only numerical and
+    categorical data types, don’t hesitate to experiment with the other options, especially
+    `DISCRETIZED_NUMERICAL`, as they can significantly speed up your training process
+    (similar to LightGBM). As you can see below, you need to provide the chosen data
+    type to `semantic` parameter and for the categorical features we also want to
+    specify the `min_vocab_frequency` parameter to get rid of rare values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading Data Using TF Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To simplest way to read in the dataset is by using TF Dataset. TFDF has a very
+    nice utility function called`pd_dataframe_to_tf_dataset` which makes this step
+    a piece of cake.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the code above we pass our DataFrame objects into the function and provide
+    the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Name of the label column
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Name of the weight column (None in this case)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Batch size (helps to speed up reading of the data)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The resulting datasets are in the correct format of TF Dataset (batched and
+    pre-fetched) and are ready to be used for training/evaluation. You can of course
+    create your own method for reading in the datasets but you must pay a special
+    attention to the outputted format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TFDF Default Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training the models is quite straight-forward if you’ve followed all the previous
+    data preparation instructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see from the code above, it takes just a few lines to build and train
+    GBT and RF models with default paramaters. All you need to specify is the features
+    used, training and validation datasets, and you’re good to go. When evaluating
+    both of these models using ROC and PR AUCs we can see that the performance is
+    already quite good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see if these results can be further improved using hyper-parameter tuning.
+    For simplicity, I’m going to focus solely on optimising the GBT model but everything
+    can be as easily applied to the RF models as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyper-parameter Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are a ton of parameters to tune, very good explanation of every one of
+    the can be found in the official Yggdrasil [documentation](https://ydf.readthedocs.io/en/latest/hyper_parameters.html).
+    TFDF gives you a few in-built options to tune parameters but you can also use
+    more standard libraries like [Optuna](https://github.com/optuna/optuna) or [Hyperpot](https://github.com/hyperopt/hyperopt).
+    Here’s a list of the approaches ordered from the least involved to the most involved
+    approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyper-parameter templates
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hyper-parameter search using pre-defined space
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hyper-parameter search using custom space
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hyper-parameter Templates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Very cool feature that TFDF provides is the availability of hyper-parameter
+    templates. These are the parameters that in the [paper](https://arxiv.org/abs/2212.02934)
+    were shown to perform the best across a wide range of the datasets. Two available
+    templates are — `better_default` and `benchmark_rank1` . If you’re short on time
+    or are not familiar with machine learning that well, this might be a good option
+    for you. Specifying these parameters is literally just 1 line of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the results we can see that with `better_default` parameters we were
+    able to get a slight uplift in both ROC and PR AUCs. `benchmark_rank1` parameter,
+    on the other hand, perform much worse. This is why it’s important to properly
+    evaluate the resulting models before deploying them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pre-defined Search Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: TFDF comes with a nice utility called `RandomSearch` which performs randomised
+    grid search (similar to `sklearn`) across many of the available parameters. There’s
+    an option to specify these parameters manually (see example [here](https://www.tensorflow.org/decision_forests/tutorials/automatic_tuning_colab#training_a_model_with_automated_hyper-parameter_tuning_and_manual_definition_of_the_hyper-parameters))
+    but it’s also possible to use a pre-defined search space. Again, if you’re not
+    that familiar with ML this might be a good option for you because it removes the
+    need to set these parameters manually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'WARNING: this search took me ages, so I had to stop it after 12 iterations.
+    Some parameters that get tested (e.g. oblique splits) take a long time to fit.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can access all of the tried combinations using the following command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/fa0359d4cbc57af5bb77fa4ede8dc10c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyper-parameter table. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After 12 iterations, the best model performed a bit worse than the baseline,
+    so use this tuning method cautiously. You can try to alter the search space, but
+    at this point you might as well use another library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Custom Search Space (with custom loss)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are a few notable disadvantages to using `RandomSearch` approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Only randomised grid search algorithm is available
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: No option to define your own loss to optimise
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Full parameter grid needs to be provided if you don’t use `use_predefined_hps`
+    flag
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Because of these reasons I highly recommend using external optimisation libraries
+    if you have enough knowledge to set a sensible search space yourself. Below you
+    can see how to do the tuning using `optuna` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of these parameters are quite standard for GBTs, but there are a few note-worthy
+    parameters. First, we can change the `growing_strategy` to `BEST_FIRST_GLOBAL`
+    (a.k.a leaf-wise growth) which is the strategy used by LightGBM. Second, we can
+    use `BINARY_FOCAL_LOSS` which is supposed to perform better with the imbalanced
+    datasets ([source](https://paperswithcode.com/method/focal-loss)). Third, there’s
+    an option to change the `split_axis` parameter to use sparse oblique splits which
+    was shown to be quite effective in [this paper](https://arxiv.org/abs/1506.03410).
+    Finally, there’s also an opportunity to build “[honest trees](https://arxiv.org/abs/1610.01271)”
+    using the `honest` parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below you can see the results achieved with the best parameters. As you can
+    see, tuning with custom search space has yielded the best results so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we’ve settled on the hyper-parameters, let’s re-train the model and
+    proceed with its inspection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Inspection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'TFDF offers a nice utility object to inspect the trained model called `Inspector`
+    . There are 3 main uses for this object that I’ll explore below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspecting the model’s attributes like type, number of trees or features used
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Obtaining feature importances
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Extracting trees structures
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Inspect Model Attributes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The inspector class stores various attributes that you might want to explore
+    if, for example, you’ve loaded somebody else’s model or you haven’t used it in
+    a while. You can print out the model type (GBT or RF), the number of trees your
+    model has, the training objective, and the features that were used to train the
+    model. Inspecting number of trees is especially useful since if the early-stopping
+    has kicked in, this parameter is going to be smaller than what you’ve set it up
+    to be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another option is to simply run `manual_tuned.summary()` to examine the model
+    in more detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Importances
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just like all the other libraries, TFDF comes with in-built feature importance
+    scores. For GBTs, you get access to `NUM_NODES` , `SUM_SCORE` , `INV_MEAN_MIN_DEPTH`
+    , `NUM_AS_ROOT` methods of explaining. Note that you can also set `compute_permutation_variable_importance`
+    parameter to `True` during training which will add a few additional methods. The
+    downside of this is that the model training will take significantly longer, so
+    use it with care (perhaps on a sample of data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39dc4b3dfd659352d963afba439a677d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Imprtances bar plot. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the model that I’ve built, Term variable has consistently come up as the
+    most important feature with categorical variables like Bank, State, and Bank State
+    following it. I’d say that one of the largest disadvantages of TFDF library is
+    the inability to use SHAP with it. Hopefully, the support will come in the future
+    versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspect Individual Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes we want to take a look at the individual trees for the sake of explainability
+    or model validation. TFDF gives an easy access to all the trees constructed during
+    training in the inspector object. For now, let’s inspect the first tree of our
+    GBT model since usually it’s the most informative one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9feb8c5a671742898251233d8c3058e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tree structure. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, when we’re dealing with large trees it may not be that convenient
+    to inspect them using the print out statement. That’s why TFDF also has a tree
+    plotting utility — `tfdf.model_plotter.plot_model` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8bb950e7d917da036be2a1e0c0ddee8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First GBT tree (depth=4). Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also note that for Random Forest models, you can use `dtreeviz` package which
+    gives you more visually appealing results ([here’s how to use it](https://www.tensorflow.org/decision_forests/tutorials/dtreeviz_colab#feature_space_partitioning_2)).
+    GBT models with this package are not yet supported.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TF Serving
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far, we’ve trained, tuned and evaluated the model. What else is there? Serving
+    the model of course! Lucky for us, TFDF is natively supported by TF Serving (since
+    the latest version), so this part is also quite easy. If you already have an up-to-date
+    TF Serving instance, all you need to do is to point to your saved model in the
+    `model_base_path` parameter. You can save the TFDF model with the `save` method.
+    Notice that you should save it to a folder `1` since it’s the first version of
+    your model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: For those who haven’t used TF Serving model you can find a good tutorial by
+    the TF team [here](https://www.tensorflow.org/decision_forests/tensorflow_serving)
+    and I’ve also written this [Colab notebook](https://colab.research.google.com/drive/13fSg7LXdewamRh-nRVRh1Dw_Fq_bo8C-?usp=sharing)
+    just in case you’re working on M1 or M2 Macs (there’s currently no support for
+    TF Serving).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Essentially, all you need to do is to install the TF Serving locally and launch
+    it with the right parameters. Once you have the binary downloaded, here’s the
+    command to launch the server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Please note that `model_base_path` should be absolute path and not relative.
+    After the TF Serving server starts, you can start sending requests to it. There
+    are two expected formats — `instances` and `inputs` . Below you can see an example
+    of the later format but you can see examples of both in this [tutorial](https://www.tensorflow.org/decision_forests/tensorflow_serving#:~:text=Finally%2C%20you%20can%20send%20a%20request%20to%20TF%20Serving%20using%20the%20Rest%20API.%20Two%20formats%20are%20available%3A%20predict%2Binstances%20API%20and%20predict%2Binputs%20API.%20Here%20is%20an%20example%20of%20each%20of%20them%3A).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you’ve managed to get the response (it can be different from mine) — congratulations!
+    You’ve made it to the last step of this post. Now, let’s look back at what you’ve
+    accomplished if you have followed all these chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To summarise, TFDF is a powerful and scalable library for training tree based
+    models in TensorFlow. TFDF models are well integrated with the rest of the TensorFlow
+    ecosystem, so if you’re using TFX, have other TF models in production, or are
+    using TF Serving, you’ll find this library quite useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’ve followed through the notebooks, you should now know how to train,
+    tune, inspect, and server the TFDF models. As you saw, TFDF models are highly
+    customisable, so if you’re in need of a high-performance library for tree-based
+    models, give it a shot and let me know how it goes!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not a Medium Member yet?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@antonsruberts/membership?source=post_page-----3b6056a6d6b0--------------------------------)
+    [## Join Medium with my referral link - Antons Tocilins-Ruberts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Antons Tocilins-Ruberts (and thousands of other writers
+    on Medium). Your membership fee directly…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@antonsruberts/membership?source=post_page-----3b6056a6d6b0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

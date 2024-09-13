@@ -1,0 +1,644 @@
+- en: 'Forecasting API: an Example with Django and Google Trends'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/forecasting-api-an-example-with-django-and-google-trends-9b55046bd578](https://towardsdatascience.com/forecasting-api-an-example-with-django-and-google-trends-9b55046bd578)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Build a web application to predict the evolution of Google Trends.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)[![Davide
+    Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------)
+    [Davide Burba](https://medium.com/@davide.burba?source=post_page-----9b55046bd578--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9b55046bd578--------------------------------)
+    ·14 min read·Aug 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e462ec58405d206471214cd10c1d9ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Google Trends”, by [Giulia Roggia](https://www.instagram.com/giulia_roggia__/).
+    Used with permission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction](#7d44)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Django Models](#3fbd)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Services](#68d5): [Data Sources](#7d4e), [Preprocessing](#cca9), [ML](#b276),
+    [Tasks](#1912)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Interaction Layer](#aeaa): [Serializers](#f468), [Views](#665f), [Endpoints](#e0f4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Conclusions](#476d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is Django?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Django](https://www.djangoproject.com) is a high-level Python web framework.
+    It’s designed to be fast, secure, and scalable, making it a popular choice for
+    developing robust web applications that are expected to grow in complexity. For
+    an introduction to Django, you can check [this tutorial](https://docs.djangoproject.com/en/4.2/intro/tutorial01/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example we are going to use [Django Rest Framework](https://www.django-rest-framework.org)
+    (DRF), which is an extension of Django that facilitates the development of [REST
+    APIs](https://www.redhat.com/en/topics/api/what-is-a-rest-api). For an introduction
+    to DRF, you can check [this tutorial](https://www.django-rest-framework.org/tutorial/quickstart/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Requirements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ll start to design our application by listing out some hypothetical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Overall goal**: Implement a system to forecast future time-series values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data**: [Google Trends](https://trends.google.com/trends/) at weekly frequency
+    for both features and targets, likely to be extended in the future. Data should
+    be downloaded on demand.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Preprocessing**: Use only lagged values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**ML Model**: A global LightGBM model (check [this article](https://medium.com/towards-data-science/local-vs-global-forecasting-what-you-need-to-know-1cc29e66cae0)
+    if you want to know more about global vs local models).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Inference**: Generate online predictions (as opposed to batch ones), but
+    without having to provide input features.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*The complete code used in this tutorial is available* [*here*](https://github.com/davide-burba/code-collection/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set up the Environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by listing the needed dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are gonna use [poetry](https://python-poetry.org) to manage the dependencies,
+    and [Docker](https://www.docker.com) to containerize the project. You can check
+    poetry and docker files used in this project [here](https://github.com/davide-burba/code-collection/tree/main/examples/api-example-django).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quickstart
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you want to jump ahead and start playing with the app you can run the following
+    commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: and connect to `localhost:8000/gtrends`!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Django Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section we list the Django models used in the example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time-series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For a forecasting system, we have to handle time-series data. Normally we would
+    need only two models: one to identify each time-series, and one to store its values.
+    But, since **historical data for Google Trends might change** from one day to
+    another due to normalization, we also need to version the data, which results
+    in an additional model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also create a model that lists the different data sources (only Google Trends
+    at the moment).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Configurations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To train a supervised model, we need a set of features and targets. We can store
+    such information in a “data configuration”. This is done with the following models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, we need to store the configurations for preprocessing and for Machine
+    Learning (ML) models. To keep it simple, we just store these in a `JSONField`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: ML Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here we make a distinction between an ML configuration and an ML model. While
+    the ML configuration holds the data about the LightGBM parameters, the ML model
+    holds all the information about data, preprocessing, and ML configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An ML model can be estimated on different datasets (due to new data coming
+    in), therefore we need to version ML models as well. This results in the two following
+    models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`MLModelVersion` holds the link to the LightGBM artifacts in `ml_file`, and
+    the info about the data it was trained on in `metadata`. The artifacts are stored
+    in the location specified in the django settings module: it could be e.g. a folder
+    in the filesystem or an S3 bucket in the cloud.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Services
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section we describe the services which contain the application logic.
+    According to the [Django-StyleGuide](https://github.com/HackSoftware/Django-Styleguide/tree/master#overview),
+    it’s a best practice to keep it separate from the views.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Sources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Since the data sources are expected to grow in the future, we are gonna use
+    a flexible design:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An abstract `DataSource` class defining an interface.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `GTrendSource` class inheriting from `DataSource` and implementing the details
+    to download Google Trends data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `download_data` factory to build `DataSource` children.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This results in the following module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Preprocessing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once data is loaded, we want to preprocess it to later train a model or infer
+    future values. Let’s start by defining an interface class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: At the moment we only consider lagged values for feature engineering. Let’s
+    create an helper function that implements the lags logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we have to create a class that implements the abstract methods of the base
+    class. Let’s start by defining its attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the target itself can be used as a feature. For targets used as features,
+    we assign a common prefix “target”. This might be beneficial when there are multiple
+    targets, since they will be stacked together in the same columns and therefore
+    reducing the amount of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the implementation to build lagged targets and features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now wrap them in a `build_x` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To build the target, we just have to shift it by `horizon` time-steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now provide an implementation for the required abstract methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: ML
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a very simple module for ML, providing two functions to dump and
+    load a LightGBM model (if you are wondering why we chose to use LightGBM, you
+    can check [this article](https://medium.com/towards-data-science/gradient-boosting-a-silver-bullet-in-forecasting-5820ba7182fd)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tasks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before jumping into defining the api interface, let’s define some `tasks` that
+    will be used in the endpoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update time-series**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first thing that we need is to store some time-series data. We don’t want
+    to clutter the database with a new version every time we download a new data-point,
+    because it would grow very quickly while having lots of duplicate data. Instead,
+    we want to compare the newly downloaded data with the latest version, and **create
+    a new version only if the data history doesn’t match**. This is done in the following
+    snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also add a wrapper to update all the time-series in the database for
+    convenience:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Load data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have some time-series data stored, we want to be able to load it
+    in order to preprocess it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Preprocess
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s wrap up preprocessing in a couple of tasks. For simplicity, we directly
+    use the `Preprocessor` class; if later on we want to add another preprocessing
+    class, we can use the same factory pattern used for data sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have our preprocessed data, we can finally train our LightGBM model.
+    Note that this is the simpler step!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Store ML model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now create a task to save the LightGBM engine to create a new `MLModelVersion`.
+    Note that we dump the engine to a temporary file first. This is just a trick in
+    order to not hardcode the storage type in the task, and instead handle it dynamically
+    with Django settings. For more information on this subject you can check the [FileField
+    documentation](https://docs.djangoproject.com/en/4.2/ref/models/fields/#filefield).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pipelines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now wrap up the training and inference pipelines. Since these pipelines
+    are quite fast, it’s acceptable to simply wrap them in a function. However, in
+    case of long running pipelines or high traffic, it’s preferable to use a task
+    manager such as [AirFlow](https://airflow.apache.org) or [Celery](https://docs.celeryq.dev/en/stable/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the training pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here’ the inference pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interaction layer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serializers, Views, and Endpoints represent the “interaction” layer of the application,
+    which is the most external one and establishes how a user will interact with the
+    app.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Serializers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Serializers are responsible to serialize and de-serialize data. Here’s an example
+    of trivial one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: To keep it brief, we’ll only discuss the non-trivial ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time-series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For time-series, we override the default create method to also download a first
+    version when we create a `TimeSeries` object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data Configuration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the data configuration, we add the link to features and targets in order
+    to later create a data configuration from a single endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Preprocessing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s add a validation step on the preprocessing configuration to check that
+    we have the expected parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: ML Configuration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Similarly, let’s check that the parameters provided for the ML configuration
+    are valid:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Views
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us now define how the user will interact with the api. We are gonna define
+    some actions to trigger the data retrieval or the ML models training. Again, this
+    is acceptable because these actions are very quick to run, and we want to keep
+    things simple at the beginning of the project (check [YAGNI](https://en.wikipedia.org/wiki/You_aren%27t_gonna_need_it)
+    if you are interested in this philosophy). However, as the project grows it might
+    become necessary to make these actions asynchronous and use a task manager.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that, to preserve versioning, we don’t allow `put` and `patch` methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Timeseries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s establish a view for time-series. We want to be able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create time-series and list them
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Get the values of the latest version
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Update values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also want to list the different versions for one timeseries, and check their
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Configurations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We want to list, add, and delete configurations. Their views are straightforward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: ML Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For ML models, we want to be able to create and list them, and to perform training
+    and inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also want to list all the versions for a specific `MLModel`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Endpoints
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, we can link the views that we just created to a set of endpoints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`timeseries` for timeseries'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`timeseries/<id>/versions` for timeseries versions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`model-config`, `data-config`, `preprocessing-config` for configuration objects'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`model` for ML models'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`model/<id>/versions` for ML model versions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This is done in the following module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we don’t have to define endpoints for data retrieval or training,
+    since these are automatically added as “extra-actions”. For instance, the endpoint
+    to train a model is `model/<id>/train`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We saw an example implementation of a forecasting system in Django. You can
+    now play around with it! To get started, follow the instructions at the beginning
+    of the article, so you can connect to `localhost:8000/gtrends` and play with the
+    app.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you finished the setup and trained a model, you should see something like
+    this (here we are predicting the term *"forecasting"*):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7b745b45f5231f07e285bda36f958c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And when you predict future values, you should see something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/682d156c586729c82d906a85f166bd52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That’s it, you can now implement variations based on your needs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a non-exhaustive list of possible improvements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement task scheduling
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Add more data sources
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Add a [backtesting](https://medium.com/towards-data-science/why-backtesting-matters-and-how-to-do-it-right-731fb9624a)
+    endpoint
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Add more preprocessing options
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Integrate [MLFlow](https://mlflow.org/) for tracking and versioning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Allow to train multiple horizons with one model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setup a proper web server (needed for production)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Enjoyed this article?* [*Checkout my other ones*](https://medium.com/@davide.burba)
+    *and follow me for more!* [*Click here*](https://medium.com/@davide.burba/membership)
+    *to read unlimited articles and support me at no additional cost for you*❤️'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,464 @@
+- en: 'Delta Lake: Keeping It Fast and Clean'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e](https://towardsdatascience.com/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Ever wondered how to improve your Delta tables’ performance? Hands-on on how
+    to keep Delta tables fast and clean.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)[![Vitor
+    Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)
+    [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----3c9d4f9e2f5e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c9d4f9e2f5e--------------------------------)
+    ·11 min read·Feb 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e8a76c0c9c9379df0e8dcc11ab6c839.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified flow chart on how to keep Delta tables fast and clean (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keeping Delta tables fast and clean is important for maintaining the efficiency
+    of data pipelines. Delta tables can grow very large over time, leading to slow
+    query performance and increased storage costs. However, there are several operations
+    and trade-offs that can positively influence the speed of the tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we’ll use the [people10m public dataset](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)
+    that is available on Databricks Community Edition, to showcase the best practices
+    on how to keep the tables fast and clean using Delta operations while explaining
+    what is happening behind the scenes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analyzing the delta log
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will start by inspecting what is inside the dataset. It is available by default
+    on Databricks and you can access it [here](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#sql).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd620f50f6840db8b87d9bbb40654d49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A small sample of the dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8aaae8e3d80dd2015369c6e8b3546ce6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files from the original Delta table
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have 16 parquet entries and a *_delta_log* folder containing all the transaction
+    logs with all the changes that stack up to create our delta table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we check the contents of the log we can see a JSON file that describes the
+    first transaction that was written when Databricks created this Delta table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb572f171ddb516f0c0a005504397dbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From analysis, we can see that this transaction includes several actions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Commit info**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`commitInfo` contains all the information regarding the commit: which operation
+    was made, by who, where, and at what time. The`operationMetrics` field shows that
+    8 files were written with a total of 1000000 records.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Protocol**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `protocol` action is used to increase the version of the Delta protocol
+    that is required to read or write a given table. This allows excluding readers/writers
+    that are on an old protocol and would miss the necessary features to correctly
+    interpret the transaction log.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Metadata**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `metadata` action contains all the table metadata. It is required on the
+    first action of a table as it contains its own definition. Subsequent modifications
+    to the table metadata will originate a new action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Add**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `add` action, as the name suggests, is used to modify the data in a table
+    by adding individual *logical files*. It contains the metadata of the respective
+    file as well as some data statistics that can be used for optimizations that we’ll
+    talk about further down the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The log contains 8 `add` entries, from part-00000 to part-00007, that were truncated
+    for simplicity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wish to learn more about Delta’s protocol please refer to: [https://github.com/delta-io/delta/blob/master/PROTOCOL.md](https://github.com/delta-io/delta/blob/master/PROTOCOL.md)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have analyzed the transaction logs and the dataset we are going
+    to copy it to our own directory so that we can modify the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53a5a868920357412976e53db9928cfb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Keeping it clean
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Vacuum
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first obvious answer is the `VACUUM`command. What this does is delete the
+    files that no longer affect our Delta table, given a configurable `delta.deletedFileRetentionDuration`
+    that defaults on 7 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After analyzing the dataset and the delta log, we found that we had 16 files,
+    all of them older than the default retention interval, but only 8 of them were
+    referenced in the log. This means that in theory if we run the command the other
+    8 files would be cleaned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63157c2d2db212e7d4d832c88ecf4b37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s check the result in the underlying filesystem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a29d8a1f870250b66783b4c0a82e97db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files after running VACUUM on default settings
+  prefs: []
+  type: TYPE_NORMAL
+- en: Surprisingly, the files were not cleaned up. What happened?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Something that I found surprising is that the timestamps that are internally
+    used by `VACUUM` are not the ones referenced in the transaction log files in the
+    `add` action but rather the `modificationTime` of the files. The reason for that
+    is to avoid reading a huge number of JSON files to find what files should be selected
+    for deletion. With that said, make sure to keep `modificationTime` intact when
+    copying/migrating Delta tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given that we just copied the entire dataset, the `modificationTime` is as
+    of now and it won’t be selected for removal, at least until 7 days have passed.
+    If we try to do so we’ll get the following warning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c5678da7c6dbeefb2c60ab111b2f1ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For testing purposes, we are setting `delta.retentionDurationCheck.enable=false`
+    so that we can demonstrate the command in action but it’s something that should
+    be used with caution as it risks corrupting the table if any other active reader
+    or writer depends on the data that is being deleted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/888c6472f82fca3c452a356d20f20d62.png)![](../Images/4b991aabb85542c484455842d0e4aad2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files after VACUUM
+  prefs: []
+  type: TYPE_NORMAL
+- en: Voilá, everything looks cleaner now. What about the transaction log? There are
+    4 new JSON files, each representing a new transaction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every time a `VACUUM` is requested, two new commits are generated in the transaction
+    log, containing `VACUUM START` and`VACUUM END` operations, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first one did not affect any files, hence the `numFilesToDelete` is 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The second one marked 8 files for deletion hence `numFilesToDelete` is 8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In sum, `VACUUM`jobs are a must for storage cost reduction. However, we need
+    to make sure to schedule them regularly (they don’t affect any running jobs),
+    as they are not scheduled by default. In addition to this, we need to make sure
+    to tweak the retention value for as long as we’d want to time travel and have
+    the `modificationTime` in mind when migrating Delta tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimize
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next command we need to be aware of is `OPTIMIZE`. What this does is compact
+    small files into larger ones, while keeping all the data intact and delta statistics
+    re-calculated. It can greatly improve query performance, especially if the data
+    is written using a Streaming job, where, depending on the trigger interval, a
+    lot of small files can be generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The target file size can be changed by tweaking `delta.targetFileSize`. Have
+    in mind that setting this value does not guarantee that all the files will end
+    up with the specified size. The operation will make a best-effort attempt to be
+    true to the target size but it heavily depends on the amount of data we’re processing
+    as well as the parallelism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, we’ll set it to 80MB, since the dataset is much smaller than
+    the default size which is 1GB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc3160e8420262e96ec126dbdfe01231.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s analyze the transaction log commit after what happened after we run the
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: A total of 8 files were removed, and 3 were added. Our new target file size
+    is 80MB so all of our files were compacted into three new ones. As the commit
+    info shows, the log also contains 8 `remove` actions and three `add` actions that
+    were omitted for simplicity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cba56d1217a364f759eddf3dbd1753f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You might be wondering if the `OPTIMIZE` command really did something useful
+    in this specific dataset so let’s try and run a simple query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88ad4892f29d784d46df460a8c65212f.png)![](../Images/9d595ba26828b402703d9780dcc22002.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With `OPTIMIZE` we have improved the scan time since we read fewer files. Nevertheless,
+    we are still reading the whole dataset while trying to find salaries that are
+    greater than 80000\. We will tackle this issue in the next section of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In sum, one should schedule `OPTIMIZE` jobs regularly since query reads can
+    heavily benefit from having fewer files to read. Databricks recommends running
+    it daily but it really depends on the frequency of the updates. Have in mind that
+    `OPTIMIZE` can take some time and will increase processing costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z-Order Optimize
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Z-Ordering](https://en.wikipedia.org/wiki/Z-order_curve) is a technique that
+    is used to colocate related information in the same set of files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When files are written to a Delta table, min, max, and count statistics are
+    automatically added in a `stats` field on the [add action](#52fa) as we’ve seen
+    before. These statistics are used for data-skippingwhen querying the table. Data-skipping
+    is an optimization that aims to optimize queries containing `WHERE` clauses. By
+    default, the first 32 columns of the dataset have their statistics collected.
+    It can be changed by tweaking `delta.dataSkippingNumIndexedCols` to the desired
+    number. Have in mind that this can affect write performance, especially for long
+    strings for which it is advised to move them to the end of the schema and set
+    the property to a number lower than its index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the `OPTIMIZE` example, we’ve seen that even though we have these statistics
+    collected we can’t really make use of them and still end up reading all the files.
+    That’s because we don’t have any explicit ordering and the salaries are basically
+    randomized between all files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By adding a `ZORDER-BY` column with `OPTIMIZE` we can easily solve this issue:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ec385374ca841d731734baafb3d8e29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s analyze the transaction log:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are some differences between both `OPTIMIZE` commands. The first we can
+    notice is that, as expected, we now have a `zOrderBy` column in `operationParameters`.
+    Moreover, even though we have specified the same target file size, the `OPTIMIZE`
+    resulted in 2 files instead of 3, due to the statistics of our column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is the `add` action for the first file. The stats show that this file
+    contains all the records that have salaries between -26884 and 73676\. With that
+    said, our query should skip this file entirely since the salary value falls out
+    of the range of our `WHERE` clause.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: By running the query again after Z-Ordering the files, we can see that only
+    one file was read and the other one was pruned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e508ddb5dd29fccfccd7c264687bbdf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Even though Z-Ordering for data-skipping looks to be a game changer, it must
+    be used correctly in order to be efficient. Below we’ll list some key considerations
+    that we must have when using Z-Ordering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z-Ordering is only suited for columns with high cardinality, if it has a low
+    cardinality we cannot benefit from data-skipping.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can specify multiple columns on Z-Order but the effectiveness of its data-skipping
+    decreases with each extra column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make sure to Z-Order only on columns for which statistics are available. Have
+    in mind the index of the columns and that only the first 32 columns are analyzed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Partitioning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another technique that can be used is physical partitioning. While Z-ordering
+    groups data with similar values under the same file, partitioning groups data
+    files under the same folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contrary to Z-Ordering, partitioning works best with low-cardinality columns.
+    If we choose otherwise, we may end up with possibly infinite partitions and end
+    up with a lot of small files which in the end results in performance issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll be using gender as our partition column since it is the only one with
+    low cardinality present in this dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5612e507c6002be0abd530bd1815f3d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By doing this we end up with two folders, one for each gender. This type of
+    segregation is rather useful for columns that have low cardinality, and are very
+    often used in `WHERE` clauses in large tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9482eb38d0eed8e649215f6f2d08560.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s suppose we now want to be able to extract insights based on gender and
+    salary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3408e973c1f207ea1e1e4096fd319700.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`OPTIMIZE` can be paired with a partition column if we only want to optimize
+    a subset of the data. Below we’ll analyze data-skipping with and without partitioning
+    in Z-Ordered tables to show how can we take advantage of both approaches. We’ve
+    decreased the target file size to showcase the differences now that our data is
+    split by gender under different files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c928a39d5138e7f8db88e3c20ffbd6d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As shown above, without partitioning we have to read two files to get our results.
+    We were able to skip 3 files by having it Z-Ordered by salary but had to fully
+    read them to extract the request gender. With partitioning, we were able to skip
+    a full partition, which filtered the gender basically for free, and 3 files due
+    to the Z-Ordering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, there are benefits to using both approaches simultaneously but
+    it needs to be thoroughly thought through as it might only make a significant
+    difference for very large tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In conclusion, keeping Delta tables clean is crucial for maintaining the performance
+    and efficiency of data pipelines. Vacuuming and optimizing Delta tables can help
+    reclaim storage space and improve query execution times. Understanding the small
+    details of each operation is very important to proper fine-tuning which could
+    otherwise lead to unnecessary storage and processing costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://docs.databricks.com/delta/vacuum.html](https://docs.databricks.com/delta/vacuum.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.databricks.com/delta/optimize.html](https://docs.databricks.com/delta/optimize.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.databricks.com/delta/data-skipping.html](https://docs.databricks.com/delta/data-skipping.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.databricks.com/tables/partitions.html](https://docs.databricks.com/tables/partitions.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.databricks.com/delta/best-practices.html](https://docs.databricks.com/delta/best-practices.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.databricks.com/blog/2018/07/31/processing-petabytes-of-data-in-seconds-with-databricks-delta.html](https://www.databricks.com/blog/2018/07/31/processing-petabytes-of-data-in-seconds-with-databricks-delta.html)'
+  prefs: []
+  type: TYPE_NORMAL

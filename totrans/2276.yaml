@@ -1,0 +1,541 @@
+- en: Using Python to Solve One of the Most Common Problems in Engineering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-python-to-solve-one-of-the-most-common-problems-in-engineering-c7f2a2d46091](https://towardsdatascience.com/using-python-to-solve-one-of-the-most-common-problems-in-engineering-c7f2a2d46091)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Creating a generic framework for operating point analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nhemenway2013?source=post_page-----c7f2a2d46091--------------------------------)[![Nick
+    Hemenway](../Images/a38cade9fe4f81c7e43e5d3155a21d78.png)](https://medium.com/@nhemenway2013?source=post_page-----c7f2a2d46091--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c7f2a2d46091--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c7f2a2d46091--------------------------------)
+    [Nick Hemenway](https://medium.com/@nhemenway2013?source=post_page-----c7f2a2d46091--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c7f2a2d46091--------------------------------)
+    ·17 min read·Jan 2, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d75a1ef4baf1f261a7f26902bc2698be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [SpaceX](https://unsplash.com/@spacex?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Certain classes of problems come up frequently in engineering. The focus of
+    this article is on a specific type of problem that comes up so often in my daily
+    work that I figured I‘d share how I go about solving it using Python. What type
+    of problem are we talking about? The problem of solving the operating point of
+    a system! Let’s illustrate what I mean with a simple example before diving into
+    something a little more complex with code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to solve the operating point of the simple circuit shown below.
+    This can be done by rearranging Ohm’s law (V=IR) to isolate the current in terms
+    of the known input voltage and resistance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9af806798a24dee231c112156b56d79a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Simple, right? Unfortunately, most real world problems are never this easy.
+    For example, what if I told you that as the resistor heats up, it’s resistance
+    value changes, essentially making the resistance a function of current. We end
+    up with an equation of the following form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0df52b1f9cd0fe498ed7e024c63941e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Without knowing the actual functional form of the resistance, we can’t just
+    solve for current by isolating it algebraically. Furthermore, what if the equation
+    is complicated and it’s not possible to isolate the current by itself? Or, perhaps
+    the resistance is given in terms of current as tabulated discrete data — then
+    we wouldn’t even have an algebraic expression to manipulate to try to solve for
+    current. How would we go about determining the current in the circuit then? We
+    need a more general approach to solving this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The general solution to a problem like this is to pose it as a root finding
+    problem. This is actually incredibly easy to do — we literally just have to subtract
+    the right hand side of the equation from the left hand side, such that we get
+    an equation that equals zero. Doing so yields the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b510e285462032f9308a2c4e2d02b277.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By doing this, we’ve re-posed our problem. Instead of solving for the current
+    directly in terms of all other variables, we can try to find the value of current
+    that can be input into the left hand side of the equation to make it evaluate
+    to zero. Why do we formulate the problem like this? Because there are a ton of
+    numerical algorithms that exist (bisection method, Newton’s method, etc.) to solve
+    this exact kind of problem! And most of the algorithms don’t care how complicated
+    the left hand side of the equation is — it doesn’t even have to have a closed
+    algebraic form (i.e. it could be composed of interpolated discrete data, numerically
+    evaluated integrals, or literally any type of function of arbitrary complexity
+    to evaluate). As long as we can pose our problem in the form of f(x)=0, we can
+    (almost) always find a solution to the problem (and the code can be modified/extended
+    easily if the problem statement changes — no need to re-do algebra).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rest of this article is going to walk through an example of how to apply
+    the root finding methodology to a slightly more complicated, real-world problem,
+    with emphasis on sound code structuring and organization techniques in Python.
+    Although the problem (determining the flow rate of water in a pipe/pump system)
+    is somewhat domain specific, the methodology and coding techniques that are used
+    are completely general, and applicable to all engineering domains. With this in
+    mind, I will try to keep the physical modeling aspects of the problem to a high
+    level, such that regardless of ones technical background, the primary learning
+    objectives of the article still come through clearly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a side note, my domain “specialty” these days lies in the realm of motor
+    controls and power electronics, and I am very far removed from pumping/piping
+    applications. I haven’t touched on the subject in years, but thought it would
+    make for an interesting example of the topic at hand. I’m sure there are plenty
+    of individuals out there that are much more qualified to speak on the specifics
+    of pump/pipe modeling than myself, but my intent with this article is on the methodology
+    — not on how to solve pipe/pump problems. Regardless, I openly welcome comments
+    or suggestions for improvement from those that are more knowledgeable of the field!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We would like to transfer water from one tank to another. We already have a
+    pump and some piping that can be used to connect the two tanks and want to get
+    an estimate of how long it will take to transfer all of the water. The volume
+    of each tank is known, so if we can estimate the flow rate of water between the
+    tanks, we can estimate how long the transfer process will take. The full apparatus
+    is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27009c554091bbd90c34d1c853994ca4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This specific problem (which can be classified as an “internal flow” problem)
+    is very well understood within the field of mechanical engineering. For those
+    less familiar though, or in need of a quick review, the way we typically go about
+    solving these problems is with the Bernoulli equation (shown below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c24dd9bd76bcf8bdbfda7e94f87018f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Bernoulli equation is essentially an energy conservation statement that
+    tells us how the energy of a fluid particle is transformed between different energy
+    mechanisms as the fluid traverses along a streamline (the flow path that an imaginary
+    particle would follow if dropped in the fluid). The left hand side of the equation
+    represents the total per-weight energy of a fluid particle at any arbitrary first
+    location (location 1) within the fluid, and is the sum of a gravitational potential
+    term, kinetic term, and pressure term. As the fluid traverses the system, energy
+    must be conserved, and thus the total energy at any arbitrary second point (location
+    2) along the streamline (represented by the right hand side of the equation) must
+    be equal to the total energy at location 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above form of the Bernoulli equation is known as the “head” form of the
+    equation because each term has units of length/height. This is convenient for
+    our intuition because we’re essentially equating the energy of each term to the
+    equivalent gravitational potential energy of a column of fluid with a height of
+    the given head. One major limitation of the Bernoulli equation, however, is that
+    it assumes there are no losses in the system (which isn’t a great assumption).
+    To overcome this limitation, we can supplement the equation with two additional
+    terms as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41ae0ad7bf17975a23214206101e728c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Hp(Q) and Hl(Q) terms represent the head added to the system by a pump,
+    and the head lost in the system from real world effects (like friction, viscosity,
+    etc.) respectively. Note that both terms are functions of the system’s fluid flow
+    rate, Q. (As an interesting consequence of the above paragraph describing the
+    interpretation of head, the head of pump tells you how high a pump could theoretically
+    push a fluid). We’ll examine the pump and loss terms more thoroughly in a bit,
+    but before we do, let’s simplify the above equation for our specific problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the system above again, we will conveniently choose our two locations
+    for the Bernoulli equation, such that most of the terms cancel. We can do this
+    by choosing locations 1 and 2 to be at the free surface of the water of each tank
+    respectively, where the pressure is constant and equal to atmospheric pressure
+    (P1=P2), and the velocity is approximately constant and zero (V1=V2=0). We will
+    also assume that the height of the water in the two tanks is the same at the instant
+    we’re analyzing the system such that Z1=Z2\. After simplifying the algebra, we
+    see that nearly all of the terms cancel, and we’re left with the fact that the
+    head produced by the pump must equal the head lost in the system due to non-idealities.
+    Stated another way, the pump is making up for any energy losses in the system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/274c4fbfcf935612ce6776f916492c5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This situation can be seen qualitatively in the figure below. The head produced
+    by a pump decreases with increasing flow rate, whereas, the losses in a piping
+    system increase with increasing flow rate. The point where the two curves intersect
+    (pump head = head loss) determines the operating point (flow rate) of the system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0533f351d755dc0815b5ca05c269660.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last step before we can jump into code is to pose the problem as a root
+    finding problem. Subtracting the right hand side of the equation from the left
+    hand side, we obtain the root solving problem that we are looking for. That is,
+    we’ve posed our problem as follows: find the flow rate (Q) such that the left
+    hand side of the equation below equals zero. At this point, the pump head will
+    equal the system head losses.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d07b5fd39fe13268eed036d6f659036.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To avoid losing the big picture of what we’re doing, I’m not going to explain
+    every little detail of the code (I’m assuming you have a reasonable background
+    in Python already). Instead, I’m going to focus my efforts on ensuring the narrative
+    and structuring of the code is clear, and go into more detail as needed. As always,
+    feel free to ask any questions if something isn’t clear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will begin by importing all of the necessary modules. It will become apparent
+    how each of the modules is used later on, but it’s worth noting that the key import
+    statements are the ones from scipy. These are the functions that are specific
+    to the problem at hand. The code block also set’s some default plotting settings
+    (to personal taste), creates a folder to save the generated figures in, and defines
+    some unit conversion constants that make our life easier later in the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we will make a Python `dataclass` that essentially acts as a container
+    for storing fluid properties (density, viscosity, and gravity). By default the
+    properties are set to those of water. Note that although not completely necessary,
+    Python data classes are incredibly convenient. If they’re new to you, I highly
+    recommend you check out this [video](https://www.youtube.com/watch?v=vRVVyl9uaZc&t=291s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pipe Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is to model the head losses of the pipe (the Hl(Q) term in the
+    extended Bernoulli equation above). This is typically done using the Darcy-Weisbach
+    equation shown below, where f is a friction factor (more on this shortly), v is
+    the flow velocity, g is gravity, and L and D are the pipe length and diameter
+    respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/89e1ea2369b0e7893d16a72cf8761dea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unfortunately, the friction factor (f) isn’t constant, but also depends on the
+    flow velocity, fluid properties, and pipe dimensions. Various models exist to
+    compute f, but we will use Haaland’s equation, shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02a80f989484d3b403a11fa317ab663d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this equation, epsilon is the surface roughness of the pipe (which can be
+    found in engineering textbook tables), and Re is the famous Reynolds number, computed
+    as per below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e793e41a43826f779d2ea8bd18f6e6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Lastly, we can note that the swept volume per unit time, or volumetric flow
+    rate (Q) equals the cross-sectional area (A) of the pipe times the flow velocity
+    (v). Thus, given a flow rate in the pipe, we can compute the corresponding flow
+    velocity in the pipe as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e5bac6a58bd0eb4d969535a4ea578b6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hopefully all of these equations aren’t detracting from the bigger picture—
+    we’re just looking at one particular model of computing head loss in a pipe. Given
+    a flow rate and pipe dimensions, first compute the corresponding flow velocity,
+    then plug through the equations above to compute the pipe’s head loss. This is
+    exactly what the `Pipe` class (shown below) implements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initialization method stores the pipes dimensions (all assumed to be in
+    meters) and fluid properties. The `A` method computes the cross-sectional area
+    of the pipe (for those unfamiliar with the`@property` decorator, this [article](https://realpython.com/python-property/)
+    explains it very well). The `Q_to_v` method converts the flow rate in gallons
+    per minute (gpm) to a flow velocity in m/s. The `friction_factor` method evaluates
+    Haaland’s equation as described above, and the `head_loss` and `head_loss_feet`
+    evaluate the pipe’s head loss in meters and feet respectively (using the Darcy-Weisbach
+    equation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see the pipe class in action. First, we can create a `Fluid` object for
+    water and a `Pipe` object that’s 100 feet long and 1.25 inches in diameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we’ll plot the head loss curve as a function of the flow rate in gpm. Isn’t
+    it incredible how clean and easy the code below becomes when we exploit object
+    oriented programming?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/83f4cc753e0ca6662be9a3c2f34516ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pump Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ve got a working model of the pipe head losses — now we need a model of
+    the head produced by a pump, Hp(Q). I’m sure there are analytic models that can
+    be used to determine a pumps behavior, but we will assume that we already have
+    a specific pump — namely the following random, fractional horspower pump that
+    I found [online](https://www.grainger.com/product/DAYTON-Plug-In-Utility-Pump-110V-3YU55):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most pumps will have a data sheet that includes a corresponding pump curve that
+    characterizes the pumps behavior. For our pump, we get the pump curve below (note
+    that for copyright reasons, this is a recreation of the figure provided by the
+    manufacturer — the original can be found [here](https://www.grainger.com/ec/pdf/Dayton-3YU55-Utility-Pump-Technical-Data-Sheet.pdf)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57f3ba29fe7c636fc6ac3f85a77300f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point we have an image depicting the pumps behavior, but not a mathematical
+    model that can actually be used to determine how it will perform in the system.
+    This issue comes up all the time, and the way I get around it is to 1) digitize
+    the data, and then 2) wrap the discrete data with an interpolation scheme to produce
+    a continous function. Let me illustrate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1) There are many tools that exist to digitize image data — my personal
+    favorite is the free online utilitiy [WebPlotDigitizer](https://apps.automeris.io/wpd/).
+    You load in the plot image of interest, align the axes, and then extract the desired
+    data curves (either manually, or with the automatic extraction tool). The data
+    can then be exported to a .csv file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e85c75f1a10302d75f71a0db519ea9d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2) Now that we’ve got digitized data, we just need to wrap it with some
+    sort of interpolator — this is exactly what the `Pipe` class does below. The initialization
+    method takes in the .csv file name, stores the file name, loads the data into
+    a pandas DataFrame, storing it in a `data` attribute, and then passes the data
+    to the `interp1d` function from scipy. The `interp1d` function then generates
+    a new function that, by default, uses linear interpolation to turn the discrete
+    datapoints into a continous function (full documentation for `interp1d` function
+    can be found [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html)).
+    The newly generated interpolation function is then stored in a `_interp` attribute
+    for later access. The `Pipe` class also contains a `bounds` method that returns
+    a list containing the min/max values of flow rate in the pump curve data (this
+    will be used in the root finding algorithm), and a `head_gain_feet` method that
+    takes in the flow rate in gpm, and calls the underlying interpolation function
+    that was generated by `interp1d`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can create a `Pump` object and look at the raw data that we’ve read in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/436e2c4121a17ee77b20bc9071e6db46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also plot the pump curve data with the pipe loss curve to visually see
+    where the system will operate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bf466f86dab858f9d2141cc89a4b4f39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: System Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We finally have the infrastructure in place to solve the operating point of
+    the pump/pipe system. The last step is to create a `System` class that takes in
+    a `Pipe` and `Pump` object and performs the root solving operation. As can be
+    seen in the code below, the `System` class takes in and stores a `Pipe` and `Pump`
+    object. It then uses the two objects to create a `residual` method that computes
+    the difference between the pump head and pipe head loss. This `residual` method
+    is then used in the`get_operating_point` method to actually solve the operating
+    point of the system. The method wraps the `root_scalar` function from scipy, which
+    acts as an interface for various root solving algorithms. We will let the `root_scalar`
+    function choose whichever algorithm it sees best fit, but to help it, we will
+    specify a bracketing interval that we know the root lies between. In our case,
+    this bracketing interval is the upper and lower flow-rate bounds of the pump curve
+    data. Full documentation on the `root_scalar` function can be found [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root_scalar.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pro tip: the process of injecting the `Pipe` and `Pump` objects into the `System`
+    class (as opposed to having the system class create a `Pipe` and `Pump` object
+    at instantiation) is called “dependency injection”. This is typically considered
+    a good coding practice as it makes code more modular, extensible, and easier to
+    debug/test.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s create a `System` and run the `get_operating_point` method to observe
+    the fruits of our labor. As can be seen by the code output, the `get_operating
+    point` method simply passes out the output of the `root_scalar` function, which
+    is a `RootResults` object. This object is essentially just a container that stores
+    various attributes, the most important of which, is the `root` attribute as it
+    contains the solution to our problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/db0e1e4adcaf24ce163a49d3b810e660.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can plot the same pump and head loss curves again, this time adding in a
+    vertical line at the computed steady-state operating point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/88d7d26649d0c5599ff4481690fd2dc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Voila! We’ve programmatically determined the operating point of our system.
+    And because we’ve done it using a somewhat generic coding framework, we can easily
+    try the same analysis using different pumps or piping! We could even extend our
+    code to include multiple pumps, or various pipe fittings/pipe branches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Design Exploration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As a final little example, highlighting the benefits of setting up the code
+    the way we did, we will perform a design exploration. Using the same pump, we
+    would like to understand the impacts that pipe length has on the volumetric flow
+    rate in the system. To do this, we simply loop over an array of pipe lengths (ranging
+    from 100 to 1000 feet), update the length attribute of the `Pipe` object stored
+    in the `System`, and then re-compute the operating point of the system, appending
+    the result to a list. Finally we plot water flow rate as a function of pipe length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/37f2e3dde6fce8c12d52894420bd3224.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a few lines of code, we were able to extract meaningful insight into the
+    behavior of our system. If this was a design problem, these insights could drive
+    key design choices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This article, although focused strongly on a domain specific example problem,
+    highlights a few aspects of a work flow that I end up using a lot. The problem
+    of operating point analysis comes up constantly in engineering and science, and
+    although there are many ways to approach the issue, some methods are more robust,
+    extensible, and flexible than others. The methodology (problem formulation and
+    code structuring principles) used in this article have served me incredibly well,
+    and I hope that others are inspired to adopt a similar work flow!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to leave any comments or questions you may have or connect with me
+    on Linkedin — I’d be more than happy to clarify any points of uncertainty. Finally,
+    I encourage you to play around with the code yourself (or even use it as a starting
+    template for your own workflows ) — the Jupyter Notebook for this article can
+    be found on my [Github](https://github.com/Nick-Hemenway/medium_most_common_problem).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nicholas Hemenway
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '***If you enjoyed this, please f***[***ollow me on Medium***](/@nhemenway2013)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Consider subscribing to*** [***email updates***](/subscribe/@nhemenway2013)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Interested in collaborating? Let’s*** [***connect on LinkedIn***](https://www.linkedin.com/in/nicholas-hemenway/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

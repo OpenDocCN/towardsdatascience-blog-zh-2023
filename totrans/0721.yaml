@@ -1,0 +1,249 @@
+- en: Interacting with sklearn machine learning models in Power BI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-sklearn-models-in-power-bi-d982f2d21ec](https://towardsdatascience.com/deploying-sklearn-models-in-power-bi-d982f2d21ec)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/74ee0509e142ebc1ab282778e7d62b1f.png)[](https://newmarrk.medium.com/?source=post_page-----d982f2d21ec--------------------------------)[![Mark
+    Graus](../Images/5b8c4d77254d891b9fb0a3e96616525a.png)](https://newmarrk.medium.com/?source=post_page-----d982f2d21ec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d982f2d21ec--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d982f2d21ec--------------------------------)
+    [Mark Graus](https://newmarrk.medium.com/?source=post_page-----d982f2d21ec--------------------------------)'
+  prefs: []
+  type: TYPE_IMG
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d982f2d21ec--------------------------------)
+    ·9 min read·May 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some cases we want to have a supervised learning model to play around with.
+    While any data scientist can quite easily build an SKLearn model and play around
+    with it in a Jupyter notebook, when you want to have other stakeholders interact
+    with your model you will have to create a bit of a front-end. This can be done
+    in a simple Flask webapp, providing a web interface for people to feed data into
+    an sklearn model or pipeline to see the predicted output. This post however will
+    focus on how to use Python visuals in Power BI to interact with a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The post will consist of two main parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the SKLearn Model / Building a Pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building the Power BI Interface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The code is really straightforward and you can copypaste whatever you need from
+    this post, but it is also available on [my Github](https://github.com/marrk/sklearn-in-powerbi).
+    To use it, you have to do two things. Run the code in the Python Notebook to serialize
+    the pipeline and alter the path to that pipeline in the Power BI file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Building the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this example we’ll use the Titanic dataset and build a simple predictive
+    model. The model will be a classification model, using one categorical (‘sex’)
+    and one numeric feature (‘age’) as predictors. To demonstrate the approach we
+    will use the RandomForestClassifier as the classification model. This is because
+    a Random Forest Classifier is a bit harder to implement in Power BI than for example
+    a logistic regression that could be coded in MQuery or DAX. In addition, since
+    this post is not aimed at really building the best model, I am relying on [parts
+    of the scikit-learn documentation](https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html)
+    quite a bit and I will not be looking at performance that much.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code we create does a couple of things. First of all, it loads and preprocesses
+    the Titanic dataset. As mentioned before, we’re only using the ‘sex’ and the ‘age’
+    features, but those still need to be processed. The categorical variable ‘sex’
+    has to be transformed into Dummy Variables or has to be One Hot Encoded (i.e.
+    the one column has to be recoded into a set of columns) for any sklearn model
+    to be able to handle it. For the numerical feature ‘age’ we do a standard MinMaxScaling,
+    as it goes from about 0 to 80, while ‘sex’ goes from 0 to 1\. Once all of that
+    is done, we drop all observations with missing values, do a Train/Test split and
+    build and serialize the pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code above creates a model that scores not really good, but good enough
+    for the purpose of this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: What will help us later, is to check how the model predicts. To do that we create
+    a DataFrame with the Cartesian product age and sex (i.e. all possible ‘age’/’sex’
+    combinations). We use that DataFrame to calculate predictions from the pipeline
+    and we subsequently plot these predictions as a heatmap. The code to do that looks
+    as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The corresponding heatmap looks as follows and shows that for example for females
+    from 13–33 years old, the prediction is survival (1). While a female aged exactly
+    37 is predicted not to survive. For males, the predictions are mostly no survival,
+    except for age 12 and some younger ages. This information will be useful when
+    debugging the Power BI report.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1969e9889223308f30114cde2797f8b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A heatplot showing the model predictions for different combinations of age (vertical)
+    and sex (horizontal). White squares are predictions corresponding to survival,
+    black squares correspond to deceased. In general we see that female passengers
+    have a higher predicted probability to survive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that this is done, we can serialize the model to start embedding it into
+    a Power BI report.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Power BI Interface
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Creating the Power BI Interface consists of two steps. The first step is that
+    of creating the controls to feed data into the model. The second is that of creating
+    the visualization that takes the inputs from the controls, feeds it into the model
+    and shows the prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2a. Controls
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A couple of concepts are important to be aware of when using Power BI. First
+    of all, there are Parameters, or variables that contain values in Power BI. These
+    Parameters can be controlled through slicers and the values they contain can be
+    accessed through visualization elements in Power BI, which in our case will be
+    a Python visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1df10f92c784c496eb8de21f9fdf32ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Process for Adding the Age Slicer
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the parameters it is essential that we keep the same structure and values
+    as the data that went into the pipeline. In our case we thus need one control
+    for age (a numeric variable ranging from 0 to 80) and one control for sex (a categorical
+    variable with the two values ‘male’ and ‘female’). Creating the parameter and
+    slicer for ‘age’ is quite straightforward. In the ribbon section ‘Modeling’ we
+    use the button ‘New Parameter’ and in the drop down we select the option select
+    ‘Numeric Value’ and specify the values that we want to be able to enter. We ensure
+    that the checkbox for ‘Add Slicer’ is checked and voila, the first control and
+    the corresponding Parameter are available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For ‘sex’ this is sadly a bit more tedious. It requires first of all creating
+    a table with all possible values for the variable. The most elegant way to do
+    this is through DAX. This is done by clicking on the ‘New Table’ button in the
+    ‘Modeling’ section of the Ribbon and entering the text below. This query creates
+    a new Table, with the name ‘SexValues’ containing one String column named ‘Sex
+    Values’ with values ‘male’ and ‘female’. These will be used to create the parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b6652dd8f3680bba4f89dc082b0ed5dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating the new parameter is done by using the Option ‘Fields’ in the dropdown
+    menu behind the button ‘New Parameter’ in the ‘Modeling’ section of the Ribbon.
+    In the configuration for this Parameter we select the field ‘Sex Values’ from
+    the Table that we made (SexValues). Make sure that you have “add slicer” turned
+    on in the dialog. Once you press ok, the slicer is added to your Power BI report,
+    but it requires some additional setup. Select the slicer, and use the part in
+    the interface with the properties of the visual. At the drop down that indicates
+    field, click on the arrow pointing down and select ‘Show values of selected field’.
+    After that is done, all controls are ready, all parameters are configured and
+    we can start start feeding into the Python visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2b. Creating the Visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/93b6cce8cbb732a29c8a2f590b6fafcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now that all the data is there it is time to create the Python Visual itself.
+    To do this, create a Python visual. Use the ‘Py’ button to create the visual and
+    select the values of the Parameters (‘Sex’ and ‘Age Value’) as input. For the
+    Python visual the information from the parameters becomes available as a pandas.DataFrame,
+    with a single row and the names of the parameters (‘Age Value’ and ‘Sex Values’)
+    as column names. The code goes through a number of steps to use that information.
+    Firstly, we import all the required libraries, in our case joblib, the relevant
+    sklearn libraries, pandas and matplotlib for the visualization. Once that is done,
+    the serialized Pipeline is loaded, the Parameter dataset is altered to correspond
+    to the dataset that was used to train the model. After this, the pipeline is used
+    to predict the survival from the Parameter values and the prediction, together
+    with the parameter values is printed in a matplotlib visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once everything is done, you can move the elements around a bit and make it
+    look nicer, or if you have the time you would alter the entire design of the report
+    as well as the Python visual. But tadaaa, if you now play around with the slicers
+    you can see the predictions being updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e73367bac1d1ea76fe62997ff74ba06b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To see that the model is doing what we would expect, we can check the values
+    we remember from right after building the model to check if the Power BI visual
+    indeed corresponds to what we would expect from the data. And indeed, submitting
+    the values we found before, shows that the prediction of the survival changes
+    as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4912a5d6a8dc5d06d365786f6f94286d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predictions from the Model in Power BI
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is quite a simple, artificial use case, with the purpose of building an
+    sklearn model and interacting with that model in Power BI. For this use case that
+    was a bit of an overkill, as it would have been easier, faster and more flexible
+    to just precalculate all predictions for all combinations of age and sex and load
+    those into Power BI. That approach sadly only works for a limited number of features,
+    whereas the approach described here in principle can be extended to models with
+    larger numbers of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One negative aspect of this approach is that the performance of this interface
+    is quite low, presumably because for every change of parameter values, the entire
+    pipeline has to be deserialized, loaded and predicted again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I‘m very interested in finding out if this approach is useful for anyone. What
+    use cases do you see? If you have any questions, ideas or suggestions, I’m more
+    than happy to listen and think along!
+  prefs: []
+  type: TYPE_NORMAL

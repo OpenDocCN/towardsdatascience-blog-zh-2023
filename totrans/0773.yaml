@@ -1,0 +1,386 @@
+- en: Dynamically Rewired Delayed Message Passing GNNs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2](https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Delayed Message Passing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Message-passing graph neural networks (MPNNs) tend to suffer from the phenomenon
+    of *over-squashing,* causing performance deterioration for tasks relying on long-range
+    interactions. This can be largely attributed to message passing only occurring
+    *locally*, over a node’s immediate neighbours. Traditional static graph rewiring
+    techniques typically attempt to counter this effect by allowing distant nodes
+    to communicate instantly (and in the extreme case of Transformers, by making all
+    nodes accessible at every layer). However, this incurs a computational price and
+    comes at the expense of breaking the inductive bias provided by the input graph
+    structure. In this post, we describe two novel mechanisms to overcome over-squashing
+    while offsetting the side effects of static rewiring approaches: *dynamic rewiring*
+    and *delayed* message passing. These techniques can be incorporated into any MPNN
+    and lead to better performance than graph Transformers on long-range tasks.'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)
+    ·9 min read·Jun 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8144f73a5808c0a411b10b828b6ec09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image: based on Shutterstock.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with Francesco Di Giovanni and Ben Gutteridge and
+    is based on the paper by B. Gutteridge et al., DRew:* [*Dynamically rewired message
+    passing with delay*](https://arxiv.org/pdf/2305.08018.pdf) *(2023), ICML.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classical message-passing graph neural networks (MPNNs) operate by aggregating
+    information from 1-hop neighbours of every node. Consequently, learning tasks
+    requiring *long-range interactions* (i.e., there exists a node *v* whose representation
+    needs to account for the information contained in some node *u* at shortest-walk
+    (geodesic) distance *d*(*u*,*v*) = *r* > 1) require deep MPNNs with multiple message-passing
+    layers. If the graph structure is such that the receptive field expands exponentially
+    fast with the hop distance [1], one may need to “squeeze” too many messages into
+    a fixed node feature vector — a phenomenon known as *over-squashing* [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69c830c6c70d0657852dd68b8b8e2d8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Over-squashing**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our previous works [3–4], we formalised over-squashing as the *lack of sensitivity*
+    of the MPNN output at a node *u* to the input at an *r*-distant node. This can
+    be quantified by a bound on the partial derivative (*Jacobian*) of the form
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|∂**x***ᵤ*⁽*ʳ*⁾/∂**x***ᵥ*⁽⁰⁾| < *c* (**A***ʳ*)*ᵤᵥ.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here *c* is a constant dependent on the MPNN architecture (e.g., Lipschitz regularity
+    of the activation function, depth, etc.) and **A** is the normalised adjacency
+    matrix of the graph. Over-squashing occurs when the entries of **A***ʳ* decay
+    exponentially fast with distance *r*. In fact, it is now known that over-squashing
+    is more generally a phenomenon that can be related to local structure of the graph
+    (such as negative curvature [3]), or its global structure beyond the shortest-walk
+    distance (e.g., commute time or effective resistance [4, 5]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The powers **A***ʳ* in the above expression reflect the fact that the communication
+    between *nodes u and v at distance r* in an MPNN is a sequence of interactions
+    between adjacent nodes comprising different paths that connect *u* and *v*. As
+    a result, the nodes *u* and *v* exchange information only from *r*th layer onwards,
+    and with *latency* equal to their distance *r*. Over-squashing is caused by this
+    information being “diluted” through repeated message passing over intermediate
+    nodes along these paths.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Graph rewiring**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The issue of over-squashing can be addressed by partially decoupling the input
+    graph structure from the one used as support for computing messages, a procedure
+    known as *graph rewiring* [6]. Typically, rewiring is performed as a pre-processing
+    step in which the input graph *G* is replaced with some other graph *G’* that
+    is “friendlier” for message-passing, according to some spatial or spectral connectivity
+    measure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simplest way to achieve this amounts to connecting all nodes within a certain
+    distance, thus allowing them to exchange information *directly*. This is the idea
+    behind the multi-hop message passing scheme [7]. Graph Transformers [8] take this
+    to the extreme, connecting *all* pairs of nodes through an attention-weighted
+    edge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way, the information is no longer “mixed” with that of other nodes along
+    the way and over-squashing can be avoided. However, such a rewiring makes the
+    graph much denser from the first layer, increasing the computational footprint
+    and partly compromising the inductive bias afforded by the input graph, since
+    both local and global nodes interact identically and *instantaneously* at each
+    layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2061ebebf4f75b3a8a5695c95ba70d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In a classical MPNN (left), information from node *u* arrives at node *v* (which
+    is 3-hops away) after 3 message passing steps along the input graph. Accordingly,
+    node v always “sees” node u with a constant lag (delay) equal to their distance
+    on the graph. In the extreme example of graph rewiring used in graph Transformers
+    (right), all the nodes are connected, making the information of node *u* available
+    at *v* immediately; however, this comes at the expense of losing the partial ordering
+    afforded by the graph distance, which needs to be rediscovered through positional
+    and structural augmentation of the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic graph rewiring
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Looking at our previous example of two nodes *u* and *v* at distance *r* > 1,
+    in a classical MPNN, one has to wait for *r* layers before *u* and *v* can interact,
+    and this interaction is never direct. We argue instead that once we reach layer
+    *r*, the two nodes have now waited “long enough” and can hence be allowed to interact
+    directly (through an inserted extra edge, without going through intermediate neighbours).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Accordingly, at the first layer we propagate messages only over the edges of
+    the input graph (as in classical MPNNs), but at each subsequent layer the receptive
+    field of node *u* expands by one hop [9]. This allows distant nodes to exchange
+    information without intermediate steps while preserving the inductive bias afforded
+    by the input graph topology: the graph is now densified gradually in deeper layers
+    according to the distance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We call this mechanism *dynamic graph rewiring*, or *DRew* for short [10]. DRew-MPNNs
+    can be seen as the “middle ground” between classical MPNNs acting locally on the
+    input graph and graph Transformers that consider all pairwise interactions at
+    once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Delayed message passing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In classical MPNNs, two nodes *u* and *v* at distance *r* always interact with
+    a constant delay of *r* layers, the minimum time it takes information to reach
+    one node from the other. Thus, node *v* ‘sees’ the state of node *u* (mixed with
+    other nodes’ features) from *r* layers ago. In DRew-MPNNs instead, when two nodes
+    interact, they do so instantaneously, through an inserted edge, using their *current
+    state*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Delayed message passing* is a tradeoff between these two extreme cases: we
+    add a global *delay* (a hyperparameter **𝝼**) for messages sent between the nodes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For simplicity, we consider here two simple cases: either no delay (like in
+    DRew), or the case of maximal delay, where two nodes *u* and *v* at distance *r*
+    interact directly from layer *r* onwards, but with a constant delay of *r* (as
+    in classical MPNNs): at layer *r*, node *u* can exchange information with the
+    state of node *v* as it was *r* layers before [11].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The delay controls *how fast* information flows over the graph. No delay means
+    that messages travel faster, with distant nodes interacting instantly once an
+    edge is added; conversely, the more delay, the slower the information flow, with
+    distant nodes accessing past states when an edge is added.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/59f7173d373f601f48b14e089d1be7ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A comparison of DRew and its delayed variant 𝝼DRew. On the left, nodes at distance
+    *r* exchange information through an additional edge from layer *r* onwards, instantaneously.
+    On the right, we show the case of maximal delay (in our paper corresponding to
+    the case **𝝼** = 1), where the delay between two nodes coincides with their distance;
+    the newly added edge between nodes at distance (layer) *r* looks “in the past”
+    to access the state of a node as it was *r* layers ago.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 𝝼DRew framework
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We call an architecture combining dynamic rewiring with delayed message passing
+    𝝼DRew (pronounced “Andrew”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to view 𝝼DRew is as an architecture with *sparse skip-connections*,
+    allowing messages to travel not only “horizontally” (between nodes of the graph
+    within the same layer, as in classical MPNN) but also “vertically” (across different
+    layers). The idea of relying on vertical edges in GNNs is not new, and in fact
+    one can think of residual connections as vertical links connecting each node to
+    the same node at the previous layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The delay mechanism extends this approach by creating vertical edges that connect
+    a node *u* and a *different* node *v* at some previous layer depending on the
+    graph distance between *u* and *v*. This way, we can leverage benefits intrinsic
+    to skip-connections for deep neural networks while conditioning them on the extra
+    geometric information we have at our disposal in the form of graph distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 𝝼DRew alleviates over-squashing since distant nodes now have access to multiple
+    (shorter) pathways to exchange information, bypassing the “information dilution”
+    of repeated local message passing. Differently from static rewiring, 𝝼DRew achieves
+    this effect by slowing down the densification of the graph and making it layer-dependent,
+    hence reducing the memory footprint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 𝝼DRew is suitable to explore the graph at different speeds, deal with long-range
+    interactions, and generally enhance the power of very deep GNNs. Since 𝝼DRew determines
+    *where* and *when* messages are being exchanged, but not *how*, it can be seen
+    as a meta-architecture that can augment existing MPNNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our paper [10], we provide an extensive comparison of 𝝼DRew with classical
+    MPNNs baselines, static rewiring, and Transformer-type architectures, using a
+    fixed parameter budget. On the recent long-range benchmark (LRGB) introduced by
+    Vijay Dwivedi and co-authors [11], 𝝼DRew outperforms in most cases all of the
+    above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6dab81c55ebc175e0c273e373a52e3aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of various classical MPNNs (GCN, GINE, etc.), static graph rewiring
+    (MixHop-GCN, DIGL), and graph Transformer-type architectures (Transformer, SAN,
+    GraphGPS, including positional Laplacian encoding) with 𝝼DRew-MPNN variants on
+    four Long-Range Graph Benchmark (LRGB) tasks. Green, orange, and purple represent
+    first-, second-, and third-best models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An ablation study of 𝝼DRew on one of the LRGB tasks reveals another crucial
+    contribution of our framework: the ability to tune 𝝼 to suit the task. We observe
+    that the more delay used (lower value of 𝝼), the better the performance for large
+    number of layers *L*, whereas using less delay (high 𝝼) ensures faster filling
+    of the computational graph and greater density of connections after fewer layers.
+    Consequently, in shallow architectures (small *L*), removing delay altogether
+    (𝝼=∞) performs better. Conversely, in deep architectures (large *L*), more delay
+    (small 𝝼) “slows down” the densification of the message passing graph, leading
+    to better performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9dcf49a8950930132e945d2eb173f808.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance of 𝝼DRew-MPNNs with different number of layers *L* and different
+    delay parameter 𝝼. While dynamic rewiring helps for long-range tasks in all regimes,
+    delay significantly improves the performance over deeper models. Our framework
+    can also be controlled for compute/memory budget depending on the application,
+    e.g. in situations where Transformers are computationally intractable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditional MPNN-type architectures differ in *how* messages are exchanged [12].
+    Graph rewiring techniques add an extra level of control of *where* they are sent
+    on the graph. Our new approach of dynamic graph rewiring with delayed message
+    passing allows to further control *when* messages are exchanged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach appears to be very powerful, and our work is only a first attempt
+    at leveraging the idea of accessing past states in a graph neural network depending
+    on “geometric properties” of the underlying data. We hope that this new paradigm
+    can lead to more theoretically-principled frameworks and challenge the idea that
+    MPNNs are unable to solve long-range tasks unless augmented with quadratic attention
+    layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] This is typical e.g. in “small-world” graphs such as social networks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] U. Alon and E. Yahav, On the bottleneck of graph neural networks and its
+    practical implications (2021), *ICLR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] J. Topping *et al.*, Understanding over-squashing and bottlenecks on graphs
+    via curvature (2022), *ICLR.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Commute time is the expected time it takes a random walk to go from node
+    *v* to node *u* and back. See F. Di Giovanni *et al.*, [On over-squashing in message
+    passing neural networks: The impact of width, depth, and topology](https://arxiv.org/pdf/2302.02941.pdf)
+    (2023), *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] See Theorem 4.3 in F. Di Giovanni *et al.* [How does over-squashing affect
+    the power of GNNs?](https://arxiv.org/pdf/2306.03589.pdf) (2023) *arXiv*:2306.03589.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Graph rewiring is somewhat a controversial technique in the GNN community
+    as some believe the input graph is sacrosanct and must not be touched. *De facto*,
+    most modern GNNs do employ some form of graph rewiring, whether explicitly (as
+    a pre-processing step) or implicitly (e.g., by neighbour sampling or using virtual
+    nodes).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] R. Abboud, R. Dimitrov, and I. Ceylan, [Shortest path networks for graph
+    property prediction](https://arxiv.org/pdf/2206.01003.pdf) (2022),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*arXiv*:2206.01003.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] See e.g. V. P. Dwivedi and X. Bresson, [A generalization of Transformer
+    networks to graphs](https://arxiv.org/pdf/2012.09699v2.pdf) (2021), *arXiv*:2012.09699
+    and C. Ying et al., [Do Transformers Really Perform Badly for Graph Representation?](https://www.microsoft.com/en-us/research/publication/do-transformers-really-perform-badly-for-graph-representation/)
+    (2021), NeurIPS.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Dynamic rewiring results in the following message passing formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**m***ᵤ*⁽*ˡ ᵏ* ⁾=AGG({**x***ᵥ*⁽*ˡ* ⁾ : *v∈𝒩ₖ*(*u*)}) with 1 ≤ *k ≤ l*+1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**x***ᵤ*⁽*ˡ* ⁺¹⁾=UP(**x***ᵤ*⁽*ˡ* ⁾, **m***ᵤ*⁽*ˡ* ¹⁾,…, **m***ᵤ*⁽*ˡ ˡ* ⁺¹⁾)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where AGG is a permutation-invariant aggregation operator, *𝒩ₖ*(*u*) is the
+    *k*-hop neighbourhood of node *u*, and UP is an update operation receiving messages
+    from each *k*-hop separately. See equation 5 in [10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] B. Gutteridge et al., DRew: [Dynamically rewired message passing with
+    delay](https://arxiv.org/pdf/2305.08018.pdf) (2023), *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Delayed message passing takes the form'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**m***ᵤ*⁽*ˡ ᵏ* ⁾=AGG({**x***ᵥ*⁽*ˡ* ᐨ*ˢ* ⁽*ᵏ* ⁾⁾ : *v∈𝒩ₖ*(*u*)}) with 1 ≤ *k
+    ≤ l*+1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**x***ᵤ*⁽*ˡ* ⁺¹⁾=UP(**x***ᵤ*⁽*ˡ* ⁾, **m***ᵤ*⁽*ˡ* ¹⁾,…, **m***ᵤ*⁽*ˡ ˡ* ⁺¹⁾)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *s*(*k*)=max{0,*k*﹣𝝼}, see equation 6 in [10]. The choice 𝝼=∞ corresponds
+    to no delay (like in DRew) and 𝝼 = 1 corresponds to classical MPNN (two nodes
+    *u* and *v* at distance *r* interact directly from layer *r* onwards, but with
+    a constant delay of *r*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] V. P. Dwivedi *et al.*, [Long range graph benchmark](https://arxiv.org/abs/2206.08164)
+    (2022), *arXiv*:2206.08164.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] In our proto-book M. M. Bronstein *et al.,* [Geometric Deep Learning:
+    Grids, Groups, Graphs, Geodesics, and Gauges](https://arxiv.org/abs/2104.13478)
+    (2021), we distinguish between three “flavours” of MPNNs: convolutional, attentional,
+    and generic message passing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*We are grateful to* [*Federico Barbero*](https://twitter.com/fedzbar)*,* [*Fabrizio
+    Frasca*](https://twitter.com/ffabffrasca)*, and* [*Emanuele Rossi*](https://twitter.com/emaros96)
+    *for proofreading this post and providing insightful comments. For additional
+    articles about deep learning on graphs, see Michael’s* [*other posts*](https://towardsdatascience.com/graph-deep-learning/home)
+    *in Towards Data Science,* [*subscribe*](https://michael-bronstein.medium.com/subscribe)
+    *to his posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
+    get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
+    or follow him on* [*Twitter*](https://twitter.com/mmbronstein)*.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,417 @@
+- en: Semantic Textual Similarity with BERT
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/semantic-textual-similarity-with-bert-fc800656e7a3](https://towardsdatascience.com/semantic-textual-similarity-with-bert-fc800656e7a3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to use BERT to calculate the semantic similarity between two texts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@marcellusruben?source=post_page-----fc800656e7a3--------------------------------)[![Ruben
+    Winastwan](../Images/15ad0dd03bf5892510abdf166a1e91e1.png)](https://medium.com/@marcellusruben?source=post_page-----fc800656e7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fc800656e7a3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fc800656e7a3--------------------------------)
+    [Ruben Winastwan](https://medium.com/@marcellusruben?source=post_page-----fc800656e7a3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fc800656e7a3--------------------------------)
+    ·11 min read·Feb 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/618fe6986fde72b9eaae6d126ce78716.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo by Leeloo Thefirst: [https://www.pexels.com/photo/brown-wooden-ruler-and-colored-pencils-on-papers-8970296/](https://www.pexels.com/photo/brown-wooden-ruler-and-colored-pencils-on-papers-8970296/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ever since its inception in 2017 by Google Brain team, Transformers have rapidly
+    become the state-of-the-art model for various use cases within the fields of Computer
+    Vision and NLP. Its superior performance led to the development of several state-of-the-art
+    models such as BERT and its variants like distilBERT and RoBERTa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BERT outperformed old recurrent models in various NLP tasks such as text classification,
+    Named Entity Recognition (NER), question answering, and even the task that we’re
+    going to focus on in this article, which is semantic textual similarity (STS).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, in this article, we’re going to see how we can train a BERT model for
+    STS task with the help of Sentence Transformers library. Next, we’re going to
+    use the trained model to predict unknown data. But as a starter, we need to know
+    first what STS task actually is and the dataset that we will use for this task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semantic Textual Similarity and the Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Semantic textual similarity (STS) refers to a task in which we compare the similarity
+    between one text to another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e96254c14992c643deb413b7d5ac368e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output that we get from a model for STS task is usually a floating number
+    indicating the similarity between two texts being compared.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are several ways to quantify the similarity between a pair of texts. Let’s
+    take a look at the dataset that we’re going to use in this article as an example,
+    which is [the STSB dataset](https://huggingface.co/datasets/stsb_multi_mt) (licensed
+    under CC-Share Alike 4.0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The similarity between a pair of texts is labeled between a number from 1 to
+    5; 1 if a pair of texts is completely dissimilar, and 5 if a pair of texts is
+    exactly similar in terms of their semantic meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there is a catch. When we want to train a BERT model with the help
+    of Sentence Transformers library, we need to normalize the similarity score such
+    that it has a range between 0 to 1\. This can be achieved simply by dividing each
+    similarity score by 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we know the dataset that we will be working with, let’s now proceed
+    to the model that we’re going to use in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Transformers-Based Model Measure Similarity Between a Pair of Texts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Transformers-based models such as BERT, distilBERT, or RoBERTa expect a sequence
+    of tokens as input. Thus, the very first step that should be done is to convert
+    our input text into a sequence of tokens. This process is called tokenization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The tokenization process for BERT models consists of two steps. First, our
+    input text will be split into several small chunks called tokens; one token can
+    be a word or a sub-word. Second, two special tokens are added to our sequence
+    of tokens: one at the beginning and one at the end. These two special tokens are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[CLS]:** this is the first token in each sequence of token'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**[SEP]:** this token is important to give BERT a hint about which token belongs
+    to which sequence. If there is only one sequence of tokens, then this token will
+    be the last token in the sequence'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Depending on the maximum sequence length of the tokenizer that you define in
+    advance, a bunch of **[PAD]** tokens will also be appended after the **[SEP]**
+    token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tokenized input then will be passed into the model and as the output, we
+    will get the embedding vector of each token. Each embedding vector has 768 dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we use BERT for classification purposes, then normally we take the embedding
+    vector of the **[CLS]** token and pass it to a softmax or sigmoid layer in the
+    end that will act as a classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1c5eb953bf4030bda9271f53d09d598.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we use BERT for STS task, the workflow would be something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a11d3c5682ffb80333007d6c1e73a01d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the workflow shown above, BERT achieved state-of-the-art performance on
+    the STS benchmark. However, there is one major drawback to that workflow: the
+    scalability factor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine we have a brand new text. Next, we want to query the most similar entry
+    to this new text in our database which consists of 100K different texts. If we
+    use BERT architecture as above, then we need to compare our new text with each
+    entry in our database 100K times. This means 100K times of tokenization process
+    and forward pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main problem of this scalability factor is the fact that BERT outputs the
+    embedding vector of each token and not the embedding vector of each text/sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6b1ae51b5adcff10c165bd27cc9de1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If BERT somehow can give us a meaningful sentence-level embedding, then we can
+    save the embedding of each entry in our database. Once we have a new text, then
+    we only need to compare the sentence embedding of our new text with each entry’s
+    sentence embedding in our database with the help of cosine similarity, which is
+    a way faster method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is what Sentence BERT (SBERT) tries to tackle. You can view SBERT as a
+    fine-tuned version of BERT by applying siamese-type model architecture, as you
+    can see below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/741d4914c4d7b0775fb7fd74fa0c2362.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem with the architecture above is that it still generates token-level
+    embedding. Thus, SBERT implements an additional pooling layer on top of BERT.
+    There are three different pooling strategies implemented by SBERT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the embedding of **[CLS]** token
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the mean of all token-level embedding vectors (this is the default implementation)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the max-over-time token-level embedding vectors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5f6347879747195ded968a8d41f0d833.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The illustration above is the final architecture of SBERT model. What we get
+    after the pooling layer is the embedding vector of a text that has 768 dimensions.
+    This embedding then can be compared to each other with pairwise distance or cosine
+    similarity, which is exactly what STS task is all about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To implement SBERT, we can use `sentence-transformers` library. If you haven’t
+    installed it yet, you can do so via pip:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we are going to implement SBERT model based on BERT, but you can also implement
+    SBERT with BERT variants like distilBERT or RoBERTa, or even load a model that
+    has been pretrained on particular dataset. You can find all of the [available
+    models here](https://huggingface.co/sentence-transformers).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: From the code snippet above, we first load a BERT model as our word embedding
+    model, and then we apply a pooling layer on top of the BERT model to obtain the
+    sentence-level embedding in the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say that we have a pair of sentences and we want to fetch the sentence-level
+    embedding of each sentence. We can do so by doing the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Semantic Textual Similarity Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we’re going to train an SBERT model on the dataset that we’ve
+    discussed in the previous section for STS task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Architecture Definition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define the model architecture first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The model architecture above is similar to what we’ve seen in the previous section.
+    We use a BERT base model as our word embedding model. The output of this model
+    is still a token-level embedding. Thus, we need to add a pooling layer on top
+    of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final output that we get from our SBERT model above is 768 dimensions of
+    sentence-level embedding vector. Since the input of our model is a pair of texts,
+    then the output will also be a pair of 768 dimensions of sentence-level embedding
+    vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Loader
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data loader is necessary to create batch on our dataset. This process is important
+    because we can’t just feed our model with the whole dataset at once during the
+    training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We’ve seen in the above sections what our dataset looks like and how to prepare
+    it so that it can be used by our model for STS task. The code above does exactly
+    the same:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The similarity score between each pair of texts is normalized, and this will
+    be our ground truth label for model training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each pair of texts is tokenized with the exact same tokenizer and the exact
+    same step that we saw in the previous section. The tokenized pair of texts will
+    be the input of our model during training.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The collate_fn above is an important function to group each pair of texts together
+    after the tokenization process for batching purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loss Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In an STS task, our goal is to train a model such that it can distinguish between
+    similar and dissimilar pairs of texts in terms of their semantic meaning. This
+    means that we want the model to push the distance of dissimilar pairs of texts
+    far apart, whilst keeping the distance of similar ones close to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a few common loss functions that we can use to achieve this objective:
+    cosine similarity loss, triplet loss, and contrastive loss.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Normally we can use contrastive loss for this case. However, contrastive loss
+    expects our label to be binary, i.e the label is 1 if the pair is semantically
+    similar, and 0 otherwise. Meanwhile, what we have as the label on this dataset
+    is a floating number that ranges between 0 to 1, thus cosine similarity loss would
+    be a better loss function to implement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This loss function takes the sentence-level embedding of each text, and then
+    it computes the cosine similarity between the two embeddings. As a result, the
+    loss function will push dissimilar pairs far apart from each other in the vector
+    space, whilst keeping the similar pairs close to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have set up the model’s architecture, the data loader, and the
+    loss function, it’s time for us to train the model. The code is just a standard
+    Pytorch training script, as you can see below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the implementation above, we train our model for 8 epochs , the learning
+    rate is set to 10e-6, and the batch size is set to 8\. These are hyperparameters
+    that you can play around to suit your own need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you run the `model_train` function above, you’ll get a training progress
+    that looks something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9757fd8d3c000192156a5c193edc83ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After we trained our model, now we can use it to predict unseen data, i.e an
+    unseen pair of texts. However, before we feed the model with an unseen pair of
+    texts, let’s create a function that enables us to obtain the similarity prediction
+    from our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code implementation above includes all of the preprocessing steps of the
+    data as well as the steps to fetch the model’s prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say that we have a similar pair of texts as can be seen below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can just call `predict_sts` function and we get the cosine similarity
+    between two texts inferred by our model. In this case, we get a similarity of
+    0.860\. This means that our pair of texts are very similar to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For comparison, let’s now feed the model with a pair of dissimilar texts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see above, when we have a pair of dissimilar texts, the similarity
+    is just 0.055, which means that embedding between two texts in the vector space
+    is far apart from each other. And this is exactly what our model has been trained
+    for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have implemented a BERT model for a semantic textual similarity
+    task. Specifically, we used Sentence-Transformers library to fine-tune a BERT
+    model into Siamese architecture such that we are able to get the sentence-level
+    embedding for each text. The sentence-level embedding for each text then can be
+    compared to each other via cosine similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find all of the code implemented in this article in [**this notebook**](https://github.com/marcellusruben/medium-resources/blob/main/STS_BERT/STS_BERT.ipynb).
+  prefs: []
+  type: TYPE_NORMAL

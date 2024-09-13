@@ -1,0 +1,642 @@
+- en: 'Exploring Numexpr: A Powerful Engine Behind Pandas'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a](https://towardsdatascience.com/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[FAST COMPUTING](https://qtalen.medium.com/list/fast-computing-2a37a7e82be5)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Enhancing your data analysis performance with Python’s Numexpr and Pandas’ eval/query
+    functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cdb94965ca3a--------------------------------)
+    ·10 min read·Sep 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa720ac983cd13291d2bf6c1b49b674d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Use Numexpr to help me find the most livable city. Photo Credit: Created by
+    Author, [Canva](https://www.canva.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will introduce you to the Python library [Numexpr](https://numexpr.readthedocs.io/en/latest/intro.html?ref=dataleadsfuture.com#),
+    a tool that boosts the computational performance of `Numpy Arrays`. The `eval`
+    and `query` methods of Pandas are also based on this library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article also includes a hands-on weather data analysis project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By reading this article, you will understand the principles of Numexpr and how
+    to use this powerful tool to speed up your calculations in reality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recalling Numpy Arrays
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a previous article discussing `Numpy Arrays`, I used a library example to
+    explain why Numpy''s Cache Locality is so efficient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/python-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e?source=post_page-----cdb94965ca3a--------------------------------)
+    [## Python Lists Vs. NumPy Arrays: A Deep Dive into Memory Layout and Performance
+    Benefits'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring allocation differences and efficiency gains
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/python-lists-vs-numpy-arrays-a-deep-dive-into-memory-layout-and-performance-benefits-a74ce774bc1e?source=post_page-----cdb94965ca3a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each time you go to the library to search for materials, you take out a few
+    books related to the content and place them next to your desk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way, you can quickly check related materials without having to run to the
+    shelf each time you need to read a book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method saves a lot of time, especially when you need to consult many related
+    books.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this scenario, the shelf is like your memory, the desk is equivalent to the
+    CPU’s L1 cache, and you, the reader, are the CPU’s core.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd2cb4e4555424d7f45cfbfee15cb884.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When the CPU accesses RAM, the cache loads the entire cache line into the high-speed
+    cache. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The limitations of Numpy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Suppose you are unfortunate enough to encounter a demanding professor who wants
+    you to take out Shakespeare and Tolstoy’s works for a cross-comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, taking out related books in advance will not work well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, your desk space is limited and cannot hold all the books of these two
+    masters at the same time, not to mention the reading notes that will be generated
+    during the comparison process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, you’re just one person, and comparing so many works would take too long.
+    It would be nice if you could find a few more people to help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the current situation when we use Numpy to deal with large amounts
+    of data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of elements in the Array is too large to fit into the CPU’s L1 cache.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Numpy’s element-level operations are single-threaded and cannot utilize the
+    computing power of multi-core CPUs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What should we do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t worry. When you really encounter a problem with too much data, you can
+    call on our protagonist today, `Numexpr`, to help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Understanding Numexpr: What and Why'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: How it works
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When Numpy encounters large arrays, element-wise calculations will experience
+    two extremes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let me give you an example to illustrate. Suppose there are two large Numpy
+    ndarrays:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When calculating the result of the expression `a**5 + 2 * b`, there are generally
+    two methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way is Numpy’s vectorized calculation method, which uses two temporary arrays
+    to store the results of `a**5` and `2*b` separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At this time, you have four arrays in your memory: `a`, `b`, `a**5`, and `2
+    * b`. This method will cause a lot of memory waste.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, since each Array’s size exceeds the CPU cache’s capacity, it cannot
+    use it well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another way is to traverse each element in two arrays and calculate them separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This method performs even worse. The calculation will be very slow because it
+    cannot use vectorized calculations and only partially utilize the CPU cache.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numexpr’s calculation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Numexpr commonly uses only one `evaluate` method. This method will receive an
+    expression string each time and then compile it into bytecode using Python's `compile`
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numexpr also has a virtual machine program. The virtual machine contains multiple
+    vector registers, each using a chunk size of 4096.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When Numexpr starts to calculate, it sends the data in one or more registers
+    to the CPU’s L1 cache each time. This way, there won’t be a situation where the
+    memory is too slow, and the CPU waits for data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the same time, Numexpr’s virtual machine is written in C, removing Python’s
+    GIL. It can utilize the computing power of multi-core CPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, Numexpr is faster when calculating large arrays than using Numpy alone.
+    We can make a comparison:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary of Numexpr’s working principle
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s summarize the working principle of Numexpr and see why Numexpr is so
+    fast:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Executing bytecode through a virtual machine.** Numexpr uses bytecode to
+    execute expressions, which can fully utilize the [branch prediction](https://en.wikipedia.org/wiki/Branch_predictor?ref=dataleadsfuture.com)
+    ability of the CPU, which is faster than using Python expressions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Vectorized calculation.** Numexpr will use [SIMD (Single Instruction, Multiple
+    Data)](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data?ref=dataleadsfuture.com)
+    technology to improve computing efficiency significantly for the same operation
+    on the data in each register.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multi-core parallel computing.** Numexpr’s virtual machine can decompose
+    each task into multiple subtasks. They are executed in parallel on multiple CPU
+    cores.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Less memory usage.** Unlike Numpy, which needs to generate intermediate arrays,
+    Numexpr only loads a small amount of data when necessary, significantly reducing
+    memory usage.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e02ddfa9a36c80a2dd9e0769a7d3ed60.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workflow diagram of Numexpr. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Numexpr and Pandas: A Powerful Combination'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You might be wondering: We usually do data analysis with pandas. I understand
+    the performance improvements Numexpr offers for Numpy, but does it have the same
+    improvement for Pandas?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer is Yes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `eval` and `query` methods in pandas are implemented based on Numexpr.
+    Let''s look at some examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pandas.eval for Cross-DataFrame operations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When you have multiple pandas DataFrames, you can use `pandas.eval` to perform
+    operations between DataFrame objects, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you calculate the sum of these DataFrames using the traditional pandas method,
+    the time consumed is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can also use `pandas.eval` for calculation. The time consumed is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The calculation of the eval version can improve performance by 50%, and the
+    results are precisely the same:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: DataFrame.eval for column-level operations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Just like `pandas.eval`, DataFrame also has its own `eval` method. We can use
+    this method for column-level operations within DataFrame, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of using the traditional pandas method and the `eval` method are
+    precisely the same:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Of course, you can also directly use the `eval` expression to add new columns
+    to the DataFrame, which is very convenient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/66e858587c5103447993467f6883a977.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Directly use the eval expression to add new columns. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using DataFrame.query to quickly find data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If the `eval` method of DataFrame executes comparison expressions, the returned
+    result is a boolean result that meets the conditions. You need to use `Mask Indexing`
+    to get the desired data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d9e766d03562d4c0d42fc0388ac9ead9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When filtering data only with DataFrame.query, it is necessary to use a boolean
+    mask. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `DataFrame.query` method encapsulates this process, and you can directly
+    obtain the desired data with the `query` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When you need to use scalars in expressions, you can use the `@` symbol to
+    indicate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Practical Example: Using Numexpr and Pandas in Real-World Scenarios'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In all articles explaining Numexpr, examples are made using synthetic data.
+    This feeling is not good and may cause you to not know how to use this powerful
+    library to complete tasks after reading the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, in this article, I will take a weather data analysis project as an
+    example to explain how we should use Numexpr to process large datasets in actual
+    work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Goal
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After a hot summer, I really want to see if there is such a place where the
+    climate is pleasant in summer and suitable for me to escape the heat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This place should meet the following conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the summer:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The daily average temperature is between 18 degrees Celsius and 22 degrees Celsius;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The diurnal temperature difference is between 4 degrees Celsius and 6 degrees
+    Celsius;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The average wind speed in kmh is between 6 and 10\. It would feel nice to have
+    a breeze blowing on me.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Data preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This time, I used the global major city weather data provided by the [Meteostat
+    JSON API](https://dev.meteostat.net/api/stations/daily.html?ref=dataleadsfuture.com#endpoint).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data is licensed under the [Creative Commons Attribution-NonCommercial 4.0
+    International Public License (CC BY-NC 4.0)](https://dev.meteostat.net/terms.html?ref=dataleadsfuture.com#availability)
+    and can be used commercially.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used the parquet dataset integrated on [Kaggle](https://www.kaggle.com/datasets/guillemservera/global-daily-climate-data?select=daily_weather.parquet&ref=dataleadsfuture.com)
+    based on the Meteostat JSON API for convenience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used version 2.0 of pandas. The `pandas.read_parquet` method of this version
+    can easily read parquet data. But before reading, you need to install `Pyarrow`
+    and `Fastparquet`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After the preliminary preparations, we officially entered the data analysis
+    process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, I read the data into memory and then look at the situation of this dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e756d9992922f7b49a69d057cb9cb5a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overview of the dataset’s metadata. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in the figure, this dataset contains 13 fields. According to the goal
+    of this project, I plan to use the fields of `city_name`, `season`, `min_temp_c`,
+    `max_temp_c`, `avg_wind_speed_kmh`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, I first remove the data in the corresponding fields that contain empty
+    values for subsequent calculations, and then select the desired fields to form
+    a new DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Since I need to calculate the average temperature and temperature difference,
+    I use the `Pandas.eval` method to directly calculate the new indicators on the
+    DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, average a few indicators by `city_name` and `season`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e1c5638fa7ff5e7ee38b4ca1b2bcee90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results after data cleaning and metric calculation. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, according to the goal of the project, I use `DataFrame.query` to filter
+    the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/353691e13f5685cd0d98a3beb4e80618.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finally, we obtained the only result that met the criteria. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final result is out. Only one city meets my requirements: Vladivostok,
+    a non-freezing port in the east of Russia. It is indeed an excellent place to
+    escape the heat!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Best Practices and Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After explaining the project practice of Numexpr, as usual, I will explain some
+    of the best practices of Numexpr combined with my own work experience for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Avoid overuse
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although Numexpr and pandas `eval` have significant performance advantages when
+    handling large data sets. However, dealing with small data sets is not faster
+    than regular operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, you should choose whether to use Numexpr based on the size and complexity
+    of the data. And my experience is to use it when you feel the need, as small datasets
+    won’t slow things down too much anyway.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The use of the eval function is limited
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `eval` function does not support all Python and pandas operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, before using it, you should consult the [documentation](https://pandas.pydata.org/docs/user_guide/enhancingperf.html?ref=dataleadsfuture.com#expression-evaluation-via-eval)
+    to understand what operations eval supports.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be careful when handling strings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although I used `season="Summer"` to filter the dataset in the project practice,
+    the `eval` function is not very fast when dealing with strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have a lot of string operations in your project, you need to consider
+    other ways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be mindful of memory usage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although Numexpr no longer generates intermediate arrays, large datasets will
+    occupy a lot of memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the dataset occupies 2.6G of memory in my project example. At this
+    time, you have to be very careful to avoid the program crashing due to insufficient
+    memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use the appropriate data type
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This point is detailed in the [official documentation](https://numexpr.readthedocs.io/en/latest/user_guide.html?ref=dataleadsfuture.com#datatypes-supported-internally),
+    so I won’t repeat it here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use the `inplace` parameter when needed
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using the `inplace` parameter of the `DataFrame.eval` method can directly modify
+    the original dataset, avoiding generating a new dataset and occupying a lot of
+    memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, doing so will lead to modifications to the original dataset, so please
+    be careful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this article, I brought a comprehensive tutorial on Numexpr, including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The applicable scenarios of Numexpr, the effect of performance improvement,
+    and its working principle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `eval` and `query` methods in Pandas are also based on Numexpr. It will
+    bring great convenience and performance improvement to your pandas' operations
+    if used appropriately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Through a global weather data analysis project, I demonstrated how to use pandas’
+    `eval` and `query` methods in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, combined with my work experience, I introduced the best practices
+    of Numexpar and the eval method of pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading. If you have any questions, please leave a message in
+    the comment area, and I will answer in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let me start with the basics and walk you through the best scientific computing
+    practices at work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Peng Qian](../Images/fa6bd24b4781f623be8ea40c4e6bdb78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Peng Qian](https://qtalen.medium.com/?source=post_page-----cdb94965ca3a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fast Computing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[View list](https://qtalen.medium.com/list/fast-computing-2a37a7e82be5?source=post_page-----cdb94965ca3a--------------------------------)4
+    stories![How to Optimize Multidimensional Numpy Array Operations with Numexpr.](../Images/dd4c34ca6ee3502debdeac4c5e73eb46.png)![Use
+    Numexpr to help me find the most livable city.](../Images/edbec8eba0dc95e2b00d5f1092f80529.png)![Efficient
+    k-Nearest Neighbors (k-NN) Solutions with NumPy](../Images/1e1af2eb2245576645f411b9b5a36a20.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading my stories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can [**subscribe**](https://www.dataleadsfuture.com/#/portal) to get the
+    latest data science stories from me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find me on [LinkedIn](https://www.linkedin.com/in/qtalen/) or [Twitter(X)](https://twitter.com/qtalen)
+    if you have any questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article was originally published on [Data Leads Future](https://www.dataleadsfuture.com/exploring-numexpr-a-powerful-engine-behind-pandas/#/portal).
+  prefs: []
+  type: TYPE_NORMAL

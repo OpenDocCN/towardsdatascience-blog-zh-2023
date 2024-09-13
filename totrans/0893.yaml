@@ -1,0 +1,583 @@
+- en: 'Finding Temporal Patterns in Twitter Posts: Exploratory Data Analysis with
+    Python'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-8aac618c8699](https://towardsdatascience.com/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-8aac618c8699)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Clustering of Twitter data with Python, K-Means, and t-SNE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----8aac618c8699--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----8aac618c8699--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8aac618c8699--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8aac618c8699--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----8aac618c8699--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8aac618c8699--------------------------------)
+    ·17 min read·May 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3732b5836870992d47e361c0c7dd91e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tweet clusters t-SNE visualization, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the article “[What People Write about Climate](/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906)”
+    I analyzed Twitter posts using natural language processing, vectorization, and
+    clustering. Using this technique, it is possible to find distinct groups in unstructured
+    text data, for example, to extract messages about ice melting or about electric
+    transport from thousands of tweets about climate. During the processing of this
+    data, another question arose: what if we could apply the same algorithm not to
+    the messages themselves but to the time when those messages were published? This
+    will allow us to analyze *when* and *how often* different people make posts on
+    social media. It can be important not only from sociological or psychological
+    perspectives but, as we will see later, also for detecting bots or users sending
+    spam. Last but not least, almost everybody is using social platforms nowadays,
+    and it is just interesting to learn something new about *us.* Obviously, the same
+    algorithm can be used not only for Twitter posts but for any media platform.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I will use mostly the same approach as described in the first part about Twitter
+    data analysis. Our data processing pipeline will consist of several steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collecting tweets including the specific hashtag and saving them in a CSV file.
+    This was already done in the previous article, so I will skip the details here.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finding the general properties of the collected data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculating embedding vectors for each user based on the time of their posts.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clustering the data using the K-Means algorithm.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Analyzing the results.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Loading the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I will be using the [Tweepy](https://github.com/tweepy/tweepy) library to collect
+    Twitter posts. More details can be found in the [first part](/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906);
+    here I will only publish the source code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using this code, we can get all Twitter posts with a specific hashtag, made
+    within the last 7 days. A **hashtag** is actually our search query, we can find
+    posts about climate, politics, or any other topic. Optionally, a **language code**
+    allows us to search posts in different languages. Readers are welcome to do extra
+    research on their own; for example, it can be interesting to compare the results
+    between English and Spanish tweets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After the CSV file is saved, let’s load it into the dataframe, drop the unwanted
+    columns, and see what kind of data we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the same way, as in the first part, I was getting Twitter posts with the
+    hashtag “#climate”. The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8cc93e1f47c6e1916488f9b693980bee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We actually don’t need the text or user id, but it can be useful for “debugging”,
+    to see how the original tweet looks. For future processing, we will need to know
+    the day, time, and hour of each tweet. Let’s add columns to the dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can easily verify the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/6c5c6b124efd20ee663e207a8c46bce1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have all the needed information, and we are ready to go.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. General Insights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we could see from the last screenshot, 199,278 messages were loaded; those
+    are messages with a “#Climate” hashtag, which I collected within several weeks.
+    As a warm-up, let’s answer a simple question: how many *messages per day* about
+    climate were people posting on average?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s calculate the total number of days and the total number of users:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see, the data was collected over 46 days, and in total, 79,985 Twitter
+    users posted (or reposted) at least one message with the hashtag “#Climate” during
+    that time. Obviously, we can only count users who made at least one post; alas,
+    we cannot get the number of *readers* this way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s find the **number of messages per day** for each user. First, let''s
+    group the dataframe by user name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The “size” column gives us the number of messages every user sent. I also added
+    the “size_per_day” column, which is easy to calculate by dividing the total number
+    of messages by the total number of days. The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f0f72f6a06e8704f69f2bca72e646c10.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can see that the most active users are posting up to 18 messages per day,
+    and the most inactive users posted only 1 message within this 46-day period (1/46
+    = 0,0217). Let’s draw a **histogram** using NumPy and [Bokeh](https://github.com/bokeh/bokeh):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c681d12d60108f5fb01f3d958b16705.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages per day distribution, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interestingly, we can see only one bar. Of all 79,985 users who posted messages
+    with the “#Climate” hashtag, almost all of them (77,275 users) sent, on average,
+    less than a message per day. It looks surprising at first glance, but actually,
+    how often do we post tweets about the climate? Honestly, I never did it in all
+    my life. We need to zoom the graph a lot to see other bars on the histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/825861d365c0373497284a8e7a5701cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages per day distribution with a higher zoom, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Only with this zoom level can we see that among all 79,985 Twitter users who
+    posted something about “#Climate”, there are less than 100 “activists”, posting
+    messages every day! Ok, maybe “climate” is not something people are making posts
+    about daily, but is it the same with other topics? I created a helper function,
+    returning the percentage of “active” users who posted more than N messages per
+    day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, using the same Tweepy code, I downloaded data frames for 6 topics from
+    different domains. We can draw results with Bokeh:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results are interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fefbccf619e8c4e08665d8e803c97ed9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Percentage of active users, who posted at least 1 message per day with a specific
+    hashtag
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most popular hashtag here is “#Cats”. In this group, about 6.6% of users
+    make posts daily. Are their cats just adorable, and they cannot resist the temptation?
+    On the contrary, “#Humour” is a popular topic with a large number of messages,
+    but the number of people who post more than one message per day is minimal. On
+    more serious topics like “#War” or “#Politics”, about 1.5% of users make posts
+    daily. And surprisingly, much more people are making daily posts about “#Space”
+    compared to “#Humour”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To clarify these digits in more detail, let’s find the **distribution of the**
+    **number of messages per user**; it is not directly relevant to message time,
+    but it is still interesting to find the answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This method calculates the total number of messages posted by the most active
+    users. The number itself can strongly vary for different topics, so I use percentages
+    as both outputs. With this function, we can compare results for different hashtags:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Because both axes are “normalized” to 0..100%, it is easy to compare results
+    for different topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4c25e26576d9833244f8e035df7f8706.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of messages made by most active users, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Again, the result looks interesting. We can see that the distribution is strongly
+    skewed: 10% of the most active users are posting 50–60% of the messages (spoiler
+    alert: as we will see soon, not all of them are humans;).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This graph was made by a function that is only about 20 lines of code. This
+    “analysis” is pretty simple, but many additional questions can arise. There is
+    a distinct difference between different topics, and finding the answer to why
+    it is so is obviously not straightforward. Which topics have the largest number
+    of active users? Are there cultural or regional differences, and is the curve
+    the same in different countries, like the US, Russia, or Japan? I encourage readers
+    to do some tests on their own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we’ve got some basic insights, it’s time to do something more challenging.
+    Let’s cluster all users and try to find some common patterns. To do this, first,
+    we will need to convert the user’s data into embedding vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Making User Embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An embedded vector is a list of numbers that represents the data for each user.
+    In the previous article, I got embedding vectors from tweet words and sentences.
+    Now, because I want to find patterns in the “temporal” domain, I will calculate
+    embeddings based on the message time. But first, let’s find out what the data
+    looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, we have a dataframe with all tweets, collected for a specific
+    hashtag. Each tweet has a user name, creation date, time, and hour:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90d99e629110f08a3995fc557bc07d49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s create a helper function to show all tweet times for a specific user:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0cb0319250af198aaa71d9cde38b1de3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for several users, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we can see messages made by some users within several weeks, displayed
+    on the 00–24h timeline. We may already see some patterns here, but as it turned
+    out, there is one problem. The Twitter API does not return a time zone. There
+    is a “timezone” field in the message body, but it is always empty. Maybe when
+    we see tweets in the browser, we see them in *our local time*; in this case, the
+    original timezone is just not important. Or maybe it is a limitation of the free
+    account. Anyway, we cannot cluster the data properly if one user from the US starts
+    sending messages at 2 AM UTC and another user from India starts sending messages
+    at 13 PM UTC; both timelines just will not match together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a workaround, I tried to “estimate” the timezone myself by using a simple
+    empirical rule: most people are sleeping at night, and highly likely, they are
+    not posting tweets at that time ;) So, we can find the 9-hour interval, where
+    the average number of messages is minimal, and assume that this is a “night” time
+    for that user.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Practically, it works well in cases like this, where the “night” period can
+    be easily detected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2ebdba49eda9097f43a0ee3abb9c137.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for the “active” user, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, some people wake up at 7 AM and some at 10 AM, and without a time
+    zone, we cannot find it. Anyway, it’s better than nothing, and as a “baseline”,
+    this algorithm can be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Obviously, the algorithm does not work in cases like that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08d984b9b9b2bce20ed31572b67dd3ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Another user with only a few “active” hours, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, we just don’t know if this user was posting messages in the
+    morning, in the evening, or after lunch; there is no information about that. But
+    it is still interesting to see that some users are posting messages only at a
+    specific time of the day. In this case, having a “virtual offset” is still helpful;
+    it allows us to “align” all user timelines, as we will see soon in the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s calculate the **embedding vectors**. There can be different ways
+    of doing this. I decided to use vectors in the form of *[SumTotal, Sum00,.., Sum23]*,
+    where *SumTotal* is the total amount of messages made by a user, and *Sum00..Sum23*
+    are the total number of messages made by each hour of the day. We can use Panda’s
+    *groupby* method with two parameters “user_name” and “hour”, which does almost
+    all the needed calculations for us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, the “get_vectorized_users” method is doing the calculation. After calculating
+    each 00..24h vector, I use the “normalize” function to apply the “timezone” offset,
+    as was described before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Practically, the embedding vector for a relatively active user may look like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here 120 is the total number of messages, and the rest is a 24-digit array
+    with the number of messages made within every hour (as a reminder, in our case,
+    the data was collected within 46 days). For the inactive user, the embedding may
+    look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Different embedding vectors can also be created, and a more complicated scheme
+    can provide better results. For example, it may be interesting to add a total
+    number of “active” hours per day or to include a day of the week into the vector
+    to see how the user’s activity varies between working days and weekends, and so
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Clustering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As in the [previous article](/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906),
+    I will be using the K-Means algorithm to find the clusters. First, let’s find
+    the optimum K-value using the [Elbow method](https://en.wikipedia.org/wiki/Elbow_method_(clustering)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b34df2ca55cb19a1761efcc0581c1ba9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Elbow graph for users embeddings, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s write the method to calculate the clusters and draw the timelines for
+    some users:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: This method is mostly the same as in the previous part; the only difference
+    is that I draw user timelines for each cluster instead of a cloud of words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, we are ready to see the results. Obviously, not all groups were perfectly
+    separated, but some of the categories are interesting to mention. As a reminder,
+    I was analyzing all tweets of users who made posts with the “#Climate” hashtag
+    within 46 days. So, what clusters can we see in posts about climate?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**“Inactive” users,** who sent only 1–2 messages within a month. This group
+    is the largest; as was discussed above, it represents more than 95% of all users.
+    And the K-Means algorithm was able to detect this cluster as the largest one.
+    Timelines for those users look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9a7612294f8fae79460a40b7584472b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for several “inactive” users, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**“Interested” users.** These users posted tweets every 2–5 days, so I can
+    assume that they have at least some sort of interest in this topic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f25f45be598e4dd4a90d8a86ade6cbdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for several “interested” users, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**“Active” users.** These users are posting more than several messages per
+    day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe3b5d141c4b96feb09916f9c947bef3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for several “active” users, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t know if those people are just “activists” or if they regularly post
+    tweets as a part of their job, but at least we can see that their online activity
+    is pretty high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**“Bots”**. These users are highly unlikely to be humans at all. Not surprisingly,
+    they have the highest number of posted messages. Of course, I have no 100% proof
+    that all those accounts belong to bots, but it is unlikely that any human can
+    post messages so regularly without rest and sleep:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c6ca5db4d9ea478479b09f2eaf0bffa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for several “bots”, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second “user”, for example, is posting tweets at the same time of day with
+    1-second accuracy; its tweets can be used as an NTP server :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By the way, some other “users” are not really active, but their timeline looks
+    suspicious. This “user” has not so many messages, and there is a visible “day/night”
+    pattern, so it was not clustered as a “bot”. But for me, it looks unrealistic
+    that an ordinary user can publish messages strictly at the beginning of each hour:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67ad82d00a360cb8cadb920af2cd49ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for a user, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maybe the auto-correlation function can provide good results in detecting all
+    users with suspiciously repetitive activity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**“Clones”.** If we run a K-Means algorithm with higher values of K, we can
+    also detect some “clones”. These clusters have identical time patterns and the
+    highest silhouette values. For example, we can see several accounts with similar-looking
+    nicknames that only differ in the last characters. Probably, the script is posting
+    messages from several accounts in parallel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fa62d2f84bd579ee8fba7bf640190e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for several users with the same pattern, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a last step, we can see clusters visualization, made by the t-SNE (t-distributed
+    Stochastic Neighbor Embedding) algorithm, which looks pretty beautiful:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6ce0f2adc9103efe1be82bb681c47cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: t-SNE clusters visualization, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we can see a lot of smaller clusters that were not detected by the K-Means
+    with K=5\. In this case, it makes sense to try higher K values; maybe another
+    algorithm like [DBSCAN](https://medium.com/towards-data-science/how-dbscan-works-and-why-should-i-use-it-443b4a191c80)
+    (Density-based spatial clustering of applications with noise) will also provide
+    good results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using data clustering, we were able to find distinctive patterns in tens of
+    thousands of tweets about “#Climate”, made by different users. The analysis itself
+    was made only by using the time of tweet posts. This can be useful in sociology
+    or cultural anthropology studies; for example, we can compare the online activity
+    of different users on different topics, figure out how often they make social
+    network posts, and so on. Time analysis is language-agnostic, so it is also possible
+    to compare results from different geographical areas, for example, online activity
+    between English- and Japanese-speaking users. Time-based data can also be useful
+    in psychology or medicine; for example, it is possible to figure out how many
+    hours people are spending on social networks or how often they make pauses. And
+    as was demonstrated above, finding patterns in users “behavior” can be useful
+    not only for research purposes but also for purely “practical” tasks like detecting
+    bots, “clones”, or users posting spam.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alas, not all analysis was successful because the Twitter API does not provide
+    timezone data. For example, it would be interesting to see if people are posting
+    more messages in the morning or in the evening, but without having a proper time,
+    it is impossible; all messages returned by the Twitter API are in UTC time. But
+    anyway, it is great that the Twitter API allows us to get large amounts of data
+    even with a free account. And obviously, the ideas described in this post can
+    be used not only for Twitter but for other social networks as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

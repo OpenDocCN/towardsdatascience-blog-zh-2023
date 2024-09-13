@@ -1,0 +1,327 @@
+- en: Load Testing SageMaker Multi-Model Endpoints
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/load-testing-sagemaker-multi-model-endpoints-f0db7b305770](https://towardsdatascience.com/load-testing-sagemaker-multi-model-endpoints-f0db7b305770)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Utilize Locust to Distribute Traffic Weight Across Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----f0db7b305770--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----f0db7b305770--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0db7b305770--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0db7b305770--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----f0db7b305770--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0db7b305770--------------------------------)
+    ·9 min read·Feb 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d73100b5f9f21fc0048bf4d480216c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/mTorQ9gFfOg) by Luis Reyes
+  prefs: []
+  type: TYPE_NORMAL
+- en: Productionizing Machine Learning models is a complicated practice. There’s a
+    lot of iteration around different model parameters, hardware configurations, traffic
+    patterns that you will have to test to try to finalize a production grade deployment.
+    [Load testing](https://www.blazemeter.com/blog/performance-testing-vs-load-testing-vs-stress-testing#:~:text=but%20remain%20stable.-,What%20is%20Load%20Testing%3F,systems%20handle%20heavy%20load%20volumes.)
+    is an essential software engineering practice, but also crucial to apply in the
+    MLOps space to see how performant your model is in a real-world setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How can we load test?** A simple yet highly effective framework is the Python
+    package: [Locust](https://locust.io/). Locust can be used in both a vanilla and
+    distributed mode to simulate up to thousands of Transactions Per Second (TPS).
+    For today’s blog we will assume basic understanding of this package and cover
+    the fundamentals briefly, but for a more general introduction please reference
+    this [article](/why-load-testing-is-essential-to-take-your-ml-app-to-production-faab0df1c4e1).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What model/endpoint will we be testing?** [SageMaker Real-Time Inference](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
+    is one of the best options for serving your ML models on REST endpoints tailored
+    for low latency, high throughput workloads. In this blog we’ll specifically take
+    a look at an advanced hosting option known as [**SageMaker Multi-Model Endpoints**](https://aws.amazon.com/blogs/machine-learning/part-3-model-hosting-patterns-in-amazon-sagemaker-run-and-optimize-multi-model-inference-with-amazon-sagemaker-multi-model-endpoints/).
+    Here we can host thousands of models behind a singular REST endpoint and specify
+    a target model we want to invoke for each API call. Load testing becomes challenging
+    here because we are dealing with multiple points of invoke not a singular model/endpoint.
+    While it’s possible to randomly generate traffic across all models, sometimes
+    users will want to control what models receive more traffic. In this example,
+    we’ll take a look at how you can **distribute traffic weight across specific models**
+    so you can simulate your real-world use case as closely as possible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: This article will assume basic knowledge of AWS and SageMaker, on
+    the coding side Python fluency will be assumed along with a basic understanding
+    of the Locust package. To understand load testing single model endpoints of SageMaker
+    with Locust as a starter please reference this [article](https://aws.amazon.com/blogs/machine-learning/best-practices-for-load-testing-amazon-sagemaker-real-time-inference-endpoints/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset Citation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this example we’ll be using the Abalone dataset for a regression problem,
+    this dataset is sourced from the UCI ML Repository (CC BY 4.0) and you can find
+    the official citation [here](https://archive.ics.uci.edu/ml/citation_policy.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating A SageMaker Multi-Model Endpoint
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we can get started with load testing, we have to create our SageMaker
+    Multi-Model Endpoint. All development for the creation of the endpoint will occur
+    on a **SageMaker Notebook Instance** on a **conda_python3 kernel**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example we’ll utilize the Abalone dataset and run a [SageMaker XGBoost
+    algorithm](https://docs.aws.amazon.com/sagemaker/latest/dg/xgboost.html) on it
+    for a regression model. You can download the dataset from the publicly available
+    Amazon datasets. We will utilize this dataset to run training and create copies
+    of our model artifacts to create a Multi-Model Endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can first kick of a training job using the built-in SageMaker XGBoost algorithm,
+    for a full guide on this process please reference this [article](https://aws.plainenglish.io/end-to-end-example-of-sagemaker-xgboost-eb9eae8a5207).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: After we’ve completed this training job we will grab the generated model artifacts
+    (model.tar.gz format in SageMaker) and create another copy of this artifact to
+    have **two models behind our Multi-Model Endpoint**. Obviously in a real-world
+    use case these models may be trained on different datasets or scale up to thousands
+    of models behind the endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: After we’ve made these two copies, we can specify the S3 path with our model
+    artifacts for both models in our [create_model](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html#SageMaker.Client.create_model)
+    Boto3 API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can define our instance type and count behind the endpoint in the [endpoint
+    configuration](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html#SageMaker.Client.create_endpoint_config)
+    object, which we then feed to our [create_endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html#SageMaker.Client.create_endpoint)
+    API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can validate that our endpoint works with a sample data point invocation
+    from the Abalone dataset. Notice that we specify a target model for a Multi-Model
+    Endpoint, here we specify the model.tar.gz or model artifact that we want to invoke.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This [invoke_endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime.html#SageMakerRuntime.Client.invoke_endpoint)
+    API call is essential as it is the point of contact we are evaluating in our load
+    tests. We now have a functioning Multi-Model Endpoint, let’s get to testing!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load Testing With Locust
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s do a quick primer on Locust before we dive into setup of our script. Locust
+    is a Python framework that let’s you define user behavior with Python code. Locust
+    defines an execution as a Task. A Task in Locust is essentially the API or in
+    our case the invoke_endpoint call that we want to test. Each user will run the
+    tasks that we define for them in a [Python script](https://docs.locust.io/en/stable/writing-a-locustfile.html)
+    that we build.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Locust has a vanilla mode that utilizes a single process to run your tests,
+    but when you want to scale up it also has a distributed [load generation feature](https://docs.locust.io/en/stable/running-distributed.html)
+    that essentially allows you to work with multiple processes and even multiple
+    client machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case we want to bombard our Multi-Model Endpoint with above 1000 TPS,
+    so we need a powerful client machine that can handle the load that we are trying
+    to generate. We can spin up an **EC2 instance**, in this case we use an **ml.c5d.18xlarge**
+    and we will conduct our load testing in this environment to ensure we don’t run
+    out of client side juice. To understand how to setup an EC2 instance, please read
+    the following [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect.html).
+    For our AMI we utilize a “Deep Learning AMI GPU TensorFlow 2.9.1 (Ubuntu 20.04)”,
+    these Deep Learning AMIs come with a lot of pre-installed ML frameworks so I find
+    them handy in these use-cases. Note that while we are using EC2 to test and invoke
+    our endpoint, you can also use another client source as long as it has adequate
+    compute power to handle the TPS Locust will generate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once you are SSHd into your EC2 instance we can get into defining our locust
+    script. We first define the boto3 client that will be conducting our invoke_endpoint
+    call that we are measuring. We’ve parameterized a few of these with a distributed
+    shell script that we will cover later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now is when we get specific for Multi-Model Endpoints. We define two methods,
+    **each method will hit one of our two target models**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now in the future if you have 200 models do you need a method for each? Not
+    necessarily, you can specify the target model string to fit into the models you
+    need. For example if you have 200 models and wanted 5 models to be invoked for
+    a specific method we can set the TargetModel parameter to something like the following
+    snippet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The more specific you want to get the more methods you may have to define, but
+    if you have a general idea that a certain number of models will receive the majority
+    of the traffic then some string manipulation like the above will suffice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally we can define the task weight via a decorator. Our first model now is
+    three times more likely to receive traffic than the second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the task decorator we can define the weight and you can expand and manipulate
+    these depending on your traffic pattern.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, there is also a shell script we have defined in this repository that
+    you can utilize to increase or decrease traffic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we are defining the parameters our locust script is reading, but also most
+    importantly two Locust specific parameters in users and workers. Here you can
+    define a number of users that will be distributed across different workers. You
+    can scale these as multiples either up or down to try to achieve your target TPS.
+    We can execute our distributed test by running the following command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we kick this off we can see in our EC2 instance CLI a load test is up and
+    running.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57ad767aac4225776ea988c962613822.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Locust Distributed Load Test (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monitoring
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we conclude there’s a few different ways you can monitor your load tests.
+    One is via Locust, as seen in the above screenshot you can track your TPS and
+    latency in live. In the end a general results file is generated containing your
+    end to end latency percentile metrics and TPS. To adjust the duration of the test
+    please check the RUN_TIME flag in your distributed.sh script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, to validate your load test results you can cross check with SageMaker
+    CloudWatch Metrics which can be found in the Console.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1eabf031087f78631b911163a09fcdb1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Monitor Endpoint (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: With Invocation Metrics we can get an idea of invocations as well as latency
+    numbers. With Instance Metrics we can see how well our hardware is saturated and
+    if we need to scale up or down. To fully understand how to interpret these metrics
+    please reference this [documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/monitoring-cloudwatch.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/792de5d6cf7598f12d0baf56a8b95812.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hardware Metrics (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1dfaa859b7171b5e379c83770a72dff8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Invocation Metrics (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we can see we’ve scaled to nearly 77,000 invokes per minute which comes
+    to a little above 1000 TPS as our Locust metrics showed. It’s best practice to
+    track these metrics at both the instance and invocation level so that you can
+    properly define [AutoScaling](/autoscaling-sagemaker-real-time-endpoints-b1b6e6731c59)
+    for your hardware as necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/weighted-mme-load-test?source=post_page-----f0db7b305770--------------------------------)
+    [## GitHub - RamVegiraju/weighted-mme-load-test: Weighted load traffic distribution
+    across models…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/weighted-mme-load-test?source=post_page-----f0db7b305770--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The entire code for the example can be found in the link above. Once again if
+    you are new to Locust and SageMaker Real-Time Inference, I strongly recommend
+    you check out the starting blogs linked for both features. The load test scripts
+    attached in this repository can easily be adjusted not just for SageMaker endpoints,
+    but any APIs that you are hosting and need to be tested. As always any feedback
+    is appreciate and feel free to reach out with any questions or comments, thank
+    you for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

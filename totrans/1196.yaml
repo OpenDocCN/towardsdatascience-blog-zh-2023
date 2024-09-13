@@ -1,0 +1,290 @@
+- en: How to Implement Learning to Rank Model using Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-implement-learning-to-rank-model-using-python-569cd9c49b08](https://towardsdatascience.com/how-to-implement-learning-to-rank-model-using-python-569cd9c49b08)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The step-by-step guide on how to implement the lambdarank algorithm using Python
+    and LightGBM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ransakaravihara.medium.com/?source=post_page-----569cd9c49b08--------------------------------)[![Ransaka
+    Ravihara](../Images/ac09746938c10ad8f157d46ea0de27ca.png)](https://ransakaravihara.medium.com/?source=post_page-----569cd9c49b08--------------------------------)[](https://towardsdatascience.com/?source=post_page-----569cd9c49b08--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----569cd9c49b08--------------------------------)
+    [Ransaka Ravihara](https://ransakaravihara.medium.com/?source=post_page-----569cd9c49b08--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----569cd9c49b08--------------------------------)
+    ·9 min read·Jan 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1226b3e93be13fec3c422a5220459bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Andrik Langfield](https://unsplash.com/@andriklangfield?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my previous two articles, I discussed the basic concepts of Learning to Rank
+    models and widely used evaluation metrics for evaluating LTR models. You can access
+    those using the links listed below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/what-is-learning-to-rank-a-beginners-guide-to-learning-to-rank-methods-23bbb99ef38c?source=post_page-----569cd9c49b08--------------------------------)
+    [## What Is Learning to Rank: A Beginner''s Guide to Learning to Rank Methods'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A guide on how to approach LTR problems in Machine Learning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/what-is-learning-to-rank-a-beginners-guide-to-learning-to-rank-methods-23bbb99ef38c?source=post_page-----569cd9c49b08--------------------------------)
+    [](/how-to-evaluate-learning-to-rank-models-d12cadb99d47?source=post_page-----569cd9c49b08--------------------------------)
+    [## How to evaluate Learning to Rank Models
+  prefs: []
+  type: TYPE_NORMAL
+- en: A practical guide on how to evaluate LTR models in Machine Learning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-evaluate-learning-to-rank-models-d12cadb99d47?source=post_page-----569cd9c49b08--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will build a lambdarank algorithm for anime recommendations.
+    A research group first introduced LambdaRank at Microsoft, and now it's available
+    on Microsoft's LightGBM library with an easy-to-use sklearn wrapper. Let's start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Search Engines to Product Recommendations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As mentioned above, ranking is widely used in search engines. But it's not limited
+    to search engines; we can adopt the concept and build a solution whenever applicable.
+    Assuming that we want to develop a ranking model for a search engine, we should
+    start with a dataset with queries, its associated documents(URLs), and the relevance
+    score for each query document pair, as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0daaef87cb000cb9dc59e195a4456018.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we can derive features based on each query and document pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/548d9e099ae03770a1bddafffabac0da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the dataset format for well-known Learning to Rank research papers and
+    datasets. Well, that's about search engines. Let's discuss how we can adapt these
+    concepts for traditional product recommendation tasks. There are various ways
+    to recommend products to users. You can show recommendations when the user purchases
+    an item, or while a user is browsing the page, etc. But for simplicity, let's
+    narrow it down to a specific scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will build an anime recommendation model for users' homepage customization.
+    When the user logs into the account, we need to show animes based on the relevance
+    scores predicted by the ranker model. Here I will use Anime Recommendation LTR
+    Dataset, which is available under a public license. You can access it via [this
+    kaggle link](https://www.kaggle.com/datasets/ransakaravihara/anime-recommendation-ltr-dataset).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's read the dataset and quickly check its columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Alright, let me explain the methodology I am going to use here. Unlike search
+    engine data, we don't have query and document pairs in this use case. So we will
+    treat users as queries and the animes they are interested in as documents. One
+    search query can be associated with multiple documents; users can interact with
+    many animes. You got the idea, right :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The target label we predict here is *relevance_score,* stored in the *relevance_scores*
+    dataset. When we build a raking model, it will learn a function to rank those
+    anime into an optimum order where the highest relevant anime comes first for each
+    user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we need to create a dataset by joining the above three datasets. I will
+    also create new features based on anime and user features. Let's create a dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's quickly check a few statistics of our dataset. In total, there are 4.8Mn
+    user-anime interactions, 15K users, and 16K animes in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the user and anime interaction distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5e62050e6c3c69368136027a119b174.png)![](../Images/dba0f5f2e2da5ddd60c7271f41ce87ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The below chart shows how the relevance score is distributed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4076e507b91eed9f8d5c55c6d4681c51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have created the dataset for model training. But one of the main confusing
+    points of the Learning to Rank model is the *group* parameter. Because the *group*
+    is a strange parameter for us since it is not commonly used in other machine-learning
+    algorithms. The idea of a *group* parameter is partitioning the dataset for each
+    query and document pair. It enables the model to learn the relative importance
+    of different features within each group, which can improve the model's overall
+    performance. Having ten user-anime pairs means we have ten groups in our LTR model.
+    Each group can be different in size. But the sum of groups should be the number
+    of samples we have. In simple words, we have to provide group boundaries using
+    *group* parameters. Then the model can identify each user-anime instance separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if you have a 6-anime dataset with `group = [3, 2, 1]`, which means
+    that you have three groups, where the first three records are in the first group,
+    records 4–5 are in the second group, and record 6 is in the third group.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fbb8930d2c949a0b90e38c37ed935f9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**So it''s vital to sort the dataset by *user_id(query_id)* before creating
+    the group parameter.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the above code snippet, I have done the following steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dropped all the columns which have more than 50% null values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sorted dataset based on *user_id.* Otherwise, a *group* parameter will have
+    inconsistent groups everywhere.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After sorting the dataset, I declared the last 100,000 rows as validation data
+    and the rest as training data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since the LightGBM model expects integers as target values, I have scaled the
+    target between 1–10 and converted it to an integer. ( If you want, try converting
+    it to 0 or 1 based on the threshold).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let's define the group parameters and quickly fit the model as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Alright, now we finished the training. It's time to make some predictions about
+    specific customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is one more critical point to notice here. That is, how the model predictions
+    are calculated. I was confused because when calling the `.predict` method, it
+    does not expect additional parameters such as *group.* So I found below information
+    from GitHub issues. According to the creator of LightGBM mentioned in [this issue](https://github.com/microsoft/LightGBM/issues/3326),
+    LightGBM's lambdarank uses a pointwise approach to generate predictions. Meaning
+    we do not want to provide additional parameters such as *group.* We can call the
+    `.predict()` method with the correct feature vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, since we are developing the LTR model, it's essential to have some
+    candidate products and rank those according to the predicted relevance score.
+    To generate candidate animes, I will use a straightforward method here. That is,
+    select the animes that are not exposed to a given user. Select an N random subset
+    from unexposed animes. Generate features based on user and selected N anime subset.
+    Finally, use generated feature vector to get the relevance score and sort animes
+    based on the relevance score. But in real-world use cases, we should use some
+    meaningful methodologies. As an example, you can generate candidates as follows,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select the user's favorite *N* number of genres.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each genre in the above-selected genres, pick the highest-rated *m* animes.
+    Now you have *M* N* animes to rank for that user. Just create the user base and
+    anime-based features. And finally, call the `.predict()` method with the created
+    feature vector.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b98b6a5dfbfdd5cb97d730eea3e21d37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Additionally, we can use shap to explain the model's predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7bea7248bb0c60a3a4f301c298a0e1bb.png)![](../Images/fa10cc03b1fce53c20773110d75a055d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This article aims to give a good starting point to address readers' specific
+    use cases. Because when I started building an LTR model for my project, there
+    wasn't a good guide for beginners. However, training the LTR model may not be
+    necessary for some use cases. You can use straightforward methods like regression,
+    multiclass/ label classification, or clustering. So don't over-engineer your solutions;
+    pick the tool wisely ; )
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading! The notebook for this article is available in my [GitHub
+    repo](https://github.com/Ransaka/LTR-with-LIghtGBM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[LightGBM documentation](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRanker.html#lightgbm.LGBMRanker)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Microsoft Learning to Rank Datasets](https://www.microsoft.com/en-us/research/project/mslr/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

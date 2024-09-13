@@ -1,0 +1,393 @@
+- en: Predicting High Emergency Room Utilization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/predicting-high-emergency-room-visit-rates-5fff6a8950f4](https://towardsdatascience.com/predicting-high-emergency-room-visit-rates-5fff6a8950f4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Analyzing social determinants of health (SDOH) with Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://meaganburkhart.medium.com/?source=post_page-----5fff6a8950f4--------------------------------)[![Meagan
+    Burkhart](../Images/d977e25bd5f9bd6e83f92511adaef3f1.png)](https://meaganburkhart.medium.com/?source=post_page-----5fff6a8950f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5fff6a8950f4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5fff6a8950f4--------------------------------)
+    [Meagan Burkhart](https://meaganburkhart.medium.com/?source=post_page-----5fff6a8950f4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5fff6a8950f4--------------------------------)
+    ·10 min read·May 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8243a7071de7f2d759a8422c5f9c8dec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [National Cancer Institute](https://unsplash.com/@nci?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of this project is to use Social Determinants of Health (SDoH) data
+    by county available from [AHRQ](https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html)
+    to look for relationships between specific variables and the county’s ED visit
+    rate. Ultimately, I’d like to develop a predictive model with the top features
+    related to a high ED rate. I decided to look at 2019 and 2020 data (2018 was not
+    available). This dataset was used with the explicit permission of [HRSA.](https://www.hrsa.gov/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This step-by-step tutorial goes through my process of loading, cleaning, analyzing,
+    and modeling the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading the Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first step was to load the two data files and check out the shape.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0221870504bac18d6454721b7b230469.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: author’s code
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the two dataframes have a different number of columns, I’m going to import
+    the data dictionaries and pull the columns that are the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I merged the data dictionaries on the column names (inner join) to get the final
+    list of common columns. Once I had the columns, I selected a subset of each dataframe
+    with those columns and concatenated them with axis=0 to add them vertically. My
+    df_final includes the 2019 and 2020 data for the common columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: About the Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This data has 674 columns, so we are going to need to try to narrow down which
+    features to look at. Let’s start with my variable of interest, the ED visit rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset includes — Emergency department visits per 1,000 male Medicare (dual
+    and non-dual) beneficiaries. However, the data provides separate male and female
+    rates, so I am going to create a weighted average for the overall ED rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so I multiplied the rate by the percentage of males and the percentage
+    of females respectively, then summed the values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Male ED Rate**: 597.1129158207091'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Female ED Rate**: 639.9023742580443'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Cleaning the Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/f8944cb315306f080c995b6ce8d58806.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After looking at the data frame, we can see missing data for some of the counties.
+    To address this, I dropped certain columns and imputed others with the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this project, we will drop rows with a missing value for the ED rate calculation
+    because that means they did not have data related to emergency visits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we will find the 80th percentile for the dataset to use as a cutoff point
+    for ‘high ED rate’. This will be my outcome variable for future predictions. The
+    overall EDrate will be used for correlations and exploratory data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In order to handle some of the missing data, I started by dropping any columns
+    with >10% missing values. Then I got a list of the remaining columns with any
+    missing values, as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s try a simple imputer with the mean for all columns that are type float.
+    First we will need to separate our training and testing sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we will select all of the columns with a dtype of float so that we can
+    run correlations between each feature and the target feature. Based on the correlation,
+    we will set a threshold and keep columns that are significantly positively correlated
+    or negatively correlated with EDrate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I made a final list of the columns as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We ended up with 140 columns. After I printed a list of the columns, I realized
+    I still had some cleaning up to do -
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to make sure that we’re not including any variables that contain ED
+    so we will filter all of those columns in addition to our calculated Female rate
+    and Male rate out of our list with the code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This left us with 140 columns. We’ve narrowed our dataset down to 112 columns.
+    But now that I’m looking at the list of columns, I see that we should also exclude
+    anything with _IP (inpatient), _PA (post-acute), and _EM(E&M)too. We’re also not
+    interested in the min and max temperature per month, so I’ll go ahead and drop
+    those columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Based on another careful examination of the output, I found that there are some
+    features that are measuring very similar things(i.e. estimated percentages overall
+    vs. aged X-Y). Let’s drop the columns that specify age ranges if the overall value
+    is there. In addition, it looks like the PQI is repeated for all different subsets
+    of the population, so we will want to take the weighted average to find the overall
+    rate by using M and F rates as we did earlier with the EDrate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: I also pulled the full labels for the columns from the data dictionary and reviewed
+    them to ensure that all of the columns were practical, given my background knowledge
+    of healthcare analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/003e39e2679b1ecb204e040d7e450c4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The final result yielded 78 columns to work with. Next, I wanted to quickly
+    visualize the relationship between each of these variables and the EDrate, so
+    I wrote a little loop to create scatterplots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f31cd17bc3f0f6d8438d67813a0e09fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The next part of this analysis involved developing a few predictive models.
+    For this project, I used a logistic regression, support vector machine, random
+    forest classifier, and XGBoost classifier. The first models we’re testing are
+    logistic regression and SVM so we need to scale the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I went with a MinMaxScaler to try to reduce the effect of outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Logistic Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you’re new to classification problems, check out this introduction article
+    on [Logistic Regressions](/introduction-to-logistic-regression-66248243c148) by
+    [Ayush Pant](https://medium.com/u/49005e363e74?source=post_page-----5fff6a8950f4--------------------------------).
+    For this logistic regression, I decided to set the class_weight=’balanced’, given
+    that this is an imbalanced classification problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The confusion matrix below displays the TP, TN, FP, and FN. We also print the
+    classification report.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/369f68985f2c3777855b05fa7e2cfb18.png)![](../Images/7ee4a6d7c24c59ca72eb24798381a3bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Support Vector Machine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next model I tried was a Support Vector Machine. If this is also a topic
+    that’s new for you, I’d recommend checking out [Ajay Yadav](https://medium.com/u/1c3ce86ec41f?source=post_page-----5fff6a8950f4--------------------------------)’s
+    article on [SVM](/support-vector-machines-svm-c9ef22815589)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For my project, I played around a little bit with the class weights to see what
+    would strike a balance in terms of the model results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b14fe9ea72a7f676c4aab23cc0bc9c9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The next models to test are Random Forest Classifier and XGBoost. Because tree-based
+    models don’t require scaling, I’m going to use the original X data for these two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Forest Classifier
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before you go ahead and start running a random forest classifier, you might
+    want to read a background article, like [Tony Yiu](https://medium.com/u/840a3210fbe7?source=post_page-----5fff6a8950f4--------------------------------)’s
+    article [Understanding Random Forest](/understanding-random-forest-58381e0602d2).
+    Once you feel like you have a good understanding of the concepts, try running
+    a simple example with the code below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/21ae5a5c5f5a9b7d9943d034b01cc142.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So far our Random Forest classification report looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12db649076115ff468d68faa36630970.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With an accuracy of 94%, this looks like it’s doing pretty well, but I’m concerned
+    about the false negative rate. Let’s see if the XGBoost can do better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: New to XGBoost? Review [George Seif](https://medium.com/u/e2af5c8737ec?source=post_page-----5fff6a8950f4--------------------------------)’s
+    article — [A Beginner’s guide to XGBoost](/a-beginners-guide-to-xgboost-87f5d4c30ed7)
+    to gain familiarity with the boosting trees before you run the code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c82de126de34c5799607a8cfea008a6f.png)![](../Images/b63b6290861e2a62cfb67283b587d3ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It looks like the Random Forest Classifier is the clear winner, with higher
+    accuracy, precision, recall, and f1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at some of the feature importance values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5d0c766837c24798234959bef0055c59.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a619cfe28113a5bbc08ab2dfe0599ad3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Key Findings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**The most important feature is the percentage of black females**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: — This suggests that the minority group faces greater hardships related to acute
+    healthcare and any discrimination or health inequity should be addressed immediately
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2. **Percentage of disabled veterans is also a top feature**
+  prefs: []
+  type: TYPE_NORMAL
+- en: — This suggests that disability and veteran status contribute to high ED utilization
+    and the underlying risk factors need to be addressed
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. **SHAP values show that PQI and the Percentage of households that received
+    food stamps/SNAP in the past 12 months have a significant impact**
+  prefs: []
+  type: TYPE_NORMAL
+- en: — This indirectly ties socioeconomic status to poor health outcomes, suggesting
+    that if healthcare providers can help in this area, the patients might not visit
+    the emergency department as frequently
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommendations and Future Directions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Based on these findings, data professionals in the healthcare sector may consider
+    developing predictive models to isolate SDoH features that are correlated with
+    poor health outcomes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hope would be that a target healthcare program can address SDoH needs such
+    as discrimination due to race, disability, or socioeconomic status. By offering
+    more intensive care and support to high-risk individuals or high-risk areas, healthcare
+    analysts can work to better treat these patients in a non-acute (not-ED) setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This can be achieved through care providers like community health facilities,
+    home health care agencies, and other partners with health insurance companies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I introduced a public dataset related to SDoH. By analyzing
+    2019 and 2020 data, I arrived at several predictive models. The goal of the model
+    was to predict if a county would have High Emergency Department usage based on
+    SDoH factors. The best model from my analysis was the random forest classifier.
+    We review the core features driving the model and explained the implications for
+    healthcare analysts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — —
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check out the entire notebook on [my GitHub](https://github.com/meagvo/SDOHproject/tree/master/SDOHproject)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re new to Medium and you enjoy stories like this, sign up [here](https://medium.com/@meagvo/membership)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Internet Citation:* Social Determinants of Health Database. Content last reviewed
+    November 2022\. Agency for Healthcare Research and Quality, Rockville, MD. [https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html](https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html)'
+  prefs: []
+  type: TYPE_NORMAL

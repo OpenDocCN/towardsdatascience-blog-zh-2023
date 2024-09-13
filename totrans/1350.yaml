@@ -1,0 +1,523 @@
+- en: Introduction to Markov chain Monte Carlo (MCMC) Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/introduction-to-markov-chain-monte-carlo-mcmc-methods-b5bad18bc243](https://towardsdatascience.com/introduction-to-markov-chain-monte-carlo-mcmc-methods-b5bad18bc243)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Markov chains, Metropolis-Hastings, Gibbs sampling, and how it relates to Bayesian
+    inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@hrmnmichaels?source=post_page-----b5bad18bc243--------------------------------)[![Oliver
+    S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----b5bad18bc243--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5bad18bc243--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5bad18bc243--------------------------------)
+    [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----b5bad18bc243--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5bad18bc243--------------------------------)
+    ·14 min read·Feb 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1fc4e2428f11d573f2bd8434e5b64c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/uKlneQRwaxY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post is an introduction to Markov chain Monte Carlo (MCMC) sampling methods.
+    We will consider two methods in particular, namely the Metropolis-Hastings algorithm
+    and Gibbs sampling. We will introduce them and prove why they work, implement
+    practical examples in Python, and eventually explain how sampling is applied for
+    Bayesian inference and why it is so important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MCMC methods are a family of sampling methods which make use of Markov chains
+    to generate dependent data samples. Their basic idea is to build such Markov chains,
+    which are easy to sample from, and whose stationary distribution is our target
+    distribution — such that when following them, in the limit, we obtain samples
+    from the target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why do we need this? In a previous post I introduced basic sampling methods,
+    among others covering [rejection and importance sampling for complex distributions](/introduction-to-sampling-methods-c934b64b6b08).
+    These generate independent data samples, whereas here we generate dependent ones,
+    as mentioned — which does not answer the previous question, but is an important
+    distinction. However, in the previous posts we saw that the presented methods
+    suffer from severe limitations: it is hard to find suited proposal distributions,
+    in particular in high-dimensional spaces, yielding to high variance and wasteful
+    computations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'MCMC methods, i.e. following a (simple) Markov chain fare better in these circumstances,
+    in particular due to less needed information about the distribution we want to
+    sample from, and the fact that we only need to be able to evaluate it up to a
+    fixed factor. That is: we do not need to be able to evaluate the full pdf for
+    a given `x`, `p(x)`, but it suffices to be able to compute `zp(x)`. At the end
+    of this article we will see why this is so powerful, by applying it to solve a
+    Bayesian inference problem. In many tutorials and explanations this last bit is
+    just given quite briefly as a side note — but I believe this deserves — especially
+    for beginners to Bayesian inference — more spotlight.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Naturally, there are disadvantages of MCMC methods too though: due to the samples
+    being correlated, the *effective* sample size shrinks, and occasionally the methods
+    might not converge or be very slow at it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markov Chains
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since, as the name suggests (and we stated it multiple times so far), MCMC methods
+    are based on [Marko Chains](https://en.wikipedia.org/wiki/Markov_chain), we introduce
+    these first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They are a way of modelling stochastic processes as a sequence of events. In
+    this, the *Markovian property* states that the next state only depends on the
+    current, and not any historic information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(Small excursus: many practical ML methods require this property, such as RL.
+    Requiring this one-step dependency might seem very limiting and impractical —
+    however note that we can simply expand the state space to arbitrary dimension,
+    in particular including past events in the current state — and thus totally circumventing
+    this “limitation”.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formally, let us consider a random variable `X`, and denote its per-timestep
+    realisations with `X₀`, `X₁`, … How `X` develops over time is given by a transition
+    function `P`, where
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02d81ab19151acffac1d93168c539508.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: denotes that the chance of `X` transitioning from state `i` to state `j` is
+    `p`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To fully specify a Markov chain, in addition we need to define an initial distribution
+    for `X`, denoted by `π₀`. With this, we can follow the Markov chain, from `π₀`
+    iteratively applying `P`, yielding the per-timestamp distributions `π₁`, `π₂`,
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us visualise this with an example. We chose the following transition matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5082dd6763eec64021c6c7c472d6fb4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that in our notation index `ij` denotes the transition probabilities from
+    state `j` to `i`, for convenience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now take a random initial distribution, and follow the Markov chain for
+    30 steps. This can be implemented as follows in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When executing this program, we will get some output similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see, this Markov chain converges — for any initial distribution —
+    to the distribution `[0.5, 0.1, 0.4]` — which we call the stationary distribution
+    of this Markov chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before moving on, we will introduce a criterion, needed in the following sections,
+    to determine whether a Markov chain converges: *detailed balance*. We say a Markov
+    chain satisfies the detailed balance criterion, if there exists a distribution
+    `π` satisfying:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b39d9e9063701e593522c35345a382d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I.e., the probability of transitioning from state `j` to state `i` is the same
+    as the reverse transition, considering the distribution `π`. Intuitively this
+    should also make sense, as to why this yields a stationary distribution. Feel
+    free to convince yourself that this criterion is satisfied for above defined Markov
+    chain, and that indeed `[0.5, 0.1, 0.4]` is the distribution satisfying it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metropolis-Hastings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Equipped with this knowledge, we now describe and introduce one of the most
+    common and frequently used MCMC algorithms, namely the [Metropolis-Hastings algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm).
+    To recap, what we are trying to do is sample values from a difficult probability
+    distribution `f(x)`, the target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s begin with an overview over the algorithm. Essentially, it is made up
+    of the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select an arbitrary initial value `x₀` in the target distribution’s support
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Draw `y₁` using a proposal distribution `q`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute `p₁` (see below)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Draw `u₁` from the uniform distribution over [0, 1]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set `x₁ = y₁` if `u₁ ≤ p₁`, else set `x₁ = x₀`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat steps 2–5
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`p₁` is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/990d62f08043f5efbfd2c2f5953c1271.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s demonstrate this using a concrete example, implemented in Python. The
+    setup: the target distribution we want to sample is a Gaussian distribution. Our
+    proposal distribution is another Gaussian. This naturally is no real-world practical
+    example. However, I believe and hope, that this simplified settings helps understanding,
+    instead of confusing the reader. Note that in this example, all values of interest
+    are 1D.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The corresponding Python code looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s go over this with some more details. In the beginning, we’re using scipy’s
+    stats module to represent our target distribution `f` — then plot its pdf. We
+    then define an initial value `x` to begin sampling with — simply generating one
+    value from a uniform distribution. We then enter the sampling loop, iteratively
+    generating `NUM_SAMPLES` value according to the algorithm introduced above. As
+    proposal distribution we use another Gaussian `q` — which yields a new value `y`
+    obtained by “jumping” away from `x` according to this Gaussian. It is probably
+    worth noting, that the conditional evaluation of `q` equals `q`’s pdf with the
+    given jump range — intuitively the further we jump, the less likely it becomes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Executing this program should yield a result similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/911cce25f9c50a0899befa04e3d88454.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see that we correctly sampled from the “unknown” distribution `f`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proof of Correctness
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To prove the correctness of the Metropolis-Hastings algorithm, we need to show
+    that the used Markov chain’s stationary distribution is indeed the target distribution.
+    For this, we use above introduced notation of detailed balance. Remember, this
+    involves showing that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c2fbdbe6c83267d45a41aa48d2ec5ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: i.e. it does not matter whether we first visit state `(t-1)` and then transition
+    to `(t)`, or vice versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus let’s evaluate the left side of this equation, and simply plug in our
+    proposal distribution and the acceptance criterion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3300d56bc2a80df286db4113a6c0e2bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A quick reformulation yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c41db989f62547d6b9fe7670594bc248.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When doing this analogously for the right side of above target equation, we
+    obtain the same result, concluding the proof.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We stated in the introduction that MCMC methods like Metropolis-Hastings are
+    superior and more efficient than, e.g., rejection sampling. This is true, still
+    we should put some effort into choosing q, as this choice will influence the speed
+    of conversion. Consider again the acceptance criterion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e04627702d98f215d75281295238f8ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we defined `q` to be equal to `f`, we’d get 1 — i.e. accept all samples,
+    which is the ideal case. Naturally, this is not possible, as we cannot sample
+    from `f`(which is why we are doing this and sampling from `q` instead, after all).
+    Still, this provides some intuition how to choose `q`. Conversely, if `q` is poorly
+    chosen, we will reject many samples, obtaining several highly correlated samples,
+    which is a problem (the chain is “stuck” in some region).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These discussions are related to the terms *effective sample* size and *burn-in*.
+    Since MCMC methods produce correlated, and not independent samples, when investigating
+    these we have to consider this. In particular, this gives rise to the term effective
+    sample size — which can be viewed as the actual sample size “cleaned” of effects
+    due to correlation. Further, it is common to throw away the first `N` elements
+    obtained by an MCMC algorithm (burn-in): this is mainly due to balance out “bad”
+    initializations, which lie in regions of low probability and out of which the
+    proposal distribution has a hard time getting out.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gibbs Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a second example of MCMC sampling methods we’ll have a look at [Gibbs sampling](https://en.wikipedia.org/wiki/Gibbs_sampling).
+    Since we already introduced underlying ideas and proved correctness for one MCMC
+    method, we’ll go considerably faster this time — but I still wanted to put it
+    out there to reach sufficient depth of this tutorial, and would refer the reader
+    to other resources for more details, or do the maths themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gibbs sampling is applied for sampling from distributions with multiple variables,
+    where sampling from the joint distribution `p(X, Y)` is hard, but we do know how
+    to sample the conditional distributions `p(X | Y)`, `p(Y | X)`. Making use of
+    this, the employed Markov Chain iterates between sampling values for `X` and `Y`
+    making use the updated conditional distributions. Thus, overall — pretty quick
+    to introduce and implement — which we will do in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the sake of introduction, we’ll consider a two-dimensional [multivariate
+    normal distribution](https://en.wikipedia.org/wiki/Multivariate_normal_distribution).
+    This multi-dimensional normal distribution is characterised by a mean vector `μ`
+    and a covariance matrix `Σ`. Conveniently, the needed conditionals again are normal
+    distributions, and defined (exemplary for `x₁`) by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/000ef162d4dcfc55bee38a27770e9ebd.png)![](../Images/5a4217177bf288e1fb4b8ae58dab6651.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To begin, let’s use `scipy.stats` to define and plot our target distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We should get something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1f306082382d092fdce728e2d1332dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we execute the Gibbs sampling procedure as described above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Eventually, we convince ourselves the obtained distribution is correct by drawing
+    a 3D histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/17a334b9bbfbc20b80a0cefc39d11814.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Applications in Bayesian Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To conclude this article, let’s give a real-world use case where such sampling
+    becomes incredibly handy, and helps solve important problems: [Bayesian inference](https://en.wikipedia.org/wiki/Bayesian_inference).
+    We’ll introduce this with more details in a future post, for now: this is solving
+    for the “full” probability distribution of a given problem, and in particular
+    calculating the probability distribution of the parameters given the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c65eadcada2478c53f78c81b1eedc2ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'These terms are commonly known as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5be7854aafd96a21566940d45d750248.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What makes solving this equation particularly challenging is the evidence,
+    as this requires marginalising over all possible parameter values, i.e.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9785de884a936b7618763b1b596592cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This integral usually is hard to compute, or even intractable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, numerical approximations in the form of MCMC methods are a good starting
+    point, and common choice for solving such problems. What is particularly useful
+    in methods like Metropolis-Hastings, is their lax requirement of only needing
+    to be able to evaluate distributions up to a certain normalisation constant —
+    and the evidence just is such a constant! Meaning, we can formulate and work with
+    the posterior distribution without the tricky denominator part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s demonstrate this with an example: we will flip an (unfair) coin `N` times,
+    and are interested in finding out the probability `θ` of the coin landing heads.
+    Particularly, we don’t just want to arrive at a point estimate, but instead go
+    Bayesian, and model the full posterior.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s analyse the single terms in more details: the result of throwing a coin
+    follows a [Bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution),
+    and, denoting by `Nₕ` the observed number of heads, and `Nₜ` the corresponding
+    number of tails, for a given parameter value `θ` this yields the following likelihood:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9df7b66ce44d61e935b375c2ccd922e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we need to find a suited prior — i.e. induce some sort of belief over
+    the estimated parameter value. Since we don’t have to worry about solving the
+    problem analytically (see: [conjugate priors](https://en.wikipedia.org/wiki/Conjugate_prior)),
+    we are free to choose any prior. Thus, we simply pick a normal distribution with
+    mean 0.5 and standard deviation 0.2 — expressing that we expect the coin to be
+    around 50:50, but also cover all of [0, 1].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These two terms are enough to run the Metropolis-Hastings algorithm. In it,
+    we need to calculate `f(y)/f(x)` for some parameter values `y` and `x`, and the
+    density function `f` we are interested in. In our case, as mentioned, this is
+    `p(θ|x).` We also mentioned already, that the evidence cancels out, since this
+    is a constant. What remains is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8bf2a74917bfe90792a8e5bfec9d5487.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With these assessments and above introduction to the Metropolis-Hastings algorithm,
+    porting above into Python should be no hard feat:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Running this should print something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ced0a88512ca7f0f3385df82ec4131ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we can see the algorithm correctly found the true `θ` of about 0.3, as shown
+    by the mode of the posterior distribution. We can also observe some variance,
+    which is good and actually expected / desired — this is one of the reasons we
+    do full Bayesian inference. Throwing a coin “only” 100 times gives us a good first
+    estimate of what its true flipping probability looks like, but to me more sure
+    we’d like to see more examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So let’s increase our dataset to 5000 throws, and inspect the output in this
+    case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17592cf071b9d65e04de731537d93f7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, the posterior distribution indeed has a much lower variance, as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this post we introduced Markov chain Monte-carlo (MCMC) methods, which are
+    powerful methods for numerical sampling. Such methods allow us to efficiently
+    sample from complex distributions without too strict requirements on tractability:
+    in particular, we only need to be able to evaluate distributions of interest up
+    to a fixed factor. MCMC methods work by generating a Marko chain, whose stationary
+    distribution is the target distribution — we thus can follow this, and effectively
+    sample the distribution we are after.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a first algorithm we introduced Metropolis-Hastings, and proved why it is
+    correct. It works by introducing a proposal distribution, which is used to “jump”
+    from the current point to a new one. This new point is accepted with a certain
+    probability, which is proportional to the ratio of probability densities around
+    these points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we discussed Gibbs sampling, which is a method for sampling multi-dimensional
+    distributions. Core idea is using conditional distributions and iterating through
+    sampling a new value for each dimension while leaving the others fixed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eventually, we gave a practical example of Bayesian inference. Solving this
+    problem analytically requires solving a complex integral, making it a prime example
+    (and a very common one) for numerical approximation. We demonstrated how to estimate
+    the posterior distribution of a Bernoulli variable simulating an unfair coin toss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this post was informative for you and shed some light into this exciting
+    field. Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless denoted otherwise, were generated by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This post is Part 3 of a series about sampling. You can find the others here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 1: [Introduction to Sampling Methods](https://medium.com/towards-data-science/introduction-to-sampling-methods-c934b64b6b08)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Part 2: [Variance Reduction with Importance Sampling](/variance-reduction-with-importance-sampling-4e5ca4b1c5a7)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

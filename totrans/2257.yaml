@@ -1,0 +1,321 @@
+- en: Use These Methods to Make Your Python Concurrent Tasks Perform Better
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1](https://towardsdatascience.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Best practices for asyncio.gather, asyncio.as_completed, and asyncio.wait
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)
+    ·6 min read·Apr 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c24747b6b245e92b0b50f2dd4c219345.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Aleksandr Popov](https://unsplash.com/@5tep5?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the Problem Lies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It has always been the case that Python’s multi-threaded performance has never
+    lived up to expectations because of GIL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So since version 3.4, Python has introduced the asyncio package to execute IO-bound
+    tasks through concurrency concurrently. After several iterations, the asyncio
+    APIs have worked very well, and the performance of concurrent tasks has improved
+    dramatically compared to the multi-threaded version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, there are still many mistakes that programmers make when using asyncio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One mistake, as shown in the figure below, is to use the await coroutine method
+    directly in a way that changes the call to a concurrent task from asynchronous
+    to synchronous, ultimately losing the concurrency feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another mistake is shown in the figure below, although the programmer realizes
+    that he needs to use `create_task` to create a task to be executed in the background.
+    However, the following way of waiting for tasks one by one turns the tasks with
+    different timings into an orderly wait.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This code will wait for *task_1* to finish first, regardless of whether *task_2*
+    finishes first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is concurrent task execution?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'So, what is a real concurrent task? Let’s use a diagram to illustrate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00c4c527290894e6279454a09b38a22c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: No matter how many tasks we spawn, we will eventually need to join back. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As the diagram shows, a concurrent process should consist of two parts: starting
+    the background task, rejoining the background task back to the main function,
+    and getting the result.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most readers will already know how to use `create_task` to start a background
+    task. Today, I will introduce a few ways to wait for a background task to complete
+    and the best practices for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Started
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before we start introducing today’s main character, we need to prepare a sample
+    async method to simulate an IO-bound method call, as well as a custom AsyncException
+    that can be used to kindly prompt an exception message when the test throws an
+    exception:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparison of methods for concurrent execution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once we have done the preparations, it’s time to start the day’s journey and
+    fasten your seat belt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. asyncio.gather
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`asyncio.gather` can be used to start a set of background tasks, wait for them
+    to finish executing, and get a list of results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`asyncio.gather`, although it forms a group of background tasks, cannot accept
+    a list or collection as an argument directly. If you need to pass in a list containing
+    background tasks, please unpack it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`asyncio.gather` takes a `return_exceptions` argument. When the value of `return_exception`
+    is False, if any background task throws an exception, it will be thrown to the
+    caller of the gather method. And the result list of the gather method is empty.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a35c538442a7306186f5706da5eb4ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the value of `return_exception` is True, exceptions thrown by background
+    tasks will not affect the execution of other tasks and will eventually be merged
+    into the result list and returned together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/92df4b411370c61d2d4b8fdf5e16d1d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, let’s see why the `gather` method can’t accept a list directly, but has
+    to unpack the list. Because when a list is filled and executed, it is difficult
+    to add new tasks to the list while we wait for them to finish. However, the `gather`
+    method can use nested groups to mix existing tasks with new ones, which solves
+    the problem of not being able to add new tasks in the middle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, `gather` cannot set the timeout parameter directly. If you need to
+    set a timeout for all running tasks, use this pose, which is not elegant enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. asyncio.as_completed
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes, we must start the following action immediately after completing one
+    background task. For example, when we crawl some data and immediately call the
+    machine learning model for computation, the `gather` method cannot meet our needs,
+    but we can use the `as_completed` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before using `asyncio.as_completed` method, let’s look at this method’s source
+    code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The source code shows that `as_completed` is not a concurrent method, and returns
+    an iterator with a `yield` statement. So we can directly iterate over each completed
+    background task, and we can handle exceptions for each task individually without
+    affecting the execution of other tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`as_completed` accepts the `timeout` argument, and the currently iterated task
+    after the timeout occurs will throw `asyncio.TimeoutError`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/232f6dffaabbd688413e01e60ae6f97a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`as_completed`is much more flexible than `gather` in terms of handling the
+    results of task execution, but it is difficult to add new tasks to the original
+    task list while waiting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. asyncio.wait
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`asyncio.wait` is called in the same way as `as_completed`, but returns a tuple
+    with two sets: `done` and `pending`. `done` holds the tasks that have finished
+    executed, and `pending` holds the still-running tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`asyncio.wait` accepts a `return_when` parameter, which can take three enumerated
+    values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When `return_when` is `asyncio.ALL_COMPLETED`, `done` stores all completed tasks,
+    and `pending` is empty.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When `return_when` is `asyncio.FIRST_COMPLETED`, `done` holds all completed
+    tasks, and `pending` holds the still-running tasks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fcc9b4b37202c6cf31a8a0c8c8e6b47b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: When `return_when` is `asyncio.FIRST_EXCEPTION`, `done` stores the tasks that
+    have thrown exceptions and completed execution, and `pending` holds the still-running
+    tasks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When `return_when` is `asyncio.FIRST_COMPLETED` or `asyncio.FIRST_EXECEPTION`,
+    we can call `asyncio.wait` recursively, so that we can add new tasks and keep
+    waiting for all tasks to finish, depending on the situation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e305dc4155286df263756382e9196dac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4\. asyncio.TaskGroup](https://docs.python.org/3/library/asyncio-task.html#task-groups)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In Python 3.11, asyncio introduced the new `TaskGroup` API, which officially
+    enables Python to support [**Structured Concurrency**](https://en.wikipedia.org/wiki/Structured_concurrency).
+    This feature allows you to manage the life cycle of concurrent tasks in a more
+    Pythonic way. For the sake of space, I won’t go into too much detail here, but
+    interested readers can refer to my article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/why-taskgroup-and-timeout-are-so-crucial-in-python-3-11-asyncio-c424bcc88b89?source=post_page-----b693b7a633e1--------------------------------)
+    [## Why Taskgroup and timeout Are so Crucial in Python 3.11 Asyncio'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embracing Structured Concurrency in Python 3.11
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/why-taskgroup-and-timeout-are-so-crucial-in-python-3-11-asyncio-c424bcc88b89?source=post_page-----b693b7a633e1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article introduced the `asyncio.gather`, `asyncio.as_completed`, and `asyncio.wait`
+    APIs, and also reviewed the new `asyncio.TaskGroup` feature introduced in Python
+    3.11.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using these background task management methods according to actual needs can
+    make our asyncio concurrent programming more flexible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to experience, there are inevitably omissions in the exposition of this
+    article, so please feel free to leave comments during the reading process, and
+    I will reply actively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following article, I’ll describe how to make tqdm work with asyncio
+    to indicate concurrent tasks’ progress with a progress bar:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----b693b7a633e1--------------------------------)
+    [## Using Tqdm with Asyncio in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An Efficient Way to Monitor Concurrent Tasks Progress
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----b693b7a633e1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And if you are interested in how to use asyncio for datasets processing tasks
+    in the real world, you can read this article of mine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----b693b7a633e1--------------------------------)
+    [## Combining Multiprocessing and Asyncio in Python for Performance Boosts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a Real-world Example to Explain the run_in_executor APIs
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----b693b7a633e1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
+    access to all of my posts and those of thousands of other authors. It only costs
+    you the price of a cup of coffee, but it’s a great encouragement to me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better/](https://www.dataleadsfuture.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better/)'
+  prefs: []
+  type: TYPE_NORMAL

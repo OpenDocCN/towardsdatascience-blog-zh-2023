@@ -1,0 +1,430 @@
+- en: 'Fourier-transform for Time-Series: Detrending'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fourier-transform-for-time-series-detrending-f0f470f4bf14](https://towardsdatascience.com/fourier-transform-for-time-series-detrending-f0f470f4bf14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Detrending your time-series might be a game-changer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)[![Yoann
+    Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------)
+    [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----f0f470f4bf14--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0f470f4bf14--------------------------------)
+    ·8 min read·Aug 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2c3572ce97230dc0947212f27958abf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Detrending a signal before computing its Fourier transform is a common practice,
+    especially when dealing with time-series.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I want to show both mathematically and visually how detrending
+    your signal affects its Fourier-transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images by author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This post is the fourth of my Fourier-transform for time-series series: I use
+    very simple examples and a few mathematical formulas to explain various concepts
+    of the Fourier transform. You don’t need to read them in the order below, I’d
+    rather recommend going back and forth between each article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Check out the previous posts here:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Review how the convolution relate to the Fourier transform and how fast it
+    is**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----f0f470f4bf14--------------------------------)
+    [## Fourier transform for time-series: fast convolution explained with numpy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10000-times faster convolution using Fourier transform
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Deepen your understanding of convolution using image examples:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603?source=post_page-----f0f470f4bf14--------------------------------)
+    [## Fourier-Transform for Time Series: About Image Convolution and SciPy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fourier-transform convolution also applies to images
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Understand how the Fourier-transform can be visualy understood using a vector-visual
+    approach:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/fourier-transform-for-time-series-plotting-complex-numbers-9743ffe8a8bb?source=post_page-----f0f470f4bf14--------------------------------)
+    [## Fourier-transform for time-series : plotting complex numbers'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot the Fourier-transform algorithm to understand it.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/fourier-transform-for-time-series-plotting-complex-numbers-9743ffe8a8bb?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post, we are going to explore 2 kinds of detrends : we’ll call them
+    ‘*constant*’ and ‘*linear*’ detrendings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The end goal of this post is to make you understand what are constant and
+    linear detrending, why we use them, and how they affects the Fourier-transform
+    of the signal.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Quick review of the Fourier transform**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this post, we’ll use the following definition of the Fourier-transform :
+    for an input sequence x[n], for n=0 to N, the k-th coefficient of the Fourier-transform
+    is the following complex number:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bcc91597fbbf257c4fc73f59ea462f4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fourier transform used in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Constant detrending**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s analyse the input signal. The sequence x[n] can be decomposed as follow:
+    instead of considering x as a whole, let’s write it as a sum of 2 signals : a
+    ‘constant part’ equal to the mean of the signal, and a ‘variability around the
+    mean’ part giving the difference between the actual signal and its mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd80c49d064899a341170208865e26b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Decomposing x as a sum of 2 parts : a constant part (mean), and the “rest”,
+    i.e. the variability around the mean'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So for all sample n, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48f97f5b4dbf55855bbff7148f1ec93f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Each value of x is decomposed as 2 part : the mean, plus the difference between
+    that value and the mean.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s take the Fourier transform of the mean of x :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1746d72a7a37d6aa74fd187ab7f412c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fourier transform of a constant value equal to the mean of x: 0 everywhere
+    except for k=0 where it equals the input value.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which is a simple sequence with value the mean of x at sample k=0, and 0 everywhere
+    else. Using the code from the previous post, we can easily understand why the
+    following is true:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca6dbcc5b0be9cbf75f0a1b9f49b5a9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The sum of the exponentials are 0 except when k=0\. This can be shown graphically
+    in the plot below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0dbe2fc0e07d455f24410e850a1e2e0f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plotting the sum of all exponents shows why they always sum to 0 (except for
+    k=0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s take the Fourier tranform of x as we wrote it, with its 2 parts :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35420cf27b24dbb9615e70e6308f912d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fourier-transform of decomposed x, which results in the sum of 2 Fourier transforms:
+    the FT of the “variability” part, and a coefficient equal to the mean for k=0.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, the Fourier transform of x is the sum of the Fourier transform
+    of its variability around its mean, plus a sequence that is 0 everywhere except
+    for k=0 where its equals the mean of x.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**And that’s what constant detrending is : it just means to remove the mean**
+    of the signal before taking its Fourier-transform. In terms of Fourier coefficients,
+    it corresponds to setting 0 to the k=0 coefficient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another way to see this is the following: it can be shown easily that the coefficient
+    for k=0 is always equal to the mean of the signal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ede9aa273a08a029e1d84e6525369bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Proof that the 0-th coeffiicient is equal to the mean of x.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Linear detrending**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The approach is the same as before: write the input signal a sum of 2 parts:
+    a “linear” part, and the rest of variability around this linear part:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e47dfa321d246c09cd818bf047c20bec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Decompose x as a sum of 2 parts: a “linear part”, and the “rest”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where the linear part is typically computed from a least-square fit. Using
+    indexes we can write the linear part as :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ef7c4e1669eaa9d99fd6ecfcfd17bf8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Expression of the linear part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with b being the mean of the signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we have written the decomposition of x, let’s take its Fourier-transform
+    :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc48534c7cd8aecc81675f32a9b743ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Decomposing the Fourier transform of x as the sum of 2 Fourier transforms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'with the Fourier-transform of the linear part being, given the linearity property
+    of the Fourier-transform:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/196b75fd9f42654d482255fab2112305.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Decomposing the Fourier-transform of the linear part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**So linear detrending consists in removing the linear part of x** before taking
+    its Fourier-transform: it removes the term aFT(n)+b from the result, where a is
+    a constant factor (corresponding to the slope of the linear fit), FT(n) is the
+    Fourier transform of the linear sequence [0, 1, …], and b is the mean of the signal
+    (hence the first Fourier coefficient will be 0, as in constant detrending).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Detrending in python**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s see how we can simply detrend a signal and take its Fourier transform
+    in python. It is pretty straightforward using numpy and scipy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scipy proposes a **detrend** function in its **signal** package, with **a type**
+    argument to specify if we want to constant-detrend or linear-detrend our signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the example below, we create a signal of length 20 samples, that contains
+    a linear part with leading coefficient 2, a bit of noise, an offset of 4, and
+    a sinusoidal part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/052720f5716ed5d2e10340b7fa8a53d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Left: input signal, constant detrended and linear detrended. Right: Module
+    of their Fourier-transforms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Let’s review the plots.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**On the left we have the raw input signal**, as well as its constant-detrended
+    and linear-detrended versions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Constant detreding effectively removes the mean of the signal to center it around
+    0\. Linear detrending not only removes the mean of the signal, but also its linear
+    trend (aka “straight slope”). Visually, it is easier to spot the sinusoidal part
+    on the linear-detrended signal than on the raw signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**On the right are the modules of the Fourier-transform of each signal**: If
+    no detrend is applied, we get the blue module. Removing the mean using constant
+    detrending effectively set the 0-th coefficient to 0, which most of the time make
+    the plot easier to analyze. But the best part comes from linear-detrending: as
+    you can see, the output Fourier coefficients shows well the sinus frequency in
+    the ouput spectrum.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**So imagine your are analyzing a time series and looking for seasonal patterns
+    using the Fourier spectrum: it is way easier if your signal has been linear-detrended.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To go even further, **the main advantage of linear-detrending is that it reduces
+    *spectral-leakage* a lot**. We’ll see in detail in another post what is spectral
+    leakage and why we want to get rid of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Fourier-transform of a linear signal
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can easily plot the Fourier-transform of a linear signal Kn where K is the
+    slope, for different values of K:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4c4067d2bdf994fc012683eed24c75c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fourier coefficients of a linear signal K*n. First line: for K=-5\. Second
+    line: for K=2\. Third line: for K=5'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, for a given value of k, the Fourier-coefficients, represented
+    by the red arrow, are always aligned, and equal up to a scale. So the removed
+    part of the output spectrum is always that of the Fourier transform of the sequence
+    [0, 1, …N], with a scaling factor given by the slope of the linear fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Wrapup**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this post, we saw what constant and linear detrending are: it simply consists
+    of removing the mean or the linear fit of the input signal, respectively. This
+    preprocessing step before computing the Fourier-transform helps make the output
+    spectrum easier to interpret.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Removing the mean of the signal sets the 0-th coefficient to 0**. The resulting
+    plot is easier to inspect since, most of the time, the mean can be pretty big
+    compared to the rest of the spectrum. So, the scale of the y-axis is easier to
+    set if we remove that coefficient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Removing the linear part, in addition to removing the mean, also removes
+    the general trend in the signal**, which is usually the dominating part of the
+    raw signal and can hide the other components/seasonal behaviors that you’re really
+    interested in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If you liked this post and want to read more, please subscribe :) !**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mocquin.medium.com/subscribe?source=post_page-----f0f470f4bf14--------------------------------)
+    [## Get an email whenever I publish !'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever I publish ! New publication will include data transformation,
+    advanced plotting and simulation…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: mocquin.medium.com](https://mocquin.medium.com/subscribe?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**And make sure to check my other posts not Fourier-transform related:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Finite difference method with numpy:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/300-times-faster-resolution-of-finite-difference-method-using-numpy-de28cdade4e1?source=post_page-----f0f470f4bf14--------------------------------)
+    [## 300-times faster resolution of Finite-Difference Method using numpy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finite-difference method is a powerfull technique to solve complex problems,
+    and numpy makes it fast !
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/300-times-faster-resolution-of-finite-difference-method-using-numpy-de28cdade4e1?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Comparison between PCA, ICA and LDA algorithms:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/pca-lda-ica-a-components-analysis-algorithms-comparison-c5762c4148ff?source=post_page-----f0f470f4bf14--------------------------------)
+    [## PCA/LDA/ICA : a components analysis algorithms comparison'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Review the concepts and differences between these famous algorithms.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/pca-lda-ica-a-components-analysis-algorithms-comparison-c5762c4148ff?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Compare PCA-whitening and ZCA-withening:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/pca-whitening-vs-zca-whitening-a-numpy-2d-visual-518b32033edf?source=post_page-----f0f470f4bf14--------------------------------)
+    [## PCA-whitening vs ZCA-whitening : a numpy 2d visual'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of whitening data consists in a transformation such that the transformed
+    data has identity matrix as…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/pca-whitening-vs-zca-whitening-a-numpy-2d-visual-518b32033edf?source=post_page-----f0f470f4bf14--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

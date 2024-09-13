@@ -1,0 +1,276 @@
+- en: Deploying Cohere Language Models On Amazon SageMaker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1](https://towardsdatascience.com/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Scale and Host LLMs on AWS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----23a3f79639b1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23a3f79639b1--------------------------------)
+    ·7 min read·May 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57c4cb0d9ebd119ae5f3cd5986778694.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/EgwhIBec0Ck) by [Sigmund](https://unsplash.com/@sigmund)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) and Generative AI are accelerating Machine Learning
+    growth across various industries. With LLMs the scope for Machine Learning has
+    increased to incredible heights, but has also been accompanied with a new set
+    of challenges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The size of LLMs lead to difficult problems in both the Training and Hosting
+    portions of the ML lifecycle. Specifically for Hosting LLMs there are a myriad
+    of challenges to consider. How can we fit a model into a singular GPU for inference?
+    How can we apply model compression and partitioning techniques without compromising
+    on accuracy? How can we improve inference latency and throughput for these LLMs?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be able to address many of these questions requires advanced ML Engineering
+    where we have to orchestrate model hosting on a platform that can apply compression
+    and parallelization techniques at a container and hardware level. There are solutions
+    such as [DJL Serving](https://github.com/deepjavalibrary/djl-serving/tree/master)
+    that provide [containers](https://aws.amazon.com/blogs/machine-learning/deploy-bloom-176b-and-opt-30b-on-amazon-sagemaker-with-large-model-inference-deep-learning-containers-and-deepspeed/)
+    tuned for LLM hosting, but we will not explore them in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ll explore [SageMaker JumpStart Foundational Models](https://aws.amazon.com/sagemaker/jumpstart/getting-started/?sagemaker-jumpstart-cards.sort-by=item.additionalFields.priority&sagemaker-jumpstart-cards.sort-order=asc&awsf.sagemaker-jumpstart-filter-product-type=*all&awsf.sagemaker-jumpstart-filter-text=*all&awsf.sagemaker-jumpstart-filter-vision=*all&awsf.sagemaker-jumpstart-filter-tabular=*all&awsf.sagemaker-jumpstart-filter-audio-tasks=*all&awsf.sagemaker-jumpstart-filter-multimodal=*all&awsf.sagemaker-jumpstart-filter-RL=*all).
+    With Foundational Models we don’t worry about containers or model parallelization
+    and compression techniques, but focus primarily on directly deploying a pre-trained
+    model with hardware of your choice. Specifically in this article we’ll explore
+    a popular LLM provider known as [Cohere](https://cohere.com/) and how we can host
+    one of their popular language models on SageMaker for Inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: For those of you new to AWS, make sure you make an account at the
+    following [link](https://aws.amazon.com/console/) if you want to follow along.
+    The article also assumes an intermediate understanding of SageMaker Deployment,
+    I would suggest following this [article](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
+    for understanding Deployment/Inference more in depth. In particular, for SageMaker
+    JumpStart, I would reference this following [blog](https://awstip.com/automl-beyond-with-sagemaker-jumpstart-9962ffc4bcd1).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is SageMaker JumpStart? What Are Foundational Models?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SageMaker JumpStart in essence is SageMaker’s Model Zoo. There are a variety
+    of different pre-trained models that are already containerized and can be deployed
+    via the SageMaker Python SDK. The main value here is that customers don’t need
+    to worry about tuning or configuring a container to host a specific model, that
+    heavy lift is taken care of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically for LLMs, JumpStart Foundational Models were launched with popular
+    language models from a variety of providers such as Stability AI and in this case
+    Cohere. You can view a full list of the Foundational Models that are available
+    on the SageMaker Console.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/64fc70670ee9dabdfa2b690889f90864.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SageMaker JumpStart Foundational Models (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: These Foundational Models are also exposed via the [AWS MarketPlace](https://aws.amazon.com/marketplace)
+    where you can subscribe for specific models that may not be accessible by default.
+    In the case of Cohere’s Medium model that we will be working with, this should
+    be accessible via JumpStart without any subscription, but in the case you do run
+    into any issues you can enlist for access at the following [link](https://aws.amazon.com/marketplace/pp/prodview-6dmzzso5vu5my).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cohere Medium Language Model Deployment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this example we’ll specifically explore how we can deploy Cohere’s GPT Medium
+    Language Model via SageMaker JumpStart. Before we start, we install the [cohere-sagemaker](https://github.com/cohere-ai/cohere-sagemaker/tree/main)
+    SDK. This SDK further simplifies the deployment process as it builds a wrapper
+    around the usual SageMaker Inference constructs (SageMaker Model, SageMaker Endpoint
+    Configuration, and SageMaker Endpoint).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: From this SDK we import the [Client](https://github.com/cohere-ai/cohere-sagemaker/blob/main/cohere_sagemaker/client.py)
+    object that will help us create our endpoint and also perform inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we go to the Marketplace link we see that this model is available via Model
+    Package. Thus, for the next step we provide the Model Package ARN for the Cohere
+    Medium model. Note that this specific model is currently only available in US-East-1
+    and EU-West-1 regions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have our model package we can instantiate our Client object and
+    create our endpoint. With JumpStart we have to provide our Model Package Details,
+    Instance Type and Count, as well as the Endpoint Name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: For language models such as Cohere for the instance type we recommend mostly
+    GPU based instances such as the g5 family, or the p3/p2 family, and the g4dn instance
+    class. All these instances have enough compute and memory to be able to handle
+    the size of these models. For further guidance you can also follow the MarketPlace
+    recommendation for the instance to use for the specific model you choose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next we perform a sample inference with the [generate](https://docs.cohere.com/reference/generate)
+    API call which will create text for the prompt we provide our endpoint with. This
+    generate API call serves as a Cohere wrapper around the [invoke_endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime/client/invoke_endpoint.html)
+    API call we traditionally see with SageMaker endpoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/727db58cdb45532fda628b508efb1f29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample Inference (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For an extensive understanding of the different LLM parameters that you can
+    tune I would reference Cohere’s official article [here](https://txt.cohere.com/llm-parameters-best-outputs-language-ai/).
+    We primarily focus on tuning two different parameters which we saw in our generate
+    API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**max_tokens**: Max tokens as the word indicates is the limit to number of
+    tokens our LLM can generate. What an LLM defines as a token varies, it can be
+    a character, word, phrase, or more. Cohere utilizes byte-pair encoding for their
+    tokens. To fully understand how their models define tokens please refer to the
+    following [documentation](https://docs.cohere.com/docs/tokens?ref=txt.cohere.com&__hstc=14363112.43b26d84fbf6221bc6cd1a688e60c028.1684346313808.1684346313808.1684346313808.1&__hssc=14363112.2.1684346313808&__hsfp=4188686977).
+    In essence we can iterate on this parameter to find an optimal value as we don’t
+    want a value that’s too small as it won’t properly answer our prompt or a value
+    that’s too large to the point where the response does not make much sense. Cohere’s
+    generation models support up to 2048 tokens.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**temperature**: The temperature parameter helps control the “creativity” of
+    the model. For example when one word is generated, there’s a list of words with
+    varying probabilities for the next word. When the temperature parameter is lower
+    the model tends to pick the word with the highest probability. When we increase
+    the temperature the responses tend to get a large amount of variety as the model
+    starts selecting words with lower probabilities. This parameter ranges from 0
+    to 5 for this model.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: First we can explore iterating upon the max_token size. We create an array of
+    5 arbitrary token sizes and loop through them for inference while keeping temperature
+    constant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: As expected we can see the difference in the length of each of the responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4b66cb79016467d7449ef0a69a035f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Token Size 200 (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/992870d9b384c66ca6c2044719c34734.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Token Size 300 (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also test the temperature parameter by iterating through values between
+    0 to 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see that at a value of 1 we have a very realistic output that makes sense
+    for the most part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bed75307a71819b3a3ae1671e7741051.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Temperature 1 (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a temperature of 5 we see an output that makes somewhat sense, but is deviating
+    extremely from the topic due to the word selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48f7f34f950b2583436b9846616869d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Temperature 5 (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would like to test all the different combinations of these parameters
+    for your optimal configuration you can also run the following code block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/SageMaker-Deployment/blob/master/LLM-Hosting/JumpStart/cohere-medium.ipynb?source=post_page-----23a3f79639b1--------------------------------)
+    [## SageMaker-Deployment/cohere-medium.ipynb at master · RamVegiraju/SageMaker-Deployment'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/SageMaker-Deployment/blob/master/LLM-Hosting/JumpStart/cohere-medium.ipynb?source=post_page-----23a3f79639b1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for the entire example can be found at the link above (stay tuned for
+    more LLM and JumpStart examples). With SageMaker JumpStart’s Foundational Models
+    it becomes easy to host LLMs via an API call without doing the grunt of work of
+    containerizing and model serving. I hope this article was a useful introduction
+    to LLMs with Amazon SageMaker, feel free to leave any feedback or questions as
+    always.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

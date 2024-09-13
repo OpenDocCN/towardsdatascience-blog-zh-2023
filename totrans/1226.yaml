@@ -1,0 +1,361 @@
+- en: How to Plot Coordinates on Landsat Satellite Images with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-plot-coordinates-on-landsat-satellite-images-with-python-5671613887aa](https://towardsdatascience.com/how-to-plot-coordinates-on-landsat-satellite-images-with-python-5671613887aa)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Mapping pixel positions to geographic coordinates using Landsat metadata and
+    Rasterio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/?source=post_page-----5671613887aa--------------------------------)[![Conor
+    O''Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----5671613887aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5671613887aa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5671613887aa--------------------------------)
+    [Conor O''Sullivan](https://conorosullyds.medium.com/?source=post_page-----5671613887aa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5671613887aa--------------------------------)
+    ·8 min read·May 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45e764239f69e9589c7b61ffd50583f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [GeoJango Maps](https://unsplash.com/@geojango_maps?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Location, location, location! Not just a housing market cliché but also incredibly
+    important to remote sensing. Whether it’s for monitoring environmental changes,
+    analyzing urban development, or tracking crop health, precise geolocation is crucial.
+    We need to know the exact coordinates of objects in satellite images to ensure
+    accurate analysis and interpretation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, we’ll explore how to plot coordinates directly onto Landsat scenes using
+    two approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Landsat metadata file (MLT)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rasterio — a package used to access geospatial raster data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We’ll also use Rasterio to **reproject** the coordinates of a satellite image.
+    Specially, we’ll go from the original coordinate reference system **(UTM)** to
+    the one used by google maps **(EPSG:4326).** Along the way, we’ll discuss the
+    code and you can find the full project on [GitHub](https://github.com/conorosully/medium-articles/blob/master/src/remote%20sensing/landsat_GPS.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading Landsat scenes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We need to start by downloading a Landsat scene. You can do this using the
+    [EarthExplorer](http://earthexplorer.usgs.gov) portal. Alternatively, if you want
+    to use Python, the article below takes you through the process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/downloading-landsat-satellite-images-with-python-a2d2b5183fb7?source=post_page-----5671613887aa--------------------------------)
+    [## Downloading Landsat Satellite Images with Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streamline Landsat scene downloads with the landsatxplore Python package
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/downloading-landsat-satellite-images-with-python-a2d2b5183fb7?source=post_page-----5671613887aa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the end, you should have a folder similar to **Figure 1**. These are all
+    the files available for a [Landsat level 2 science product](https://www.usgs.gov/landsat-missions/landsat-collection-2-level-2-science-products).
+    We’ll be working with the red visible band (***_B4.TIF**) and the JSON metadata
+    file (***_MTL.json**). These are highlighted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72690c5614f470746158f244bfcedea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Landsat level-2 science product files (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This particular scene was taken above the east coast of Ireland. To see this
+    we visualise the red band. We load the tiff file (line 9). We [scale the band](https://www.usgs.gov/faqs/how-do-i-use-scale-factor-landsat-level-2-science-products)
+    (line 12) and [clip it to enhance it’s contrast](/visualising-the-rgb-channels-of-satellite-images-with-python-6d541af1f98d)
+    (line 15). You can see the resulting image in **Figure 2**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/479bbc78afa84f057620906d134e887e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Visible red light band of Landsat scene of the east coast of Ireland
+    (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to plot a point for Howth, an Irish village, directly onto this image.
+    Looking at **Figure 2**, you can see it sticking out at about 1/3 of the way down
+    the coast. The specific latitude and longitude points we want to plot are given
+    in **Figure 3**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67741b06fe8bf6bff3d54c9dc98456ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Latitude and longitude coordinates for Howth, Dublin (source: google
+    maps)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting points using Landsat metadata (MLT)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Okay, so plotting points with the MLT file is not as straightforward as using
+    Rasterio. Still, it is worth exploring this method. You will see that we do not
+    have to rely on a package. We will also learn about the coordinate reference system
+    (CRS) used by Landsat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Landsat metadata
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The MLT file contains a lot of metadata about the Landsat scene. You can find
+    all the details in the [data format control book](https://www.usgs.gov/media/files/landsat-8-9-olitirs-collection-2-level-2-data-format-control-book).
+    We are interested in the **projection attributes**. These are details about the
+    scenes CRS and will allow us to geolocate the pixels in **Figure 2**. We load
+    these attributes (lines 4–5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Figure 4**, gives the list of projection attribute**s**. The first item tells
+    us that [UTM](https://www.usgs.gov/faqs/how-are-utm-coordinates-measured-usgs-topographic-maps#:~:text=The%20UTM%20(Universal%20Transverse%20Mercator,Zone%2019%2C%20which%20includes%20Maine.)
+    is the CRS for this scene. This is a projected coordinate system (PCS). It is
+    used to project geolocation on the Earth surface (a sphere) onto the scene (2D
+    surface). Later we will see how this differs from a geographic coordinate system
+    (GCS).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4464cca16e268f97e8662b0f17b47f3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: projection attribute for Landsat scenes (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When converting UTM to pixel positions, we will need two other pieces of information
+    from **Figure 4**. These are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GRID_CELL_SIZE_REFLECTVE — this tells us that each pixel covers 30 square meters
+    of land
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Projection coordinates (e.g. CORNER_UL_PROJECTION_X_PRODUCT) — these give the
+    UTM coordinates (in meters) for the scenes bounding box
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In fact, we only need the first 2 coordinates. These are for the upper left
+    (UL) corner of the bounding box. Looking at **Figure 5**, we see how this information
+    is used to convert to pixel position. We know each pixel is 30m². This means that
+    we can start at (543000, 6004200) and add/subtract 30m to get the start of the
+    next pixel. We select a pixel if the UTM coordinates fall in that pixel’s range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e3a6a8f18549a06a93222c69d1a2ef4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: UTM coordinates of start and end of pixels'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting coordinates on a Landsat band
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use this information to create the **coords_to_pixels** function. As parameters,
+    it takes the UTM coordinates for the UL corner (**ul**) and the coordinate we
+    want to convert (**utm**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now use this function to find the pixels for our point on Howth. We start
+    by getting the UTM coordinates for the UL corner (lines 4–5). We took our points
+    straight from google maps and so they are given in latitude and longitude (lines
+    8–9). We convert these to UTM coordinates (line 12) which gives us values of **(694624,
+    5918089)**. Finally, we convert these to pixels (line 16). This gives us pixel
+    values of **(5054, 2870)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see how accurate this is. We add a white circle to the image in **Figure
+    2** at the given pixel values (line 5). To see our point we zoom in by cropping
+    the image around the circle (lines 8–9). Comparing **Figure 6** to the point in
+    **Figure 3**, we can see that we have accurately plotted the point onto the Landsat
+    scene. In general, [90% of all Landsat points will have a positional error of
+    less than 12 meters](https://www.sciencedirect.com/science/article/pii/S003442571400042X).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/eab237551bd84541beea2e6fb4a53305.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: Howth coordinates plotted using Landsat Metadata file (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting coordinates with rasterio
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The above process works! But, we can make our lives easier using the Rasterio
+    package. We open the tiff file for the red visible light band (line 4). Metadata
+    about the scene is embedded in the file. For example, we print the CRS (line 7)
+    which outputs **“EPSG:32629”**. This is the [EPSG code](https://epsg.io/32629)
+    for UTM zone 29N. In other words, the same CRS that was given in the MLT file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can use the **index** function to convert UTM to pixel coordinates (line
+    9). This outputs **(5054, 2870).** The same as before!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, with Rasterio we no longer have to worry about the bounding box or even
+    the CRS. However, we still have to convert latitude and longitude to UTM. If we
+    want to plot the latitude and longitude directly, we will have to reproject the
+    Landsat scene to the Google Maps CRS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reprojecting a Landsat scene
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We do this using the code below. In summary, it takes the red band image, reprojects
+    it to EPSG:4326 (Google Maps CRS), and saves the reprojected image to a new file.
+    Some things to point out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We calculate a new transform function (line 12). This is what Rasterio uses
+    to convert coordinates to pixels.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When we reproject the file we use the nearest resampling method (line 42). This
+    means we use the value of the nearest cells to fill in the values of other cells.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We need a resampling method because the reprojection process will “warp” the
+    image to fit the new CRS. We will see this when we output the reprojected image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: To confirm the process has worked, we load the projected image (line 2) and
+    output its CRS (line 3). This gives us **“EPSG:4326”**. Success!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now get the pixel coordinates directly from lat/long coordinates. This
+    gives a value of **(6336, 2227).** These are different to before because, as mentioned,
+    the projected image has been warped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see this when we plot the point on the projected image in **Figure 7**.
+    Comparing it to **Figure 6**, the aspect ratio has changed. In fact, many of the
+    pixels will have been altered. This is because, unlike UTM, EPSG:4326 is a *geographic*
+    coordinate system (GCS). It is used to plot points on a sphere (i.e. the Earth).
+    Trying to display an image with this CRS on a 2D plane leads to the distorted
+    aspect ratio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19ba93f168f4927b41283bbe8b63ac18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: Howth coordinates plotted on the projected image (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article has focused on plotting coordinates on a single band. If you are
+    working with multiple bands or RGB visualisations, the underlying method will
+    be the same. This is because all bands in the Landsat scene will have the same
+    CRS. See the article below for details on visualising the RGB channels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/visualising-the-rgb-channels-of-satellite-images-with-python-6d541af1f98d?source=post_page-----5671613887aa--------------------------------)
+    [## Visualising the RGB Channels of Satellite Images with Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to deal with multiple spectral bands, large pixel values and skewed RGB
+    channels when visualising satellite images
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/visualising-the-rgb-channels-of-satellite-images-with-python-6d541af1f98d?source=post_page-----5671613887aa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you enjoyed this article! You can find me on [Mastodon](https://sigmoid.social/@conorosully)
+    | [Twitter](https://twitter.com/conorosullyDS) | [YouTube](https://www.youtube.com/channel/UChsoWqJbEjBwrn00Zvghi4w)
+    | [Newsletter](https://mailchi.mp/aa82a5ce1dc0/signup) — sign up for FREE access
+    to a [Python SHAP course](https://adataodyssey.com/courses/shap-with-python/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/membership?source=post_page-----5671613887aa--------------------------------)
+    [## Join Medium with my referral link — Conor O’Sullivan'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: conorosullyds.medium.com](https://conorosullyds.medium.com/membership?source=post_page-----5671613887aa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Maurício Cordeiro](https://medium.com/u/8878c77fe1a3?source=post_page-----5671613887aa--------------------------------)
+    **Python for Geosciences: Raster Merging, Clipping and Reprojection with Rasterio**
+    [https://medium.com/analytics-vidhya/python-for-geosciences-raster-merging-clipping-and-reprojection-with-rasterio-9f05f012b88a](https://medium.com/analytics-vidhya/python-for-geosciences-raster-merging-clipping-and-reprojection-with-rasterio-9f05f012b88a)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BGU **Rasters (rasterio)** [https://geobgu.xyz/py/rasterio.html#raster-file-connection](https://geobgu.xyz/py/rasterio.html#raster-file-connection)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[gerdoo](https://medium.com/u/4334b7a2376e?source=post_page-----5671613887aa--------------------------------)
+    **Indexing Georeferenced Landsat Images** [https://medium.com/@gerdoo/georeferencing-landsat-images-in-python-92d5d5aafc67](https://medium.com/@gerdoo/georeferencing-landsat-images-in-python-92d5d5aafc67)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyGIS **Raster Coordinate Reference Systems (CRS)** [https://pygis.io/docs/d_raster_crs_intro.html](https://pygis.io/docs/d_raster_crs_intro.html)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,318 @@
+- en: Combining Traditional Thread-Based Code and Asyncio in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c](https://towardsdatascience.com/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A comprehensive guide to integrating synchronous and asynchronous programming
+    in Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----dc162084756c--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----dc162084756c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc162084756c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc162084756c--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----dc162084756c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc162084756c--------------------------------)
+    ·6 min read·May 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d6b4ed69c2a46871c9ec4c44fa56d21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I’ll explain how to call existing IO-blocking code in asyncio
+    programs that don’t implement asyncio and how to call asyncio code in existing
+    programs based on the threaded model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous articles, I introduced you to asyncio, a Python feature. The
+    performance of asyncio is very high, and using asyncio in modern, highly concurrent
+    code will improve IO performance by several orders of magnitude.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But in the real world, we have not seen asyncio code used as much as expected.
+    Why is that?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Challenge 1: How to call old IO-blocking code in asyncio code'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One scenario is that while we implement the new code with asyncio, there are
+    still a lot of IO-blocking programs left in the system that was implemented traditionally.
+    For example, microservice, file operation, etc. Even if you use asyncio and call
+    these blocking APIs directly, you still can’t achieve the high concurrency effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Challenge 2: How to call asyncio in existing blocking code to accomplish tasks
+    asynchronously'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In another case, the existing code already implements a set of architecture
+    based on the threaded model. Since asyncio’s event loop is executed in the current
+    thread, directly calling asyncio will block the execution of existing code. It
+    does not have the effect of concurrent execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So today, I will use a few real-life examples to show you how to implement asyncio
+    calls in each of the two cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 1: Calling IO-Blocking Code in Asyncio-Based Programs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s take FastAPI as an example. FastAPI is a high-performance web framework
+    based on asyncio implementation. But very often, not all the business logic of
+    a web application is implemented in the FastAPI code. Sometimes we need to call
+    several microservices implemented long ago that are blocking calls. How could
+    we deal with this situation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using run_in_executor to Run IO-Blocking Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous article, we explained how to use `loop.run_in_executor` API
+    to integrate multiple processes with asyncio to achieve high-performance computing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----dc162084756c--------------------------------)
+    [## Combining Multiprocessing and Asyncio in Python for Performance Boosts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a real-world example to demonstrate a map-reduce program
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----dc162084756c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, IO-bound code is unsuitable for multi-process calls but recommended
+    for multi-thread. The good thing is that the first argument of `loop.run_in_executor`
+    accepts either a `concurrent.futures.ProcessPoolExecutor` implementation or a
+    `concurrent.futures.ThreadPoolExecutor` implementation. So our sample code is
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we use a `get_status` method to simulate the old microservice code calls
+    via the requests package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we manage the creation and destruction of the `ThreadPoolExecutor` thread
+    pool during the startup and shutdown phases of the web application, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we call the IO blocking methods in the thread pool and get the results
+    in the response method of the request via `loop.run_in_executor`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The default executor parameter of `loop.run_in_executor` can be None. That
+    is because asyncio will initialize a default thread pool internally after startup.
+    When the executor parameter of `run_in_executor` is None, it will use the default
+    thread pool to execute, so we don’t have to manage a thread pool in our code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leveraging [asyncio.to_thread](https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread)
+    (Python 3.9+)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Python 3.9 introduced a new high-level abstraction API, `asyncio.to_thread`,
+    which, as you can see from the source code, internally calls the `loop.run_in_thread`
+    method with the executor argument of None:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, using `asyncio.to_thread`, will further simplify the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 2: Calling Asyncio Code in Traditional Thread-Based Programs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There is another case where our program already implements a loop in the existing
+    code. For example, most GUI programs use an event loop to respond to various events
+    and to update the UI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take [tkinter](https://docs.python.org/3/library/tkinter.html) as an
+    example. tkinter will start a main loop when it starts, and this main loop will
+    block the main thread and keep on looping. As shown in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e70f8ed638b43c6d6e0a30238c06cf3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How does the tkinter main loop work. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A direct call to synchronous IO code will block the main loop
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s take the example of a tkinter program that contains a button and a status
+    text:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This program uses a state machine to implement it. Every 60 milliseconds, the
+    code refreshes the corresponding text according to the program’s current state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we click the request_code button, the workflow should ideally look like
+    the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14604b3eab87ef6b7f70d5d87f07603b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workflow of the tkinter program. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But by the execution result, the program hangs when clicking the button, and
+    the status text is updated until the IO blocking code finishes executing. It means
+    that the main loop is blocked when the IO request is running, causing the GUI
+    interface to be unresponsive:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e04a97f4a740a7340d5dbd34caac33d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The app is blocked and doesn’t show query text. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using [asyncio.run](https://docs.python.org/3/library/asyncio-runner.html#asyncio.run)
+    to Run Asyncio Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Can we replace the requests package with the [aiohttp](https://docs.aiohttp.org/en/stable/)
+    package to achieve the asynchronous invocation of IO requests?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we first inherit the `App` class to implement a new class `AppAsyncBase`.
+    In this new class, we use aiohttp to implement an `async_request` method to lay
+    the foundation for subsequent asynchronous calls:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Readers of my previous article will know we can execute asynchronous methods
+    inside synchronous code via `asyncio.run`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we implement a new class `AppAsyncRun`, by inheriting `AppAsyncBase`.
+    In this new class, we override the `request_remote` method and use `asyncio.run`
+    to call the `async_request` method directly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, let’s look at the results. Because asyncio’s [event loop](https://docs.python.org/3/library/asyncio-eventloop.html)
+    is executed in the main thread by default, and when the event loop is running,
+    it blocks the main thread, and the main loop of tkinter is blocked and unresponsive:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f71c434e21b8b0d15edc0bcd93a2d02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: asyncio.run blocks the main loop. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrating Asyncio with Thread-Based Programs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is there a way to solve the event loop blocking problem?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we can use a separate [daemon thread](https://docs.python.org/3/library/threading.html#thread-objects)
+    and then run the event loop into the daemon thread, so asyncio’s event loop will
+    not block the main thread. The diagram is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb5957d523d6178cc237a8c68f93088c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Combining tkinter and asyncio loops. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking at the code implementation, we first inherit the `AppAsyncBase` class
+    to implement a new class `AppEventLoop`. Next, override the `request_remote` method
+    and use `asyncio.run_coroutine_threadsafe` to call the `async_request` method
+    in the event loop. Request method in the event loop. `asyncio.run_coroutine_threadsafe`
+    is also thread-safe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implement a `run_event_loop` method to call the `loop.run_forever` in the thread:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, use the `contextmanager` decorator to manage the lifecycle of the daemon
+    thread:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, implement the event loop integration and the app launch in the main
+    method, and let’s see the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d1f6b0932e7b4a55535ab9f9b4ac0ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The event loop running separately in the daemon thread no longer blocks. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perfect! Click the button, the status text is changed accordingly, the whole
+    GUI interface runs smoothly, and IO calls do not block the GUI ever. Mission accomplished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although asyncio can dramatically improve the execution performance of concurrent
+    programs, asyncio is not used on a large scale because it does not implement much
+    of the legacy code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Today’s article, using examples from real-world coding efforts, demonstrates
+    the solution to two challenges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to call the old IO code non-blocking in a new asyncio program.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: how to use asyncio asynchronous code in an existing synchronous program to achieve
+    non-blocking execution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Welcome to leave your comments and discussions. I will answer them one by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
+    access to all of my posts and those of thousands of other authors. It only costs
+    you the price of a cup of coffee, but it’s a great encouragement to me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.dataleadsfuture.com/combining-traditional-thread-based-code-and-asyncio-in-python/](https://www.dataleadsfuture.com/combining-traditional-thread-based-code-and-asyncio-in-python/)'
+  prefs: []
+  type: TYPE_NORMAL

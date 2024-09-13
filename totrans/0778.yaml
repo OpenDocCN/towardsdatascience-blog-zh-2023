@@ -1,0 +1,359 @@
+- en: Easy CDK Deep Learning EC2 Instances
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/easy-cdk-deep-learning-ec2-instances-f30fbeec1ea3](https://towardsdatascience.com/easy-cdk-deep-learning-ec2-instances-f30fbeec1ea3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deploying an EC2 instance for deep learning is easy with CDK
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://nbertagnolli.medium.com/?source=post_page-----f30fbeec1ea3--------------------------------)[![Nicolas
+    Bertagnolli](../Images/6f2ee2f49fae47f1dd89d8484303b20c.png)](https://nbertagnolli.medium.com/?source=post_page-----f30fbeec1ea3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f30fbeec1ea3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f30fbeec1ea3--------------------------------)
+    [Nicolas Bertagnolli](https://nbertagnolli.medium.com/?source=post_page-----f30fbeec1ea3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f30fbeec1ea3--------------------------------)
+    ·10 min read·Jan 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5946aec4ae6ed299708df43b4bca69d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The rough overview of what we are building today.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a data scientist I often have to run jobs on GPUs in the cloud and I have
+    a visceral hate for clicking through UIs. In the past when I needed a GPU instance
+    for some one-off model training I laboriously navigated through AWS’ UI. Not anymore!
+    Now it’s easy to create an EC2 stack that knows how to install and instantiate
+    everything you need. In this tutorial we’ll use AWS CDK to create an EC2 instance.
+    We’ll protect that EC2 instance on a private subnet in a VPC and only allow inbound
+    traffic. We’ll then connect to this instance using AWS [Secure Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html)
+    (SSM). This is cool because in the past if you wanted your machine to be on a
+    purely private network you needed a bastion host, with SSM this is no longer the
+    case! All of the code for this tutorial can be found here. At the end of all of
+    this you’ll be able to run a few commands and have a fully functioning Data Science
+    ready secure EC2 instance with a JupyterLab interface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All code for this tutorial can be found [here](https://github.com/nbertagnolli/ds-ec2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: CDK
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: CDK is the cloud development kit created by AWS. It allows us to create resources
+    in the cloud using languages like python or typescript. It’s really easy to use
+    and it’s free unlike services like [Pulumi](https://www.pulumi.com/) (What I use
+    in production). However, CDK is just a wrapper around CloudFormation so you inherit
+    all of the limitations of that system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in learning a bit more about CDK I’d recommend following
+    this [tutorial](https://cdkworkshop.com/30-python.html). It will walk you through
+    everything you need to setup CDK and create a very simple API. It’s well worth
+    the read if you haven’t. I’m going to assume that you’ve completed the `New Project`
+    section of that tutorial and setup CDK on your local machine. From here on out
+    we’ll focus on creating the EC2 instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a project folder
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once inside the new folder we can instantiate our project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will create a bunch of files but there are really only two that you need
+    to focus on and that’s app.py and ds_ec2_stack.py.
+  prefs: []
+  type: TYPE_NORMAL
+- en: app.py defines the CDK app and is the entry point for deployment. If you want
+    to deploy multiple interconnected stacks this is the place to edit. We won’t be
+    doing much here though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ds_ec2_stack.py is where we will define our stack and resources. It’s the workhorse
+    of this whole system so let’s get started by editing this file and adding what
+    we want!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b68739884b5fe95b013ff56ba8fd9cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Activate your environment and install the CDK libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating the EC2 instance and other resources.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you don’t care about the particulars of CDK and what is happening skip down
+    to Deploying the stack and just clone the repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Otherwise, the code below needs to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Create a VPC
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We create a VPC for all of our resources to live in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Assign permissions for the instance to use SSM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We create an IAM role for this instance which allows us to add a managed policy
+    giving the instance the ability to be connected to through SSM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Create a Security Group
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We want our instance to be on a private subnet and only allow inbound traffic.
+    This helps with security because nothing in our instance can leave our network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. Install all of the python libraries we care about
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One thing that is nice about using CDK is we can setup custom logic around installing
+    Python dependencies. I have mine setup to install a bunch of common libraries
+    that I use so once I connect to the instance it’s ready to go. We can do that
+    using CDK by using [ec2.MultipartUserData()](https://docs.aws.amazon.com/cdk/api/v1/python/aws_cdk.aws_ec2/MultipartUserData.html).
+    This is just a fancy way of passing in user data to the instance to allow it to
+    run some configuration for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create a requirements.txt file in your project next to app.py. For me my file
+    looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then load in a requirements.txt file so we know which packages to install.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 5\. Add some block storage so we can load in some data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The default disk space on the EC2 instances is kind of small and usually I want
+    a few GB’s of data loaded onto the instance to do my work. This attaches an EBS
+    volume for additional disk space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 6\. Get the correct machine image for our instance type
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we are running a CPU instance we can use AmazonLinux
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we are running a GPU we need to use a generic_linux MachineImage and pass
+    it the AMI for the deep learning instance we want. For example, if deploying in
+    us-west-2 we could use ami-0a83cbb39db39cb3e.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 7\. Create the EC2 instance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last step is to instantiate the ec2 instance with everything we’ve made
+    so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Final Stack
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The final stack I use is here. You’ll notice there is some additional logic.
+    This logic checks whether the desired instance is a GPU or a CPU and then selects
+    the correct stack components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploying the Stack
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To deploy your stack run you’ll need to set two environment variables. `INSTANCE_TYPE`
+    and `AWS_AMI` if you are using a GPU. If you want to deploy with the defaults
+    you don’t need to set either of them. As an example of deploying a GPU instance
+    run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will create all of the resources we’ve specified so far through CloudFormation.
+    Once it’s completed you can log into the console and see your instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dcbf9327c36039f7e88d9d24277da0ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Grab the instance id from column two you’ll need it later to connect to the
+    instance through SSM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up SSM
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'SSM allows us to use AWS IAM roles to manage access to instances. This is nice
+    because we don’t have to open any ssh ports and can put the instance entirely
+    on a private subnet, which is really nice from a security perspective. To enable
+    SSM to work we need to modify our `.ssh/config` file with the following lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Don’t worry too much about this fancy command. It basically allows SSM to connect
+    to the remote instance using Secure Shell(SSH) without opening an inbound port.
+    Now to connect to the instance we can run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you want to avoid the UI you can use the following command to get all EC2
+    instance ids from AWS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Setting up a remote notebook
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: JupyterLab provides a pretty nice interface for working on these remote servers.
+    I like to setup a lab session and then connect to it through SSM. On your remote
+    instance create a screen to hold the jupyter session so it’s easy to find and
+    manage later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Make sure you’re in a folder where you have read and write permissions by default
+    your EC2 instance will put you in `/usr/bin`If you run the following command this
+    will put you in your user folder which should have read and write permissions
+    for Jupyter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now inside your screen create the JupyterLab instance. This command will create
+    a JupyterLab session running on port 8123\. We’ll use this port later to connect
+    through SSM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now exit out of this connection (ctrl + d should work) and on your local machine
+    run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Make sure the port in this command matches the previous one. This will open
+    a tunnel to your instance through SSM and forward all traffic on port 8123\. Now
+    just go to localhost:8123 in your browser and Voila! You have a connection to
+    your remote instance and can do all of the fun jupyterlab things there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ded179477c714df40c6e060c7199c0f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What you should see on connecting to your instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tearing things down
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once you’re done with everything and want to destroy your instance simply run
+    `cdk destroy.` This command will clean up everything you deployed in that stack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next Steps and Caveats
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hopefully this makes it easy for you to start and manage EC2 instances for yourself.
+    I’ve found it to be a very nice way of interacting with EC2 instances. There are
+    a few things you should keep in mind. This script creates a VPC. Often times AWS
+    limits the number of custom VPCs you can have in a region to 5 so if you want
+    to create multiple instances it’s pretty inefficient to generate a VPC for every
+    instance (and by inefficient I mean don’t do it…). The goal here is personal development
+    not a large shared team. Let me know in the comments if you want me to write another
+    post on creating that shared VPC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As next steps try and get the AMI automatically from AWS instead of hardcoding
+    it. Try and use CfnParameters instead of environment variables for the instance
+    type. Try and create a shared VPC instance. All of these would be good projects
+    to improve the above code. Happy building!
+  prefs: []
+  type: TYPE_NORMAL

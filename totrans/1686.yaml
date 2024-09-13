@@ -1,0 +1,284 @@
+- en: Probabilistic Forecasting of Binary Events using Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/probabilistic-forecasting-of-binary-events-using-regression-4f8a8022ec37](https://towardsdatascience.com/probabilistic-forecasting-of-binary-events-using-regression-4f8a8022ec37)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Forecasting the probability of extreme values with the cumulative distribution
+    function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://vcerq.medium.com/?source=post_page-----4f8a8022ec37--------------------------------)[![Vitor
+    Cerqueira](../Images/9e52f462c6bc20453d3ea273eb52114b.png)](https://vcerq.medium.com/?source=post_page-----4f8a8022ec37--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f8a8022ec37--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4f8a8022ec37--------------------------------)
+    [Vitor Cerqueira](https://vcerq.medium.com/?source=post_page-----4f8a8022ec37--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f8a8022ec37--------------------------------)
+    ·5 min read·Mar 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fab758c65d153360deece4f407598819.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Silas Baisch](https://unsplash.com/@silasbaisch?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ll explore the probabilistic forecasting of binary events
+    in time series. The goal is to predict the probability that the time series will
+    exceed a critical threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You’ll learn how (and why) to use a regression model to compute binary probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First of all, why would you use regression to compute binary probabilities instead
+    of a classifier?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The probabilistic forecasting of binary events is usually framed as a classification
+    problem. But, a regression approach may be preferable for two reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interest in both the point forecasts and event probabilities;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Varying exceedance thresholds.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Interest in both the point forecasts and event probabilities
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes you may want to forecast the value of future observations as well
+    as the probability of a related event.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, in the case of forecasting the height of ocean waves. Ocean waves
+    are a promising source of clean energy. Short-term point forecasts are important
+    for estimating how much energy can be produced from this source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, large waves can damage wave energy converters — the devices that convert
+    wave power into electricity. So, it’s also important to forecast the probability
+    that the height of waves will exceed a critical threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, in the case of the height of ocean waves, it’s desirable to compute the
+    two types of forecasts with a single model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Varying exceedance threshold
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Binary events in time series are often defined by [exceedance — when the time
+    series exceeds a predefined threshold](https://medium.com/towards-data-science/an-introduction-to-exceedance-probability-forecasting-4c96c0e7772c).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some cases, the most appropriate threshold may change depending on different
+    factors or risk profiles. So, a user may be interested in estimating the exceedance
+    probability for different thresholds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A classification model fixes the threshold during training and it cannot be
+    changed during inference. But, a regression model is built independently of the
+    threshold. So, during inference, you can compute the event probability for many
+    thresholds at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to compute binary probabilities from forecasts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/943a1c93699e069db0d0de6b60863d00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jamie O’Sullivan](https://unsplash.com/@imjamie?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how can you use a regression model to estimate the probability of a binary
+    event?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue the example above about forecasting the height of ocean waves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll use a time series collected from a smart buoy placed on the coast of Ireland
+    [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/32dc5e580ae1bb33d0ec6a749b705d2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hourly time series of the average height of ocean waves. The horizontal dashed
+    line represents a critical safety threshold. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exceedance probability forecasting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our goal is to forecast the probability of a large wave, which we define as
+    a wave above 6 meters. This problem is a particular instance of exceedance probability
+    forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a [previous article](https://medium.com/towards-data-science/an-introduction-to-exceedance-probability-forecasting-4c96c0e7772c),
+    we explored the main challenges behind exceedance probability forecasting. Usually,
+    this problem is tackled with one of two approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A probabilistic binary classifier;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A forecasting ensemble. Probabilities are computed according to the ratio of
+    models that forecast above the threshold.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here, you’ll learn about a third approach. One which is based on a forecasting
+    model, but which does not have to be an ensemble. Something like an ARIMA would
+    do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the Cumulative Distribution Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Suppose that the forecasting model makes a prediction “*y”.* Then, also assume
+    that this prediction follows a Normal distribution with a mean equal to “*y”*.
+    Of course, the choice of distribution depends on the input data. Here we’ll stick
+    with the Normal for simplicity. The standard deviation (“*s”*), under stationarity,
+    can be estimated using the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our example, “*y*” is the height of the waves forecasted by the model. “*s”*
+    is the standard deviation of the height of waves in the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We get binary probabilistic predictions using the cumulative distribution function
+    (CDF).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the CDF?
+  prefs: []
+  type: TYPE_NORMAL
+- en: When evaluated at the value *x*, the CDF represents the probability that a random
+    variable will take a value less than or equal to *x*. We can take the complementary
+    probability (1 minus that probability) to get the probability that the random
+    variable will exceed *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e7549576dd4bfedba46e345a20c192c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The cumulative distribution function for the standard Normal distribution. Image
+    by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, *x* is the threshold of interest that denotes exceedance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a snippet of how this can be done using Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Forecasting large waves
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s see how we can use the CDF to estimate the probability of large waves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we build a forecasting model using [auto-regression](https://medium.com/towards-data-science/machine-learning-for-forecasting-transformations-and-feature-extraction-bbbea9de0ac2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we can use the CDF to transform point forecasting into exceedance probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The model is able to detect when large waves occur effectively:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a25493c83782627077f9daa040de850.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In a recent paper, I compared this approach with a classifier and an ensemble.
+    The CDF-based method leads to better forecasts. You can check the paper in reference
+    [2] for details. The code for the experiments is also available [on Github](https://github.com/vcerqueira/exceedance_wave).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Getting binary probabilities from forecasting models is desirable. Especially
+    in problems where point forecasts are also useful or the exceedance threshold
+    changes;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can use a forecasting model to get binary exceedance probabilities using
+    the CDF;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the CDF is a competitive alternative to using a classifier or a regression
+    ensemble.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thank you for reading, and see you in the next story!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Related Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[An Introduction to Exceedance Probability Forecasting](https://medium.com/towards-data-science/an-introduction-to-exceedance-probability-forecasting-4c96c0e7772c)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [Irish Wave Buoys](https://erddap.marine.ie/erddap/tabledap/IWaveBNetwork.html)
+    (License: Creative Commons Attribution 4.0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Vitor Cerqueira, and Luis Torgo. “Exceedance Probability Forecasting via
+    Regression for Significant Wave Height Forecasting.” arXiv preprint arXiv:2206.09821
+    (2022).'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,453 @@
+- en: Extending Context Length in Large Language Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/extending-context-length-in-large-language-models-74e59201b51f](https://towardsdatascience.com/extending-context-length-in-large-language-models-74e59201b51f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to turn your Llama into a Giraffe
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://donatoriccio.medium.com/?source=post_page-----74e59201b51f--------------------------------)[![Donato
+    Riccio](../Images/0af2a026e72a023db4635522cbca50eb.png)](https://donatoriccio.medium.com/?source=post_page-----74e59201b51f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----74e59201b51f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----74e59201b51f--------------------------------)
+    [Donato Riccio](https://donatoriccio.medium.com/?source=post_page-----74e59201b51f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----74e59201b51f--------------------------------)
+    ·9 min read·Oct 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8bb0da11ed7b43b5f0cc752db52b0aad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author. (AI generated Llamas)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Context length refers to the maximum number of tokens the model can remember
+    when generating text. A longer context window allows the model to understand long-range
+    dependencies in text better. Models with longer contexts can build connections
+    between ideas far apart in the text, generating more globally coherent outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During training, the model processes the text data in chunks or fixed-length
+    windows. Models need to be trained on lengthy texts to actually leverage long
+    contexts. Training sequences must contain documents, books, articles, etc., with
+    thousands of tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The length of training data sets a limit on usable context length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, why don’t we train models on longer sequences?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Not so fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasing context length increases the number of possible token combinations
+    the model must learn to predict accurately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This enables more robust long-range modeling but also require more memory and
+    processing power, leading to higher training costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without any optimization, computation scales quadratically with context length
+    — meaning that a 4096 token model will need 64 times more computation than a 512
+    token model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use sparse or approximate attention methods to reduce the computation
+    cost, but they may also affect the model’s accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Training and using large context language models presents three main challenges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fitting long contexts into the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Accelerating inference and training so they don’t take forever.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ensuring a high-quality inference that maintains awareness of the full context.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Attention is a complex operation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The attention mechanism is the core component of transformer models. It relates
+    different positions of a sequence to compute its representation, allowing models
+    to focus on relevant parts of the text and understand it better. Scaling transformers
+    to longer sequences faces challenges due to the quadratic complexity of full attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a3218089dd630220ceb86bf9b71802d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There are two matrix multiplications involved in self-attention. Image based
+    on the original paper. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stacked self-attention layers allow modeling long-range dependencies in text.
+    The standard attention mechanism used in Transformers, which computes the attention
+    weights for all possible pairs of input tokens, has a complexity of **O(n²).**
+    It means that the computation and memory requirements grow quadratically with
+    the input sequence length, limiting Transformers’ scalability and efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When generating text, the model has to compute the attention matrix first. With
+    a 100K context and quadratic attention, it can take minutes before the model starts
+    generating text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explore methods to improve attention efficiency, from approximations to
+    hardware optimizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving Attention Efficiency
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Reducing the quadratic cost has become an active research area. Proposed methods
+    can be grouped into two main categories: **approximating attention** and **exact
+    attention** using hardware-aware optimizations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approximation techniques constrain interactions between sequence positions.
+    **Sparse attention** limits the number of non-zero attention weights per attention
+    head, while **local attention** restricts interactions to a sliding window. These
+    approximations reduce computational cost but may degrade accuracy on complex tasks.
+    [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recent work has focused on optimizing attention to leverage GPU architectures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sparse attention** approximates attention by only computing the attention
+    weights for a subset of the input tokens instead of all possible pairs, thus saving
+    time and memory. There are different ways to implement sparse attention, such
+    as using fixed or static patterns (e.g., local, strided, or block attention) or
+    dynamic or adaptive patterns that depend on the input sequence (e.g., entmax or
+    dynamic sparse attention).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db8e90a3376384683f9f21dd41c2273e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quadratic attention (left) computes every possible combination between input
+    tokens. Sparse attention (right) limits the computation only to nearby tokens.
+    [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sparse attention can improve the efficiency and scalability of Transformers,
+    especially for long sequences, but it may also sacrifice some representation power
+    and accuracy. Quadratic attention can achieve high performance and quality, but
+    it may also be computationally expensive and impractical for large-scale applications.
+    Therefore, there is a trade-off between sparsity and complexity in attention mechanisms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flash Attention
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The fundamental intuition is to avoid materializing the large N x N attention
+    matrix, which requires quadratic reading/writing in the sequence length N.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**FlashAttention** applies two techniques — tiling and recomputation. Tiling
+    splits the input into blocks, loaded into fast GPU on-chip SRAM. Attention is
+    computed block-by-block to avoid materializing the entire matrix. Recomputation
+    stores just enough information to reconstruct the attention matrix on-chip during
+    backpropagation, avoiding storing the large intermediate. [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors analyze the IO complexity, proving FlashAttention requires O(N²/M)
+    memory accesses versus O(N²) for standard attention, where M is the SRAM size.
+    This IO-awareness allows FlashAttention to run faster despite increased FLOPs
+    from recomputation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiments validate the speedups — FlashAttention trains BERT 15% faster than
+    the MLPerf record, GPT-2 3x faster, and Long Range Arena 2.4x faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91d89ae3fb6519710fb048cc8cf01905.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instead of computing the whole attention matrix on the slower HBM, FlashAttention
+    copies blocks to the SRAM. [3]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This idea was further developer in **FlashAttention-2**. The improvements focus
+    on enhancing parallelism across sequence blocks and optimizing work partitioning
+    between thread blocks and warps on GPUs. Key techniques include reducing non-matrix
+    multiply operations, partitioning attention computation across threads to increase
+    occupancy, and distributing work between warps to reduce shared memory traffic.
+    Empirical validation shows FlashAttention-2 achieves around 2x speedup over FlashAttention,
+    reaching up to 73% of theoretical peak FLOPs on A100 GPUs. When used to train
+    GPT models end-to-end, training throughput reaches 225 TFLOPs/s per A100, translating
+    to 1.3x faster training than FlashAttention. [4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The improvements promise to enable training models on much longer sequences
+    than before at a similar cost. Accelerating attention speeds up inference and
+    training, but fitting text into the model while maintaining high output quality
+    remains an issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see what to do about it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Models are pre-trained on fixed-length sequences
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An efficient training and inference is not enough to have an high-quality model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two main paradigms of context length extension: **fine-tuned extrapolation**,
+    where the LLM further updates its weights on longer contexts, and **zero-shot
+    extrapolation**, where the model is evaluated on long contexts with no change
+    to weights from the short context training. [5]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To extend context, most approaches focus on modifying the positional encoding
+    system used in the transformer attention mechanism to indicate where tokens are
+    located in the input sequence. The idea is that representing longer input sequences
+    in the positional encoding will allow the LLM to attend to those longer sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7272a89e1df22f57dac6474602c4425d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Positional encoding is used to make your model understand the order in the sentence.
+    Image based on the original paper. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Positional encoding is used to make your model understand the order in the sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Positional embeddings** are added to the input token embeddings before feeding
+    them into the model to enable the model to use the order of the sequence. They
+    map the discrete positional IDs to continuous embedding vectors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usually, positional embeddings are defined algorithmically based on the position
+    IDs. In the original Transformers paper, they used a trigonometric function, where
+    each dimension of the positional embedding vector follows a sinusoidal pattern.
+    [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In LLaMa, **Rotary Position Embeddings (RoPE)** are used, where positional embeddings
+    are computed on the fly using rotary embeddings. The token and positional dimensions
+    are rotated together using trigonometric functions. The rotation amounts are determined
+    by the position ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless of how positional embeddings are generated, models struggle to generalize
+    to sequences longer than what was seen during pretraining. *(context extrapolation)*
+    Sinusoidal position embedding methods have limited extrapolation ability, only
+    allowing for a few dozen more tokens during inference before performance degrades.
+    [6]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Newer approaches like linear scaling and position interpolation have been introduced
+    to address this limitation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear scaling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With **linear scaling**, the positional embeddings are rescaled to adapt the
+    model to different sequence lengths. If the pre-trained model has embeddings up
+    to length L, then for inference on a sequence of length N, each positional embedding
+    vector is multiplied by N/L. This cheaply approximates embeddings for the new
+    length while retaining the pre-trained embedding properties. Linear scaling improves
+    performance on long sequences significantly. However, the model still underperforms
+    on sequences much longer than the pretrained length. The linear scaling process
+    destroys information by collapsing multiple position embeddings together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e82ac836770d64f13d2925c96376ca8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In position interpolation, the context range is not extended. Instead, there
+    are more intermediate positions. [7]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Linear scaling/interpolation** performs best overall for extending context,
+    with promise also shown in the truncated basis method. Further gains are achieved
+    by using a longer scaling factor at evaluation time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method was concurrently researched by kaiokendev and Meta. [8]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first released YaRN, a model able to achieve 128k context length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Later, three more fine-tuned models with 8k, 16k and 32k context were released,
+    called Giraffe. [5]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention with Linear Biases
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**ALiBi** introduces a simpler approach that eliminates positional embeddings.
+    Instead, it negatively biases attention scores between queries and keys with a
+    penalty proportional to their distance. This inductive bias towards recent contexts
+    allows extrapolation at low computational cost. Experiments show a 1.3B parameter
+    model trained on 1024 tokens with ALiBi achieving the same perplexity as a sinusoidal
+    model trained on 2048 tokens when tested on 2048 tokens, training faster and using
+    less memory. [6]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MosaicML’s **MPT-7B** model leverages the **ALiBi** architecture to enable extrapolation
+    to extreme context lengths up to 65k tokens, far surpassing the limits of other
+    open-source models. By replacing positional embeddings with ALiBi, the model gains
+    the ability to handle inputs of arbitrary length during inference without being
+    constrained to a fixed context window. This was demonstrated through fine-tuning
+    MPT-7B into MPT-7B-StoryWriter-65k+ using 65k token excerpts from fiction books,
+    allowing it to generate coherent continuations from the full text of The Great
+    Gatsby at 68k tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of positional embedding approach depends on considerations like model
+    size, expected sequence lengths, and how important generalization is for the problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There remains significant room for improvement, as all methods degrade in accuracy
+    with increasing length, even when perplexity is reasonable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bonus model: RWKV'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another way to improve attention would be to *not use it*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Receptance Weighted Key Value (RWKV)** model introduced by Peng et al.
+    aims to reconcile the trade-off between computational efficiency and model performance
+    in sequence processing tasks. RWKV combines aspects of both Transformers and RNNs
+    into a novel architecture that achieves linear scaling. [9]
+  prefs: []
+  type: TYPE_NORMAL
+- en: A key innovation is the reformulation of the attention mechanism to use scalar
+    interactions rather than dot products, eliminating the quadratic bottleneck.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3e32afb0c0bb84770d2a397b5dd8267.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RWKV architecture for language modeling. [9]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RWKV** implements a variant of linear attention without approximation for
+    improved efficiency. The model parallelizes computations in training like Transformers
+    but behaves as an RNN decoder at inference, yielding constant speed and memory
+    with unlimited context.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiments demonstrate RWKV is competitive with Transformers on language tasks
+    while requiring lower computational cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, given its recurrent nature, it might be necessary to adapt the prompts
+    carefully and it might struggle with maintaining detailed tracking over extremely
+    long sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Raven**](https://huggingface.co/RWKV/rwkv-raven-14b) is an example of an
+    RWKV model. This model competes with the smallest Llama-based models. In my tests,
+    Raven showed a good understanding of grammar and semantic meaning, but tended
+    to hallucinate often.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Language models benefit from longer contexts. However, longer contexts increase
+    training costs quadratically due to the standard attention mechanism. Recent research
+    focuses on approximating attention to improve efficiency. Methods like sparse
+    attention and linear attention help. Optimizing hardware efficiency also works,
+    as FlashAttention shows by leveraging GPU memory hierarchies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pretrained models still struggle with contexts longer than those seen during
+    training. Techniques like linear scaling of positional embeddings and ALiBi enable
+    longer contexts. Fine-tuning on longer contexts further adapts models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: State-of-the-art models push context lengths far beyond previous limits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: YaRN and Giraffe use position iterpolation. MPT-65k uses ALiBi for 65,000 token
+    contexts. RWKV proposes linear-scaling attention, allowing unlimited context at
+    inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Longer contexts empower models to process full documents and books, but challenges
+    remain in maintaining output quality over extended lengths.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article, join* [***Text Generation***](https://textgeneration.substack.com/)
+    *— our newsletter has two weekly posts with the latest insights on Generative
+    AI and Large Language Models.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Also, you can find me on* [***LinkedIn***](https://www.linkedin.com/in/driccio/)***.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [[1706.03762] Attention Is All You Need (arxiv.org)](https://arxiv.org/abs/1706.03762)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [[1904.10509] Generating Long Sequences with Sparse Transformers (arxiv.org)](https://arxiv.org/abs/1904.10509)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [[2205.14135] FlashAttention: Fast and Memory-Efficient Exact Attention
+    with IO-Awareness (arxiv.org)](https://arxiv.org/abs/2205.14135)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [[2307.08691] FlashAttention-2: Faster Attention with Better Parallelism
+    and Work Partitioning (arxiv.org)](https://arxiv.org/abs/2307.08691)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [[2308.10882] Giraffe: Adventures in Expanding Context Lengths in LLMs
+    (arxiv.org)](https://arxiv.org/abs/2308.10882)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [[2108.12409] Train Short, Test Long: Attention with Linear Biases Enables
+    Input Length Extrapolation (arxiv.org)](https://arxiv.org/abs/2108.12409)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [[2306.15595] Extending Context Window of Large Language Models via Positional
+    Interpolation (arxiv.org)](https://arxiv.org/abs/2306.15595)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] [[2309.00071] YaRN: Efficient Context Window Extension of Large Language
+    Models (arxiv.org)](https://arxiv.org/abs/2309.00071)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] [[2305.13048] RWKV: Reinventing RNNs for the Transformer Era (arxiv.org)](https://arxiv.org/abs/2305.13048)'
+  prefs: []
+  type: TYPE_NORMAL

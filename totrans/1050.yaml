@@ -1,0 +1,310 @@
+- en: Host Hundreds of NLP Models Utilizing SageMaker Multi-Model Endpoints Backed
+    By GPU Instances
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/host-hundreds-of-nlp-models-utilizing-sagemaker-multi-model-endpoints-backed-by-gpu-instances-1ec215886248](https://towardsdatascience.com/host-hundreds-of-nlp-models-utilizing-sagemaker-multi-model-endpoints-backed-by-gpu-instances-1ec215886248)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Integrate Triton Inference Server With Amazon SageMaker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)
+    ·7 min read·Sep 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a0b73ef0eb92e36d0a4cc5bd7159c302.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/6b5uqlWabB0)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the past we’ve explored [SageMaker Multi-Model Endpoints (MME)](/deploy-multiple-tensorflow-models-to-one-endpoint-65bea81c3f2f)
+    as a cost effective option to host multiple models behind a singular endpoint.
+    While hosting smaller models is possible on MME with CPU based instances, as these
+    models get larger and more complex in nature sometimes GPU compute may be necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[MME backed by GPU](https://aws.amazon.com/about-aws/whats-new/2022/10/amazon-sagemaker-cost-effectively-host-1000s-gpu-multi-model-endpoint/)
+    based instances is a specific SageMaker Inference feature that we will harness
+    in this article to showcase how we can host hundreds of NLP models efficiently
+    on a single endpoint. Note that at the time of this article, MME GPU on SageMaker
+    currently supports the following single GPU based instance families: p2, p3, g4dn,
+    and g5.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'MME GPU is currently also powered by two model serving stacks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Nvidia Triton Inference Server](https://aws.amazon.com/blogs/machine-learning/run-multiple-deep-learning-models-on-gpu-with-amazon-sagemaker-multi-model-endpoints/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[TorchServe](https://aws.amazon.com/blogs/machine-learning/run-multiple-generative-ai-models-on-gpu-using-amazon-sagemaker-multi-model-endpoints-with-torchserve-and-save-up-to-75-in-inference-costs/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For the purpose of this article we will be utilizing Triton Inference Server
+    with a PyTorch backend to host BERT based models on our GPU instance. If you are
+    new to Triton, we will have a slight primer, but I would recommend referencing
+    my starter article [here](/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: This article assumes an intermediate understanding of SageMaker Deployment
+    and Real-Time Inference in particular. I would suggest following this [article](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
+    for understanding Deployment/Inference more in depth. We will also overview Multi-Model
+    Endpoints, but to understand further please reference this [documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/multi-model-endpoints.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DISCLAIMER**: I am a Machine Learning Architect at AWS and my opinions are
+    my own.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is MME? Solution Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Why Multi-Model Endpoints and when would you use them? MME is a cost and management
+    effective hosting option. A traditional SageMaker Endpoint setup will look like
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f71e9966193967b59f4847d9aed6a7c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you have hundreds or even thousands of models, it becomes hard to manage
+    so many different endpoints and you have to pay for the hardware behind each persistent
+    endpoint. With MME this becomes simplified as you have one endpoint and one set
+    of hardware behind it for you to manage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab1e589097260a422fc18cced36d56fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can capture these different models in a model tarball (model.tar.gz). This
+    model tarball will essentially contain all your model metadata in the format that
+    the model serving solution expects. In this case we are using Triton as our model
+    server so our model.tar.gz will look like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For this example, we will make 200 copies of our model tarball to showcase
+    how we can host multiple models on a singular endpoint. For real-world use-cases
+    these tarballs will differ depending on the models you are pushing behind your
+    endpoint. These tarballs are all captured in a common S3 path for SageMaker to
+    understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35de9236cb5faa9a94d852feb2bf5645.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MME Bucketing (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: How are models behind MME managed? SageMaker MME will receive a request and
+    dynamically load and cache the specific model that you have invoked. In the case
+    that you are expecting high traffic for your endpoint it’s also essential to either
+    have multiple initial instances behind the endpoint or configure AutoScaling.
+    For example, if a singular model is receiving a large number of invocations, this
+    model will be loaded onto another instance to be able to serve the additional
+    traffic. To further understand load testing SageMaker MME, please reference this
+    [guide](/load-testing-sagemaker-multi-model-endpoints-f0db7b305770).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local Setup & Testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this example, we will be working in a SageMaker Classic Notebook Instance
+    with a conda_python3 kernel and a g4dn.4xlarge instance. We use a GPU based instance
+    to locally test Triton before deploying to SageMaker Real-Time Inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, we work with the popular [BERT model](https://huggingface.co/bert-base-uncased).
+    We want to first create our local model artifact, so we use PyTorch to trace and
+    then save the serialized model artifact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can confirm our saved model infers properly by loading it and running a sample
+    inference with the tokenized text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now focus on setting up Triton to host this specific model. Why is it
+    important to [test Triton locally](/debugging-sagemaker-endpoints-with-docker-7a703fae3a26)
+    before implementing with SageMaker? We want to capture any issues with our setup
+    before creating a SageMaker endpoint. Creating a SageMaker endpoint can take a
+    few minutes and until you see the failure in the logs you won’t have an idea of
+    what’s wrong with your setup even if it is as small as a scripting error or improper
+    structuring of your model tarball. By locally testing Triton first we can quickly
+    iterate on our configuration and model files to capture any errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For Triton we first need a config.pbtxt file. This captures our input and output
+    dimensions as well as other Triton Server properties you want to tune. In this
+    case we can grab the input and output shapes from the transformers library describing
+    the BERT architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can use these values to then create our config.pbtxt file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then start our Triton Inference Server with the following Docker command
+    pointing towards our model repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the container has been started you can make sample requests to ensure that
+    we are able to successfully conduct inference with our existing model artifacts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once this is working successfully, we can focus on our SageMaker MME deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SageMaker MME GPU Deployment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have our model artifacts in a format that our model server understands,
+    we can encapsulate this into a model.tar.gz that is expected for SageMaker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also create 200 copies of this model in a common S3 path to back our MME.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Along with our model artifacts location, we also need to specify the managed
+    Triton container that we are utilizing for SageMaker deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The next few steps are the usual SageMaker Endpoint creation flow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[SageMaker Model](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateModel.html):
+    Points towards our model data and container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SageMaker Endpoint Configuration](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpointConfig.html):
+    Specifies our instance type and count.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SageMaker Endpoint](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html):
+    REST Endpoint to invoke.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In our EndpointConfiguration object we specify a GPU based instance: g4dn.4xlarge
+    in this instance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The endpoint may take a few minutes to create, but after it has you should be
+    able to run sample inference. In the TargetModel header you can specify any model
+    from 1–200 as we made that the delimiter for our different model.tar.gz artifacts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you run inference you can also monitor hardware and invocation metrics via
+    CloudWatch. Specifically as this is a GPU based endpoint, you can monitor GPU
+    Utilization via API or the SageMaker console.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f0bfb6f07494571531b0059638ac3d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Monitor Tab SageMaker Console (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9efdfa132b4a7e3f60ddd54213680246.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hardware GPU Metrics (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand all other MME CloudWatch metrics please reference the following
+    [documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/monitoring-cloudwatch.html#cloudwatch-metrics-multimodel-endpoints).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/SageMaker-Deployment/blob/master/RealTime/Multi-Model-Endpoint/Triton-MME-GPU/mme-gpu-bert.ipynb?source=post_page-----1ec215886248--------------------------------)
+    [## SageMaker-Deployment/RealTime/Multi-Model-Endpoint/Triton-MME-GPU/mme-gpu-bert.ipynb
+    at master ·…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compilation of examples of SageMaker inference options and other features. …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/SageMaker-Deployment/blob/master/RealTime/Multi-Model-Endpoint/Triton-MME-GPU/mme-gpu-bert.ipynb?source=post_page-----1ec215886248--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The entire code for the example can found at the link above. MME was already
+    a very powerful feature, but when paired with GPU based hardware it can allow
+    us to host larger models in the NLP and CV space. Triton is also a dynamic serving
+    option that allows for multiple different frameworks and diverse hardware support
+    to super charge our MME applications. For more SageMaker Inference examples please
+    refer to the following [link](https://github.com/RamVegiraju/SageMaker-Deployment).
+    If you are interested in understanding Triton better please refer to my [starter
+    guide with PyTorch models](/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always thank you for reading and feel free to leave any feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

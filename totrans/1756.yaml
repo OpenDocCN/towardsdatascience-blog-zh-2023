@@ -1,0 +1,396 @@
+- en: Querying a Corpus of Documents in GPT Mode with Azure “Prompt Flow”
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/querying-a-corpus-of-documents-in-gpt-mode-with-azure-prompt-flow-3a79ec23f59c](https://towardsdatascience.com/querying-a-corpus-of-documents-in-gpt-mode-with-azure-prompt-flow-3a79ec23f59c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to automatically vectorize content and create LangChain-like mechanisms
+    to efficiently query a *corpus* of documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pl-bescond.medium.com/?source=post_page-----3a79ec23f59c--------------------------------)[![Pierre-Louis
+    Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----3a79ec23f59c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3a79ec23f59c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3a79ec23f59c--------------------------------)
+    [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----3a79ec23f59c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3a79ec23f59c--------------------------------)
+    ·6 min read·Jul 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f304c4feae9387ea63d4e46bccb0dd14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Kenny Eliason](https://unsplash.com/@neonbrand?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The GPT fever
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All tech-savvy people around the globe have been playing for a while with ChatGPT…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many of them used it as a very clever knowledge database 🔎,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Some explored the “Art of Prompting” (or “Prompt Engineering”) to get more relevant
+    results, sometimes using their own data 🤖,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But only a few went further and leveraged solutions such as LangChain to build
+    complex workflows and create real-life applications 📚.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And it is true that mastering concepts like “embeddings” or “vector stores”,
+    combined with programming requirements can seem complex for many and prevent them
+    from actually unlocking the power of LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where “[**Prompt Flow**](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/overview-what-is-prompt-flow?view=azureml-api-2)”
+    comes to the rescue!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s discover how building a powerful Q&A tool in low code is now possible
+    in Azure!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prerequisites
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I will assume that you have the necessary rights to create the resources needed
+    for this tutorial, the most important one is having an “Azure Machine Learning
+    Studio Workspace”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce9a21460a674f05a3a6bc985487fa26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Azure Machine Learning Studio Landing Page (Image from Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “**Prompt Flow**” functionality, as well as the “**Models Catalog**” (allowing
+    you to deploy LLMs curated by Azure, Hugging Face, Meta, etc.), are currently
+    in private or public preview so you’ll have to join the [waiting list](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR3NZX0G6POdDmpxIQWUqHJNUQlJXS0M4SVFZT1haVFNDTUpFQjlBUDA3QS4u)
+    before being able to activate and use it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c65e3191bc610f861adea0119ea7106.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Models Catalog and Prompt Flow in Azure Machine Learning Studio (Image from
+    Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a Vector Index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Understanding Embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To efficiently process a large *corpus* and overcome the tokens limitation of
+    current models, you need to split each document into chunks (ex. each page) and
+    convert the corresponding content into “embeddings”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An embedding is a **numeric vector, allowing to mathematically compare the
+    underlying meanings and concepts of different contents**, as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**I love dogs**: [-0.020993631333112717, …, -0.013046476989984512]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**I love animals**: [-0.004775667563080788, …, -0.02461422048509121]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**My car is broken**: [-0.029365260154008865, …, -0.032723452895879745](note:
+    the vectors’ dimensions are actually 1 x 1536)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When comparing the similarity of the first two embeddings with the [NumPy “dot”
+    function](https://numpy.org/doc/stable/reference/generated/numpy.dot.html), we
+    get a result close to 1 (~0.94), showing that their meanings are very close to
+    each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the contrary, the results when comparing the third embedding with the first
+    two ones (~0.77) show they correspond to different concepts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will be the foundation for downstream analysis: being able to compare
+    the concepts embedded in queries… with the content previously reviewed to find
+    similarities.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Vector Storage or Indexes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/f67ffe23014069231a2f8d9f85a241a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From content to a vector store (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you might have guessed, we now need a place to collect all these vectors
+    and link them with the initial documents… this is the core functionality of the
+    “Vector Storage”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[document.pdf]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: — page 1
+  prefs: []
+  type: TYPE_NORMAL
+- en: '— page 1 => split-1 => Embedding #1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '— page 1 => split-2 => Embedding #2'
+  prefs: []
+  type: TYPE_NORMAL
+- en: — page 2
+  prefs: []
+  type: TYPE_NORMAL
+- en: '— page 2 => split-1 => Embedding #3'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '— page 2 => split-2 => Embedding #4'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of Vector Storage creation can be cumbersome but “Prompt Flow” simplifies
+    and accelerates it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this example, we’ll use three documents as a *corpus*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Alice’s Adventures in Wonderland (1st Chapter)**, by Lewis Carroll'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Little Lost Robot**, a short story by Isaac Asimov (my favorite writer!)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**A few paragraphs regarding the Internet**, generated by GPT-4'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We launch the creation of “stories-vector-index” and select the 3 files, stored
+    on my computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b5fe5fb3ae78d7cd523c5279f0ac87a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New Vector Index Creation in Azure Prompt Flow (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: During the second step, you will have to choose an Azure Open AI resource that
+    includes an “embedding” model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the case for standard “Azure Open AI” resources that come with GPT-3.5
+    models and also provide “text-embedding-ada-002”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa2f5b342f0ee398cd20552e86de30ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Azure Open AI — Models Deployed in a Resource (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, it is only a matter of choosing between a “Serverless Compute” or a “Compute
+    Cluster” and a bit of patience 🤔
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*From my experience, the process with a “Serverless Compute” for a few documents
+    will take approx. 10 minutes and goes up to one hour for 1.000 documents (~1GB),
+    including various formats such as PDF, PPT, DOC, CSV, XLS, TXT, etc.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d20bf71ada4fc6c0ac55e595ea28f6f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector Index Creation Successful Process in Azure Prompt Flow(Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When the process is over, the vector index becomes available in AZML:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9f24c22b261bc8f5da38d87c44cb4ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Available Vector Indexes in Azure Prompt Flow (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: the only case of failure I have encountered so far was when the initial
+    documents were including one or more “protected PDFs” as the script was not able
+    to access the file’s content.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In that case, you’ll have to check the log to detect which document is causing
+    trouble:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f6867e12a28b72ced23439f72033b66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector Index Creation failure login Azure Prompt Flow (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d21a514b774c50810dc4f2426c07d505.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector Index Creation failure login Azure Prompt Flow (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a new Flow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'From the gallery (which is constantly evolving), we will choose and clone “Bring
+    Your Own Data QnA”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a32f8809b002860ea8c13dfa4a19008b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Flow Gallery in Prompt Flow (Image from Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This creates a complete LangChain-like mechanism that only needs a few configurations
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27a60f153fbdf247fab2d22fc9056db4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cloned Q&A Prompt Flow Configuration (Image from Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating the initial query/question
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choosing an Azure Open AI resource including embedding capacity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Selecting a runtime, linked to a running compute instance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Updating the location of the vector index (using its “Storage URI”)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/7c58809ac4c43d6008e04bec0e2adad9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cloned Q&A Prompt Flow Configuration (Image from Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After a successful run, you can inspect the relevance of the answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Indeed, one could argue that you do not need to provide the first chapter as
+    GPT models would be able to answer without it… but you understood that it that
+    for demo purposes only 😉
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the same principles, we can create a powerful Q&A application for enterprise
+    documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09e0b6195a17a14d9f2888e18d0d8d2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Flow output, based on proprietary documents (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leveraging the endpoint through a Web-App
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After a few “sanity checks” to secure that answers provided are meaningful,
+    we can deploy the application in a few clicks with the corresponding button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The flow becomes a Rest Azure Endpoint that a simple Python, C#, or R snippet
+    can consume:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/94e3e29eee1cdd7f035e2578da086ab9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Endpoint Consumption Snippet from Azure (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of my recommendations to make the model accessible easily would be to use
+    a package such as Streamlit and design a simple interface, allowing users to ask
+    queries naturally way and get answers with the corresponding sources in return,
+    as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/931f01160d1505df5658cb9848b5959d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Possible Web-App Design and UX created with Streamlit (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: And here we are! 🎉
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without so much coding, we went from an original corpus of documents to a web
+    application leveraging LLMs’ power to help end-users extract insights and knowledge
+    in an easy and natural way!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Among all the possible usages of Generative AI coming in the near future, I
+    truly believe that it’s going to be a game changer for many companies or entities
+    which try to make sense of and leverage tons of TB of data or documents they have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, I tried to identify all required steps but do not hesitate to revert
+    to me should there be any missing instructions in this tutorial!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And do not hesitate to browse through my other contributions on Medium:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----3a79ec23f59c--------------------------------)
+    [## Pierre-Louis Bescond’s articles on Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Science, Machine Learning and Innovation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pl-bescond.medium.com](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----3a79ec23f59c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

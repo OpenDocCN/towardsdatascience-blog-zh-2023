@@ -1,0 +1,1031 @@
+- en: Contextual Text Correction Using NLP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/contextual-text-correction-using-nlp-81a1363c5fc3](https://towardsdatascience.com/contextual-text-correction-using-nlp-81a1363c5fc3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Detecting and correcting errors that involve modeling context**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----81a1363c5fc3--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----81a1363c5fc3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----81a1363c5fc3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----81a1363c5fc3--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----81a1363c5fc3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----81a1363c5fc3--------------------------------)
+    ·23 min read·Jan 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bcadaafc6c2554d8c8a66ada008560c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Lorenzo Cafaro](https://pixabay.com/users/3844328-3844328/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1870721)
+    from [Pixabay](https://pixabay.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the previous article, we discussed the problem of detecting and correcting
+    common errors in text using methods from statistical NLP:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/text-correction-using-nlp-b68c7233b86?source=post_page-----81a1363c5fc3--------------------------------)
+    [## Text Correction Using NLP'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Detecting and correcting common errors: problems and methods'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/text-correction-using-nlp-b68c7233b86?source=post_page-----81a1363c5fc3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: There we took an inventory of several issues, with accompanying real examples
+    and discussion. Below are the ones that we had not fully resolved in that post.
+    (The last two were not even touched.) These are the ones needing handling of context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Missing commas.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Missing or incorrect articles.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using singular instead of plural, or vice-versa.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the wrong preposition or other connective.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this post, we start with issues involving articles. We look at elaborate
+    examples of this scenario and delve into what we mean by “issues” on each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then describe a method that addresses them. It uses a key idea of self-supervision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then move on to the various other scenarios and discuss how this same method
+    addresses them as well. Albeit with some slightly different specifications of
+    the outcomes for the self-supervision, and slightly different preprocessing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Issues Involving Articles**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider these examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the first sentence, there should be an *a* between *within* and *matter*.
+    In the second sentence, there should be a *the* right after *capitalize* and another
+    one right after *in*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider this rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Would you agree this rule makes sense? Never mind its narrow scope of applicability.
+    As will become clear later, this will hardly matter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you agree, then *within* and *matter of* are the left and the right contexts
+    respectively, for where the *a* should be inserted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can succinctly represent such a rule as L**a**R which should be read as follows.
+    If the left context is L and the right context is R, then there should be an ***a***
+    between the two. In our setting, L and R are both sequences of tokens, perhaps
+    bounded in length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As will become clear in the paragraph that follows, in fact, it is better to
+    express this rule in a somewhat generalized form as L**M**R.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here **M** denotes a fixed set of possibilities defining exactly the problem
+    we are trying to solve. In our cas*e,* we might choose **M** to be the set{ **a***,*
+    **an***,* **the***, _***none***_* }*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would read this rule as “if the left context is L and the right context is
+    R, then there are four possibilities we want to model. _**None***_*, meaning there
+    is no article in between L and R, and the other three for the three specific articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What we are really doing here is formalizing the problem we want to be solved
+    as a supervised learning problem with specific outcomes, in our case **M**. This
+    will not require any human labeling of the data. Just defining **M**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What we are really doing is *self-supervision*. We can define as many problems
+    as we want, for different choices of **M**. (In fact, in this post we will address
+    a few more.) Then we can apply the power of supervised learning without having
+    to incur the cost of labeling data. Very powerful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see an example. Consider **M** = {_**none**_, _**a_**, _**the_**, _**an_**
+    }. Say our training set has exactly one sentence in it. The underscores are there
+    just for readability — to distinguish between the outcomes in **M** and the other
+    words in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ll further assume that our rule does not cross sentence boundaries. This
+    is a reasonable assumption. Nothing in the modeling depends on this assumption
+    so it can always be relaxed as needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From this one-sentence corpus we will derive the following labeled data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: On each line, the word flanked by the underscores is an outcome in **M**, the
+    words to the left its left context, and the words to the right its right context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: says that if the left context is [*John*, *is*] and the right context is [*man*],
+    then there is an *a* between the left and the right contexts. So this labeled
+    instance captures where the article should be and what its identity should be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The remaining instances capture the negatives, i.e. where the article should
+    not be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we have such labeled data sets we can in principle use any suitable supervised
+    learning method to learn to predict the label from the input (L, R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will focus on a particular supervised learning method that
+    we think is a strong fit for our particular supervised learning problem. It is
+    a for-purpose method that models L and R as sequences of tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reader might ask, why not use the latest and greatest NLP techniques for
+    this problem as they handle very elaborate scenarios? Such as recurrent neural
+    networks, transformers, and most recently large language models such as ChatGPT.
+    Perhaps even Hidden Markov Models or Conditional Random Fields. (For more on elaborate
+    language models, see [6] and [7].) Some if not all of them should work very well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are tradeoffs. If one is trying to solve these problems for the long term,
+    perhaps to build a product around it, e.g., Grammarly [3], the latest and greatest
+    methods should of course be considered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If on the other hand, one wishes to build or at least understand simpler yet
+    effective methods from scratch, then the method of this post should be considered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The aforementioned method is also easy to implement incrementally. For readers
+    who want to give this a try, check out the section **Mini Project**. The project
+    described there could be executed in a few hours, tops a day. By a programmer
+    well-versed in Python or some other scripting language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Method**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s describe this method for the particular problem of missing or incorrect
+    articles. Following that we will apply it to several of the other issues mentioned
+    earlier in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider L**M**R. We will work with a probability distribution P(**M**|L, R)
+    attached to this rule. P(**M**|L, R) will tell us which of the outcomes in **M**
+    is more likely than others in the context of (L, R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, we would expect *P*(**a**|L=*John is*, R=*man*) to be close to
+    1 if not 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(**M**|L, R) can be learned from our training data in an obvious way.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(**m**|L, R) = #(L,**m**,R)/sum_**m’** #(L,**m’**,R)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here #(L, **m’**, R) is the number of instances in our training set in which
+    the label on input (L, R) is **m’.** Note that if **m’** is _**none**_ then R
+    begins right after L ends.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say our training corpus now has exactly two sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*P*(**a**|L=*John is*, R=*man*) would be ½ since there are two instances of
+    this (L, R) of which one is labeled **a**, the other **the**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generalizing, in the ML Sense**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider the labeled instances
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: If our corpus had enough of these, we’d want our ML to be able to learn the
+    rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: i.e., that P(**a**|L=*is*, R=*man*) is also close to 1\. Such a rule would generalize
+    better as it is applicable to any scenario in which the left context is *is* and
+    the right context is *man*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our approach, we will address this as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say L**m**R is an instance in the training set. Below we’ll assume L and R are
+    sequences of tokens. In our setting, the tokenization may be based on white space,
+    for instance. That said, our method will work with any tokenization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From L**m**R we will derive new training instances L’**m**R’ where L’ is a suffix
+    of L and R’ a prefix of R. L’ or R’ or both may have zero tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The derived instances will cover all combinations of L’ and R’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sure the size of the training set could explode if applied to a large corpus
+    and the lengths of L and R are not bounded. Okay, bound them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Recap**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, let’s see where we are. Consider the examples earlier in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Assuming our training corpus is rich enough, for example, all of Wikipedia pre-segmented
+    into sentences, we should have no difficulty whatsoever in detecting where the
+    articles are missing in these two sentences, and recommending specific fixes.
+    The sentences that would result from applying these fixes are
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using our trained model we can detect that **the** here should probably be **a.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prediction Algorithm**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To this point, we’ve only discussed informally how we might use the learned
+    rules to identify issues, not in fine detail. We now close this gap.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a window L**m**R on which we want to compare m with the predictions
+    from the rules that apply in this situation. For example, were L**m**R to be
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: we’d want to predict off the rules L’ _the_ R’, where L’ is [*within*] or [],
+    and R’ is [*matter*, of, *minutes*], [*matter*, of], [*matter*], or [] and from
+    these predictions somehow come up with a final prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach we will take is the following. We assume that we are given some
+    cutoff, call it *c*, on the minimum value that *P*(**m’**|L, R) needs to be for
+    us to surface that our method predicts **m’** in the context (L, R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will examine our rules in order of nonincreasing|L’|+|R’|. Here |T| denotes
+    the number of tokens in a list T. We will stop as soon as we find some m’ for
+    some L’, R’ such that *P*(**m’**|L’, R’) is at least *c*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In plain English, we are doing this. Among all the rules that apply to a particular
+    situation, we are finding one that is sufficiently predictive of some outcome
+    in **M** and is also the most general among those that do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Try These**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider these examples, also from [https://en.wikipedia.org/wiki/Shannon_Lucid](https://en.wikipedia.org/wiki/Shannon_Lucid)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have removed the articles. I would like the reader to guess where an article
+    should go and what it should be: *the*, *a*, or *an*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Look below only after you have made all your predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The instances from which these were derived were
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: How good were your predictions? If you did well, the method described so far
+    in this post would also have worked well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Mini Project**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in a mini project that could be implemented in hours,
+    consider this. Write a script, probably just a few lines, to input a text document
+    and output a labeled training set. Then inspect the labeled training set to get
+    a sense of whether it contains useful instances for the prediction of the locations
+    and the identities of the articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If your assessment shows potential and you have the time, you can then consider
+    taking it further. Perhaps use an existing ML implementation, such as from scikit-learn,
+    on the training set. Or implement the method from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now some more detail will help with your script. Consider limiting the context
+    to L and R to be exactly one word each. Scan the words in the document in sequence,
+    and construct the negative and positive instances on the fly. Ignore sentence
+    boundaries unless you have access to an NLP tool such as NLTK and can use its
+    tokenizer to segment the text into sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deposit the constructed instances incrementally into a pandas data frame of
+    three columns L, R, **M**. **M** is the set we chose in this section. Output this
+    data frame to a CSV file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to get a reasonable training set for your script? Download a Wikipedia page
+    or two by copying and pasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Issues Involving Commas**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s turn our attention to issues involving commas. In [1] we covered
+    some simple scenarios. The ones below are more nuanced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider this from [https://en.wikipedia.org/wiki/Zork](https://en.wikipedia.org/wiki/Zork)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: First off, let’s observe that to apply our method, we should retain the comma
+    as a separate token. Then the problem looks like the one we addressed earlier,
+    the one on articles. It would make sense to choose **M** = {_**comma**_, _**none**_}.
+    That is, the supervised learning problem is to predict whether there is a comma
+    or not in the context (L, R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: From what we have seen so far, while the rules we learn might be effective,
+    they may not generalize adequately. This is because the last token of the left
+    context would be *Zork*. We are not really learning the general pattern
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Is there a straightforward way to generalize our method so it can learn more
+    general rules?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer is yes. Here is how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll introduce the concept of an abstracted token. We’ll start with a single
+    abstraction that is relevant to our example. Later in this post, we’ll introduce
+    other abstractions as needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll assume the word on which this abstraction is applied contains only characters
+    from *a* through *z*. That is, no digits; no special characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This abstraction will produce one of three strings: /**capitalized/** denoting
+    that the word begins with a letter in upper case followed by zero or more letters
+    in lower case, /**all_lower/** denoting that all the letters in the word are in
+    lower case, and /**all_caps/** denoting that all the letters in the word are in
+    upper case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we will derive new sequences of tokens from the existing ones by selectively
+    applying this abstraction operator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s elaborate on “selectively”. If for every token in the sequence, we considered
+    two possibilities, the original token or the abstracted one, we would get a combinatorial
+    explosion of generated sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To mitigate this issue, we will only abstract out the tokens that occur sufficiently
+    infrequently if at all in our training set. Or abstract out only those that yield
+    /**capitalized**/ or /**all-caps**/.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is the sequence we may derive from *In Zork*, *the* …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We only abstracted *Zork* as it is both capitalized and an uncommon word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine that we add, to the training set, new labeled instances derived
+    from the abstracted sequences. The label is the one associated with the original
+    sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our example, the derived labeled instance would be
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we train our algorithm exactly as before. It will learn the generalized
+    rules as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that when we say “add new labeled instances to the training set” we are
+    not implying that this needs to be done offline. We can simply add these labeled
+    instances on the fly. This is analogous to what is often done in ML practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Also, note that we described our method as “adding new labeled instances” only
+    because we felt it was useful to explain it this way. We can view this alternately
+    as if we did not add new labeled instances but merely extracted additional features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is because all the newly-added instances have the same label — the original
+    one. So we can collapse them all into the original instance, just with additional
+    features extracted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More Nuanced Examples**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider these examples from [https://en.wikipedia.org/wiki/Shannon_Lucid](https://en.wikipedia.org/wiki/Shannon_Lucid)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: These ones are more intricate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nonetheless, we will continue with our method for the reasons we mentioned earlier
+    in the post. One is that a basic yet meaningful version can be implemented in
+    days if not hours from scratch. (No ML libraries needed.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To these, we’ll add one more. This method’s predictions are explainable. Specifically,
+    if it detects an issue and makes a recommendation, then the specific rule that
+    was involved can be attached as an explanation. As we’ve seen, rules are generally
+    transparent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, back to the examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s examine the scenarios involving commas in the above examples one by one.
+    We won’t examine all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With those that we do examine, we will also weigh in on whether we think our
+    current method has a good chance of working as is. These inspections will also
+    generate ideas for further enhancement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: The sequence we derive from this is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The labeled instances derived from these two sequences also include all combinations
+    of suffices of the left context paired with prefixes of the right context. In
+    the terminology of machine learning, this means that we are enumerating lots of
+    hypotheses in the space of hypotheses (in our setting, the hypotheses are the
+    rules).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The point we are trying to make in the previous paragraph is that by generating
+    lots of hypotheses, we increase the likelihood of finding some rules that are
+    sufficiently predictive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, there is no free lunch. This impacts the training time and model
+    complexity as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This also assumes that we are somehow able to discard the rules we found during
+    this process that turned out to be noisy or ineffective. Specifically, those that
+    were either *insufficiently* predictive or could be covered by more general rules
+    that are equally predictive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a section downstream in this post, we will address all these issues. That
+    said, only an empirical evaluation over a wide range of scenarios would ultimately
+    reveal how effective our approach is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to this specific example. First, let’s see it again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: There is a fair chance our method will work adequately as-is. If not on this
+    particular one, then at least on similar examples. Furthermore, nothing specific
+    comes to mind in terms of enhancements. So let’s move on to other examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: We think the current method, as is, is likely to work for this. Why? Consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Would you not consider inserting a comma between *old* and *the* based on this
+    information alone? (I do mean “consider”.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would, the algorithm could also work well. It sees the same information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: The abstraction we presented earlier, which abstracts certain words out into
+    /**capitalized**/, /**all_lower**/, or /**all_caps**/ should help here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If it doesn’t help adequately, we can tack on a second, finer abstraction. Specifically,
+    involving detecting the named entities *city* and *state*. These would let us
+    derive two new sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Even More Nuanced Cases**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are even more nuanced examples of issues involving commas. These are also
+    from [https://en.wikipedia.org/wiki/Shannon_Lucid](https://en.wikipedia.org/wiki/Shannon_Lucid)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: These suggest that we probably need to allow for quite long left and right contexts,
+    possibly up to 20 words each. And maybe add more abstractions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keeping abstractions aside, how will this impact our model training? First of
+    all, since we are learning a complex model, we’ll need our training set to be
+    sufficiently large, rich, and diverse. Fortunately, such a data set can be assembled
+    without much effort. Download and use all of Wikipedia. See [9].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, now onto training time. This can be large as we have a huge training set
+    combined with a complex model we are trying to learn, one involving lots and lots
+    of rules. Of course, the learned model itself is potentially huge, with perhaps
+    the vast majority of the learned rules turning out to be noisy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Later on in this post, we will discuss these challenges in detail and how to
+    mitigate them. In particular, we will posit specific ways to weed out rules that
+    are *insufficiently* predictive or those that can be covered with more general
+    rules that remain *sufficiently* predictive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, let’s move on to the next use case, which is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Issues Involving Prepositions Or Other Connectives**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider these examples, also from [https://en.wikipedia.org/wiki/Shannon_Lucid](https://en.wikipedia.org/wiki/Shannon_Lucid)
+    which I have mutated slightly. Specifically, I replaced certain connectives with
+    others that are somewhat plausible though not as good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Can you spot the errors and fix them?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are the original, i.e. correct, versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you did well, so will the method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now to the modeling. We will let **M** denote the set of connectives we wish
+    to model. **M** could be defined, for example, by the words tagged as prepositions
+    by a certain part-of-speech tagger. Or some other way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless, we will need to ensure that we can determine with certainty and
+    reasonably efficiently whether or not a particular token is in **M**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is because during training, while scanning a particular text, we will need
+    to know, for every word, whether it is an instance of **M** or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep things simple, we will leave _**none**_ out of **M**. This means that
+    we will only be able to model replacement errors, i.e., using the wrong connective.
+    It is easy to add _**none**_ in but it clutters up the description a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Singular Versus Plural**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider these examples, with the words we want to examine for the so-called
+    grammatical number highlighted in bold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: First off, let’s ask how we would even detect the words in /…/ in an automated
+    fashion. Here is a start. We could run a part-of-speech tagger and pick up only
+    nouns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try this out on our examples. Using the part-of-speech tagger at [https://parts-of-speech.info/](https://parts-of-speech.info/)
+    we get
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/230734bad82e51007f797cb80760ff5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The color codes of the various parts of speech are below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63e1067603e53f8c2eb8f1ecbb1b3fe4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This, while not great, seems good enough to start with. It got *problems*, *contexts*,
+    and *words* correctly. It had a false positive, *and*, and a false negative, *set*.
+    It also picked up *training* which perhaps we don’t care about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we will discuss in more detail later, while the false positives may yield
+    additional irrelevant rules, these will tend not to be harmful, only useless.
+    Furthermore, we’ll catch them during the pruning phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, if we are concerned about accuracy upfront, we might consider a more
+    advanced part-of-speech tagger. Or some other way to refine our detection approach.
+    We won’t pursue either in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we’ll do a type of preprocessing we haven’t yet had to do in any of our
+    use cases discussed thus far. Say the procedure we described in the previous paragraph
+    detects a particular word that is the object of our study. By “object of our study”
+    we mean whether it should be in singular or in the plural.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Right after we have detected such a word, we will run a grammatical number classifier,
+    possibly one using a very simple heuristic such as if the word ends with *s* or
+    *ies* deem it plural else deem it singular. Next, we will add _singular_ or _plural_
+    to a copy of our text, depending on this classifier’s prediction. Importantly,
+    we will also singularize the word which precedes the label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our examples, after all of this has been done, and using the part-of-speech
+    tagger we used earlier, we will get
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: So our **M** will be the set { _**singular**_, _**plural**_ }.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the left context includes the word whose grammatical number we are
+    trying to predict. This is by design. This is why we added the labels explicitly
+    to the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, note that the words flanked by asterisks are the ones we singularized.
+    We did so because these words are in the left context of the label to be predicted.
+    We want to strip off any information in the word itself that can be used to predict
+    its label. Other than any information inherently in the singularized version of
+    the word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we didn’t singularize these words we would have label leakage. This would
+    have bad consequences. We might learn rules that seem to be good but don’t work
+    well at prediction time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s do a quick review of the text as a sanity check. To assess whether
+    or not the contexts seem to have enough signal to at least predict better than
+    random. How accurately we can predict the labels will have to await an empirical
+    evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It does seem that *for some of the problems* predicts _**plural**_. *left and
+    right context* would also seem to predict _**plural**_ better than random. How
+    much better is hard to say without seeing more examples. Similarly, *Up to 20
+    word* would seem to predict _**plural**_. The prediction might possibly improve,
+    and certainly generalize better, were we to use the abstraction that 20 is _**integer_greater_than_1**_.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model Complexity, Training Time, And Lookup Time**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we’ve seen, for some of the problems we are trying to solve, we may need
+    long left and right contexts. Up to 20 words each. Perhaps longer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve also discussed that we’d preferably want a very rich data set for training.
+    Such as all of Wikipedia. Our mechanism also relies on abstractions, which amplify
+    the size of the training set possibly by another order of magnitude.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So is this a show-stopper for our method? Well, no. We can substantially prune
+    the size of the model and substantially speed up training. We’ll discuss these
+    below individually. We’ll also discuss how to be fast at what we are calling lookup
+    time, as it will impact both training time and prediction time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reducing The Model Size**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the model size. First off, keep in mind that in modern times
+    large-scale real models do use billions of parameters. So we may be okay even
+    without any pruning. That said, we’ll cover it anyhow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When considering whether a particular rule should be deleted or not, we will
+    distinguish between two cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is the rule insufficiently predictive?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Is a more general rule sufficiently predictive compared to this one?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our main reason for distinguishing between these two cases is that we will not
+    explicitly prune for the first case. Instead, we will rely on either the second
+    case addressing the first one as well or on the prediction algorithm doing on-the-fly
+    pruning sufficiently well. With regards to the latter, also note that the prediction
+    algorithm takes the cutoff *c* as a parameter, which allows us to get more conservative
+    or more sensitive at prediction time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, with that out of the way, let’s address the second case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To explain this method, let’s start with a learned rule L**M**R that is general
+    enough. Here is an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: We deem it general because the left and the right contexts are a single word
+    each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that in the training corpus, the expression *from a learned model* appears
+    at least once somewhere. So we would also have learned the rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: This rule is more specific. So we will deem it a child of the rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have defined child-parent relationships we can arrange the rules
+    into a tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are ready to describe the pruning criterion. For a particular node *v*
+    in the tree, if all its descendants predict the same outcome as *v* does, we will
+    prune away all the nodes under *v*’s subtree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s apply this to our example. In the setting **M** = {_**a_**, _**an_**,
+    _**the_**, _**none**_}, the rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: predicts the same outcome, _**a_**, as does
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Furthermore imagine that the latter rule only has one rule, the former one,
+    in its subtree. So we prune away the former.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, we’ve defined the pruning criterion. Next, we discuss how to do the actual
+    pruning, i.e. apply the criterion efficiently. *The short answer is bottom-up.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with the leaves of the tree and find their parents. We then consider
+    each of these parents one by one. We prune away a parent’s children if they all
+    predict the same outcome as the parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have a new tree. We repeat this same process on it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We stop when we can’t prune further or when we have pruned enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Speeding Up Training**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the one hand, we only need one pass over the sentences in the training set.
+    Moreover, we only need to stop at the tokens that are instances of **M**. To pause
+    and update various counters as described earlier. That’s good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, at a particular stopping point **m**, we may need to enumerate
+    all admissible windows L**m**R so we can increment their counters involving **m**.
+    For each of these, we also need to derive additional windows based on the abstractions
+    we are modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve already discussed how to constrain the abstractions, so we won’t repeat
+    that discussion here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key point we’d like to bring out is that pruning the model in the manner
+    we described earlier not only reduces the model’s size, it also speeds up subsequent
+    training. This is because, at any particular stopping point **m**, there will
+    generally be far fewer rules that trigger in the pruned model compared to the
+    unpruned one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Lookup Time**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By lookup, we mean that we want to efficiently look up rules that apply in a
+    particular situation. Let’s start with an example. Say we have learned the rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: for the issue involving articles. Recall that we chose **M** to be { **a**,
+    **an**, **the**, _**none**_ }.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider the text *Jeremy is a man.* We want to scan it for issues. We will
+    be on *a* since *a* is in **M**. We want to check the following, in order. For
+    this **M**, is there a rule with L = [*is*] and R = []? Is there a rule with L
+    = [] and R = [*man*]? Is there a rule with L = [*is*] and R = [*man*]? And so
+    on. Let’s call “Is there a rule” a look-up. The look-up inputs **M**, L, and R.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We obviously want the lookups to be fast. We can make this happen by indexing
+    the set of rules in a hashmap, let’s call it H. H is keyed on the triple (**M**,
+    L, R). Think of H as a 3d hashmap, expressed as H[**M**][L][R].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we covered elaborate versions of scenarios involving detecting
+    and correcting errors in text. By “elaborate” we mean those in which context seems
+    important. We covered issues involving missing or incorrect articles, missing
+    commas, using singular when it should be plural or the other way around, and using
+    the wrong connective such as a wrong preposition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We modeled each as a self-supervised learning problem. We described an approach
+    that works on all these problems. It is based on a probability distribution on
+    the space of outcomes conditioned jointly over a left context and a right context.
+    The definition of the outcomes and some preprocessing do depend on the particular
+    problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We discussed enumerating left context, and right context pairs of increasing
+    length, and also abstraction mechanisms to learn more general rules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method we described is straightforward to implement in its basic form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also described how to prune the set of learned rules, how to speed up training,
+    and how to efficiently look up which of the rules apply to a particular situation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Text Correction Using NLP. Detecting and correcting common errors… | by Arun
+    Jagota | Jan, 2023 | Towards Data Science](/text-correction-using-nlp-b68c7233b86)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Association rule learning — Wikipedia](https://en.wikipedia.org/wiki/Association_rule_learning)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Grammarly](https://app.grammarly.com/) *I used it extensively. Very useful.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[ChatGPT: Optimizing Language Models for Dialogue](https://openai.com/blog/chatgpt/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Wikipedia:Database download](https://en.wikipedia.org/wiki/Wikipedia:Database_download)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Statistical Language Models | by Arun Jagota | Towards Data Science | Medium](https://medium.com/towards-data-science/statistical-language-models-4e539d57bcaa)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Neural Language Models, Arun Jagota, Towards Data Science, Medium](https://medium.com/towards-data-science/neural-language-models-32bec14d01dc)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

@@ -1,0 +1,270 @@
+- en: 'Boosting Spark Union Operator Performance: Optimization Tips for Improved Query
+    Speed'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/boosting-spark-union-operator-performance-optimization-tips-for-improved-query-speed-9123ae6ada80](https://towardsdatascience.com/boosting-spark-union-operator-performance-optimization-tips-for-improved-query-speed-9123ae6ada80)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Demystify Spark Performance in Union Operator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chengzhizhao.medium.com/?source=post_page-----9123ae6ada80--------------------------------)[![Chengzhi
+    Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----9123ae6ada80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9123ae6ada80--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9123ae6ada80--------------------------------)
+    [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----9123ae6ada80--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9123ae6ada80--------------------------------)
+    ·6 min read·Apr 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd00c06827eb22a6b64bcc2112e3d7d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Fahrul Azmi](https://unsplash.com/@fahrulazmi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/zN4mtLHkHn4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The union operator is one of the set operators to merge two input data frames
+    into one. Union is a convenient operation in Apache Spark for combining rows with
+    the same order of columns. One frequently used case is applying different transformations
+    and then unioning them together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ways of using the union operation in Spark are often discussed widely. However,
+    a hidden fact that has been less discussed is the performance caveat associated
+    with the union operator. If we didn’t understand the caveat of the union operator
+    in Spark, we might fall into the trap of doubling the execution time to get the
+    result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will focus on the Apache Spark DataFrameunion operator in this story with
+    examples, show you the physical query plan, and share techniques for optimization
+    in this story.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Union Operator 101 in Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Like Relational Database (RDBMS) SQL, the union is a direct way to combine
+    rows. One important thing to note when dealing with a union operator is to ensure
+    rows follow the same structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The number of columns should be identical**. The union operation won’t silently
+    work or fill with NULL when the number of columns differs on data frames.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The column data type should match and resolves columns by position**. The
+    column name should follow the same sequence for each data frame. Nevertheless,
+    that’s not mandatory. The first data frame will be chosen as the default for the
+    column name. So mixing order can potentially cause an undesired result. Spark
+    `unionByName` is intended to resolve this issue.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In Spark, the operation `unionAll` is an alias to `union` that doesn’t remove
+    duplication. We’d need to add distinct after performing union to perform SQL-like
+    union operations without duplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also combine multiple data frames to produce a final data frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Performance Bottleneck of Union Operator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One typical pattern of using the union operator is splitting a single data frame
+    into multiple, then applying different transformations, and eventually combining
+    them into the final one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example: we have two big tables (fact table) that need to join,
+    and the best way to join is the SortMerged join in Spark. Once we got the SortMerged
+    data frame, we split it into four subsets. Each subset uses different transformations,
+    and eventually, we combine those 4 data frames into the final one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aedfcc3042c197c4580de6e8324241f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Union Operation in Spark | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark data frame leverages Catalyst optimizer, which takes the data frame code
+    you had, then performs code analysis, logical optimization, physical planning,
+    and code generation. Catalyst tries to create an optimal plan that executes your
+    Spark job efficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In recent years, Spark has extensively accomplished a lot of optimization on
+    Catalyst to improve performance on Spark join operations. The join operation has
+    more scenarios to use than the union operation, leading to less effort put into
+    the union operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If users don’t use union on entirely different data sources, union operators
+    will face a potential performance bottleneck — Catalyst isn’t “smart” to identify
+    the shared data frames to reuse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, Spark will take each data frame as separate branches, then perform
+    everything from the root multiple times. In our example, we will perform the two
+    big table join four times! It is a huge bottleneck.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set up an Example with Union Operator in Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It’s straightforward to reproduce a non-optimized physical query plan for the
+    union operator in Spark. We will do the following
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create two data frames from 1 to 1000000\. Let’s call them `df1` and `df2`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform inner join on `df1` and `df2`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Split the joined result into two data frames: one only contains the odd numbers,
+    another one for the even numbers'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add a transformation with a field called `magic_value` , which is generated
+    by two dummy transformations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Union the odd and even number data frames
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is a high-level view of what the DAG looks like. If we look at the DAG
+    bottom-up, one thing that stands out is the join happened twice, and the upstream
+    almost looks identical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have seen where Spark needs to optimize the union operator extensively, and
+    much time is wasted performing unnecessary recomputing if the data source can
+    be reused.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/add8c79c2672760e195efa5889b57e5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The DAG for non-optimized query plan for Union Operation | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the physical plan that has 50 stages scheduled with AQE enabled. We
+    can see ids 13 and 27\. Spark did perform join twice on each branch and recomputed
+    its branch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f22a40b040403b4d2deb7056b6503f78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The non-optimized Physical query plan for Union Operation | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to Improve the Performance of Union Operation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we can see this potential bottleneck. How could we resolve this? One option
+    is to double the number of executors to run more concurrent tasks. But there is
+    a better way to hint to Catalyst and let it reuse the joined data frame from memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To resolve the issue of the Spark performance of union operation, **we can explicitly
+    call a** `**cache**` **to persist the joined data frame in memory.** So Catalyst
+    knows the shortcut to fetch the data instead of returning it to the source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where to add the `cache()` ? The recommended place would be the data frame before
+    the filtering and after the join is completed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see it in action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the query plan: **InMemoryTableScan** is present, so we can reuse the
+    data frame to save other computing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/321a65c28576e4c8594712fac1b6d0ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The DAG for optimized query plan for Union Operation | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the physical plan is reduced to have only 32 stages, and if we check, ids
+    1 and 15 both leverage the **InMemoryTableScan.** This could save much more time
+    if we split the original data frames into smaller datasets and then union them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95230850a6a7f3d0904d3f591ab9bb8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Optimized Physical query plan for Union Operation | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope this story helps provide some insights into why sometimes the union operation
+    becomes a bottleneck for your Spark performance. Due to the lack of optimization
+    in Catalyst for the union operator in Spark, users need to be aware of such caveats
+    to develop Spark code more effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding cache can save time in our example, but it won’t help if the union is
+    performed on two completely different data sources and there is no shared place
+    to perform cache.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kazuaki Ishizaki's talk inspires this story — [Goodbye Hell of Unions in Spark
+    SQL](https://www.youtube.com/watch?v=c25eT-2dwAg), and my experience handling
+    a similar issue for my projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Goodbye Hell of Unions in Spark SQL](https://www.youtube.com/watch?v=c25eT-2dwAg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ps: If you are interest in how to handle data skew part of Spark performance,
+    I have another story on TDS for it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/deep-dive-into-handling-apache-spark-data-skew-57ce0d94ee38?source=post_page-----9123ae6ada80--------------------------------)
+    [## Deep Dive into Handling Apache Spark Data Skew'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Ultimate Guide To Handle Data Skew In Distributed Compute
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/deep-dive-into-handling-apache-spark-data-skew-57ce0d94ee38?source=post_page-----9123ae6ada80--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

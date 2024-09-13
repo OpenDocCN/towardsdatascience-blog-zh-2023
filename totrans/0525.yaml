@@ -1,0 +1,497 @@
+- en: College Football Conference Realignment — node2vec
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/college-football-conference-realignment-node2vec-ba2e931bb1c](https://towardsdatascience.com/college-football-conference-realignment-node2vec-ba2e931bb1c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gspmalloy?source=post_page-----ba2e931bb1c--------------------------------)[![Giovanni
+    Malloy](../Images/e94218e244fab1af845c68e63e5706a1.png)](https://medium.com/@gspmalloy?source=post_page-----ba2e931bb1c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba2e931bb1c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba2e931bb1c--------------------------------)
+    [Giovanni Malloy](https://medium.com/@gspmalloy?source=post_page-----ba2e931bb1c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba2e931bb1c--------------------------------)
+    ·16 min read·Aug 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You have made it to the final part of this 4-part blog. In part 3 of this blog,
+    we tried to explore a world of conferences based on clustering where similar teams
+    can share conferences. In this blog, we will perform analysis from the perspective
+    of television and media networks. We are going to focus on creating a blockbuster
+    lineup of made-for-television matchups: think [Camping World Kickoff Game](https://campingworldkickoff.com/about/)
+    every week. In other words, what would the college football landscape look like
+    if ESPN or FOX could tailor conferences to their liking (and that of their shareholders).
+    In many ways, this is a more realistic approach than the preceding blog. The idea
+    is that we will calculate an expected payoff from every possible game in college
+    football, greedily fill schedules to maximize payoff and create a “dream” season,
+    define a network graph based on the selected matchups, and create conferences
+    based on the graph structure.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b43a1347bf189e9d1cfde98814ea1da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jacob Rice](https://unsplash.com/@jrice_photography?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This series is organized into four parts (and the full motivation for it is
+    found in part 1):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[College Football Conference Realignment — Exploratory Data Analysis in Python](/college-football-conference-realignment-exploratory-data-analysis-in-python-6f4a74037572)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[College Football Conference Realignment — Regression](/college-football-conference-realignment-regression-8f0776278d55)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[College Football Conference Realignment — Clustering](/college-football-conference-realignment-clustering-6ca16840ed3d)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[College Football Conference Realignment — node2vec](https://medium.com/towards-data-science/college-football-conference-realignment-node2vec-ba2e931bb1c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hopefully, each part of the series provides you with a fresh perspective on
+    the future of the beloved game of college football. For those of you who did not
+    read part 1 or 2 a quick synopsis is that I created my own data set compiled from
+    sources across the web. These data include [basic information about each FBS program](https://en.wikipedia.org/wiki/List_of_NCAA_Division_I_FBS_football_programs),
+    a non-canonical approximation of all [college football rivalries](https://en.wikipedia.org/wiki/List_of_NCAA_college_football_rivalry_games),
+    [stadium size](https://en.wikipedia.org/wiki/List_of_NCAA_Division_I_FBS_football_stadiums),
+    [historical performance](https://en.wikipedia.org/wiki/List_of_NCAA_Division_I_FBS_football_bowl_records),
+    [frequency appearances in AP top 25 polls](https://collegepollarchive.com/football/index.cfm),
+    whether the school is an [AAU](https://www.aau.edu/) or [R1](https://en.wikipedia.org/wiki/List_of_research_universities_in_the_United_States)
+    institution (historically important for membership in the Big Ten and Pac 12),
+    the number of [NFL draft picks](https://www.ncaa.com/news/football/article/2020-04-27/college-football-teams-most-nfl-draft-picks-2000),
+    [data on program revenue](https://graphics.wsj.com/table/NCAA_2019) from 2017–2019,
+    and a [recent estimate](https://drive.google.com/file/d/1MiUOwx8X3H2bSkUOz8a1YhceyJWLLCoJ/view)
+    on the size of college football fan bases. In part 1 we found that there were
+    several features that correlated strongly with fan base size, so in part 2, we
+    developed a linear regression and random forest regression model to predict fan
+    base size. In part 3, we used constrained k-means clustering to suggest 10 new
+    conferences. Some of them were networks of traditional regional rivals while others
+    were mega-conference mashups of misfits. How will that approach compare to our
+    profit-maximizing one?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Feature Engineering**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given the complexity of the methods for this model, let’s start with the data
+    first. This time, we won’t need to do nearly as much manipulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we will set some user-specified inputs to help us calculate the expected
+    payoff of a given matchup. We know that top 25 games and rivalries make for great
+    television, so we assign a bonus multiplier (1.25x per team) for every team in
+    a game that is in the top 25\. This comes out to a little more than 1.5x for a
+    game with two top 25 teams. The bonus multiplier for a rivalry game is 1.5X. We
+    also define the number of conference games per season to help calculate a payoff
+    by conference. Right now, a lot of conferences play 9 in-conference games per
+    season.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Expected Payoff by Existing Conference**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we are ready to put our expected payoff model into action. For each existing
+    conference, we can calculate the payoff for every conference game possible. First,
+    we can create lists of all teams in each conference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This isn’t strictly necessary, but I think it helps eliminate confusion later
+    on. Next, we can start with our analysis by conference. Let’s use the example
+    of the ACC for the purposes of this blog. Our strategy will be to loop over every
+    team and their possible opponents to get a data frame of possible conference games.
+    For each game, we will assume that the expected payoff is a function of the size
+    of each team’s fan base, whether one, both, or neither of the teams is in the
+    AP top 25, and whether the game is a rivalry game. So, we keep track of each of
+    those things as we loop through. In this example, the way that we keep track of
+    rivalry games is by creating a network from an edge list of rivalry games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we are ready to loop through:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we create a data frame with all of the conference matchup information
+    using pandas. We know that the AP Top 25 changes from week to week, so we assume
+    that the probability of being in the AP top 25 is the frequency with which a team
+    appeared in an AP top 25 poll between 2001–2021\. For each game, there are three
+    scenarios: two top 25 teams, one top 25 team, or zero top 25 teams. We calculate
+    the probability of each scenario. Then, for each of those scenarios, we calculate
+    the expected payoff as (1+muliplier_top_25)^(# teams in top 25) * (1 + (multiplier_rivalry_game
+    * is_rivalry_game) * (sum of both teams fan bases). Finally, we get the expected
+    payoff of the game by multiplying the probability of a game scenario by the payoff
+    of that game scenario.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is a distribution of expected payoffs for all possible conference
+    matchups which we can plot using a plotly histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c95e8b566727f159c3e592223e9b980f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Most ACC games have an expected payoff between 0 and 7\. There are a few outliers
+    with very high payoffs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that in general, the games have an expected payoff of between 0 and
+    7\. Games like Florida State — Miami, Clemson — Florida State, and Virginia Tech
+    — Miami are outliers with expected payoffs of more than 10\. These are games that
+    make sense as consistent prime time matchups, and this is a validation of our
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can repeat this process for each conference and easily compare the distribution
+    by conference using a box plot. Here, we will use seaborn and matplotlib to create
+    the box plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/76f9d2fbee72fae989947c688cd9d590.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, we can see that in terms of economic payoff, the Big Ten and SEC have
+    a clear advantage with the other Power 5 conferences closely grouped and the Mountain
+    West conference as the leader among Group of 5 conferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, we can confirm mathematically what the sports media world has been alleging
+    since the latest round of realignment: the Big Ten and the SEC are consolidating
+    power and value. This is especially true for the marquee matchups of the conferences
+    like the Big Game: Ohio State — Michigan. It truly earns its nickname. We see
+    that there is relative parity between the ACC, Big 12, and Pac-12, and we also
+    see that the Mountain West conference is the clear favorite among Group of 5 conferences.
+    In the table below, we get a detailed picture of the payoffs by conference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fafc3d03100f7127c348443611a3e032.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The table compares expected payoff by game and by team per conference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Just as we noted before, the Big Ten and SEC dominate, but the SEC has a variance
+    that is almost half that of the Big Ten. The other interesting outcome is that
+    the payoff per team of the Big 12 is about half that of the Pac-12\. So, why do
+    the two seem in a [constant realignment quarrel](https://www.outkick.com/whose-bigger-pac-12-vs-big-12/#:~:text=Big%2012%20Commissioner%20Brett%20Yormark%20made%20waves%20when,if%20we%E2%80%99re%20going%20shopping%20there%20yet%20or%20not.%E2%80%9D)
+    lately? That probably has more to do with the uncertainty of the future of the
+    remaining valuable assets of the Pac-12: Oregon and Washington. The teams in the
+    Big 12, on the other hand, are not in danger of being poached.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Greedy Scheduling**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we feel comfortable enough with our model to calculate expected payoff
+    per game, we can compute the expected payoff for all 8,778 possible matchups in
+    the FBS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting distribution is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0bb0af1b9aab840704479df3219f5e81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distribution of the expected payoff per game over the entire FBS is heavily
+    right skewed. Of the almost 9,000 possible matchups, most have low payoffs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The histogram reveals an expected result: there are a few games that are incredibly
+    high payoff, and most are low payoff. The distribution is right skewed with a
+    median expected payoff of around 2 per game and a mean expected payoff of around
+    3\. While the expected payoff number itself is difficult to interpret, the qualitative
+    results are certainly enlightening. Conference realignment is motivated by maximizing
+    the conference expected payoff per team (which often, but not always, aligns with
+    maximizing expected payoff per game).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While we would all love to see 8,778 college football games per year, there
+    is a limit to each team’s schedule. Typically, teams play 12 regular season games
+    (unless they play a game in Hawaii, then they are allowed to play 13), but for
+    our purposes, let’s say that each team can play 15 games per season to add some
+    additional flexibility for [an expanded playoff](https://www.cbssports.com/college-football/news/college-football-playoff-expansion-remains-unsettled-as-committee-eyes-12-team-field-in-2024/).
+    We can create a data frame to keep track of our newly scheduled games:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will treat scheduling as a [knapsack problem](https://en.wikipedia.org/wiki/Knapsack_problem)
+    which we will solve using a greedy algorithm. Essentially, we will add the highest
+    payoff games possible to the schedule assuming both teams in that game still have
+    room in their schedule. The result should be the optimal season for media companies.
+    They will have the best of the best playing each other as often as possible. This
+    strategy of course ignores any existing conference boundaries, which is exactly
+    the point: we will generate schedules first then use the schedules to identify
+    the conferences. Here is the code to generate our master FBS schedule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The highest payoff game not to be scheduled? Ohio State — Florida State with
+    an expected payoff of 19.84\. The lowest payoff game to be scheduled? Jacksonville
+    State — Sam Houston State with an expected payoff of 0.08\. We can create a histogram
+    to compare the expected payoff of our greedily chosen games to that of all possible
+    games:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/83f7e9835808d8478d0649da131f07bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Most of the low payoff games were not chosen while the high payoff games were
+    chosen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the histogram, we can see that our new conference model maintains the
+    highest payoff games and reduces the lowest payoff games substantially compared
+    to the possible FBS games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Network Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To go from a master schedule to conferences, we need to make sense of the relationships
+    that the teams now have with each other. The method that we will take to do this
+    is to convert our master FBS schedule to an undirected graph using [networkx](https://networkx.org/).
+    (If you are new to graph theory, I recommend starting where I did many years ago:
+    [Wikipedia](https://en.wikipedia.org/wiki/Graph_theory).) Each team will be a
+    vertex (or node), and each game will be an edge in the graph. We will also add
+    edge weights to the graph where the weight of each edge is the expected payoff
+    of the game between the two teams connected by that edge. Let’s create the network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: One way we can visually determine whether this approach might work for creating
+    conferences is to graph the network using draw_circular(). We visually inspect
+    that the model looks like a [small world](https://www.nature.com/articles/30918).
+    This is a good sign as we expect teams in the same conference to play each other.
+    In our network, this means high numbers of common neighbors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3118f9f0d9245019548f13fa2c00397.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The master FBS schedule shows small world properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**node2vec**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key to translating our network of college football teams to a group of conferences
+    lies in an algorithm called [node2vec](https://dl.acm.org/doi/10.1145/2939672.2939754)
+    proposed by Aditya Grover and Jure Leskovec. The short summary of the node2vec
+    algorithm is that it uses a biased random walk procedure to generate low-dimensional
+    representations of the nodes in a graph. It took its inspiration from the word2vec
+    algorithm familiar to those who work with natural language processing. However,
+    instead of skip gram models of words, it is biased random walks along a graph.
+    At some point, I will try to do a blog post comparing the two. If we had used
+    the SNAP package to make the network in Python, there is a built-in function for
+    [node2vec](http://snap.stanford.edu/node2vec/). However, we will use an [implementation](https://github.com/eliorc/node2vec)
+    compatible with networkx. I have to admit that the online documentation is not
+    as thorough as most of the other packages I have used in the blog series, so I
+    will try to explain thoroughly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code above, we import the node2vec package for networkx and first generate
+    the random walks. The dimension input is the length of the array output for each
+    node, the walk length is the number of transitions each random walk consists of,
+    and the number of walks is the number of random walks that start at each node.
+    The workers input is for parallel execution, however, for Windows machines this
+    must be set to 1\. Then, we run the node2vec model to get the embeddings. We create
+    a data frame with only the embeddings and a data frame with team names included.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Clustering**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Much like before, we will create our conferences using k-means clustering. However,
+    this time, the clusters will be created using the node2vec embeddings. In that
+    way, teams that have similar positions in the network structure are grouped together
+    into conferences. Given that the network is based on the greedy schedule, we should
+    see groups of teams that play together often clustered together into our new conferences.
+    Since I described k-means clustering thoroughly in part 3 of this series, I will
+    skip the explanation for now. Instead, here is the code to implement a clustering
+    of 8 realigned conferences. This time, our number of conferences will be a function
+    of the total number of teams and the number of games each team plays per season.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Data-driven FBS Conferences**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, time for the big reveal! If media executives could have their way, showcase
+    the biggest payoff games in college football every year, how would the teams realign
+    into new conferences? The approach is both driven by data and money, so this is
+    our most robust recommendation yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*ACC+*: Syracuse, Miami (FL), Florida State, Nebraska, Clemson, North Carolina,
+    South Carolina, Missouri, Arkansas, Iowa, Virginia Tech, Washington, Ole Miss,
+    West Virginia, UCLA, Kentucky, Maryland, Arizona State, Georgia Tech. I couldn’t
+    resist naming a conference in this blog with a “+”. It’s too trendy, and this
+    conference looks like the ACC plus some others. In this case the “+” includes
+    a presence in middle America and the Pacific coast. A true delight for media executives
+    who weren’t able to cash in on the Super 20.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Mountain South*: Marshall, Troy, Louisiana, UTEP, Appalachian State, Louisiana
+    Tech, Florida Atlantic, San Jose State, UTSA, Arkansas State, SMU, UNLV, Akron,
+    Buffalo, Utah State, FIU, North Texas, Louisiana-Monroe. All of these teams come
+    from the current Mountain West conference or from the southern United States except
+    Buffalo and Akron who are the obvious outliers. These teams have the potential
+    to spoil a season of high expectations (see [App State v Michigan](https://en.wikipedia.org/wiki/2007_Appalachian_State_vs._Michigan_football_game)
+    in 2007).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Tuesday Group*: New Mexico State, South Alabama, Georgia State, Bowling Green,
+    Central Michigan, Texas State, Ball State, Kent State, Jacksonville State, Eastern
+    Michigan, James Madison, Sam Houston State. Named in part after the [moderate
+    Republican caucus](https://en.wikipedia.org/wiki/Republican_Governance_Group)
+    in Congress and in part because this seems like the conference most likely to
+    play in the coveted Tuesday night slot on ESPNU.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Power Group*: Navy, Duke, Fresno State, Northwestern, Virginia, Boston College,
+    Indiana, UCF, Iowa State, Baylor, Washington State, Vanderbilt, San Diego State,
+    Kansas, Army, Oregon State. This conference includes teams with fan base reach
+    on the lower end of the Power 5 conferences and the upper end of the Group of
+    5 conferences.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Super 20*: Ohio State, Notre Dame, Texas, Florida, Michigan, Penn State, Alabama,
+    Oregon, LSU, Georgia, Wisconsin, USC, Oklahoma, Auburn, Texas A&M, Michigan State,
+    Tennessee, Texas Tech, Illinois, TCU. This is the conference that would have the
+    folks at ESPN, Fox, CBS, and NBC fighting tooth and nail over. The big name teams
+    mean big fan bases and big payoffs. This is a media executive’s dream and honestly
+    not too far out of the question if the best of the Big Ten and the SEC wanted
+    to join forces and add a few others.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Pan-American Conference 17 (Pac-17)*: Pittsburgh, Minnesota, NC State, Oklahoma
+    State, Purdue, Stanford, Arizona, Louisville, Boise State, Utah, Mississippi State,
+    BYU, Cal, Kansas State, UConn, Colorado, Rutgers. This is the one of the largest
+    conferences in our newly realigned world. It stretches from Connecticut to California
+    and features many solid teams with a smaller fan base. The projection is high
+    quality football, but not always the highest payoff football.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Middle West*: UAB, Middle Tennessee State, Western Michigan, Liberty, Tulsa,
+    Miami (OH), Rice, Toledo, Northern Illinois, Charlotte, Old Dominion, Ohio, Coastal
+    Carolina, Tulane, UMass, Georgia Southern, Western Kentucky. This conference is
+    a mix of teams from all over the current Group of 5 conferences. Most of these
+    teams are located in the country’s interior. Hence, the proposed name.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*AAMWC*: Houston, Memphis, New Mexico, Wyoming, Hawaii, East Carolina, Nevada,
+    Southern Miss, Colorado State, South Florida, Cincinnati, Air Force, Temple, Wake
+    Forest. This conference is a perfect mesh between the current American Athletic
+    and Mountain West Conferences. These teams have all had very solid years in the
+    past but haven’t shown consistency in their gridiron product.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The node2vec algorithm is designed to group together similar nodes, but we should
+    still verify that the number of conference games per team is stable across conferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above code produces a comparison of the average number of in-conference
+    games per school in the newly realigned FBS world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d1fe5c056a4bb83ed0c29b243120a6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All conferences average between 10.1 and 11.3 conference games per team.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the new conference average between 10 and 11 conference games per year out
+    of a 15-game schedule. This consistency between conferences verifies the stability
+    of scheduling between conferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that, we come to a close on this blog series. We have learned how to explore
+    data, use supervised and unsupervised machine learning, and implement a decision
+    model to create the ideal college football conferences. Perhaps the methods presented
+    in this blog are already being used behind the scenes to inform conference realignment
+    in the FBS. If they are not, then they ought to be. Our beloved game is heading
+    into a new era driven by money. This framework presents a method driven by economics
+    that also incorporates traditional rivalries that sets college football apart.
+    If one day we see conferences aligned as I’ve presented here, you heard it here
+    first. Until then, I’ll keep enjoying my Saturdays watching and waiting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading! As always, comment your thoughts below. I know this is a
+    thought experiment, so let me know your reactions. Where did your team end up?
+    Would you prefer these allegiances to today’s conferences?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Show some love on Twitter: [@malloy_giovanni](https://twitter.com/malloy_giovanni)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interested in my content? Please consider [following me on Medium](https://medium.com/@gspmalloy).
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,280 @@
+- en: How I Built A Cascading Data Pipeline Based on AWS (Part 2)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Automatic, scalable, and powerful
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[![Memphis
+    Meng](../Images/5a2b214eb5d5ab884b18224c471662c0.png)](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)
+    [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)
+    ·10 min read·Aug 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/527158d227cde2bf33b0286a233784ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Mehmet Ali Peker](https://unsplash.com/@mrpeker?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/hfiym43qBpk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Previously](https://medium.com/p/997b212a84d2), I shared my experience in
+    developing a data pipeline using AWS CloudFormation technology. It is not an optimal
+    approach, though, because it leaves behind 3 more issues awaiting resolution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The deployment has to be imposed manually which could increase the chances of
+    errors;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All resources are created in one single stack, without proper boundaries and
+    layers; as the development cycle goes on, the resource stack will be heavier,
+    and managing it will be a disaster;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Many resources are supposed to be sustained and reused in other projects.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In short, we are going to increase the manageability and reusability of this
+    project, in an agile manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'AWS enables users to implement 2 types of CloudFormation structural patterns:
+    cross-stack reference and nested stacking. Cross-stack reference stands for a
+    designing style of developing cloud stacks separately, and usually independently,
+    while the resources among all stacks can be interrelated based on the reference
+    relationship. [Nested stacking](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html)
+    means a CloudFormation stack composed of other stacks. It is achieved by using
+    the `[AWS::CloudFormation::Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html)`
+    resource.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ff043977326ddfcf62a296a186bd9f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A nested stack in real life: a nest full of nests/eggs (Photo by [Giorgi Iremadze](https://unsplash.com/@apollofotografie?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/lbCsrVgJ0z8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because one of our missions we aim to achieve is to come up with better project
+    management, the project is going to be broken down by layered separation and nested
+    stacking is the one to help. However, in regard to the intrinsic interrelationship
+    between the artifacts of the existing stack, we would also need to take a drop
+    of cross-stack reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We created 3 Lambda functions, 3 DynamoDB tables, 1 IAM role along with its
+    policies attached, several SQS queues, and several Cloudwatch alarms. Due to the
+    complexity of the functions themselves, in this version, they are going to be
+    defined in separate templates, with the services only used by themselves including
+    alarms and dead letter queues. Apart from those, IAM resources will be another
+    nested stack and so will the DynamoDB tables, in order to maintain their reusability.
+    The SQS queues that deliver messages between lambda functions will be a different
+    stack too. All these nested stacks will be put in a new directory called `/templates`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The coding part is quite light in this session compared to the previous one,
+    since mostly we only need to move these original codes from one file to another.
+    For example, when configuring the DynamoDB table stack, what I did is only copying
+    the snippet and pasting it to a new file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Cross-nested-stack References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s worth noting that there are still some modifications in need. If we need
+    to make sure the resources defined within a stack can be referenced by others
+    outside the stack, those exporting stacks need a new section called `Outputs`
+    to output the values for references. In our case, the IAM role is going to be
+    in use globally, so right after its definition, we output its ARN so that it’s
+    going to be visible within a certain scope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, the messenger queues are exported in the same way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the meantime, the stacks importing the resources from others also need a
+    minor change. AWS supports this functionality by providing an intrinsic function
+    `[Fn::ImportValue](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html)`
+    . Take “Branch Collector” as an example. It involves the IAM role and a messenger
+    queue which aren’t created in the same stack. Thus, whenever the resources mentioned
+    above occur, I replace them with the value of the function `Fn::ImportValue` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Root Stack
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that all nested stacks are defined and created, there should be a root stack
+    to integrate the entire infrastructure altogether. Consider the infrastructure
+    that utilizes nested stack style as a hierarchy, the root stack is a parent that
+    all the nested ones belong to (though the nested stacks can be parents to others
+    too). In our case, it’s quite as easy as to replace the existing snippets that
+    define individual resources with the references to the nested stack CloudFormation
+    templates in the predefined `template.yml` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: From here, it’s safe to say that the CloudFormation upgrade is complete!
+  prefs: []
+  type: TYPE_NORMAL
+- en: But wait, does it mean that we need to rebuild and redeploy it? Sadly speaking,
+    yeah, and that’s what the next section is going to address.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Auto Deployment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since I always store everything I code in the GitHub repo, I am going to leverage
+    [GitHub Actions](https://github.com/features/actions). GitHub Actions is a feature
+    of GitHub to automate the workflows stored on any GitHub repos so as to seamlessly
+    support building, testing, and deployment. There are pre-defined workflows though,
+    owing to the uniqueness and the complexity of our mission, we need to customize
+    one that meets our needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generally speaking, the workflow should mimic what we do manually in the cloud
+    environment during the software build & deployment stage. Namely, it includes
+    the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assign values to the parameters, e.g.`environment`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set up AWS configuration, e.g. inputting the default AWS credentials and service
+    region code
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Install SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Grant the AWS role access to the permissions of the services/resources that
+    will be utilized
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a S3 bucket as the Cloudformation storage location
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Clone the common code base to every independent directory
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Build & deploy the Serverless Application Model (SAM)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To wrap them all up in a workflow file, it will be like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here I include one job called “deploy”. It’s containerized by the image `lambci/lambda:build-python3.8`
+    and run on the Ubuntu System, which is defined within this job. A variable called
+    `BUCKET_NAME` is created to store the string value of the name that we are going
+    to name the S3 bucket to be built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1 is to create a new parameter `env_name` which stores the value of the
+    working environment name. It depends on the branch by which the workflow is triggered:
+    unless the workflow is running on the main branch, it’s called `prod` ; otherwise,
+    it’s `dev` .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2 records the repository name in another output value. This is going to
+    be part of the prefix of the location of the template file in the S3 bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 3 is similar to step 2, getting the name of the branch to be used later
+    as another part of the prefix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 4 simply uses [actions/checkout](https://github.com/actions/checkout),
+    a package to check out the current repo under a different workspace so the workflow
+    is able to access it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 5 also uses a package. With the help of [aws-actions/configure-aws-credentials@v1](https://github.com/aws-actions/configure-aws-credentials),
+    we can effortlessly configure the AWS working environment by only providing the
+    AWS access key ID, AWS secret access key, and region. Note that it’s recommended
+    to keep your sensitive credentials (AWS access key ID and AWS secret access key)
+    in secret.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 6~11 is executed in the bash command line. In this order, the rest of the
+    workflow installs SAM CLI; then attaches all necessary policy ARNs to the IAM
+    user; creates an S3 bucket with the bucket name provided as an environmental parameter,
+    if it doesn't exist; last but not least, a CloudFormation stack will be built,
+    packaged and deployed by SAM commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using workflows, developers will be saved from constantly rerunning part of,
+    if not all of, the steps personally. Instead, as long as a pull request is made,
+    any new commit will trigger a new workflow run with the codes on a non-main branch;
+    when the pull request is merged, the most recent workflow will also be triggered
+    along with the resources on the main branch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before you leave
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thanks for making it here. In this post, I talked about one of the major upgrades
+    to improve the manageability and reusability of the codes, while introducing a
+    solution to automating the stack building and deployment. If you are interested
+    in the details, feel free to check out [my repo](https://github.com/MemphisMeng/Cascading-ETL-pipeline/tree/main)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the way, the approach that I organized the resources and artifacts in the
+    stack can also be a good start to kicking off [microservices](https://en.wikipedia.org/wiki/Microservices).
+    If you are interested in microservices, don’t forget to subscribe to follow my
+    next articles!
+  prefs: []
+  type: TYPE_NORMAL

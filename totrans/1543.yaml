@@ -1,0 +1,341 @@
+- en: 'Multi-Task Learning in Recommender Systems: A Primer'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/multi-task-learning-in-recommender-systems-a-primer-508e661a2029](https://towardsdatascience.com/multi-task-learning-in-recommender-systems-a-primer-508e661a2029)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The science and engineering behind algorithms that try to do it all
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)[![Samuel
+    Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)[](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------)
+    [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----508e661a2029--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----508e661a2029--------------------------------)
+    ·8 min read·Jul 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14dcc1089b980b3a39af30f387ebe796.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Mike Kononov](https://unsplash.com/@mikofilm?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While multi-task learning has been has been well established in computer vision
+    and natural language processing, its use in modern [recommender systems](/deep-learning-in-recommender-systems-a-primer-96e4b07b54ca)
+    is still relatively new and therefore not very well understood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we’ll take a deep dive into some of the most important design
+    considerations and recent research breakthroughs in multi-task recommenders. We’ll
+    cover
+  prefs: []
+  type: TYPE_NORMAL
+- en: why we need multi-task recommender systems in the first place,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'positive and negative transfer: the key challenge in multi-task learners,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: hard parameter sharing and expert modeling, and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'auxiliary learning: the idea of adding new tasks for the sole purpose of improving
+    the main task.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why multi-task recommender systems?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The key advantage of multi-task recommender systems is their ability to solve
+    for multiple business objectives at the same time. For example, in a video recommender
+    system we may want to optimize for clicks, but also for watch times, likes, shares,
+    comments, or other forms of user engagement. In such a situation, a single multi-task
+    model is not only computationally cheaper than multiple single-task models, it
+    can also have better predictive accuracy per task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Even in cases where we only want to predict one event, such as “purchase” in
+    an e-commerce recommender system, we can still add additional tasks with the sole
+    purpose of improving performance on the main task. We call these additional tasks
+    “auxiliary tasks”, and this form of learning “auxiliary learning”. In the e-commerce
+    example, it may make sense to also learn “add-to-cart” as well as “add-to-list”
+    along with “purchase”, given that all of these events are closely related to each
+    other: they indicate shopping intent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which tasks learn well together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At a high level, predicting a second task can either help with the first task
+    or do the opposite: make the prediction of the first task worse. We call the former
+    case “positive transfer” and the latter “negative transfer”. The challenge in
+    multi-task learning is then to only learn tasks together that have positive transfer,
+    and avoid negative transfer, which can be detrimental to model performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A key question in multi-task learning is then which tasks learn well together.
+    In many cases, we can make reasonable guesses with domain knowledge. We’ve already
+    seen an example above: “purchase” and “add-to-cart” both indicate shopping intent,
+    and therefore should work well together in a multi-task learner (and in fact,
+    they do).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, if the number of tasks becomes large, we may need to determine algorithmically
+    which tasks should be learned together, and which should be learned separately.
+    Notably, this is an NP-hard problem because the number of possible task groupings
+    scales exponentially with the number of tasks. This is not easy, but doable: in
+    a 2020 [paper](https://www.google.com/search?client=safari&rls=en&q=Which+Tasks+Should+Be+Learned+Together+in+Multi-task+Learning%3F&ie=UTF-8&oe=UTF-8)
+    form Stanford University, the authors solve this task grouping problem on a computer
+    vision dataset using the “branch and bound” algorithm, resulting in a solution
+    that outperforms both multiple single-task learners and a single multi-task learner.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44a1d96a0142deb474556d8877272549.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3 different multi-task modeling paradigms. Figure from [Ma et al 2018](https://dl.acm.org/doi/pdf/10.1145/3219819.3220007).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hard parameter sharing: multi-task learning under the hood'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The simplest way to build a multi-task neural network is a technique known as
+    “hard parameter sharing”, or “shared bottom”, where we combine a shared bottom
+    module with task-specific top modules. In this way, the bottom module can learn
+    patterns that are task-generic, while the top modules can learn patterns that
+    are task-specific. (“Modules” here are simply multi-layer perceptrons (MLPs) with
+    certain activation.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the simplest case, the task-specific module can be single output neuron that
+    makes the prediction. However, in practice we can often achieve better performance
+    by adding a dedicated module for each task which can learn task-specific internal
+    representations of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of the multi-task learner is going to be a list of predictions which
+    we can combine into a final loss as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be7a7ca40e729ba6830d930fcdcf17d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where p are the predictions, y are the labels, and w are the (optional) task-specific
+    weights, controlling the relative importance of each task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expert modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Hard parameter sharing is perhaps the most common and also simplest way to
+    solve multi-task learning problems, however it has a major disadvantage: we have
+    to decide ahead of time which parts of the network should be shared and which
+    shouldn’t. This requires us to know which tasks learn well together and which
+    don’t, but in practice, we simply may not have this information ahead of time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter “expert modeling”, also known as “mixtures of experts” (MoE), which traces
+    back to a [paper](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf) from 1991
+    by some of the big names in AI, Robert Jacobs, Michael Jordan, Steven Nolan, and
+    Geoffrey Hinton. The key idea behind MoE is to combine N experts using a gating
+    network that selects the best expert, given the input data. Here,
+  prefs: []
+  type: TYPE_NORMAL
+- en: an “expert” is an MLP that processes the data, resulting in either an embedding
+    or a prediction, and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the “gating network” is simply a softmax function:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fd228b1883eb57129a0e9dbceb2f367a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where x is the input data, and W is a learnable matrix. In other words, W (and
+    thus the gate) learns to select the right expert given the input data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoE however uses just a single gate, which may not work well if we have multiple
+    tasks, each of which would require their own set of experts. One of the breakthroughs
+    in multi-task recommender systems was therefore to replace the single gate in
+    MoE with multiple gates, one per task, resulting in “MMoE”, or “Multi-gate Mixtures
+    of Experts”, introduced in a 2018 [paper](https://dl.acm.org/doi/pdf/10.1145/3219819.3220007)
+    from Google.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors show that MMoE outperforms both hard parameter sharing and MoE on
+    synthetic data, census data, as well as a large-scale production recommendation
+    dataset. MMoE works particularly well (compared to MoE) when the tasks become
+    less correlated, highlighting the advantage of having multiple gates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Auxiliary learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/be210010812e4882cab810fdf7ad6c4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The key idea behind MetaBalance is to scale auxiliary gradients to match those
+    of the main tasks, as seen in the transition of plots from left to right. Figure
+    from [He et al 2022](https://arxiv.org/abs/2203.06801).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many recommendation problems, the predictive performance on the main task
+    can be improved via joint learning of auxiliary tasks. For example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: when trying to predict conversion rates, predictive performance improves when
+    jointly learning the auxiliary task of predicting click-through rates ([Ma et
+    al 2018](https://dl.acm.org/doi/10.1145/3209978.3210104)),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when trying to predict user ratings, predictive performance improves when jointly
+    learning the auxiliary task of predicting item metadata such as genre and tags
+    ([Bansal et al 2016](https://arxiv.org/abs/1609.02116)),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when trying to predict reading duration in a newsfeed, predictive performance
+    improves when jointly learning the auxiliary task of predicting click-through
+    rates ([Zhao et al 2021](https://arxiv.org/pdf/2102.07142.pdf)), just to name
+    a few examples. In all of these cases, the purpose of the auxiliary task is not
+    to use the prediction at inference time, but instead solely to boost predictive
+    performance on the main task we’re trying to learn.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Auxiliary learning works because we’re adding gradient signal which helps the
+    model find the best potential minimum in the parameter space, and this extra signal
+    can be particularly useful when the gradient signal from the main task is sparse.
+    For example, conversion rates are much lower than click-through rates, and therefore
+    it is expected that the gradient signal from the latter signal is richer, and
+    can supplement the former.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it has been shown that the gradients in auxiliary learning can be highly
+    imbalanced such that the auxiliary gradients either dominate the learning or don’t
+    matter at all. This is a problem, hypothesize the authors of “MetaBalance”, an
+    advanced auxiliary learning algorithm introduced 2022 [paper](https://arxiv.org/abs/2203.06801)
+    from, you guessed it, Meta. The key idea in MetaBalance is to scale the auxiliary
+    gradients to be of the same magnitude as those of the main task(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'where `g_aux` is the gradient from the auxiliary task, `g_main` is the gradient
+    from the main task, and r is a hyper-parameter which the authors determine empirically.
+    r~0.7 appears to work best in the paper: in other words, auxiliary tasks help
+    the most when the magnitude of their gradients are close but not quite the same
+    as the gradients of the main tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And in fact, MetaBalance shows promising results. The authors consider two e-commerce
+    shopping dataset where the target is “purchase”, and the auxiliary tasks are “click”,
+    “add-to-card”, and “add-to-list”. The improvements of MetaBalance are substantial
+    with respect to single-task and vanilla (shared-bottom) multi-task modeling. In
+    one problem, they were able to improve NDGC@10 from 0.82 (vanilla multitask) to
+    0.99 (MetaBalance), a 17% improvement!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s recap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-task learning matters because modern recommender systems often need to
+    optimize for multiple business objectives at the same time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Not all tasks can be learned well together. Tasks can help each other, creating
+    positive transfer, or do the opposite — fight with each other — creating negative
+    transfer. Figuring out which tasks to learn together is an NP-hard problem!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hard parameter sharing (aka “shared bottom”) is the simplest and most common
+    way to solve multi-task learning. It’s the first thing you should try in order
+    to establish a solid baseline.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Expert modeling, and in particular MMoE, is the most advanced technique today
+    to solve multi-task learning problems while at the same time mitigating negative
+    transfer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In auxiliary learning, we add additional tasks with the sole purpose of improving
+    performance on the main task(s). Auxiliary learning has been shown to bring substantial
+    modeling improvements in multiple use-cases, and can be further improved by scaling
+    the auxiliary gradients.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'And this is just the tip of the iceberg. There’s a wealth of open questions
+    left in this domain: How to craft good auxiliary tasks? What’s a good ratio of
+    auxiliary to main tasks? What’s the best number of experts? How does it scale
+    with the number of tasks? How large should expert modules be?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Watch this space. New breakthroughs are certainly on the horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Still curious about modern recommender systems? Continue here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Deep Learning in Recommender Systems: A Primer](https://medium.com/towards-data-science/deep-learning-in-recommender-systems-a-primer-96e4b07b54ca)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Hashing in Modern Recommender Systems: A Primer](https://medium.com/towards-data-science/hashing-in-modern-recommender-systems-a-primer-9c6b2cf4497a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Learning to rank: A primer](https://medium.com/towards-data-science/learning-to-rank-a-primer-40d2ff9960af)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Breaking Down YouTube’s Recommendation Algorithm](https://medium.com/towards-data-science/breaking-down-youtubes-recommendation-algorithm-94aa3aa066c6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Biases in Recommender Systems: Top Challenges and Recent Breakthroughs](https://medium.com/towards-data-science/biases-in-recommender-systems-top-challenges-and-recent-breakthroughs-edcda59d30bf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Machine Learning Does Not Only Predict the Future, It Actively Creates It](/machine-learning-does-not-only-predict-the-future-it-actively-creates-it-1615895c80a9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,234 @@
+- en: Structuring Your Cloud Instances’ Startup Scripts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/structuring-your-cloud-instances-startup-scripts-2ce981825b8d](https://towardsdatascience.com/structuring-your-cloud-instances-startup-scripts-2ce981825b8d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Separating between first launch vs reboot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)[![Jake
+    Teo](../Images/9687f43822fab69befb750a8ec58516d.png)](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------)
+    [Jake Teo](https://medium.com/@teosiyang?source=post_page-----2ce981825b8d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ce981825b8d--------------------------------)
+    ·7 min read·Nov 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of your machine-learning tasks will typically be, after the initial exploration
+    phase, packaged into images and deployed to on-premise or cloud servers. This
+    will facilitate the rapid iteration to build the infrastructure supporting the
+    operationalisation of the MLOps pipeline with the involvement of the entire development
+    team comprising data scientists, together with data, software, cloud engineers,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d582e642cfce4bde1f97ee0d72d95c17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample diagram showing a typical deployment of machine learning tasks to servers
+    (VM = virtual machine). Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Startup scripts are used to execute automated configuration or other tasks upon
+    the start of a cloud server instance. This is known as **user data** in **AWS
+    EC2**, **startup scripts** in **Google Cloud Engine**, and **custom script extensions**
+    in **Azure Virtual Machine**. The contents within the startup scripts could come
+    in the form of installations, metadata settings, environment variables, etc. The
+    main purpose is that each instance is always configured to be ready to serve the
+    applications within or adjacent services whenever it is started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As with all scripts we write, we should always target them to be neat, structured
+    and centralised so that they can be reused as templates. This will make your life
+    easier to manage multiple applications in different instances in your project.
+    In the following sections, I will be showing how you can do that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*While the latter sections are specific to AWS EC2’s user data, they can easily
+    be adapted to other providers using the same concept.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1) First Launch vs Reboot Startup Scripts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is quite intuitive to use startup scripts on an instance’s first launch,
+    but rebooting? If we are using on-demand instances, and they are not meant for
+    production environments (e.g., dev, staging, SIT, UAT), it makes little financial
+    sense to have them running on weekends or after office hours when developers are
+    not at work. Hence, they are scheduled to be turned off and restarted when they
+    are required. There are also occasions when a reboot is required on patching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During those periods of shutdown, there could be updates to the metadata that
+    the application needs. Hence, after a reboot, these should be refreshed to reflect
+    the latest information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87872fa95d640f0b4e9156f0c1be8fdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of what is required for an instance’s first launch and reboot. Image
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Henceforth, user data can be served to configure instances when they are first
+    launched, and also on reboot. More often than not, both types of start-ups do
+    not require the same configuration, but the dilemma is that we can only attach
+    one user data file to each instance. So how can we differentiate them within the
+    same user data file?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-part format
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we only require our user data to be executed on the instance’s first launch,
+    the script can just contain the shell commands. However, to enable it to be also
+    executed in every instance reboot, a cloud-config command is required. This is
+    in a separate format, hence AWS uses the MIME (Multipurpose Internet Mail Extensions)
+    multi-part format to contain both information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can see from the above the definition of MIME, followed by the cloud configuration,
+    with `[scripts-user, always]` indicating the user data to be executed on both
+    instance’s first launch and subsequent reboot. The next format is catered for
+    the shell commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differentiate between first launch & reboot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Technically, AWS does not have a user data configuration to separate your scripts
+    based on the first launch and reboot. Luckily we can use some simple scripting
+    to do that elegantly, as you can see from the pseudo code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, we need to structure our script into functions so that they can be called
+    later either during the first launch or reboot. You can see that I have defined
+    four functions for `install_docker`, `create_dotenv`, `setup_docker_compose` and
+    `launch_docker_compose`. Appropriate arguments should be set to make it as reusable
+    as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, we have a simple if-else statement such that when the file `STARTED`
+    is not present, it will execute all four functions, and at the end, create the
+    `STARTED` file within. In the reboot of that instance, since that `STARTED` file
+    is present, it will only run two of the configuration functions, not the others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s pretty straightforward, right? Below is a working example using a Ubuntu
+    virtual machine to illustrate this further.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: A short description of each function is provided. Note the use of arguments
+    to make each function reusable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**install_docker()**: update package manager, and install base libraries as
+    well as docker and docker-compose.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**create_dotenv()**: grab metadata of the environment, e.g., dev, staging,
+    prod from the instance metadata tag, and put it in a `.env` file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**set_docker_compose()**: get the latest `docker-compose.yml` file from the
+    source code repository, set the image tag using the environment within the file,
+    and then log in to the container registry.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**launch_docker_compose()**: deploy the image as a container'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2) Centralise Startup Scripts & Overcome Character Limits
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: User data has a character or size limit of 16K and 16KB respectively. That is
+    a healthy length to play with in most use cases. However, should you exceed this
+    amount, you can easily store the scripts in your blob storage like S3 bucket,
+    and within the user data, pull the scripts in and execute them. This is also the
+    preferable way to update all user data scripts via a central store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can store all four functions above in a file called `userdata_template.sh`
+    and place it in an S3 bucket of your choice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To access the S3 bucket, we need to ensure that 1) the instance has the relevant
+    permissions to read from this bucket within the instance profile, and 2) that
+    the instance has `aws-cli` installed so that the appropriate commands can be used
+    to pull the startup script from S3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that, we can easily download the script, `source` it so that you can access
+    the earlier functions, and execute them accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3) Debugging
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If your user data is not performing the task as expected, you can view the log
+    file within the instance to see if any error messages are captured. This can be
+    found at `/var/log/cloud-init-output.log`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you need to check on the user data script itself, you may do that with the
+    following two methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So there you have it! Hope you have learnt some elegant tips to structure your
+    user data from your virtual machines’ first launch and reboot. I hope you find
+    it useful and intuitive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-add-user-data.html#](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-add-user-data.html#)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

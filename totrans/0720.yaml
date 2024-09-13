@@ -1,0 +1,259 @@
+- en: Deploying SageMaker Endpoints With Terraform
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-sagemaker-endpoints-with-terraform-3b09fb3e1d59](https://towardsdatascience.com/deploying-sagemaker-endpoints-with-terraform-3b09fb3e1d59)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Infrastructure as Code With Terraform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----3b09fb3e1d59--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----3b09fb3e1d59--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b09fb3e1d59--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b09fb3e1d59--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----3b09fb3e1d59--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b09fb3e1d59--------------------------------)
+    ·7 min read·Mar 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09fae694c66b87492fc2ff5f7e372912.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/KNZHyTpre18) by [Krishna Pandey](https://unsplash.com/@krishna2803)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Infrastructure as Code (IaC)](/infrastructure-as-code-with-aws-207239573de)
+    is an essential concept to optimize and take your resources and infrastructure
+    to production. IaC is an age old DevOps/Software practice and has a few key benefits:
+    Resources are maintained centrally via code, which in turn optimizes the speed
+    and collaboration required to take your architecture to production.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This software best practice like many other also applies to your Machine Learning
+    tooling and infrastructure. For today’s article we’ll take a look at how we can
+    utilize an IaC tool known as [Terraform](https://www.terraform.io/) to deploy
+    a pre-trained SKLearn model on a SageMaker Endpoint for inference. We will explore
+    how we can create a reusable template that you can adjust as you have to update
+    your resources/hardware. With Terraform we can move from having standalone notebooks
+    and individual Python files scattered everywhere to capturing all our necessary
+    resources in one template file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another option for Infrastructure as Code with SageMaker is [CloudFormation](/deploying-sagemaker-endpoints-with-cloudformation-b43f7d495640).
+    You can reference this article, if that’s a preferred tool for your use-case.
+    Note that **Terraform is Cloud Provider agnostic**, it spans across different
+    cloud providers, whereas CloudFormation is specifically for AWS services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: For those of you new to AWS, make sure you make an account at the
+    following [link](https://aws.amazon.com/console/) if you want to follow along.
+    Make sure to also have the [AWS CLI](https://aws.amazon.com/cli/) installed to
+    work with the example. This article will also assume basic knowledge of Terraform,
+    take a look at this [guide](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+    if you need a starting guide and reference the following [instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+    for installation. The article also assumes an intermediate understanding of SageMaker
+    Deployment, I would suggest following this [article](/deploying-a-pre-trained-sklearn-model-on-amazon-sagemaker-826a2b5ac0b6)
+    for understanding Deployment/Inference more in depth, we will be using the same
+    model in this article and mapping it over to Terraform.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As stated earlier we won’t really be focusing on the theory of model training
+    and building. We’re going to quickly train a sample SKLearn model on the built-in
+    [Boston Housing Dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html)
+    that the package provides.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we quickly validate that the local model performs inference as expected.
+    The script also emits the **serialized model artifact** that we will provide to
+    SageMaker for deployment. Next we create a [custom inference script](https://aws.plainenglish.io/adding-custom-inference-scripts-to-amazon-sagemaker-2208c3332510),
+    that essentially serves as an entry point script for dealing with pre/post processing
+    for SageMaker Endpoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we wrap up both the script and the model artifact into a tarball format
+    that SageMaker is compliant with. We then upload this model tarball into an S3
+    Bucket, as that’s the main storage option for all artifacts that SageMaker works
+    with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Terraform Variables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Within our template file (.tf) we first want to define something known as a
+    [Terraform Variable](https://developer.hashicorp.com/terraform/language/values).
+    With [Input Variables](https://developer.hashicorp.com/terraform/language/values/variables)
+    specifically you can pass in values similar to arguments for functions/methods
+    you define. Any values that you don’t want to hardcode, but also give default
+    values to you can specify in the format of a variable. The variables we’ll be
+    defining for a Real-Time SageMaker Endpoint are listed below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SageMaker IAM Role ARN**: This is the Role associated with the SageMaker
+    service, attach all policies necessary for actions you will take with the service.
+    Note, you can also define and reference a Role within Terraform itself.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Container**: The [Deep Learning Container](https://aws.plainenglish.io/how-to-retrieve-amazon-sagemaker-deep-learning-images-ff4a5866299e)
+    from AWS or your own [custom container](/bring-your-own-container-with-amazon-sagemaker-37211d8412f4)
+    you have built to host your model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Model Data**: The pre-trained model artifacts that we uploaded to S3, this
+    can also be the trained artifacts emitted from a SageMaker Training Job.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Instance Type**: The hardware behind your real-time endpoint. You can also
+    make the number of instances into a variable if you would like.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For each variable you can define: the type, the default value, and a description.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: While we don’t cover it fully in depth in this article, you can also define
+    variables for different hosting options within SageMaker. For example, within
+    Serverless Inference you can define Memory Size and Concurrency as two variables
+    that you want to set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Terraform Resources & Deployment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The most essential Terraform building block is a [Resource](https://developer.hashicorp.com/terraform/language/resources).
+    Within a Resource Block you essentially define an **infrastructure object**. For
+    our use-case we specifically have three SageMaker building blocks: SageMaker Model,
+    SageMaker Endpoint Configuration, and a SageMaker Endpoint. Each of these are
+    linked in a chain and eventually help us create our desired endpoint.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can follow the Terraform Documentation for a [SageMaker Model](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sagemaker_model)
+    to get started. First we define the resource itself which has two components:
+    the terraform name for the resource and the following string is the name you define
+    if you want to reference it later in the template. Another key part we notice
+    here is how we can reference a variable value, using the Terraform key word **var**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next for our SageMaker Model we define our container and model data that we
+    defined earlier and reference those specific variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Optionally within SageMaker you can also provide a [tag](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_Tag.html)
+    that you define for the specific object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We apply a similar format for our [Endpoint Configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sagemaker_endpoint_configuration),
+    here we essentially define our hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then reference this object in our [endpoint](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sagemaker_endpoint)
+    creation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before we can deploy the template to provision our resources, make sure you
+    have the AWS CLI configured with the following command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we can then initialize our terraform project, with the following command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: For deployment, we can then run another Terraform CLI command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/394f374869a568053f345dd1c5d7bfa0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Resource Creation (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the endpoint is creating you can also validate this with the SageMaker
+    Console.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b5925f4f1900b3ae5fc9d56c8c022ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Endpoint Creation SM Console (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/IaC-SageMaker-Deployment/tree/master/Terraform?source=post_page-----3b09fb3e1d59--------------------------------)
+    [## IaC-SageMaker-Deployment/Terraform at master · RamVegiraju/IaC-SageMaker-Deployment'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/IaC-SageMaker-Deployment/tree/master/Terraform?source=post_page-----3b09fb3e1d59--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The entire code for the example can be found in the repository above. I hope
+    this article was a good introduction to Terraform in general as well as usage
+    with SageMaker Inference. Infrastructure as Code is an essential practice that
+    cannot be ignored in the world of MLOps when scaling to production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

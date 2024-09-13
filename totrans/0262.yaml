@@ -1,0 +1,672 @@
+- en: 'Advanced Guide: Avoiding Max Character Limits on the Microsoft Translator API
+    by Auto-Batching Inputs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/advanced-guide-avoiding-max-character-limits-on-the-microsoft-translator-api-by-auto-batching-8a106e5f9f80](https://towardsdatascience.com/advanced-guide-avoiding-max-character-limits-on-the-microsoft-translator-api-by-auto-batching-8a106e5f9f80)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Making the best use of the free tier subscription
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)[![Yousef
+    Nami](../Images/09a0baa3fe20c858ace5b7923b7c753a.png)](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)
+    [Yousef Nami](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)
+    ·24 min read·Jan 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af8adbcc9c869a0985b8e5a4eed8d533.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo from [Unsplash](https://unsplash.com/photos/5Z8mR4vqJD4) courtesy of [Edurne](https://unsplash.com/@edurnetx).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Microsoft Translator API [[1](https://www.microsoft.com/en-us/translator/business/translator-api/)]
+    is one of the easiest translator services to set up, and it’s quite powerful,
+    giving you access to translators for a multitude of low and high resource languages
+    for free. However, it has a **50000 max character limit** per request [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)]
+    and a **2 million max character limit per hour of use** (on the free version).
+    So while the service itself is very easy to setup and use, using it reliably is
+    quite difficult.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, I will explore methods for ensuring that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any arbitrary number of texts can be translated to any number of target languages
+    while adhering to the max character limit by autobatching inputs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consecutive requests are delayed such that they adhere to the max character
+    limit per hour
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: At worst (free subscription), these methods will decrease wasted characters
+    on partial translations and at best (paid subscription) they’ll save you cash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The tutorial is targeted towards those with working knowledge of the Microsoft
+    Translator API. If you are unfamiliar and would like a beginner friendly-guide
+    on setting it up, check my introduction article below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-integrate-the-microsoft-translator-api-in-your-code-89bad979028e?source=post_page-----8a106e5f9f80--------------------------------)
+    [## How to Integrate the Microsoft Translator API in Your Code'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A comprehensive beginner friendly guide
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-integrate-the-microsoft-translator-api-in-your-code-89bad979028e?source=post_page-----8a106e5f9f80--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Challenges with Simple Translation Interface
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The original translation code I wrote was simply a wrapper over `requests`
+    that took a list of texts, a list of target languages, and optionally a source
+    language as parameters, and called the **translate** endpoint of the translator
+    API. The code snippet of the translation function is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Upon use, I ran into the following challenges that caused my translation requests
+    to fail:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Challenge 1:** The total size of the texts exceeded the max character limit
+    when translated to all target languages'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Challenge 2:** At least one of my texts exceeded the max character limit
+    when translated to all target languages'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Challenge 3:** At least one of my texts exceeded the max character limit'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Challenge 4:** The total size of my texts was negligible but because of very
+    frequent calls to the endpoint I was hitting a max number of requests limit'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The next section will run through a first implementation of a translation function
+    to deal with the 4 challenges above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First Implementation — Naïve Autobatching
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Challenge 1 — Too Many Texts, Too Many Languages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first issue occurs when you have a list of texts such that **no single text**
+    exceeds the max character limit when translated to its target languages, but that
+    the **texts together do**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To put it concretely, this means that you can’t send a single request of **n**
+    texts whose total size **S** is greater than 50000\. From Microsoft’s documentation
+    [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)],
+    we know that the **size** of a text is calculated as the **number of characters**
+    in the text multiplied by the **number of languages** it’s being translated to.
+    In Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As such, we need a function to bucket all input texts into batches whose total
+    size does not exceed 50000\. My first implementation resulted in the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `translate_text` function from above can now be modified to include this
+    functionality:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note some key considerations that were made:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A failure in translating a single batch would fail the whole request
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The batching function is O(n)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The translation loop is O(n) in the worst case (e.g. each text size hits the
+    max limit). Realistically it will be less, however the algorithm will not try
+    to minimise the number of batches, since it only linearly loops through the texts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/de2d8c04229a7c97a0fa35c3b10a80eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Challenge 2 — Single Text, Too Many Languages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'While the above code works for most cases, you will inevitably run into a case
+    where you have a **single text** that alone will not exceed the max character
+    limit, but would do if translated to all. In Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this case, the problematic text must be translated separately for a batch
+    of target languages, and at worst, for each language separately. At this point
+    though, we realise that there are two batching strategies that we can consider:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Batching where size is defined by `len(text) * n_target_langs` : batch items
+    with the solution for **Challenge 1**. For texts whose size `S = len(text) * n_target_langs
+    > max_limit` , further batch by target language'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Batching where size is defined by the optimal combination of text lengths and
+    target languages: batch texts such that each batch can have an arbitrary number
+    of languages associated with it, provided that `sum(texts_in_batch) * n_target_langs_for_batch
+    <= max_limit`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Below is a pictorial representation of an example where the second method leads
+    to solution with less batches overall:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/accea85b90ac7655c730fecc17b79024.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'While the second batching strategy is an interesting algorithm design problem,
+    in this use case problems outweigh any possible benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, Microsoft’s limits are based on the total characters consumed, and
+    not on the number of requests. So the only theoretical benefit from decreasing
+    the number of requests is speed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Secondly, it is hard to design an efficient algorithm for it so any speed gains
+    that you could get from shaving the number of requests are negligible, it at all
+    existent
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thirdly, and most importantly, breaking up texts by target language makes mapping
+    them back very difficult. If there is a failure during the translation process
+    you will have partially translated texts*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Note:** While you will also run into this problem if you use the first batching
+    strategy, the frequency of such failures will be minimal. For most cases that
+    I can think of, it’s more important to have complete translations (e.g. texts
+    translated to **all** target languages) while dropping a finite number of failed
+    ones than having partial translations (e.g. texts translated to a subset of the
+    target languages) for all texts. It is also easier to re-translate the failed
+    examples because you can extract the IDs of the failed texts, whereas filling
+    gaps in partial translations is much more difficult.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'As such, I continued with the first batching strategy. This resulted in some
+    modifications of the translation function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As before, there are some key considerations here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still, we are failing the entire translation if there is a failure in request.
+    This is partially motivated by the fact that we **don’t know** how to resolve
+    the status codes for partial translations, as our output expects a single status
+    code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The batching function is still **O(n)**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The translation loop has theoretically increased in computational complexity.
+    In the worst case we now have **O(n*k)** where **k** is the number of languages.
+    However, unlike before, we can now deal with cases where a text is **large enough**
+    that it can’t be translated to **all** target languages in a single request, but
+    **small enough** that it can be translated to **subsets** of the target languages
+    as **separate** requests.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Challenge 3 — Single Large Text
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We now reach the inevitable edge case: a single text that has more than 50000
+    characters. In this case, none of our previous batching methods work. The only
+    thing we can consider doing is automatically splitting the text prior to translation.
+    However, I decided to avoid this for the following reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single Responsibility Principle:** the purpose of the translation function
+    is to act as a wrapper over the Microsoft Translator API. In my view, any extra
+    processing should be done prior to translation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Increased Code Complexity:** adding support for sentence splitting requires
+    the use of sentence splitting libraries, which add unnecessary dependencies for
+    a function whose role is to be a wrapper for the Microsoft API. It would also
+    require lots of code for ensuring sentence splitting methods all return the same
+    output format, ground truth labels prior to sentence splitting are preserved,
+    and to enable split sentences to be mapped back together after translation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Increased Output Ambiguity:** the choice of sentence splitter could vary
+    a lot. These could be naïve, classical or neural methods. The choice of sentence
+    splitting method would inevitably impact the quality of the translations, and
+    would raise ambiguities in mapping back translated split sentences back together.
+    In principle, the sentence splitting methods should be used outside the translation
+    function, evaluated using some metric to determine split quality, and then translated.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Due to the above, for now I decided to add an error using the logger if such
+    were encountered. Later we’ll look into how this fits in with the rest of the
+    code when trying to resolve ambiguity in the case of partially failed translations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Challenge 4 — Too Many Requests
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, most cases that you encounter will not be edge cases. They will all
+    fit within the max character limit. However, the issue you’ll run into is trying
+    to call the translate API too many times in a short amount of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to avoid this, Microsoft recommends that your requests not exceed
+    more than 2 million characters per hour, or 33300 per minute. We can estimate
+    if our request will pass the threshold using the following function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Each time we make a request, we need to update the value of `time_of_last_success`
+    (which is initially set to `None`). The `request_size` is the size of the request
+    we’re currently making, e.g. **total characters in batch * num_languages**. In
+    my experience, this method helps avoid overloading the Microsoft API, however
+    it is not optimal. I have tried running translations without sleeping and without
+    overloading the server. But without knowing how exactly Microsoft calculates the
+    request limits, it is difficult to design an optimal solution (for speed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Efficiency, Resolving Ambiguity and Cleaning Up Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous section, we designed a Proof-of-Concept solution that improved
+    over our simple translation wrapper. We can now automatically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batch documents such that the total size of each batch does not exceed the max
+    limit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Batch documents by language for cases where a single document is too large to
+    be translated to all target languages
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Get the IDs of documents that cannot be translated because they are larger than
+    the max limit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Avoid max number of requests limits by slowing down requests based on the total
+    size of requests we’ve made in a single session
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'However, we still had some unanswered questions and inefficient methods. In
+    this section, we will introduce four enhancements to finalise the translation
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Enhancement 1:** decreasing the number of requests made by improving the
+    batching functionality'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Enhancement 2:** defining a strategy for resolving partial translations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Enhancement 3:** refactoring our code into reusable code blocks'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enhancement 1 — Decreasing the Number of Requests Made
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our previous method of batching the data was fast, but not the best for minimising
+    the number of batches. Instead, we modify it so that documents are assigned to
+    each batch such that they minimise the difference between the total batch size
+    and the max character limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note some comparisons with the naïve method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The batching function is now O(n²) at worst. While this may sound alarming,
+    when we think of the whole system, we notice that the main bottleneck in terms
+    of time will come from requests, so we could justify going for O(n²) for batching,
+    if we’ll get a substantial decrease in the number of batches
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While this is a substantial improvement over the naïve method for decreasing
+    the number of batches, it is still an *approximate* solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I added an optional sorting parameter `sort_docs` to sort the sizes in descending
+    order. My hunch is that setting `sort_docs=True` should decrease the number of
+    batches.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For an illustration of why this is still an approximate solution, see the figure
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9490d6fb457e5880754b355850d169ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It’s worth noting that having a random split can in *theory* result in the optimal
+    solution. In this case, if the texts were organised in the following order [“Hello
+    World”, “Bye”, “Hi”, “Hi World”, “Cry”, “Halo”] (as an example) then the algorithm
+    without sorting would have led to the optimal solution. However, we will see that
+    on average, sorting leads to more optimal solutions!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get a better understanding of how sorting affects the algorithm, I ran a
+    few simulations, here are some results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How Does Sorting Affect Time Complexity?**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The figure below shows the average time taken (over 50 iterations) for the four
+    batching strategies we have (quadratic and naive for sorted and unsorted cases).
+    As expected, sorting slows down batching by a tiny bit. However, as argued before
+    in the article our main bottleneck in terms of time comes from requests, not batching,
+    and since the difference in time between the methods is not massive, we can justify
+    sorting if it decreases the number of batches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4955d09a78a391d6cc5b7185440540da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**How Does Sorting Affect The Number of Batches?**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The figure below shows two important things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The quadratic batching algorithm substantially decreases the number of batches
+    compared to the naive algorithm
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sorting decreases the number of batches for both the naive and quadratic algorithms
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The first point shows the impact of using quadratic batching. A typically response
+    from the Microsoft Translator has a latency of 150 milliseconds [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)].
+    If we consider the smallest gap between the naive and quadratic algorithms at
+    300 documents, quadratic batching unsorted vs. naive batching sorted: we have
+    a difference of 40 batches. This means that in effect the quadratic algorithm
+    (in the worst case) saves us 6 seconds on requests alone. Comparing with the time
+    complexity of the batching algorithm, we find that the O(n²) of the quadratic
+    algorithm has a negligible impact on overall translation speed. The other hidden
+    advantage of course, is that we have 40 less chances of request failures!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second point is interesting, for it empirically proves my theory that sorting
+    decreases the number of batches. Unfortunately I don’t have a mathematical proof
+    for this, so the empirical results suffice for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd239165544787b1506ff112667227f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**How Does Sorting Affect The Average Batch Size?**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Naturally, following the number of batches trend we expect that quadratic algorithms
+    have a higher average batch size than the naive ones, and that sorting increases
+    the batch size for each algorithm respectively. This is reflected empirically
+    in the figure below. What’s interesting to note though, is that the average batch
+    size seems to converge for all cases. We can also see that the sorted quadratic
+    algorithm converges to the max character limit has the number of documents approaches
+    infinity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9491eb924f044bc2ce80f53b4cd65f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Enhancement 2 — Resolving Partial Translations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Previously, we automatically failed the entire translation process on encountering
+    a single failure. However, this can be wasteful in cases where most translation
+    requests have already succeeded, or in cases where there is no hard requirement
+    on having a 100% success translation rate. The behaviour of the translate function
+    should therefore be defined by the user. Here are a few notable cases that we
+    should cover:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Case 1:** Fail the entire process if there is any failure'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Case 2:** Ignore failures from the output, and remove partial translations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Case 3:** Ignore failures from the output, but keep partial translations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To achieve these cases, we add two boolean parameters: `raise_error_on_translation_failure`
+    and `include_partials_in_output` . The first will raise an error anytime there
+    is a failure (e.g. at batch level, or at a language level) if set to `True` (if
+    `False`, we still log the error!). This is to cover **Case 1**. The second is
+    only relevant when `raise_error_on_translation_failure=False` , and it will keep
+    partial translations if set to `True` , and remove them if set to `False` . The
+    code for this is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Enhancement 3 — Cleaning Up Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s now time to clean up the code and to add useful comments. However, since
+    there is lots of reusability and the code logic is complicated, it makes sense
+    to re-write the the translate function as a class. This also has the added benefit
+    of allowing us to store the IDs of documents/batches whose translation fails (immensely
+    beneficial if you want to re-run those specific translations as opposed to finding
+    them through the logs!). I also decided to change the `raise_error_on_translation_failure`
+    to `ignore_on_translation_failure` , and instead simply return the error and status
+    code if a failure occurs and `ignore_on_translation_failure=False` . I decided
+    to change this as I don’t wish for the API function to raise errors (errors should
+    be captured by status codes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final code looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: For access to the full working code, please visit the [repository](https://github.com/namiyousef/ml-utils/blob/develop/mlutils/external_apis/microsoft.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concluding Remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Microsoft Translate API is a versatile tool for translation and very easy
+    to setup. However, it has request and character limits that make using it effectively
+    difficult and costly. In this article we discussed methods for making the best
+    use of the translate API, by automatically batching inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some final notes and comments on further direction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Speed:** the biggest bottleneck to speed is by far the wait time between
+    requests in order to avoid the max request limits imposed by Microsoft. However,
+    just for an academic exercise, the batching algorithm can be made better. Of course,
+    this has no practical use since any benefits we might gain from batching faster
+    would become relevant when the number of documents approaches infinity, but by
+    virtue of the max character limit we can never exceed 50000 (e.g. 50000 documents
+    of length 1, being translated to a single language). If you are interested though,
+    I would recommend reading about the [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Assurance:** at the moment, the code is designed to avoid most request limit
+    problems. However, should there be a failure, it will not re-try the request until
+    all translations have been completed. For this, a worker architecture is needed
+    that keeps re-trying the failed translations (perhaps with [exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff))
+    until all of them have been successfully completed. Of course, whether this is
+    practical is also a question worth considering, since the current translator class
+    stores failed translations, making it a relatively trivial task to re-translate
+    manually.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Author’s Note
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you liked this article or learned something new, please consider getting
+    a membership using my referral link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://namiyousef96.medium.com/membership?source=post_page-----8a106e5f9f80--------------------------------)
+    [## Join Medium with my referral link - Yousef Nami'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Yousef Nami (and thousands of other writers on Medium).
+    Your membership fee directly supports…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: namiyousef96.medium.com](https://namiyousef96.medium.com/membership?source=post_page-----8a106e5f9f80--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This gives you unrestricted access to all of Medium, while helping me produce
+    more content at no extra cost to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are interested in in-depth tutorials on Software Engineering and Machine
+    Learning, then join my email list to get notified whenever I release a new article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## Get notified whenever I release a new article'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get notified whenever I release a new article By signing up, you will create
+    a Medium account if you don't already have…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/subscribe/@namiyousef96?source=post_page-----8a106e5f9f80--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Happy learning and till next time!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference List
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [https://www.microsoft.com/en-us/translator/business/translator-api/](https://www.microsoft.com/en-us/translator/business/translator-api/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Repository
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/namiyousef/ml-utils?source=post_page-----8a106e5f9f80--------------------------------)
+    [## GitHub - namiyousef/ml-utils: Useful ML util functions'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/namiyousef/ml-utils?source=post_page-----8a106e5f9f80--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images by author unless specified otherwise*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,283 @@
+- en: Stacking Time Series Models to Improve Accuracy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/stacking-time-series-models-to-improve-accuracy-7977c6667d29](https://towardsdatascience.com/stacking-time-series-models-to-improve-accuracy-7977c6667d29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Extracting signals from RNN, ARIMA, and Prophet models to forecast with Catboost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)[![Michael
+    Keith](../Images/4ebd39b25a1faae3586eb25ec83d3e91.png)](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------)
+    [Michael Keith](https://mikekeith52.medium.com/?source=post_page-----7977c6667d29--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7977c6667d29--------------------------------)
+    ·7 min read·Feb 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4a54a6899fe0dff94fe8914297c3a54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Robert Sachowski](https://unsplash.com/@rsachowski?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Research around powerful time series models is robust. There are many options
+    available, far beyond the classical techniques like ARIMA. Lately, recurrent neural
+    networks and LSTMs have reached the top of many researchers’ interests. Going
+    by the number of downloads listed on [PePy](https://pepy.tech/project/prophet),
+    the Prophet model is probably the most widely used model by time series forecasters,
+    due to its low barrier of entry. Which of these options is best for your series?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maybe the answer is that you should try all of them and combine their various
+    strengths. A common technique to do this is known as stacking. The popular machine
+    learning library, scikit-learn, offers a [StackingRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingRegressor.html)
+    that can be employed for time series tasks. I have [previously demonstrated how
+    to use it](https://medium.com/towards-data-science/expand-your-time-series-arsenal-with-these-models-10c807d37558)
+    for just such a case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is a limitation to the StackingRegressor, however; it only accepts other
+    scikit-learn model classes and APIs. So, a model like ARIMA, which is unavailable
+    in scikit-learn, or deep networks from tensorflow, becomes unavailable to place
+    in the stack. There is a solution. In this post, I will show how to extend stacking
+    methods for time series using the [scalecast](https://github.com/mikekeith52/scalecast)
+    package and a Jupyter [notebook](https://scalecast-examples.readthedocs.io/en/latest/misc/stacking/custom_stacking.html).
+    The dataset used is available [open access](https://github.com/Mcompetitions/M4-methods/issues/16)
+    on GitHub. The following requirements are needed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dataset Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The dataset is hourly and split into a train set (700 observations) and test
+    set (48 observations). My notebook uses the H1 series, but modifying it to utilize
+    any of the hourly series from the M4 dataset is straightforward. This is how to
+    read the data and store it in a `Forecaster` object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is a plot of the series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f401c9799631034696a0527e7bcc829b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applied Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we start staking models, we need to generate predictions from them. I
+    chose to use a Naive model as a benchmark against ARIMA, LSTM, and Prophet models.
+    In the subsequent sections, I go through why I made each selection, but other
+    decisions could be made that are just as interesting or even more so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Benchmark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To benchmark all models, we can call a seasonal naive estimation, which propagates
+    the last 24 observed values in any given hourly series forward. In scalecast,
+    this is done pretty easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: ARIMA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Autoregressive Integrated Moving Average is a popular and simple time series
+    technique that uses a series’ lags and errors to make predictions about its future
+    in a linear fashion. Through an exploratory data analysis (which you can see in
+    the linked [notebook](https://scalecast-examples.readthedocs.io/en/latest/misc/stacking/custom_stacking.html)),
+    I determined the series was not stationary and that it was highly seasonal. I
+    ultimately chose to apply a seasonal ARIMA model of order (5,1,4) x (1,1,1,24).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: LSTM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If ARIMA is on the simpler side of time series models, [LSTM](https://www.tensorflow.org/api_docs/python/tf/keras/layers/LSTM)
+    is one of the more advanced methods. It is a deep learning technique with many
+    parameters, including an attention mechanism that finds long and short-term patterns
+    in sequential data, which theoretically makes it an ideal choice for time series.
+    It is difficult to set up this model using tensorflow, but not too bad in scalecast
+    (see [this article](https://medium.com/towards-data-science/exploring-the-lstm-neural-network-model-for-time-series-8b7685aa8cf)).
+    I applied two LSTM models: one with a Tanh activation function and one with ReLu.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Prophet
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Despite its extreme popularity, the Prophet model has been [maligned recently](https://www.microprediction.com/blog/prophet).
+    There are claims that it is underwhelming in accuracy, mainly due to how unrealistically
+    it extrapolates trends and that it doesn’t consider local patterns through modeling
+    autoregressively. However, it does some things uniquely. For one, it automatically
+    applies holiday effects to models. It also considers several types of seasonality.
+    It does this all with minimum specification needed from the user. I like the idea
+    of using it as a signal, even if it is not ideal for generating point predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compare Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have predictions generated for each model, let's see how they performed
+    on the validation set, which are the last 48 observations in our training set
+    (this is still separate from the test set mentioned earlier).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2a7e19fb3374c21513b3d8cde09abeee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The good news here is that each model out-performed the naive method. The ARIMA
+    model performed the best with a percentage error of 4.7%, followed by Prophet.
+    Let''s see all forecasts plotted against the validation set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/16529891e70fd018f0bfc795c16964f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of these models performed reasonably on this series, without large deviations
+    between any of them. Let’s stack them!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stacking Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Every stacking model needs a final estimator, which will filter through the
+    other models’ various estimates to create a new set of predictions. We will stack
+    our previously explored results with a boosted tree estimator called [Catboost](https://catboost.ai).
+    Catboost is a powerful procedure that we hope will flesh out the best signals
+    from each of the already-applied models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The above code adds the predictions from each of the evaluated models into
+    the `Forecaster` object. It calls these predictions “signals.” They are treated
+    the same as any other covariate stored in this same object. We also add the last
+    48 series’ lags as additional regressors that the Catboost model can use to make
+    its forecast. Let’s now call three Catboost models: 1 that uses all available
+    signals and series lags, one that only uses the signals, and one that uses only
+    the lags.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s tap into that test set we kept separate from the Forecaster object at
+    the beginning of the analysis and compare the results of all applied models. This
+    time, we will look at two measures: SMAPE and Mean Absolute Scaled Error (MASE).
+    These are the two metrics that were used in the actual M4 competition.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c20085add01772635dd715cbd05d4e8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By combining signals from a diverse class of models, we have generated two
+    estimators that outperform the others: the Catboost model that was trained using
+    all signals and 48 series lags followed by the Catboost model that just used the
+    signals. These both scored an error of about 2.8% out of sample. We can see these
+    two models plotted with the actuals from the test set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/26cf88caea4e6acf646451780e2bffd3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which Signals Were Most Important?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To round out the analysis, we can use shapley scores to determine which signals
+    were the most important in this stack. [Shapley scores](https://christophm.github.io/interpretable-ml-book/shapley.html)
+    are considered one of the state-of-the-art methods to determine the inputs’ predictive
+    power in a given machine learning model. Higher scores mean the inputs were more
+    important in that particular model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/70806022263aa125dea516fb8b33e938.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above screenshot only shows the first-few most important predictors, but
+    we can see from this that the ARIMA signal was most important, followed by the
+    series’ first lag and then the Prophet signal. The RNN models also scored higher
+    than many of the included lags. This can be a good starting place if we want to
+    train a more parsimonious model in the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, I demonstrated the power of stacking models in a time-series context
+    and how using diverse model classes led to higher accuracy on the explored series.
+    This is all made easy with the scalecast package. If you found the analysis interesting,
+    please give that package a star on [GitHub](https://github.com/mikekeith52/scalecast).
+    Thank you for following along!
+  prefs: []
+  type: TYPE_NORMAL

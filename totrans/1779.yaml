@@ -1,0 +1,439 @@
+- en: The Reingold Tilford Algorithm Explained, with Walkthrough
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/reingold-tilford-algorithm-explained-with-walkthrough-be5810e8ed93](https://towardsdatascience.com/reingold-tilford-algorithm-explained-with-walkthrough-be5810e8ed93)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Algorithm to Plot Tree Nodes with Numerical Examples and Python Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://kayjanwong.medium.com/?source=post_page-----be5810e8ed93--------------------------------)[![Kay
+    Jan Wong](../Images/28e803eca6327d97b6aa97ee4095d7bd.png)](https://kayjanwong.medium.com/?source=post_page-----be5810e8ed93--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be5810e8ed93--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be5810e8ed93--------------------------------)
+    [Kay Jan Wong](https://kayjanwong.medium.com/?source=post_page-----be5810e8ed93--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be5810e8ed93--------------------------------)
+    ·9 min read·Sep 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4962af380309f59d5a1af978e2bb8265.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Sergiu Vălenaș](https://unsplash.com/@svalenas?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The 1981 Reingold-Tilford algorithm creates a visually pleasing representation
+    of hierarchical data by arranging nodes in a tree structure to maximize readability.
+    In other words, it is an algorithm for retrieving the `(x, y)` coordinates of
+    every node in a tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to the [paper](https://reingold.co/tidier-drawings.pdf), there are
+    a few aesthetic rules that a good tree diagram should follow,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Nodes at the same depth should lie along a straight line, and the straight
+    lines defining the depths should be parallel
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. A left child should be positioned to the left of its parent node and a right
+    child to the right (only applicable to binary trees)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. A parent should be centered over their children
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4\. A tree and its mirror image should produce drawings that are a reflection
+    of one another, and a subtree should be drawn the same way regardless of where
+    it occurs in the tree
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Determining the `y` coordinates of the nodes is straightforward, whereas the
+    `x` coordinates are slightly more tricky. This article will attempt to explain
+    the algorithm with numerical examples on a slightly more complex tree than the
+    other papers and articles I have read, so more scenarios can be covered. I will
+    also introduce extra terminologies not used in the original paper to better distinguish
+    between the different terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An important intuition about the algorithm is that it will plot the tree from
+    a left-to-right direction. You can think of the leftmost node having a coordinate
+    of `(0, 0)`, and the various subtrees will shift rightwards accordingly.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Fun fact**: `scikit-learn` Python library is also using this algorithm to
+    plot decision trees!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Terminology
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before determining the final coordinates of every node, 3 terms are crucial.
+    The original paper references the terms `x` and `mod`, but in my explanation,
+    I will use an additional `shift` term for better clarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`**x**` refers to the initial `x` coordinate of the node purely based on the
+    node’s position (it is not the final `x` coordinate)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**mod**` refers to the amount of shift for the node’s descendants (but not
+    the node itself), to make the children centered with respect to itself'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**shift**` refers to the amount of shift for the node’s descendants, including
+    itself, to not overlap with the subtrees to the left of itself'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It may not be very clear now why these 3 terms are needed to determine the final
+    `x` coordinate of every node — hopefully, this will be clearer after going through
+    the numerical examples. In the following sections, the following tree structure
+    will be used to explain the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/acc0260e9d3353479bff28c6cb09ccca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig 1: Tree example — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First Pass
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Post-order Traversal of the tree to compute the `x`, `mod`, and `shift` attributes
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In post-order traversal, the tree example will be traversed in alphabetical
+    order. There are two parts — Part 1 computes the `x` and `mod` attributes, while
+    Part 2 computes the `shift` attribute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 1 of First Pass
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/98fe452458940dfe54510755001ec120.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig 2: Tree example with added x attribute (in black) and mod attribute (in
+    blue) — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned, `x` refers to the initial position of the node purely based on
+    the node’s position.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the node is the leftmost child, `x` will be 0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For every other node, it will refer to the `x` value of the left sibling and
+    add a *sibling distance* to the value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is an exception to this, if the node is a leftmost child but has children,
+    it will try to center itself with respect to the children and set its `x` value
+    as the midpoint of its children's `x` values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the example, we will assume a sibling distance of `1` and notice how the
+    `x` attribute of every sibling is exactly sibling distance apart from their left
+    sibling. The exception cases are illustrated by the yellow nodes in Fig 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For nodes that are not the leftmost child but have children — they will also
+    need to center themselves with respect to their children and will do so using
+    the `mod` attribute. The idea is to center the descendants and the amount to shift
+    the descendants will be parent `x` minus the midpoint of the children’s `x` values.
+    These examples are illustrated by the red nodes in Fig 2\. For example for Node
+    `e`, shifting its children `c` and `d` by a value of `1.5` to the right will center
+    the children with respect to itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “final” `x`-coordinates can be easily computed by adding the node’s `x`
+    attribute with the sum of the ancestors' `mod` attribute. But we quickly realize
+    there are overlaps in the subtrees. For example in the third level, nodes `f`
+    and `k` would be overlapping with `x`-coordinates of `3` and `2.5` respectively.
+    This will be addressed in Part 2 where the `shift` attribute will be computed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 2 of First Pass
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the second part, for every node traversed, we will check for overlaps with
+    the subtrees of *all* the left siblings with its subtree. This is also why a post-order
+    traversal is performed as it is guaranteed that all left siblings (and their subtrees)
+    and the current node’s subtree are already traversed and their `x`, `mod`, and
+    `shift` values are known (only the current node’s `shift` value is to be computed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To detect overlaps, the rightmost descendant of the left subtree and the leftmost
+    descendant of the right subtree is compared at every level. In the paper, this
+    is referred to as the *right contour* and *left contour* respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07d741487f6e08730be6302aae273a06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig 3: Tree example with added shift attribute (in red), subtrees of n and
+    g — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, when traversing the tree, the following subtrees are compared,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Node `b` against Node `a` (no overlaps)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Node `e` against Nodes `b` and `a` (no overlaps)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Node `f` against Nodes `e`, `b`, and `a` (no overlaps)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: so on and so forth…
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The overlap happens when the subtree of Node `n` is compared against the subtree
+    of Node `g`. In Fig 3, the right contour of the left subtree is in red, while
+    the left contour of the right subtree is in green. The right subtree will be shifted
+    such that both subtrees will be separated by a *subtree distance* apart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the example, we will assume a subtree distance of `1` and compare the overlaps
+    for each depth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the second depth, the coordinates of `f` and `k` are `3` and `2.5` respectively
+    (need to shift `k` to the right by `1.5` to be subtree distance apart from `f`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the third depth, the coordinates of `d` and `i` are `2.5` and `2` respectively
+    (need to shift `i` to the right by `1.5` to be subtree distance apart from `d`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This results in node `n` having to shift rightwards by `1.5` (maximum of the
+    shifts from the second and third depth). The `shift` attribute is special as this
+    will result in the shifting of the node and its descendants (Node `n` and its
+    descendants shift right by `1.5`), and the left and right siblings are also affected.
+    Since Node `n` is the second node from the leftmost sibling, Node `h` and its
+    descendants will have to shift by `1.5 * (1 / 2) = 0.75`, and Node `q` and its
+    descendants will have to shift by `1.5 * (3 / 2) = 2.25` such that all the siblings
+    are still centralized with respect to their parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ebaf9b8ad23b7fb985919bc1dbbfbe5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig 4: Tree example with added shift attribute (in red), subtrees of q and
+    n — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another overlap happens when comparing the subtree of Node `q` against the subtree
+    of Node `n`. The computation here will be elaborated on later in the Relative
+    Shifting section of the article. For now, let’s conclude that Node `q` and its
+    descendants need to be shifted to the right by `2.25`. Referencing Fig 4, since
+    Node `q` is the third node from the leftmost sibling, Node `h` and its descendants
+    have to shift by `2.25 * (1 / 3) = 0.75`, and Node `n` and its descendants have
+    to shift by `2.25 * (2 / 3) = 1.5` such that all the siblings are still centralized
+    with respect to their parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second Pass
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pre-order Traversal of the tree, computing final `x` and `y` values
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/e6ef2c3591dfd2e21a0ab1ea55426f2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig 5: Tree example with final x and y coordinates — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since all the `x`, `mod`, and `shift` attributes are computed in the first pass,
+    these attributes can be summed up to derive the final `x`-coordinate by traversing
+    the tree in a top-to-bottom direction by pre-order traversal. Note that the `mod`
+    attribute shifts the descendants only, while the `shift` attribute shifts the
+    current node and its descendants.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Third Pass
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pre-order Traversal of the tree, adjusting `x` values for any negative cases,
+    if any
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: While performing the second pass, any `x` coordinates that are negative due
+    to a negative `mod` from the parent can be noted down as an adjustment value and
+    handled during the third pass by adding this adjustment value to every node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional Consideration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Relative Shifting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In Part 2 of the First Pass, the `shift` value was computed in one example by
+    comparing the subtrees of Nodes `n` and `g`. It is also mentioned that the `shift`
+    will affect the sibling Nodes `h` and `q` as all children have to remain centralized
+    with respect to the parent. We can call the shift that affects the siblings a
+    *relative shift* as this shift is a result of the direct shift of the right subtree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to this relative shift, there are additional considerations when computing
+    the `shift` value between the left and right subtrees as the left subtree will
+    be shifted *relatively* later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Referencing Fig 4, note that Node `q` is the third node and Node `n` is the
+    second node from the leftmost sibling. At the second depth,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Node `m` will have an intermediate `x` coordinate of 6 (`Node n's mod 2 + Node
+    n's shift 1.5 + Node m's x 2.5`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Node `o` will have an intermediate `x` coordinate of 6.25 (`Node q's mod 4 +
+    Node q's shift 2.25`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let the shift value be `x` and the subtree distance be `1`. There will be a
+    relative shifting whereby Node `m` will be shifted by `(2 / 3) * x` if Node `q`
+    is shifted by `x`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The equation is as such, `(6.25 + x) — (6 + (2 / 3) * x) >= 1`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Solving the equation, shift value `x >= 2.25`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additional Parameters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Subtree separation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the example above, sibling separation and subtree separation are set to the
+    same value. Sibling separation can be differentiated from subtree separation as
+    such,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sibling separation is used in Part 1 of First Pass and used to determine the
+    `x` attribute.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Subtree separation is used in Part 2 of First Pass and used to determine the
+    `shift` attribute.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Level separation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Level separation can be an additional parameter to determine the distance between
+    different levels, and this will be used to determine the `y`-coordinates in the
+    second pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Offset (x-offset, y-offset)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Offset parameters can be introduced to shift the whole tree by a constant value
+    of `x-offset` and `y-offset` and can be introduced in the second pass when the
+    final `x` and `y`-coordinates are computed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Code Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I have implemented a Python Code Example of the Reingold Tilford algorithm [here](https://github.com/kayjan/bigtree/blob/master/bigtree/utils/plot.py)
+    which follows this article closely, with first, second, and third pass and referencing
+    `x`, `mod`, and `shift` attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Related Links
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Official Paper (6 pages, code in Pascal): [https://reingold.co/tidier-drawings.pdf](https://reingold.co/tidier-drawings.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Explanation (Easiest to read, pseudo-code in C+): [https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/](https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Explanation (Good to read next): [https://www.drdobbs.com/positioning-nodes-for-general-trees/184402320?pgno=4](https://www.drdobbs.com/positioning-nodes-for-general-trees/184402320?pgno=4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Explanation (With animation of contour and shifting): [https://williamyaoh.com/posts/2023-04-22-drawing-trees-functionally.html](https://williamyaoh.com/posts/2023-04-22-drawing-trees-functionally.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

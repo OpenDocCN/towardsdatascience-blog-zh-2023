@@ -1,0 +1,674 @@
+- en: 'Parameter-Efficient Fine-Tuning (PEFT) for LLMs: A Comprehensive Introduction'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/parameter-efficient-fine-tuning-peft-for-llms-a-comprehensive-introduction-e52d03117f95](https://towardsdatascience.com/parameter-efficient-fine-tuning-peft-for-llms-a-comprehensive-introduction-e52d03117f95)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A conceptual survey of PEFT methods used by Hugging Face, Google’s Vertex AI,
+    and eventually OpenAI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@smsmith714?source=post_page-----e52d03117f95--------------------------------)[![Sean
+    Smith](../Images/611395d113b10ec4bbfaf781301139c7.png)](https://medium.com/@smsmith714?source=post_page-----e52d03117f95--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e52d03117f95--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e52d03117f95--------------------------------)
+    [Sean Smith](https://medium.com/@smsmith714?source=post_page-----e52d03117f95--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e52d03117f95--------------------------------)
+    ·19 min read·Aug 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/425a0569c2f36a07f176e6742754e25f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by DALL-E. A Sunday Afternoon on the Island of La Grande Jatte
+    but everyone is a humanoid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) are quite large by name. These models usually have
+    anywhere from 7 to 70 billion parameters. To load a 70 billion parameter model
+    in full precision would require 280 GB of GPU memory! To train that model you
+    would update billions of tokens over millions or billions of documents. The computation
+    required is substantial for updating those parameters. The self-supervised training
+    of these models is expensive, [costing companies up to $100 million](https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the rest of us, there is significant interest in adapting our data to these
+    models. With our limited datasets (in comparison) and lacking computing power,
+    how do we create models that can improve on the major players at a fraction of
+    the cost?
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where the research field of Parameter-Efficient Fine-Tuning (PEFT) comes
+    into play. Through various techniques, which we will soon explore in detail, we
+    can augment small sections of these models so they are better suited to the tasks
+    we aim to complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After reading this article, you will conceptually grasp each PEFT technique
+    applied in Hugging Face and be able to distinguish the differences between them.
+    One of the most helpful overviews I found before this article was from a [Reddit
+    comment](https://www.reddit.com/r/MachineLearning/comments/14pkibg/d_is_there_a_difference_between_ptuning_and/jqkdam8/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button).
+    There’s also another [exceptional article](https://lightning.ai/pages/community/article/understanding-llama-adapters/)
+    available from lightning.ai (the creators of pytorch lightning.) Additionally,
+    there’s a comprehensive survey that much of this piece is based on, authored by
+    Liali et al [2]. In my article, I aim to address the gaps I identified while reviewing
+    this material. At the time of writing, this article serves as a conceptual guide
+    to all the PEFT methods present in the Hugging Face library. The goal for readers
+    is to approach the research literature for other PEFT techniques with a fundamental
+    understanding of the field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A Moment for Self-Reflection: Is it time to fine-tune?'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I wrote a previous article about [considerations regarding fine-tuning LLMs](/thinking-about-fine-tuning-an-llm-heres-3-considerations-before-you-get-started-c1f483f293)
+    and how similar performance could be achieved through In-Context Learning. Since
+    then Llama 2 has been released and there has been great improvements in the open
+    source LLM world. Here are some expanded thoughts I can share that extend beyond
+    that article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning is inherently dangerous for your organization. In a recent paper
+    it was shown that LLMs can remember at least 1% of their training data [1]. If
+    you have potential data duplication, that floor of 1% goes up even higher. If
+    your fine-tuned LLMs will be used by non-internal users, ask yourself if it’s
+    okay to give them the data you are going to train on. Users can do malicious things
+    to your model such as a [prompt injection attack.](https://blog.mithrilsecurity.io/attacks-on-ai-models-prompt-injection-vs-supply-chain-poisoning/)
+    I made a [LinkedIn post](https://www.linkedin.com/posts/sms714_fine-tuning-llms-a-high-stakes-game-activity-7095426067393384448-xR30?utm_source=share&utm_medium=member_desktop)
+    about these security risks that serves as a quick overview. In the event that
+    you can’t give away your data, dynamic observation selection with ICL is one of
+    your best options (see my other [article](/thinking-about-fine-tuning-an-llm-heres-3-considerations-before-you-get-started-c1f483f293)
+    for details.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You must also prioritize the creation of high-quality data labels for your learning
+    task. If the organization’s commitment to top-notch data is lacking, particularly
+    in support of your project’s fine-tuning, I recommend considering an alternative
+    approach. Models thrive on high-quality labeled inputs. If the commitment from
+    your stakeholders is not there for human labelers, you risk disappointing all
+    parties involved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Who Even Uses PEFT?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: PEFT is used by most providers that offer the ability to fine-tune language
+    models. If the provider doesn’t already make use of these techniques, I guarantee
+    they have plans to. This article covers all of the techniques from [Hugging Face
+    PEFT](https://huggingface.co/docs/peft/index) that are available at time of writing.
+    The survey from Lialin et al. [2] is referenced by Google in their introductory
+    video about [tuning foundation models on Vertex AI](https://www.youtube.com/watch?v=4A4W03qUTsw).
+    While Vertex AI is more of a black box, I have heard use of [adapters](https://services.google.com/fh/files/misc/adaptation_of_foundation_models_whitepaper_google_cloud.pdf),
+    prompt-tuning, and recently LoRa from sales pitches. It’s unclear exactly what
+    they are use, but at it’s core the techniques we discuss here are what’s powering
+    things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI does offer fine-tuning, but however famously [has not implemented any
+    PEFT methods](https://web.archive.org/web/20230531203946/https://humanloop.com/blog/openai-plans)
+    yet. This is based on a blog post that was requested to be deleted by OpenAI a
+    few months ago. The article details OpenAI does not use Adapters or LoRa to make
+    fine-tuning more compute friendly. There has been no announcement from OpenAI
+    that this has been implemented, so the safe assumption is that these features
+    are not available to users yet. It is included on the roadmap for OpenAI and since
+    [fine-tuning is much more lucrative](https://openai.com/pricing) than normal model
+    use I suspect it will be available in the near future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quick Transformer Review
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I assume that readers of this article are familiar with the Transformer architecture.
+    You don’t need to be intimately invested in the details of self-attention or any
+    components, but you should have glanced at Vaswani et al. [3] and maybe had a
+    walkthrough of [The Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)
+    (in my opinion that’s the best resource to learn the Transformer.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I am going to include this pseudo code for the transformer block. If you don’t
+    know much about transformers, just know that at it’s core they do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: All functions from that pseudo code are as described in Vaswani et al. The FFN
+    is a Feed Forward Network, which is 2 layers for our purposes. Many PEFT techniques
+    that follow make changes to the transformer block or to self-attention, so I’ll
+    reference and change this pseudo code as we move through the guide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Tour through PEFT Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/b9e462418b0698dca2f8e214b7774e8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overview of methods and classes from [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll go through each technique by looking at the broader classes in the diagram
+    above. The classes we will cover are Additive, Adapters, Soft-Prompts, Reparameterization,
+    and one Hybrid method that is a combination of Reparameterization and Selective
+    (that isn’t Sparse LoRa).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additive Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Additive methods are probably the easiest to grasp. The goal of additive methods
+    is to add an additional set of parameters or network layers to augment the model.
+    When fine-tuning the data you update the weights only of these newly added parameters.
+    This makes training computationally easier and also adapts to smaller datasets
+    (think in the ballpark of 100–500 for starters, with a ceiling near 100,000.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Method: Adapters'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Adapters are simultaneously a method and a class. This technique was introduced
+    in Houlsby et al [4]. The goal of adapters is to add small fully connected networks
+    after Transformer sub-layers and learn those parameters. I follow the definitions
+    from [2] and keep a strict definition of adapters as only adding fully connected
+    layers to the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Houlsby et al. propose a simple update to the transformer block. They add fully
+    connected layers in two places as shown in this pseudo code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Method: (IA)³'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Infused Adapter by Inhibiting and Amplifying Inner Activations, or (IA)³ is
+    a very interesting additive method (adding parameters) that augments the transformer
+    block with some new parameters. It was proposed by Liu et al. [5] in 2022\. Despite
+    the name, this is not an adapter method since it does not strictly add fully connected
+    layers after the sub-layers of the transformer block .
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s consider the scaled dot-product attention found in a normal transformer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaled dot-product attention from Vaswani et al. [3]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we are working with an additive method, we are seeking to add parameters
+    to this network. We want the dimensionality to be quite small. (IA)³ proposes
+    the following new vectors to be added to the attention mechanism:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaled dot-product attention in (IA)³ from [5]. Here we added two column vectors
+    to the normal equation, l_k, l_v, which take the Hadamard product by the key and
+    value terms, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We just added column vectors l_k and l_v and take the [Hadamard product](https://en.wikipedia.org/wiki/Hadamard_product_(matrices))
+    between the column vector and the matrix (multiple the column vector against all
+    columns of the matrix).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also introduce one other learnable column vector l_{ff} that is added to
+    the feed forward layers as follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feed Forward update in (IA)³ adapted from [5]. We can see that we add the column
+    vector l_{ff} to the network and take Hadamard product with the output of the
+    first layer of the transformer blocks FFN. The function gamma is the activation
+    function [GELU](https://paperswithcode.com/method/gelu#:~:text=The%20GELU%20activation%20function%20is%20x%20%CE%A6%20(%20x%20)%20%2C%20where,of%20as%20a%20smoother%20ReLU.).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this example, gamma is the activation function applied to the product between
+    the weights and input. Here is some pseudo code for (IA)³:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Soft-Prompts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To understand soft-prompts, let’s first discuss hard-prompts, a concept that
+    most readers might be familiar with, even if not by name. In hard prompting, we
+    put together a dataset of prompts that represent the task at hand. When someone
+    interacts with the network by posing a question, they could phrase it in different
+    ways. With hard prompting, the process involves curating a dataset that covers
+    the various ways a particular task could be framed for the language model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Soft-prompting is a technique that tries to avoid this dataset creation. In
+    hard prompting, we are creating data in a discrete representation (picking words.)
+    In soft-prompting, we seek a continuous representation of the text we will input
+    to the model. This does imply you need one static prompt for the examples you
+    are training on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on the technique, there are different methods for how the information
+    is added to the network. The core idea is that the base model does not optimize
+    the text itself but rather the continuous representation (i.e. some type of learnable
+    tensor) of the prompt text. This can be some form of embedding or some transformation
+    applied to that embedding. These techniques will be explored in more detail as
+    we move on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Method: Prompt-Tuning'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/08f053c16dae10c6ecf38a250d65c7dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from prompt-tuning from Lester et [11]. This shows that in prompt-tuning
+    we concatenate the soft-prompt and the input text’s representation (embedding)
+    to the pre-trained model. Doing this allows us to optimize our representation
+    of the soft-prompt through a learnable tensor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompt tuning is a technique from Lester et al. [11] that falls into the category
+    of soft-prompts. With soft-prompts our goal is to add information to the base
+    model that is more specific to our current task. With prompt tuning we accomplish
+    this by creating a set of parameters for the prompt tokens and injecting this
+    at the beginning of the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To find a representation of the soft prompt, we create a separate set of embeddings
+    for the static prompt used during training. We concatenate the output embeddings
+    with the sequence embeddings. We use this new information to pass into the language
+    model. Creating this dual information allows us to learn a parameterization of
+    the soft prompt without needing to create many prompts for the same task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are a number of rich benefits to fine-tuning through this approach. This
+    new set of parameters can be very small, around 0.01% the size of the tunable
+    parameters of the base model. This creates opportunities to have an ensemble of
+    task specific models that all run off the same base model, which drastically decreases
+    memory requirements for the model. For more on this, check out this post I shared
+    on [LinkedIn](https://www.linkedin.com/posts/sms714_ensembling-has-long-been-a-favorite-technique-activity-7097213152114708480-BHxn?utm_source=share&utm_medium=member_desktop)
+    and also the section on ensembling in [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Method: Prefix Tuning'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Prefix tuning is another soft prompting technique that is very similar to prompt
+    tuning. In prompt tuning we created a separate set of parameters that we fed our
+    input into and appended the outputs to the continuous representation of the text
+    input in the model. In Prefix tuning we also find a continuous representation
+    from a separate set of prompt tokens that are input into the base model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference between prefix tuning and prompt tuning is that the representation
+    from prefix tuning is fed to all layers of the transformer whereas prompt tuning
+    was only concatenated with the embeddings. Additionally, we also learn additional
+    parameters for the soft prompt for prefix tuning in the form of a fully connected
+    network. After training the FFN is discarded and we only use the soft-prompt as
+    input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Method: P-Tuning'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/48f16389543c55a9a51eaeb37d614d7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image for P-Tuning from Liu et al [6]. This shows the creation of the prompt
+    embedding throughout the prompt encoding being concatenated with the input embedding.
+    The prompt encoder consists of and embedding, LSTM, and then some fully connected
+    layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: P-Tuning is another soft-prompting method introduced by Liu et al. [6] that
+    differs from prompt and prefix tuning. Colloquially we can think of P-Tuning as
+    prompt-tuning but encoding the prompt using an LSTM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: P-Tuning sets out to solve two problems the authors noticed. The first is the
+    discreteness of the word embeddings passed to the model. The authors argue that
+    if the embeddings are randomly initialized and then optimized through Stochastic
+    Gradient Descent, the model is likely to fall into a local minima. They second
+    is association of the word embeddings. With the parameterization in prompt-tuning
+    and prefix-tuning, the soft prompts are technically independent of each other.
+    The authors wanted an approach that made the prompt tokens dependent on each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors propose that a prompt is a function that takes a context x and a
+    target y and organizes itself into a template T. The authors provide the example
+    sequence “The capital of Britain is [MASK]”. Here the prompt is “The capital of
+    … is …”, the context is “Britain” and the target is [MASK]. We can use this formulation
+    to create two sequences of tokens, everything before the context and everything
+    after the context before the target. We can learn a representation of this additional
+    information that can be reduced to a continuous output and fed into the language
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To embed the prompt in this way, we use a small network of an LSTM fed into
+    a two layer FFN. We pass the prompt tokens, those before the context and those
+    after and before the target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Method: LLaMA-Adapater'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/8b51188fac198efd68e593fdf1f575db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image for LLaMA-Adapter from Zhang et al. [7] We can see the addition of zero-initialized
+    attention being used on the adaption prompts and that those are the only thing
+    fine-tuned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLaMA adapter is a soft-prompting technique introduced by Zhang et al. [7] that
+    applies a more efficient version of prefix learning to the Llama model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLaMA-Adapter has a few key differences from Prefix Tuning. They introduce Adaptation
+    Prompts, which are soft-prompts appended with the input to the transformer layer.
+    These adaption prompts are inserted in the L topmost of the N transformer layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors also introduce zero initialized attention. With additive methods
+    we introduce a new set of parameters that have some random initialization over
+    the weights. Because of this random noise added to the LM, we can potentially
+    experience unstable fine-tuning which can cause a problem with large loss values
+    at the early stages. To solve this problem, the authors introduce a gating factor,
+    initialized to 0, that is multiplied by the self attention mechanism. The product
+    of the gating factor and self-attention is referred to as zero-init attention.
+    The gating value is adaptively tuned over the training steps to create a smoother
+    update of the network parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Reparameterization-Based Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Reparameterization-Based methods focus on finding low dimensional representations
+    of the same weight matrices found in the base model. The first connection between
+    fine-tuning and a low dimensional representation was shown in Hu et al [8]. The
+    authors make a connection between the full parameters of the model and a lower
+    dimensional representation. Depending on the task, the authors are able to achieve
+    90% of the results of the fully fine-tuned model with approximately 0.0002% of
+    the trainable parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Method: LoRa**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7f6a7616ba55d625afb1f93ba61941d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image taken from Hu & Shen et al [9]. Here we can see the pre-trained weights
+    and the additional matrices A and B. A is initialized normally and B is initialized
+    to 0\. We train only A and B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most popular techniques in fine-tuning is a reparameterization-based
+    method called Low-Rank Adaptation (LoRa) [9]. LoRa updates a weight matrix by
+    learning a separate matrix which represents the updates from optimization. They
+    go a step further to create two smaller dimension weight matrices to represent
+    this difference. By creating smaller dimension weight matrices we have less parameters
+    to learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To train LoRa we use the fundamental ideas of gradient descent, where we make
+    incremental adjustments to a set of parameters that move us closer to our goal
+    (loss function). In LoRa we choose to isolate all of our updates to a separate
+    matrix. This matrix, we denote Delta W, represents all of the parameter updates
+    we learn in this during the fine-tuning process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assign W_0 to have dimensions dxk (d rows and k columns). We want to update
+    it’s parameters so that it is aligned with our new goal. You can represent this
+    update to the parameters by ΔW, which also the dimension dxk. We can model our
+    update rule using the equation below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Update rule for W_0 from [9]. We isolate the changes to W_0 in DeltaW. We then
+    represent DeltaW as the product of A and B, two smaller dimension matrices. This
+    way we learn less parameters but still update W, which makes fine-tuning computational
+    easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s change our update rule such that ΔW is modeled by a matrix multiplication
+    AB. We assign matrix A to have dimensions dxr and B to have dimensions rxk. If
+    you’re up to speed on your matrix multiplications you will see that AB has the
+    same dimensions as W_0, so the addition of these matrices is valid. Here’s why
+    AB is a better choice than DeltaW: Matrix A only has dxr and matrix B has rxk.
+    If we make r a very small number (r=8 is a typical value), then the number of
+    parameters in A and B is drastically smaller than ΔW. If we only learn the parameters
+    of A and B, then we learn `d*k-d*r-r*k` less parameters. In practice this allows
+    us to learn only 0.1–0.5% of the parameters of the original network.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The walk through I just illustrated is the essence of how LoRa works. Instead
+    of optimizing a matrix W through additional training steps, we alter a matrix
+    ΔW through two new matrices A and B that have far fewer parameters. This result
+    helps us optimize many fewer parameters, which makes our training much more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically we use this update rule for the key and value matrices of the self
+    attention in the transformer block. We also add a scaling factor, set to 1/r,
+    to the amount of information given to the update. See the pseudo code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Selective Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With selective methods we choose some of the parameters to update and do not
+    update others. The problem with these approaches is that we have created a sparse
+    matrix of parameters. Sparse matrix operations are not well supported on present
+    day GPUs and provide computation challenges. For more information on why sparse
+    matrices produce computational challenges, check out [10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are also techniques in Selective methods that focus on pruning unsuccessful
+    vectors or manipulating model biases. These also create additional complexity
+    when attempting to train the model. In general these methods have more challenging
+    implementations since their compute operations are more expensive than other operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Method: AdaLoRa**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a hybrid approach that combines ideas from reparameterized and selective
+    methods. Zhang et al [12] developed AdaLoRa by studying LoRa and formed the question
+    “How can we allocate the parameter budget adaptively according to [the] importance
+    of modules to improve the performance of parameter-efficient fine-tuning?” What
+    this translates to is “How can we give preference to the parameters that lead
+    to better performance rather than treating all parameters equally?”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead of using two matrices A and B as we did in LoRa, AdaLoRa uses an approximation
+    of [Singular Value Decomposition (SVD)](https://en.wikipedia.org/wiki/Singular_value_decomposition)
+    to reduce the dimensionality of a vector space into three matrices: P (left singular
+    vectors), Lambda (singular values), and Q (right singular vectors). Using these
+    three matrices we can reconstruct an approximation of our vector space Delta as
+    P * Lambda * Q. The benefit of using SVD is the singular values represent the
+    importance of the vector in this lower dimensional space. The contribution of
+    this paper is applying some efficiency implementations to use an SVD related approach
+    to consider importance around which weights should be optimized.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In LoRa, we saw that we can approximate delta W with two matrices A and B. Here
+    we can replace A and B with our new approximation P * Lambda * Q. Since lambda
+    only has values along the diagonal (singular values) we store it as a column vector.
+    We pick the dimensions of our matrices P (d x r), Lambda (r x r), and Q (r x k)
+    to match the dimensions of a weight matrix W (d x k).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other novel result is the idea of using a special importance sampling technique
+    to determine which elements of the SVD can be pruned out. Essentially the technique
+    is to consider a group of triplets (each entry of the SVD) and determine how important
+    they are to the lower dimensional representation. They accomplish this by using
+    a function that relates the singular values and left/right singular vectors. These
+    are then run through a sensitivity function that combines an exponential moving
+    average between steps of the gradient weight product (pseudo importance) and another
+    function called the uncertainty quantification, that is also exponentially averaged
+    over the current step and previous step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While pruning elements of the SVD, the rank of the lower dimension (the r term
+    of the matrices) is iteratively changed as they delete the least important triplets.
+    They accomplish this through a global budget scheduler that decays the rank r
+    over the training steps. The budget is initialized as 1.5 times the magnitude
+    of the target budget and follows a cubic decrease to the target budget after t
+    warm up steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is conceptually a dense method to understand. If you’re technically inclined
+    I encourage reading through the paper to understand the inner workings of the
+    method. If you remember this as an efficient SVD implementation applied to LoRa
+    that combines pruning less important singular vectors, that is probably safe at
+    a conceptual level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comparison of Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To compare all of the methods in one place I created the table below to show
+    their number of trainable parameters (which are all additional parameters to the
+    network), the method type, and an informal summary of the method. The informal
+    summary is how I would describe the method in one sentence to a college student
+    who had never heard of it before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92175ae12769830938d7d7d9d3d5c308.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table adapted from Lialin et al [2]. Author contributed P-Tuning, LLaMA-Adapter,
+    and AdaLoRa and informal summary column. Informal summary is how I would describe
+    the paper in one sentence to a college student.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this the only conceptual guide you need?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I argue this is the only conceptual guide you need because after reading you
+    understand the basics of PEFT techniques. If you noticed, all of the techniques
+    expanded on the ideas from another. After this introduction you understand enough
+    of the basics that you could explore the research papers yourself. However, if
+    you end up needing another conceptual guide to understand the concepts, please
+    share it in the comments of the article so other readers can find these resources!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time to get started!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After this conceptual review you are at a great point to start experimenting
+    with these methods to train your own models. There are plenty of great implementation
+    guides available from [Hugging Face](https://huggingface.co/docs/peft/index).
+    If you want a less hands on approach you can work with Google’s Vertex AI models
+    or work with OpenAI fine tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thank you for reading the article! If you have additional questions or something
+    was unclear, leave a comment and I will get back to you. If you want to see more
+    articles like this one, please follow me on* [*Medium*](https://medium.com/@smsmith714)
+    *and on* [*LinkedIn*](https://www.linkedin.com/in/sms714/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you found a technical error in this article, please let me know ASAP! I
+    strive to make sure the information I publish is as correct as possible, but no
+    one is perfect.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Nicholas Carlini, Daphne Ippolito, Matthew Jagielski, Katherine Lee, Florian
+    Tramer, & Chiyuan Zhang. (2023). Quantifying Memorization Across Neural Language
+    Models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Vladislav Lialin, Vĳeta Deshpande, & Anna Rumshisky. (2023). Scaling Down
+    to Scale Up: A Guide to Parameter-Efficient Fine-Tuning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+    Aidan N. Gomez, Lukasz Kaiser, & Illia Polosukhin (2017). Attention Is All You
+    Need*. CoRR, abs/1706.03762.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
+    de Laroussilhe, Andrea Gesmundo, Mona Attariyan, & Sylvain Gelly (2019). Parameter-Efficient
+    Transfer Learning for NLP*. CoRR, abs/1902.00751.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Haokun Liu, Derek Tam, Mohammed Muqeeth, Jay Mohta, Tenghao Huang, Mohit
+    Bansal, & Colin Raffel. (2022). Few-Shot Parameter-Efficient Fine-Tuning is Better
+    and Cheaper than In-Context Learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Xiao Liu, Yanan Zheng, Zhengxiao Du, Ming Ding, Yujie Qian, Zhilin Yang,
+    & Jie Tang (2021). GPT Understands, Too*. CoRR, abs/2103.10385.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Renrui Zhang, Jiaming Han, Chris Liu, Peng Gao, Aojun Zhou, Xiangfei Hu,
+    Shilin Yan, Pan Lu, Hongsheng Li, & Yu Qiao. (2023). LLaMA-Adapter: Efficient
+    Fine-tuning of Language Models with Zero-init Attention.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Armen Aghajanyan, Luke Zettlemoyer, & Sonal Gupta (2020). Intrinsic Dimensionality
+    Explains the Effectiveness of Language Model Fine-Tuning*. CoRR, abs/2012.13255.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li,
+    Shean Wang, & Weizhu Chen (2021). LoRA: Low-Rank Adaptation of Large Language
+    Models*. CoRR, abs/2106.09685.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Trevor Gale, Matei Zaharia, Cliff Young, & Erich Elsen. (2020). Sparse
+    GPU Kernels for Deep Learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Brian Lester, Rami Al-Rfou, & Noah Constant. (2021). The Power of Scale
+    for Parameter-Efficient Prompt Tuning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Qingru Zhang, Minshuo Chen, Alexander Bukharin, Pengcheng He, Yu Cheng,
+    Weizhu Chen, & Tuo Zhao. (2023). Adaptive Budget Allocation for Parameter-Efficient
+    Fine-Tuning.'
+  prefs: []
+  type: TYPE_NORMAL

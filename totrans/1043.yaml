@@ -1,0 +1,291 @@
+- en: Heuristics as Warm Start for Mixed Integer Programming (MIP) Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f](https://towardsdatascience.com/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Setting a starting solution in MIP Models: a scheduling application'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)[![Bernardo
+    Furtado](../Images/fa4e7e408135319d0531ef364acca8f6.png)](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)
+    [Bernardo Furtado](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)
+    ·10 min read·Apr 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dddb71a353bfd16b1c89773175b62f3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Nils Geldner](https://unsplash.com/@n_geldner?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/nZf1_8WPIQk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In computer science, heuristics are techniques used to find a feasible solution
+    to a given problem, typically faster than exact methods but without a guarantee
+    of optimality. On the other hand, exact methods are much more expensive computationally,
+    but the optimal solution is guaranteed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modeling a problem as a Mixed Integer Program (*MIP*) and solving it using a
+    solver may give you the optimal solution. Usually, those solvers use a branch-and-bound
+    algorithm behind the scenes. Branch and Bound (*B&B*) is considered an exact method
+    to solve optimization problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the name suggests, it enumerates the solutions as a tree (branching). The
+    main difference between *B&B* and exhaustive search, often called brute force,
+    is the bounding phase. During the process, every node (solution) is compared against
+    the solution’s lower and upper bound. If the branch is proven not to give better
+    results than the best already found, it is pruned and the algorithm goes to another
+    branch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The target of this article is not to give too many details on the Branch and
+    Bound algorithm; a much deeper explanation is found [here](https://www.gurobi.com/resources/mixed-integer-programming-mip-a-primer-on-the-basics/).
+    But we have to define a couple of things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Incumbent*: best feasible solution found at each step of the algorithm. If
+    it is a minimization problem, it is an upper bound.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Best Bound*: valid lower bound of the solution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Gap (%)*: difference between Best Bound and Incumbent. If incumbent is equal
+    to the best bound, the gap is 0, and optimal solution was found.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: State-of-the-art solvers have different methods to calculate an incumbent and
+    best bound for any *MIP*. But for the solver, our *MIP* is just a set of equations
+    and objective function. Since we know the exact structure of our problem, wouldn’t
+    it be helpful to develop an Adhoc algorithm and provide the result as an incumbent
+    itself? Yes, and that’s when heuristics and warm-start comes into the picture
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The permutation flow shop scheduling problem is one of the most classic optimization
+    problems in the literature. It can be briefly described as follows: given a set
+    of machines *m* and a set of jobs *n*, how to process those jobs such that every
+    job has to go through all the machines in the same order. Objective is to minimize
+    the completion time of last job.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s suppose there are *3* machines (*M1*, *M2* and *M3*) and *3* jobs (*J1*,
+    *J2* and *J3*). Jobs have to follow that order given. A possible feasible solution
+    is shown below in form of Gantt Chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7bcaaf563561dc00b248db36fd137a92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feasible solution for Permutation Flow shop
+  prefs: []
+  type: TYPE_NORMAL
+- en: The completion time, or Makespan, of this schedule is *34* and the solution/order
+    is *J1*, *J2*, *J3*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This problem can be formulated as *MIP* model. Let’s call *m* the set of machines
+    and *n* the set of jobs. The jobs have to go through the same order of machines
+    *{0,1,…,m}*. The processing time of job *j* in machine *i* is given by p_ij. Let’s
+    create those parameters in python. We’ll start with a set of *15* jobs and *5*
+    machines. Processing time is generated randomly between *1* and *100*. *M* is
+    an upper bound of the solution. A good upper bound is the sum of all processing
+    times of all jobs in all machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are two sets of variables. Variable *x_ij*, a continuous variable, which
+    is the starting time of job *j* in machine *i*. And variable *y_jk*, a binary
+    variable that is equal to *1* if job *j* is executed before *k*. *0* otherwise.
+    *Cmax* is the makespan of the schedule. Now let’s define that using *gurobipy*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Constraints are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15343bbeae0ca682b7b3e88f41d2f3af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***(1)*** ensures that processing of job *j* in machine *i* can start only
+    when it is finished in machine *i-1*. ***(2)*** and ***(3)*** are the disjunction
+    constraints — if job *j* is executed after job *k*, it should start after its
+    completion, in the given machine. ***(4)*** defines the makespan, which is the
+    completion time of last job in machine *m* (last machine).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Objective function is minimize makespan:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we set the *MIP* Gap to be *1.8%*, the best objective is *832\.* The convergence
+    of the Branch-and-Bound algorithm is shown in the chart below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62581d485f313261ae8d6a11665c5744.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convergence curve for Permutation Flow shop example
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incumbent starts at around *1,200* (the first solution gurobi was able to find)
+    and converges until *832*. What if we could find a better initial solution for
+    the problem and use it as the incumbent?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *NEH* heuristic is one of the most known heuristics for the flow shop scheduling
+    problem. It is named *NEH* due to its authors ([Nawaz, Enscore, and Ham](https://www.sciencedirect.com/science/article/abs/pii/0305048383900889)).
+    It is a constructive heuristic, therefore, it starts from an empty solution and
+    constructs the schedule iteratively until all the jobs are assigned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A solution representation of the permutation flow shop problem is a list of
+    *n* elements. The list is ordered by start time — the first job in the list is
+    the first to be executed and the last job is the latest. The first step is to
+    create a function that receives the ordered list (a solution) as input and returns
+    the makespan associated to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*NEH* starts by sorting the jobs in decreasing order of processing times (sum
+    of all machines). The first iteration adds the job with the highest processing
+    time at the beginning of the schedule. For the remaining jobs, it tries to insert
+    it in all possible positions in the current solution, compares the (partial) makespan
+    of each, and stores the best solution found. This process is repeated until all
+    the jobs are assigned. The function is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result found by *NEH* has makespan of *891*, much better than the *1,200*
+    found by Gurobi as first incumbent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we wanted to start with our incumbent, *B&B* from Gurobi would be able to
+    skip a lot of branches with solution higher than *891*. As in the chart below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/881071d8ffa91adf1187133707ec5150.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convergence curve for Permutation Flow shop example against NEH solution
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a warm start in Gurobi is relatively easy. The only challenge is to transform
+    the data structure returned by the heuristic into values of the *MIP* variables.
+    For our problem, we must transform an ordered list and a makespan value into variable
+    values of *y*, *x*, and *c*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*cmax_heuristic* and *c* variable have thesame meaning, so the only task is
+    assigning the variable start value.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Transforming the ordered list (*sequence_heuristic*) into variable *y* is also
+    straightforward. One needs to iterate through the list, and if job *j* comes before
+    job *k* in the list, *y_jk = 1*. *0* otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We don’t need to assign variable *x* values. Gurobi can infer their values
+    from the constraints. Once the model is executed, the user will be able to see
+    the following message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab0cefcc8e354885050eacb1d7a244c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It means the solution is feasible, its objective is *891*, and it will be used
+    as the *MIP* start. What if we try to insert an unfeasible *MIP* start? For example,
+    if we try to add as a start *y_ij = 0*, for all *i* and all *j*. Of course, this
+    is not feasible since all jobs must be on the schedule. In that case, the user
+    would see the following message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/602ec4cace045ac441a4b9fb7c23a4d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Having a heuristic that finds a good starting point for *MIP* is not the only
+    use of the *MIP* start functionality. There are a couple of others:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a real-world problem, the user could feed the model with a scenario that
+    happened in reality. In this case, the baseline would be the model’s starting
+    point. For example, if a company wants to create a model for their routing process
+    and if there’s historical data available, the routes taken by one day of operation
+    could be a *MIP* start if it respects the constraints given in the mathematical
+    model. This is also a good exercise to check if the designed constraints are respected
+    in reality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As already explained, for solvers, our model is just a bunch of equations. If
+    the user doesn’t want to spend time developing heuristics, using a very simple/naive
+    method could also be helpful. For example, an ordered list of jobs by their index
+    is a feasible solution (*[1,2,3,..,n]*) and could be useful if solver is struggling
+    to find an initial point.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If a very good known solution is available and one wants to prove it is the
+    optimal, or how far it is from the optimal.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Last but not least, it is not guaranteed that a *MIP* start, even if it is
+    better than the solver’s initial solution, will improve convergence and/or run
+    time. This is because the solver takes an entirely different path than the original.
+    The case we showed before is a good example. The convergence curve of *MIP* using
+    a *MIP* start is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb9777c7bbe498eacd4fcff084553835.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convergence curve for Permutation Flow shop example using NEH as start
+  prefs: []
+  type: TYPE_NORMAL
+- en: It indeed starts from a better solution, but it gets stuck in values close to
+    *891*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, *MIP* start is a very useful resource and almost all commercial solvers
+    have this functionality. But its value will depend greatly on the problem, dataset,
+    and time to develop a good heuristic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author. Full code is available
+    in [GitHub](https://github.com/bernardoor/Permutation-Flow-Shop-Warm-Start).
+  prefs: []
+  type: TYPE_NORMAL

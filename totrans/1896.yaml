@@ -1,0 +1,581 @@
+- en: Speculative Sampling — Intuitively and Exhaustively Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/speculative-sampling-intuitively-and-exhaustively-explained-2daca347dbb9](https://towardsdatascience.com/speculative-sampling-intuitively-and-exhaustively-explained-2daca347dbb9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Machine Learning | Natural Language Processing | Data Science
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Exploring the drop-in strategy that’s speeding up language models by 3x
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----2daca347dbb9--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----2daca347dbb9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2daca347dbb9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2daca347dbb9--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----2daca347dbb9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2daca347dbb9--------------------------------)
+    ·12 min read·Dec 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c21285038373258e14b9f0b7ea4033a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Speculators” by Daniel Warfield using MidJourney and Affinity Design 2\. All
+    images by the author unless otherwise specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article we’ll discuss “Speculative Sampling”, a strategy that makes
+    text generation faster and more affordable without compromising on performance.
+    In doing so, we’ll take a thorough look at some of the more subtle aspects of
+    language models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/37be7902d8b7476df84c826007418377.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Empirical results of using speculative sampling on a variety of text generation
+    tasks. Notice how, in all cases, generation time is significantly faster. [Source](https://arxiv.org/pdf/2211.17192.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we’ll discuss a major problem that’s slowing down modern language models,
+    then we’ll build an intuitive understanding of how speculative sampling elegantly speeds them up,
+    then we’ll implement speculative sampling from scratch in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Anyone interested in natural language processing
+    (NLP), or cutting edge AI advancements.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** The concepts in this article are accessible
+    to machine learning enthusiasts, and are cutting edge enough to interest seasoned
+    data scientists. The code at the end may be useful to developers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-requisites:** It might be useful to have a cursory understanding of Transformers,
+    OpenAI’s GPT models, or both. If you find yourself confused, you can refer to
+    either of these articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/gpt-intuitively-and-exhaustively-explained-c70c38e87491?source=post_page-----2daca347dbb9--------------------------------)
+    [## GPT — Intuitively and Exhaustively Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring the architecture of OpenAI’s Generative Pre-trained Transformers.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/gpt-intuitively-and-exhaustively-explained-c70c38e87491?source=post_page-----2daca347dbb9--------------------------------)
+    [](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----2daca347dbb9--------------------------------)
+    [## Transformers — Intuitively and Exhaustively Explained
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exploring the modern wave of machine learning: taking apart the transformer
+    step by step'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----2daca347dbb9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language Models Are Getting Too Big
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Over the last four years OpenAI’s GPT models have grown from 117 million parameters
+    in 2018 to an estimated 1.8 Trillion parameters in 2023\. This rapid growth can
+    largely be attributed to the fact that, in language modeling, bigger is better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc29d1fea21cc0d5f25b71a079c856dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A graph of model size vs performance, showing that bigger is better. From [my
+    article on GPT](https://medium.com/towards-data-science/gpt-intuitively-and-exhaustively-explained-c70c38e87491).
+    [Original source](https://arxiv.org/pdf/2005.14165.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, the last few years have been an arms race. Numerous companies have
+    been dropping billions of dollars on fancy graphics cards to the schagrin of Fortnight
+    players everywhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The issue is, the models are simply getting too big. Language models, like the
+    ones used in ChatGPT, have to generate their responses one word at a time through
+    a process called “autoregressive generation”. The bigger the model gets, the more
+    money and time it takes to generate output word by word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14ad4313662eaa0d11b1eb52f8a26036.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A decoder only style model, like GPT, iteratively constructing an output. The
+    model takes an input “Translate to French: I am a manager”, and generates the
+    response word by word by using the previous outputs as part of the input. This
+    style of text generation is called “autoregressive generation”. [From my article
+    on GPT](https://medium.com/towards-data-science/gpt-intuitively-and-exhaustively-explained-c70c38e87491)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI’s GPT-4, [based on a leak by some guy on twitter](https://archive.is/2RQ8X#selection-833.1-873.202),
+    uses a bunch of technologies to get around this problem. One of them, the topic
+    of this article, is speculative sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speculative Sampling in a Nutshell
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Speculative sampling (also known as “Speculative Decoding” or “Speculative
+    Generation”) was simultaneously proposed in two papers, both of which suggest
+    a speedup in text generation by around 3x:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “[Accelerating Large Language Model Decoding with Speculative Sampling](https://arxiv.org/pdf/2302.01318.pdf)”,
+    a paper by DeepMind,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “[Fast Inference from Transformers via Speculative Decoding](https://arxiv.org/pdf/2211.17192.pdf)”,
+    a paper by Google.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Despite being published independently, both approaches are functionally identical,
+    so we’ll treat them synonymously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fundamental idea of speculative sampling is that bigger language models
+    are better because *some* examples of text generation are difficult, but not *all*
+    examples. For instance, suppose you ask a language model about the geological
+    composition of the moon. To formulate a coherent response the model has to understand
+    fancy sciency stuff, and also has to put words like “a”, “and”, and “of” in the
+    right spots. Knowing the moon consists of something called “Breccias” is more
+    difficult than knowing the word “are” might come after the word “which”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4890a3bd9357e7925b6175a5e7610f95.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual demonstration of generative difficulty. When a model predicts a
+    response sequence, word by word, some of the words are difficult to predict because
+    they require in depth knowledge, but some of them are easy because they can be
+    inferred by simple grammar or context clues. In this example the text in red might
+    be more difficult to predict than the text in blue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Speculative sampling exploits the idea of varying degrees of difficulty by
+    using two language models; a target model and a draft model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The target model is the super big, super smart model we’re trying to speed up.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The draft model is a smaller, dumber, and faster model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The idea is to use the draft model to predict numerous words in the sequence,
+    then ask the target model to confirm that all the generated words are good. We
+    can throw away all disagreements, resulting in an output which is identical to
+    what the target model would output if it was working alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d100f94cb722db75aa4581543a8bd90d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of speculative generation in action. In the first row, the draft
+    model output “japan’s benchmark bond”, but the target model disagreed with “bond”
+    in favor of “n”. The word “bond” was replaced with “n”, and anything the draft
+    model might have predicted after the word “bond” is thrown out. In effect, this
+    allows a speculative generation system to output multiple words for each pass
+    of the target model. [source](https://arxiv.org/pdf/2211.17192.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Natural Question
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’re anything like me, you might be a bit confused. The common intuition,
+    and the intuition that I communicated in both my [article on transformers](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb)
+    and my [article on GPT](https://medium.com/towards-data-science/gpt-intuitively-and-exhaustively-explained-c70c38e87491),
+    is that language models predict output word by word. Under that intuition it’s
+    not exactly obvious how a target model might efficiently “double check” the output
+    of the draft model; if the target model has to check predictions one by one, then
+    what’s the point of going through the trouble of using the draft model in the
+    first place?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14ad4313662eaa0d11b1eb52f8a26036.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If a model like GPT outputs text word by word, wouldn’t it have to check the
+    output of the draft model word by word, thus taking the same amount of time? No,
+    and we’ll talk about why in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea of speculative sampling requires a thorough understanding of the exact
+    output of transformers. There are some quirks which normally aren’t relevant,
+    but are very relevant for speculative sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Secret Outputs of Transformers, and How Speculative Sampling Uses Them
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As I discussed in [my article on the original transformer architecture](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb),
+    the thing that made transformers so special was their ability to parallelize training.
+    Before transformers, models like LSTMs had to be trained word by word, which was
+    a slow and expensive process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When a model like GPT is trained, an entire input sequence is provided at input,
+    and the model is asked to predict that same sequence, just shifted by one word.
+    The model is then trained to minimize the flaws of its predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8132621588836de8f5299cda729d66a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of the training process for a language model, like GPT. The model
+    is given an input sequence, shifted to the right by a token which designates the
+    start of a sequence, and the model is asked to predict that same sequence, in
+    a single pass. Any errors are used to train the model. Essentially, the model
+    is trained to predict *all next words simultaneously.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, if the model has access to the entire input sequence, wouldn’t it cheat
+    by just moving each word over by one space? No, and that’s because of masking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Transformers use “masked” self attention, which essentially blocks out information
+    about future words from reaching the information for a given word. I’ll probably
+    cover masking in it’s own dedicated article, it’s definitely worthy of a deeper
+    dive, but the intuition is this: By setting certain values in the self attention
+    mechanism to zero, the prediction of a given word is not influenced by future
+    words.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f049bc3556dfd4a7bda8ac8ffaa8fcb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of training with masking. In effect, with masking, a language
+    model is asked to predict all next words simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, when using a transformer, we only care about a prediction of the
+    next word in a sequence; that’s how we get text to generate and cause venture
+    capitalists to empty their pockets. However, technically, the model has outputs
+    for the entire sequence as if the next words in the sequence did not exist, because
+    of the way the model is trained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/543b80612b86895b208df82bfd101d91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The true output of a transformer based language model like GPT. While we usually
+    only care about the final last word prediction, technically it predicts all next
+    words in the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s how the target model can quickly check numerous predictions from
+    the draft model. If we give the draft models output to the target model as input,
+    and ask the target model to predict the next word, we can compare the predicted
+    values for every word in the sequence. If there’s a discrepancy we can stop there
+    and use the target model’s output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95ee7441708d4b960e90910d2a1a247f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Suppose the text in blue was generated by the draft model, and the target model
+    disagreed with some word in the sequence as highlighted in red and underlined.
+    All draft generated before the disagreement can be accepted, and all drafted text
+    after the disagreement must be rejected. At the point of first disagreement we
+    use the output from the target model. In effect, we just generated “primarily
+    made up of rocks and regolith” with a single pass of the target model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A cool note about this process generally. Every single time we run the target
+    model, it predicts the next word in the sequence. The target model might confirm
+    all of the predictions of the draft model, or it disagree with all of them. Regardless,
+    the target model will always predict a new word. As a result, in a worst case
+    scenario where the draft model consistently outputs incorrect information, the
+    entire system is as fast as if we were only using the target model. In other words,
+    **speculative sampling can’t slow down generation, it can only make generation
+    faster** (at least, when it’s implemented correctly)**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sequences, Tokens, TokenIds, Logits, and Probabilities
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: That was the theory. Before we dive into the code we should discuss some technical
+    details about how transformers function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text, from a language modeling perspective, is conceptualized as a **sequence**;a
+    list of “things” that come one after another. Typically these “things” can be
+    conceptualized as words, but in reality they’re a bit more abstract than that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A machine learning model first breaks the input sequence into **tokens**, which
+    are the “things” that make up a sequence. This can be done using one of many algorithms,
+    but the end result is that the input sequence is divided into atomic chunks. These
+    might be individual words, portions of words, multiple words, punctuation, numbers,
+    or spaces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53e25c56aef9c03dd4a57a7c57faf0bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of tokenization, using a tokenizer called “sentencepiece”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of the tokens extracted from a tokenizer has a unique number, called the
+    **TokenId**. Typically, a transformer style model learns a representative vector
+    for each TokenId, which then becomes the input to the model. There’s one vector
+    associated with each TokenId, which the model optimizes throughout training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/239fbb45a0fe9c7980082b18f4c988a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The same tokens, with their associated Ids
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the data goes through numerous rounds of self attention within the model,
+    the data becomes an abstract sequence of vectors, one for each output. This is
+    sometimes referred to as the “final hidden state”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a971ff4cf2d8a6bbb79f047d2b768a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The input, which has vectors which cleanly correspond with each word, get passed
+    through numerous layers of self attention. This process creates highly abstract
+    representations. [From my article on transformers.](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is passed through a language modeling head, which converts the model’s
+    abstract representation into a representation that corresponds directly to the
+    tokenizer. There’s a set number of TokenIds for a given tokenizer, and the language
+    modeling head converts the output of the model into vectors which contain the
+    same number of values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4653ff0c7be9283288f5316e8c98972.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After the transformer does its thing, the final hidden state of the model is
+    passed through a language modeling head, which re-structures the data into a format
+    which directly corresponds to whatever tokenizer the model is being trained with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These outputs are called **logits**. Typically, the term “logit” is used to
+    refer to the unfiltered, unprocessed, true output of the model. This is the thing
+    that usually gets optimized. logits are typically compared to each other using
+    a softmax function, which converts the logits into **probabilities**. Big logit
+    values become big probabilities, small logit values become small probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0b85b223d7731d4fb9471a97d9e33d7c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of logits getting converted to probabilities
+  prefs: []
+  type: TYPE_NORMAL
+- en: These probabilities can then be converted into tokens, which then can be used
+    to construct the output sequence. There are a few ways to go about doing that
+    though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can simply always choose to use the highest probability token
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You could randomly select an output in a manner which is weighted by probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You could do a more complex strategy like “top K sampling”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Regardless, the probabilities become a tokenId, that tokenId becomes the token
+    itself, and from the tokens, the output can be constructed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, to recap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sequence:** This is typically used in reference to the input and output text,
+    but can also be conceptualized as a sequence of tokens, sequence of tokenIds,
+    sequence of logits, sequence of probabilities, whatever. “The sequence” can mean
+    a few things, depending on the context of the discussion'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Token:** Text can be divided into atomic tokens with a tokenizer. These are
+    used to break text up into atomic, predefined chunks. Sometimes these cleanly
+    correspond to words, and sometimes they don’t.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**TokenId:** Each token has a corresponding TokenId, which is simply a number.
+    The model uses this number to retrieve a learned vector for that token, thus constructing
+    the input to the model'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Logits and Probabilities:** After the model does its thing, it outputs a
+    series of values. These are typically softmaxed, and thus turned into probabilities.
+    The probabilities are used to select output tokens.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Speculative Sampling in PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we understand logits, probabilities, and tokens, we can start diving
+    into a practical example of Speculative Sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s keep it simple: We’ll use the maximum logit to decide which token gets
+    generated on each step. If both the draft and target models output the same max
+    value, we’ll say they agree.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Full code can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/SpeculativeSampling.ipynb?source=post_page-----2daca347dbb9--------------------------------)
+    [## MLWritingAndResearch/SpeculativeSampling.ipynb at main · DanielWarfield1/MLWritingAndResearch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notebook Examples used in machine learning writing and research - MLWritingAndResearch/SpeculativeSampling.ipynb
+    at…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/SpeculativeSampling.ipynb?source=post_page-----2daca347dbb9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading the Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we need a draft and a target model. I’m using T5 in this example, which
+    stands for “Text to Text Transfer Transformer”. It’s an encoder-decoder style
+    transformer ([like the one I talk about in this article](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb)),
+    which differs from a decoder only model ([like the one I talk about in this article](https://medium.com/p/c70c38e87491)).
+    Regardless, it has a decoder, so it will work for our purposes. Also, conveniently,
+    T5 comes in a variety of sizes, pre-traind, and easily available on huggingface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The whole idea of speculative decoding relies on the draft and target model
+    having the same tokens. So, just to double check, I confirmed that the tokenizers
+    for both models behaved similarly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/48c587278e6d57843be23d46838fe591.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The “0”, in this case, means both tokenizers behave similarly
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building Speculative Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once you have the models, you just, kinda.. do speculative sampling. Of course,
+    as previously mentioned, to do speculative sampling productively you need a whole
+    architecture that can handle parallelized cues of information. In this example
+    I’m simply doing drafting and checking within the same loop on a single machine.
+    It’s not a very complicated process, but there are some loops and logic that need
+    to happen to get it all working. Here’s the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once concluded, we can observe how many tokens were generated in each loop.
+    In this example we’re asking the model to translate a famous quote from English
+    to German:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e12aec97563102b5ee5917ad119cbfe8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Every iteration of speculative sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, with the chosen task and models, most iterations did not have
+    useful draft output. In some examples however, like 8 and 11, the draft model
+    allowed the system to effectively generate five tokens in one run of the target
+    model. The models used in this example are fairly small. I imagine, when dealing
+    with larger models, the draft model would be more useful more often.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And that’s it. Speculative sampling is an incredibly elegant way to drastically
+    speed up text generation. We use a small language model to quickly generate output,
+    then (by using a quirk of masked attention during training) we can use a large
+    language model to double check that work essentially for free. We only keep generated
+    text that the larger model agrees with, so at the end we get the same output,
+    only faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I describe papers and concepts in the ML space, with an emphasis on practical
+    and intuitive explanations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1/subscribe?source=post_page-----2daca347dbb9--------------------------------)
+    [## Get an email whenever Daniel Warfield publishes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Daniel Warfield publishes By signing up, you will create
+    a Medium account if you don't already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@danielwarfield1/subscribe?source=post_page-----2daca347dbb9--------------------------------)
+    [![](../Images/1f6f4c8a07d69cf53e055e0130a85b03.png)](https://www.buymeacoffee.com/danielwarfield)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Never expected, always appreciated. By donating you allow me to allocate more
+    time and resources towards more frequent and higher quality articles. [Learn More](https://www.buymeacoffee.com/danielwarfield)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the images in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any images in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  prefs: []
+  type: TYPE_NORMAL

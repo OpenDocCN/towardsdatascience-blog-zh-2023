@@ -1,0 +1,833 @@
+- en: 'TensorFlow-GNN: An End-To-End Guide For Graph Neural Networks'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tensorflow-gnn-an-end-to-end-guide-for-graph-neural-networks-a66bfd237c8c](https://towardsdatascience.com/tensorflow-gnn-an-end-to-end-guide-for-graph-neural-networks-a66bfd237c8c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/f6cf81efc4d2972bc977bddcaf88dd1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Mapsterpiece” by Heidi Malin, used with permission
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tutorial
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How to do graph, node, and edge predictions using your own Pandas/NetworkX datasets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-malin.medium.com/?source=post_page-----a66bfd237c8c--------------------------------)[![Michael
+    Malin](../Images/070604c68a50e8f2996f2c8837df3ec9.png)](https://michael-malin.medium.com/?source=post_page-----a66bfd237c8c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a66bfd237c8c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a66bfd237c8c--------------------------------)
+    [Michael Malin](https://michael-malin.medium.com/?source=post_page-----a66bfd237c8c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a66bfd237c8c--------------------------------)
+    ·20 min read·Jan 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A special thanks to Alvaro Sanchez Gonzalez from DeepMind and Bryan Perozzi
+    and Sami Abu-el-haija from Google who assisted me with this tutorial*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updated 04/22/2023 for minor fixes and adding the Graph Nets approach
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Graph data is everywhere. Graph research is in its infancy and tools for modeling
+    graph data are only starting to emerge. **This makes it the perfect time to jump
+    in if you are a data scientist looking to distinguish yourself**. Unfortunately,
+    it can be difficult being on the cutting edgedue to a lack of tutorials and support.
+    This guide hopes to significantly reduce that pain point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why TensorFlow-GNN?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: TF-GNN was recently released by Google for graph neural networks using TensorFlow.
+    While there are other GNN libraries out there, TF-GNN’s modeling flexibility,
+    performance on large-scale graphs due to distributed learning, and Google backing
+    means it will likely emerge as an industry standard. This guide assumes you already
+    understand the merits of this library, but please see [this paper](https://arxiv.org/abs/2207.03522)
+    for more information and performance comparisons. Also, check out the [documentation](https://github.com/tensorflow/gnn/blob/e096b647831b5472b9ad0deb006df22f422bdbec/tensorflow_gnn/docs/guide/overview.md)
+    for TF-GNN. If you are new to GNN altogether, check out [this guide](https://distill.pub/2021/gnn-intro/)
+    for a conceptual understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the downside?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With this library currently in an alpha stage, the code is very exact on the
+    structures, input shapes, and formats required to model successfully. This makes
+    it very difficult to navigate without a guide. Unfortunately, there is not much
+    information out there for using TF-GNN. The guides I *could* find focus on the
+    same context-level prediction use case using a pre-built TensorFlow dataset. As
+    of writing this, there is not a single walk-through for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making edge or node predictions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Starting with your own Pandas or NetworkX datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating holdout datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Troubleshooting errors you may run into
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After a good month of rereading documentation, trial-and-error coding, and some
+    direct help from the TensorFlow developers at Google/DeepMind, I decided to put
+    this guide together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Many [hours] died to bring us this information.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'What this guide will cover:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, we will start very simply to get the building blocks down. Then we will
+    move to a more advanced example — college football conference predictions. Here
+    is the outline of what will be covered:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TF-GNN elements**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Building Blocks'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Graph tensor from Pandas'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Data setup**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Graph tensor from NetworkX'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Feature engineering'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Creating test splits'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Creating a graph TensorFlow dataset'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Building the model**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Node model'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Edge model'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Context model'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Troubleshooting errors**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Parameter tuning**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: TF-GNN elements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A graph consists of nodes and edges. Here is an example of a simple graph showing
+    people (nodes) who recently had contact each other (edges):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/132c610deee63e541103190bda44322b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example graph by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This same graph could also be represented as node and edge tables. We can also
+    add features to these nodes and edges. For example, we can add ‘age’ as a node
+    feature and an ‘is-friend’ indicator as an edge feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09389ab67da2d4cd6def793b618471af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example node and edge data by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we add edges to TF-GNN, we need to index by number rather than name. We
+    can do that like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/762698e968c380016ec11778531577ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Node and edge data with numeric index by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we might have a context value for the graph. For example, maybe this
+    friend group scored an average of 84% on a certain test. That will not mean much
+    for this single-graph example. If we had other friend graphs, we could perhaps
+    predict scores for new friend groups based on learned group dynamics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph tensor from pandas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With these elements, we can now build the foundation for our GNN: a graph tensor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the features we created fit into the nodes and edges. The indented
+    structure makes it simple to add additional nodes, edges, and features. For example,
+    we could easily add nodes and edges for the movies each friend has watched and
+    include a graph context value this time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note: Be very careful with your dtypes and shapes. Any deviations will cause
+    errors or training issues. The only supported dtypes are ‘int32’, ‘float32’, and
+    ‘string’. If you are having issues, please see the troubleshooting section towards
+    the end of this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may have noticed that the graph tensor is directional with a source and
+    target. This might be fine for Sam watching a movie, but communication is bidirectional.
+    When Sam talks to Amy, Amy is also talking to Sam. For bidirectional data, you
+    will want to duplicate those edges (with source and target reversed) to indicate
+    both directions of data flow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/840945e3aebb0eb3adcab49fc15e2918.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example bidirectional data by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this foundation, we are now ready to transition to making predictions on
+    a real dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The training data is a network of American football games between Division IA
+    colleges during regular season Fall 2000, as compiled
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'by M. Girvan and M. Newman. Node data includes college names and an index of
+    the conference they belong to (e.g. conference 8 = Pac 10). Edges include the
+    two college names, indicating a game was played between them. The data can be
+    pulled as follows (see [Google Colab](https://colab.research.google.com/drive/1gNhC0YLc0aZeWwWh6QuSt2McbZMToY2S?usp=sharing)
+    to follow along):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Graph tensor from NetworkX
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our data is now in a NetworkX graph. Let’s see how it looks with nodes colored
+    by which conference they belong to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5f1a9b7277bf3fefb4611fb8c8ac8413.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: College American football network by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**For our node model, we will attempt to predict the conference a school belongs
+    to. For our edge model, we will attempt to predict if a game was an in-conference
+    game.** Both predictions will be evaluated on a holdout dataset.How do we do this
+    from NetworkX? It is possible to build a graph tensor directly from a graph using
+    these functions to extract the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The problem is, we still want to do some feature engineering and we do not yet
+    have our holdout dataset. For these reasons, I highly recommend taking the approach
+    of converting your graph data to Pandas. Later, we can plug our data into a graph
+    tensor using the method shown in our first example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7975807fc612d9189471b35cc64cd0e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: College American football node and edge data by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using the base graph, a model might be able to determine if two colleges are
+    in the same conference based on the network. But how would it know which conference
+    specifically? How could it learn the differences between conferences without any
+    node or edge data? For this task, we will need to add more features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What kind of features should we gather? I am no expert in college football,
+    but I would imagine conferences are put together based on proximity and rank.
+    This guide is focused on TF-GNN so I will add these new features using magic,
+    but you can find the specific code in the linked [Google Colab](https://colab.research.google.com/drive/1gNhC0YLc0aZeWwWh6QuSt2McbZMToY2S?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For nodes, we will add latitude/longitude and the previous year’s (1999) rank,
+    wins, and conference wins. We will also convert the conference column into 12
+    dummy variable columns for a softmax prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f322fc88b624005af21da86dbd54fd71.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Final node dataset by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For edges, we will calculate the distance between schools, add a name similarity
+    score (maybe schools with the same state in their name are more likely to be in
+    the same conference), and a target value for games being a within-conference game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c2fc3b980805c0bd2f933d22e2d9c3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Final edge dataset by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize our data with our new information (orange edges indicate a conference
+    game). It definitely appears that geography at least plays a role in conference
+    selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/335efbc0766b99f81ec0a82645c83718.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: College data on US map by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating test splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Creating a training split is straightforward; exclude the holdout nodes and
+    edges the same way you normally would. Holdout data, however, is a little different
+    from your typical machine learning application. Because the overall connections
+    are important for an accurate prediction, the final prediction will need to be
+    on the entire graph. Once a prediction is made, the results can be filtered down
+    to the holdout data for the final evaluation. I will show this process in more
+    detail at the prediction stage; here is how I create the splits for now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: With our new splits, we can now make our bidirectional adjustments and add the
+    edge index columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating a TensorFlow dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are now ready to create our graph tensors which we will transform into TensorFlow
+    datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before creating the dataset, we need a function that will split our graph into
+    our training data and the target we will be predicting (shown as label below).
+    For our node prediction problem, we will make ‘conference’ our label. We also
+    need to drop the ‘conference_game’ feature from the dataset since it would create
+    a data leakage issue (i.e. cheating).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will do the reverse for our edge model: drop the ‘conference’ feature and
+    split off ‘conference_game’ as our target (label).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now create our dataset and map it through the function above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The order of these procedures is extremely important:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. We create our dataset from the graph tensor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. We split our dataset in batches (read up on batch sizes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. In the map function, we merge those batches back into one graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. We split/drop the features as needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model will not train (or not correctly) if you do not follow this order
+    precisely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have our datasets, now the fun part! First, we define the inputs using our
+    dataset spec.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we need to initialize our features. We will create functions for initializing
+    the nodes and edges. Then we map our features through these functions. To keep
+    things simple, I will create a dense layer for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: There is a lot of customization that can happen with this previous step. For
+    example, we could create word embeddings for string features. We could probably
+    gain some accuracy by hashing a latitude / longitude grid rather than just using
+    a dense layer. TensorFlow has many options available to us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few things to note:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have multiple nodes or edges, you will need to add ‘if statements’ to
+    apply features to the correct node/edge.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Nodes or edges without features can also be initialized with the ‘MakeEmptyFeature’
+    function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For a node-centric problem, initializing edges is optional (read more on node
+    vs edge centric).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The first node must have at least one feature. You may have to create an embedding
+    on an index if you have no features (results will likely not be very good).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before we develop our update loop, we need one more helper function. As we add
+    dense layers, we will want to make sure we are utilizing L2 regulation and/or
+    dropout (L1 would work as well).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Node Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are several model architectures out there, but graph convolutional networks
+    are by far the most common (see other approaches described [here](https://huggingface.co/blog/intro-graphml)).
+    Graph convolutions are similar to convolutions commonly used in computer vision
+    problems. The main difference is that graph convolutions work on the irregular
+    data you find with graph structures. Let’s jump into the actual code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The code above can seem a little confusing because of how TensorFlow stacking
+    works. Remember that the (graph) labeled ‘#start here’ at the end of the ‘GraphUpdate’
+    function is really the input for the code that comes before it. At first, this
+    (graph) equals the initialized features we mapped previously. The input gets fed
+    into the ‘GraphUpdate’ function becoming the new (graph). With each ‘graph_updates’
+    loop, the previous ‘GraphUpdate’ becomes the input for the new ‘GraphUpdate’ along
+    with a dense layer specified with the ‘NextStateFromConcat’ function. This diagram
+    should help explain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3dd765df1bb6d59a58a1ef924d8326c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Graph convolutional network diagram showing two graph updates by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ‘GraphUpdate’ function simply updates the specified states (node, edge,
+    or context) and adds a next state layer. In this case, we are only updating the
+    node states with ‘NodeSetUpdate’ but we will explore an edge-centric approach
+    when we work on our edge model. With this node update, we are applying a convolutional
+    layer along the edges, allowing for information to feed to the node from neighboring
+    nodes and edges. The number of graph updates is a tunable parameter, with each
+    update allowing for information to travel from further nodes. For example, the
+    three updates specified in our case allow for information to travel from up to
+    three nodes away. After our graph updates, the final node state becomes the input
+    for our prediction head labeled ‘logits’. Because we are predicting 12 different
+    conferences, we have a dense layer of 12 units with a softmax activation. Now
+    we can compile the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: And finally, we train the model. I am using a callback to stop training when
+    the validation dataset stops improving accuracy. It isn’t perfect since we have
+    to use the full dataset (explained above). This will cause our accuracy number
+    to include data leakage. A perfect solution would be to write a custom evaluation
+    function that only returns accuracy for the validation nodes on the validation
+    data, and training nodes for the training data. That is a lot of work (would take
+    a tutorial in itself) to be a couple epochs closer to the most accurate stopping
+    point. I choose to keep it simple and live with a marginally less accurate model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Time to see how we did using node_model.predict(full_node_dataset) and printing
+    the results on a map using magic (see [Google Colab](https://colab.research.google.com/drive/1gNhC0YLc0aZeWwWh6QuSt2McbZMToY2S?usp=sharing)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e526705ac81014ab669eddc20e737372.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Node prediction accuracy comparison by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, we had a respectable 88% accuracy (see [Google Colab](https://colab.research.google.com/drive/1gNhC0YLc0aZeWwWh6QuSt2McbZMToY2S?usp=sharing)
+    for model parameters). The model seems to have a harder time for the mountain
+    states. Diving in deeper yields some interesting insights. For example, the model
+    falsely predicted Utah to be in the Pac 10 conference. The following year, however,
+    Utah did in fact join Pac 10\. It is entirely possible that the model is correctly
+    identifying how things should be and the ~12% error is really a measurement of
+    human inconsistency when creating conferences. Another way to think about it is
+    with a social network of friends. If the network predicts two people are friends
+    when they have never met, is the model wrong or are they a good match to be friends?
+    For many (or a majority) of graph problems, these “errors” are what you are really
+    trying to find. They can then be used to recommend products to buy, movies to
+    watch, people you should connect with, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this case, let’s assume the data is perfect and we are interested in classification
+    accuracy. To really know how well we did, we will need to test the accuracy on
+    our holdout data. To do this, we will make a prediction on the full dataset and
+    filter down to the holdout nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: For this model, accuracy drops to ~72% (Don’t Panic, a drop is expected on a
+    holdout dataset). Given the limited feature engineering, only one year of data,
+    and 12 output predictions — those results are reasonable. Upon visual inspection
+    of the maps below (and comparing to the full map above), most of the errors seem
+    like decent guesses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67636c0dd27a6de4f2ee8244698d61bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Node holdout prediction accuracy comparison by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edge Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now we will try to predict if a specific game is an in-conference game. We
+    already defined our edge datasets above and most of the steps can be reused with
+    only one change:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: We do need to make a few changes to the graph updates though. First, we need
+    to add an ‘edge_sets’ update to our ‘GraphUpdate’ function. Leaving in the ‘node_sets’
+    update is optional but the model does seem to do better for me when I keep it
+    in. Next, we will switch from a GCN to a Graph Nets approach. This method treats
+    edges as first-class citizens (i.e. a fancy way of saying they will learn their
+    own weights which is what we are after). Finally, we need to update ‘logits’ to
+    be a one unit sigmoid activation dense layer since we are predicting a dummy variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: We compile the model using ‘binary_crossentropy’ this time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we fit the model using the same callback defined in our node problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: When evaluated on the holdout dataset, we get 85% accuracy compared to a 56%
+    mean. The model did its job and I am satisfied with those results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Context Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This particular problem does not have a context value. Let’s imagine that we
+    sliced the graph above so we had a separate graph for each conference. These new
+    graphs would show every game played for teams in the conference and ignore all
+    other games. We could then have values for each graph for how the conference was
+    ranked. Now we can train a model to make context-level predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we need to add our context values to the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we need to create a new dataset with the context mapped to the label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We have the ability to set our initial context state. In this case, we are
+    predicting this feature so it will be absent from from our training data. For
+    other models, context may be a trainable feature and can be set like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again, we can optionally add a context update to the ‘GraphUpdate’ (see below).
+    I have not tested this method so feel free to experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we update our ‘logits’ for a context prediction
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Troubleshooting errors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I ran into many errors and poorly trained models trying to figure out the code
+    above. While I tried to keep things generic enough to apply to many different
+    problems, you will no doubt run into errors as you make adjustments for your data.
+    The trick is to identify the source of your error. The best way I found to diagnose
+    errors was to create a graph schema.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our code above, we pulled the graph schema from our dataset. You can, however,
+    build a graph schema directly. For our football example, the graph schema would
+    look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can test if our ‘graph_spec’ is at least valid by attempting to build and
+    compile the model. If you get an error, there is likely an issue with your feature
+    shapes or your ‘set_initial_…’ functions. If it works, you can verify that the
+    schema you created is compatible with your ‘graph_tensor’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: If false, you can print out ‘full_tensor.spec’ and ‘graph_spec’ to compare each
+    piece to ensure the shapes and dtypes are exactly the same. You can also create
+    a randomly generated graph tensor directly from the ‘graph_spec’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this ‘random_graph’ you can attempt to train a model. This should help
+    you determine if your error is with the spec or the model code. If you do not
+    get any errors, you can print the values of the ‘random_graph’ to see how the
+    outputs compare to your ‘graph_tensor’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: These steps should allow you to track down the majority of issues you run into.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameter tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have successfully fixed any errors we were having and trained a model. Now
+    we want to tune our hyperparameters for an accurate model. My tuner of choice
+    is the Hyperopt library because of its ease of use and integrated Bayesian optimization.
+    But first we want to convert our modeling code above to a class with variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we define our parameters. For our tuning parameters, we can either expressly
+    define the value (e.g. ‘dropout’: 0.1) or define the space for Hyperopt to experiment
+    with as I did below. ‘hp.choice’ will choose between options you specify while
+    ‘hp.uniform’ will pick options between two values. There are many other options
+    available in the H[yperopt documentation](http://hyperopt.github.io/hyperopt/getting-started/search_spaces/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we define a helper function and plug it into ‘fmin’ along with our parameters.
+    Each evaluation is a trained model so this can take a while depending on your
+    hardware. Consider doing fewer ‘max_evals’ if it is too slow for you. My personal
+    rule of thumb is ~15 evaluations per tuned parameter so I would expressly define
+    some of the parameters in relation to the drop in the number of evaluations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have our best hyperparameters, we can train our final model (NOTE:
+    your accuracy will be slightly different due to how TensorFlow randomly initializes
+    its weights).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can tune and train our edge model with a few slight adjustments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Final thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: GNN research is still in its infancy. New modeling methods are likely to be
+    discovered. With TF-GNN still in an alpha state, there is a good chance there
+    may be some code changes over the years. Please comment below if you find changes
+    or errors that I have not fixed yet and I will update this guide the best I can.
+    If you did not like this article, feel free to draw an analogy between me and
+    your favorite historical dictator in the comments. Otherwise, a clap or nice comment
+    would be appreciated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My hope is that this guide can be a starting place for more people to enter
+    this field and experiment. Consider this your opportunity to be at the beginning
+    of the next AI wave!
+  prefs: []
+  type: TYPE_NORMAL
+- en: About me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I am a senior data scientist and part-time freelancer with over 12 years of
+    experience. I am always looking to connect so please feel free to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Connect with me on LinkedIn](https://www.linkedin.com/in/michael-a-malin/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Follow me on Twitter](https://twitter.com/alaska_malin)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Visit my website: www.modelforge.ai](http://www.modelforge.ai)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[See my other articles](https://michael-malin.medium.com/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Please feel free to comment below if you have any questions.***'
+  prefs: []
+  type: TYPE_NORMAL

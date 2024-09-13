@@ -1,0 +1,458 @@
+- en: DETR (Transformers for Object Detection)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/detr-transformers-for-object-detection-a8b3327b737a](https://towardsdatascience.com/detr-transformers-for-object-detection-a8b3327b737a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deep Dive and clear explanations on the paper “End to end detection with transformers”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@francoisporcher?source=post_page-----a8b3327b737a--------------------------------)[![François
+    Porcher](../Images/9ddb233f8cadbd69026bd79e2bd62dea.png)](https://medium.com/@francoisporcher?source=post_page-----a8b3327b737a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a8b3327b737a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a8b3327b737a--------------------------------)
+    [François Porcher](https://medium.com/@francoisporcher?source=post_page-----a8b3327b737a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8b3327b737a--------------------------------)
+    ·8 min read·Oct 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dae11e25d74f1483e61af5a29e11a35f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Aditya Vyas](https://unsplash.com/@aditya1702?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: This article delves into the intricate world of Computer Vision, specifically
+    focusing on Transformers and the Attention Mechanism. It’s recommended to be acquainted
+    with the key concepts from the paper [“Attention is All You Need.”](https://arxiv.org/abs/1706.03762)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Snapshot of History
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**DETR**, short for **DE**tection **TR**ansformer, pioneered a novel wave in
+    object detection upon its conception by Nicolas Carion and team at **Facebook
+    AI Research in 2020.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While not currently holding the SOTA (State Of The Art) status, DETR’s innovative
+    reformulation of object detection tasks has significantly influenced subsequent
+    models, such as CO-DETR, which is the current State-of-the-Art in **Object Detection**
+    and **Instance Segmentation** on [LVIS](https://www.lvisdataset.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving away from the conventional one-to-many problem scenario, where each ground
+    truth corresponds to myriad anchor candidates, DETR introduces a fresh perspective
+    by viewing object detection as a **set prediction problem**, with a one-to-one
+    correspondance between predictions and ground truth, thereby eliminating the need
+    for certain post-processing techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Refresher on Object Detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Object detection is a domain of computer vision that focuses on identifying
+    and locating objects within images or video frames. Beyond merely classifying
+    an object, it provides a bounding box, indicating the object’s location in the
+    image, thereby enabling systems to understand the spatial context and positioning
+    of various identified objects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/882459fab2d3469f3648a695ae2aab34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Yolo5 video segmentation, [source](https://commons.wikimedia.org/wiki/File:Yolo5.gif)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object detection is really useful in itself for example in autonomous driving,
+    but it is also a preliminary task for **instance segmentation**, where we try
+    to seek a more precise contour of the objects, while being able to differentiate
+    betwen different instances (unlike semantic segmentation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Demystifying Non-Maximum Suppression (and getting rid of it)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/1b9c9b633277fbe1263194dea79f1675.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Non-Maximum Suppression, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Non-Maximum Suppression (NMS)** has long been the cornerstone in object detection
+    algorithms, performing an indispensable role in post-processing to refine the
+    prediction outputs. In traditional object detection frameworks, the model proposes
+    a plethora of bounding boxes around potential object regions, some of which invariably
+    exhibit substantial overlap (as seen on the picture above).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: NMS addresses this by **preserving the bounding box with the maximum predicted
+    objectness scor**e while concurrently suppressing the neighboring boxes that manifest
+    a high degree of overlap, quantified by the Intersection over Union (IoU) metric.
+    Specifically, given a pre-established IoU threshold, NMS iteratively selects the
+    bounding box with the highest confidence score and nullifies those with IoU exceeding
+    this threshold, **ensuring a singular, highly confident prediction per object**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite its ubiquity, DETR (DEtection TRansformer) audaciously sidesteps the
+    conventional NMS, reinventing object detection by **formulating it as a set prediction
+    problem.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: By leveraging transformers, DETR directly predicts a fixed-size set of bounding
+    boxes and obviates the necessity for the traditional NMS, remarkably **simplifying
+    the object detection pipeline while preserving, if not enhancing, model performance.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep Dive in DETR architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At the High-Level picture, DETR is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**An Image Encoder** (it is actually a double Image Encoder because there is
+    firstly a **CNN Backbone** followed by a **Transformer** **Encoder** for more
+    expressivity)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A **Transformer Decoder** which produces the bounding boxes from the image encoding.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b34f2bb86d4d6e488a9661e3a9571e11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DETR architecture, image from [article](https://arxiv.org/abs/2005.12872)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go into more details in each part:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Backbone:**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'We start from an initial image with 3 color channels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And this image is fed into a backbone which is a Convolutional Neural Network
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typical values we use are *C = 2048* and *H = W = H0 =W0 = 32*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Transformer encoder:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Transformer Encoder is theoretically not mandatory but it adds more expressivity
+    to the backbone, and ablation studies show improved performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, a 1x1 convolution reduces the channel dimension of the high-level activation
+    map *f* from *C* to a smaller dimension *d*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the Convolution
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But as you know, Transformers map an input sequence of vectors to an output
+    sequence of vectors, so we need to collapse the spatial dimension:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After collapsing the spatial dimension
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are ready to feed this to the Transformer Encoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is important to note that the **Transformer Encoder only uses self-attention
+    mechanism.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for the **Image Encoding part**!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46dc94deac1f578f41c40d103aaca1e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: More details on the Decoder, Image from [article](https://arxiv.org/abs/2005.12872)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Transformer decoder:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This part is the most difficult part to understand, hang on, if you understand
+    this, you understand most of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Decoder uses a combination of Self-Attention and Cross-Attention mechanisms.
+    It is fed *N* object queries, and each query will be transformed into an output
+    box and class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does a box prediction look like?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is actually made of 2 components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A bounding box has some coordinates (x1, y1, x2, y2) to identify the bounding
+    box.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A class (for example seagul, but it can also be empty)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is important to note that *N* is fixed. It means that DETR always predict
+    exactly *N* bounding boxes. But some of them can be empty. We just have to make
+    sure that *N* is big enough to cover enough objects in the images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then the Cross-Attention Mechanism can attend the image features produced by
+    the Encoding part (Backbone + Transformer Encoder).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are unsure about the mechanism, this scheme should clarify things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71798b7319d8ae8879d3f90251249028.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Detailed Attention mechanism, image from [article](https://arxiv.org/abs/2005.12872)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the original Transformer architecture we produce one token and then we use
+    a combination of self-attention and cross-attention to produce the next token
+    and repeat. But here we do not need this recurrence formulation, we can just produce
+    all the outputs at one so we can exploit parallelism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main innovation: Bipartite Matching Loss'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned before, DETR produces exactly *N* outputs (bboxes + class). But
+    each output corresponds to one ground truth only. If you remember well this is
+    the whole point, we do not want to apply any post-processing to filter out overlapping
+    boxes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96b2fc4578be6806117b213a87aae949.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bipartite Matching, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to basically associate each prediction with the closest ground truth.
+    So we are in fact looking for a bijection between the prediction set and the ground
+    truth set, which minimizes a total loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how do we define this loss?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. The matching loss (pairwise loss)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We first need to define a matching loss, which corresponds to the loss between
+    one prediction box and one ground truth box:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this loss is split needs to account for 2 components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The classification loss** (is the class predicted inside the bounding box
+    the same as the ground truth)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The bounding box loss** (is the bounding box close to the ground truth)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/3624d28403e0a284aa6a0767562ff29d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matching Loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And more precisely for the bounding box component there are 2 sub components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intersection over Union Loss (IOU)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: L1 Loss (absolute difference between coordinates)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/360a54f203774c2e160b37c8428202b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2\. Total Loss of the Bijection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To compute the total loss, we just sum over the *N* instances:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b55f7d61d8df711130b3ea3aa7eec395.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So basically our problem is to find the bijection that minimizes the total
+    loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c411a6a9b81d88fc882850c11e59d6af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reformulation of the problem
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Insights
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/f0a9bdef234d7ce79dfd7e5147b34a42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance of DETR vs Faster RCNN
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DETR:** This refers to the original model, which uses a transformer for object
+    detection and a **ResNet-50 as a backbone.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DETR-R101:** This is a variant of DETR that employs a **ResNet-101 backbone
+    instead of ResNet-50**. Here, “R101” refers to “ResNet-101”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DETR-DC5:** This version of DETR uses the modified, **dilated C5 stage in
+    its ResNet-50 backbone**, improving the model’s performance on smaller objects
+    due to the increased feature resolution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DETR-DC5-R101:** This variant combines **both modifications**. It uses a
+    ResNet-101 backbone and includes the dilated C5 stage, benefiting from both the
+    deeper network and the increased feature resolution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DETR significantly outperforms baselines on large objects, which is very likely
+    enabled by the non-local computations allowed by the transformer. But interesting
+    enough DETR achieves lower performances on small objects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why the Attention Mechanism is so Powerful is this case?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/6148040e2feb2ba4e44ddee1901f4c47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Attention on Overlapping instances, image from article
+  prefs: []
+  type: TYPE_NORMAL
+- en: Very interestingly, we can observe that in the case of Overlapping instances,
+    Attention mechanism is able to correctly separate individual instances as shown
+    on the picture above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/54f9274e18939352912de99147a2587b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Attention mechanism on extremities
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also very interesting no note that Attention is focused on the extremities
+    of objects to produce the bounding box, which is exactly what we expect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: DETR is not merely a model; it is a paradigm shift, transforming object detection
+    from a one-to-many problem into a set prediction problem, effectively utilizing
+    Transformer architecture advancements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enhancements have unfolded since its inception, with models like DETR++ and
+    CO-DETR now steering the ship as State of the Art in Instance Segmentation and
+    Object Detection on the [LVIS](https://www.lvisdataset.org) dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thanks for reading! Before you go:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check my [compilation of AI tutorials](https://github.com/FrancoisPorcher/awesome-ai-tutorials)
+    on Github
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://github.com/FrancoisPorcher/awesome-ai-tutorials?source=post_page-----a8b3327b737a--------------------------------)
+    [## GitHub — FrancoisPorcher/awesome-ai-tutorials: The best collection of AI tutorials
+    to make you a…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best collection of AI tutorials to make you a boss of Data Science! — GitHub
+    …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/FrancoisPorcher/awesome-ai-tutorials?source=post_page-----a8b3327b737a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Y*ou should get my articles in your inbox.* [***Subscribe here.***](https://medium.com/@francoisporcher/subscribe)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you want to have access to premium articles on Medium, you only need a
+    membership for $5 a month. If you sign up* [***with my link***](https://medium.com/@francoisporcher/membership)*,
+    you support me with a part of your fee without additional costs.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you found this article insightful and beneficial, please consider following
+    me and leaving a clap for more in-depth content! Your support helps me continue
+    producing content that aids our collective understanding.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: “End-to-End Object Detection with Transformers” by Nicolas Carion, Francisco
+    Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, and Sergey Zagoruyko.
+    You can read it in full on [arXiv](https://arxiv.org/abs/2005.12872).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Zong, Z., Song, G., & Liu, Y. (Year of Publication). DETRs with Collaborative
+    Hybrid Assignments Training. [https://arxiv.org/pdf/2211.12860.pdf](https://arxiv.org/pdf/2211.12860.pdf).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[COCO dataset](https://cocodataset.org/#home)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

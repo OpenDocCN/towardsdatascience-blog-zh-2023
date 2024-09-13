@@ -1,0 +1,228 @@
+- en: 'Forecasting with Granger Causality: Checking for Time Series Spurious Correlations'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/forecasting-with-granger-causality-checking-for-time-series-spurious-correlations-5faed62c3604](https://towardsdatascience.com/forecasting-with-granger-causality-checking-for-time-series-spurious-correlations-5faed62c3604)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Hacking Granger Causality Test with ML Approaches
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@cerlymarco?source=post_page-----5faed62c3604--------------------------------)[![Marco
+    Cerliani](../Images/48a07a024349bac3c8e397bf5a0372e2.png)](https://medium.com/@cerlymarco?source=post_page-----5faed62c3604--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5faed62c3604--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5faed62c3604--------------------------------)
+    [Marco Cerliani](https://medium.com/@cerlymarco?source=post_page-----5faed62c3604--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5faed62c3604--------------------------------)
+    ·6 min read·Apr 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f95ed31b2eca041090475ffc0f39690.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Phoenix Han](https://unsplash.com/@phienix_han?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In time series forecasting is often helpful to inspect graphically the data
+    at disposal. This helps us understand the dynamics of the phenomena we are analyzing
+    and take decisions accordingly. Despite having a colorful plot with our time series
+    may be fascinating, it may lead to incorrect conclusions. **Time series are tricky
+    because often unrelated events may still be visually seen to be related**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/652e6447ad9b57be8d737a543dbc5bea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of spurious correlation [[SOURCE](https://www.tylervigen.com/spurious-correlations)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As rational individuals, we can easily negate any sort of relationship between
+    the *number of people who died by becoming tangled in their bedsheets* and *per
+    capita cheese consumption*. **We can affirm being in presence of a false (spurious)
+    correlation because there is nothing that can relate the two events**, even though
+    we are not experts in both fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those who work with data know that these patterns may happen often, also where
+    we have difficulties interpreting the context and discriminating between true
+    and wrong correlations. For this reason, the need for methodologies that help
+    in discriminating against these situations is crucial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**One of the most famous techniques used to detect spurious correlation is
+    the Granger causality test**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Granger-causality is built on the intuition that **if a signal Y1 *“Granger-causes”*
+    another signal Y2, then lags of Y1 (i.e. past observations) should contain information
+    that helps predict Y2** together with the information contained in past observations
+    of Y2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/560eb319a896dde01c41a64dda40bde8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of possible Granger-causality between time series [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing for Granger causality doesn’t mean Y1 must be a cause for Y2\. It simply
+    means that past values of Y1 are good enough to improve the forecast of Y2’s future
+    values. From this implication, we may derive a naive definition of causality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The adoption of the Granger causality test implies strict assumptions on the
+    underlying data (i.e. stationarity and linear dependency), which may be difficult
+    to fulfill in real-world applications. For this reason, in this post, **we propose
+    a generalization of the Granger causality test adopting a simple machine learning
+    approach that involves the usage of forecasting algorithms**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: EXPERIMENT SETUP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For the scope of this post, we simulate two different time series as a result
+    of autoregressive processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77ea807f7ae2e96a3f7998f8f41d4778.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simulated AR processes [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both series are correlated with some of their past timesteps (autocorrelation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/beaaa033f94c78e4d9166ad3841f9b10.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Autocorrelation of AR processes [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The time series exhibit an overall Pearson correlation of 0.637 with a discrete
+    positive relationship preserved over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbf78162b5c08d14111efe380c2205ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pearson correlation of AR processes over time [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: At first sight, it seems we are in the presence of two events that have a positive
+    connection. **We express the correlation between two variables using the Pearson
+    correlation coefficient**. It is the most commonly used statistic to measure linear
+    relationships between variables. It is so common that often people wrongly interpret
+    it trying to give it a causal meaning. That may be a mistake! **Person correlation
+    only relates the mean and standard deviation of two variables. We can conclude
+    anything about their dependency**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6dc62539d75c392fdc1f3ad2540e2805.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Person correlation formula [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our simulated scenario, the positive relationship is merely a mathematical
+    result since we know the two series are related in only one direction. More precisely,
+    past values of Y1 are linearly related to actual values of Y2 (vice-versa is not
+    valid). Our scope is to make a practical demonstration of this statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GRANGER FORECASTING
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Carrying out a Grange causality test, in a classical manner, means verify
+    past values of a time series (Y1) have a statistically significant effect on the
+    current values of another time series (Y2)**. This is done by running a linear
+    model on the lagged series values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The null hypothesis of the test states that the coefficients corresponding to
+    past values of Y1 are zero. We reject the null hypothesis if the p-values are
+    below a specific threshold. In that case, Y1 does not Granger cause Y2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What if we operate the same check on the residuals of a predictive model?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, **we verify if adding past values of Y1 may improve the performance
+    of a model which uses only lagged observation of the target (Y2)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the first step, we fit two autoregressive models, on both Y1 and Y2, without
+    additional exogenous variables and store the predictions obtained on test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Secondly, we repeat the same forecasting procedure but add lagged exogenous
+    variables (i.e. when forecasting Y1 we use past values of Y2 plus past values
+    of Y1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: At the end of the forecasting phase, we store the predictions of 4 different
+    models (two for forecasting Y1 and the other two for forecasting Y2). It’s time
+    for a results comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Squared residuals are computed at the sample level for all the prediction types.
+    The distributions of the squared residuals are analyzed together for the same
+    prediction target. We use the standard Kolmogorov-Smirnov test to check for distribution
+    divergencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f62ad9705398a80d060cfa58aa3db2cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of squared residual distributions [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The forecasts for Y1 appear to be the same with and without the addition of
+    Y2's features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e8532b6feaa4120c19fca9b17b9aa69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of squared residual distributions [image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the contrary, the forecasts of Y2 are significative different with and without
+    the addition of Y1’s features. That means that Y1 has a positive impact in predicting
+    Y2, i.e. Y1 Granger cause Y2 (the vice-versa is not true).
+  prefs: []
+  type: TYPE_NORMAL
+- en: SUMMARY
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we proposed an alternative to the standard Granger causality test
+    to verify causation dynamics in the time series domain. We didn’t stop looking
+    only at the Pearson correlation coefficient to come to conclusions on the data.
+    We analyzed, in an empirical way, the possible presence of reciprocal influences
+    of events at our disposal spotting spurious relationships. The ease of use of
+    the proposed methodology and its adaptability, with low assumptions, make it suitable
+    to be adopted in any time series analytic journey.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**CHECK MY GITHUB REPO**](https://github.com/cerlymarco/MEDIUM_NoteBook)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep in touch: [Linkedin](https://www.linkedin.com/in/marco-cerliani-b0bba714b/)'
+  prefs: []
+  type: TYPE_NORMAL

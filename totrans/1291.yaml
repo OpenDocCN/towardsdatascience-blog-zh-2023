@@ -1,0 +1,578 @@
+- en: Identifying Drivers of Spotify Song Popularity With Causal ML
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/identifying-drivers-of-spotify-song-popularity-with-causal-ml-934e8347d2aa](https://towardsdatascience.com/identifying-drivers-of-spotify-song-popularity-with-causal-ml-934e8347d2aa)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What makes a song “tick”?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@aashishnair?source=post_page-----934e8347d2aa--------------------------------)[![Aashish
+    Nair](../Images/23f4b3839e464419332b690a4098d824.png)](https://medium.com/@aashishnair?source=post_page-----934e8347d2aa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----934e8347d2aa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----934e8347d2aa--------------------------------)
+    [Aashish Nair](https://medium.com/@aashishnair?source=post_page-----934e8347d2aa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----934e8347d2aa--------------------------------)
+    ·10 min read·Feb 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e158bbe5c7a9493fddc127a1acad384.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [C D-X](https://unsplash.com/de/@cdx2?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ∘ [Introduction](#0a12)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Problem Statement](#0d78)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Why Causal ML?](#b34e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Data Collection](#fa56)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Exploratory Data Analysis (EDA)](#ad8f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Data Modeling](#1a29)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Model Explanation](#26c0)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Building a Web App](#a2ee)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Limitations](#8f75)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Conclusion](#6379)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What makes a song tick? It’s easy to justify your love for a song when the artist
+    hits a high note or recites a thought-provoking verse. It’s also easy to like
+    a song solely because it was performed by one of your favorite artists. However,
+    that alone does not account for the current music landscape. In this saturated
+    market, where countless tracks have similar voices, genres, and styles, some tracks
+    just happen to outperform others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This begs the question: are there more hidden/latent audio factors that influence
+    our inclination toward certain tracks? This project attempts to answer this question
+    by leveraging causal ML to build a tool that can help identify potential drivers
+    of Spotify song popularity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: All source code and the web app itself can be accessed in the repository
+    provided at the end of this article.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Problem Statement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The goal of the project is to build a machine learning model that predicts the
+    popularity of Spotify tracks based on user-defined features. The model will be
+    deployed in a web app that can be accessed by other users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, Spotify quantifies many of its tracks’ otherwise qualitative audio
+    data, which makes this project possible to carry out. For instance, the Spotify
+    API offers the `danceability` feature, which provides a numeric value denoting
+    how suitable a song is for dancing. For access to all of the provided audio features
+    as well as their descriptions, feel free to visit the Spotify API [documentation](https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Spotify tracks also contain the `popularity` variable, which is the target
+    label for this machine learning project. According to the documentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The popularity of a track is a value between 0 and 100, with 100 being the
+    most popular. The popularity is calculated by algorithm and is based, in the most
+    part, on the total number of plays the track has had and how recent those plays
+    are.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why Causal ML?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is standard to prove causation by conducting experiments (e.g., A/B testing)
+    that track a predictive variable and its influence on a target variable. Unfortunately,
+    it is infeasible to conduct experiments where songs that only differ in one variable
+    can be compared to each other. After all, songs comprise many elements that are
+    difficult to control with precision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, causal ML grants users the opportunity to create endless
+    simulations of songs and derive their predicted popularity scores. Although the
+    model will not directly indicate which variables cause high popularity (correlation
+    is not causation), it will give impetus and direction for any subsequent research
+    and analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Collection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The data used for the project was pulled using the Spotify API. Specifically,
+    it used [Spotipy](https://spotipy.readthedocs.io/en/2.22.1/), the Python library
+    for the Spotify Web API to procure data on tracks and artists. The data collection
+    entailed pulling tracks released in 2022 from the most successful artists on the
+    platform in order to get exposure to high-popularity tracks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Procuring the information required multiple steps as the features of interest
+    needed to be pulled from different API endpoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The procedure for procuring the training data is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Collect data on all top artists**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since song popularity depends on the artists themselves, it is important to
+    collect basic information like their follower count and music genres. The following
+    function is used to collect data for 1000 artists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce4656d3f2dc194b58fab84081fbee9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of Artist Data (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Collect all tracks released by the top artists**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After collecting data for all artists, Spotipy was used to collect all Spotify
+    tracks for each artist. The following function collects data on all tracks released
+    by a given artist. Note that the maximum number of records in a specific query
+    is 1000.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e63b23028f352f5071ce40315272761.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of Track Data (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Collect all audio feature data for all tracks of top artists**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, Spotipy is used to collect all audio data for the tracks collected in
+    the previous step. The following function collects audio data for the given track
+    (each track is identified by a track id).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ddd9589b2d9a7e4af0232744997ed99.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of Track Audio Features Data
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Merge all datasets**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By joining the datasets and storing each feature in individual columns, the
+    resulting dataset contains artist data and track data, which can be used to train
+    ML models to predict song popularity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74d55494abb8f595fe20425c3b5750c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of Joined Dataset (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, the raw dataset comprises 101,700 tracks and 22 columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f57703473b8201f12c8055b3bccd9108.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Reminder: the definitions of the audio features (columns 7–18) are provided
+    in the [Spotify API documentation](https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Exploratory Data Analysis (EDA)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before the dataset can be used for training machine learning models, a thorough
+    analysis should be conducted to determine what elements should be added, discarded,
+    and changed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing EDA will uncover more information on the data, which will provide
+    more insight into what processes and transformations should be executed prior
+    to training any machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Handling missing data**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Songs that are missing audio features are removed from the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Handling duplicate Data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All records with duplicate track ids are omitted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Examining the popularity variable**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, the distribution of values in the `popularity` feature, the target variable,
+    is visualized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0706b7cf6087010f46f55ab43bfd770.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Histogram of Popularity Scores (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a lack of high-popularity tracks, which poses a challenge since the
+    model needs to be able to correctly identify tracks with a high popularity scores.
+    One way to address this issue is to use an evaluation metric that heavily penalizes
+    bigger errors, such as mean squared error (MSE) or root mean squared error (RMSE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Examining the predictor variables**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, the distribution of predictor variables was visualized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8afe4314fe1d92aec229b4812e44864a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of Predictive Features (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the predictive features have different ranges of values, they will have
+    to be scaled to mitigate bias from the model. Moreover, the scaling method will
+    need to handle the outliers exhibited in some of the features (e.g., liveness,
+    acousticness).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**5\. Dropping features**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Features such as track ids and artist ids that have no bearing on song popularity
+    are dropped from the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**6\. Computing correlation between predictors**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multicollinearity, a concept where independent variables are strongly correlated,
+    will hamper the performance of the trained model. To avoid this, the variation
+    inflation factor (VIF) for each variable was computed with the following function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1f9db96fffb1dbf6eeabc3496026a43.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VIF Values of Features (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the predictive features yield VIF values less than 5, there is no evidence
+    of multicollinearity in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**6\. Handling categorical features**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two categorical features in this dataset that need to be addressed
+    prior to training the model: `key` and `genre`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `key` feature represents the key the track is in. Currently, the key is
+    denoted by numbers, but this implies that some keys are greater than others, which
+    is false. Thus, this feature will be one hot encoded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, one hot encoding isn’t a feasible method for the `genre` feature
+    since the feature has 609 unique values! One hot encoding a column with this many
+    unique values will only yield a high dimensional dataset. Instead, the sub-genres
+    will be consolidated into one binary variable named `is_pop_or_rap`, which is
+    1 if the song is either pop or rap, and is 0 if the song is in a different genre.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The EDA has shed some light on how the modeling phase should be carried out.
+    It indicates that the models will yield better performance if tuned based on the
+    MSE or RMSE metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It also shows that the data will need to be subject to one-hot encoding and
+    standardization prior to being used to train the models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. Preparing the training and testing data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data is first split into training and testing sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Creating a baseline**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A baseline will help contextualize the performance of the actual models. For
+    this study, the baseline model was a linear regression model with default parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Creating a feature engineering pipeline**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior to being trained by machine learning algorithms, the predictors will need
+    to undergo feature engineering. First, the categorical feature `key` will be one
+    hot encoded. After that, all features will be scaled with standardization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transformations and the model were stored in a pipeline object using the
+    following snippet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Training the models**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Multiple machine learning regression algorithms were trained with the data
+    after feature engineering. The regressor models used were the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear regression (baseline)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lasso regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random forest regressor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LightGBM regressor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: XGBoost regressor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each regression model, hyperparameter tuning was applied based on the mean
+    squared error metric to ascertain the best hyperparameter combinations. The best
+    hyperparameters for each model were chosen using the following function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the hyperparameters for the models were determined, the models were evaluated
+    against the testing set based on the RMSE and MAE metrics. The following table
+    summarizes the performances of all of the models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b06e920a89ad52400c2e2bb4ddc26fa9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary of Models Performance Against the Testing Set (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The baseline model yielded an RMSE and MAE of 17.65 and 13.03 against the testing
+    set, respectively. While all of the other models outperformed the baseline, the
+    random forest regressor was the stand-out performer, with an RMSE and MAE of 13.10
+    and 8.04, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that the random forest model yielded the best performance against the
+    testing set, it will be deployed in the web app.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Explanation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Shapley Addictive Explanations (SHAP) helps explain the random forest regressor’s
+    performance by showing how much each feature contributed to the predictions. This
+    will provide shed some light into how predictions are being made (i.e., which
+    features influence the target) and can even show evidence of deficiency in the
+    model or training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1fbca38ee614940cb4d3e53f4d7ecf5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SHAP Summary Plot (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to the plot, the regressor’s predictions are most heavily impacted
+    by the `followers`, `duration_s`, and `speechiness` features. The model deems
+    that songs with artists with a high following, medium duration, and high speechiness
+    (i.e. verbosity) will yield high popularity. Intuitively, it makes sense for these
+    factors to influence popularity, but it is surprising that the model doesn’t rank
+    features like `energy` or `is_pop_or_rap` highly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, the model’s evaluation metric scores suggest that there is room for
+    improvement. The summary plot makes it clear that some features are not favored
+    by the model despite their ties to popularity being backed by domain knowledge.
+    It also suggests that the limited features in the data itself prevent the model
+    from accurately gauging popularity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a Web App
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Deploying the model through a web app is an effective way of using it to generate
+    predictions for multiple songs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The random forest regressor is deployed in a streamlit app, which predicts the
+    popularity of tracks with features chosen by users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The streamlit app can be run by entering the following command into the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/df4d3df73a6ee6e337f2861386055460.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of Streamlit App (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The users can select their track’s features in the sidebar and click on the
+    “predict” button to view the model’s prediction. With this web app, users can
+    leverage the ML model to predict song popularity for endless combinations of song
+    parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Limitations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although using causal ML can help provide some insight into what audio features
+    have an influence over song popularity, there are some limitations in this approach
+    that need to be addressed. Specifically, there are certain subjects that the study
+    has failed to sufficiently delve into.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Numerical representation of audio features**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While Spotify does provide users with the means to quantify certain features
+    in a song (e.g., energy), the assigned numeric values may not be adequate for
+    representing the otherwise qualitative features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Artist/Album/Song Marketing**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s no doubt that a song’s popularity has a lot to do with how the artist
+    markets their songs as well as themselves. Unfortunately, there is little representation
+    of this factor in the collected data. For future reference, it’s worth considering
+    the influence of entities like record labels and artists’ engagement on popular
+    social media platforms (e.g., Twitter, Instagram).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Lyrics**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While you can’t magically make someone love a song by saying a certain word,
+    phrase, or sentence, lyrics no doubt play a role in how people enjoy tracks. Perhaps
+    a topic modeling method like Latent Dirichlet Allocation (LDA) would provide some
+    insight into the type of lyrics that garner more attention for different genres.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Customer Demographic**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Listeners of different demographics are likely to have different standards for
+    tracks. Instead of lumping the entire audience into one group, it might be preferable
+    to segment the audience by age/gender/race and look into what types of songs appeal
+    to these groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**5\. Gradual Change in User Preference**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, a significant shortcoming of the model is that it only accounts for
+    songs released in 2022\. Even if it adequately captures the elements that yield
+    high popularity in tracks, the standards in music will inevitably change over
+    time. As a result, this model will have to be consistently trained with new data
+    to remain usable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/5893f740b7665ca7ae368374618b20e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo by John Tekeridis: [https://www.pexels.com/photo/person-using-smartphone-340103/](https://www.pexels.com/photo/person-using-smartphone-340103/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, I took a shot at answering a question that is in the minds of most
+    artists and record labels. By leveraging machine learning, we are able to run
+    advanced simulations to make conjectures on how songs with certain features will
+    be received by the listeners.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are interested in running the streamlit app on your device or if you
+    just wish to examine the source code, you can access the project’s Github repository
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/anair123/Identifying_Drivers_Of_Song_Popularity_With_Causal_ML?source=post_page-----934e8347d2aa--------------------------------)
+    [## GitHub - anair123/Identifying_Drivers_Of_Song_Popularity_With_Causal_ML'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What makes a song tick? If you've browsed through any artist's album on Spotify,
+    you've probably noticed that some…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/anair123/Identifying_Drivers_Of_Song_Popularity_With_Causal_ML?source=post_page-----934e8347d2aa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you had as much fun learning about this project as I did making it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs: []
+  type: TYPE_NORMAL

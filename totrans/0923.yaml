@@ -1,0 +1,289 @@
+- en: 'Fourier-transform for time series: About image convolution and SciPy'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603](https://towardsdatascience.com/fourier-transform-for-time-series-about-image-convolution-and-scipy-5e8fa1279603)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Fourier-transform convolution also applies to images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)[![Yoann
+    Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------)
+    [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----5e8fa1279603--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e8fa1279603--------------------------------)
+    ·5 min read·Jul 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This post is the second of the Fourier-transform for time series, check the
+    first here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------)
+    [## Fourier transform for time-series: fast convolution explained with numpy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10000-times faster convolution using Fourier transform
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Quick review of the previous post**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the first post, I explained how the Fourier-transform can be used to convolve
+    signals **very efficiently**. I showed that convolution using the Fourier-transform
+    in *numpy* is many orders of magnitude faster that the standard algebraic approach,
+    and that it corresponds to a certain type of convolution called **circular convolution.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I want to emphasize what the circular convolution means and how
+    it all applies to images. Images are also a good way to extend the 1-dimension
+    intuition into 2 dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images were made by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Image convolution with scipy**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’ve ever worked with images for image processing, you most likely have
+    encountered functions to apply convolution. Convoluting images is used everywhere
+    — image enhancement, denoising, segmentation, feature extraction, compression
+    — and is at the base of Convolutionnal Neural Networks, the gold standard of deep
+    learning model to process visual data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In *Python*, image convolution can be done quite simply using *scipy* and its
+    *ndimage* subpackage. At this point, I recommend taking a quick look at [the documentation
+    of the `convolve` function](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.convolve.html),
+    and then come back here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## scipy.ndimage.convolve - SciPy v1.11.1 Manual'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Multidimensional convolution. The array is convolved with the given kernel.
+    Parameters: The input array. Array of…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.convolve.html?source=post_page-----5e8fa1279603--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The use is very simple: you can pass two images to convolve them together.
+    Let’s see an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Note that *scipy* proposes several ways to handle the boundaries using the
+    parameter ‘*mode*’](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.convolve.html):
+    as we will see below, the mode ‘*wrap*’ corresponds to circular convolution and
+    hence to convolution using a Fourier-transform approach. Other approaches exist,
+    like ‘*reflect*’ that reflects the images inside-out, or ‘*constant*’ that repeats
+    the outermost value. Notice also how ‘*wrap*’ works: it repeats the whole signal,
+    as if it was periodic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convolution of 2D images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start coding to see the differences between different convolution modes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we create a class to represent 2D periodic images: remember from the
+    previous post that when using Fourier-transform tool, the signal are considered
+    to be periodic. This class is just syntactic sugar to plot such 2d periodic arrays.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We show the “*base*” image in the [0, V, 0, H] rectangle, as well as its 8 first
+    replicas around. As stated in the previous post, the signal is considered periodic
+    hence with infinite support, but we only need and use a single period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now create a sample image to play with: it shall contain random noise,
+    a sinusoidal pattern, a slope pattern, and a few square spots. We also create
+    the periodic version of this sample image: it represents the periodic image that
+    the Fourier-transform considers when applying its operators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d83fc9efe9fa95558a7975252b8de358.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Input image we are going to convolve, represented as a periodic array. The “base”
+    image is in the center, with its replicas all around.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now create a kernel to use for the convolution: we’ll use a simple constant
+    kernel, also called averaging kernel since the convolution with this kernel just
+    gives the local average of the input image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then start playing with *scipy* convolution function and its differents
+    *modes* to handle the boundaries, and wrap the result as a periodic array for
+    easy plotting: notice how the middle of the convoluted image is always the same
+    whatever the *mode* used, but the boundaries vary.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d37359d9096e6e2f4793b6f9dc3264b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of 4 different types of ‘mode’ to handle boundaries with scipy convolution
+    function. Each result image is displayed as a periodic array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can use a Fourier-transform approach to compute the convolution: as
+    shown in the previous post, we just need to take the inverse Fourier-transform
+    of the product of the Fourier-transform of both signals, the image and the kernel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f47345d7022b328ceef0d96f7fcf26c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Base equation to compute the convolution of 2 signals using a Fourier-transform
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a8147b6ae4c56d247b7b967a068dbbe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of the convolution using a Fourier-transform approach, not scipy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Comparing the result with the “wrap” mode of scipy, we can see that the results
+    look a lot alike, just with a slight shift:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/59d8f26d0b48814ffc697789b7503e2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison between scipy convolution with mode=’wrap’, and Fourier-transform
+    approach. They are almost identical. Using the periodic array representation,
+    we can see that it is just a matter of shit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is just a matter of indexing, and we can get the exact same results using
+    a shifted-centered kernel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/413f7f65fb24ad068aa626d4d3edc5e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Comparison between convolution with scipy mode=’wrap’ (left), and 2 Fourier-trasnform
+    approach: with kernel padded on the sides (middle), and centered kernel (right).
+    The left and right image are identical.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using proper centering, we then got identical results between *scipy*’s convolution
+    with mode=’*wrap*’, and theFourier-transform approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Out of curiosity, let’s see which approach is faster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b5e53ffe4aabce07e8b04350ce6f043.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Time comparison between scipy and Fourier-transform to compute the convolution
+    between our 2 images: Fourier-transform is about 15-times faster than scipy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, the Fourier-transform approach was faster, and in this case **faster
+    than a scipy function,** which is nice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrap up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have seen in this post how the circular convolution translates to images,
+    and how it is equivalent to scipy convolution function using mode=’wrap’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next post, we’ll dive in the use of window functions in the context of
+    Fourier-transform to reduce spectral leakage and improve spectral analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subscribe to get future posts about Fourier transform directly onto your feed!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Also, check out my other posts and if you like any of them, please subscribe
+    it helps me a lot to reach my goal of 100 subscribers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------)
+    [## Fourier transform for time-series: fast convolution explained with numpy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10000-times faster convolution using Fourier transform
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/fourier-transform-for-time-series-fast-convolution-explained-with-numpy-5a16834a2b99?source=post_page-----5e8fa1279603--------------------------------)
+    [](/pca-lda-ica-a-components-analysis-algorithms-comparison-c5762c4148ff?source=post_page-----5e8fa1279603--------------------------------)
+    [## PCA/LDA/ICA: a components analysis algorithms comparison'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Review the concepts and differences between these famous algorithms.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/pca-lda-ica-a-components-analysis-algorithms-comparison-c5762c4148ff?source=post_page-----5e8fa1279603--------------------------------)
+    [](/pca-whitening-vs-zca-whitening-a-numpy-2d-visual-518b32033edf?source=post_page-----5e8fa1279603--------------------------------)
+    [## PCA-whitening vs ZCA-whitening: a numpy 2d visual'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of whitening data consists in a transformation such that the transformed
+    data has identity matrix as…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/pca-whitening-vs-zca-whitening-a-numpy-2d-visual-518b32033edf?source=post_page-----5e8fa1279603--------------------------------)
+    [](/300-times-faster-resolution-of-finite-difference-method-using-numpy-de28cdade4e1?source=post_page-----5e8fa1279603--------------------------------)
+    [## 300-times faster resolution of Finite-Difference Method using numpy
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finite-difference method is a powerfull technique to solve complex problems,
+    and numpy makes it fast !
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/300-times-faster-resolution-of-finite-difference-method-using-numpy-de28cdade4e1?source=post_page-----5e8fa1279603--------------------------------)
+    [](/interactive-plotting-the-well-know-rc-circuit-in-jupyter-d153c0e9d3a?source=post_page-----5e8fa1279603--------------------------------)
+    [## Interactive plotting the well-know RC-circuit in Jupyter
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another step into ipywidgets and matplotlib
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/interactive-plotting-the-well-know-rc-circuit-in-jupyter-d153c0e9d3a?source=post_page-----5e8fa1279603--------------------------------)
+    [](/wrapping-numpys-arrays-971e015e14bb?source=post_page-----5e8fa1279603--------------------------------)
+    [## Wrapping numpy’s arrays
+  prefs: []
+  type: TYPE_NORMAL
+- en: The container approach.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/wrapping-numpys-arrays-971e015e14bb?source=post_page-----5e8fa1279603--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If those articles seem interesting to you, remember to follow me, the new articles
+    will appear on your feed.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,996 @@
+- en: 'ToolFormer: Guiding AI Models To Use External Tools'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/toolformer-guiding-ai-models-to-use-external-tools-37e4227996f1](https://towardsdatascience.com/toolformer-guiding-ai-models-to-use-external-tools-37e4227996f1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Meta’s LLM teaches itself to call External APIs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)[![Nikos
+    Kafritsas](../Images/de965cfcd8fbd8e1baf849017d365cbb.png)](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------)
+    [Nikos Kafritsas](https://medium.com/@nikoskafritsas?source=post_page-----37e4227996f1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37e4227996f1--------------------------------)
+    ·14 min read·Oct 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/180485d9bb3167a1e863f926c118935d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by author using Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Now that the dust has settled, the weaknesses of LLMs are known.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even the powerful GPT-4 struggles with math operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, the training cut-off time is an inherent weakness of every LLM. They struggle
+    to answer queries on new things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A loose fix is to use external Plugins (e.g. ChatGPT plugins). Still, the user
+    has to manually specify some actions, and these plugins are sometimes unreliable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if there was a model that knew its weaknesses — and was trained to **natively**
+    call the optimal external tool when uncertain?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That’s what Meta did, by creating **ToolFormer[1].** In this article, we discuss
+    :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is ToolFormer and why is it a breakthrough?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How the model works.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How ToolFormer’s methodology can be applied to any LLM.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why AI research heads towards ToolFormer’s vision.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s dive in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weaknesses of Large Language Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before starting to describe ToolFormer, let’s explore what issues the modern
+    LLMs face:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Progression of Time:** Every LLM has a training cutoff date. Hence, they
+    can’t access up-to-date information and recent events.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Incorrect Facts:** LLMs are infamous for making up facts, places, events,
+    products, and even research papers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Arithmetic operations:** LLMs struggle with mathematical calculations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Rare languages:** LLMs cannot handle low-resource languages, usually due
+    to a lack of training data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Obviously, these issues are irrelevant to language mechanics. An ideal solution
+    would be to combine text generation with external tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here comes ToolFormer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is ToolFormer?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ToolFormer is an LLM, trained to decide which APIs to call, when to call them,
+    and what arguments to pass to call them.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'ToolFormer is amazing because of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Best of both worlds:** ToolFormer is an LLM, like GPT-3\. But when uncertain,
+    it learns to call external APIs — thus avoiding common mistakes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Portability:** The methodology of training ToolFormer can be applied to any
+    LLM.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Superior Performance:** ToolFormer is smaller, but outperforms much larger
+    models like OPT and GPT-3.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Open Source:** While Meta has not released the original version yet, the
+    community has created a [few great open-source implementations](https://github.com/xrsrke/toolformer).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ToolFormer provides the following tools. These are shown in **Figure 1:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/774f968cd54d92335dba8f79c75c1d56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1:** ToolFormer autonomously calls external APIs to obtain accurate
+    information and complete the output text (highlighted). From top to bottom, the
+    APIS are: a question-answering system, a calculator, a machine translation system,
+    and a Wikipedia search engine. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'According to **Figure 1**, ToolFormer provides:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**QA:** A question-answering system'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Calculator**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MT:** a machine translation system'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**WikiSearch:** a Wikipedia search engine API'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Calendar:** a calendar API that returns the current date (not shown in **Figure
+    1**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**How ToolFormer generates text** In each case, the model decides which API
+    to call and what arguments to use. The tool names like `**QA**`and `**Calculator**`
+    are special tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6abda84152483aabd12c17572da1263.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If the model generates `**Calculator**(400/1400)` , then the model is ready
+    to call the **Calculator API** with `(400/1400)` as argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `**->**`token signifies that the model next expects the response for the
+    API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When that happens, decoding(inference) is interrupted, and the model places
+    the answer from the corresponding API. Decoding then continues, if necessary,
+    until the answer is complete (*…passed the test.*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: How ToolFormer is Built
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It’s time to delve into technical stuff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key innovation of ToolFormer isn’t the base pretrained model — it’s the
+    dataset used for training and particularly the **unique way** the authors augmented
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fundamentally, ToolFormer is a **GPT-J** pretrained model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ToolFormer, a small pretrained **GPT-J** 6.7B model, beats the much larger GPT-3
+    and OPT on numerous tasks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The authors used a subset of the CCNet training dataset (abbreviated as **C**).
+    Then, they augmented that dataset with API calls — and called it **C***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4df20583ef9593c2e37d622a69e4bb2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2:** Augmentation of a training example for the QA tool (Image by
+    author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of augmenting C to C* is the real novelty of ToolFormer; This dataset
+    can be used to teach any model how to effectively use API calls.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: However, augmenting the training dataset is not an easy feat. We discuss this
+    next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Augmenting the Training Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is the most crucial part. The authors have 3 goals here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**No human intervention.** We don’t expect that a human will manually perform
+    the process shown in **Figure 2.**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Top-quality data:** The augmentation should be meaningful and helpful for
+    the model. For example, the augmentation: **Pittsburgh is also known as the [QA:
+    (*What type of material characterizes Pittsburgh?* -*> Steel*)] the Steel City**
+    is wrong and not meaningful.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**No loss of generality:** Withthe new dataset, ToolFormer will still function
+    as an LLM (able to optimally predict the next word).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now, it’s time to zoom in on **Figure 2** and reveal the intermediate steps
+    between Dataset **C** and Dataset **C***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A more detailed view is shown in **Figure 3:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fac962f59a9d4e0c8511b9351428cf8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3:** All 3 steps of augmenting a training example `**x**` for the
+    QA tool. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are 3 steps — let’s decompose them. Given a sentence `**x**`**,** wehave:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample API Calls:** Sample a position `**i**` in sentence `**x**` that is
+    likely to be used for an API call. Then, generate sample candidate API calls **[**`**c1**`**,**`**c2**`**..**`**ck**`**]**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Execute API Calls:** Execute those API calls, and take the responses **[**`**r1**`**,**`**r2**`**..**`**rk**`**]**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Filter API Calls:** Not all pairs (`ci`-> `ri`) are useful or correct. We
+    filter the API calls that don’t reduce the loss function L over the next tokens.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Don’t worry if you don’t fully understand the steps. In the next section, we
+    will delve deeper into each step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Sample API Calls'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this step, we generate possible API calls — from the dataset **C**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The prerequisites are i) no manual intervention and ii) the API calls should
+    be as meaningful as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best way to automate this task is to ask the GPT-J model to make the annotations
+    itself!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, we will write a prompt `P(x)` with instructions and a few examples
+    — and encourage the model to annotate a sentence `**x**`withAPI calls. For the
+    QA tool, the authors use the following prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/06e38268a69aa487779eb41d57f1b8b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4:** Example of prompt P(x) that generates API calls for the QA tool.
+    ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** The process of including a few examples in the prompt to help the
+    model better understand the given task is called ***in-context learning.***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: But remember, language models tend to hallucinate or produce errors — that’s
+    why we need the filtering process in **Step 3.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, let’s examine how **Step 1** works in practice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the prompt `P(x)` from **Figure 4** to annotate a sentence `**x**`withsome
+    candidate API Calls.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try the sentence `**x**`= **Pittsburgh is also known as the Steel City.**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/755138fc16feccfd26552786bdd678cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5:** Example of candidate API calls using as input the sentence `**x**`=**Pittsburgh
+    is also known as the Steel City.** (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We got 3 annotated sentences as output. Obviously, only the 2nd candidate API
+    call is meaningful here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this step is to generate multiple annotated sentences without
+    human effort. We will address how to filter out the incorrect ones later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** The authors also impose a minimal filtering process here, to save
+    costs. For more info, check the **Appendix** at the end of the article.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Step 2: Execute API Calls'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is straightforward — given the candidate calls from **Step 1**, we ask
+    APIs for responses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52f9439b605ad59c9ff52722f7364d92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 6:** In Step 2, we get responses for each candidate call, regarding
+    the QA tool (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In reality, there are no actual APIs for all cases — except for the **Calculator**
+    and the **Calendar** cases, which are simple scripts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the other cases, the authors use specialized LMs. For example, for the QA
+    tool, they use Atlas, (Izacard et al., 2022), a retrieval-augmented LM finetuned
+    on Natural Questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to check the paper for further details on each tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Filter API Calls'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While **Step 1** generated numerous API Calls, **Step 3** keeps only the meaningful
+    ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Meaningful API calls: **Those** **which** **improve the model’s capability
+    to call external APIS.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This improvement is measured with a loss function and a formula — called **helpfulness
+    ratio.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The whole process is displayed in **Figure 7**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The goal is to check if the following example is meaningful enough to be included
+    in the augmented **C*** dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1343abd93ade940fa614900934b827cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 7:** The helpfulness ratio determines whether an augmented candidate
+    sentence is useful for the model (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s break down what happens here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We calculate the *negative log-likelihood* of each case as the prefix to the
+    phrase **“the Steel City”:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**No API:** We calculate `p(the Steel City | **Pittsburgh is also known as**)`
+    . Here, we don’t help the model much — that’s why the loss is high.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Input Only:** We calculate`p(the Steel City | **Pittsburgh is also known
+    as [QA(“What other name is Pittsburgh known by?“) ->?]** )`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Full API:** We calculate`p(the Steel City | **Pittsburgh is also known as
+    [QA(“What other name is Pittsburgh known by?“) ->Steel City]** )`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The full API case is the most helpful. Besides, the prefix contains the correct
+    answer ‘**Steel City**’. That’s why we obtain the lowest loss here!
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we have to quantify how helpful an annotation is. Here comes the ***helpfulness
+    ratio***. The higher the ratio, the more helpful the annotation is for training
+    ToolFormer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In **Figure 7**, we achieve a high helpfulness ratio, so our annotated example
+    `[**Pittsburgh is also known as [QA … city]**` goes into the augmented dataset
+    **C*.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The role of the helpfulness ratio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now, consider this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A more powerful model like GPT-4 probably knows that Pittsburgh is also known
+    as the “Steel City”. In that case, the loss of the **No API** case would be low
+    and almost similar to the **Full API** case. That leads to a helpfulness ratio
+    close to 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But GPT-J, being a smaller model, doesn’t know the answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence, the GPT-J model benefits from being finetuned on the annotated example
+    `**Pittsburgh is..city**`**,** while **GPT-4** doesn't. Probably, GPT-4 would
+    require more complex examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, the process of training ToolFormer can be applied to any LM — thanks to
+    the 3-step pipeline and the helpfulness ratio formula.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A rejection example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Remember, for our case, we sampled 3 API calls (**Figure 5**). Only the 2nd
+    one is meaningful — the other 2 should be rejected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see a rejection example. We will use as an example the following API
+    call (the 1st in **Figure 5**):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Pittsburgh is also known as **[QA(In which state is Pittsburgh?) -> Pensylvania]**
+    the Steel City**.**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1897151bb19ad6d1206ad48acd2f6bfc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 8:** Here, the annotated example is not helpful for our model (Image
+    by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we make an API call for a completely irrelevant question — “w*hich state
+    does Pittsburgh belong*”. This does not help our model answer “*how else is Pittsburgh
+    known*”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence, we get a high loss, which means a negative helpfulness ratio. Thus, that
+    annotated API call is not inserted in the **C*** dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The threshold τf for the helpfulness ratio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far so good, but how high should the helpfulness ratio of an example be to
+    be considered meaningful— and eligible to enter C*?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors found this threshold `τf` experimentally — by considering the number
+    of training examples per category on **C*** for different values of the helpfulness
+    ratio. The results are shown in **Figure 9**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/833a96c425054100381372709c5813af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 9:** Number of examples with API calls in **C∗** for different values
+    of our filtering threshold τf.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously, by increasing the threshold `τf`, fewer examples are going into **C*.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, **Machine Translation** and **Calculator** examples were fewer than
+    in the other categories. Hence, to avoid a serious imbalance, the authors set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For **QA**, **Wiki Search,** and **Calendar**, `τf = 1`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For **Machine Translation** and **Calculator**, `τf = 0.5`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Final Step: Finetuning ToolFormer'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The augmented dataset **C*** is now ready.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We finetune GPT-J on **C***— and voila, we get **ToolFormer!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finetuning is trivial. The authors use ***perplexity*** for the finetuning objective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Perplexity** is a standard metric to evaluate how uncertain a language model
+    is. For instance, a perplexity of 32 means the model is as sure for predicting
+    the next word as throwing a 32-side die. Hence, lower is better.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next, the authors evaluate ToolFormer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In total, the authors use the following models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**GPT-J:** The original GPT-J pretrained model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**GPT-J on C:** Here, GPT-J fine-tuned on the **C** dataset (the one without
+    API calls).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**ToolFormer:** GPT-J model fine-tuned on **C*** dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**ToolFormer (disabled):** ToolFormer, but using API calls is disabled. (This
+    is done by setting the probability of generating the `**[**` token during inference
+    to zero)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The goal is to evaluate the model for each separate task: QA, Calculator, Calendar,
+    and so on. Let’s start:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: QA Evaluation (LAMA Benchmark)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The authors evaluate ToolFormer on 3 subsets of the [LAMA Benchmark](https://github.com/facebookresearch/LAMA):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*SQuAD*, *Google-RE,* and *T-REx*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each of these subsets, the task is to complete a short statement with a
+    missing fact — e.g. `The theory of relativity is developped by ___` and the model
+    should fill in the correct fact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results of this benchmark are shown in **Figure 10.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** The perfomance scores below represent metrics that are evaluated
+    differently for each dataset. To avoid getting into details, consider that **higher
+    is better**. This is true for the other benchmarks throughout this paper.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/118bc395fb10e87ed755288b753f5b96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 10:** Performance of ToolFormer on the LAMA benchmark. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are particularly interesting: ToolFormer **outperforms** the much
+    larger OPT and GPT-3 on all benchmarks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The power of ToolFormer comes from its ability to call external APIs in challenging
+    situations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, the model decided to call the QA API in **98.1%** of all cases.
+    For only very few examples, it uses a different tool **(0.7%)** or no tool at
+    all **(1.2%)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculator Evaluation (Math Benchmark)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e7165f857045bdb8928835b11d9bc8f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 11:** Performance of ToolFormer on the math benchmarks. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ToolFormer again outperforms OPT and GPT-3 by a large margin.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The model decides to call the Calculator API in 97.9% of all cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Wiki Search Evaluation (Search Benchmark)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here, ToolFormer is **not the best model:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d4774b195d4404259186f446533bfa2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 12:** Performance of ToolFormer on Search benchmarks. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ToolFormer outperforms OPT but loses to GPT-3\. The authors provide the following
+    reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ToolFormer Wiki Tool searches on **Wikipedia** only, instead of the whole Web
+    (GPT-3 was trained on a huge portion of online content).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ToolFormer would have outperformed GPT-3 if it was able to call the QA Tool
+    as well. The authors disabled the QA Tool on purpose — because the datasets used
+    to train the QA system have some potential overlap with the data in these benchmarks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An additional layer on top of the **Wiki Tool** isnecessary — to reformulate
+    the return results and provide clearer answers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Translation Evaluation (MLQA Benchmark)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here, the results are very interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f5cf87ad826a54e8fd97641da4b10d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 13:** Performance of ToolFormer on Translation benchmarks. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ToolFormer easily outperformed OPT and GPT-3 in all languages (except Zh, with
+    GPT-3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, ToolFormer was surpassed by the original GPT-J. The authors explained
+    this was because GPT-J was also pretrained on multilingual data — while **C**
+    had very few multilingual examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calendar Evaluation (Temporal Datasets)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Finally, we evaluate ToolFormer’s ability to extract dates and recent information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors used 2 datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TempLAMA**: Contains masked data that change with time (e.g., “Kylian Mbappé
+    plays for ___”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DATESET:** Contains random queries about dates (e.g. “What day of the week
+    was it 30 days ago?”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Figure 14** displays the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/76744b4e274f4bddabbbd5d2f8e2a285.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 14:** Performance of ToolFormer on Temporal benchmarks. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, ToolFormer outperforms the much larger models. The difference is huge
+    in **DATESET** — this is expected since finding dates is an inherent weakness
+    of LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling Laws
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An integral part of training LLMs is whether the training model obeys the scaling
+    laws.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling laws are empirical rules that describe the relationship between a LM’s
+    parameter size, tokens(dataset size), training time and performance.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Scaling laws were first introduced in [2], but were later re-examined in [3],
+    where Deepmind researchers discovered that many LMs were significantly undertrained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the authors explored ToolFormer’s ability to scale, compared to the other
+    models of the benchmark. The results are shown in **Figure 15:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/059a380ad0f792baf659516cbd0affc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 15:** Performance of ToolFormer vs GPT3 on LAMA, math, and QA benchmarks
+    in terms of model size. While API calls are not helpful to the smallest models,
+    larger models learn how to make good use of them ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evidently, ToolFormer displays excellent signs of scalability — following scaling
+    laws.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Smaller models (less than 775M parameters) achieve similar performance — they
+    don’t gain an advantage by calling external APIs. After 775M parameter size, ToolFormer
+    starts to scale dramatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decoding Strategy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An interesting part about ToolFormer is how the authors implemented the decoding
+    strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In truth, `**[**`is a special token — and signifies the start of an API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During word generation, an LM model calculates the probabilities of every token
+    in the vocabulary, and generates **the one with the highest probability** (I explain
+    it roughly). This is known as greedy decoding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors found experimentally that ToolFormer performs better if `**[**`is
+    generated when it is in the top `**k**=10` most probable tokens, instead of getting
+    generated when it’s the most likely token (`k=1`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The parameter `**k=10**` is found experimentally. The results are shown in **Figure
+    16:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08ac48f2e95b50b4c858e2c91229567c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 16:** ToolFormer results on the T-REx subset of LAMA and WebQS for
+    different values of k used during decoding. ([Source](https://arxiv.org/pdf/2302.04761.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly, the model performs best, on average when `**k**=10` . Figure **16**
+    displays only 2 datasets. However, the pattern holds for the other benchmarks
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Tools LLMs ecosystem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ToolFormer uses external APIs to solve maths and reasoning problems. But these
+    problems can also be addressed by other approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most popular approach is called **‘chain-of-thoughts’ [4]:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: In ‘chain of thoughts‘, the LLM learns to break a prompt into intermediate steps
+    — solving each step individually before giving the final answer.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Here, we don’t call external APIs. Instead, we teach the model to decompose
+    a prompt into smaller parts — which helps the model with arithmetic tasks. An
+    example is shown in **Figure 17**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a5fcd3a9b57b307071ccdd89af506b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 17:** Using chain-of-thought prompting (right) the model can figure
+    out the correct answer. Chain-of-thought reasoning processes are highlighted in
+    green [[Wei et al.](https://arxiv.org/pdf/2201.11903.pdf)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **‘chain-of-thoughts’** paradigm has been improved in the latest research.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Program-aided Language models** (PAL) **[5]** achieve even better results
+    by breaking down the prompts into both textual intermediate steps and Python code
+    (**Figure 18)**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c4ecec1f8d7bf9dd83b8a6bacc7e907.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 18:** **Chain-of-thought** (left) gives a wrong answer, while **PAL**
+    (right) is correct. PAL combines Chain-of-thought reasoning (highlighted in blue)
+    with programming annotations (highlighted in pink) [[Luyu Gao et al.]](https://arxiv.org/pdf/2211.10435.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lastly, we can use LangChain, an application framework for LLMs. Langchain
+    uses agents to integrate with various search APIs, capable of searching the web.
+    **Figure 19** shows the SerpAPI tool:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6bf672cea31edf8bbe011451479ff8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 19:** We can instruct a language model to use an API for searching
+    the web, and integrating the search results into the prompt so we get the correct
+    answer. ([Source](https://python.langchain.com/docs/integrations/tools/serpapi))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is the difference between ToolFormer and Langchain agents?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Langchain agents have to first use the appropriate API (which a human specifies)
+    and then combine the results with the prompt to get a correct answer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In contrast, ToolFormer was **explicitly trained** to call and integrate API
+    tools (no manual intervention).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Closing Remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article explored ToolFormer, a model capable of calling external Tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Essentially, ToolFormer is a process that can teach any LLM to call external
+    APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the adoption of LLMS, the necessity to call external resources will become
+    apparent. Even ChatGPT now allows the user to enrich his prompt with search results
+    from the web.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I write an in-depth analysis of an impactful AI paper once a month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Stay connected!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow me on [Linkedin](https://www.linkedin.com/in/nikos-kafritsas-b3699180/)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Subscribe to my newsletter, [**AI Horizon Forecast**](https://aihorizonforecast.substack.com)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://aihorizonforecast.substack.com/?source=post_page-----37e4227996f1--------------------------------)
+    [## AI Horizon Forecast | Nikos Kafritsas | Substack'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explaining complex AI models as clear as daylight. Focusing on time series and
+    latest AI research. Click to read AI…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: aihorizonforecast.substack.com](https://aihorizonforecast.substack.com/?source=post_page-----37e4227996f1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The authors also impose a minimal filtering process on the 1st step of the data
+    augmentation process, to save costs. For example, the sentences that are not annotated
+    at all with special tokens `***[QA..***`etc are rejected from the next steps.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Also, the authors calculate the most probable positions in the sentence that
+    are likely to initiate an API call. The symbols `***[***`***,*** `***]***`arealsospecial
+    tokens and signify the start and the end of an API call.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So, the authors calculate the position `***i***` where the token `***[***`has
+    the highest probability of appearing. Hence, only the sentences where the start
+    of the API call(the token `***[***`) is generated on the most probable position
+    `***i***`, are passed to the next step.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Timo Schick et al. [*Toolformer: Language Models Can Teach Themselves to
+    Use Tools*](https://arxiv.org/pdf/2302.04761.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Jared Kaplan et al. [*Scaling Laws for Neural Language Models*](https://arxiv.org/pdf/2001.08361.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Jordan Hoffmann et al. [*Training Compute-Optimal Large Language Models*](https://arxiv.org/pdf/2203.15556.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Jason Wei et al. [*Chain-of-Thought Prompting Elicits Reasoning in Large
+    Language Models*](https://arxiv.org/pdf/2201.11903.pdf) *(January 2023)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Luyu Gao et al. [*PAL: Program-aided Language Models*](https://arxiv.org/pdf/2211.10435.pdf)
+    *(January 2023)*'
+  prefs: []
+  type: TYPE_NORMAL

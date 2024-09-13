@@ -1,0 +1,403 @@
+- en: Demystify Data Backfilling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/demystify-data-backfilling-cf1713d7f7a3](https://towardsdatascience.com/demystify-data-backfilling-cf1713d7f7a3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s talk about data engineers’ nightmare
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)[![Xiaoxu
+    Gao](../Images/8712a7e5f3bad0d2abd7e04792fad66f.png)](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------)
+    [Xiaoxu Gao](https://medium.com/@xiaoxugao?source=post_page-----cf1713d7f7a3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cf1713d7f7a3--------------------------------)
+    ·10 min read·Nov 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a374b8c9a41614e60b77cc9adf59a72a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Created by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As data engineers, we encounter unique challenges every day. But if there is
+    one daunting task that stands out, it must be the backfill. A flawed backfill
+    means excessive processing time, data contamination, and substantial cloud bills.
+    And yeah, it also means you need one more backfill job to fix it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Completing your first successful data backfill is a data engineering rite of
+    passage. — Dagster
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Backfill task demands a set of data engineering skills to be effectively accomplished
+    such as domain knowledge to validate results, tooling expertise to run backfill
+    jobs, and a solid understanding of the database to optimize the process. When
+    all of these elements are intertwined within a single task, things can go wrong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will explore the concept of data backfilling, its necessity,
+    and efficient implementation methods. Whether you are a beginner in backfilling
+    or someone who often feels panic about such tasks, this article will calm your
+    mind and help you regain your confidence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is backfill?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Backfill is the process of filling in missing data from the past on a new table
+    that didn’t exist before, or replacing old data with new records. It’s usually
+    not a recurring job and it’s necessary only for data pipelines that update the
+    table incrementally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4a38246ad78cbd9985c2ea75635871d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Difference between regular job and backfill job (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, a table is partitioned on `date` column. A regular daily job updates
+    just the latest 2 partitions. In contrast, a backfill job can update partitions
+    all the way back to the initial one in the table. If the regular job updates the
+    entire table each time, a backfill job becomes unnecessary as the historical data
+    will naturally be updated through the regular job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, when do we need to backfill?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In general, there are a few common scenarios. Let’s see if you find them familiar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Create a new table and want to fill in missing historical data**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You’ve just developed a new table for analyzing the monthly e-commerce sales
+    performance. The data pipeline selects only the transactions that occurred within
+    the given month. When deploying the data pipeline, it generates a report exclusively
+    for the current month. To produce historical monthly reports, a backfill job is
+    required. The number of partitions updated in a backfill job depends on both the
+    business requirements and data availability in the source table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8fa125360da1ee158c9673b332a15f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Develop a new table with a backfill job (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fix a bug in data pipeline and want to update the entire historical data**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Whoops, you’ve discovered a bug in the join logic. It should have been a left
+    join instead of an inner join. You quickly fixed the issue to ensure data quality
+    going forward, but what about the data in the past? It’s still using the left
+    join. The backfill job here is to correct the historical data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cdd238379f1fa003eb1e5f173162622.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bug fix with a backfill job (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A downtime in data pipeline and want to catch up**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The data pipeline may experience downtime for a few days leading to data gaps.
+    Once the pipeline is restored, it will need to catch up on its scheduled runs.
+    Fortunately, most modern data orchestration tools offer automatic catch-up functionality,
+    so it needs less manual intervention than other scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50d2a1dbed5f8b6a0eb896d354b23c5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Catch up on missing data with a backfill job (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Do you have other scenarios? You are welcome to share with us in the comments.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As seen from the graphs, backfill is a time-consuming job as it involves many
+    partitions. To prevent unnecessary complexity, it’s a best practice to first ask
+    the team and stakeholders about the intended use of the backfilled data and whether
+    a backfill is indeed necessary. What’s the time range for backfill? Will the stakeholders
+    get long-term benefits from the backfill? As the company grows, the table similarly
+    grows. Ultimately, we may reach the point where backfilling the entire table becomes
+    unfeasible and we need to decide where to cut off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another important question to consider is whether we have the authority to modify
+    historical data. In certain scenarios, changing historical data like finance data
+    can mean a lot for a company, particularly when that data has undergone auditing.
+    Understanding the business impact before updating the history is crucial as no
+    one wants to get involved in legal issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table partition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, let’s look at the technical aspect of the backfill. It wouldn’t be possible
+    to discuss backfill without mentioning the table partition. Partitioning is an
+    approach to incremental table updates. The partition column divides the table
+    into a set of partitions. The backfill job updates these partitions one after
+    another. Partition is also a unit of parallelism that allows the concurrent execution
+    of multiple backfill jobs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a trade-off between the size of each partition and the number of partitions.
+    A higher number of partitions results in a more granular division of data, the
+    backfill job is more targeted and specific. However, it’s generally recommended
+    not to create overly small partitions (e.g. less than 1G) because it may not effectively
+    utilize the resources. Imagine comparing opening a single 1GB file and opening
+    10 separate 100MB files — the former is typically more efficient. On the other
+    hand, overly large partitions can result in a long backfill job because it might
+    involve data that is not in the scope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ae986c2d16ee2078e4b7c09526c3ef1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trade-off between big partition and small partition (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each data warehouse has a different recommended partition size based on how
+    the metadata is accessed and the optimal utilization of resources. Additionally,
+    think about which granularity makes the most sense for the table. For example,
+    a common partition strategy is to partition on a `date` column where we expect
+    an equal distribution across the days. However, if the data size for each day
+    proves to be small, an alternative approach could be to partition it based on
+    months or years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backfill strategy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As previously mentioned, a backfill job demands a mix of data engineering skills.
+    The majority of the critical factors for a successful backfill job are actually
+    established before the job itself starts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bring data backfilling into the initial table design discussion**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a good practice to involve the discussion on backfill as early as possible
+    because it can influence the table design, such as the partition strategy, as
+    mentioned earlier. Particularly when the regular job doesn’t update the entire
+    table with each run, it’s essential to have a backfilling plan to update historical
+    data when required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For certain tables such as small dimension tables, doing a full-table refresh
+    each time can be a more favorable idea to eliminate the need for backfill. On
+    the other hand, for fact tables with consistent linear growth, incremental table
+    updates are preferable because we don’t want the cloud bill or server costs to
+    grow linearly alongside the data growth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Make data pipeline idempotent**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Idempotency refers to running the same operation multiple times without changing
+    the result. It’s a fundamental data pipeline design principle that every data
+    engineer should know. Before a code change, rerunning the same Airflow task with
+    the same input should consistently produce the same output. You don’t want to
+    see any duplication or different output. Therefore, for an incremental table update,
+    use `replace` rather than `append` mode to avoid duplicates. Moreover, use Airflow
+    variables such as `data_interval_end` and not time-sensitive functions like `current_date()`
+    in the transformation logic as `current_date()` gives different output based on
+    the execution time of the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Idempotency is a critical precondition for a successful backfill and it ensures
+    that data is only changed according to the expected change and not influenced
+    by others. In this example, `date` column in the dataframe consistently represents
+    the expected scheduled time and is not tied to the actual execution time of the
+    task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Make a wise decision on the scope of backfilling and do it**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The backfill job can be intense if the scope is not chosen wisely. Whatever
+    time and money is taken in one partition will be multiplied in the backfill job.
+    You can use the historical run to estimate costs and time beforehand. If the estimation
+    surpasses your budget, then first understand the use case. Is this required for
+    a one-off analysis? Then consider creating a temporary view on top of the existing
+    table. Is the scope too big for the use case? Then reducing the partition size
+    to a more manageable level. Is it still too much? Then perhaps consider using
+    a more efficient or cost-effective technology.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another very important point is to evaluate downstream impacts. When backfilling
+    the source table, there may be a need to extend the backfill to downstream tables
+    as well. I know it can be challenging to uncover all hidden connections. But if
+    it’s a significant challenge for your team, consider leveraging a data lineage
+    tool to systematically identify all downstream dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the scope has been defined, it’s time to take action. Fortunately, many
+    data tools natively support backfilling. In [Airflow](https://airflow.apache.org/docs/apache-airflow/stable/cli-and-env-variables-ref.html#backfill),
+    you can either rerun the task from Airflow UI or use the command `airflow dags
+    backfill`. In [dbt](https://docs.getdbt.com/docs/build/incremental-models#how-do-i-rebuild-an-incremental-model),
+    you can use the command `dbt run --full-refresh` or pass a custom variable like
+    `dbt run -s my_model --vars '{"start":"2023-11-01"}'`. Other tools like [Dagster](https://docs.dagster.io/concepts/partitions-schedules-sensors/backfills)
+    and [Mage](https://docs.mage.ai/orchestration/backfills/overview) also have their
+    own way of running backfill jobs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be careful with the schema change. For changes that are compatible such as adding
+    a new column, many data tools populate empty values for records before the first
+    partition in the backfill job. For incompatible changes like deleting columns
+    or changing data type, you need to recreate the entire table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use DDL or DML to backfill the table**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The good news is that there are alternative methods for backfilling the table,
+    eliminating the need for executing many time-consuming Airflow runs. The truth
+    is very often, we want to backfill only specific columns, not all of them. Thus,
+    running computations for irrelevant columns is an inefficient use of resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A shortcut is to update the table using DDL or DML. For instance, in a situation
+    where transformation for `quantity` changes from `quantity = amount * price` to
+    `quantity = amount * price * exchange_rate`. We can simply backfill the table
+    using `UPDATE` statement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In most cases, this is more efficient than running a backfill job in Airflow.
+    Same for incompatible schema change, if recreating the entire table is expensive,
+    consider use `DDL` to delete a column or alter data type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parallel backfilling jobs**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another optimization tip is to parallelize your backfill jobs. If 10 Airflow
+    backfill jobs update 10 partitions, they can potentially run in parallel with
+    these configs in place:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This approach allows for concurrent updates of multiple partitions, eliminating
+    the need for sequential waiting. However, we need to make sure that the data warehouse
+    supports concurrent writes and check its concurrency level. Additionally, there
+    shouldn’t be any dependency among partitions such as today’s partition being computed
+    based on yesterday’s partition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Backfill within a regular run**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes we also want to automatically “backfill” the table as part of the
+    normal run. What does it mean? This happens for example when a regular batch contains
+    a few late-arrived records that need retrospective updates to historical data.
+    Because it happens so often, it should be incorporated into the regular run instead
+    of manually triggering it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An example is counting accumulated total purchased orders in an e-commerce.
+    Now, suppose a situation where a customer made an order on 11–01, but the order
+    information doesn’t get ingested until 11–03 due to system delays. When order
+    information is received on 11–03, it should update the number on 11–01 and 11–02
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/901c17261e804285aa946a696b2eea20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transaction data with late orders (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e287c3c6a2d842612eaffdfda077b7ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Before and after backfill summary table (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, the “internal backfill” is triggered by an update on the input
+    data, not the transformation logic. Depending on how late the record is, the job
+    can potentially update more than one partition. The greater the delay, the more
+    partitions need adjustment. Hence, it’s essential to monitor the performance and
+    perhaps implement another process to prevent overloading the regular job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Post-backfill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Wow, that’s a lot of reading so far. I’m glad that you made it here. Triggering
+    a backfill job is not the end of the process. We must actively monitor the performance
+    as issues can arise at any point during the process. A key benefit of backfilling
+    the table partition by partition is that if things go wrong midway, you have the
+    flexibility to resume from the failed partition, not restart from the beginning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Communication is the key to any data change. Make sure stakeholders are involved
+    in the process. Think about creating scripts to automatically send notifications
+    and ask for verification to all users of the backfilled table once the job is
+    done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: That was it! I hope you enjoy it and get inspired in one way or the other. The
+    backfill job is challenging, but it should never be a black box or something that
+    scares you away. Next time, there is no need to take a deep breath and pray hard
+    before pressing the button :))
+  prefs: []
+  type: TYPE_NORMAL
+- en: For those already familiar with backfilling. I hope you still gained some insights
+    from this article. Feel free to share additional tips or tricks you may have —
+    we’d love to hear from you! Cheers!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dagster.io/blog/backfills-in-ml?source=post_page-----cf1713d7f7a3--------------------------------)
+    [## Backfills in Data & Machine Learning: A Primer | Dagster Blog'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recovering from a bad backfill is a painful experience for any data engineer.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: dagster.io](https://dagster.io/blog/backfills-in-ml?source=post_page-----cf1713d7f7a3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

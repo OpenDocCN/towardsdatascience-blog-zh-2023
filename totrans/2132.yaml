@@ -1,0 +1,324 @@
+- en: 'Towards LLM Explainability: Why Did My Model Produce This Output ?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/towards-llm-explainability-why-did-my-model-produce-this-output-8f730fc73713](https://towardsdatascience.com/towards-llm-explainability-why-did-my-model-produce-this-output-8f730fc73713)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The release in these last few months of larger, better Large Language Models,
+    that showcase new capabilities, has been paired with overall growing concerns
+    over AI Safety. LMM explainability research tries to expand our understanding
+    of how these models work.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@georgiadeaconu?source=post_page-----8f730fc73713--------------------------------)[![Georgia
+    Deaconu](../Images/39ba1bea77aa46bb39b2975108c3adaa.png)](https://medium.com/@georgiadeaconu?source=post_page-----8f730fc73713--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8f730fc73713--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8f730fc73713--------------------------------)
+    [Georgia Deaconu](https://medium.com/@georgiadeaconu?source=post_page-----8f730fc73713--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8f730fc73713--------------------------------)
+    ·9 min read·Dec 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) saw a lot of development this past year, such as
+    the recent release of GPT-4 and Claude 2\. These models display new abilities
+    with respect to their previous versions, but most of them are discovered through
+    post-hoc analysis and weren’t part of a purposeful training plan. They are a consequence
+    of the model scaling in terms of number of parameters, training data and compute
+    resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a conceptual level, I like the analogy between LLMs and compression algorithms.
+    Terabytes of internet data go in and many FLOPS later we get a file of a few hundreds
+    GB containing the parameters of an LLM. The model is unable to precisely retrieve
+    the initial knowledge, but still produces a pertinent output most of the times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbaf98a73c1b3f342cb9792dc0587ca1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author and DALL-E 3 (inspired by Karpathy’s [llmintro](https://drive.google.com/file/d/1pxx_ZI7O-Nwl7ZLNk5hI3WzAsTLwvNU7/view))
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mystery of the LLMs does not reside in the technical architecture or the
+    complexity of their computations. If the architecture of a model is fully documented,
+    we can [*easily* follow](https://bbycroft.net/llm) the mathematical operations
+    being performed. But we still cannot entirely explain how a precise set of parameters
+    collaborate towards producing an output that makes sense. How is the knowledge
+    from the initial training data actually retrieved? Where and how is it actually
+    stored inside the network ?
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM explainability is an active area of research and many interesting results
+    have been published in the last year. I don’t pretend to be exhaustive in what
+    I will be showing next. My purpose is to draw attention to some of the current
+    research directions and some promising results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To simplify things, I would distinguish between 4 main directions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explain the produced output based on the input (features attributions)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Explain the produced output based on the training data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Explain the role of individual neurons in embedding features
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Extract explainable features from poly-semantic neurons
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I will provide some examples from each category and links to the full papers
+    for each example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Explain the produced output based on the input
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The methods in this category rely on the computation of a measure of feature
+    importance (or attribution) for each token in the input. Several [families of
+    measures](https://arxiv.org/pdf/2302.13942.pdf) exists, mostly derived from the
+    existing interpretablility methods in machine learning: gradient based, attention
+    based, perturbation based (occlusion, LIME), etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can test some of these importance measures yourself using the [Inseq](https://github.com/inseq-team/inseq)
+    Python package. They provide support for the models in the [Transformers library](https://github.com/huggingface/transformers)
+    and you can display your first results with just a few lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Features attributions rely on the computation of a matrix Aij representing the
+    importance of every token i in the input for every generated token j in the output.
+    Previously generated tokens influence following predictions, so they must be dynamically
+    incorporated into the computations. From a computational point of view, these
+    methods are still very accessible and can run in a notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The obtained output for the example given in the code snippet is shown bellow.
+    From the values in the first column, we can see that the presence of the token
+    *ladies* in the input was the most influential in the generation of the token
+    *gentlemen* in the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bd786a1301533e535807225dff1d904.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image generated by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another recent approach to obtain feature attributions was to ask the model
+    itself to provide this information using prompt engineering. [Researchers at UC
+    Santa Cruz](https://arxiv.org/pdf/2310.11207.pdf) asked ChatGPT to classify some
+    movie reviews into either positive or negative and to also provide a feature importance
+    measure for each token in the review. They have used the following prompt to get
+    a nicely structured output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: ChatGPT replied using the requested format and [their analysis](https://arxiv.org/pdf/2310.11207.pdf)
+    showed that when comparing the numbers directly provided by the model with those
+    produced by more traditional explanation methods (occlusion, LIME saliency maps),
+    the self explanations perform on par with the traditional ones. This seems promising
+    since these explanations are computationally much cheaper to produce, but they
+    still need more research before they can be fully trusted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Explain the produced output based on the training data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[A recent research paper from Anthropic describes a computationally efficient
+    way to use influence functions to study LLM generalization](https://arxiv.org/pdf/2308.03296.pdf).
+    For a given prompt, they are capable to identify which sequences in the training
+    data contribute the most in generating the output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Their analysis shows that the larger the model, the more it is capable of concept
+    generalization, and thus less likely to simply repeat sequences of tokens from
+    the training data (they observe this behavior in the smaller model they use for
+    comparison).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83c75541487ed5008b3cdc2d2ae58d9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image source: [2308.03296.pdf (arxiv.org)](https://arxiv.org/pdf/2308.03296.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example they show that for large enough models the most influential
+    sequences are conceptually related to the given prompt, but the contribution of
+    each individual sequence is small and many training sequences contribute in the
+    same time to produce the output. The lists of influential sequences can show considerable
+    diversity, depending on the prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Explain the role of individual neurons in embedding features
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Open AI tried [using an LLM to explain the activation patterns seen in the
+    neurons of a smaller LLM](https://openai.com/research/language-models-can-explain-neurons-in-language-models).
+    For each neuron in the GPT-2 XL model they used the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collect the output produced by the neuron’s activation function in response
+    to a given set of text sequences
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Show the text sequences along with the neuron’s responses to GPT-4 and ask it
+    to generate an explanation for the observed behavior
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ask GPT-4 to simulate the activations of a neuron corresponding to the generated
+    explanation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compare the simulated activations with the ones produced by the original GPT-2
+    XL neuron
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: They compute a score based on the comparison between the simulated activations
+    and the actual neuron behavior. They find confident explanations for approx 1000
+    neurons out of the 307 200 neurons that GPT-2 XL has (corresponding to a score
+    of at least 0.8). However, the average score computed across all the neurons only
+    falls somewhere around 0.1\. You can explore some of their findings using the
+    [Neuron Viewer](https://openaipublic.blob.core.windows.net/neuron-explainer/neuron-viewer/index.html#/)
+    and you can contribute by proposing better explanations in case you feel inspired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The low overall score can be attributed to the fact that most neurons exhibit
+    complex behavior that is hard to describe using short natural language explanations
+    (as GPT-4 was instructed to produce in the experiment). Most neurons seem to be
+    highly poly-semantic or could even represent concepts that humans don’t have words
+    for. The approach they propose is interesting but very computationally intensive,
+    it relies on having readily available an LLM much larger than the one you are
+    trying to explain and still does not bring us any closer to understanding the
+    underlying mechanism that produces the observed behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Extract explainable features from poly-semantic neurons
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As seen in the example before and in [previous research](https://distill.pub/2017/feature-visualization/)
+    on [vision models](https://distill.pub/2020/circuits/zoom-in/), while mono-semantic
+    neurons can sometimes be identified, most neurons in an LLM tend to be poly-semantic,
+    meaning that they represent several different concepts or features at the same
+    time. This phenomenon is called [superposition](https://transformer-circuits.pub/2022/toy_model/index.html)
+    and it has been studied and reproduced in toy models by the researches at Anthropic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'They trained small neural networks on synthetic data composed of 5 features
+    of different importance to investigate how and what gets represented when models
+    have more features than they have dimensions. With dense features, the model learns
+    to represent an orthogonal basis of the two most important features (similar to
+    the Principal Component Analysis), and the other three features are not represented.
+    But if the sparsity of the features increases, then more and more features get
+    represented, at the cost of a small interference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ce559eb31d7ad00fb5207544dad358e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image reproduced by the author using [https://colab.research.google.com/github/anthropics/toy-models-of-superposition/blob/main/toy_models.ipynb](https://colab.research.google.com/github/anthropics/toy-models-of-superposition/blob/main/toy_models.ipynb)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This mechanism could be also at play in LLMs since more concepts than neurons
+    are present in the training data. Moreover, in the natural world, many features
+    seem to be sparse (they only rarely occur) and they are not all equally useful
+    to a given task. Under this hypothesis, our current LLMs can be interpreted as
+    the projection onto a smaller space of a much larger LLM, for which each neuron
+    is entirely mono semantic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on this insight, the researchers at [Anthropic](https://www.anthropic.com/)
+    devised a method to extract mono-semantic features from poly-semantic neurons
+    using [sparse auto-encoders](https://transformer-circuits.pub/2023/monosemantic-features/index.html).
+    They demonstrate their approach on a one-layer transformer with a 512-neuron MLP
+    layer (Multi-Layer Perceptron). Using their method, the 512 MLP activations are
+    decomposed into 4096 relatively interpretable features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A [web interface](https://transformer-circuits.pub/2023/monosemantic-features/vis/a1.html)
+    allows you to browse through the extracted features and judge for yourself. The
+    features descriptions are generated post-analysis by [Claude](https://www-files.anthropic.com/production/images/Model-Card-Claude-2.pdf?dm=1689034733).
+    For instance, [feature no 9](https://transformer-circuits.pub/2023/monosemantic-features/vis/a1.html#feature-9)
+    encodes for the Romanian language, with the top neurons activated by this feature
+    corresponding to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[#257](https://transformer-circuits.pub/2023/monosemantic-features/vis/a-neurons.html#feature-257):
+    fires on content words (nouns, verbs, adjectives) from Romance languages (French,
+    Spanish, Italian)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[#269](https://transformer-circuits.pub/2023/monosemantic-features/vis/a-neurons.html#feature-269):
+    fires on punctuation, particularly question marks, periods, hyphens, slashes,
+    and parentheses'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[#86](https://transformer-circuits.pub/2023/monosemantic-features/vis/a-neurons.html#feature-86):
+    fires on words related to chemistry/medical contexts involving liquids'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The extracted feature are generally more interpretable than the neurons themselves.
+    This is a very promising result, even if it is not clear yet if the approach can
+    be scaled to larger models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope this article provided examples of the some recent research directions
+    in LLM explainability. Understanding exactly how LLMs work would allow us to fully
+    trust their output and integrate them into more applications than we do today.
+    Being able to easily check for the absence of bias would allow LLMs back into
+    domains such as recruiting. Better understanding of their abilities and their
+    limits would allow us to scale more efficiently, not just make them bigger and
+    hope that it is enough. If you know of methods that look promising and that I
+    have overlooked, please feel free to share them in the comments, I’d be happy
+    to continue the exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep reading about LLMs check out also this post about LLM jail-breaking
+    and security
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://ai.gopubby.com/llm-safety-training-and-jail-breaking-57417f486d9f?source=post_page-----8f730fc73713--------------------------------)
+    [## LLM Safety Training and Jail-Breaking'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since ChatGPT brought LLMs into the spotlight, we witnessed the cat and mouse
+    game between LLM developers trying to…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: ai.gopubby.com](https://ai.gopubby.com/llm-safety-training-and-jail-breaking-57417f486d9f?source=post_page-----8f730fc73713--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

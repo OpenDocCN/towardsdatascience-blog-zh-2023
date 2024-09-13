@@ -1,0 +1,238 @@
+- en: 'Breaking Boundaries: Exploring Function Calling for LLMs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/breaking-boundaries-exploring-function-calling-for-llms-73d063d46fcb](https://towardsdatascience.com/breaking-boundaries-exploring-function-calling-for-llms-73d063d46fcb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How function calling paves the way for seamless integration of Large Language
+    Models with external tools and APIs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dpoulopoulos.medium.com/?source=post_page-----73d063d46fcb--------------------------------)[![Dimitris
+    Poulopoulos](../Images/ce535a1679779f5a2ec8b024e6691e50.png)](https://dpoulopoulos.medium.com/?source=post_page-----73d063d46fcb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----73d063d46fcb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----73d063d46fcb--------------------------------)
+    [Dimitris Poulopoulos](https://dpoulopoulos.medium.com/?source=post_page-----73d063d46fcb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----73d063d46fcb--------------------------------)
+    ·8 min read·Aug 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2db4889afc4841fc06a779401048f6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image generated with SDXL
+  prefs: []
+  type: TYPE_NORMAL
+- en: The moment I discovered that Large Language Models (LLMs) had gained the ability
+    to interact with external tools and APIs, I knew nothing would ever be the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Does this move us closer to achieving Artificial General Intelligence (AGI)?
+    Maybe not, but it undeniably ushers in a whole new era for AI: one where LLMs
+    can execute anything that you can put in a function. Now, this may seem heretical,
+    but for me, this brings us closer to my vision of AGI , since I’m not one to fantasize
+    about sentient machines or other sci-fi narratives.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Just picture this: an AI agent that takes full ownership of a task, communicates
+    with other agents operating online, fetches data, and returns with exactly what
+    you wished for. This transformative capability not only redefines our interaction
+    with the internet, but it reshapes our thought processes as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fast forward a few years: imagine wanting to plan a vacation. The first step
+    won’t be to search for tickets online, but rather, to instruct an AI agent to
+    plan and organize everything, from start to finish. You’ll only know it’s done
+    when a couple of confirmation emails land in your inbox — that’s if email is still
+    a thing — and your credit card shows a charge.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But let’s not get too far ahead. Even in our current reality, you can create
+    agents that execute whatever is programmatically possible. It requires some effort
+    on your part, though. You’ll need to familiarize yourself with the new function-calling
+    ability of the OpenAI model family, and create the custom tool that your model
+    will utilize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s where this blog post comes in. Consider this a hands-on guide to bring
+    your AI agent to life — one that can create events on your personal Google Calendar
+    account. However, by simply changing the function the LLM calls, the world is
+    your oyster. Ready to dive in?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Learning Rate](https://www.dimpo.me/newsletter?utm_source=medium&utm_medium=article&utm_campaign=function-calling)
+    is a newsletter for those who are curious about the world of ML and MLOps. If
+    you want to learn more about topics like this subscribe [here](https://www.dimpo.me/newsletter?utm_source=medium&utm_medium=article&utm_campaign=function-calling).
+    You’ll hear from me on the last Sunday of every month with updates and thoughts
+    on the latest MLOps news and articles!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Toolkit
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First up on our to-do list is building the tool, the function our LLM will call
+    to create new calendar events. Our weapon of choice? LangChain — quite possibly
+    the fastest growing Python library out there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain already comes armed with a multitude of ready-to-use [tools](https://python.langchain.com/docs/integrations/tools/).
+    However, its arsenal does not offer a tool for integrating LLMs with the Google
+    Calendar API. But hey, no sweat — we’ll create it ourselves!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We kick things off by diving into the Google Calendar Event [reference guide](https://developers.google.com/calendar/api/v3/reference/events).
+    This helps us outline what our function signature should resemble. But remember,
+    we don’t need a value for everything, so let’s mark what we think to be the most
+    crucial arguments and define our function’s input. A small heads up: LangChain
+    expects us to use a Pydantic model for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you notice, we’re expecting our model to provide a variety of details for
+    the event: a summary, location, attendees, start and end times, and so forth.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some of these fields are simple types, such as strings or lists, while others
+    require us to roll up our sleeves and define Python classes. So, without further
+    ado, let’s dive into that next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fantastic, we’ve got our function model ready. Now, onto the next step — crafting
+    the custom tool. Our task here is to create a class that inherits from LangChain’s
+    `BaseTool` class, and at the very least, implement either `_run` or `_arun`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also need to set a few crucial values such as the tool’s `name`, a `description`
+    (which nudges the model on when to use it), and the `args_schema` property, which
+    outlines the tool’s schema — the one we defined previously. Let’s do it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our tool is quite straightforward. We’ve just defined the `_run`function, as
+    there’s no need for us to support async calls for this task. The `_run` function’s
+    role is to assemble the request body and call another private function, aptly
+    named `_create_event`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s tackle this bit by bit. First off, we need to define the `create_request_body`
+    utility function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our `create_request_body` function depends on a couple of other utility functions
+    to create the JSON object. We define these private function a few lines above
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our next destination? The `_create_event` function. This function constructs
+    the service we’ll use to carry out the API call. To get this done, you’ll need
+    to secure a credentials file. Not sure how? Just follow this guide: [OAuth Client
+    ID credentials](https://developers.google.com/workspace/guides/create-credentials#oauth-client-id).
+    Once you download the JSON file, rename it to `credentials.json` and use the function
+    below to fetch and store a token:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Putting all that code together should equip you with the tool you need. This
+    may seem like a handful but it’s nothing that you cannot do yourselves, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s switch gears and create an AI agent that can put this tool to good
+    use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Agent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'LangChain really takes the guesswork out of this part. All you need to do is
+    initialize a new agent of the `[OPENAI_FUNCTIONS](https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent)`
+    type. Next, you’ll need to equip this agent with the tools it can access and then
+    run it on a user query. Sounds exciting? Let’s jump right into it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Last but not least, it’s time to put this all to the test. Run your Python
+    file and try out a test query like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Create a new event for my meeting with John, on the 10th of August, at noon
+    (Athens/Greece). Don’t forget to invite John ([john@example.com](mailto:john@example.com))
+    and set up an online meeting room.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Chances are this will work like a charm, though you might need a bit of prompt
+    engineering. But there you have it — you’ve done it! Now, you’re equipped to create
+    AI agents that can execute anything you can capture in code. How exhilarating
+    is that?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this exciting journey, we explored how OpenAI’s Large Language Models (LLMs)
+    integrate with external tools and APIs. We delved into how this game-changing
+    feature is set to redefine our interaction with AI and the internet, promising
+    a future where AI agents can seamlessly execute any task that can be programmatically
+    defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From understanding the crucial arguments of function signatures to defining
+    Python classes, we took a hands-on approach to creating a model that can interact
+    with the Google Calendar API, using LangChain, an rapidly growing Python library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result of our venture is an AI agent capable of creating events on a personal
+    Google Calendar. However, you should now be able to create an agent that can do
+    anything that you can put in a function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The future of AI and its interaction with the digital world is bright, and as
+    we continue to harness the power of AI, the possibilities for what we can achieve
+    are boundless. Let’s see what you will build next!
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My name is [Dimitris Poulopoulos](https://www.dimpo.me/?utm_source=medium&utm_medium=article&utm_campaign=function-calling),
+    and I’m a machine learning engineer working for [HPE](https://www.hpe.com/us/en/home.html).
+    I have designed and implemented AI and software solutions for major clients such
+    as the European Commission, IMF, the European Central Bank, IKEA, Roblox and others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in reading more posts about Machine Learning, Deep Learning,
+    Data Science, and DataOps, follow me on [Medium](https://towardsdatascience.com/medium.com/@dpoulopoulos/follow),
+    [LinkedIn](https://www.linkedin.com/in/dpoulopoulos/), or [@james2pl](https://twitter.com/james2pl)
+    on Twitter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Opinions expressed are solely my own and do not express the views or opinions
+    of my employer.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,517 @@
+- en: Using OpenCLIP for Image Search and Automatic Captioning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-openclip-for-image-search-and-automatic-captioning-fa1cbbd48ce4](https://towardsdatascience.com/using-openclip-for-image-search-and-automatic-captioning-fa1cbbd48ce4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How LAION used more data and new ML training techniques to improve image and
+    text embeddings for various applications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://robgon.medium.com/?source=post_page-----fa1cbbd48ce4--------------------------------)[![Robert
+    A. Gonsalves](../Images/96b4da0f602a1cd9d1e1d2917868cbee.png)](https://robgon.medium.com/?source=post_page-----fa1cbbd48ce4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa1cbbd48ce4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fa1cbbd48ce4--------------------------------)
+    [Robert A. Gonsalves](https://robgon.medium.com/?source=post_page-----fa1cbbd48ce4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa1cbbd48ce4--------------------------------)
+    ·12 min read·Mar 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01279abccfb8391b5c22a466bcb77154.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “**high-tech computer system for finding pictures in a large library,”** I*mage
+    created using an AI image creation program,* Midjourney, and edited by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have been using and writing about OpenAI’s CLIP system since it came out in
+    2021 [1]. It consists of image and text encoding models that can be used for various
+    forms of cross-modal comparison, like using a text query to find the best matching
+    image in a library quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In December 2022, an independent group of researchers known as LAION released
+    a paper called “Reproducible scaling laws for contrastive language-image learning”
+    [2] that describes how they first reimplemented and trained a model similar to
+    CLIP and then experimented with improving the system by training with a larger
+    dataset and using new ML techniques. They call their new model OpenCLIP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will provide some background info on the original CLIP, describe
+    how LAION improved the model, and show some results from my experiments with the
+    two systems using images from the [Library of Congress’s Flickr photostream](https://www.flickr.com/photos/library_of_congress/).
+    I also implemented a cool technique called “embedding arithmetic” from Meta AI
+    to search for photos using both images and text prompts [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll end the article with a demo of using a variant of LAION’s OpenCLIP model
+    that automatically generates picture captions. For example, I created the title
+    picture for this article using Midjourney with the text prompt, “high-tech computer
+    system for finding pictures in a large library.” When I sent the image into OpenCLIP,
+    it generated the caption, “a girl is standing in a library looking at a television.”
+    Not bad!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**OpenAI’s CLIP**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In 2021, OpenAI published a paper called “Learning Transferable Visual Models
+    From Natural Language Supervision,” where they described their new system called
+    Contrastive Language-Image Pre-training (CLIP.) It comprises two AI models, a
+    Text Encoder and an Image Encoder, trained to create arrays of numbers called
+    embeddings. They released the source code and pre-trained models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7dbd95a11ad1fe78c8338489e0a2eb57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**System Components for CLIP,** Diagram by OpenAI'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI trained the encoders using 400 million image/caption pairs with the goal
+    of having the encoders generate embeddings that are similar when the text and
+    images are similar. The system can be used for various tasks involving text and
+    images like retrieval, i.e., searching for images with text, and classification,
+    i.e., automatically assigning images to categories. You can read more about CLIP
+    in my [article on using the system](https://medium.com/towards-data-science/using-openais-clip-to-search-for-design-patents-7fcc63d91033)
+    to search for design patents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LAION’s OpenCLIP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LAION is a group of independent researchers that provides datasets, tools, and
+    AI models. They reimplemented OpenAI’s CLIP models and further trained them on
+    their dataset of 2 billion image/caption pairs to improve performance. In their
+    paper [2], they discussed how they overcame issues when training with more data
+    by using a floating-point number format called bfloat16, invented by Google [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: For larger model scales … we observed loss spikes during training which had
+    an adverse effect on performance. We fixed the issue by switching from mixed precision
+    with float16 to mixed precision with bfloat16\. We hypothesize that bfloat16 fixed
+    the issue due to larger models typically showing larger activation values … making
+    bfloat16 more suitable with its wider dynamic range. — Mehdi Cherti, et al., from
+    LAION
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Their paper shows how their OpenCLIP system is better than OpenAI’s CLIP on
+    tasks like searching for images. The graph below shows results from OpenCLIP in
+    orange and CLIP in blue, where smaller is better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4228581b4fdc02b324a04af68800b02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Results of Using CLIP (blue) and Open (clip) for Image Retrieval, Smaller
+    is Better,** Chart by LAION'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There’s a lot of info in the graph. I’ll see if I can unpack it. The horizontal
+    axis indicates how much computation was used for training in Giga multiply-accumulate
+    operations (GMACs.) The vertical axis shows the accuracy of results, defined as
+    100 - Recall @ 5 for the Flicker 30K dataset. For example, if the system searched
+    for five pictures of cats, and only four contained a cat, it would get an 80%
+    value for Recall@5\. But subtracted from 100 it would get a 20%, where lower is
+    better. Are you still with me? The shapes in the graph are various datasets with
+    different sizes, as indicated by the key on the right. The blue line shows how
+    CLIP performed with CLIP-WIT, their dataset, trained with multiple configurations.
+    The orange line shows how the best OpenCLIP models performed with the LAION datasets
+    with various configurations. The bottom line: OpenCLIP is better than CLIP.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in the above graph, LAION calculated the equations for the relationships
+    between training and performance with exponential components. They discuss using
+    this “scaling law” to predict how much more training would be needed to improve
+    their models further [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, I will show how I built and ran some tests to show how
+    the two systems perform with US Library of Congress images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing OpenCLIP with CLIP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I used photos from the [Flickr photostream](https://www.flickr.com/people/library_of_congress/)
+    of the Library of Congress (LOC) for my tests. The library posted over 40 thousand
+    images with captions in its collection for people to browse and post comments.
+    Note that all the photos in the collection are marked as “no known copyright restrictions,”
+    so they can be used for any purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here are some samples from the dataset, with captions above the images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c9c475033372fb2fecbbb3cedb166a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Samples from the Library of Congress Flickr Photostream**, Images from the
+    LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With these samples, you can get a sense of the types of images in the dataset,
+    paintings, old photos, new photos, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test the systems, I ran the six captions and images through CLIP and OpenCLIP
+    and calculated the cosine similarity, a measure of closeness between the text
+    and image embeddings. Note that the results range roughly from 0.0 to 0.4, where
+    the lower numbers indicate a non-match, and the higher numbers indicate a match.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1b9d42a709ece24a7b8abd6c8388c8d.png)![](../Images/3c9f01943cee7a4fc551d2be6dc952d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The images are shown across the top horizontally, and the corresponding captions
+    are listed down the left vertically. You can see that the results from OpenCLIP
+    on the right tend to have higher matching scores on the diagonal blocks (brighter
+    yellows) and lower non-matching scores (darker blues) as compared to the results
+    from CLIP on the left. This means that if you search for images with text using
+    the systems, you will get better results using OpenCLIP than CLIP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring Images from the LOC using OpenCLIP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To explore the Flickr photostream from the Library of Congress, I created a
+    [Google Colab](https://colab.research.google.com/github/robgon-art/open-clip/blob/main/Index_LOC_Photos_with_OpenCLIP.ipynb)
+    that downloaded all 40K images and ran them through the OpenCLIP image encoder
+    to perform text searches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/272d98998a4b89f81ebc3ff243928d9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Components to use OpenCLIP for Searching for LOC Images**, Diagram by Author,
+    Images from the LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I started by using the [Flickr API](https://www.flickr.com/services/api/) to
+    download all 40 thousand photos to a local folder. Next, I sent the pictures into
+    the OpenCLIP image encoder to create image embeddings. The encoders were previously
+    trained by LAION using 2 billion images with captions. I then entered a text query,
+    like “gone fishing” and sent it through the text encoder to create an embedding.
+    I calculated the cosine similarity between the text embedding and the 40K image
+    embeddings to find the best matches. As the last step, I sorted the array and
+    showed the top six images for the search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here are some example searches using OpenCLIP with results from the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “boat vacation”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I entered a search phrase and hit the “run” button to see the top six hits with
+    scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81040c84a8a7693dcd990231752a2eb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**OpenCLIP Search Results for “boat vacation”,** Screenshot by Author, Images
+    from the LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sure enough, it found some boats with people on vacation, presumably. Notice
+    the relatively low scores of the matches (0.259 to 0.281). The reason these scores
+    are low is probably due to the use of the somewhat abstract word “vacation.” Next,
+    I tried something more concrete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “building an airplane engine”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here I tried using a more specific search phrase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60570c12ade28e70060d2c7b16912254.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**OpenCLIP Search Results for “building an airplane engine”,** Screenshot by
+    Author, Images from the LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OK, this search's scores were much higher (0.302 to 0.326). The top hit shows
+    a nice picture of people building an airplane engine. Next up, I tried something
+    fun.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “mini golf”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There were a lot of images with an Americana vibe in the dataset, so I checked
+    to see if there were any images of mini golf courses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f5a0a5be120c70111402a93bd700198.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sure enough, the answer was, “Yes!” Notice the higher scores for these images
+    (0.378 to 0.395). The top hit is a classic windmill hole, with the words “MINI
+    GOLF” written twice on the blades. I’ll revisit this search after I describe a
+    cool new way to refine image searches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embedding Arithmetic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In October 2022, Meta AI published a paper with an intriguing title, “Embedding
+    Arithmetic of Multimodal Queries for Image Retrieval,” where multimodal means
+    other forms of media, like text [8].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the concept: if you find an image in a dataset and want to find another
+    image that retains some of the qualities but changes others, you can build a query
+    by combining image and text elements. Running the new query should find what you
+    are looking for, if such an image exists in the dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here's a visual example from the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74301a78f5026155bf2062826f7b2fe8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Using Embedding Arithmetic for Image Retrieval**, Image by Meta AI'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It starts with an image of a cat at the top, which is encoded into an embedding
+    E(I). Then the words “cat” and “dog” are sent through the text encoder to get
+    E(W1) and E(W2), respectively. The delta between E(W2) and E(W1) is added to the
+    embedding of the cat image, to land where a similar image of a dog should be.
+    Running a retrieval from the image database shows a close match, as seen at the
+    bottom. The match is evaluated by swapping the word “dog” for “cat” in the original
+    caption to get “A dog is sitting on the grass.” The text embedding from the transformed
+    caption is compared to the embedding of the dog image to see if there is a match
+    or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper discusses how a scaling factor, λ, can be used to adjust the amount
+    of modification made from the text prompts. Here is the equation to produce the
+    new embedding, *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/472c153d6251751f0ddc870d30fc6985.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The paper discusses how a scaling factor between 1.0 and 1.5 works well for
+    many searches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I implemented this form of embedding math in my Colab. Here are some results,
+    starting with a modified search based on the mini golf windmill image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: mini golf windmill image + 1.5 (“Yosemite Sam” - “windmill”)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this search, I started with the portrait photo of the mini golf windmill
+    and added in the phrase “Yosemite Sam” and dropped “windmill.” I used a scaling
+    factor of 1.5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6a9b10fd7e648a8570161f12962d58d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**mini golf windmill image + 1.5 (“Yosemite Sam” - “windmill”)**, Screenshot
+    by Author, Images by LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The original image is at the top left, and the best match is next to it, with
+    a high score of 0.407\. The top hit is very similar to the starting image, except
+    that it shows Yosemite Sam instead of the windmill. Up next are some images of
+    roadside eateries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: donut shop image + 1.2 (“hamburger” - ”donut”)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the next test, I started by searching for “donut shop” and chose an image
+    of an interesting place called the Donut Hole. Next, I used “hamburger” as the
+    positive prompt and “donut” as the negative prompt. I used a scaling factor of
+    1.2\. Here are the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50697bf2f704c0a69d64243853591a9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**donut shop image + 1.2 (“hamburger” - ”donut”)**, Screenshot by Author, Images
+    by LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wow, it found a classic Macdonalds restaurant where the golden arches line up
+    nicely with the giant donuts in the starting image. Notice the very high score
+    of 0.533 for the top match. My last search involves some old photos of famous
+    people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Abraham Lincoln image + 1.1 (“Oscar Wilde” - ”Abraham Lincoln”)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For my final test, I first searched for “Abraham Lincoln” and chose a well-known
+    image of him sitting in a chair. I used the system to see if the dataset had a
+    similar image of Oscar Wild. I used a scaling factor of 1.1 for this test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2b2460f2686c2ae7b3b16bd2141d59a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Abraham Lincoln image + 1.1 (“Oscar Wilde” - ”Abraham Lincoln”)**, Screenshot
+    by Author, Images by LOC'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sure enough, it found a sepia-toned image of Oscar wild sitting in a wooden
+    chair. The score for the top match is the highest I’ve seen at 0.675, even though
+    the pose differs. The high score may be because the strong correlation between
+    the name and face of a famous person overrides the other factors. Next, I’ll show
+    how I used OpenCLIP to generate image captions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using CoCa and OpenCLIP to Create Captions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In their paper from 2022, “CoCa: Contrastive Captioners are Image-Text Foundation
+    Models,” [5] the authors show how a model similar to OpenAI’s CLIP can be trained
+    to generate captions from images automatically.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this work we present Contrastive Captioners (CoCa), a new image-text foundation
+    model family that subsumes existing vision pretraining paradigms with natural
+    language supervision. Pretrained on image-text pairs from various data sources
+    in a single stage, CoCa efficiently combines contrastive and captioning objectives
+    in an encoder-decoder model. — Jiahui Yu and Zirui Wang from Google
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The independent researcher Phil Wang, known as lucidrains, adapted the CoCa
+    model to work with OpenCLIP. The results are excellent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, here are six images with the original captions from the LOC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79e89654c0a1ff81f5603847e142651d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And here are the images with captions generated by CoCa/OpenCLIP:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/36d12e92524b15fbbb879f644b9a634f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although the captions are missing certain details like naming specific people
+    (who) and places (where), the system does a great job of describing the visual
+    content of the images (what). You can check this out in my Colab [here](https://colab.research.google.com/github/robgon-art/open-clip/blob/main/Create_Captions_with_OpenCLIP.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Societal Impact
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Large AI models trained on data from the Internet can exhibit cultural biases
+    and, left unmitigated, could cause societal harm. The authors of the OpenCLIP
+    model express their concerns in their paper [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our work deals with studying function and properties of pre-trained models on
+    large scales. Releasing these models to public can have both positive and negative
+    implications, like with any research artefact that possesses generic functionality.
+    … There is potential for abuse of technology based on large-scale pre-trained
+    generalist models, and it is the task of democratic institutions to work out rules
+    for sensitive applications that might involve those. Open release of models gives
+    the broad research community also opportunity to study safety related aspects
+    of such models, such to preventively design measures that make such abuse by malicious
+    parties less probable, in a common transparent effort. — Mehdi Cherti, et al.,
+    from LAION
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Their policy of transparency allows other researchers to assess and mitigate
+    the use of their models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion and Next Steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The OpenCLIP system seems to work well for searching for images in a large dataset.
+    And the new techniques for embedding math provide expert tools to help people
+    find the perfect shot. The CoCa/OpenCLIP model does a fine job creating descriptive
+    captions for images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An area for improvement would be to see if these systems could be fine-tuned
+    to find or create captions for personal photographs. Unlike OpenAI, LAION released
+    the training code for their models. Although their code is designed for large-scale
+    training, it would be helpful if it could be adapted to fine-tune models with,
+    say, only ten images of your uncle Bob.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Source Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The source code for this project is available on [GitHub](https://github.com/robgon-art/open-clip).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e4cb7250c1bec4531e196f1ff265f49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Creative Commons Attribution Sharealike**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Acknowledgments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I want to thank Jennifer Lim for her help with this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] A. Radford et al., CLIP, [Learning Transferable Visual Models From Natural
+    Language Supervision](https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf)
+    (2021)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] M. Cherti et al., OpenCLIP, [Reproducible scaling laws for contrastive
+    language-image learning](https://arxiv.org/pdf/2212.07143.pdf) (2022)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] G. Couairon et al., [Embedding Arithmetic of Multimodal Queries for Image
+    Retrieval](https://arxiv.org/pdf/2112.03162.pdf) (2022)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] S. Wang and P. Kanwar, [BFloat16: The secret to high performance on Cloud
+    TPUs](https://cloud.google.com/blog/products/ai-machine-learning/bfloat16-the-secret-to-high-performance-on-cloud-tpus)
+    (2019)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] J. Yu, [CoCa: Contrastive Captioners are Image-Text Foundation Models](https://arxiv.org/pdf/2205.01917.pdf)
+    (2022)'
+  prefs: []
+  type: TYPE_NORMAL

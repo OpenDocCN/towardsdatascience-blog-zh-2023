@@ -1,0 +1,380 @@
+- en: 'Forecast Multiple Horizons: an Example with Weather Data'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07](https://towardsdatascience.com/forecast-multiple-horizons-an-example-with-weather-data-8d5fa4321e07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Predict precipitations in Switzerland by using the forecasting horizon as a
+    feature.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[![Davide
+    Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)
+    [Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d5fa4321e07--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d5fa4321e07--------------------------------)
+    ·8 min read·Aug 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a51955e062687c7048d4f894669ee7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Weather forecast, by [Giulia Roggia](https://www.instagram.com/giulia_roggia__/).
+    Used with permission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction](#38c0)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Example: Precipitations in Switzerland](#65d9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*The traditional approach*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When we want to predict future values for a time-series, we are often interested
+    in multiple future horizons, e.g. what will happen in 1, 2, or 3 months. The traditional
+    approach to predict these different horizons consists in training a separate model
+    for each target horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Common alternatives*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A common alternative consists in training a single model on a short horizon,
+    and extend it to multi-horizons by applying it recursively (i.e. by taking the
+    previous predictions as inputs to produce the following ones). However this approach
+    can be complex to implement in production systems, and it may lead to error propagation:
+    an error on a close horizon can have detrimental effects for the following ones.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another alternative consists in forecasting all the horizons at the same time
+    with a multi-variate model. However, the kind of models that support multi-variate
+    outputs is limited, and it requires extra effort in data handling and model maintenance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Horizon as a feature*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A simpler approach consists in concatenating the data prepared for each horizon,
+    and adding a new “horizon” feature. This approach has several **advantages**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s simple to understand and implement, as it leads to a single model to train
+    and maintain.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'It potentially improves the predictions accuracy, since the model is trained
+    on a larger dataset. It can even be used as a “data augmentation” technique: if
+    you are interested in only a few horizons, you can still add additional ones in
+    the training phase to improve model estimation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The model can be used to predict horizons on which it was not trained, which
+    might be helpful if you have many horizons to predict.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'This approach is the alter-ego of a [global model](https://medium.com/towards-data-science/local-vs-global-forecasting-what-you-need-to-know-1cc29e66cae0),
+    but in the context of multiple horizons instead of multiple time-series. Therefore,
+    it shares similar **drawbacks**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If performance for a specific horizon starts to degrade, it’s hard to update
+    the model without impacting predictions on other horizons.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It might need full re-training when a new horizon appear (although it’s not
+    mandatory).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You cannot use traditional forecasting models (such as ARIMA, exponential smoothing,
+    etc.).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Example: Precipitations in Switzerland'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/452022e982e461409438f520fa0b650a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Lugano Lake, Image by [Makalu](https://pixabay.com/users/makalu-680451/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3098927)
+    from [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3098927)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section we show a concrete Python implementation of the “horizon as
+    a feature” technique, and we compare it to the traditional approach of training
+    one model per horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our goal is to forecast precipitations in Lugano, a city in Switzerland. The
+    data used in this example is provided by [MeteoSwiss](https://www.meteoswiss.admin.ch/)
+    and is available [here](https://www.meteoswiss.admin.ch/climate/climate-change/changes-in-temperature-precipitation-and-sunshine/homogeneous-data-series-since-1864.html)
+    (data used with permission).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data loading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by importing the necessary libraries to manipulate the data, visualize
+    it, and train a LightGBM model (if you are interested in the choice of the model,
+    you can check [this article](https://medium.com/towards-data-science/gradient-boosting-a-silver-bullet-in-forecasting-5820ba7182fd)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us load the data in a Pandas dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Quick data exploration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can now have a look at the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7acaeb96eb0cf79cb913631c1d9ecbe8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Temperature and Precipitation in Lugano. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that we have monthly data of temperature and precipitation starting
+    from 1864 (that’s almost 160 years!). Let’ exploit [Plotly](https://plotly.com/)
+    interactive functionalities to look a bit closer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7906a797810c81948633808f5612b930.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Temperature in Lugano in the past 10 years. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30d5bf75cd36641f9af9e4110b00c9cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Precipitations in Lugano in the past 10 years. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the data is seasonal, and that temperature is more regular than
+    precipitations, as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since precipitations are harder to predict, they are also more interesting!
+    Let’s try to forecast their values for the next 1, 2, and 3 months.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s prepare the data to train a forecasting model. We are gonna use lagged
+    values of precipitations and temperature to forecast future values of precipitation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For precipitations, we consider the 3 most recent lags, plus the ones corresponding
+    to 1, 2, and 3 years before the target month.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For temperature, we consider the 2 most recent lags, plus the ones corresponding
+    to 1 and 2 years before the target month.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We also add a “*month_horizon*” feature, which indicates which month we are
+    predicting (e.g. January or April) to help the model to learn seasonality. Note
+    that this is not the same as the “horizon as a feature” which takes values 1,
+    2, or 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now build the target and features for each horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Split train and test set
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s consider the last 10 years in the data as the test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Models training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we only care about comparing the two different approaches, we’ll keep
+    default hyper-parameters in both cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start by training models the traditional way, one for each horizon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And now let’s run the alternative approach: a single model using the horizon
+    as a feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Predict on the test set
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make predictions on the test set with the two approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Error Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s now evaluate the predictive performances. First, we combine the outputs
+    in a format convenient for comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here below you can see the head of the output dataframe for horizon 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90765a4b8d80fc16d4eacb23a57d6168.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output dataframe for horizon 1 month. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now compute and print the Mean Absolute Error (MAE) overall, and for each
+    horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which gives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5a0e9185abbf8d0603eaaa2f7e3226b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see that the shared model across horizons always leads to a lower error.
+    This is somewhat expected, since it was trained on a larger dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s have a look at some of the predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here we display only predictions at horizon 3 for brevity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/06b750da0c64d07d6b324001726420df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predictions at horizon 3 months. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We see that the models still fail to capture extreme events (like August 2014).
+    This is not surprising since:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have very limited information on the real state of the system.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Extreme events are very hard to predict with ML, since by definition there are
+    limited observations in the training set.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next steps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are several things that we could try to improve the predictive performance.
+    Here’s a non-exhaustive list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Penalize large errors by using an L2 loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Target transformations, e.g. by taking the square root.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Include infra-month data. Include additional data sources.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use a global model trained on more targets.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Retrain more frequently, e.g. every year.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hyper-parameters tuning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To evaluate if these changes improve the accuracy of the predictions, you should
+    rely on a [solid backtesting strategy](https://medium.com/towards-data-science/why-backtesting-matters-and-how-to-do-it-right-731fb9624a).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The full code used in this example is available* [*here*](https://github.com/davide-burba/code-collection/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Enjoyed this article?* [*Checkout my other ones*](https://medium.com/@davide.burba)
+    *and follow me for more!* [*Click here*](https://medium.com/@davide.burba/membership)
+    *to read unlimited articles and support me at no additional cost for you* ❤️'
+  prefs: []
+  type: TYPE_NORMAL

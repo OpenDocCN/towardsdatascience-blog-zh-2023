@@ -1,0 +1,460 @@
+- en: 'Unlock the Power of Causal Inference: A Data Scientist’s Guide to Understanding
+    the Backdoor Adjustment Formula'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unlock-the-power-of-causal-inference-a-data-scientists-guide-to-understanding-backdoor-686d2826efa4](https://towardsdatascience.com/unlock-the-power-of-causal-inference-a-data-scientists-guide-to-understanding-backdoor-686d2826efa4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A fully working example of the backdoor adjustment formula using Python and
+    the pgmpy library
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://grahamharrison-86487.medium.com/?source=post_page-----686d2826efa4--------------------------------)[![Graham
+    Harrison](../Images/c6bfe00c6e0cfcdf3bd042c7fdc03554.png)](https://grahamharrison-86487.medium.com/?source=post_page-----686d2826efa4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----686d2826efa4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----686d2826efa4--------------------------------)
+    [Graham Harrison](https://grahamharrison-86487.medium.com/?source=post_page-----686d2826efa4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----686d2826efa4--------------------------------)
+    ·9 min read·Jan 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0959161efc60244eb04bbac98fcace83.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Roberto Huczek](https://unsplash.com/@tamoio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/door?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In probability theory it is very straightforward to look at a dataset and calculate
+    the probability of an event based on knowing something about other variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4411430efff6fc3f34df0a2cc1365e37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: i.e. the probability of a sale is equal to the probability of a click on the
+    link given that the product has been searched.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, this approach breaks down when causal effects exist in the data and
+    this is where causal inference comes in. There are a range of approaches depending
+    on the pattern of causality and this article is going to focus on unlocking the
+    power of the backdoor adjustment formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “backdoor criteria” exists when the causal affect of X on Y is “confounded”
+    by a third factor that influences both X and Y …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca1b6bc95563b3a7a360001525ebb685.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this instance the formula 𝑝(𝑌|𝑋) does not work because of the confounding
+    effect of Z and the backdoor adjustment formula needs to be applied from Pearlean
+    “do” calculus to get the correct result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/160ce3c3aeb7e479d44b4cb8603395cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks scarily complicated, especially to those who are new to “do” calculus,
+    but it is actually very easy to understand and apply.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the end of this article you will understand how to apply the backdoor adjustment
+    formula in `Python` and `pgmpy`, why it is so powerful and what is happening behind
+    the scenes.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Getting Started
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To get started we need some standard imports and a test dataset which is entirely
+    synthetic and fictitious.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data is read in from a csv in the code below but if you would like to know
+    how to generate synthetic binary data the following article provides a full explanation
+    -
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-generate-synthetic-data-for-any-causal-inference-project-in-less-than-10-lines-of-code-158688a89349?source=post_page-----686d2826efa4--------------------------------)
+    [## How to Generate Synthetic Data for any Causal Inference Project in less than
+    10 Lines of Code'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If 99% are Vaccinated, 1% Get a Reaction and 2% Get the Disease How Can You
+    Generate Representative Synthetic Data?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-generate-synthetic-data-for-any-causal-inference-project-in-less-than-10-lines-of-code-158688a89349?source=post_page-----686d2826efa4--------------------------------)
+    ![](../Images/b1eff9db42140c2cfa5b1f03ed4cdde9.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The synthetic data represents the results of a fictitiuous drug trial for 1000
+    subjects who all had a medical condition that the drug would be tested on. For
+    example, the first row represents a male (male=1) who took the drug (drug=1) and
+    recovered (recovery=1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start by taking a quick look at the traditional probabilities in the
+    data relating to recovery and patient outcomes using a single line of Python code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result is that 77.8% of patients who took the drug recovered but 82.6% of
+    patients who did not take the drug recovered. The traditional, probabilistic approach
+    clearly suggests that the drug has a negative impact and that the drug trial should
+    end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there is causality between the features and that means that causal
+    inference and the “do” operator need to be applied to establish the true effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Causal Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The cause-and-effect relationships in the data can be visualised using a simple
+    Directed Acyclic Graph (or DAG)…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec926ef016decc7bd5c266adc027436f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code to create the DAG has been left out of this article but a full explanation
+    can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-visualise-causal-inference-models-with-interactive-directed-acyclic-graphs-8dd648a64915?source=post_page-----686d2826efa4--------------------------------)
+    [## How to Visualise Causal Inference Models with Interactive Directed Acyclic
+    Graphs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to generate interactive Directed Acyclic Graphs to visualise and understand
+    causal inference models in 1 line of…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-visualise-causal-inference-models-with-interactive-directed-acyclic-graphs-8dd648a64915?source=post_page-----686d2826efa4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The causal diagram shows that whilst taking the drug has a causal affect on
+    recovery, it is not that simple. Gender (male) has a causal impact on both “drug”
+    and “recovery” because …
+  prefs: []
+  type: TYPE_NORMAL
+- en: A higher proportion of males decide to take the drug compared to females
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Males have a higher recovery rate than females
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Therefore we must “de-confound” the affect of “male” from the affect of taking
+    the drug to get the true affect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ideal scenario is that we travel back in time and force everyone to take
+    the drug and measure the impact. We then travel back in time again and this time
+    and prevent everyone from taking the drug. We then simply compare the two results
+    and we have our answer!
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, that solution suffers from the impossibility of time travel and the
+    ethical, moral, and legal aspects to forcing or preventing drug-taking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a way forward though. It is the Pearlean “do” calculus which provides
+    a formula for converting an interventional “do” into an equivalent formula containing
+    only observational data which we know.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The remainder of this article is going to provide a simple causal solution using
+    the `pgmpy` library and a second version which performs all the calculus by hand
+    to show how it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Solution 1: Using the Pgmpy Library'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first stage is to create a `pgmpy` causal model using the causal relationships
+    defined in the Directed Acyclic Graph. `Pgmpy` creates a set of Conditional Probability
+    Tables that describe the causal relationships which can easily be displayed to
+    see what is going on ...
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following code will call `TabularCPD.__str__` in the `pgmpy` library to
+    display the conditional probability tables ...
+  prefs: []
+  type: TYPE_NORMAL
+- en: … but I have displayed them below in a more visual and understandable format
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7bb99ce9f3b4fa9b224a9d06c0e886c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next stage is to run the “do” operator twice on the model, once the drug=1
+    and again for drug=0\. The second result can then be subtracted from the first
+    to calculate the overall affect of taking the drug indepent and de-confounded
+    from “male” …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: So `pgmpy` has been able to perform the magic trick of travelling back in time
+    and re-running the drug trial. The first re-run forced everyone to take the drug,
+    the second prevented anyone from taking the drug and then a simple subtraction
+    provided the answer, but how does `pgmpy` work this magic? ...
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Solution 2: Manually Applying “do” Calculus'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have already concluded from the DAG that both “drug” and “recovery” are confounded
+    by “male” and that in causal inference this pattern is referred to as the “backdoor”
+    criteria.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The task therefore is to simulate an intervention (the time travel piece!) by
+    writing a mathematical formula for the intervention and then to “adjust” it such
+    that is is expressed in terms of data we can observe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The backdoor adjustment formula from the “Introduction” section can be expressed
+    as follows for the drug trial data -
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df4ef720681e8f5fd0871c8e4dd1734d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From here it is a straightforward task to calculate the overall effect of the
+    drug as follows -
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the effect of intervening or “do-ing” Drug=1 using the backdoor adjustment
+    criteria.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the effect of intervening or “do-ing” Drug=0 using the backdoor adjustment
+    criteria.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Subtract the result of part 2 from the result of part 1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the drug is having a positive impact the overall result will be a positive
+    number.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The result is called the “Average Causal Effect” and can be denoted as follows
+    -
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/027ddd0d32ab169eaa7394bdbabff512.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: … and in the drug example …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/826ae98a57ccbc7f49d819fa419ef139.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Substituting the left and right side with the backdoor adjustment formula gives
+    the following
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b5630f2282c633727e97dfe569dceee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So we need to solve the left side of the minus sign (i.e. the intervention where
+    the drug is taken by everyone) by adding together the results for Male=1 and Male
+    = 0 as follows -
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd9e5fccb73c5f9c0a80e4b2191431c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These probabilities could all be easily calculated directly from the `df_drug`
+    `DataFrame` but they have already been nicely summarised for us in the conditional
+    probability tables so they can be immediately substituted as follows ...
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/696cf7228c305b8ded808e2f2dc76b58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we need to solve the right hand side of the minus sign in the expanded ACE
+    formula (i.e. for the intervention where everyone is prevented from taking the
+    drug) …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a0863a192381921733af0ea7679eeaa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, we can just read off and substitute the probabilites from the conditional
+    probability tables ..
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00bd43abaaf8827f6d4fc4e00f16194b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Average Causal Effect (ACE) can now be calculated by subtracting the second
+    result from the first …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f77989897256202313c39c352a1cfe8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So the improvement in recovery rate by everyone taking the drug is 5.2%5.2%
+    which exactly matches the calculations produced by using the `pgmpy` library!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Traditional probabilistic approaches fail to produce the correct answers when
+    causal relationships exist in data requiring causal techniques to calculate the
+    correct results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article has used a synthetic dataset to show that the true effect of taking
+    a drug on patient recovery was a positive impact of 5.2% when the traditional
+    probabilistic approach suggested a negative impact of 5%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To apply the causal inference techniques requires a “Directed Acyclic Graph”
+    to define the causal relationships which is then used along with the dataset as
+    an input to a causal calculation to show the true effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `pgmpy` library performed the seemingly impossible magic trick of travelling
+    back in time to intervene in the drug trial not once but twice, first forcing
+    everyone to take the drug and then preventing anyone from taking the drug.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it is not magic. It is done by applying the “backdoor adjustment formula”
+    as defined in Pearlean “do” calculus and the long-hand calculations were explained
+    and then verified by matching the results back to the `pgmpy` library.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If you enjoyed this article you can get unlimited access to thousands more by
+    becoming a Medium member for just $5 a month by [clicking on my referral link](https://grahamharrison-86487.medium.com/membership)
+    (I will receive a proportion of the fees if you sign up using this link at no
+    extra cost to you).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://grahamharrison-86487.medium.com/membership?source=post_page-----686d2826efa4--------------------------------)
+    [## Join Medium with my referral link - Graham Harrison'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Graham Harrison (and thousands of other writers on Medium).
+    Enhance your knowledge of Data…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: grahamharrison-86487.medium.com](https://grahamharrison-86487.medium.com/membership?source=post_page-----686d2826efa4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Subscribing to a free e-mail whenever I publish a new story](https://grahamharrison-86487.medium.com/subscribe).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Taking a quick look at my previous articles](https://grahamharrison-86487.medium.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Downloading my free strategic data-driven decision making framework](https://relentless-originator-3199.ck.page/5f4857fd12).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visiting my data science website — [The Data Blog](https://www.the-data-blog.co.uk/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further Reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you would like to know more about the `pgmpy` library the full documentation
+    can be found here: [https://pgmpy.org/index.html](https://pgmpy.org/index.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And if you would like to know more about causal inference, this amazing book
+    is a great place to get started:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://amzn.to/3iCVF8r?source=post_page-----686d2826efa4--------------------------------)
+    [## The Book of Why: The New Science of Cause and Effect (Penguin Science)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Buy The Book of Why: The New Science of Cause and Effect (Penguin Science)
+    01 by Pearl, Judea, Mackenzie, Dana (ISBN…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: amzn.to](https://amzn.to/3iCVF8r?source=post_page-----686d2826efa4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this book provides a deeper and more detailed exploration of some of the
+    key concepts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://amzn.to/3WblFp1?source=post_page-----686d2826efa4--------------------------------)
+    [## Causal Inference in Statistics: A Primer'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Buy Causal Inference in Statistics: A Primer 1 by Pearl, Judea, Glymour, Madelyn,
+    Jewell, Nicholas P. (ISBN…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: amzn.to](https://amzn.to/3WblFp1?source=post_page-----686d2826efa4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please note: These are Amazon referral links and the author will receive a
+    proportion if you make a purchase.'
+  prefs: []
+  type: TYPE_NORMAL

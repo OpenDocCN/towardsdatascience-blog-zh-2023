@@ -1,0 +1,744 @@
+- en: 'Multimodal Chain of Thoughts: Solving Problems in a Multimodal World'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/multimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa](https://towardsdatascience.com/multimodal-chain-of-thoughts-solving-problems-in-a-multimodal-world-961a8ab9d0fa)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: NLP | MULTIMODALITY | CHAIN OF THOUGHTS |
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The world is not only text: How to extend the chain of thoughts to image and
+    text?'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)[![Salvatore
+    Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------)
+    [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----961a8ab9d0fa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----961a8ab9d0fa--------------------------------)
+    ·14 min read·Mar 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/868bf8d7fafd276e2175a475fa6cc822.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: photo by [Giulio Magnifico](https://unsplash.com/it/@giuliomagnifico) on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes getting to the answer is not easy, especially when the question requires
+    reasoning. A model does not always have the answer hidden in its parameters but
+    can get there with the right context and approach. What is the chain of thoughts?
+    Why does this approach make it possible to solve multi-step reasoning tasks? Can
+    it be extended to multimodal problems (i.e., problems with images and text)? Are
+    only large models capable of this?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article discusses how to answer these questions.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chain of thought (CoT): what is it?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/118e0e262bad7b95096ebc2f40b9c948.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: photo by [Todd Cravens](https://unsplash.com/it/@toddcravens) on [Unsplash](https://unsplash.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In recent years we have seen the number of model parameters grow (to well over
+    100 B of parameters). This has been motivated by the scaling law: as the number
+    of parameters increased, the error decreased.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## Unsupervised data pruning: less data to learn better'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not always more data is meaning a more accurate model, but how to choose your
+    data?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this is true for tasks such as [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis)
+    and machine translation (even in the case of [zero-shot](https://en.wikipedia.org/wiki/Zero-shot_learning)
+    or [few-shot learning](https://paperswithcode.com/task/few-shot-learning)), even
+    models with billions of parameters struggle with tasks that require multi-step
+    reasoning (e.g., math problems or commonsense reasoning).
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to allow a model to succeed in these tasks?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Large models can be fine-tuned for a specific task, and this was the first
+    system that was attempted. [As the authors of this idea explain](https://arxiv.org/pdf/2006.06609.pdf)
+    if you ask a model if a whale has a belly button the model will incorrectly answer
+    no. This is because the model does not have this information stored in its parameters.
+    The authors suggest that one can provide help to the model, providing it with
+    a hint of implicit knowledge: “A whale is a mammal”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80dc45de359daf253e1afdba6a7637c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: [here](https://arxiv.org/pdf/2006.06609.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea of providing implicit knowledge has paved the way for the possibility
+    that systems can improve themselves by interacting with users. The user can identify
+    an error and provide the information to the model allowing it to correct itself.
+    Or more precisely as defined by the authors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This can be viewed as a form of “one-shot learning” that improves the model
+    on-the-fly without further training, unlike most current work that relies on data
+    collection and re-training for fixing model errors.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So conceptually the idea is that a model can solve a problem whose exact answer
+    it does not directly know by exploiting intermediate steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[As noted by Google](https://ai.googleblog.com/2022/05/language-models-perform-reasoning-via.html),
+    prompting is allowing in-context few-shot learning. In other words, instead of
+    fine-tuning an LM on a particular task, one can prompt the LM with a few input-output
+    exemplars demonstrating the task. This method has proven to be extremely functional,
+    especially for question answering. Also, as demonstrated in context learning it
+    is [particularly effective for large models](https://arxiv.org/abs/2005.14165).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51a81dd2261eeecbc3a6dfdb574ecda2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“Aggregate performance for all 42 accuracy-denominated benchmarks While zero-shot
+    performance improves steadily with model size, few-shot performance increases
+    more rapidly, demonstrating that larger models are more proficient at in-context
+    learning.” source: [here](https://arxiv.org/pdf/2005.14165.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Google then proposed that one can allow the model to solve multi-step reasoning
+    problems by including a few examples of the chain of thought via prompting only.
+    For better understanding, here is an example of what changes between a classic
+    prompt and a chain of thought prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe105e20281bcdedc89613b6e0cc665f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“Chain-of-thought prompting enables large language models to tackle complex
+    arithmetic, commonsense, and symbolic reasoning tasks. Chain-of-thought reasoning
+    processes are highlighted.” source: [here](https://arxiv.org/pdf/2201.11903.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advantage of this method is that it requires neither changing LM’s weights
+    nor a large training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In short, we can say that the idea is that a complex problem can be decomposed
+    into a series of intermediate steps that can be solved separately.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It may seem like a small thing, but it actually means that this method can be
+    applied to any problem you can solve using language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Google authors say that this is an emergent property of the model and that
+    it emerges with a certain size of model capacity (they estimate about 100 B parameters).
+    The authors have evaluated increasing models for solving math problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e080fc3f70908bcd1f8de1eb59a93f03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“: Chain-of-thought prompting enables large language models to solve challenging
+    math problems”. source: [here](https://arxiv.org/pdf/2201.11903.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, the authors note that model improvement does not come from increasing
+    parameters, but by using a “chain of thought prompting, increasing model scale
+    leads to improved performance that substantially outperforms standard prompting
+    for large model sizes.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is also true for [commonsense reasoning](https://en.wikipedia.org/wiki/Commonsense_reasoning)
+    (“reasoning about physical and human interactions under the presumption of general
+    background knowledge”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6eaadf276534702b66a03cafc02d8ab7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“: Examples of input, chain of thought, output triples for arithmetic, commonsense,
+    and symbolic reasoning benchmark”. source: [here](https://arxiv.org/pdf/2201.11903.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this, too, the model showed the same behavior: “performance improved with
+    model scale, and employing a chain of thought prompting led to additional small
+    improvements.” The greatest improvement was seen in the area of sports understanding
+    (surprisingly).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So in general we have seen that there are two techniques for CoT, fine-tuning
+    or using prompting (in context learning). Regarding this second paradigm, we can
+    further subdivide into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Zero-Shot-CoT**. Kojima showed that LMs are decent zero-shot COT (simply
+    adding “Let’s think step by step”) and this is enough to meaningfully improve
+    zero-shot LLM for complex reasoning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Few-Shot-CoT.** A few step-by-step reasoning demonstrations are used for
+    model conditioning in inference. Each demonstration presents both a question and
+    a reasoning chain that explains to the model how to arrive at the final answer
+    (these demonstrations can be either hand-built or using automatic generation).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/124ec295b0a57cc2601f62677c11d3ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: [here](https://arxiv.org/pdf/2205.11916.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Few-shot-CoT has since been shown to be more efficient and with better results
+    (provided the demonstrations are well written). Therefore, most subsequent studies
+    focused on this method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f31f9d790f23ee524f7a0b7b3087c5b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“Typical CoT techniques (FT: fine-tuning; KD: knowledge distillation). Segment
+    1: in-context learning techniques; Segment 2: fine-tuning techniques. To the best
+    of our knowledge, our work is the first to study CoT reasoning in different modalities.
+    Besides, we focus on 1B-models, without relying on the outputs of LLMs”. source:
+    [here](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multimodal Chain of Thought is challenging
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/acf1b79a008b36938e2f394e6876ae94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by [airfocus](https://unsplash.com/fr/@airfocus) on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we saw above, the chain of thought (CoT) has proven very useful for problems
+    requiring complex reasoning. Many of the problems are not only textual but multimodal.
+    For example, to solve a problem we may need to look at a picture. As we said CoT
+    works only for problems that can be expressed in textual form. **How can we do
+    it for multimodal problems?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine reading a textbook with no figures or tables. Our ability to knowledge
+    acquisition is greatly strengthened by jointly modeling diverse data modalities,
+    such as vision, language, and audio. ([source](https://arxiv.org/pdf/2302.00923.pdf))
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'A recent article posed exactly this problem and tried to extend CoT to multimodal
+    problems as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://arxiv.org/abs/2302.00923?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## Multimodal Chain-of-Thought Reasoning in Language Models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models (LLMs) have shown impressive performance on complex reasoning
+    by leveraging chain-of-thought…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: arxiv.org](https://arxiv.org/abs/2302.00923?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As noted earlier, [models under 100 billion parameters tend to produce illogical
+    CoTs](https://arxiv.org/pdf/2206.07682.pdf), thus leading to incorrect answers.
+    A [multi-modal model](https://en.wikipedia.org/wiki/Multimodal_learning) must
+    not only handle textual input but also other modalities. This makes it difficult
+    to create a model smaller than 100 B of parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, META’s LLaMA showed that models trained with fewer 100 B
+    parameters can achieve comparable results to much larger models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/mlearning-ai/metas-llama-a-small-language-model-beating-giants-5065948e0b7f?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## META’s LLaMA: A small language model beating giants'
+  prefs: []
+  type: TYPE_NORMAL
+- en: META open-source model will help us to understand how LMs biases arise
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/mlearning-ai/metas-llama-a-small-language-model-beating-giants-5065948e0b7f?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, as other studies have shown, a textual model did not see pictures
+    during training and thus has no information about visual elements or how to exploit
+    visual features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'CoT reasoning in a multimodal context requires the model to take into account
+    the different modalities: given the inputs in different modalities, a model decomposes
+    a multi-step problem into a series of intermediate stems and can then infer the
+    answer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d2df89b5ca5751d1b77424fdce30e20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Example of the multimodal CoT task. source: [here](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most immediate way to perform Multimodal-CoT is to transform the input of
+    different modalities into one modality and prompt LLMs to perform CoT. ([source](https://arxiv.org/pdf/2302.00923.pdf))
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For example, one could take an image and use it as input for a captioning model.
+    Once the caption is obtained one could then use the obtained caption and join
+    it to the textual prompt and then provide it to a large LM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, this approach has a serious drawback, the caption as opposed to the
+    visual features loses a lot of information, so the mutual synergy between the
+    information contained in the different modalities is lost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, it has been shown in previous studies that cross-modal alignment
+    of pre-trained uni-modal models is not easy. For example, in BLIP-2 to allow a
+    vision transformer and a language model to talk to each other they needed an additional
+    transformer in between.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://levelup.gitconnected.com/blip-2-when-chatgpt-meets-images-463582b541e0?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## BLIP-2: when ChatGPT meets images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BLIP-2, a new visual language model capable to dialogue about images
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/blip-2-when-chatgpt-meets-images-463582b541e0?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering these challenges, the authors decided to investigate whether it
+    is possible to train a 1 B model of parameters for multimodal CoT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This work focuses on 1B-models as they can be fine-tuned and deployed with consumer-grade
+    GPUs (e.g., 32G memory). In this section, we will investigate why 1B-models fail
+    at CoT reasoning and study how to design an effective approach to overcome the
+    challenge. ([source](https://arxiv.org/pdf/2302.00923.pdf))
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why do small models fail in CoT and how to design to overcome the challenge?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/0d7373870be1ed4a86f40f8f61dfe6d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by [Jason Leung](https://unsplash.com/fr/@ninjason) on Unsplash all
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actually, an approach to train small models to reason had already been tried.
+    However, previous attempts had used a large model as the teacher and a small model
+    as a student.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the authors provided, the teacher model with a prompt and used
+    the “Let’s think step by step” method to get answers that explained the reasoning.
+    The prompt plus demonstration was then provided to the smaller model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84f4aedada0c72c493bcc5a5224755ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “We consider a method consisting of multiple stages. First, a large teacher
+    model is prompted to answer questions using multi-step reasoning, without relying
+    on correct examples. That is, the teacher employs zero-shot chain-of-thought reasoning
+    to generate output. We then use the resulting reasoning samples (consisting of
+    the question and teacher output) for fine-tuning a much smaller student model.”
+    image source ([here](https://arxiv.org/pdf/2212.10071.pdf))
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach, however, still requires the use of large LMs with all its drawbacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors instead decided to explore the possibility that a small model could
+    be fine-tuned for multimode-CoT. In short, fusing multimodal features allows the
+    model architecture to be able to be adjusted more flexibly (with respect to prompting).
+    However, the main problem remains: “*The key challenge is that language models
+    under 100 billion parameters tend to generate hallucinated rationales that mislead
+    the answer inference*”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, why small models hallucinate with CoT?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'And it is the same question the authors asked themselves: to investigate why
+    a 1-B model fails at CoT reasoning. Once this is understood study an effective
+    approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors started with fine-tuning a text-only baseline model for CoT reasoning.
+    In this case, the problem is modeled as a text generation problem. The baseline
+    is having the question (Q), context (C), and multiple options (O) the model must
+    predict the answer (A). The authors compared the baseline with predicting the
+    rationale (R) before the answer (QCM→RA) and the rationale is used for explaining
+    the answer (QCM→AR).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2146d70a184c982d35f2f28141176e52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result is surprising, there is more than a 10 % accuracy decrease if the
+    model predicts the rational first: “*The results imply that the rationales might
+    not necessarily contribute to predicting the right answer.*” In other words, it
+    almost seems that reasoning harms the answer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But why?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To try to understand this, the authors decided to separate the problem into
+    two stages. First, generate the rationale and then use that to answer the question
+    as well. The model succeeds in generating a quality rationale ([RougeL](https://en.wikipedia.org/wiki/ROUGE_(metric))
+    is a metric used for automatic summarization and machine translation) but at the
+    same time, it seems to harm the accuracy inference (the answer to the question).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51cbf7e909c1943b99abc033957ab8db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rationale does not help to improve answer accuracy. So the authors selected
+    50 random error cases and inspected them manually. They saw that the model when
+    generating rational often hallucinated because it lacked reference to the visual
+    content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c06139df299f4b78e12e963813f31e7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This was the most common error, more than 60 percent of the errors were attributable
+    to this factor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3633d5eba9fad4d0720544d6c9f3718.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**So why not provide them with information about what is inside the image?**
+    The authors used a pipeline to generate captions and provide them to the model
+    (append the captions to the input). However, this resulted in an increase in marginal
+    accuracy (0.59 percent, in Table 3).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors then tested another approach, took the image, and used it as input
+    to the [DETR](https://github.com/facebookresearch/detr) model with the aim of
+    extracting vision features. They then combined these vision features with the
+    encoded language representation. In other words, the text is encoded by the LM
+    encoder, the image is encoded by the vision model. These two outputs are combined
+    and become the input to the LM’s decoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result shows (Table 3, above) that it improves not only the generation of
+    the rationale but also the accuracy of the response. In other words, with a better
+    rationale “the phenomenon of hallucination is mitigated.” Vision features are
+    beneficial for better response, but probably this useful information is lost in
+    the process of captioning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having understood why the model hallucinated, what framework can we use for
+    efficient multimodal-CoT?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The authors propose that of incorporating language (the text) and vision (the
+    images) modalities into a two-stage framework: in which the rationale is generated
+    first and the response is generated later.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model architecture is the same for both steps; however, the inputs and outputs
+    change. In the first step, the model is given language and vision inputs to generate
+    rationales. In the second step of the second model, you provide d the original
+    language input which is appended to the rationale generated from the first stage.
+    This is passing by the encoder of the second model, then you add the vision features
+    and use the decoder to get the final answer
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d57433fa30ff894cf4d070962bf2bad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“Overview of our Multimodal-CoT framework. Multimodal-CoT consists of two stages:
+    (i) rationale generation and (ii) answer inference. Both stages share the same
+    model architecture but differ in the input and output. In the first stage, we
+    feed the model with language and vision inputs to generate rationales. In the
+    second stage, we append the original language input with the rationale generated
+    from the first stage. Then, we feed the updated language input with the original
+    vision input to the model to infer the answer.” [(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can a small model be competitive?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/535bf546836d7acf7591f1219306871d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: photo by [Steven Lelham](https://unsplash.com/it/@slelham) on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have seen why small models hallucinate during CoT, how to solve the problem,
+    it remains to be understood whether this approach is competitive compared to larger
+    models and other approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors decided to use the ScienceQA benchmark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ScienceQA is the first large-scale multimodal science question dataset that
+    annotates the answers with detailed lectures and explanations. It contains 21k
+    multimodal multiple choice questions with rich domain diversity across 3 subjects,
+    26 topics, 127 categories, and 379 skills. [(source)](https://arxiv.org/pdf/2302.00923.pdf)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In order to use vision features, they needed a model that uses an encoder-decoder
+    so they chose [T5](https://huggingface.co/docs/transformers/model_doc/t5). In
+    addition, to better study whether the approach generalizes with other models they
+    also chose [FLAN-T5](https://huggingface.co/docs/transformers/model_doc/flan-t5).
+    They also decided to compare it with a number of models and with humans.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result shows that their approach outperforms GPT-3.5 and also outperforms
+    humans (both on average and in the various classes of questions). UnifiedQA and
+    GPT-3.5 use captions, the result shows that vision features are more effective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1929fc5a46b1dfcc2564668c653efea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ablation studies show that using a two-stages approach leverages the best from
+    the vision features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45f9f2d4bfd4427b0d97bd7931d2b47f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, the authors note that multimodality boosts convergence. Practically,
+    the two-stage model achieves higher accuracy from the beginning of training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2ea5f39f79dcf7d6ba95d44b25c8a1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Accuracy curve of the No-CoT baseline and MultimodalCoT variants across epochs.”
+    [(source)](https://arxiv.org/pdf/2302.00923.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors say that the approach is generalizable with different models to
+    extract vision features, they then chose DETR because it gave the best accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb8903811f64cc692608c9018b9d2eb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And the textual model that is chosen is also generalizable. That is, the approach
+    works even with a different LM model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7ae7075d0f2ac3fe50e42b801924860.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors then inspected 50 examples for which the answer was correct and
+    50 for which the answer was incorrect instead, to better understand the mechanism.
+    The result shows that the CoT is not always beneficial for the answer, but the
+    model is robust and in some cases is able to answer correctly even if the rationale
+    is wrong. Moreover, when the answer is incorrect most of the errors are due to
+    commonsense mistakes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2c13be5e6be851b4efd753c8fd8cc4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model in most makes commonsense errors when the question requires commonsense
+    knowledge: for example, understanding a map or counting numbers in the image,
+    or using the alphabet. An example of an error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d0c25aae5e3728a937c8fac70f1ea22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[(source)](https://arxiv.org/pdf/2302.00923.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors state that the results of this one are a cue to modify the model
+    prospectively:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is possible to improve MultimodalCoT by (i) incorporating more informative
+    vision features and improving language-vision interaction to be capable of understanding
+    maps and counting numbers; (ii) injecting commonsense knowledge; (iii) applying
+    a filtering mechanism, e.g., using only the effective CoT to infer the answer
+    and get rid of irrelevant CoT. [(source)](https://arxiv.org/pdf/2302.00923.pdf)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The authors have made the model, both code and dataset available on GitHub
+    for those who want to test it or learn more about it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/amazon-science/mm-cot?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## GitHub - amazon-science/mm-cot: Official implementation for "Multimodal Chain-of-Thought
+    Reasoning…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"Imagine learning a textbook without figures or tables." Multimodal-CoT incorporates
+    vision features in a decoupled…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/amazon-science/mm-cot?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parting thoughts**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The authors in this study formally studied multimodal CoT. They analyzed why
+    a small model hallucinates during CoT and showed that a small model is capable
+    of outperforming large models in multimodal CoT (even outperforming human performance).
+    The key is to be able to best combine textual and visual modalities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is achieved by using a two-stage approach, in the first the visual features
+    are used to create the rationale and then exploit this best rationale to be able
+    to get the answer. The analysis then conducted by the authors gives suggestions
+    on how to get even better models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In short, the results of this paper show that even a small model can solve complex
+    problems. Moreover, providing the right multimodal features is essential for the
+    model. One does not need a large LM with billions of parameters, because captioning
+    works worse than a small model that is aware of vision features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have found this interesting:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You can look for my other articles, you can also [**subscribe**](https://salvatore-raieli.medium.com/subscribe)
+    to get notified when I publish articles, and you can also connect or reach me
+    on[**LinkedIn**](https://www.linkedin.com/in/salvatore-raieli/)**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the link to my GitHub repository, where I am planning to collect code
+    and many resources related to machine learning, artificial intelligence, and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/SalvatoreRa/tutorial?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## GitHub - SalvatoreRa/tutorial: Tutorials on machine learning, artificial intelligence,
+    data science…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tutorials on machine learning, artificial intelligence, data science with math
+    explanation and reusable code (in python…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/SalvatoreRa/tutorial?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'or you may be interested in one of my recent articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pub.towardsai.net/pca-bioinformaticians-favorite-tool-can-be-misleading-fe139262a576?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## PCA: Bioinformatician’s Favorite Tool Can Be Misleading'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A new study assesses how a most used technique can be problematic
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'pub.towardsai.net](https://pub.towardsai.net/pca-bioinformaticians-favorite-tool-can-be-misleading-fe139262a576?source=post_page-----961a8ab9d0fa--------------------------------)
+    [](https://levelup.gitconnected.com/stable-diffusion-and-the-brain-how-ai-can-read-our-minds-45398b395ea9?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## Stable diffusion and the brain: how AI can read our minds'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Researchers were able to reconstruct images using fMRI data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'levelup.gitconnected.com](https://levelup.gitconnected.com/stable-diffusion-and-the-brain-how-ai-can-read-our-minds-45398b395ea9?source=post_page-----961a8ab9d0fa--------------------------------)
+    [](https://levelup.gitconnected.com/microsoft-biogpt-towards-the-chatgpt-of-life-science-56e251536af6?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## Microsoft BioGPT: Towards the ChatGPT of life science?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BioGPT achieves the SOTA in different biomedical NLP tasks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/microsoft-biogpt-towards-the-chatgpt-of-life-science-56e251536af6?source=post_page-----961a8ab9d0fa--------------------------------)
+    [](https://levelup.gitconnected.com/stable-diffusion-to-fill-gaps-in-medical-image-data-b78a2a7d6c9d?source=post_page-----961a8ab9d0fa--------------------------------)
+    [## Stable diffusion to fill gaps in medical image data
+  prefs: []
+  type: TYPE_NORMAL
+- en: A new study shows that stable diffusion could help with medical image analysis
+    and rare diseases. How?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/stable-diffusion-to-fill-gaps-in-medical-image-data-b78a2a7d6c9d?source=post_page-----961a8ab9d0fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

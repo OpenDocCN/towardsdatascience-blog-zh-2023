@@ -1,0 +1,356 @@
+- en: Create a Local dbt Project
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/create-local-dbt-project-e12c31bd3992](https://towardsdatascience.com/create-local-dbt-project-e12c31bd3992)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to create a local dbt project with dummy data for testing purposes with
+    Docker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gmyrianthous.medium.com/?source=post_page-----e12c31bd3992--------------------------------)[![Giorgos
+    Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----e12c31bd3992--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e12c31bd3992--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e12c31bd3992--------------------------------)
+    [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----e12c31bd3992--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e12c31bd3992--------------------------------)
+    ·7 min read·Jan 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/481b848f924c744cbd3a67c44800e6fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Daniel K Cheung](https://unsplash.com/@danielkcheung?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/ZqqlOZyGG7g?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[dbt (data build tool) is one of the hottest technologies in the data engineering
+    and analytics space](/dbt-55b35c974533). Recently, I’ve been working on a task
+    that performs some post-processing over dbt artefacts and wanted to write up some
+    tests. In order to do so, I’ve had to create an example project that could run
+    locally (or in a docker container), so that I wouldn’t have to interact with the
+    actual Data Warehouse.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article we will go through a step-by-step process one can follow in
+    order to create a dbt project and connect it with a containerized Postgres instance.
+    You can use such projects either for testing purposes, or even for experimenting
+    with the dbt itself in order to try out features or even practise your skills.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Subscribe to Data Pipeline**](https://thedatapipeline.substack.com/welcome)**,
+    a newsletter dedicated to Data Engineering**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Create a dbt project'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will be populating some data in a Postgres database therefore, we first
+    need to install the dbt Postgres adapter from PyPI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the command will also install the `dbt-core` package as well as other
+    dependencies that are required for running dbt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s go ahead and create a dbt project — to do so, we can initialise a
+    new dbt project by running the `dbt init` command in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You will then be prompted to select which database you like to use (depending
+    on the adapters you have installed locally, you may see different options):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Make sure to enter the number that corresponds to the Postgres adapter, as
+    shown in the output list. Now the `init` command should have created the following
+    basic structure in the directory where you’ve executed it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77dcaab10f55daf3e04ee716be8e6f9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'dbt project structure created by `dbt init` command — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Create a Docker Compose file'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now let’s create a `docker-compose.yml` file (place the file at the same level
+    as the `test_dbt_project`directory) in which we will be specifying two services
+    — one would correspond to a ready-made Postgres image and the second one to a
+    `dbt` image that we will define in a `Dockerfile` in the next step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can tell, for the Postgres container, we will be using an image called
+    `frantiseks/postgres-sakila` which is publicly available and accessible on Docker
+    Hub. This image, will populate the Sakila Database on the Postgres instance. The
+    database models a DVD rental store and is consisted of multiple tables which are
+    normalised and correspond to entities such as films, actors, customers and payments.
+    In the next few following sections we’ll make use of this data in order to build
+    some example dbt data models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second service, called `dbt`, will be the one that creates an environment
+    where we will build our data models. Note that we mount the current directory
+    into the docker container. This will let the container have access to any changes
+    we may be doing to the data models without having to re-build the image. Additionally,
+    any metadata generated by dbt commands (such as `manifet.json`) will appear instantly
+    on the host machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Create a Dockerfile'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s specify a `Dockerfile` that will be used to build an image on top
+    of which the running container will then build the models specified in our example
+    dbt project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that in the last `CMD` command, we intentionally added an extra `&& sleep
+    infinity` command such that the container won’t exit after running the steps specified
+    in the `Dockerfile` so that we can then access the container and run additional
+    dbt commands (if needed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: Create a dbt profile for the Postgres database'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have created the required infrastructure for our host machines in
+    order to create a Postgres database, populate some dummy data as well as creating
+    an image for our dbt environment, let’s focus on the dbt side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will first have to create a dbt profile that will be used when interacting
+    with the target Postgres database. Within the `test_dbt_project` directory, create
+    another directory called `profiles` and then a file called `profiles.yml` with
+    the following content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 5: Define some data models'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is to create some data models based on the Sakila data populated
+    by the Postgres container. If you are planning to use this project for testing
+    purposes, I would advise to create at least one seed, one model and a snapshot
+    (with tests if possible) so that you have a full coverage of all dbt entities
+    (macros excluding).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have created some data models, seeds and snapshots already, that you can access
+    them on this repository
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/gmyrianthous/dbt-dummy/tree/main/dbt_project?source=post_page-----e12c31bd3992--------------------------------)
+    [## dbt-dummy/dbt_project at main · gmyrianthous/dbt-dummy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/gmyrianthous/dbt-dummy/tree/main/dbt_project?source=post_page-----e12c31bd3992--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 6: Run the Docker containers'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We now have everything we need in order to spin up the two docker containers
+    we specified in the `docker-compose.yml` file earlier, and build the data models
+    defined in our example dbt project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s build the images
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And now let’s spin up the running containers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This command should have initialised a Postgres database using the Sakila Database,
+    and created the dbt models specified. For now, let’s make sure you have two running
+    containers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: should give an output that includes one container with name `dbt` and another
+    one with name `postgres`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 7: Query the models on Postgres database'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to access the Postgres container, you’ll first need to infer the container
+    id
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: And then run
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will then need to use `psql`, a command-line interface that gives us access
+    the postgres instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you have used the data models I’ve shared in the previous sections, you can
+    now query each of the models created on Postgres using the queries below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 8: Creating additional or modifying existing models'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As mentioned already, the `Dockerfile` and `docker-compose.yml` files were written
+    in such a way such that the dbt container would still be up and running. Therefore,
+    whenever you modify or create data models, you can still use that container to
+    re-build seeds, models, snapshots and/or tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do so, first infer the container id of the `dbt` container:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then enter the running container by running
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And finally run any dbt command you wish, depending on the modifications you’ve
+    made to the example dbt project. Here’s a quick reference of the most commonly
+    used commands for these purposes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to get the full code of this tutorial
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I’ve created a GitHub repository called `dbt-dummy` that contains all the pieces
+    you need in order to quickly create a containerized dbt project that uses Postgres.
+    You can access it in the link below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/gmyrianthous/dbt-dummy?source=post_page-----e12c31bd3992--------------------------------)
+    [## GitHub - gmyrianthous/dbt-dummy: This is a dummy dbt (data build tool) project
+    you can use for…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a dummy dbt (data build tool) project you can use to populate dbt seeds,
+    models, snapshots and tests for…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/gmyrianthous/dbt-dummy?source=post_page-----e12c31bd3992--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This project is also available in the [example projects section of the official
+    dbt documentation](https://docs.getdbt.com/faqs/project/example-projects)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In today’s tutorial we went through a step by step process for creating a dbt
+    project on a local machine using Docker. We’ve built two images, one for the Postgres
+    database that also populates the Sakila database, and another one for our dbt
+    environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to be able to quickly build some example projects with data build
+    tool that can then be used as a testing environment or even a playground for experimenting
+    and learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Subscribe to Data Pipeline**](https://thedatapipeline.substack.com/welcome)**,
+    a newsletter dedicated to Data Engineering**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Related articles you may also like**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/dbt-models-structure-c31c8977b5fc?source=post_page-----e12c31bd3992--------------------------------)
+    [## How to Structure Your dbt Projects and Data Models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enforcing meaningful structure to dbt data models
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/dbt-models-structure-c31c8977b5fc?source=post_page-----e12c31bd3992--------------------------------)
+    [](/staging-intermediate-mart-models-dbt-2a759ecc1db1?source=post_page-----e12c31bd3992--------------------------------)
+    [## Staging vs Intermediate vs Mart Models in dbt
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the purpose of staging, intermediate and mart models in the context
+    of data build tool (dbt)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/staging-intermediate-mart-models-dbt-2a759ecc1db1?source=post_page-----e12c31bd3992--------------------------------)
+    [](/install-dbt-1bd6a4259a14?source=post_page-----e12c31bd3992--------------------------------)
+    [## How to Install dbt (data build tool)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing data build tool for your specific data warehouse
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/install-dbt-1bd6a4259a14?source=post_page-----e12c31bd3992--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

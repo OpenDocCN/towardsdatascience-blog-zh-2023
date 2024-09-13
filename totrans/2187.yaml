@@ -1,0 +1,628 @@
+- en: Understanding Instrumental Variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/understanding-instrumental-variables-0ce5d3d6ba20](https://towardsdatascience.com/understanding-instrumental-variables-0ce5d3d6ba20)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[CAUSAL DATA SCIENCE](https://towardsdatascience.com/tagged/causal-data-science)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*How to estimate causal effects when you cannot randomize treatment*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)[![Matteo
+    Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------)
+    [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----0ce5d3d6ba20--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0ce5d3d6ba20--------------------------------)
+    ·12 min read·Nov 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9caba9cc613fed76bb306ba2e72466d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cover, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A/B tests are the golden standard of causal inference because they allow us
+    to make valid causal statements under minimal assumptions, thanks to **randomization**.
+    In fact, by randomly assigning a **treatment** (a drug, ad, product, …), we are
+    able to compare the **outcome** of interest (a disease, firm revenue, customer
+    satisfaction, …) across **subjects** (patients, users, customers, …) and attribute
+    the average difference in outcomes to the causal effect of the treatment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in many settings, it is **not possible to randomize** the treatment,
+    for either ethical, legal, or practical reasons. One common online setting is
+    on-demand features, such as subscriptions or premium memberships. Other settings
+    include features for which we cannot discriminate customers, like insurance contracts,
+    or features that are so deeply hard-coded that an experiment might not be worth
+    the effort. Can we still do valid causal inference in those settings?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer is yes, thanks to **instrumental variables** and the corresponding
+    experimental design called **encouragement design**. In many of the settings mentioned
+    above, we cannot randomly *assign* treatment, but we can *encourage* customers
+    to take it. For example, we can offer a subscription discount or we can change
+    the order in which options are presented. While customers retain the ultimate
+    word on taking the treatment, we are still able to estimate a causal treatment
+    effect. Let’s see how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating Subscription Programs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the rest of the article, we are going to use a toy example. Suppose we were
+    a product company starting a weekly **newsletter** to promote product and feature
+    updates. We would like to understand whether the newsletter is worth the effort
+    and whether it is ultimately successful in increasing **sales**. Unfortunately,
+    we cannot run a standard A/B test since we cannot force customers to **subscribe**
+    to the newsletter. Does it mean we cannot evaluate the newsletter? Not exactly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume we have also run an A/B test on a new **notification** on our mobile
+    app that promotes the newsletter. A random sample of our customers has received
+    the notification, while a random sample has not. Perhaps this A/B test was not
+    related to the evaluation of the causal effect of the **newsletter** at all, as
+    it sometimes happens in large companies. However, this is a great opportunity
+    for a data scientist interested in understanding the impact of the newsletter
+    on **sales**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s first have a look at the data. I import the data-generating process from
+    [src.dgp](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py)
+    and some plotting utilities from [src.utils](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3b39d0b9b730ab4c6c6b8c010055b58a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data snapshot, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have information on *10,000* customers, for whom we observe whether or not
+    they received the `notification`, whether they `subscribed` to the newsletter,
+    and how much they `spent`. Moreover, we also observe how much they spent before
+    the introduction of the subscription program (`spent_old`). For the rest of the
+    article, we will label these variables as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`notification`, the **treatment assignment**, *Z*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`subscription`, the **treatment status**, *W*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`spend_old`, a **feature** or control variable, *X*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`spend`, the **outcome**, *Y*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A **naive approach** would be to compare the difference in `spend` between customers
+    that `subscribed` and those who didn't. The corresponding causal object or *estimand*
+    is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8882007f3d588ef1c6025a86b990ab8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Effect of subscription on spend, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize the average `spend` for the two groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/87f98297db0a7ee15d89ceccefc4a77e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spend difference between subscribers and non-subscribers, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subscribers spend on average *11.5$* more than non-subscribers. But is it a
+    **causal** effect?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can imagine that customers who are more active and more interested in our
+    product will also be more interested in hearing news about it. For example, we
+    can imagine that customers who have more **budget** to spend will also want to
+    spend it better and subscribe to the newsletter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can represent the relationship between the variables in the following Directed
+    Acyclic Graph (DAG). If you never heard of DAGs, I recommend reading my [introductory
+    article](/b63dc69e3d8c) first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/controls-b63dc69e3d8c?source=post_page-----0ce5d3d6ba20--------------------------------)
+    [## DAGs and Control Variables'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edit description
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/controls-b63dc69e3d8c?source=post_page-----0ce5d3d6ba20--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the plot, we represent variables with circles and causal relationships with
+    arrows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f822b1f2ae8bfcfef35a526f0eaef3d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DAG data-generating process, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Technically speaking, customer’s **budget** is an unobservable confounder that
+    opens a spurious path between our treatment, the `subscription`, and the outcome,
+    customers' `spend`. Because of this, we cannot interpret the difference-in-means
+    estimate of *11.5$* as causal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encouragement Design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Unfortunately, we cannot run an A/B test because we cannot force people to subscribe
+    to the newsletter. However, we can *encourage* people to subscribe. For example,
+    we can send them a mobile **notification** to advertise the newsletter. This setting
+    is called an **encouragement design** since we do not randomize the treatment,
+    but the encouragement. The encouragement, the `notification` in our setting, is
+    also called **instrumental variable**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to stress that, while being randomly assigned, the encouragement
+    does *not* correspond with the treatment of interest. In fact, some people will
+    *not* subscribe despite receiving the notification, and some people will subscribe
+    despite *not* receiving the notification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e85a9af44e957585d113dfcfd5dc15ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Treatment assignment and treatment status, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After adding the encouragement, the `notification`, the data-generating process
+    can be represented with the following DAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/915f3abc0b17caafd39cb041abc62634.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DAG data-generating process, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that now we have closed the open path between `subscription` and `spend`.
+    Therefore, we can estimate the causal effect of the subscription on the probability
+    of making a sale. Let's see how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we would like to understand whether the `notification` is effective or
+    not. This is often referred to as the **strength** of the instrument. Thanks to
+    randomization, we can attribute the average difference in `spend` between people
+    who received the `notification` and people who did not, to the treatment itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1e0310144d735bca58900b40f70cba2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Effect of notification on spend, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize the corresponding difference-in-means estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a1fa7c89e05832b2ca528e471a9b5f02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spend difference with and without the notification, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It seems that customers who received the `notification` spend on average *1$*
+    more than customers who didn't receive it. This is a sensibly lower number than
+    the *11.5$* we estimated before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the effect of the `notification` on `spend` is not what we are interested
+    in. We would rather know the effect of the `subscription` on `spend`. In fact,
+    not all customers who receive the email subscribe to the newsletter. And vice-versa,
+    some people subscribe to the newsletter even without the notification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that the effect that we have just computed is **diluted** by the
+    fact that some people do not comply with our incentive, the `notification`. We
+    have to attribute it *only* to the customers who changed their minds because of
+    the newsletter. How many are these customers?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s compute the probability of `subscription`, by treatment group.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbf16d619002efd206f4f9d55a93d3b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Effect of notification on subscription probability, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f3d284eb81b0eee9a4b8d8fe562ebf28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Subscription probability with and without the notification, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Customers that received the `notification` have a *17%* higher `subscription`
+    probability. In other words, it seems that the `notification` is able to make
+    *17%* of our customers change their minds. From the control group, we learned
+    that *28%* of them would have subscribed anyway, while we were unable to convince
+    the remaining *55%*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have all the ingredients we need for our main analysis
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instrumental Variables (IV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this case, with a binary instrument, the `notification`, a binary treatment,
+    the `subscription` decision, and a 50-50 treatment assignment probability, we
+    can get a very simple **intuition** of how instrumental variables work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have four groups of customers, depending on whether they received the notification
+    or not, and whether they subscribed or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0a6ea808dc6c5470f3852eb45103363d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spend and number of customers by segment, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize the total spend and the total number of customers within each
+    bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce6ce1cc64d907eac5c50286942f41bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spend and number of customers by segment, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing treatment (`notification`) and control group, we see that the notification
+    has generated an increase in `spend` of *5k€* (*43 + 20 - 28 - 30*). In order
+    to recover the causal effect of interest, we just need to attribute the *5k€*
+    incremental `spend` to the *800* (*2200 - 1400*) customers that decided to `subscribe`
+    because of the `notification`. The result is exactly *5k€ / 800 = 6€* per customer!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fbc304cd1290335b37f1e52e3f9ef4eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spend and number of customers by segment, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More generally, the IV estimand is given by the **ratio of two causal effects**:
+    the effect of the instrument (or encouragement, or assignment) *Z*, on the outcome
+    *Y*, over the effect of the instrument *Z* on the treatment (or endogenous variable)
+    *W*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0dff9c46e31335614585511a727e5c17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instrumental variable estimator, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To compute the IV estimate we replace the expected values with the empirical
+    averages. In practice, in our case, we just divide the two difference-in-means
+    estimates we computed in the plots in the previous section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our instrumental variable estimate of the effect of the `subscription` program
+    on `spend` is *6$*, as anticipated in the illustrations above! Note that the math
+    in the illustration works *only* in the special case of an exact 50-50 assignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More generally, it can be shown that the formula of the IV estimator is given
+    by a ratio of covariances,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9a11b905e4a2cdcf206533c6057b23c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: IV estimator as ratio of covariances, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: or, in matrix notation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b170149643db64825cdab10bbbfe5fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: IV estimator in matrix notation, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: IV Extensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What would happen if we had more instruments or other control variables? For
+    example, we could have run other experiments to encourage customers to `subscribe`.
+    Or, as in our case, we could have other variables that we can add to the model
+    in order to increase prediction accuracy, such as previous spend levels, `spend_old`.
+    How do we include them in the model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The long-story-short is that when we have multiple instruments, the instrumental
+    variable formula can be rewritten as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3094eff0394ce1f00e82100acb60b21d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two Stage Least Squares estimator, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *Ŵ* is the projection of *W* onto *Z*, i.e. in practice the predicted
+    treatment status, given the treatment assignment. This prediction step is called
+    the **first stage**. This formula should remind you of the OLS estimator formula.
+    Indeed, this is equivalent to a linear regression of our outcome *Y* on the predicted
+    treatment *W*, given the assignment *Z*. This step is called the **second stage**.
+    Overall, since the estimation procedure can be split into two separate stages,
+    this is referred to as the **Two-Stage Least Squares (2SLS) Estimator**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two-stage formulation is particularly evident in the implementation of most
+    IV packages, where we express the treatment as the result of a regression on the
+    instrument. In the `[IV2SLS](https://bashtage.github.io/linearmodels/iv/iv/linearmodels.iv.model.IV2SLS.html)`
+    package this is done by using square brackets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4181238d9c17e68fa7fb91c9d9c13c00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: IV estimates, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can verify that this is algebraically equivalent to first regressing `subscription`
+    on `notification` and then regressing `spend` on the predicted `subscription`
+    probability. Below we run the two regressions and report the estimates from the
+    second stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/09996b31dbe5c970f38959f648b899f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2SLS estimates, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The coefficients are indeed identical!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, the two-stage formulation above should also make the inclusion of additional
+    **covariates** quite intuitive. We just add the covariates to both stages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/35da75c1b352a4e879d06291bf4b2949.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2SLS estimates, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can again verify that the estimated coefficients are identical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/183282a1aa626a2d9bc2960b53fb3056.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2SLS estimates, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Including previous spend levels in the regression has indeed decreased the standard
+    errors from *0.5* to *0.1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Limits of IV
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main limit of instrumental variables in an experimental setting, as analyzed
+    in this article, is that they estimate a very “special” causal effect. As we have
+    seen in the previous section, we have to re-scale the total effect by the number
+    of customers who decided to `subscribe` *because of* the `newsletter`. This means
+    that we can estimate the effect only for those customers who *complied* with our
+    intervention. This set of customers is usually called **compliers** and the corresponding
+    causal effect is called the **Local Average Treatment Effect (LATE)** or **Compliers
+    Average Causal Effect (CACE)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are unfortunately unable to say anything about customers who subscribed to
+    the `newsletter` even without the `notification`, called the **always-takers**,
+    and those that we couldn't convince with the `notification`, the **never-takers**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another limit of IV concerns its **assumptions**. In the last paragraph, we
+    talked about three groups of customers, the compliers (our favorite one), always-takers,
+    and never-takers. You might have noticed that this characterization implies the
+    existence of a fourth group: the **defiers**. Those are the customers that would
+    have `subscribed` to the newsletter if we had not received the `notification`.
+    However, because of the notification, they changed their mind, *defying* the intent
+    of the instrument.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d790a0bb8228934c1f0284c41211662.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Groups by treatment assignment and treatment status, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to be able to draw causal conclusions, we have to assume that there
+    are **no defiers** in the experiment, otherwise our re-scaling would be wrong
+    and our estimates biased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another crucial assumption lurking in the background is what is usually called
+    the **exclusion restriction**. This assumption states that the instrument, the
+    `notification`, only affects the outcome, `spend`, through the treatment, the
+    `subscription`. A potential violation in our setting could be if the notification
+    was *waking up* sleeping users. Imagine a customer who wanted to make a sale and
+    already added items to the basket, but forgot to checkout. The subscription notification
+    might remind the users to checkout and therefore directly impact `spend`. As you
+    can imagine, the IV estimate would be biased because we are wrongly attributing
+    some sales to the `subscription`, while they were a *direct* effect of the `notification`
+    itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have introduced **instrumental variables** in an experimental
+    setting. When we cannot randomize the treatment because of ethical, legal, or
+    technical constraints, we might still consider randomizing an **incentive** to
+    take up the treatment. This allows us to make causal statements, but only for
+    a subset of the overall population, the **compliers**, i.e. the customers that
+    comply with our incentive and take up the treatment *because of* the incentive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to note that instrumental variables can be also used in **observational
+    settings**. However, in that case, the **exclusion restriction** assumption that
+    we mentioned in the previous section becomes harder to justify. In fact, we need
+    a setting in which our instrument does not affect the outcome through *any other*
+    channel besides the treatment. Technically, the exclusion restriction assumption
+    is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc648c7a6f632de7f29a0bf1e315aa06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Exclusion restriction, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This assumption is harder to justify when we do not control the design of the
+    encouragement assignment. However, if satisfied, it opens the door to causal inference
+    in completely new settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spotify (2023), [Encouragement Designs and Instrumental Variables for A/B Testing](https://engineering.atspotify.com/2023/08/encouragement-designs-and-instrumental-variables-for-a-b-testing/)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Goldsmith-Pinkham (2021), [Instrumental Variables](https://www.youtube.com/watch?v=LEAx0He_KBI)
+    video lecture
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ding (2023), [A First Course in Causal Inference](https://arxiv.org/abs/2305.18793)
+    notes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Related Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[DAGs and Control Variables](/b63dc69e3d8c)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Understanding Omitted Variable Bias](/344ac1477699)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Understanding The Frisch-Waugh-Lovell Theorem](/59f801eb3299)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can find the original Jupyter Notebook here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb?source=post_page-----0ce5d3d6ba20--------------------------------)
+    [## Blog-Posts/notebooks/instrumental_variables.ipynb at main · matteocourthoud/Blog-Posts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code and notebooks for my Medium blog posts. Contribute to matteocourthoud/Blog-Posts
+    development by creating an…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb?source=post_page-----0ce5d3d6ba20--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*I really appreciate it!* 🤗 *If you liked the post and want to see more, consider*
+    [***following me***](https://medium.com/@matteo.courthoud)*. I post once a week
+    on topics related to causal inference and data analysis. I try to keep my posts
+    simple but precise, always providing code, examples, and simulations.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Also, a small* ***disclaimer****: I write to learn, so mistakes are the norm,
+    even though I try my best. Please, when you spot them, let me know. I also appreciate
+    suggestions on new topics!*'
+  prefs: []
+  type: TYPE_NORMAL

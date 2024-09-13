@@ -1,0 +1,429 @@
+- en: 'Unraveling the Design Pattern of Physics-Informed Neural Networks: Part 07'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a](https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Active learning for efficiently training parametric PINN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----4ecb543b616a--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----4ecb543b616a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4ecb543b616a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4ecb543b616a--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----4ecb543b616a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4ecb543b616a--------------------------------)
+    ·8 min read·Jul 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/65bd5d8fceb65306815ee058fe60f42d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Scott Graham](https://unsplash.com/@homajob?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to the 7th blog post of this series, where we continue our exciting
+    journey of exploring ***design patterns*** of physics-informed neural networks
+    (PINN)🙌
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this blog, we will take a closer look at a paper that introduces **active
+    learning** to PINN. As usual, we will examine the paper through the lens of design
+    pattern: we will start with the target problem, followed by introducing the proposed
+    method. After that, we will discuss the evaluation procedure and the advantages/disadvantages
+    of the proposed method. Finally, we will conclude the blog by exploring future
+    opportunities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As this series continues to expand, the collection of PINN design patterns
+    grows even richer! Here’s a sneak peek at what awaits you:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 02: Dynamic solution interval expansion](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: Training PINN with gradient boosting](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 04: Gradient-enhanced PINN learning](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: Automated hyperparameter tuning](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 06: Causal PINN training](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Paper at a glance 🔍
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Title**: Active training of physics-informed neural networks to aggregate
+    and interpolate parametric solutions to the Navier-Stokes equations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Authors**: C. A., Arthurs, A. P. King'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Institutes**: King’s College London'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Link**: [Journal of Computational Physics](https://www.sciencedirect.com/science/article/pii/S002199912100259X)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Design pattern 🎨
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2.1 Problem 🎯
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the prime uses of PINNs is to ***surrogate*** high-fidelity, time-consuming
+    numerical simulations (e.g., FEM simulations for structural dynamics). Thanks
+    to the strong regularizations enforced by the known governing differential equations
+    (represented as an extra loss term), PINNs’ training typically only requires minimal
+    data gathered from just a handful of simulation runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, this ideal scenario is limited to cases where the problem under investigation
+    does not involve variable parameters. In practical applications, we frequently
+    need to infer solutions for different domain geometries, model parameters (e.g.,
+    material properties), and initial and/or boundary conditions. We certainly don’t
+    want to retrain a new PINN for each distinct scenario, as that would be highly
+    inefficient and computationally costly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One strategy to address this challenge is to upgrade the vanilla PINNs to **parametric
+    PINNs**: in essence, the variable parameters are treated as additional inputs
+    to the PINN, as depicted in the figure below. Once trained, we can use parametric
+    PINN to make instant predictions for any given conditions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1049373831d730dae37e7ab666a1755d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Compared to the vanilla PINN, which only accepts spatial/temporal
+    coordinates, parametric PINN also takes the variable parameters as inputs. (Image
+    by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As expected, however, more inputs calls for more training data. Since generating
+    new training data implies running time-consuming simulations, a crucial question
+    arises: how can we minimize the simulation runs (thus being more data-efficient)
+    for PINN training, while reaching the desired prediction accuracy?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Solution 💡
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The key to answering this question lies in the strategic selection of points
+    in the parameter space (i.e., **θ** space) to run the simulations, and the solution
+    brought forth by the paper is **active learning**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bcf8135bb99db1d52235180d1849411.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Active learning workflow. For PINN training, the “Label” step corresponds
+    to running the numerical simulation at the selected sample locations in the parameter
+    space. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specific to the applications in addressing parametric PDEs, the proposed workflow
+    can be illustrated in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d34a29f4b245d6aef670b5543d36d42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Illustration of the active learning pipeline proposed in the paper.
+    Here, *θ*₁ and *θ*₂ denote variable parameters (in practice there can be many
+    more such variable parameters), and u represents the physical quantity or quantities
+    we are trying to simulate (e.g., in a fluid simulation, u can be velocity, pressure,
+    etc.) (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The proposed active learning pipeline starts with randomly sampling the parameter
+    space (in the illustration, *θ*₁ and *θ*₂ are the variable parameters) and running
+    numerical simulations to gather the training data (i.e., *u*, the physical quantity
+    being modeled, at various spatial/temporal locations).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we proceed with the usual PINN training, where the neural network predictions
+    are required to not only match the collected simulation results *u* but also satisfy
+    the governing differential equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the training has converged, we would obtain a PINN model that can accurately
+    predict *u* within the simulation spatial/temporal domain, for *θ*₁-*θ*₂ values
+    included in the training dataset. However, up till now, there is no guarantee
+    that for unseen *θ*₁-*θ*₂ value combinations, the PINN can also deliver accurate
+    predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s why we kick off the active learning process. Our goal is to select the
+    next *θ*₁-*θ*₂ sample to run the simulation. **Ideally, we want this new *θ*₁-*θ*₂
+    sample to be the most informative and once its associated simulation results are
+    appended to the training data, it can bring the most improvement in PINN’s accuracy.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So how should we select the new *θ*₁-*θ*₂ sample? The paper proposed a simple
+    criterion: it first uses the currently trained PINN to predict *u* for all candidate
+    *θ*₁-*θ*₂ samples in the parameter space (those candidate samples can be pre-generated
+    in large quantities to evenly fill the space), then it calculates the corresponding
+    PDE residuals for different candidate *θ*₁-*θ*₂ samples. Finally, **the next *θ*₁-*θ*₂
+    sample is chosen as the sample with the highest PDE residuals.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, the paper proposed to use *PDE residuals* as the indicator for
+    PINN prediction accuracy. Since the currently trained PINN has the most difficulty
+    in accurately predicting *u* (that fulfills the known differential equation)at
+    the selected *θ*₁-*θ*₂ location, it makes sense to then run the time-consuming
+    simulation at the selected *θ*₁-*θ*₂ location and append the original training
+    data with the simulated results. Once the training data is enriched, we start
+    another round of PINN training, thus completing an iteration of active learning.
+    The entire process terminates when the calculated maximum PDE residuals drop below
+    a pre-defined threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 Why the solution might work 🛠️
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Active learning is a well-established technique for reducing model training
+    costs. It is effective because it identifies the regions in the parameter space
+    where the current PINN’s predictions are less satisfactory, and later chooses
+    which points to simulate next accordingly such that the model improvement can
+    be maximized. This way, active learning can drastically improve data efficiency
+    while ensuring the desired prediction accuracy can be reached.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Benchmark ⏱️
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Unlike other PINN papers, the current paper solely focused on solving parametric
+    steady, incompressible Navier-Stokes equations in a continuous set of 2D tubular
+    domains:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12461ce9bd9f065de5590aa598adc368.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two variable parameters are considered, including a flow boundary condition,
+    i.e., the inflow rate, as well as a domain shape parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper demonstrated that the PINN trained with the proposed active learning
+    strategy can accurately and efficiently predict the flow field for any given values
+    of inflow rate and domain shape within their considered variational ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper also demonstrated that using the proposed active learning strategy
+    requires much fewer simulation runs compared to random or uniform data selection
+    within the considered parameter space, while achieving a far smaller error in
+    flow field prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, the paper showcased one practical usage of the trained parametric
+    PINN: parameter sweeping. More specifically, the trained PINN can be used to search
+    the parameter space and identify the values of the two parameters when the resulting
+    flow field satisfies the given conditions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.5 Strengths and Weaknesses ⚡
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Strengths** 💪'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dramatically reduce the simulation data needed to train a *parametric* PINN
+    model with desired prediction accuracy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The trained PINN model can provide extremely fast approximations to PDE solutions
+    across a region of parameter space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The trained PINN is highly flexible, as it can be adapted to a different parameter
+    space without the need for comprehensive retraining. This is possible because
+    active learning allows the model to be easily updated as new rounds of simulations
+    are performed in the extended parameter space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: No need to store a large number of simulation results, as the trained parametric
+    PINN can generate the flow field results on demand. Since a typical neural network
+    only consumes a small amount of storage space, the potential data compression
+    is significant.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Weaknesses** 📉'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The effectiveness of the proposed active training pipeline may be dependent
+    on the initial data. If the initial data set does not adequately represent the
+    underlying behavior of the system, the model may struggle to identify areas of
+    potential improvement, thus leading to a suboptimal selection of the following
+    simulations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additionally, the proposed approach uses the PDE residuals as the indication
+    for the model prediction accuracy. However, for cases when the model prediction
+    accuracy does not correlate well with the PDE residuals, the effectiveness of
+    the proposed approach will likely be discounted.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Currently, the paper only considered two variable parameters. However, active
+    learning may become computationally expensive as the dimensionality of the problem
+    increases. Therefore, the scalability of the proposed approach remains to be investigated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.6 Alternatives 🔀
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Alternative to using an active learning scheme, the samples (which are used
+    to run simulations to generate training data) can also be generated by adopting
+    quasi-random sampling methods. Popular quasi-random sampling methods include Latin
+    hypercube sampling (LHS), Sobol sequences, and Halton sequences. Compared to a
+    simple random sampling scheme, the quasi-random sampling approaches have better
+    *space-filling* properties, meaning that fewer samples are required to evenly
+    cover the investigated parameter space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, compared to the active learning approach proposed in the paper, the
+    quasi-random sampling schemes would require the user to specify a sample number
+    upfront, therefore they are less flexible in terms of enriching the training dataset
+    when new simulation data is available. Nevertheless, active learning would introduce
+    extra computational costs due to the necessity of estimating the model’s performance
+    and determining the most informative points for performing the next simulation
+    run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 Potential Future Improvements 🌟
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are several possibilities to further improve the proposed strategy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leveraging more sophisticated active learning algorithms to automate the selection
+    of training data points. This may further improve the accuracy of the predictions
+    and reduce the amount of time needed for training.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Developing strategies to allow sampling of multiple data points in each active
+    learning iteration. As the corresponding simulations can be run in parallel, the
+    overall training efficiency can be greatly improved.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Integrating other proven best practices of training PINN (collocation point
+    sampling, casual training, ensemble learning, etc.) with the proposed active learning
+    scheme to further improve the model performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 Takeaways 📝
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog post, we looked at how to perform data-efficient, parametric PINN
+    training with active learning. Here are the highlights of the design pattern proposed
+    in the paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Problem]: How to train parametric PINNs with as few data samples as possible.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Solution]: **Training PINN with active learning**, where data are collected
+    adaptively to maximize the improvement in PINN’s prediction accuracy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Potential benefits]: 1\. Significantly reduced the training cost of parametric
+    PINNs. 2\. Trained parametric PINN provides fast approximations to PDE solutions
+    across a region of parameter space.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the PINN design card to summarize the takeaways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8c75b852264307afc8ab527e969f81a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN design pattern proposed in the paper. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference 📑
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Arthurs et al., Active training of physics-informed neural networks to
+    aggregate and interpolate parametric solutions to the Navier-Stokes equations,
+    [Journal of Computational Physics](https://www.sciencedirect.com/science/article/pii/S002199912100259X),
+    2021.'
+  prefs: []
+  type: TYPE_NORMAL

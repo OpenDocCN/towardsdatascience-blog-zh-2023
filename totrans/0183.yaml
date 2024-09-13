@@ -1,0 +1,356 @@
+- en: A Data Scientist Friendly Variogram Tutorial for Quantifying Spatial Continuity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-data-scientist-friendly-variogram-tutorial-for-quantifying-spatial-continuity-1d2f29dcfb51](https://towardsdatascience.com/a-data-scientist-friendly-variogram-tutorial-for-quantifying-spatial-continuity-1d2f29dcfb51)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Applied on a Synthetic Mining Dataset using open source GSLib and Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://fouadfaraj.medium.com/?source=post_page-----1d2f29dcfb51--------------------------------)[![Fouad
+    Faraj](../Images/680780ed3ff3a1103abbdb5abc65a503.png)](https://fouadfaraj.medium.com/?source=post_page-----1d2f29dcfb51--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1d2f29dcfb51--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1d2f29dcfb51--------------------------------)
+    [Fouad Faraj](https://fouadfaraj.medium.com/?source=post_page-----1d2f29dcfb51--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1d2f29dcfb51--------------------------------)
+    ·7 min read·Aug 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04289e391ed2f5914b22f2a145b395c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Sebastian Pichler](https://unsplash.com/@pichler_sebastian?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Variograms are used to demonstrate the distance-based variability of spatial
+    data. Understanding and modeling spatial continuity with variograms is important
+    as they are used to estimate point measurements into practical blocks across a
+    wide range of applications such as mining ore grades, oil concentrations, or the
+    environmental contaminants.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite open-source options being available to generate variograms, due to their
+    complexity, most users rely on expensive software packages which abstract a lot
+    of the details. This tutorial aims to give a brief introduction to variograms
+    and how the open source Geostatistics Library (GSLib) which can be used independently
+    or with Python to develop variograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here a variogram model is developed on a synthetic mining dataset but the workflow
+    could be used for any kind of spatial data for meteorological applications like
+    temperature, or environmental applications like contaminant tracking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tutorial Requirements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ll need GSLib which is available [here](http://gslib.com/main_gd.html) for
+    free download and some of the most basic, commonly used Python libraries which
+    are also in the complete code uploaded to [github](https://github.com/13ff6/Variogram):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Variogram Basics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The general idea of variograms are that data points further away from each other
+    are more likely to be more distinct than data points close to one another. The
+    variance of data points further and further apart eventually reaches a point where
+    it is equal to the global variance of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with a spatial dataset and can generalize the variogram modeling workflow
+    into a few steps as shown below. First we need to determine adequate search parameters
+    for the variogram. Then identify the major and minor continuity axis. Finally
+    the variograms can be then modeled and subsequently used for estimation or simulation
+    purposes. Each of the steps will be further explained in the following sections
+    and applied on a dataset in the tutorial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7704bc472aa5bdb7e8ea1b9aa9a35a47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generalized workflow for developing variogram models to a spatial dataset. Image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Variogram Modeling Parameters: Nugget, Range, and Sill'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Variograms models are made up of three components which describe different
+    attributes about the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nugget**: Y intercept of a variogram model indicating the immediate variability
+    at near zero distance or randomness at a single point'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Range**: Distance after which the variogram plateaus indicating points at
+    that distance are no longer spatially correlated'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Sill**: Variance of the modeled data, once the variance of points a certain
+    distance apart meet it, there is no longer spatial correlation'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The variogram schematic below illustrates each of the model parameters. Before
+    reaching the range the data is considered to be spatially correlated. Variograms
+    with longer ranges are more spatially continuous than those with shorter ranges.
+    High nugget variograms indicate a high variability at near zero distances and
+    are typical of more variable, discontinuous datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c99fb4d5841253364862523ac7df0f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic illustrating a variogram model fit to a set of experimental data highlighting
+    the relevant variogram modeling parameters. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variogram Development
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To generate experimental variogram data we need to define pairs. These pairs
+    are composed of a head and tail a specified distance apart. We increase the distance
+    to test the average difference in the pairs and understand how it varies as a
+    function of distance. If we are working with 2D data, a few different search parameters
+    are standards in variogram modeling and illustrated below. The search parameters
+    come with tolerances as it is highly unlikely we’ll find a match at exactly 2.0000
+    m a certain direction away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f3ad9fd8e423098fe4caf7a88642029.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic illustrating the 2D variogram search parameters. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After defining the parameters, the search is iteratively applied on all points
+    to develop the experimental variogram data at each lag as shown below for one
+    point. The average variogram is calculated at each lag and eventually reaches
+    the sill or variance of the global data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e118061e95b29ee54838b27258882a37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic showing all the n lags from a single point when generating the experimental
+    variogram data. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The calculation done at each lag is simply half the difference squared of all
+    pairs as illustrated below. This variogram value is plotted against the lag to
+    develop the variogram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e79a51a350480c559fe2eb795ce1161.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Annotated variogram equation. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Developing Experimental Variogram Data with GSLib’s gamv
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now to actually calculate the experimental variogram data with GSLib’s gamv
+    we will first need to define the search parameters. Below is the search parameter
+    schematic next to an annotated screenshot indicating the corresponding GSLib gamv
+    parameter file input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f6a17f989eeab09ee9b066c282a47dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic illustrating the 2D variogram search parameters next to GSLib parameter
+    file screenshot. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After setting the parameters, make sure your spatial data is in the right .dat
+    format for GSLib like shown below for our spatial copper grade data example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/007d5ce025e5a4c40fb52f168755b6fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Annotated notepad screenshot of the data format for GSLib gamv. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now to run the GSLib code you can use the command window, navigate to the working
+    directory, and exectute gamv as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a5066b944d6a2cdf6c94d13b62698d4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Annotated screenshot of the input lines to run GSLib gamv and typical return
+    feedback. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output variogram will be saved to gamv.out with the data sorted as shown
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/25a049fa10894234855eb801efb30e8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Annotated screenshot of the GSLib gamv output indicating what each column is.
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After that you can analyze the output any way you’d like, we will use Python
+    in this tutorial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Application on a Synthetic Mining Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The synthetic blasthole dataset we are using is modeled after a real Cu mine.
+    The blasthole data is scattered ~7x7 m in 2D with easting and north measured in
+    meters and each point has a measured copper grade associated with it measured
+    in weight percent (wt%). All the code and data used in this tutorial is available
+    on github. A map showing the copper grades and how they’re scattered in space
+    can be seen below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bfdb2ff7c4c126766b7d3e24e11487b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map view of the copper grade dataset. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following GSLib variogram search parameters below are adequate for ~7x7
+    m spatial data and we’ll use them to generate our variograms. [Here](https://geostatisticslessons.com/lessons/variogramparameters)
+    is a great source for determining adequate search parameters depending on the
+    spatial data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lag separation distance: 7 m, this is roughly the data spacing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Lag tolerance: 3.5 m, rule of thumb is to make the lag tolerance half the spacing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Number of lags: 30, Most the area is covered in 30*7m (210 m)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Azimuth tolerance: 22.5 degrees, could be slightly smaller say 15 degrees butwe
+    want to make sure we can get a good number of pairs'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Bandwidth: 10 m, could be slightly smaller say 7.5 m but we want to make sure
+    we can get a good number of pairs'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Variogram type: Semivariogram'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Identifying the Principal Directions of Minimum and Maximum Discontinuity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we are working in 2D, we’ll need to identify the two orthogonal directions
+    of high and low continuity often referred to as the major and minor axis respectively.
+    There are various ways to determine the principal directions, the most basic way
+    presented here is to generate multiple variogram pairs at equal intervals and
+    find the two which encompass the highest and lowest spatial continuity. Other
+    useful methods include generating variogram maps which visualize the spatial continuity,
+    GSLib offers packages for variogram maps and there is a guide to use them [here](http://www.gslib.com/gslib_help/varmap.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we see variogram pairs developed at 15 degree intervals, it is clear to
+    see that the variograms with azimuth of 000° and 090° have the highest and lowest
+    continuity respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e13d9a90db430246a17f3c912c2234b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Experimental variogram data for six orthogonal pairs highlighting the high and
+    low continuity observed with 000° and 090° degree azimuth. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can quickly check with the grade map of the 000° and 090° azimuth directions
+    make reasonable sense for the and least continuous directions respectively. As
+    we can see with the map reproduced below it makes sense that the lowest continuity
+    is west-east as we have the highest grades transitioning to the lowest in that
+    direction while the grades don’t vary as much north-south.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9f968508a4127b730df288612abdd4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map of the copper grades highlighting the directions of low continuity east-west
+    and high continuity north-south with their respective azimuth. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variogram Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The experimental variogram data for the 000° and 090° azimuth was modeled using
+    an exponential model. Different nuggets, ranges, and partial sills were tested
+    until a qualitatively good fit was achieved. Better fits to the experimental data
+    might have been achieved using nested structures with multiple models or exploring
+    different models like the most common spherical model using in mining.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a955cc230429ed9bc7c64fb64351fdbc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Exponential variogram models for the minor and major axis with the parameters
+    tabulated. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the variogram model can be used for any kind of estimation or simulation
+    of the point data into blocks. GSLib also offers the packages required to run
+    commonly used ordinary krigging estimations or sequential gaussian simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Understanding and modeling spatial continuity is challenging, especially for
+    those without a geostatistics background. Here we covered a brief introduction
+    and quick tutorial on variograms and generating variogram models with open-source
+    software. Many users currently use expensive software as there is an overall lack
+    in coding experience for spatial continuity analysis and open-source software
+    such as GSLib are not widely known.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, many of the commercial software abstract important details of the variogram
+    which could impact the developed models. Various geostatistical texts emphasize
+    the importance of not treating variogram modeling as a black box and the effort
+    spent trying to understand what is going on in the data can be very useful to
+    generate robust variogram models.
+  prefs: []
+  type: TYPE_NORMAL

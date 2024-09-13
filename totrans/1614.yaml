@@ -1,0 +1,657 @@
+- en: Outlier Detection Using Distribution Fitting in Univariate Datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/outlier-detection-using-distribution-fitting-in-univariate-data-sets-ac8b7a14d40e](https://towardsdatascience.com/outlier-detection-using-distribution-fitting-in-univariate-data-sets-ac8b7a14d40e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to detect outliers using Probability Density Functions for fast and
+    lightweight models and explainable results.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://erdogant.medium.com/?source=post_page-----ac8b7a14d40e--------------------------------)[![Erdogan
+    Taskesen](../Images/8e62cdae0502687710d8ae4bbcd8966e.png)](https://erdogant.medium.com/?source=post_page-----ac8b7a14d40e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac8b7a14d40e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac8b7a14d40e--------------------------------)
+    [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----ac8b7a14d40e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac8b7a14d40e--------------------------------)
+    ·16 min read·Feb 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8f7a7adb294d55c78fd3b0f70d41809.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Randy Fath](https://unsplash.com/es/@randyfath?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/G1yhU1Ej-9A?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly or novelty detection is applicable in a wide range of situations where
+    a clear, early warning of an abnormal condition is required, such as for sensor
+    data, security operations, and fraud detection among others. Due to the nature
+    of the problem, outliers do not present themselves frequently, and due to the
+    lack of labels, it can become difficult to create supervised models. Outliers
+    are also called anomalies or novelties but there are some fundamental differences
+    in the underlying assumptions and the modeling process. ***Here I will discuss
+    the fundamental differences between anomalies and novelties and the concepts of
+    outlier detection. With a hands-on example, I will demonstrate how to create an
+    unsupervised model for the detection of anomalies and novelties using probability
+    density fitting for univariate data sets.*** *The distfit library is used across
+    all examples.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you found this article helpful, use my* [*referral link*](https://medium.com/@erdogant/membership)
+    *to continue learning without limits and sign up for a Medium membership. Plus,*
+    [*follow me*](http://erdogant.medium.com) *to stay up-to-date with my latest content!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly or Novelty?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Anomalies and novelties are both observations that deviate from what is standard,
+    normal, or expected. The collective name for such observations is the ***outlier***.
+    In general, outliers present themselves on the (relative) tail of a distribution
+    and are far away from the rest of the density. In addition, if you observe large
+    spikes in density for a given value or a small range of values, it may point toward
+    possible outliers. ***Although the aim for anomaly and novelty detection is the
+    same, there are some conceptual modeling differences*** *[1]*, briefly summarized
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Anomalies are outliers that are known to be present in the training data
+    and deviate from what is normal or expected.** In such cases, we should aim to
+    fit a model on the observations that have the expected/normal behavior (also named
+    inliers) and ignore the deviant observations. The observations that fall outside
+    the expected/normal behavior are the outliers.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Novelties are outliers that are not known to be present in the training data.
+    The data does not contain observations that deviate from what is normal/expected.**
+    Novelty detection can be more challenging as there is no reference of an outlier.
+    Domain knowledge is more important in such cases to prevent model overfitting
+    on the inliers.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Outliers Can Fall into Three Categories.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I just pointed out that the difference between anomalies and novelties is in
+    the modeling process. But there is more to it. Before we can start modeling, we
+    need to set some expectations about “*how an outlier should look like*”. There
+    are roughly three types of outliers (Figure 1), summarized as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Global outliers** (also named point outliers) are single, and independent
+    observations that deviate from all other observations [1, 2]. When someone speaks
+    about “*outliers*”, it is usually about the global outlier.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Contextual outliers** occur when a particular observation doesn’t fit in
+    a specific context. A context can present itself in a bimodal or multimodal distribution,
+    and an outlier deviates within the context. For instance, temperatures below 0
+    are normal in winter but are unusual in the summer and are then called outliers.
+    Besides time series and seasonal data, other known applications are in sensor
+    data [3] and security operations [4].'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Collective outliers** (or group outliers)are a group of similar/related instances
+    with unusual behavior compared to the rest of the data set [5]. The group of outliers
+    can form a bimodal or multimodal distribution because they often indicate a different
+    type of problem than individual outliers, such as a batch processing error or
+    a systemic problem in the data generation process. Note that the Detection of
+    collective outliers typically requires a different approach than detecting individual
+    outliers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/dceb1957bbf32d37e5b5fd7747f1a70d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. From left to right an example of global, contextual, and collective
+    outliers. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One more part that needs to be discussed before we can start modeling outliers
+    is the ***data set*** part. From a data set perspective, outliers can be detected
+    based on a single feature (univariate) or based on multiple features per observation
+    (multivariate). Keep on reading because the next section is about univariate and
+    multivariate analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outliers can be Modeled in a Univariate or Multivariate manner.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A modeling approach for the detection of any type of outlier has two main flavors;
+    *univariate and multivariate analysis (Figure 2)*. I will focus on the detection
+    of outliers for univariate random variables but not before I will briefly describe
+    the differences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The univariate** approach is when the sample/observation is marked as an
+    outlier using one variable at a time, i.e., a person’s age, weight, or a single
+    variable in time series data. Analyzing the data distribution in such cases is
+    well-suited for outlier detection.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The multivariate** approach is when the sample/observations contain multiple
+    features that can be jointly analyzed, such as age, weight, and height together.
+    It is well suited to detect outliers with features that have (non-)linear relationships
+    or where the distribution of values in each variable is (highly) skewed. In these
+    cases, the univariate approach may not be as effective, as it does not take into
+    account the relationships between variables.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fc58358d39954cd5542e2f58f431be9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Overview of univariate vs. multivariate analysis for the detection
+    of outliers. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outlier Detection in Univariate Variables Using Distribution Fitting.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are various (non-)parametric manners for the detection of outliers in
+    univariate data sets, such as Z-scores, Tukey’s fences, and density-based approaches
+    among others. The common theme across the methods is that the underlying distribution
+    is modeled. The *distfit* library [6] is therefore well suited for outlier detection
+    as it can determine the Probability Density Function (PDF) for univariate random
+    variables but can also model univariate data sets in a non-parametric manner using
+    percentiles or quantiles. Moreover, it can be used to model anomalies or novelties
+    in any of the three categories; global, contextual, or collective outliers. See
+    [this blog](/how-to-find-the-best-theoretical-distribution-for-your-data-a26e5673b4bd)
+    for more detailed information about distribution fitting using the *distfit* library
+    [6]. The modeling approach can be summarized as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute the fit for your random variable across various PDFs, then rank PDFs
+    using the goodness of fit test, and evaluate with a bootstrap approach. *Note
+    that non-parametric approaches with quantiles or percentiles can also be used.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Visually inspect the histogram, PDFs, CDFs, and Quantile-Quantile (QQ) plot.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choose the best model based on steps 1 and 2, but also make sure the properties
+    of the (non-)parametric model (e.g., the PDF) match the use case. *Choosing the
+    best model is not just a statistical question; it is also a modeling decision.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make predictions on new unseen samples using the (non-)parametric model such
+    as the PDF.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Novelty detection for continuous random variables.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with a simple and intuitive example to demonstrate the working of
+    novelty detection for univariate variables using distribution fitting and hypothesis
+    testing. ***In this example, our aim is to pursue a novelty approach for the detection
+    of global outliers***, i.e., *the data does not contain observations that deviate
+    from what is normal/expected.* This means that, at some point, we should carefully
+    include domain knowledge to set the boundaries of what an outlier looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose we have measurements of 10.000 human heights. Let’s generate random
+    normal data with `mean=163` and `std=10` that represents our *human height* measurements*.*
+    We expect a bell-shaped curve that contains two tails; those with smaller and
+    larger heights than average. *Note that due to the stochastic component, results
+    can differ slightly when repeating the experiment.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1\. Determine the PDFs that best fit Human Height.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we can detect any outliers, we need to fit a distribution (PDF) on what
+    is normal/expected behavior for human height. The *distfit* library can fit up
+    to 89 theoretical distributions. I will limit the search to only common/popular
+    probability density functions as we readily expect a bell-shaped curve (s*ee the
+    following code section).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1854e16b6d1a0039c8db3e06afc6926d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. The RSS scores for the fit of human height with the most common distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ***loggamma*** PDF is detected as the best fit for *human height* according
+    to the goodness of fit test statistic (RSS) and the bootstrapping approach. Note
+    that the bootstrap approach evaluates whether there was overfitting for the PDFs.
+    The bootstrap score ranges between [0, 1], and depicts the fit-success ratio across
+    the number of bootstraps (`n_bootst=100`) for the PDF. It can also be seen from
+    Figure 3 that, besides the *loggamma* PDF, multiple other PDFs are detected too
+    with a low Residual Sum of Squares, i.e., *Beta, Gamma, Normal, T-distribution,
+    Loggamma, generalized extreme value, and the Weibull distribution* (Figure 3).
+    However, only five PDFs did pass the bootstrap approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2: Visual inspection of the best-fitting PDFs.'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A best practice is to visually inspect the distribution fit. The *distfit*
+    library contains built-in functionalities for plotting, such as the histogram
+    combined with the PDF/CDF but also QQ-plots. The plot can be created as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/add7513ed538186738cf9fe5feb95159.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4\. Pareto plot with the histogram for the empirical data and the estimated
+    PDF. Left panel: PDF with the best fit (Beta). Right panel: CDF with the top 10
+    best fits. The confidence intervals are based on alpha=0.05.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A visual inspection confirms the goodness of fit scores for the top-ranked PDFs.
+    However, there is one exception, the Weibull distribution (yellow line in Figure
+    4) appears to have two peaks. In other words, although the RSS is low, a visual
+    inspection does not show a good fit for our random variable. *Note that the bootstrap
+    approach readily excluded the Weibull distribution and now we know why*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Decide by also using the PDF properties.'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last step may be the most challenging step because there are still five
+    candidate distributions that scored very well in the goodness of fit test, the
+    bootstrap approach, and the visual inspection. We should now decide which PDF
+    matches best on its fundamental properties to model human height. I will stepwise
+    elaborate on the properties of the top candidate distributions with respect to
+    our use case of modeling human height.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Normal distribution** is a typical choice but it is important to note
+    that the assumption of normality for human height may not hold in all populations.
+    It has no heavy tails and therefore it may not capture outliers very well.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**The Students T-distribution** is often used as an alternative to the normal
+    distribution when the sample size is small or the population variance is unknown.
+    It has heavier tails than the normal distribution, which can better capture the
+    presence of outliers or skewness in the data. In case of low sample sizes, this
+    distribution could have been an option but as the sample size increases, the t-distribution
+    approaches the normal distribution.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**The Gamma distribution** is a continuous distribution that is often used
+    to model data that are positively skewed, meaning that there is a long tail of
+    high values. Human height may be positively skewed due to the presence of outliers,
+    such as very tall individuals. However, the bootstrap appraoch showed a poor fit.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**The Log-gamma distribution** has a skewed shape, similar to the gamma distribution,
+    but with heavier tails. It models the log of the values which makes it more appropriate
+    to use when the data has large number of high values.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**The Beta distribution** is typically used to model proportions or rates [9],
+    rather than continuous variables such as in our use-case for height. It would
+    have been an appropriate choice if height was divided by a reference value, such
+    as the median height. So despite it scores best on the goodness of fit test, and
+    we confirm a good fit using a visual inspection, it would not be my first choice.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**The Generalized Extreme Value (GEV)** distribution can be used to model the
+    distribution of extreme values in a population, such as the maximum or minimum
+    values. It also allows heavy tails which can capture the presence of outliers
+    or skewness in the data. However, it is typically used to model the distribution
+    of extreme values [10], rather than the overall distribution of a continuous variable
+    such as human height.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**The Dweibull distribution** may not be the best match for this research question
+    as it is typically used to model data that has a monotonic increasing or decreasing
+    trend, such as time-to-failure or time-to-event data [11]. Human height data may
+    not have a clear monotonic trend. The visual inspection of the PDF/CDF/QQ-plot
+    also showed no good match.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To summarize, the ***loggamma*** distribution may be the best choice in this
+    particular use case after considering the *goodness of fit test, the bootstrap
+    approach, the visual inspection, and now also based on the PDF properties related
+    to the research question*. Note that we can easily specify the *loggamma* distribution
+    and re-fit on the input data (see code section) if required (see code section).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step 4\. Predictions for new unseen samples.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the fitted model we can assess the significance of new (unseen) samples
+    and detect whether they deviate from what is normal/expected (the inliers). Predictions
+    are made on the theoretical probability density function, making it lightweight,
+    fast, and explainable. The confidence intervals for the PDF are set using the
+    `alpha` parameter. ***This is the part where domain knowledge is required because
+    there are no known outliers in our data set present.*** In this case, I set the
+    confidence interval (CII) `alpha=0.01` which results in a minimum boundary of
+    139.8cm and a maximum boundary of 185.8cm. The default is that both tails are
+    analyzed but this can be changed using the `bound` parameter *(see code section
+    above)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use the `predict` function to make new predictions on new unseen samples,
+    and create the plot with the prediction results (Figure 5). Be aware that significance
+    is corrected for multiple testing: `multtest=''fdr_bh''`. *Outliers can thus be
+    located outside the confidence interval but not marked as significant.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1bc29ced25b5ca8326ec8245b8be2262.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5\. Left Panel: Histogram for the empirical data and the log-gamma PDF.
+    The black line is the empirical data distribution. The red line is the fitted
+    theoretical distribution. The red vertical lines are the confidence intervals
+    that are set to 0.01\. The green dashed lines are detected as outliers and the
+    red crosses are not significant. (image by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results of the predictions are stored in `results` and contains multiple
+    columns: `y`, `y_proba`, `y_pred`, and `P` . The `P` stands for the raw p-values
+    and `y_proba` are the probabilities after multiple test corrections (default:
+    `fdr_bh`). Note that a data frame is returned when using the `todf=True` parameter.
+    Two observations have a probability `alpha<0.01` and are marked as significant
+    `up` or `down`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly Detection in Real World data.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far we have seen how to fit a model and detect global outliers for novelty
+    detection. ***Here we will use real-world data for the detection of anomalies.***
+    The use of real-world data is usually much more challenging to work with. To demonstrate
+    this, I will download the data set of *natural gas spot price* from Thomson Reuters
+    [7] which is an open-source and freely available dataset [8]. After downloading,
+    importing, and removing nan values, there are 6555 data points across 27 years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visually inspection of the data set.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To visually inspect the data, we can create a line plot of the *natural gas
+    spot price* to see whether there are any obvious trends or other relevant matters
+    (Figure 6). It can be seen that 2003 and 2021 contain two major peaks (which hint
+    toward global outliers). Furthermore, the price actions seem to have a natural
+    movement with local highs and lows. Based on this line plot, we can build an intuition
+    of the expected distribution. The price moves mainly in the range [2, 5] but with
+    some exceptional years from 2003 to 2009, where the range was more between [6,
+    9].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5f41592ef2ef30a67cafdada6af2cf1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Open data source data set of Natural gas spot price from Thomson
+    Reuters [7, 8].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use *distfit* to deeper investigate the data distribution, and determine
+    the accompanying PDF. The search space is set to all available PDFs and the bootstrap
+    approach is set to 100 to evaluate the PDFs for overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/36864f47391676a0807d7fa5655f7bc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7\. left: PDF, and right: CDF. All fitted theoretical distributions
+    are shown in different colors. (image by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The best-fitting PDF is *Johnsonsb* (Figure 7) but when we plot the empirical
+    data distributions, the PDF (red line) does not precisely follow the empirical
+    data. In general, we can confirm that the majority of data points are located
+    in the range [2, 5] (*this is where the peak of the distribution is)* and that
+    there is a second smaller peak in the distribution with price actions around value
+    6\. This is also the point where the PDF does not smoothly fit the empirical data
+    and causes some undershoots and overshoots. With the summary plot and QQ plot,
+    we can investigate the fit even better. Let’s create these two plots with the
+    following lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is interesting to see in the summary plot that the goodness of fit test showed
+    good results (low score) among all the top distributions. However, when we look
+    at the results of the bootstrap approach, it shows that all, except one distribution,
+    are overfitted (Figure 8A, orange line). This is not entirely unexpected because
+    we already noticed overshooting and undershooting. The QQ plot confirms that the
+    fitted distributions deviate strongly from the empirical data (Figure 8B). Only
+    the *Johnsonsb* distribution showed a (borderline) good fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f747c612bd39d78edbd11900a0b1b3b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8\. A. left panel: PDFs are sorted on the bootstrap score and the goodness
+    of fit test. B. right panel: QQ-plot containing the comparison between empirical
+    distribution vs. all other theoretical distributions. (image by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detection of Global and Contextual Outliers.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will continue using the *Johnsonsb* distribution and the `predict` functionality
+    for the detection of outliers. We already know that our data set contains outliers
+    as we followed the anomaly approach, i.e., *the distribution is fitted on the
+    inliers, and observations that now fall outside the confidence intervals can be
+    marked as potential outliers.* With the `predict` function and the `lineplot`
+    we can detect and plot the outliers. It can be seen from Figure 9 that the global
+    outliers are detected but also some contextual outliers, despite we did not model
+    for it explicitly. ***Red bars*** are the underrepresented outliers and ***green
+    bars*** are the overrepresented outliers. The `alpha` parameter can be set to
+    tune the confidence intervals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d9e5266f0cf57532ffdd81475bf6f3f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. Plotting outliers after fitting distribution and making predictions.
+    Green bars are outliers outside the upper bound of the 95% CII. Red bars are outliers
+    outside the lower bound of the 95% CII.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final words.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I described the differences between anomaly and novelty detection and how to
+    create a model using distribution fitting. With the *distfit* library, 89 theoretical
+    distributions can be evaluated, selected, and predictions can be made on new unseen
+    samples. With a hands-on example and a real-world data set, I showed how to determine
+    the best matching PDF. Note that it can occur that none of the known theoretical
+    distributions is significantly matching. In that case, the *distfit* library has
+    also the option for non-parametric fitting using *percentiles* or *quantiles*.
+    More information can be found in my [previous blog](/how-to-find-the-best-theoretical-distribution-for-your-data-a26e5673b4bd)
+    about distribution fitting [6]. It’s important to note that outlier detecting
+    is a challenging task, as the definition of what is normal or expected can be
+    subjective and can differ based on the application. Additionally, outliers can
+    be caused by measurement errors, data errors, or natural fluctuations, so it’s
+    important to carefully consider the underlying cause of the deviation before making
+    any conclusions*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Be Safe. Stay Frosty.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Cheers E.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you found this article helpful, use my* [*referral link*](https://medium.com/@erdogant/membership)
+    *to continue learning without limits and sign up for a Medium membership. Plus,*
+    [*follow me*](http://erdogant.medium.com) *to stay up-to-date with my latest content!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Software
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Distfit Github/Documentation](https://erdogant.github.io/distfit/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Distfit notebook examples](https://erdogant.github.io/distfit/pages/html/Documentation.html#colab-notebook)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s connect!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Let’s connect on LinkedIn](https://www.linkedin.com/in/erdogant/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Follow me on Github](https://github.com/erdogant)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Follow me on Medium](https://erdogant.medium.com/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Breunig, Kriegel, Ng, and Sander (2000)*,* [*LOF: identifying density-based
+    local outliers*.](https://www.dbs.ifi.lmu.de/Publikationen/Papers/LOF.pdf) Proc.
+    ACM SIGMOD'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://scikit-learn.org/stable/modules/outlier_detection.html](https://scikit-learn.org/stable/modules/outlier_detection.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hayes, M.A., Capretz, M.A. *Contextual anomaly detection framework for big sensor
+    data*. *Journal of Big Data* **2**, 2 (2015). [https://doi.org/10.1186/s40537-014-0011-y](https://doi.org/10.1186/s40537-014-0011-y)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'A. AlEroud and G. Karabatis, *A Contextual Anomaly Detection Approach to Discover
+    Zero-Day Attacks*, 2012 International Conference on Cyber Security, Alexandria,
+    VA, USA, 2012, pp. 40–45, doi: [10.1109/CyberSecurity.2012.12](https://doi.org/10.1109/CyberSecurity.2012.12)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Song W., Dong W., Kang L. *Group anomaly detection based on Bayesian framework
+    with genetic algorithm*, Inf. Sci. (NY), 533 (2020), pp. 138–149, [10.1016/j.ins.2020.03.110](https://doi.org/10.1016/j.ins.2020.03.110)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: E. Taskesen, [*How to Find the Best Theoretical Distribution for Your Data*](/how-to-find-the-best-theoretical-distribution-for-your-data-a26e5673b4bd),
+    Febr. 2023 Medium.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Thomson Reuters, [*Natural Gas Spot Price*](https://www.eia.gov/dnav/ng/hist/rngwhhdW.htm)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Thomson Reuters, [*Natural Gas Spot Price Open Source Data*](https://www.eia.gov/opendata/)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Wikipedia, [*Beta Distribution*](https://en.wikipedia.org/wiki/Beta_distribution)*.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: statisticshowto, [*Extreme Value Distribution & the Extreme Value Theory*](https://www.statisticshowto.com/extreme-value-distribution/)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Wikipedia, [*Weibull Distribution*](https://en.wikipedia.org/wiki/Weibull_distribution).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

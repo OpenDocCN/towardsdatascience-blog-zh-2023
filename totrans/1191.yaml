@@ -1,0 +1,596 @@
+- en: How to get performance data from Power BI with DAX Studio
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9](https://towardsdatascience.com/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Sometimes we have a slow Report, and we need to figure out why. I will show
+    you how to collect performance data and what these metrics mean.*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@salvatorecagliari?source=post_page-----b7f11b9dd9f9--------------------------------)[![Salvatore
+    Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----b7f11b9dd9f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b7f11b9dd9f9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b7f11b9dd9f9--------------------------------)
+    [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----b7f11b9dd9f9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b7f11b9dd9f9--------------------------------)
+    ·9 min read·Jan 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be3df699528c306993e55c7a3e5b64cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Aleks Dorohovich](https://unsplash.com/@doctype?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To put things straight: I will not discuss how to optimize DAX Code today.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: More articles will follow, concentrating on common mistakes and how to avoid
+    them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, before we can understand the performance metrics, we need to understand
+    the architecture of the Tabular model in Power BI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The same architecture applies to Tabular models in SQL Server Analysis Services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Any Tabular model has two Engines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storage Engine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Formula Engines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These two have distinct properties and fulfill different tasks in a Tabular
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s investigate them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storage Engine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Storage Engine is the interface between the DAX Query and the data stored
+    in the Tabular model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This Engine takes any given DAX query and sends queries to the Vertipaq Storage
+    engine, which stores the data in the data model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Storage Engine uses a language called xmSQL to query the data model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This language is based on the standard SQL language but has fewer capabilities
+    and supports only simple arithmetic operators (+, -, /, *, =, <>, and IN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To aggregate data, xmSQL supports SUM, MIN, MAX, COUNT, and DCOUNT (Distinct
+    Count).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then it supports GROUP BY, WHERE, and JOINs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It will help if you have a basic understanding of SQL Queries when you try to
+    understand xmSQL. If you don’t know SQL, it will be helpful to learn the basics
+    when digging deeper into analyzing bad-performing DAX code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most important fact is that the Storage Engine is multi-threaded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, when the Storage Engine executes a query, it will use multiple CPU-Cores
+    to speed up query execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, the Storage Engine can Cache queries and the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, repeated execution of the same query will speed up the execution
+    because the result can be retrieved from the cache.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formula Engine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Formula Engine is the DAX engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All functions, which the Storage Engine cannot execute, are executed by the
+    Formula Engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usually, the Storage Engine retrieves the data from the data model and passes
+    the result to the Formula Engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This operation is called materialization, as the data is stored in memory to
+    be processed by the Formula Engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can imagine, it is crucial to avoid large materializations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Storage Engine can call the Formula Engine when an xmSQL-Query contains
+    functions that the Storage Engine cannot execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is operation id called CallbackDataID and should be avoided, if possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Crucially, the Formula engine is single-threaded and has no Cache.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This means:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: No parallelism by using multiple CPU Cores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: No re-use of repeated execution of the same query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This means we want to offload as many operations as possible to the Storage
+    engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, it is impossible to directly define which part of our DAX-Code
+    is executed by which Engine. We must avoid specific patterns to ensure that the
+    correct engine completes the work in the least amount of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And this is another story that can fill entire books.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how can we see how much time is used by each Engine?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting the Performance data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We need to have DAX Studio on our machine to get Performance Metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can find the download link for DAX Studio in the References Section below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you cannot install the Software, you can get a portable DAX version from
+    the same site. Download the ZIP file and unpack it in any local folder. Then you
+    can start DAXStudio.exe, and you get all features without limitations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, we need to get the DAX Query from Power BI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we need to start Performance Analyzer in Power BI Desktop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0715b1a1ed7d836d26a22407175d2e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1 — Start Performance Analyzer in Power BI Desktop (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As soon as we see the Performance Analyzer Pane, we can start recording the
+    performance data and the DAX query for all Visuals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9098aa9c3c1b08efdb8b7e0b693e05b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 — Start recording of Performance data and DAX query (Figure by the
+    Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we must click on Start Recording
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then click on “Refresh Visuals” to restart the rendering of all Visuals of the
+    actual page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can click on one of the rows in the list and notice that the corresponding
+    Visual is also activated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we expand on one of the rows in the report, we see a few rows and a link
+    to copy the DAX query to the Clipboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e83d3bd604c57192b1ddef72be669823.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 — Select the Visual and copy the query (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, Power BI needed 80'606 milliseconds to complete the rendering
+    of the Matrix Visual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The DAX query alone used 80'194 milliseconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a highly poor-performing measure used in this visual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we can start DAX Studio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In case we have DAX Studio installed on our machine, we will find it in the
+    External Tool Ribbon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/492fbe27ee7e4fe525d3007994fc12b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 — Start DAX Studio as an External Tool (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: DAX Studio will automatically be connected to the Power BI Desktop file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In case that we must start DAX Studio manually, we can manually connect to
+    the Power BI file as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ae7b7aa83ba0d3e542eb4a971f35272.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5 — Manually connect DAX Studio to Power BI Desktop (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the connection is established, an empty query is opened in DAX Studio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the bottom part of the DAX Studio Window, you will see a Log section where
+    you can see what happens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But, before pasting the DAX Query from Power BI Desktop, we have to start Server
+    Timings in DAX Studio (Right top corner of the DAX Studio Window):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f15a308c6bf4c9f9637f06e31e59bf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6 — Start Server Timings in DAX Studio (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After pasting the Query to the Empty Editor, we have to Enable the “Clear on
+    Run” Button and execute the query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab18a9ad6d92ff139916960852054955.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7 — Enabling “Clear on Run” Feature (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Clear on Run” ensures the Storage Engine Cache is cleared before executing
+    the Query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearing the Cache before measuring performance metrics is the best practice
+    to ensure a consistent starting point for the measurement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After executing the query, we will get a Server Timings page at the bottom
+    of the DAX Studio Window:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab3c2eab86457034e3c243a91ec0984f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8 — Server Timings Window in DAX Studio (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we see a lot of information, which we will explore next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'On the left side of Server Timings, we will see the execution timings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/985c6bbfe96681403c04ded41c96c49f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9 — Execution Timings (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we see the following numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Total — The total execution time in milliseconds (ms)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SE CPU — The sum of the CPU time spent by the Storage Engine (SE) to execute
+    the Query.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Usually, this number is greater than the Total time because of the parallel
+    execution using multiple CPU Cores
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: FE — The time spent by the Formula Engine (FE) and the percentage of the total
+    execution time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SE — The time spent by the Storage Engine (FE) and the percentage of the total
+    execution time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SE Queries — The number of Storage Engine Queries needed for the DAX Query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SE Cache — The use of Storage Engine Cache, if any
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As a rule of thumb: The larger the percentage of Storage Engine time, compared
+    to Formula Engine time, the better.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The middle section shows a list of Storage Engine Queries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eae07325f5f0e203416e5534a760fd3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10 — List of Storage Engine queries (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This list shows how many SE Queries have been executed for the DAX Query and
+    includes some statistical columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line — Index line. Usually, we will not see all the lines. But we can see all
+    lines by clicking on the Cache and Internal buttons on the top right corner of
+    the Server Timings Pane. But we will not find them very useful, as they are an
+    internal representation of the visible queries. Sometimes it can be helpful to
+    see the Cache queries and see what part of the query has been accelerated by the
+    SE Cache.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Subclass — Normally “Scan”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Duration — Time spent for each SE Query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CPU — CPU Time spent for each SE Query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Par. — Parallelism of each SE Query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rows and KB — Size of the materialization by the SE Query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Waterfall — Timing sequence by the SE Queries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Query — The beginning of each SE Query
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this case, the first SE Query returned 12'527'422 rows to the Formula engine
+    (The number of rows in the entire Fact table) using 1 GB of Memory. This is not
+    good, as large materializations like these are performance killers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This clearly signifies that we made a big mistake with your DAX Code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lastly, we can read the actual xmSQL Code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca17bbc32b3f207c040a9c97de57f1a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11 — Storage Engine Query Code (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we can see the xmSQL code and try to understand the Problem of the DAX
+    Query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we see that there is a highlighted CallbackDataID. DAX Studio
+    highlights all CallbackDataID in the Query text and makes all queries in the query
+    list bold, which contains a CallbackDataID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that, in this case, an IF() function is pushed to the Formula Engine
+    (FE), as the SE cannot process this function. But SE knows that FE can do it.
+    So, it calls the FE for each row in the result. In this case, over 12 million
+    times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see from the timing, this takes a lot of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we know that we have written bad DAX Code and the SE calls the FE many times
+    to execute a DAX function. And we know that we use 1 GB of RAM to execute the
+    query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, we know that the parallelism is only 1.9 times, which could be much
+    better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How should it look like
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The DAX query contains only the Query created by Power BI Desktop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But in most cases, we need the Code of the Measure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DAX Studio offers a feature called “Define Measures” to get the DAX Code of
+    the Measure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add one of two blank lines in the Query
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Place the cursor on the first (empty) line
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find the Measure in the Data Model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Right-click on the Measure and click on Define Measure
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/787afb605e4ed80a73d9ac73b9d0b62e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12 — Define Measure in DAX Studio (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. If our Measure calls another Measure, we can click on Define Dependent Measures.
+    In this case, DAX Studio extracts the code of all Measures used by the selected
+    Measure
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result is a DEFINE statement followed by one or more MEASURE Statements
+    containing the DAX code of our guilty Measure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After optimizing the code, I executed the new Query and took the Server Timings
+    to compare them to the original Data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a55f0eb458b9c31e49cb6c6bb6eca38c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13 — Comparing slow a fast DAX code (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, the entire query took only 55 ms, and SE created a materialization of only
+    19 Rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The parallelism is at 2.6 times, which is better than 1.9 times. It looks like
+    the SE didn’t need that much processing power to increase parallelism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a very good sign.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The optimization worked very well after looking at these numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca7d0ce12c7117ccba7758416cf79298.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Marc-Olivier Jodoin](https://unsplash.com/@marcojodoin?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We need some information when we have a slow Visual in your Power BI Report.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to use Performance Analyzer in Power BI Desktop to see where
+    time is spent rendering the result of the Visual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we see that it takes much time to execute the DAX Query, we need DAX Studio
+    to find out the problem and try to fix it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I didn’t cover any methods to optimize DAX in this article, as it wasn’t my
+    aim to do it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But now that I have laid down the foundation to get and understand the performance
+    metrics available in DAX Studio, I can write further articles to show how to optimize
+    DAX code, what you should avoid, and why.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m looking forward to the journey with you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Download DAX Studio for free here: [https://www.sqlbi.com/tools/dax-studio/](https://www.sqlbi.com/tools/dax-studio/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Free SQLBI Tools Training: [DAX Tools Video Course — SQLBI](https://www.sqlbi.com/p/dax-tools-video-course/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQLBI offers DAX-Optimization training as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I use the Contoso sample dataset, like in my previous articles. You can download
+    the ContosoRetailDW Dataset for free from Microsoft [here](https://www.microsoft.com/en-us/download/details.aspx?id=18279).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Contoso Data can be freely used under the MIT License, as described [here](https://github.com/microsoft/Power-BI-Embedded-Contoso-Sales-Demo).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@salvatorecagliari/membership?source=post_page-----b7f11b9dd9f9--------------------------------)
+    [## Join Medium with my referral link - Salvatore Cagliari'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Salvatore Cagliari (and thousands of other writers on
+    Medium). Your membership fee directly…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@salvatorecagliari/membership?source=post_page-----b7f11b9dd9f9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

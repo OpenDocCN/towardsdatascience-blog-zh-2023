@@ -1,0 +1,536 @@
+- en: 'Stable Diffusion as an API: Make a Person-Removing Microservice'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/stable-diffusion-as-an-api-5e381aec1f6](https://towardsdatascience.com/stable-diffusion-as-an-api-5e381aec1f6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/a964e08268efee5aaf0f29c6237487db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Landscape image produced using Stable Diffusion 2 (by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remove people from photos with a Stable Diffusion microservice
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@masonmcgough?source=post_page-----5e381aec1f6--------------------------------)[![Mason
+    McGough](../Images/4b465e0eef1590b1f12dea23a6f688e1.png)](https://medium.com/@masonmcgough?source=post_page-----5e381aec1f6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5e381aec1f6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5e381aec1f6--------------------------------)
+    [Mason McGough](https://medium.com/@masonmcgough?source=post_page-----5e381aec1f6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5e381aec1f6--------------------------------)
+    ·12 min read·Feb 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Stable Diffusion is a cutting-edge open-source tool for generating images from
+    text. The Stable Diffusion Web UI opens up many of these features with an API
+    as well as the interactive UI. We will first introduce how to use this API, then
+    set up an example using it as a privacy-preserving microservice to remove people
+    from images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to Generative AI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So many innovations in machine learning-based data generators happened last
+    year you might be able to call 2022 the “Year of Generative AI.” We had [DALL-E
+    2](https://openai.com/dall-e-2/), the text-to-image generation model from OpenAI
+    that produced strikingly realistic images of astronauts riding horses and dogs
+    wearing people clothes. [GitHub Copilot](https://github.blog/2022-06-21-github-copilot-is-generally-available-to-all-developers/),
+    the powerful code completion tool that will autocomplete statements, write documentation,
+    and implement entire functions for you from a single comment, was released to
+    the public as a subscription service. We had [Dream Fields](https://www.ajayjain.net/dreamfields/),
+    [Dream Fusion](https://dreamfusion3d.github.io/), and [Magic3D](https://research.nvidia.com/labs/dir/magic3d/),
+    a series of groundbreaking models capable of producing textured 3D models from
+    text alone. Last but certainly not least we had [ChatGPT](https://openai.com/blog/chatgpt/),
+    the cutting-edge AI chatbot which these days needs no introduction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This list barely even scratches the surface. In just the world of generative
+    image models like DALL-E 2 we also have [Midjourney](https://www.midjourney.com/),
+    [Google Imagen](https://imagen.research.google/), [StarryAI](https://starryai.com/),
+    [WOMBO Dream](https://dream.ai/create), [NightCafe](https://nightcafe.studio/),
+    [InvokeAI](https://invoke-ai.github.io/InvokeAI/), [Lexica Aperture](https://lexica.art/aperture),
+    [Dream Studio](https://beta.dreamstudio.ai/), [Deforum](https://deforum.github.io/)…
+    I think you get the *picture*. 😉 📷 It seems like no exaggeration to say that generative
+    AI has captured the imaginations of the whole world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stable Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While many of the popular generative AI tools like ChatGPT, GitHub Copilot,
+    and DALL-E 2 are proprietary and paywalled, the open-source community has not
+    skipped a beat. Last year, LMU Munich, Runway, and Stability AI collaborated to
+    publicly share [Stable Diffusion](https://github.com/CompVis/stable-diffusion),
+    a powerful yet efficient text-to-image model efficient enough to run on consumer
+    hardware. This means that anyone with a decent GPU and an internet connection
+    can download the Stable Diffusion code and model weights, bringing low-cost image
+    generation to the world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stable Diffusion Web UI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [Stable Diffusion Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui),
+    one of the most popular tools leveraging Stable Diffusion, exposes a wide range
+    of the settings and features of Stable Diffusion in an interactive browser-based
+    user interface. A lesser-known feature of this project is that you can use it
+    as an HTTP API, allowing you to request images from your own applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b361ece7b8424e89b5c7e22e9230c880.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Stable Diffusion Web UI with an example generation (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It has a metric truckload of features, such as inpainting, outpainting, resizing,
+    upscaling, variations, and many more. The [project wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features)
+    provides a great overview of all the features. In addition, it provides scripting
+    for extensibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before beginning, ensure that you have a GPU (NVIDIA preferably but AMD is
+    also supported) with at least 8GB of VRAM to play with on your system. That will
+    ensure that you can load the model into memory. Next, you want to clone the repo
+    to your system (for instance via HTTPS):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Follow the [installation instructions](https://github.com/AUTOMATIC1111/stable-diffusion-webui#installation-and-running)
+    for your system as they may be different from mine. I used an install of Ubuntu
+    18.04 to set this up, but it should also work on Windows and Apple Silicon. These
+    instructions will include setting up a Python environment, so make sure that whichever
+    environment you set up is active when you launch the server later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once that is done, we need a copy of the model weights. I am using [Stable
+    Diffusion 2.0](https://huggingface.co/stabilityai/stable-diffusion-2), but [Stable
+    Diffusion 2.1](https://huggingface.co/stabilityai/stable-diffusion-2-1) is now
+    available as well. Whichever option you pick, be sure to download the weights
+    for the [stablediffusion](https://github.com/Stability-AI/stablediffusion) repository.
+    Lastly, copy those weights to the `models/Stable-diffusion` folder like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now you should be ready to start generating images! To launch the server, execute
+    the following from the root directory (be sure that the environment you set up
+    is activated):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The server will take some time to get set up, as it likely needs to install
+    requirements, load the model weights into memory, and check for embeddings, among
+    other things. When it is ready, you should see a message in your terminal that
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The UI is browser-based, so navigate to “[127.0.0.1:7860](http://127.0.0.1:7860)"
+    in your favorite web browser. If it is working, it should look something like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ea02f9b2002eee7e0ce6eedd81f3629.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Stable Diffusion Web UI when first opened (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You should now be ready to generate some images! Go ahead and generate something
+    by entering text into the “Prompt” field and clicking “Generate.” If this is your
+    first time using this UI, take a second to explore and learn some of its features
+    and settings. Refer to [the wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki)
+    if you have any questions. This knowledge will come in handy later when designing
+    your API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will not delve too deep into how to use the web UI since many others before
+    me have done so. However, I will provide the following cheat sheet of basic settings
+    for reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sampling method**: The sampling algorithm. This can greatly affect the content
+    of the generated image and overall appearance. The execution time and the results
+    can differ greatly between methods. Ideally experiment with this option first.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Sampling steps**: The number of denoising steps during the image generation
+    process. Some results will change drastically with the number of steps whereas
+    others will quickly lead to diminishing returns. A value of 20–50 is ideal for
+    most samplers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Width**, **Height**: The output image dimensions. For SD 2.0, 768x768 is
+    the preferred resolution. The resolution can affect the generated content.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**CFG scale**: The [Classifier-Free Guidance](https://arxiv.org/abs/2207.12598)
+    (CFG) scale. Increasing this increases how much the image is impacted by the prompt.
+    Lower values produce more creative results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Denoising strength**: Determines how much variation on the original image
+    to allow for. A value of 0.0 results in no change. A value of 1.0 disregards the
+    original image entirely. Starting with a value between 0.4–0.6 is generally a
+    safe option.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Seed**: The random seed value. Useful when you want to compare the effect
+    of a setting with as little variation as possible. If you like a particular generation
+    but want to modify it a bit, copy the seed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Stable Diffusion as an API
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The web UI is meant for a single user and works great as an interactive art
+    tool for making your own creations. However, if we want to build applications
+    using this as the engine then we will want an API. A lesser-known (and lesser-documented)
+    feature of the stable-diffusion-webui project is that it also has a built-in API.
+    The web UI is built with [Gradio](https://gradio.app/) but there is also a FastAPI
+    app that can be launched with the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives us an API that exposes many of the features we had in the web UI.
+    We can send POST requests with our prompt and parameters and receive responses
+    that contain output images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a microservice
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As an example, we will now set up a simple microservice that removes people
+    from photos. This has many applications, such as preserving the privacy of individuals.
+    We can use stable diffusion as a rudimentary privacy-preserving filter, which
+    removes people from photos without any unsightly mosaicing or pixel blocking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that this is a basic setup; it does not include encryption, load-balancing,
+    multitenancy, RBAC, or any other features. This setup may not be suitable for
+    production, but it can be useful for setting up applications on a home or private
+    server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start application in API mode
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following instructions will use the server in API mode, so go ahead and
+    stop the web UI for now with CTRL+C. Start it up again in API mode with the `--api`
+    option:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The server should print something like this when it is ready:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It can also be useful to run the server in a headless state without the UI.
+    To enable just the API without the Gradio app:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Send a request to the API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing we will want to do is demonstrate how to make a request to the
+    API. We wish to send a POST request to the `txt2img` (i.e. “text-to-image”) API
+    of the application to simply generate an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use the `requests` package, so install that if you have not already:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can send a request containing a prompt as a simple string. The server will
+    return an image as a [base64](https://en.wikipedia.org/wiki/Base64)-encoded PNG
+    file, which we will need to decode. To decode a base64 image, we simply use `base64.b64decode(b64_image)`.
+    The following script should be all you need to test this out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Copy the contents to a file and name it `sample-request.py`. Now execute this
+    with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If it worked, it should save a copy of the image to the file `dog.png`. Mine
+    looked like this dapper fellow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4ee5a19b1d19b4de18ac8f09681aebb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created with ‘sample-request.py’ (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep in mind that your results will vary from mine. If you encounter issues,
+    double-check the output from the terminal running the stable diffusion app. It
+    could be that the server was not finished setting up yet. If you get an issue
+    like “404 Not Found,” double-check that the URL was typed correctly and is pointing
+    to the correct address (e.g. 127.0.0.1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Masking an image
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If all is working so far, then great! But how can we use this to modify images
+    we already have? For that we will want to use the `img2img` (i.e. “image-to-image”)
+    API. This API uses stable diffusion to modify an image that you submit. We will
+    use the [inpainting feature](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#inpainting):
+    given an image and a mask, the inpainting technique will try to replace the masked
+    portion of the image with content generated by stable diffusion. The mask acts
+    as a weight that smoothly interpolates between the original image and a generation
+    to blend the two together.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rather than make a mask by hand, we will attempt to generate one using one of
+    the many pre-trained computer vision models available to us. We will use the “person”
+    class of the model outputs to generate a mask. While an object detection model
+    would work, I chose to use a segmentation model so that you can experiment with
+    using either dense masks or bounding boxes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will need a sample image to test with. We could download one from the Internet,
+    but in the spirit of preserving privacy (and copyright), why not make one with
+    stable diffusion? The following is one I generated with the prompt “beautiful
+    mountain landscape, a woman walking away from the camera.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2a07a10abe92d5e95f51db818854298.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image generated by stable diffusion (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can download this one, but I encourage you to try to generate one yourself.
+    Of course, you can use real photos as well. The following is minimal code to apply
+    a stock segmentation model from `torchvision` to this image as a mask.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Like before, copy this to a file named `segment-person.py`. Execute the code
+    with the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting prediction should look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/042dc0bd35ef951cfb12daf3ecb788ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of segmentation mask applied to image (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have the machinery to make requests to the API and to predict bounding
+    boxes. Now we can start building out our microservice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Person removal microservice
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us now turn to our practical example: removing people from images. The
+    microservice should do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read a number of input arguments
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load an image from a file
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply a segmentation model with the class “person” to the image to create a
+    mask
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Convert the image and mask to base64 encoding
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Send a request containing the base64-encoded image, the base64-encoded mask,
+    the prompt, and any arguments to the `img2img` API of the local server
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Decode and save the output image as a file
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Since we already covered all of these steps individually, the microservice
+    has already been implemented for you in [this GitHub Gist](https://gist.github.com/Mason-McGough/9733aff5bc9d04faecfbb81074617315).
+    Now download the script and execute it on the image “woman-on-trail.png” (or whichever
+    image you like) using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `-W` and `-H` indicate the desired output width and height, respectively.
+    It will save the generated image as `inpaint-person.png` and the corresponding
+    mask as `mask_inpaint-person.png`. Yours will be different, but this is the output
+    I received:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2b2c2a0fdc22772c274443559b753a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of API call using the raw segmentation mask (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hmm, not quite what we are looking for. Seems that much of the person still
+    remains, particularly the silhouette. We may need to mask a larger area. For this,
+    let us try converting the mask to a bounding box. We can do this using the `-B`
+    flag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output I received is this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13239ae2bb31628762428c05fb379093.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of API call using a bounding box as mask (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is also not quite right! A concrete column is not something we would expect
+    to find in the middle of a trail. Perhaps bringing in a prompt will help steer
+    things in the right direction. We use the `-p` flag to add the prompt “mountain
+    scenery, landscape, trail” to the request. We also dilate the bounding box with
+    `-D 32` to remove some of the edge effects and blur the bounding box with `-b
+    16` to blend the mask with the background a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this I received the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af78bf46b1810c8eef81bd6d66fd9685.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of final API call (photo by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that is looking plausible! Keep playing around with different images, settings,
+    and prompts to get it working for your use case. To see a complete list of arguments
+    and hints available with this script, enter `python inpaint-person.py -h`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is very likely that your images looked very different from the ones above.
+    Because it is an inherently stochastic process, even using stable diffusion with
+    the same settings can produce radically different outputs. There is quite a steep
+    learning curve to understand all of the features and proper prompt design and
+    even then the results can be finicky. Making an image look exactly the way you
+    like is extremely difficult and requires much trial and error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To aid in your quest, keep the following tips in mind:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use the web UI to find the right parameters that work for your use case before
+    moving to the API.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rely on the prompt matrix and X/Y plot features when finetuning an image to
+    your liking. These will help you rapidly explore the parameter search space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Be mindful of the seeds. If you like a specific output but want to iterate on
+    it, copy the seed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Try a different generator like Midjourney! Every tool is slightly different.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use Internet resources like [Lexica](https://lexica.art/) as inspiration and
+    to find good prompts.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use the “Create a text file next to every image with generation parameters”
+    option in the settings menu to keep track of the prompts and settings you use
+    to make every image.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Most importantly, have fun!
+  prefs: []
+  type: TYPE_NORMAL

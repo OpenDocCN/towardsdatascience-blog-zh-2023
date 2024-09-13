@@ -1,0 +1,337 @@
+- en: Auto-Tuning for Deep Neural Network Deployment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/auto-tuning-for-deep-neural-network-deployment-ff2324cb41d](https://towardsdatascience.com/auto-tuning-for-deep-neural-network-deployment-ff2324cb41d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What, why, and most importantly… how?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)[![Federico
+    Peccia](../Images/48ad8401c28e87717718f58336cc64cf.png)](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)
+    [Federico Peccia](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)
+    ·7 min read·Sep 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58fccebb5870c0dfc860e5b9927f920f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [S. Tsuchiya](https://unsplash.com/@s_tsuchiya?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the metrics used to compare different Neural Network (NN) architectures
+    is the time it takes to train them. Does it take hours? Days? *Weeks*? Usually,
+    this can be improved just by updating the hardware used to train them. Replace
+    lesser GPUs with more powerful ones, parallelize the training across multiple
+    GPUs, etc. Something similar happens with the inference step. Will we deploy our
+    trained network on an embedded device, like a microcontroller? Or are we going
+    to run it on a mobile device? Perhaps the network is just too big, and we need
+    an embedded GPU or even a server-size GPU to execute it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's select one of them. We take our NN, compile it for our device, and test
+    how fast it runs. Oh no! It does not meet our latency requirements! We needed
+    the NN to run faster than 1 second, and our NN took 2 seconds to run! What are
+    the options now?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Replace the device with a more powerful one:** This can be very problematic,
+    specifically when there are hard application constraints. Perhaps you are only
+    allowed to use specific, already certified hardware. Or you have difficult energy
+    constraints to meet.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reduce the complexity of the NN:** This may also be difficult because you
+    can lose quality in the metric of the NN if not done carefully.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Autotune the NN for your particular hardware.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Wait, what? What do you mean by *autotune*? Well, that's the topic of this article.
+    Stay with me to learn about this fascinating technique. In this article, I will
+    try to explain this topic from a high-level point of view. If you stay with me
+    till the end of the article, you will find examples from software frameworks that
+    can be used to optimize your NN, together with links to their tutorials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Auto… why?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you read [my last post](https://medium.com/towards-data-science/green-ai-methods-and-solutions-to-improve-ai-sustainability-861d69dec658),
+    you may remember a very simplistic explanation of computer architecture. In it,
+    I talked about two elements: computation units and memory units.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to execute a layer of a NN, data needs to be transferred across the
+    memory hierarchy until it reaches the computation units. Then, the computation
+    units will execute the required mathematical operation, and the result will be
+    stored at some level of the memory hierarchy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We define the cost of executing a NN layer as the metric that will represent
+    the quality of the inference. For example, one of the most common metrics is latency,
+    which means how much time it takes to complete the execution of the layer. Another
+    one could be energy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, there are two different aspects that modify this metric:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cost of actually executing the mathematical operation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The cost of moving data across the memory hierarchy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Depending on the available hardware, the computation units can be extremely
+    complicated or very simple, or there can even be different ones available on the
+    same hardware. An example of the first one would be a systolic array, a complex
+    digital circuit able to execute multiple mathematical operations in parallel (take
+    a look [at my post](https://medium.com/towards-data-science/accelerating-neural-networks-on-hardware-baa3c14cd5ba)
+    about systolic arrays if you are interested in this topic). An example of a simple
+    one would be an ALU (Arithmetic Logic Unit) which is able to execute only one
+    mathematical operation between two elements on each time step (for example, an
+    addition or a multiplication). So the first aspect would be to select which data
+    needs to be inserted into each computation unit at each timestep.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other aspect is moving data from memory to the computation units. The less
+    data that is moved from the last memory levels to the closer memory levels, the
+    better. So the main idea is to move data as little as possible, and then reutilize
+    it as much as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at an example to illustrate this, shall we? Now, we want to execute
+    on this hardware the following mathematical operation, which is called a 1D convolution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see from the animation, the basic idea is that we superimpose the
+    filter over the input, and on each timestep, we move the filter to the right.
+    On each timestep, we multiply elementwise the input and the filter and accumulate
+    the results together. This is a typical operation, which in its 2D version is
+    the basis operation used in Convolutional Neural Networks (CNN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I will propose a theoretical hardware, *only for illustration purposes*, with
+    the following elements and costs (referenced to the basic mathematical operation
+    needed by the 1D convolution):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Computation unit 1: Cost of 5.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Computation unit 2: Cost of 2.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Memory level 1: Read and write each cost 1 per element, but we can only store
+    here 8 elements at the same time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Memory level 2: Read and write each cost 4 per element, and we can store here
+    all elements needed by the layer.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'How can we run this 1D convolution in this theoretical hardware? For example,
+    we could use option A:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But we could also use option B:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, **we can map the same operation in different ways, and obtain
+    different costs**. Option B has a lower cost not only because it uses computation
+    unit 2, but also because I changed the way data is reused in Memory Level 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Auto…what?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: But what happens if there is no model of the hardware to obtain the cost, or
+    if the hardware is just too complicated to do this kind of manual analysis? We
+    need a way to automate the search for the best mapping of a particular operation
+    on particular hardware. This is called *auto-tuning*. It is a process by which
+    we **automate** this search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How would this work for an entire NN? We start with the pre-trained model and
+    extract from it all the different operations that need to be executed. Then, for
+    each operation, we run the search process on a host computer by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating a new mapping proposal for the selected mathematical operation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compiling the mapping proposal for the particular hardware on which we want
+    to run the inference
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sending the compiled mapping to the hardware where we are going to measure its
+    cost
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Execution of the proposed compiled mapping
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Reading the cost of the execution
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Selecting the next mapping to test and returning to step 2
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/425732d6a3c58528e5a2008dbc2802f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. Schematic of the auto-tuning process
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One interesting point here is: how do we actually select the next mapping to
+    test (point 6)? Well, one could try a grid search approach, by testing all possible
+    mappings. But this is usually too slow because the search space of possible mapping
+    proposals can be too huge to test all of them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another possibility is to use some algorithm to guide the selection of the next
+    mapping proposals to test, instead of just testing everything blindly. The main
+    goal is to reduce the number of mapping proposals to actually execute, and try
+    to arrive at the optimal solution using the fewest possible measurements. This
+    can be done, for example, by using Genetic Algorithms or Reinforcement Learning
+    to learn from past measurements and predict the performance of future measurements,
+    thus being able to discard the mapping proposals that are *probably* not good
+    and try only the most promising ones. Wait, are we using AI to optimize AI? Yes!
+    Isn’t it wonderful?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Auto…how?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ok, this sounds promising, but how do we *actually* do this? Well, we need software
+    that allows us to define the different transformations that need to be applied
+    to an operation in order to get the different mapping proposals. Do we need to
+    program this search ourselves?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course not! There are a lot of papers proposing modelling techniques and
+    methods to solve the autotuning process, and this is a very active research topic.
+    Works like Bolt [1], Lorien [2], Ansor [3] or Chameleon [4] are examples of works
+    that tackle this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Particularly, if you are looking for some **practical** frameworks built on
+    top of works like this, that provide tutorials and documentation on how to run
+    this process, I would recommend you take a look at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TVM [5]:** An end-to-end compiler that accepts models from different frameworks
+    as inputs (PyTorch, Tensorflow Lite, Tensorflow, Keras, ONNX, etc.) and is able
+    to optimize and deploy the network for an increasing number of targets (GPUs,
+    microcontrollers, custom accelerators and more). Programs can be optimized using
+    its [AutoTVM](https://tvm.apache.org/docs/tutorial/autotvm_relay_x86.html#sphx-glr-tutorial-autotvm-relay-x86-py)
+    or [AutoScheduler](https://tvm.apache.org/docs/tutorial/auto_scheduler_matmul_x86.html#sphx-glr-tutorial-auto-scheduler-matmul-x86-py)
+    modules.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**TensorComprehensions [6]:** Provides an autotuner based on a genetic algorithm,
+    and is integrated with [PyTorch](https://facebookresearch.github.io/TensorComprehensions/framework/pytorch_integration/writing_layers.html#autotuning).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tiramisu [7]:** Polyhedral compiler able to target NVIDIA GPUs, Xilinx FPGAs
+    and multicore x86 CPUs. Tutorials can be found [here](https://github.com/Tiramisu-Compiler/tiramisu/tree/master/tutorials).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Don’t give up if your NN fails to achieve the required performance when executed
+    on a resource-constrained hardware! There are techniques for improving its performance,
+    such as the auto-tuning method described in this article. This is not some esoteric
+    technique only available in scientific papers; some of the provided software frameworks
+    already include tutorials to accomplish this in a *nearly* plug-and-play manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Give them a try, and let me know in the comments if you find them useful!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to follow me on [LinkedIn](https://www.linkedin.com/in/fpecc/) and
+    let me know what you think of this article, or [buy me a coffee](https://www.buymeacoffee.com/pecciaf)
+    if you really liked it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[[1] Jiarong Xing, “Bolt: Bridging the Gap between Auto-tuners and Hardware-native
+    Performance”, 2021.](https://arxiv.org/abs/2110.15238)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[[2] Cody Hao Yu, “Lorien: Efficient Deep Learning Workloads Delivery”, 2021.](https://dl.acm.org/doi/abs/10.1145/3472883.3486973)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[[3] Lianmin Zheng, “Ansor : Generating High-Performance Tensor Programs for
+    Deep Learning”, 2020.](https://arxiv.org/abs/2006.06762)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[[4] Byung Hoon Ahn, “Chameleon: Adaptive Code Optimization for Expedited Deep
+    Neural Network Compilation”, 2019.](https://openreview.net/forum?id=rygG4AVFvH)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[[5] Tianqi Chen, “TVM: An Automated End-to-End Optimizing Compiler for Deep
+    Learning”, 2018.](https://arxiv.org/abs/1802.04799)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[[6] Nicolas Vasilache, “Tensor Comprehensions: Framework-Agnostic High-Performance
+    Machine Learning Abstractions”, 2018.](https://arxiv.org/abs/1802.04730)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[[7] Riyadh Baghdadi, “Tiramisu: A Polyhedral Compiler for Expressing Fast
+    and Portable Code”, 2018.](https://arxiv.org/abs/1804.10694)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,369 @@
+- en: Topological Generalisation with Advective Diffusion Transformers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/topological-generalisation-with-advective-diffusion-transformers-70f263a5fec7](https://towardsdatascience.com/topological-generalisation-with-advective-diffusion-transformers-70f263a5fec7)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Topological Generalisation in GNNs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the key open questions in the study of graph neural networks (GNNs) is
+    their generalisation capabilities, in particular, under changes in the topology
+    of the graph. In this post, we study this problem from the perspective of graph
+    diffusion equations, which are intimately related to GNNs and have been used in
+    the past as a framework for analysing GNN dynamics, expressive power, and justifying
+    architectural choices. We describe a new architecture based on advective diffusion
+    that combines the computational structure of message-passing neural networks (MPNNs)
+    and Transformers and shows superior topological generalisation capabilities.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-bronstein.medium.com/?source=post_page-----70f263a5fec7--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----70f263a5fec7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70f263a5fec7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----70f263a5fec7--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----70f263a5fec7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70f263a5fec7--------------------------------)
+    ·9 min read·Oct 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4454e0295635120bca008b7c8f313e5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image: Unsplash'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with* [*Qitian Wu*](https://qitianwu.github.io/)
+    *and* [*Chenxiao Yang*](https://chr26195.github.io/) *and is based on the paper
+    by Q. Wu et al.,* [*Advective Diffusion Transformer for Topological Generalization
+    in Graph Learning*](https://arxiv.org/abs/2310.06417) *(2023) arXiv:2310.06417.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph Neural Networks (GNNs) have emerged in the last decade as a popular architecture
+    for machine learning on graph-structured data, with a wide variety of applications
+    ranging from social networks and [life sciences](https://arxiv.org/abs/2307.08423)
+    to [drug](https://medium.com/towards-data-science/geometric-ml-becomes-real-in-fundamental-sciences-3b0d109883b5)
+    and [food design](https://medium.com/towards-data-science/hyperfoods-9582e5d9a8e4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two key theoretical questions regarding GNNs are their *expressive* and *generalisation*
+    capabilities. The former question has been addressed extensively in the literature
+    by resorting to [variants of the graph isomorphism test](https://medium.com/towards-data-science/expressive-power-of-graph-neural-networks-and-the-weisefeiler-lehman-test-b883db3c7c49)
+    [1], and more recently, by formulating GNNs as [discretised diffusion-type equations](https://medium.com/towards-data-science/neural-sheaf-diffusion-for-deep-learning-on-graphs-bfa200e6afa6)
+    [2]. However, the second question, despite multiple recent approaches [3–4], is
+    still largely open.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirically, GNNs are often reported to show poor performance [5–7] when the
+    training and test data are generated from different distributions (so-called *“distribution
+    shift”*), especially when the topology of the graph changes (*“topological shift”*).
+    This is a major concern in applications such as chemistry, where ML models are
+    typically trained on a limited set of molecular graphs and are expected to learn
+    some rules that generalise to previously unseen molecules with different structures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e690e59c2c82b6b5ec96935e3b77f35a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Example of topological shifts in graph-based molecular modeling: three molecules
+    on the left have high drug-likeness (QED), whereas the molecules on the right
+    do not.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Neural Graph Diffusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In a recent collaboration between Oxford and Shanghai Jiao Tong University [8],
+    we used the neural diffusion PDE perspective to study the generalisation capabilities
+    of GNNs under topological shifts. [Graph neural diffusion](https://medium.com/towards-data-science/graph-neural-networks-as-neural-diffusion-pdes-8571b8c0c774)
+    approaches [9] replace discrete GNN layers with a continuous-time differential
+    equation of the form
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ẋ**(*t*) = div(**S**(t)∇**X**(t)),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: known as the *graph diffusion equation*. It is initialised with **X**(0) = ENC(**X**ᵢ)
+    and run for some time *t*≤*T*, in order to produce the output **X**ₒ = DEC(**X**(*T*))
+    [10]. Here **X**(*t*) is an *n*×*d* matrix of *d*-dimensional node features at
+    time *t*, **S** is the matrix-valued diffusivity function [11], and ENC/DEC is
+    a feature encoder/decoder pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When **S** depends only on the *structure* of the graph (through its adjacency
+    matrix **A**, i.e., **S** = **S**(**A**)), the graph diffusion equation is *linear*
+    and referred to as *homogeneous* (in the sense that diffusivity properties are
+    “the same” everywhere on the domain). When **S** also depends on the *features*
+    (i.e., **S** = **S**(**X**(*t*),**A**) and is thus time-dependent), the equation
+    is *nonlinear* (*non-homogeneous*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the graph learning setting, **S** is implemented as a parametric function
+    whose parameters are learned using backpropagation based on the downstream task.
+    Many standard message-passing graph neural networks (MPNNs) can be recovered as
+    special settings of the graph diffusion equation by an appropriate choice of diffusivity
+    and a time discretisation scheme [12]. The linear setting corresponds to GNNs
+    of the *convolutional* type and the nonlinear setting to the *attentional* one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generalisation capabilities** of the neural graph diffusion model are related
+    to the sensitivity of the solution **X**(*T*) = *f*(**X**(0),**A**) to a perturbation
+    of the adjacency matrix **Ã** = **A** + δ**A**. A model is expected to show good
+    topological generalisation if *f*(**X**(0),**A**) ≈ *f*(**X**(0),**Ã**) for a
+    small δ**A**. This is unfortunately not the case for graph diffusion: we show
+    [13] that in both linear and nonlinear cases, the change in **X**(*T*) can be
+    very large, of 𝒪(exp(‖δ**A**‖*T*)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Graph Transformers** attempt to overcome this problem by allowing for *non-local
+    diffusion*, where exchange of information can occur between any pair of nodes
+    rather than only those connected by an edge. This effectively decouples the input
+    graph from the computational one (which is now fully-connected and learned through
+    the attention mechanism) and makes the model agnostic to the input graph. We prove
+    that such a non-local diffusion model is capable of topological generalisation
+    [14] under a certain data generation model [15] with an additional assumption
+    that the node labels and graph topology are statistically independent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This independence assumption, however, is often far from reality, since node
+    labels typically correlate with the graph structure. This implies that non-local
+    diffusion alone, discarding any observed structural information, is insufficient
+    for topological generalisation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Advective Graph Diffusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We consider a more general type of diffusion equations containing an additional
+    advective term,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ẋ**(*t*) = div(**S**(*t*)∇**X**(*t*)) + *β*div(**V**(*t*)**X**(*t*)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equations of this type are known as *advective diffusion* and arise in real-world
+    physical systems such as saline solutions. The first *diffusive term* is lead
+    by the concentration gradient and describes the evolution of salinity due to spatial
+    differences in the salt chemical concentration (**S** represents the molecular
+    diffusivity in water). The second *advective term* is related to the movement
+    of the water (**V** characterises the flow direction).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Advective Diffusion Transformer.** In our setting, the diffusion process
+    led by the feature gradient acts as an *internal* driving force of the evolution,
+    in which the diffusivity remains invariant across environments. This corresponds
+    to environment-invariant latent interactions among nodes, determined by the underlying
+    data manifold, that induce all-pair information flow over a complete graph. Architecturally,
+    we implement the diffusive term as a *Transformer* with precomputed global attention
+    between the input features of all pairs of nodes, **S** = **S**(**X**(0),**A**).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advection process driven by the directional movement (where we use **V**=**A**)
+    is an *external* force, where the velocity depends on the context. This is analogous
+    to environment-sensitive graph topology that is informative for prediction in
+    specific environments. Architecturally, the advective term is implemented as message-passing
+    on the input graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55094d1fdb20966e20a75a7315c30469.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Advective Diffusion Transformer architecture for generalisable learning on
+    graph data. The model comprises three modules: a node-wise encoder (ENC), a diffusion
+    module, and a node-wise decoder (DEC). The diffusion module is implemented with
+    the graph advective diffusion equation, where the diffusion term is instantiated
+    as global attention (Transformer-like) and the advection term as local message
+    passing.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We refer to this architecture combining MPNNs and graph Transformers as the
+    *Advective Diffusion Transformer* *(ADiT)*. It requires only learnable weights
+    in the feature encoder and decoder neural networks (ENC and DEC) and the attention
+    used for the pre-computed diffusivity and is highly parameter-efficient. The use
+    of constant diffusivity also yields a closed-form solution of the advective diffusion
+    equation, **X**(*t*) = exp(−(**I**−**S**−*β***A**)*t*)**X**(0), which can be numerically
+    approximated using Padé-Chebyshev rational series [16] with linear complexity
+    in the number of nodes *n*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Topological generalisation of Advective Diffusion.** We show [17] that the
+    change in **X**(*T*) as a result of graph adjacency perturbation is reduced from
+    exponential to polynomial, 𝒪(Poly(‖δ**A**‖*T*)). This suggests that the advective
+    diffusion model incorporating observed structural information is capable of controlling
+    the impact of topology variation on node representations to arbitrary rates. Furthermore,
+    we show that under our graph generation model [15], this architecture has provable
+    topological generalisation capability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Experimental Validation**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We provide an extensive experimental validation of the Advective Diffusion Transformer
+    on a variety of node-, edge-, graph-level tasks across datasets ranging from molecules
+    to social networks. The main focus of the evaluation is a comparison with state-of-the-art
+    MPNN and graph Transformers on challenging training/testing splits in order to
+    stress-test the generalisation capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f932ffd746cfabeaf9cc3c1af92cca5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Results on node classification datasets: citation network Arxiv and social
+    network Twitch. The train/validation/test data are split with the publication
+    years of papers and geographic domains of users on Arxiv and Twitch, respectively,
+    which introduces distribution shifts. OOM means out-of-memory error.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e9322ad8f8f17ea08bfd7a61cb6315b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Dynamic Graph Dataset DPPIN [19] of biological protein interactions where we
+    consider three different tasks: node regression, edge regression, and link prediction.
+    The performance is measured by RMSE and ROC-AUC, respectively. We consider dataset-level
+    data splits for train/valid/test, where different datasets are obtained from distinct
+    protein identification methods and have disparate topological patterns.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78c4481446bb4c48f15b1c598ce974cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating molecular coarse-grained mapping operators where the task is to find
+    a representation of how atoms are grouped in a molecule that can be modeled as
+    a graph segmentation problem [20]. It boils down to predicting the edges for subgraph
+    partition (indicated by colors) resembling the expert annotations (ground truth).
+    The presented scores for each method are averaged testing accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, our experimental results demonstrate the promising power and wide applicability
+    of our model in the challenging generalisation tasks over graph data. More broadly,
+    our work points to the possibility of leveraging established physical PDEs for
+    understanding the generalisation capabilities of GNNs and designing novel generalisable
+    architectures in graph learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] K. Xu et al., How powerful are graph neural networks? (2019) *ICLR*, and
+    C. Morris et al., Weisfeiler and Leman go neural: Higher-order graph neural networks
+    (2019) *AAAI* established the equivalence between message passing and the graph
+    isomorphism test described in the classical paper of B. Weisfeiler and A. Lehman,
+    The reduction of a graph to canonical form and the algebra which appears therein
+    (1968) *Nauchno-Technicheskaya Informatsia* 2(9):12–16\. See our [previous blog
+    post](https://medium.com/towards-data-science/expressive-power-of-graph-neural-networks-and-the-weisefeiler-lehman-test-b883db3c7c49)
+    on this topic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] C. Bodnar et al., Neural Sheaf Diffusion: A Topological Perspective on
+    Heterophily and Oversmoothing in GNNs (2022) *NeurIPS* (see also an [accompanying
+    blog post](https://medium.com/towards-data-science/neural-sheaf-diffusion-for-deep-learning-on-graphs-bfa200e6afa6))
+    showed how the ability of the diffusion equation on a cellular sheaf constructed
+    over a graph to separate a certain number of node classes depends on the choice
+    of the sheaf. F. Di Giovanni et al., Understanding convolution on graphs via energies
+    (2023) *TMLR* (see an [accompanying blog post](https://medium.com/towards-data-science/graph-neural-networks-as-gradient-flows-4dae41fb2e8a)
+    and a [talk](https://www.youtube.com/watch?v=sgTTtmwOMgE)) described the conditions
+    under which diffusion with channel mixing (discretised as a convolutional-type
+    GNN) can cope with heterophilic graphs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] V. Garg et al., Generalization and Representational Limits of Graph Neural
+    Networks (2020) *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] H. Tang and Y. Liu, Towards Understanding Generalization of Graph Neural
+    Networks (2023) *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] P. W. Koh et al., WILDS: A benchmark of in-the-wild distribution shifts
+    (2021) *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] W. Hu et al., OGB-LSC: A large-scale challenge for machine learning on
+    graphs (2021) *arXiv*:2103.09430.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] G. Bazhenov and D. Kuznedelev, Evaluating robustness and uncertainty of
+    graph models under structural distributional shifts (2023) *arXiv*:2302.13875.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Q. Wu et al., Advective Diffusion Transformer for Topological Generalization
+    in Graph Learning (2023) *arXiv*:2310.06417.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] There exist multiple diffusion-based GNN models. See, e.g., B. Chamberlain
+    et al., GRAND: graph neural diffusion (2021) *ICML,* an [accompanying blog post](https://medium.com/towards-data-science/graph-neural-networks-as-neural-diffusion-pdes-8571b8c0c774),
+    [talk](https://youtu.be/9SMbH18nMUg?si=3aNK6gFEjTcDcCHN),as well as our more general
+    blog post on [physics-inspired GNNs](https://medium.com/towards-data-science/graph-neural-networks-beyond-weisfeiler-lehman-and-vanilla-message-passing-bc8605fa59a).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Additional boundary conditions can be imposed e.g. to model missing features,
+    see E. Rossi et al., On the Unreasonable Effectiveness of Feature propagation
+    in Learning on Graphs with Missing Node Features (2022) *LoG* (see also an [accompanying
+    blog post](https://medium.com/towards-data-science/learning-on-graphs-with-missing-features-dd34be61b06)
+    and a [talk](https://youtu.be/xe5A-xQTBdM?si=ftcUtxZHSHv0wXwq)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] The graph *G* is assumed to have *n* nodes and *m* edges, **W** is the
+    *n*×*n* adjacency matrix with *wᵤᵥ*=1 if *u*~*v* and zero otherwise. The gradient
+    is an operator assigning to each edge *u*~*v* the difference of the respective
+    node feature vectors, (∇**X**)*ᵤᵥ*=**x***ᵥ*−x*ᵤ* and the divergence at node *u*
+    sums the features of edges emanating from it, (div(**X**))*ᵤ*= ∑*ᵥ* *wᵤᵥ* **x***ᵤᵥ*.
+    Given *d*-dimensional node features arranged into an *n*×*d* matrix **X**, the
+    gradient ∇**X** can be represented as a matrix of size *m*×*d*. Similarly, given
+    edge features matrix **Y** of size *m*×*d*, the divergence div(**Y**) is an *n*×*d*
+    matrix. The two operators are adjoint w.r.t. the appropriate inner products, ⟨∇**X**,**Y**⟩=⟨**X**,div(**Y**)⟩.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] For example, **S** can be defined as attention on the connected node features,
+    as in P. Veličković et al., Graph Attention Networks (2018) *ICLR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] Propositions 1 and 2 in our paper [8].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] Proposition 3 in our paper [8].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] The data generation hypothesis in our paper [8] is an extension of the
+    graphon (continuous graph) model described in Section 3.1\. The general setting
+    does not assume the independence between node labels and graph topology.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] See E. Gallopoulos and Y. Saad, Efficient solution of parabolic equations
+    by Krylov approximation methods (1992) *SIAM J. Scientific and Statistical Computing*
+    13(5):1236–1264\. This method has previously been successfully used in geometry
+    processing, e.g., G. Patané, Laplacian spectral distances and kernels on 3D shapes
+    (2014) *Pattern Recognition Letters* 47:102–110.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[17] Theorem 1 in our paper [8].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[18] Theorem 2 in our paper [8].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[19] D. Fu and J. He, DPPIN: A biological repository of dynamic protein-protein
+    interaction network data (2022) *Big Data*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[20] Z. Li et al., Graph neural network based coarse-grained mapping prediction
+    (2020) *Chemical Science* 11(35):9524–9531.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*We are grateful to Yonatan Gideoni and Fan Nie for proofreading this post.
+    For additional articles about deep learning on graphs, see Michael’s* [*other
+    posts*](https://towardsdatascience.com/graph-deep-learning/home) *in Towards Data
+    Science,* [*subscribe*](https://michael-bronstein.medium.com/subscribe) *to his
+    posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
+    get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
+    or follow* [*Michael*](https://twitter.com/mmbronstein), [*Qitian*](https://twitter.com/qitianwu_),
+    *and* [*Chenxiao*](https://twitter.com/Chenxia58917359) *on Twitter.*'
+  prefs: []
+  type: TYPE_NORMAL

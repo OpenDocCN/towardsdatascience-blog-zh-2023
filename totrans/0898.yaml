@@ -1,0 +1,424 @@
+- en: Fine-Tune Your LLM Without Maxing Out Your GPU
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78](https://towardsdatascience.com/fine-tune-your-llm-without-maxing-out-your-gpu-db2278603d78)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How you can fine-tune your LLMs with limited hardware and a tight budget
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)[![John
+    Adeojo](../Images/f6460fae462b055d36dce16fefcd142c.png)](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------)
+    [John Adeojo](https://johnadeojo.medium.com/?source=post_page-----db2278603d78--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db2278603d78--------------------------------)
+    ·8 min read·Aug 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ebaa7adc1f03dc619e66b6d330a31748.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Generated with Midjourney'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Demand for Bespoke LLMs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With the success of ChatGPT, we have witnessed a surge in demand for bespoke
+    large language models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there has been a barrier to adoption. As these models are so large,
+    it has been challenging for businesses, researchers, or hobbyists with a modest
+    budget to customise them for their own datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now with innovations in parameter efficient fine-tuning (PEFT) methods, it is
+    entirely possible to fine-tune large language models at a relatively low cost.
+    In this article, I demonstrate how to achieve this in a [Google Colab](https://colab.research.google.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I anticipate that this article will prove valuable for practitioners, hobbyists,
+    learners, and even hands-on start-up founders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, if you need to mock up a cheap prototype, test an idea, or create a cool
+    data science project to stand out from the crowd — keep reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Do We Fine-tune?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Businesses often have private datasets that drive some of their processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To give you an example, I worked for a bank where we logged customer complaints
+    in an Excel spreadsheet. An analyst was responsible for categorising these complaints
+    (manually) for reporting purposes. Dealing with thousands of complaints each month,
+    this process was time-consuming and prone to human error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Had we had the resources, we could have fine-tuned a large language model to
+    carry out this categorisation for us, saving time through automation and potentially
+    reducing the rate of incorrect categorisations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspired by this example, the remainder of this article demonstrates how we
+    can fine-tune an LLM for categorising consumer complaints about financial products
+    and services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The dataset comprises real consumer complaints data for financial services and
+    products. It is open, publicly available data published by the [Consumer Financial
+    Protection Bureau](https://www.consumerfinance.gov/complaint/data-use/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are over 120k anonymised complaints, categorised into approximately 214
+    “subissues”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have a version of the [dataset](https://huggingface.co/datasets/JAdeojo/consumer_complaints_cfpb)
+    on my hugging face page that you can explore for yourself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Hardware
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The hardware I used for training was a V100 GPU with 16 GB of RAM, accessed
+    via Google Colab. This is a relatively inexpensive and accessible infrastructure,
+    available for rent via Google Colab Pro at approximately 9.99 USD per 100 compute
+    units.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Large Language Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The LLM used is RoBERTa¹ (XLM), which has approximately 563 million parameters.
+    An overview of the model and its specification can be found [here](https://huggingface.co/xlm-roberta-large).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though not the largest model currently available, RoBERTa still presents a demanding
+    workload for those with access only to small-scale infrastructure. This makes
+    it an ideal choice to demonstrate that training a relatively large model on small-scale
+    infrastructure is feasible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note — RoBERTa is a pre-trained model pulled from the* [*Hugging Face Hub*](https://huggingface.co/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning at Low Cost with LoRA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As stated in the introduction, PEFT methods have made it possible to fine-tune
+    LLMs at a low cost. One such method is LoRA, which stands for Low-Rank Adaptations
+    of large language models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a high level, LoRA accomplishes two things. First, it freezes the existing
+    weights of the LLM (rendering them non-trainable); second, it injects trainable
+    “lower-dimensional” layers into specified layers of the architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This technique yields a model with far fewer trainable parameters while still
+    preserving performance. LoRA has been shown to reduce GPU memory consumption by
+    a factor of three compared to standard fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For further details on LoRA, please read the full [paper](https://arxiv.org/pdf/2106.09685.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Technical Details
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the past, the key challenge for training large language models on limited
+    hardware was adapting the training parameters to prevent the process from crashing
+    due to exceeding your GPU’s memory capacity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With LoRA, one can push the boundaries of their hardware with just a few adjustments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying LoRA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Assuming you have your dataset prepared, the first thing you need to do is set
+    your LoRA configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Script by Author: Applying LoRA to RoBERTa'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**task_type** — The task for which you’re fine-tuning the model. For complaints
+    classification, we are focusing on sequence classification.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**r** — A hyperparameter named the LoRA attention dimension which affects the
+    scaling.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**lora_alpha** — Another hyperparameter that impacts the scaling.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**target_modules** — Here we specify that the transformation should be applied
+    to the attention modules in our transformer, hence we set this to “query” and
+    “value”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**lora_dropout** — The dropout probability for the LoRA layers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**bias** — The bias type for LoRA.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**modules_to_save** — Excluding the LoRA layers, we declare which layers of
+    our model we wish to make trainable and save at the final checkpoint. For our
+    purposes, we require the classification head to be trainable.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The next part of the script sets up the model itself. Here we are simply loading
+    the pre-trained RoBERTa model from Hugging Face. The additional model parameters
+    are simply passing dictionaries to the classification IDs such that the returned
+    labels are in text form rather than numerically encoded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we want to transform the pre-trained model based on our LoRA configuration.
+    This is done with the get_peft_model function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After applying LoRA, we are left with a network with the following structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: the original RoBERTa parameters are still in the network; they are simply
+    frozen and therefore not trainable. Instead, we have the LoRA layers, which are
+    fewer in number and trainable.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initiate Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once we have our LoRA model, it’s simply a matter of setting up our trainer
+    and initiating the training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Script by Author: Setup for training the LoRA model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most aspects in the script are standard for training deep learning models; however,
+    we have incorporated a few additional elements to improve GPU memory efficiency.
+    Let’s briefly outline them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Per_device_train_batch_size** — Setting this parameter to lower values maintains
+    low RAM usage on your GPU at the expense of training speed. The lower the number,
+    the more training steps are required to complete one epoch. Remember, one epoch
+    is a complete run through the entire training dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Per_device_eval_batch** — Setting this parameter dictates how many data samples
+    are processed on each GPU core. Increasing this number increases the speed of
+    evaluation and therefore the speed of training, but at the cost of GPU memory
+    usage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Gradient_accumulation_steps** — Usually, when updating deep learning models,
+    there is a forward pass through the network and a loss is calculated. Following
+    this, through a process known as backpropagation, the gradients are calculated
+    and used to update the model parameters. With gradient accumulation, model parameters
+    are not updated immediately after one forward pass. Instead, the gradients are
+    stored and accumulated over the number of batches specified. Only after all the
+    batches have passed through the network will the accumulated gradients be applied
+    to update the parameters in the network. The effect here is to increase the effective
+    batch size, meaning the model can effectively train on a larger batch size enabling
+    you to reap the benefits of training on larger batches without the cost in GPU
+    RAM usage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fp16 (mixed-precision training)** — Setting mixed precision training to true
+    can help improve training speed at the cost of GPU usage. Essentially, some calculations
+    in the network are done in 16-bit (half precision) instead of 32-bit (full precision)
+    to speed up the calculations. However, the method requires both a 16-bit and 32-bit
+    version of the model to be stored on your GPU device meaning 1.5 RAM usage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Diagnostics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s see how everything performed. Since this is about training effectively
+    with limited hardware, let’s start by looking at the GPU RAM diagnostics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0591e1f3771d790299cc834ca2b32a1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: GPU RAM usage chart'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We were able to train our model for 9 hours without exceeding the RAM on our
+    GPU. This is a good result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about the model performance? Let’s take a look at the validation and training
+    loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af3c0fad0f5073e5e86d2f810b428c75.png)![](../Images/6a7b88bc7aeaba5d09b6860e10cab2e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: validation and training loss'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upon examining the loss charts, it seems that the models have yet to converge,
+    despite the training session lasting approximately nine hours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This might not be surprising considering the substantial model size and limited
+    infrastructure at our disposal, alongside the fact that many of the training parameter
+    decisions were made to prioritise memory preservation over training speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model’s precision, recall, and F1 show that it’s prbably not ready for full
+    production usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab9a7ded433bcfbab3a8a2d271d298ac.png)![](../Images/204a27f935e99914efa5181d2128ae06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'image by Author: Precision and recall tracking for the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46024b59c06227f09daedc22ee1496bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: F1 tracking for the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cost
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Google levies charges for renting GPUs via Colab based on compute units. Consequently,
+    to calculate the cost of training the model for nine hours, we need to ascertain
+    the number of compute units utilised. I was unable to locate explicit details
+    from Google on their computation of these units, but it is [suggested](https://help.apify.com/en/articles/3490384-what-is-a-compute-unit)
+    that a compute unit is determined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 GB memory x 1 hour = 1 compute unit
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The model was trained for approximately nine hours and utilised around 15 GB
+    of RAM. Therefore, the training run consumed roughly 135 compute units. With a
+    price of 9.99 USD per 100 compute units, the cost of training the model amounts
+    to approximately 13.49 USD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To achieve a usable state for the model, convergence may necessitate a slightly
+    higher expenditure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have demonstrated that LoRA makes it possible for individuals with limited
+    resources to engage in the world of LLMs. For interested readers, I recommend
+    exploring other [parameter efficient fine-tuning methods](https://huggingface.co/blog/peft),
+    as well as strategies for improving data efficiency in your training processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The end-to-end Colab with the full model run is available [here](https://colab.research.google.com/drive/1jmUPbg6G2uLkpRg7DQzPzerDLU_d9N2-?usp=sharing).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I have hosted an app demonstrating the model [Hugging Face](https://huggingface.co/spaces/JAdeojo/consumer-finance-complaints-app-demo)
+    for you to try for yourself.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The full model diagnostics for the training run is available for you to review
+    [here](https://api.wandb.ai/links/data-centric-solutions/mai8vzsz).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Link to the model checkpoint is [here](https://huggingface.co/JAdeojo/xlm-roberta-large-lora-consumer-complaints-cfpb_49k).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Watch a live tutorial on [YouTube](https://youtu.be/HMbctCYJLbw).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re keen to enhance your skills in artificial intelligence, join the waiting
+    list for [my course](https://www.data-centric-solutions.com/course), where I will
+    guide you through the process of developing large language model powered applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re seeking AI-transformation for your business, book a discovery call
+    today.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.brainqub3.com/?source=post_page-----db2278603d78--------------------------------)
+    [## Brainqub3 | AI software development'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At Brainqub3 we develop bespoke AI software. We create qub3s, advanced artificial
+    brains, using the latest AI to…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.brainqub3.com](https://www.brainqub3.com/?source=post_page-----db2278603d78--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more insights on artificial intelligence, data science, and large language
+    models you can subscribe to the [YouTube](https://www.youtube.com/channel/UCkXe-exqi25V4GnZendgEaA)
+    channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Citations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Conneau, A., Khandelwal, K., Goyal, N., Chaudhary, V., Wenzek, G., Guzmán,
+    F., Grave, E., Ott, M., Zettlemoyer, L., & Stoyanov, V. (2019). Unsupervised cross-lingual
+    representation learning at scale. *CoRR*. Retrieved from [http://arxiv.org/abs/1911.02116](http://arxiv.org/abs/1911.02116)'
+  prefs: []
+  type: TYPE_NORMAL

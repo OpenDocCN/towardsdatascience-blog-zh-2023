@@ -1,0 +1,578 @@
+- en: Examining Flights in the U.S. with AWS and Power BI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/examining-flights-in-the-u-s-with-aws-and-power-bi-297a29fb2c13](https://towardsdatascience.com/examining-flights-in-the-u-s-with-aws-and-power-bi-297a29fb2c13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What insights can we obtain using ETL and BI?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@aashishnair?source=post_page-----297a29fb2c13--------------------------------)[![Aashish
+    Nair](../Images/23f4b3839e464419332b690a4098d824.png)](https://medium.com/@aashishnair?source=post_page-----297a29fb2c13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----297a29fb2c13--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----297a29fb2c13--------------------------------)
+    [Aashish Nair](https://medium.com/@aashishnair?source=post_page-----297a29fb2c13--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----297a29fb2c13--------------------------------)
+    ·9 min read·Jul 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7bf31178eb840ce3f7f2851143eee040.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [John McArthur](https://unsplash.com/@snowjam?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ∘ [Introduction](#1403)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Problem Statement](#f26a)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Data](#2077)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [AWS Architecture](#cac6)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Data Storage with AWS S3](#b9c0)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Designing the Schema](#b132)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [ETL with AWS Glue](#0a30)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Data Warehousing with AWS Redshift](#85b9)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Extracting Insights with AWS Redshift](#935e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Visualizing data with Power BI](#c25c)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Future Steps](#cbd7)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Conclusion](#1a36)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [References](#eb18)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Air travel has become an integral part of our lives. It is a means for businesses
+    to network and conduct commerce and for families to visit loved ones or travel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite its influence, the aviation industry is known for facing turbulence.
+    It is subject to continuous change due to external factors like economic busts
+    and booms, climate change, the Covid-19 pandemic, and a push to rely more on renewable
+    energy sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be cognizant of such changes and their impact on air travel, it is worth
+    tracking these flights over time. Such an endeavor requires a robust strategy
+    for data warehousing, data analysis, and data visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Statement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This project has 2 primary objectives. The first is to utilize the resources
+    provided by Amazon Web Services (AWS) to build a data pipeline that facilitates
+    the storage, transformation, and analysis of U.S. flight data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second is to build a visualization tool with Power BI that can effectively
+    illustrate the key findings from the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The dataset used for this project is obtained from the [Bureau of Transportation
+    Statistics](https://www.transtats.bts.gov/ot_delay/OT_DelayCause1.asp?20=E). It
+    primarily reports the number of total flights, delays, and cancellations in airports
+    and carriers from 2003 to 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following is a preview of the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/20a83d3f6f6e1034f9af42167ffc532c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a glance, there are a few issues with the raw dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, the information in the `airport_name` field comprises multiple pieces
+    of information. It not only presents the name of the airport, but also the city
+    and the state. To easily access this information, this field will have to be split
+    into 3 separate fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Secondly, this data currently adopts a flat model (i.e., 1 table). However,
+    this is not the optimal setup since the data contains multiple entities with relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These shortcomings will have to be addressed before the data can be used for
+    analysis or visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AWS Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s discuss the AWS architecture needed to build the data pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The required resources are best illustrated with the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/758a0dd8cbadacd0dea9655997bfa7af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: AWS Architecture (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cloud solution uses Amazon S3 to store the raw data as well as the transformed
+    data, AWS Glue to create an ETL job that facilitates the transformation of the
+    data, and AWS Redshift to create the cloud data warehouse that enables users to
+    extract insights from the data with SQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, Power BI is used to display the key metrics provided by the data in
+    the form of a dashboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Storage with AWS S3
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The project utilizes two S3 buckets: `flights-data-raw` and `flights-data-processed`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f213beaeeccb77629d06383c7da858e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: S3 Buckets (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `flights-data-raw` bucket contains the raw dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38f386af929602df266e84d67bd5e135.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: flights-data-raw Bucket (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `flights-data-processed` bucket will contain the data after it has been
+    transformed (it is currently empty).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Designing the Schema
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, it is important to determine a suitable schema for this data. The raw
+    data is stored in a flat file, which contains a single table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/105527d7546868f2b3caf746f2bff64b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Raw Data (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, this schema only has a single table, which comprises multiple
+    entities, such as date, airport, and carrier. To optimize the database for faster
+    retrieval of data, this flat schema can be converted into a star schema with the
+    use of dimensional modeling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d4c59165f5ce2980bbfc8dcc9f42f0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Star Schema (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this new schema, the `flights` table serves as the fact table, while the
+    `date`, `carrier`, and `airport` tables serve as the dimension tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ETL with AWS Glue
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An ETL job created with AWS Glue can transform the raw data into the fact and
+    dimension tables and load them into the `flights-data-processed` bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ETL job uses an imported Python script to carry out the dimensional modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f1bc2982e72a6638976049967a88fc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating an ETL Job (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The script uses boto3, the Python SDK, to extract the raw dataset in the `flights-data-raw`
+    bucket, create the 4 tables in the star schema, and loads them into the `flights-data-processed`
+    bucket as csv files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, the following snippet is used to create the `carrier` table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The entire script used to create the 4 tables in the schema can be accessed
+    in the [GitHub repository](https://github.com/anair123/Tracking-U.S.-Flights-With-AWS-and-Power-BI).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ETL job runs without any issues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb20dac17dbf45a4a86732d748ff60f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Successful Run (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset has been converted into one fact table and 3 dimension tables in
+    the form of csv files, which are all stored in the `flights-data-processed` bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1dda9d4f42a1d4ed6e42f1ebb0d559b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: flights-data-processed Bucket (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Warehousing with AWS Redshift
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With AWS Glue, the data that was initially in a flat model can now be represented
+    with a more fitting star schema in a data warehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cloud data warehouse for this data will be created with AWS Redshift Serverless.
+    This entails creating a namespace named `flights-namespace` as well as a database
+    named `dev`. In addition, it requires a workgroup named `flights-workgroup`, which
+    will be used to write SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: The workgroup has been configured to allow devices outside of the VPC
+    to access the database. This will be useful when creating the visualization with
+    Power BI'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/c2564ad18a60d46c91742954c26312f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workgroup (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we can open the query editor in Redshift and start creating the fact and
+    dimension tables in the `dev` database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/854ce456d3239eb16f91323ce9eb8137.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query Editor (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, the 4 tables in the schema need to be created in the warehouse using
+    the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92d92bc99aedf7001ddec7bf346d540b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Created Tables (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The four tables are now in the data warehouse, but they are all empty since
+    the data is still in the `flights-data-processed` bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data can be copied into this data warehouse using the `COPY` command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, the data in `flights.csv` can be copied into the `flights` table
+    using the following command syntax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: the `iam_role` variable should be assigned whatever iam role is was selected
+    when creating the workgroup.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By executing the `COPY` command for each of the csv files in the `flights-data-processed`
+    bucket, the 4 tables should be filled with the necessary data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, here is a preview of the airport table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6734b0767b7283f78075038b89df7974.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query Output (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting Insights with AWS Redshift
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that all tables are loaded with the data, we can now perform analyses with
+    SQL queries!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the data has previously been transformed into a star schema with dimensional
+    modeling, it is easy to retrieve data efficiently with little run time, thus making
+    this set up ideal for ad hoc analyses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here are some examples of questions that can be answered with SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Which airports had the most flights in 2022?**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/dfd5daf57330433488995ead686a720b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query Output (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. What type of delay contributed the most to the total delay from 2019
+    onwards?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bce44e539eec366dceac1fc9f69407e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query Output (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. In the John F. Kennedy airport, what is percent change in delays for
+    each year?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8f94d9feac99dccb02a2da76fcac59d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of Query Output (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing data with Power BI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The current cloud data warehouse enables users to answer key questions with
+    little time and cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we can take this a step further by creating a visualization that end-users
+    can use to answer similar questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to achieve this is to create a dashboard with Power BI, a highly popular
+    BI tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although there are many metrics that can be unearthed through visualizations,
+    the dashboard will focus on examining the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a summary of the number of flights, delays, and cancellations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tracking the number of flights, delays, and cancellations over time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: identifying the most used airports and carriers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a breakdown of the different types of delays
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In addition, the dashboard will include filters that allow users to target specific
+    times and locations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Altogether, these features can be combined in the form of the following dashboard:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/308cfc56b7deee250c343332377e6f60.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Full Dashboard (Created By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using such a tool, users without access to the data or without knowledge of
+    SQL can answer key questions with little effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Such questions can include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Which carrier sees the most flights in the JFK airport?**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/2d2e3806efed2861c8e71a301dafc6a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Select JFK in the filter (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9e3e83b268a3acd46149109d55a135c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Most Popular Carriers (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. How many flights have been canceled in California from 2019 to 2022?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/834af58042544dee974e97f1f573a303.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Select CA in the Filter (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c4fc0c477c1ed76cb85323249968798.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of Canceled Flights (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. What type of delay contributes the most to total delay in the American
+    Airlines?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29a31db15d766d8c5aa2e4d16b8b58f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Select American Airlines in the Filter (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7cc85669d851630206e0411c59c87e0f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Breakdown of Flight Delay (Created by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Future Steps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb692dd42546a11c8a2965362c021f68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo by Anna Shvets: [https://www.pexels.com/photo/white-round-medication-pill-on-red-surface-3683087/](https://www.pexels.com/photo/white-round-medication-pill-on-red-surface-3683087/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current setup in AWS and Power BI promotes quick and inexpensive data analysis
+    and visualization. However, it’s worth considering new applications for the data
+    for the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Incorporating new data sources**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If new data sources are to be included, the schema will have to be modified
+    accordingly. Moreover, additional ETL jobs will have to be created to seamlessly
+    integrate the data from these sources into the existing data warehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Performing time series analysis**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data provided by BTS is a time series. Thus, there is merit in considering
+    the use of time series analysis and building forecasting models to predict the
+    demand for air travel in the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/15181ffe5a0bb814fb4900d263da10f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Alexas_Fotos](https://unsplash.com/@alexas_fotos?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Datasets with copious records, such as the one provided by the BTS, can be difficult
+    to manage. However, with the resources provided by AWS, one can build a data pipeline
+    that processes the data and structures it in a form that enables users to extract
+    insights in a cost-effective manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, visualizations like the created Power BI dashboard are an effective
+    method for contextualizing certain metrics and creating an impactful story for
+    the audience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the code used to build the ETL job in AWS Glue or the SQL queries used
+    to create the tables and carry out the analysis, please visit the GitHub repository:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/anair123/Tracking-U.S.-Flights-With-AWS-and-Power-BI?source=post_page-----297a29fb2c13--------------------------------)
+    [## GitHub - anair123/Tracking-U.S.-Flights-With-AWS-and-Power-BI'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contribute to anair123/Tracking-U.S.-Flights-With-AWS-and-Power-BI development
+    by creating an account on GitHub.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/anair123/Tracking-U.S.-Flights-With-AWS-and-Power-BI?source=post_page-----297a29fb2c13--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Airline On-Time Statistics and Delay Causes*. BTS. (n.d.). [https://www.transtats.bts.gov/ot_delay/OT_DelayCause1.asp?20=E](https://www.transtats.bts.gov/ot_delay/OT_DelayCause1.asp?20=E)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

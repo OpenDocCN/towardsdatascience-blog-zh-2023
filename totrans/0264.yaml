@@ -1,0 +1,742 @@
+- en: Advanced Prompt Engineering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/advanced-prompt-engineering-f07f9e55fe01](https://towardsdatascience.com/advanced-prompt-engineering-f07f9e55fe01)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What to do when few-shot learning isn’t enough…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wolfecameron.medium.com/?source=post_page-----f07f9e55fe01--------------------------------)[![Cameron
+    R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----f07f9e55fe01--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f07f9e55fe01--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f07f9e55fe01--------------------------------)
+    [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----f07f9e55fe01--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f07f9e55fe01--------------------------------)
+    ·17 min read·Aug 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c81386dd2900922e3779e5a589170682.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Photo by [Mike Tinnion](https://unsplash.com/@m15ky?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/3ym6i13Y9LU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))
+  prefs: []
+  type: TYPE_NORMAL
+- en: The popularization of large language models (LLMs) has completely shifted how
+    we solve problems as humans. In prior years, solving any task (e.g., reformatting
+    a document or classifying a sentence) with a computer would require a program
+    (i.e., a set of commands precisely written according to some programming language)
+    to be created. With LLMs, solving such problems requires no more than a textual
+    prompt. For example, we can prompt an LLM to reformat any document via a prompt
+    similar to the one shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f0e2c7c36f265458b3c1eaa3d0a17396.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using prompting to reformat an XML document (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As demonstrated in the example above, the generic text-to-text format of LLMs
+    makes it easy for us to solve a wide variety of problems. We first saw a glimpse
+    of this potential with the proposal of [GPT-3](https://cameronrwolfe.substack.com/p/language-model-scaling-laws-and-gpt)
+    [18], showing that sufficiently-large language models can use [few-shot learning](https://cameronrwolfe.substack.com/i/117151147/few-shot-learning)
+    to solve many tasks with surprising accuracy. However, as the research surrounding
+    LLMs progressed, we began to move beyond these basic (but still very effective!)
+    prompting techniques like zero/few-shot learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Instruction-following LLMs](https://cameronrwolfe.substack.com/i/117151147/instruction-prompting)
+    (e.g., [InstructGPT](https://cameronrwolfe.substack.com/i/93578656/training-language-models-to-follow-instructions-with-human-feedback)
+    and [ChatGPT](https://openai.com/blog/chatgpt)) led us to explore whether language
+    models could solve truly difficult tasks. Namely, we wanted to use LLMs for more
+    than just toy problems. To be practically useful, LLMs need to be capable of following
+    complex instructions and performing multi-step reasoning to correctly answer difficult
+    questions posed by a human. Unfortunately, such problems are often not solvable
+    using basic prompting techniques. To eliciting complex problem-solving behavior
+    from LLMs, we need something more sophisticated.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a436cca569569781c24bca3ee30082f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1, 2, 4, 7])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expanding the scope of what’s possible…
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/82fd27178f3ef4edbd63b3476efaa691.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a prior post, we learned about more fundamental methods of prompting for
+    LLMs, such as zero/few-shot learning and instruction prompting. Understanding
+    these practical prompting techniques is important for gaining a grasp of the more
+    advanced prompting procedures that will be covered here. For more details on these
+    techniques, check out the overview at the link [here](https://cameronrwolfe.substack.com/p/practical-prompt-engineering-part)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**better prompting → better results.** Such techniques can be used to accomplish
+    a lot with LLMs (assuming they are applied correctly). However, they may fall
+    short for a variety of reasons. Few-shot learning requires the [limited context
+    window](https://cameronrwolfe.substack.com/i/117151147/what-is-prompt-engineering)
+    of most LLMs to be occupied with exemplars, LLMs can be tricked into providing
+    harmful output if safeguards aren’t put in place, and a majority of models are
+    bad at solving reasoning tasks or following multi-step instructions. Given these
+    limitations, *how should we move forward in attempting to solve difficult tasks
+    with LLMs?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One approach would be to create more capable LLMs, either [from scratch](https://twitter.com/cwolferesearch/status/1635693551584522256?s=20)
+    or via better [refinement procedures](https://cameronrwolfe.substack.com/i/93578656/training-language-models-to-follow-instructions-with-human-feedback).
+    However, this requires a lot of effort! *What if we could just make existing models
+    better at problem solving?* In this post, we will explore more advanced forms
+    of prompt engineering (e.g., chain of thought prompting, automatic prompt engineering,
+    information retrieval, and more) that allow us to improve LLM performance and
+    elicit more complex problem solving behavior. These ideas are important to learn,
+    as they broaden the scope of what is possible with LLMs. For example, using these
+    techniques, we can:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Allow an LLM to access an external knowledge database.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enable complex, reasoning-based problems to be solved.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provide unlimited memory to an LLM by allowing the model to store and access
+    prior information from a conversation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**prompt engineering is evolving.** This overview will focus upon providing
+    a high-level view of recent advancements in prompt engineering. Rather than deeply
+    exploring individual approaches, we will focus on gaining a broad view of different
+    prompting techniques that might be useful. However, it should be noted that the
+    topic of prompt engineering is both new and rapidly evolving. New research is
+    released nearly every day, and many cutting edge ideas are just [shared online](https://github.com/openai/openai-cookbook)
+    instead of being formally published. As such, this topic is likely to transform
+    significantly in coming months, thus expanding what problems are solvable with
+    LLMs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding LLMs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Due to its focus upon prompting, this overview will not explain the [history](https://twitter.com/cwolferesearch/status/1639378997627826176?s=20)
+    or [mechanics](https://twitter.com/cwolferesearch/status/1635693551584522256?s=20)
+    of language models. To gain a better general understanding of language models
+    (which is an important prerequisite for deeply understanding prompting), I’ve
+    written a variety of overviews that are available. These overviews are listed
+    below (in order of importance):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language Modeling Basics (GPT and GPT-2) [[link](https://cameronrwolfe.substack.com/p/language-models-gpt-and-gpt-2)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Importance of Scale for Language Models (GPT-3) [[link](https://cameronrwolfe.substack.com/p/language-model-scaling-laws-and-gpt)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Modern [[link](https://cameronrwolfe.substack.com/p/modern-llms-mt-nlg-chinchilla-gopher)]
+    and Specialized [[link](https://cameronrwolfe.substack.com/p/specialized-llms-chatgpt-lamda-galactica)]
+    LLMs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PaLM](https://cameronrwolfe.substack.com/p/palm-efficiently-training-massive),
+    T5 (Part [One](https://cameronrwolfe.substack.com/p/t5-text-to-text-transformers-part)
+    and [Two](https://cameronrwolfe.substack.com/p/t5-text-to-text-transformers-part-354)),
+    LLaMA (Part [One](https://cameronrwolfe.substack.com/p/llama-llms-for-everyone)
+    and [Two](https://cameronrwolfe.substack.com/p/beyond-llama-the-power-of-open-llms))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Advanced Prompting Techniques
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will now cover three influential topics in the prompt engineering space.
+    First, we will learn about how chain of thought prompting, including several notable
+    extensions and variants, can be used to improve the reasoning abilities of LLMs.
+    From here, we will discuss the integration of LLMs with external databases, enabling
+    relevant, accurate information to be injected into each prompt. Finally, we will
+    learn how automatic prompt engineering approaches can be used to discover better
+    prompts from data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Chain of Thought Prompting and Beyond
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We covered the main ideas behind chain of thought (CoT) prompting [1] and a
+    few of its popular variants in a prior post. For full details, read the overview
+    at the link [here](https://cameronrwolfe.substack.com/p/chain-of-thought-prompting-for-llms).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is CoT prompting?** CoT prompting is a simple technique for improving
+    an LLM’s performance on reasoning tasks like commonsense or symbolic reasoning.
+    CoT prompting leverages few-shot learning by inserting several examples of reasoning
+    problems being solved within the prompt. Each example is paired with a chain of
+    thought (or rationale) that augments the answer to a problem by textually explaining
+    how the problem is solved step-by-step; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b39b50a667079c6a74b854117c20aec4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to their few-shot learning capabilities, LLMs can learn to generate a rationale
+    along with their answers by observing the exemplars within a CoT prompt. Prior
+    work has shown that generating accurate rationales in this manner can improve
+    reasoning performance [10, 11], and we see exactly this effect in experiments
+    with CoT prompting. Namely, teaching an LLM to output a relevant chain of thought
+    that explains its final answer can drastically improve performance on tasks like
+    arithmetic, symbolic, and commonsense reasoning; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/974e6497204cdab17cc36bd7c38b08fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [9])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**popular CoT variants.** Beyond basic CoT prompting, several [variants](https://cameronrwolfe.substack.com/i/116166267/variants-of-cot-prompting)
+    of the technique have been explored, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Zero-shot CoT prompting [13]: replacing all example rationales and instead
+    injecting the statement “Let’s think step by step” at the end of the prompt.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Self-consistency [14]:* using the LLM to generate multiple chains of thought
+    and taking the majority vote of these multiple outputs as the final answer.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Least-to-most prompting [15]:* decomposing reasoning problems into smaller
+    steps that are solved one-at-a-time, where the output of each subproblem is used
+    as input for the next.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These techniques (shown in the figure below) are similar to CoT prompting and
+    yield comparable results, but they each have unique benefits. For example, zero-shot
+    CoT prompting is incredibly simple! We just need to insert a single statement
+    into our prompt instead of hand-writing or curating several relevant chain of
+    thought examples. On the other hand, least-to-most prompting is slightly more
+    complex than vanilla CoT prompting, but this technique is also more capable of
+    solving reasoning problems that require many steps. As such, we can use least-to-most
+    prompting to solve the most difficult tasks where CoT prompting falls short.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a557024afdffc8dcc3983763969f49ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [13, 14, 15])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of these techniques, self-consistency is my personal favorite. Why? Because
+    it is a simple technique that is widely applicable and very effective. In fact,
+    the idea is not even specific to CoT prompting! Self-consistency can improve the
+    performance of LLM applications in many cases. Instead of generating a single
+    output with our LLM, we generate multiple outputs and take their average as our
+    final answer, thus improving [reliability](https://github.com/dair-ai/Prompt-Engineering-Guide/blob/main/guides/prompts-reliability.md)
+    and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This idea reminds me of [model ensembles](/ensemble-methods-in-machine-learning-what-are-they-and-why-use-them-68ec3f9fef5f)
+    in deep learning, where we *i)* independently train several models to solve some
+    task and *ii)* take an average of each model’s output at inference time. Although
+    self-consistency only uses a single model instead of an ensemble, similar techniques
+    have been applied in the broader deep learning literature; e.g., to simulate an
+    ensemble, several outputs can be generated and averaged from neural networks that
+    contain non-deterministic modules like dropout [19, 20].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**extending CoT prompting.** Whether or not CoT prompting actually teaches
+    LLMs how to “reason” is unclear. Nonetheless, CoT prompting has significant practical
+    importance because it can be used to solve complex, multi-step problems with LLMs.
+    As such, a variety of interesting ideas surrounding CoT prompting have been explored
+    recently. In [16], a multimodal version of CoT prompting is explored, in which
+    both image and text modalities are used to perform different reasoning tasks;
+    see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9752c741a02b4ec2ec773ee41ab97a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [16])
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to exploring multiple data modalities (i.e., images and text), authors
+    in [16] slightly tweak the CoT setup by treating multi-step rationale generation
+    and answer inference as two distinct steps in solving a reasoning-based task;
+    see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a28d1abae2f949c19d33289a5699512.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [16])
+  prefs: []
+  type: TYPE_NORMAL
+- en: By clearly isolating these components, we can more easily analyze sources of
+    error in CoT prompting. As a result, authors in [16] find that *i)* incorrect
+    answers can often be caused by hallucinations in the generated rationale and *ii)*
+    using multimodal data leads to the generation of more effective rationales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7909060f15cfb3130e49779f6c8f8fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [17])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going further, authors in [17] combine CoT prompting with the idea of [active
+    learning](https://jacobgil.github.io/deeplearning/activelearning) (i.e., using
+    the model itself to identify data that should be included in the training set).
+    The LLM first answers several questions using CoT prompting. From here, output
+    “uncertainty” (measured based on disagreements between multiple answers generated
+    by the same LLM) is used to identify questions that the model poorly understands.
+    The questions within this group are then hand-annotated (by humans) with a correct
+    chain of thought and used as examples for solving future questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the biggest problems we might experience with applying CoT prompting
+    in practice is the lack of few-shot exemplars that align well with the task we
+    are trying to solve. Maybe we have access to several high-quality chains of thought
+    to include in our prompt, *but what do we do if the problem we are trying to solve
+    is slight different than the problem solved in these examples?* Although such
+    a problem can lead to deterioration in performance, the approach proposed in [17]
+    aims to combat this problem. Namely, we can use active learning to dynamically
+    identify when available examples for CoT prompting are insufficient for solving
+    a certain problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Knowledge Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although LLMs learn a lot of information during [pre-training](https://cameronrwolfe.substack.com/i/85568430/language-modeling),
+    augmenting their prompts with extra, relevant information is oftentimes helpful.
+    Such an approach can help with issues like [hallucination](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence))
+    (i.e., generating incorrect facts) by providing accurate sources of information
+    within an LLM’s prompt that can be used as context while generating output. Although
+    there are several ways to accomplish this, we will focus upon techniques based
+    upon information retrieval and generated knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ad9878ade279b24b3048ba7b88670cef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**information retrieval.** The LLM community has placed a recent emphasis on
+    vector database technology (e.g., [Pinecone](https://www.pinecone.io/), [Milvus](https://milvus.io/),
+    [Weaviate](https://weaviate.io/), etc.) due to its role in performing [information
+    retrieval](https://mattboegner.com/knowledge-retrieval-architecture-for-llms/);
+    see above. At a high level, the goal of information retrieval is to enable LLMs
+    to access a large bank of textual information (beyond the maximum [context window](https://cameronrwolfe.substack.com/i/117151147/what-is-prompt-engineering))
+    by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Chunking the text into small parts.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Producing an [embedding](https://platform.openai.com/docs/guides/embeddings)
+    for each chunk of text.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Storing these embeddings in a vector database.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Performing [vector similarity search](https://www.pinecone.io/learn/what-is-similarity-search/)
+    (based on these embeddings) to find relevant chunks of text to include in a prompt.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The net result is that we can quickly find relevant textual information to provide
+    as extra context within the LLM’s prompt. Such an approach can even be combined
+    with [CoT prompting](https://cameronrwolfe.substack.com/p/chain-of-thought-prompting-for-llms)
+    to guide the retrieval process towards new and useful information [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35cba62dbf07231f8160f33bd011a863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**generated knowledge.** Information retrieval is powerful (i.e., it enables
+    access to a nearly unlimited amount of information!), but we might wonder: *is
+    the external vector database completely necessary?* Interestingly, recent research
+    [1] indicates that the answer might be no! Instead of storing and retrieving external
+    knowledge, we can improve LLM performance by just prompting a separate LLM to
+    generate information; see above. In particular, we can use few-shot learning by
+    prompting an LLM with examples of knowledge generation on various topics and ending
+    with a request to generate useful context about a desired topic; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/017aa16a8f8ec032691b2b31f6e7381c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Form here, we can feed the generated information as extra context when generating
+    a prediction. Despite not relying on any external database, this approach can
+    noticeably improve LLM performance on several commonsense reasoning tasks; see
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12f8679c24f4a8c694ee56f1f853fbe6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generated knowledge is most helpful for tasks (like commonsense reasoning) that
+    assume understanding of commonsense knowledge in the world. Put simply, LLMs are
+    a good information sources as long as they are used carefully and for the correct
+    kind of task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“Generated knowledge prompting highlights large language models as flexible
+    sources of external knowledge for improving commonsense reasoning”* — from [1]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Automatic Prompting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The goal of prompt engineering is two tweak the input to our language model
+    such that we maximize the model’s chance of providing a correct result. With this
+    in mind, we could even consider our prompt as a group of [trainable parameters](https://datascience.stackexchange.com/questions/17635/model-parameters-hyper-parameters-of-neural-network-their-tuning-in-training)
+    that can be updated (e.g., using [gradient descent](https://www.youtube.com/watch?v=IHZwWFHWa-w&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi&index=2)
+    or some other data-driven criteria) to generate a correct answer. The idea of
+    automatically updating our prompt based on data is pretty generic, but several
+    such techniques have been successfully explored in recent research.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**automatic prompt engineer (APE) [4]** proposes a simple approach for automatically
+    generating [instructions](https://cameronrwolfe.substack.com/i/117151147/instruction-prompting)
+    for prompting. First, an LLM is used to propose a set of potential instructions
+    by using a few-shot prompt with multiple instruction examples. A few prompt templates
+    are explored for generating instructions; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3fad653a651c8e32e11055c02e058084.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [4])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we search over this pool of instruction “candidates” by evaluating the
+    zero-shot performance (i.e., either accuracy or log probability of the correct
+    result) of an LLM that uses each instruction. In other words, LLM performance
+    with each prompt is used as a metric for evaluating instruction quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/20a693e8e51214feace589caf4c79bb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [4])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going further, we see in [4] that instructions can be iteratively refined by
+    just repeating this process. In particular, we can i) propose a set of candidates,
+    ii) evaluate these candidates based on performance, iii) select top candidates,
+    and iv) generate new variants of top-performing candidates by prompting an LLM
+    to generate similar instructions (i.e., resampling). This process (and the associated
+    prompt) are outlined in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5fa916468f2854ea9ba135b99061e396.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [4])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**gradient-based search.** Beyond techniques that search for better textual
+    prompts, there is a line of useful prompt engineering works that explore continuous
+    updates to prompt embeddings. First, we should recall what prompt embeddings are
+    within a language model. Given a textual prompt, we typically tokenize this prompt
+    (i.e., separate it into words or sub-words), then look up the embedding of each
+    resulting token. This process gives us a *list of token embeddings* (i.e., a prompt
+    embedding!), which we pass as input to the language model; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a6805ea8e47fa59523984de29257312.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prompts and prompt embeddings within a language model (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Several works explore prompt engineering strategies that directly modify the
+    prompt embedding (i.e., just a list of embeddings for each token). In other words,
+    these works don’t directly modify the words of a prompt, but rather update the
+    prompt embeddings using a rule like gradient descent. The major works in this
+    area are outlined in the list below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**AutoPrompt [5]** combines the original prompt input with a set of shared
+    (across all input data) “trigger tokens” that are selected via a gradient-based
+    search to improve performance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prefix Tuning [6]** adds several “prefix” tokens to the prompt embedding
+    in both input and hidden layers, then trains the parameters of this prefix (leaving
+    model parameters fixed) with gradient descent as a parameter-efficient fine-tuning
+    strategy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prompt Tuning [7]** is similar to prefix tuning, but prefix tokens are only
+    added to the input layer. These tokens are fine-tuned on each task that the language
+    model solves, allowing prefix tokens to condition the model for a given task.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**P-Tuning [8]** adds task-specific anchor tokens to the model’s input layer
+    that are fine-tuned, but allows these tokens to be placed at arbitrary locations
+    (e.g., the middle of the prompt), making the approach more flexible than prefix
+    tuning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**which one should we use?** All of these approaches (shown below) explore
+    the addition of “soft” tokens to the language model that undergo supervised fine-tuning
+    over a target dataset. Notably, these techniques cannot be used with language
+    models that are only accessible via paid APIs (e.g., the [OpenAI API](https://platform.openai.com/docs/api-reference)).
+    This is because we would need the ability to access and modify prompt embeddings,
+    while most APIs only surface the textual inputs and outputs of a model. For now,
+    we can only use gradient-based automatic prompting techniques if we are working
+    with our own self-hosted LLM.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5962419a7691f7b349b34965c2913116.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [5, 6, 7, 8])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of these approaches, Prompt Tuning is the simplest and yields impressive performance
+    benefits. With Prompt Tuning, we just *i)* append some prefix token embeddings
+    to the input and *ii)* perform parameter-efficient fine-tuning of these embeddings
+    over individual, downstream tasks. The approach in [7] performs multi-task fine-tuning
+    by mixing several different tasks into each update and giving each task a unique,
+    learned prefix; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b039469709a3f3e661eb7193dc65afe2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [7])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usually, fine-tuning a language model would mean that we have to store a separate
+    copy of the model’s parameters for each task. In contrast, Prompt Tuning just
+    fine-tunes a small set of prefix token embeddings and keeps remaining model parameters
+    fixed. Despite only fine-tuning a small group of parameters, Prompt Tuning comes
+    quite close to matching the performance of end-to-end fine-tuning as shown in
+    the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96d16323129650a1bf72e27a82b59e9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [7])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: “How much more can we expect reasoning ability to improve with model scale?
+    What other prompting methods might expand the range of tasks that language models
+    can solve?” *— from [9]*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The main purpose of this overview was to explore different prompting techniques
+    that might be practically useful for solving difficult problems with LLMs. If
+    applied correctly, fundamental techniques like zero/few-shot learning and instruction
+    prompting are useful and effective. However, something more sophisticated might
+    be needed to enable LLMs to solve reasoning-based tasks or follow complex, many-step
+    instructions. Though models may improve in quality over time and more easily handle
+    such difficult cases, the techniques covered in this overview can be used to expand
+    the scope of what is possible with LLMs that are currently available. Some basic
+    takeaways from these techniques are outline below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**solving hard problems.** Analysis of CoT prompting shows us that LLMs are
+    capable of solving complex, multi-step problems. To do this, however, the problem
+    needs to be broken into smaller parts for or by the LLM. We can do this implicitly
+    by encouraging the model to generate a problem-solving rationale before its answer,
+    or explicitly by using least-to-most prompting to break the problem into small
+    parts that are individually solved by the LLM. Either way, we usually see a benefit
+    from encouraging the LLM to solve problems step-by-step instead as a whole.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**learning to prompt.** If we hear the words “prompt engineering”, most of
+    us probably think of tweaking the words or structure of a prompt and seeing what
+    works best. However, this is not the only approach to prompt engineering! Namely,
+    we can adopt an automatic prompting approach that learns optimal prompts from
+    data via gradient descent. To do this, we make the prompt embedding (i.e., the
+    list of embeddings for each token in the prompt) trainable and perform fine-tuning.
+    Although this approach is interesting and useful, there are a few caveats to keep
+    in mind:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learned prompt embeddings cannot be mapped back to a textual prompt because
+    the embeddings for each token in a model’s vocabulary are discrete.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can only use these approaches if we have access to the language model’s embedding
+    layer. Such access is not provided via paid APIs (e.g., from OpenAI).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**simple but powerful.** Despite the fact that this overview focuses on advanced
+    prompt engineering techniques, there are many simple tricks that can be easily
+    applied to improve LLM applications. For example, self-consistency can improve
+    the reliability of LLMs by generating multiple answers and taking their average.
+    Zero-shot CoT prompting can easily improve LLM reasoning capabilities by appending
+    a single statement to the end of a prompt. Finally, generated knowledge can improve
+    LLM performance by simply asking the model to list useful information about a
+    topic before generating a final answer. In many cases, adding simple tricks to
+    our prompt engineering toolkit can make a big difference!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing Remarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thanks so much for reading this article. I am [Cameron R. Wolfe](https://cameronrwolfe.me/),
+    Director of AI at [Rebuy](https://www.rebuyengine.com/). I study the empirical
+    and theoretical foundations of deep learning. You can also check out my [other
+    writings](https://medium.com/@wolfecameron) on medium! If you liked it, please
+    follow me on [twitter](https://twitter.com/cwolferesearch) or subscribe to my
+    [Deep (Learning) Focus newsletter](https://cameronrwolfe.substack.com/), where
+    I help readers build a deeper understanding of topics in AI research via understandable
+    overviews of popular papers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bibliography
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Liu, Jiacheng, et al. “Generated knowledge prompting for commonsense reasoning.”
+    *arXiv preprint arXiv:2110.08387* (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Trivedi, Harsh, et al. “Interleaving Retrieval with Chain-of-Thought Reasoning
+    for Knowledge-Intensive Multi-Step Questions.” *arXiv preprint arXiv:2212.10509*
+    (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Wei, Jason, et al. “Chain of thought prompting elicits reasoning in large
+    language models.” *arXiv preprint arXiv:2201.11903* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Zhou, Yongchao, et al. “Large language models are human-level prompt engineers.”
+    *arXiv preprint arXiv:2211.01910* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Shin, Taylor, et al. “Autoprompt: Eliciting knowledge from language models
+    with automatically generated prompts.” *arXiv preprint arXiv:2010.15980* (2020).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Li, Xiang Lisa, and Percy Liang. “Prefix-tuning: Optimizing continuous
+    prompts for generation.” *arXiv preprint arXiv:2101.00190* (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Lester, Brian, Rami Al-Rfou, and Noah Constant. “The power of scale for
+    parameter-efficient prompt tuning.” *arXiv preprint arXiv:2104.08691* (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Liu, Xiao, et al. “GPT understands, too.” *arXiv preprint arXiv:2103.10385*
+    (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Wei, Jason, et al. “Chain of thought prompting elicits reasoning in large
+    language models.” *arXiv preprint arXiv:2201.11903* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Wang Ling, Dani Yogatama, Chris Dyer, and Phil Blunsom. 2017\. Program
+    induction by rationale generation: Learning to solve and explain algebraic word
+    problems. ACL.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Jacob Hilton, Reiichiro
+    Nakano, Christopher Hesse, and John Schulman. 2021\. Training verifiers to solve
+    math word problems. arXiv preprint arXiv:2110.14168.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Kojima, Takeshi, et al. “Large language models are zero-shot reasoners.”
+    *arXiv preprint arXiv:2205.11916* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] Kojima, Takeshi, et al. “Large language models are zero-shot reasoners.”
+    *arXiv preprint arXiv:2205.11916* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] Wang, Xuezhi, et al. “Self-consistency improves chain of thought reasoning
+    in language models.” *arXiv preprint arXiv:2203.11171* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] Zhou, Denny, et al. “Least-to-most prompting enables complex reasoning
+    in large language models.” *arXiv preprint arXiv:2205.10625* (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] Zhang, Zhuosheng, et al. “Multimodal chain-of-thought reasoning in language
+    models.” *arXiv preprint arXiv:2302.00923* (2023).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[17] Diao, Shizhe, et al. “Active Prompting with Chain-of-Thought for Large
+    Language Models.” *arXiv preprint arXiv:2302.12246* (2023).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[18] Brown, Tom, et al. “Language models are few-shot learners.” *Advances
+    in neural information processing systems* 33 (2020): 1877–1901.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[19] Hara, Kazuyuki, Daisuke Saitoh, and Hayaru Shouno. “Analysis of dropout
+    learning regarded as ensemble learning.” *Artificial Neural Networks and Machine
+    Learning–ICANN 2016: 25th International Conference on Artificial Neural Networks,
+    Barcelona, Spain, September 6–9, 2016, Proceedings, Part II 25*. Springer International
+    Publishing, 2016.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[20] Huang, Gao, et al. “Deep networks with stochastic depth.” *Computer Vision–ECCV
+    2016: 14th European Conference, Amsterdam, The Netherlands, October 11–14, 2016,
+    Proceedings, Part IV 14*. Springer International Publishing, 2016.'
+  prefs: []
+  type: TYPE_NORMAL

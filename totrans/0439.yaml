@@ -1,0 +1,376 @@
+- en: Building a Recommender System using Machine Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-recommender-system-using-machine-learning-2eefba9a692e](https://towardsdatascience.com/building-a-recommender-system-using-machine-learning-2eefba9a692e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: “Candidate rerank” approach with co-visitation matrix and GBDT ranker model
+    in Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie?source=post_page-----2eefba9a692e--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----2eefba9a692e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2eefba9a692e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2eefba9a692e--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----2eefba9a692e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2eefba9a692e--------------------------------)
+    ·6 min read·Mar 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/812a9ad1d2c667c59f32b0b97872a32d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “An excellent choice, madam! Our burger pairs perfectly with a side and a drink.
+    May I suggest some options?” (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to the first edition of a new article series called “[The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd)”,
+    where we will analyze [Kaggle](https://www.kaggle.com/) competitions’ top solutions
+    for lessons we can apply to our own data science projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This first edition will review the techniques and approaches from the [“OTTO
+    — Multi-Objective Recommender System”](https://www.kaggle.com/competitions/otto-recommender-system/)
+    competition, which ended at the end of January, 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem Statement: Multi-Objective Recommender System'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The goal of the [“OTTO — Multi-Objective Recommender System”](https://www.kaggle.com/competitions/otto-recommender-system/)
+    competition was to build **a multi-objective recommender system (RecSys) based
+    on a large dataset of implicit user data**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, in the e-commerce use case, competitors were dealing with the
+    following details:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'multi-objective: clicks, cart additions, and orders'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'large dataset: over 200 million events for about 1,8 million items'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'implicit user data: previous events in a user session'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/competitions/otto-recommender-system/?source=post_page-----2eefba9a692e--------------------------------)
+    [## OTTO — Multi-Objective Recommender System'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build a recommender system based on real-world e-commerce sessions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/competitions/otto-recommender-system/?source=post_page-----2eefba9a692e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to Approach a RecSys for a Large Database of Items
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the main challenges of this competition was the large number of items
+    to choose from. Feeding all of the available information into a complex model
+    would require the availability of extensive amounts of computational resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, the general baseline most competitors of this challenge followed is the
+    **two-stage** [**candidate generation/rerank technique**](https://www.kaggle.com/competitions/otto-recommender-system/discussion/364721)
+    [3]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stage: candidate generation — This step reduces the number of potential recommendations
+    (candidates) for each user from millions to about 50 to 200 [2]. To handle the
+    amount of data, a simple model is usually used for this step.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Stage: reranking — You can use a more complex model for this step, such as
+    an Machine Learning (ML) model. Once you have ranked your reduced candidates,
+    you can select the highest-ranked items as recommendations.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/82df295cf697c47b3073a9a090dca88d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two-stage recommender candidate generation/rerank technique (Image by author,
+    inspired by [3])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stage 1: Candidate Generation with Co-Visitation Matrix'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first step of the two-stage approach is to reduce the number of potential
+    recommendations (candidates) from millions to about 50 to 200 [2]. To deal with
+    the large number of items, the first model should be simple [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can choose and combine different strategies to reduce the number of items
+    [3]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: by user history
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: by popularity — this strategy can also serve as a strong baseline [5]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: by co-occurrence based on a co-visitation matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The most straightforward approach to generate candidates is to use the **user
+    history**: If a user has viewed an item, they are likely to purchase it as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if the user has viewed fewer items (e.g., five items) than the number
+    of candidates we want to generate per user (e.g., 50 to 200), we can populate
+    the list of candidates by item popularity or co-occurrence [7]. Since selection
+    by popularity is straightforward, we will focus on candidate generation by co-occurrence
+    in this section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **candidate generation by the co-occurrence** of two items can be approached
+    with a **co-visitation matrix:** If `user_1` bought `item_a` and shortly after
+    `item_b` , we store this information [6, 7].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3cf5b02ecbc91c76fa5618dfe2bb75e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Minimal example of users’ buying behavior for recommender system (Image by the
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each item, count the occurrences of every other item within a specified
+    time frame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/e833b62001f5679e722ad8cca715a36b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Minimal example of co-visitation matrix (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. For each item, find the 50 to 200 most frequent items visited after this
+    item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see from the image above, a co-visitation matrix is not necessarily
+    symmetrical. For example, someone who bought a burger is also likely to buy a
+    drink — but the opposite may not be true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also assign weights to the co-visitation matrix based on proximity.
+    For example, items bought together in the same session could have a higher weight
+    than items a user bought across different shopping sessions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The co-visitation matrix resembles doing **matrix factorization by counting**
+    [6]. Matrix factorization is a popular technique for recommender systems. Specifically,
+    it is a collaborative filtering method that finds the relationship between items
+    and users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/recommendation-system-matrix-factorization-d61978660b4b?source=post_page-----2eefba9a692e--------------------------------)
+    [## Recommendation System — Matrix Factorization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Walk Through Recommender System of Matrix Factorization
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/recommendation-system-matrix-factorization-d61978660b4b?source=post_page-----2eefba9a692e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stage 2: Reranking with GBDT Model'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The second step is **reranking**. While you can achieve a good performance with
+    handcrafted rules [1], in theory, using an ML model should work better [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use different Gradient Boosted Decision Tree (GBDT) rankers like [XGBRanker](https://medium.com/predictly-on-tech/learning-to-rank-using-xgboost-83de0166229d)
+    or [LGBMRanker](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRanker.html)
+    [2, 3, 4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparation of training data and feature engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The training data for the GBDT ranker model should contain the following column
+    categories [2]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**User and item pairs from candidate generation** — The base for the dataframe
+    will be the list of candidates generated in the first stage. For each user, you
+    should end up with `N_CANDIDATES` , and thus, the starting point should be a dataframe
+    of shape `(N_USERS * N_CANDIDATES, 2)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**User features** —counts, aggregation features, ratio features, etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Item features** —counts, aggregation features, ratio features, etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**User-item features** (optional)— You can create user-item interfaction features,
+    such as ‘item clicked’'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Labels** — For each user-item pair, merge the labels (e.g., ‘bought’ or ‘not
+    bought’).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The resulting training dataframe should look something like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/691247efebae3db620835736534b158b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training data structure for training a GDBT ranker model for a recommender system
+    (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: GBDT ranker models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This step aims to train a GBDT ranker model to select the `top_N` recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The GBDT ranker will take three inputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`X_train`, `X_val`: training and validation data frames containing `FEATURES`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`y_train`, `y_val`: training and validation data frames containing `LABELS`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`group` : Note that the `FEATURES` **don’t contain** `user`, `item` columns
+    [2]. Thus, the model needs the information on within which group to rank the items:
+    `group = [N_CANDIDATES] * (len(train_df) // N_CANDIDATES)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Below you can find the sample code with [XGBRanker](https://medium.com/predictly-on-tech/learning-to-rank-using-xgboost-83de0166229d)
+    [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Below you can find the sample code with [LGBMRanker](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRanker.html)
+    [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The GBDT ranking model will rank the items within the specified group. To retrieve
+    the `top_N` recommendations, you only need to group the output by the user and
+    sort by the item’s ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many more lessons to be learned from reviewing the learning resources
+    Kagglers have created during the course of the [“OTTO — Multi-Objective Recommender
+    System”](https://www.kaggle.com/competitions/otto-recommender-system/) competition.
+    There are also many different solutions for this type of problem statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we focused on the general approach that was popular among
+    many competitors: **Candidate generation with a co-visitation matrix to reduce
+    the number of potential items to recommend, followed by a GBDT reranker.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enjoyed This Story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
+    when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----2eefba9a692e--------------------------------)
+    [## Get an email whenever Leonie Monigatti publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
+    a Medium account if you don’t already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----2eefba9a692e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
+    and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Chris Deotte (2022). [“Candidate ReRank Model — [LB 0.575]”](https://www.kaggle.com/code/cdeotte/candidate-rerank-model-lb-0-575)
+    in Kaggle Notebooks. (accessed 26\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Chris Deotte (2022). “[How To Build a GBT Ranker Model](https://www.kaggle.com/competitions/otto-recommender-system/discussion/370210)”
+    in Kaggle Discussions. (accessed 21\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Ravi Shah (2022). “[Recommendation Systems for Large Datasets](https://www.kaggle.com/competitions/otto-recommender-system/discussion/364721)”
+    in Kaggle Discussions. (accessed 21\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Radek Osmulski (2022). [“[polars] Proof of concept: LGBM Ranker”](https://www.kaggle.com/code/radek1/polars-proof-of-concept-lgbm-ranker)
+    in Kaggle Notebooks. (accessed 26\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Radek Osmulski (2022). [“ Introduction to the OTTO competition on Kaggle
+    (RecSys)”](https://youtu.be/gtPEX_eRAVo) on YouTube. (accessed 21\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Radek Osmulski (2022). [“What is the co-visitation matrix, really?”](https://www.kaggle.com/competitions/otto-recommender-system/discussion/365358)
+    in Kaggle Discussions. (accessed 21\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Vladimir Slaykovskiy (2022). [“Co-visitation Matrix”](https://www.kaggle.com/code/vslaykovsky/co-visitation-matrix)
+    in Kaggle Notebooks. (accessed 21\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL

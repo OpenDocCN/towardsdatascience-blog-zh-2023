@@ -1,0 +1,409 @@
+- en: 'Retro-engineering a database schema and quality checks: GPT vs. Bard'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/retro-engineering-a-database-schema-and-quality-checks-gpt-vs-bard-2e2776e8af86](https://towardsdatascience.com/retro-engineering-a-database-schema-and-quality-checks-gpt-vs-bard-2e2776e8af86)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Can LLMs retro-engineer a consolidated dataset to design the original database
+    and suggest the corresponding data quality checks?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)[![Pierre-Louis
+    Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)
+    [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)
+    ·9 min read·Jul 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c745c0ff34a55794be637adf06abedc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jake Trotman](https://unsplash.com/@jake_t?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/wallpapers/design/pattern?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the continuity of my previous posts on how to leverage Generative AI for
+    Data Activities, I’d like to explore this use case where one Data team receives
+    a consolidated dataset from a function (let’s say Human Resources) and needs to
+    redesign a proper data model in their Data Platform to handle future queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll compare the answers from GPT-4 and Bard to determine which model offers
+    the more relevant answers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(Note: the notebook and data source are available at the end of the article)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Initial (and Final) Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sometimes, business solutions only let you extract information from their proprietary
+    system in the form of reports… and, if you are lucky, they might even be accessible
+    through APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the case at “MyCompany” where the HRIS legacy system can only provide
+    one extract of all employees, containing many details regarding the company as
+    well, some of them being confidential.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following the Data Mesh principles, the Human Resources team would like to expose
+    this data but they also understand that the report cannot be consumed as such,
+    not even mentioning the confidentiality issues that trigger some of the columns
+    like “Salary”, “Age”, or “Annual_Evaluation”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69c949a452847d131ca2e36b47242ebe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Original Report from the Legacy HRIS System (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retro-Engineering the Data Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When interacting with the Data Team, everyone around the table quickly understands
+    that this dataset cannot be broadcasted to all functions/employees and that it
+    needs to be split into multiple tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some of these tables could be leveraged by many for other analyses or use cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the internal departments’ list
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the employees’ list with their email, department, country, and location
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Some others should remain confidential (salaries, age, evaluation)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One Data Analyst decides to test how GPT or Bard could help everyone retro-engineer
+    the original relational database and save time 🕘.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a new environment and importing data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is always a good practice to create a dedicated environment in Python for
+    every new project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the terminal, we launch the two commands below (we immediately ask for the
+    two required packages: Pandas and Tabulate):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We switch to a Jupyter Notebook and import the CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/07997339a16992c8cba95cf2bc2b2d4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: df variable content in VS Code (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset of 7688 lines x 11 columns is well ingested, we can continue 😀
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formatting data for future prompting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For most users, GPT models are accessible only through the chat interface and
+    this is the case for our Data Analyst. She needs to find a way to “communicate”
+    the dataset in a structured way to the LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markdown to the rescue! 🚀
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Luckily, LLMs can perfectly handle tables in the Markdown format so we can
+    print a sample of the rows directly in our Jupyter Notebook (and this is why the
+    “tabulate” package was required during the environment creation😉):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/90c3a8916d190ba26754ada89b073ead.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Dataset sample in Markdown format (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(Note: The reason we are choosing 50 rows is to keep a reasonable but still
+    representative sample without exceeding the current tokens limitations of LLMs.)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining our prompt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’d like the model to work on different tasks. To maximize the chances of
+    getting relevant answers, we will explain the sequence we are expecting from it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Combined with the table in Markdown, this request will consume approx. 6K tokens,
+    leaving us ~2K tokens for the different answers (as per GPT-4k limitations; the
+    token limit from Bard is currently not being disclosed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d840406d62ccdcec91cb318706e8ed0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analyzing results (GPT-4k)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Identifying Categorical and Confidential Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'GPT-4k (with a temperature of 0) understands well the data structure even if
+    one might argue that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: within a company, the professional email address is not confidential,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the age, on the contrary, might be kept secret at the HR level.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Suggesting a database model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'GPT properly separates the Public and Confidential tables as instructed, keeping
+    the Employee_ID as Primary Key and also creating “Department_ID”, “Country_ID”,
+    “Location_ID”, and “Education_ID” in the “Employee_Details” table as Foreign Keys
+    to link with categorical tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: SQL Scripts to create tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'GPT produces a ready-to-use SQL scripts for categorical data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the same goes for the two remaining tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s test the scripts in Snowflake and… “tada🎉”, all tables are created in
+    a few seconds without any failure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e4dff5805d5f1ff0c15c131c691e93d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Quality Checks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Beyond “classic” searches of NULL, duplicates, or not existing keys, we can
+    see some interesting suggestions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Email proper formating
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Valid ranges for “Annual_Performance”(1–5) or “Age”(18–65)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Positive values for “Salary” (hopefully 😅)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Conclusion for GPT-4k:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Identifying Categorical and Confidential Data ✅
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Suggesting a database model ✅
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SQL Scripts to create tables ✅
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data Quality Checks ✅
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It’s a faultless one! 🥇
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/2bd43dce9e6edca6587fc768ba463828.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analyzing results (Google Bard)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Identifying Categorical and Confidential Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*(We will be using the very same prompt as with GPT-4k to ensure some consistency)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quite surprisingly, Bard considers the “Employee_ID”, the “First_Name” and “Last_Name”
+    columns as categorical (see below) whereas, according to me, they should be considered
+    as simple strings’ columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like GPT-4K, Bard also classifies the “Age” as public which I would personally
+    consider confidential information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Suggesting a database model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here, Bard fails to design a proper data model and only suggests creating two
+    tables: “employees” and “confidential_data”, strongly influenced by its previous
+    answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: SQL Scripts to create tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Besides the use of “AUTO_INCREMENT” during the “employees” table creation (which
+    is incompatible with Snowflake accepted syntax), the two tables are created properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Quality Checks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Bard’s recommendations are more “limited” and some of the checks suggested
+    by GPT-4k (email formatting, age within an acceptable range (18–65)) are missed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Conclusion for Bard:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Identifying Categorical and Confidential Data ❌
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Suggesting a database model ❌
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SQL Scripts to create tables ✅
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data Quality Checks 🔶
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Still room for improvement 🤔
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'GPT-4k really outperforms Bard when it comes to understanding a dataset, designing
+    a proper data model (here under the 3rd Normal Form (3NF)), creating the corresponding
+    SQL queries, and suggesting data quality checks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84e5966c1ba93ffdc7baa5e61ed66624.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Beyond the comparison of these two models, it is important to understand how
+    LLMs can accelerate the work of Data Citizen and, as shown in this article, allow
+    a first and quick in-depth analysis of a dataset to help model it efficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ⏩ Links to the corresponding [Jupyter Notebook](https://github.com/pierrelouisbescond/medium_articles/blob/main/medium_llm_db_retro_eng_load_and_format_data.ipynb)
+    and [CSV Data Source](https://github.com/pierrelouisbescond/medium_articles/blob/main/Employees_Base.csv).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, I tried to identify all required steps but do not hesitate to revert
+    to me should there be any missing instructions in this tutorial!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And do not hesitate to browse through my other contributions on Medium:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----2e2776e8af86--------------------------------)
+    [## Pierre-Louis Bescond’s articles on Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Science, Machine Learning and Innovation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pl-bescond.medium.com](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----2e2776e8af86--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

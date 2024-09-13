@@ -1,0 +1,582 @@
+- en: Retrieval Augmented Generation — Intuitively and Exhaustively Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/retrieval-augmented-generation-intuitively-and-exhaustively-explain-6a39d6fe6fc9](https://towardsdatascience.com/retrieval-augmented-generation-intuitively-and-exhaustively-explain-6a39d6fe6fc9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Making language models that can look stuff up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----6a39d6fe6fc9--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----6a39d6fe6fc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a39d6fe6fc9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a39d6fe6fc9--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----6a39d6fe6fc9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a39d6fe6fc9--------------------------------)
+    ·12 min read·Oct 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a64b639851984b11ef2f5e26a773463.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Data Retriever” By Daniel Warfield using MidJourney. All images by the author
+    unless otherwise specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’ll explore “retrieval augmented generation” (RAG), a strategy
+    which allows us to expose up to date and relevant information to a large language
+    model. We’ll go over the theory, then imagine ourselves as resterauntours; we’ll
+    implement a system allowing our customers to talk with AI about our menu, seasonal
+    events, and general information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/275875b7b031a6af1c337568b3d25062.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The final result of the practical example, a chat bot which can serve specific
+    information about our restaurant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Anyone interested in natural language processing
+    (NLP).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** This is a very powerful, but very simple concept;
+    great for beginners and experts alike.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-requisites:** Some cursory knowledge of large language models (LLMs)
+    would be helpful, but is not required.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Core of the Issue
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LLMs are expensive to train; chat GPT-3 famously cost a cool $3.2M on compute
+    resources alone. If we opened up a new restaurant, and wanted to use an LLM to
+    answer questions about a menu, it’d be cool if we didn’t have to dish out millions
+    of dollars every time we introduced a new seasonal salad. We could do a smaller
+    training step (called fine tuning) to try to get the model to learn a small amount
+    of highly specific information, but this process can still be hundreds to thousands
+    of dollars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another problem with LLMs is their confidence; sometimes they say stuff that’s
+    flat out wrong with abject certainty (commonly referred to as haluscinating).
+    As a result it can be difficult to discern where an LLM is getting its information
+    from, and if that information is accurate. If a customer with allergies asks if
+    a dish contains tree-nuts, it’d be cool if we could ensure our LLM uses accurate
+    information so our patrons don’t go into anaphylactic shock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attorney Steven A. Schwartz first landed himself in hot water through his use
+    of ChatGPT, which resulted in six fake cases being cited in a legal brief. — A
+    famous example of hallucination in action. [source](https://www.legaldive.com/news/chatgpt-lawyer-fake-cases-lawyer-uses-chatgpt-sanctions-generative-ai/653925/#:~:text=Attorney%20Steven%20A.,cited%20in%20a%20legal%20brief.)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Both the issue of updating information and using proper sources can be mitigated
+    with RAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval Augmented Generation, In a Nutshell
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In-context learning is the ability of an LLM to learn information not through
+    training, but by receiving new information in a carefully formatted prompt.For
+    example, say you wanted to ask an LLM for the punchline, and only the punchline,
+    of a joke. Jokes come in a setup-punchline combo extremely often, and because
+    LLMs are statistical models it can be difficult for them to break that prior knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2870eb9dda995bc2985728811c173a04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of ChatGPT failing a task because of lack of context
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way we can solve this is by giving the model “context”; we can give it a
+    sample in a cleverly formatted prompt such that the LLM gives us the right information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eff4dff862fb4034d6c4fd4d9fd7edac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of ChatGPT succeeding at the same task when more context is provided
+  prefs: []
+  type: TYPE_NORMAL
+- en: This trait of LLMs has all sorts of cool uses. I’ve written an article on how
+    [this ability can be used to talk with an LLM about images](https://medium.com/towards-data-science/visual-question-answering-with-frozen-large-language-models-353d42791054),
+    and [how it can be used to extract information from conversations](https://medium.com/towards-data-science/conversations-as-directed-graphs-with-lang-chain-46d70e1a846c).
+    In this article we’ll be leveraging this ability to inject information into the
+    model via a carefully constructed prompt, based on what the user asked about,
+    to provide the model in-context information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d15714e4c78867b57b7a7402113d62c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of RAG. The prompt is used to retrieve information in a
+    knowledge base, which is in turn used to augment the prompt. This augmented prompt
+    is then fed into the model for generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'the RAG process comes in three key parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Retrieval:** Based on the prompt, retrieve relevant knowledge from a knowledge
+    base.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Augmentation:** Combine the retrieved information with the initial prompt.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Generate:** pass the augmented prompt to a large language model, generating
+    the final output.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/adc7ca9c29445672832edb3e7016fce7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of what a RAG prompt might look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The only really conceptually challenging part of RAG is retrieval: How do we
+    know which documents are relevant to a given prompt?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s a lot of ways this could be done. Naively, you could iterate through
+    all your documents and ask an LLM “is this document relevant to the question”.
+    You could pass both the document and the prompt to the LLM, ask the LLM if the
+    document is relevant to the prompt, and use some query parser (I talk about those
+    [here](https://medium.com/me/stats/post/46d70e1a846c)) to get the LLM to give
+    you a yes or no answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively, for an application as simple as ours, we could just provide all
+    the data. We’ll probably only have a few documents we’ll want to refer to; our
+    restaurant’s menu, events, maybe a document about the restaurants history. we
+    could inject all that data into every prompt, combined with the query from a user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, say we don’t just have a restaurant, but a restaurant chain. We’d
+    have a vast amount of information our customers could ask about: dietary restrictions,
+    when the company was founded, where the stores are located, famous people who’ve
+    dined with us. We’d have an entire franchise’s worth of documents; too much data
+    to just put it all in every query, and too much data to ask an LLM to iterate
+    through all documents and tell us which ones are relevant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use **word vector embeddings** to deal with this problem. With word vector
+    embeddings we can quickly calculate the similarity of different documents and
+    prompts. The next section will go over word vector embeddings in a nutshell, and
+    the following section will detail how they can be used for retrieval within RAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Word Vector Embeddings in a Nutshell
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This section is an excerpt from my article on transformers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----6a39d6fe6fc9--------------------------------)
+    [## Transformers — Intuitively and Exhaustively Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exploring the modern wave of machine learning: taking apart the transformer
+    step by step'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----6a39d6fe6fc9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In essence, a word vector embedding takes individual words and translates them
+    into a vector which somehow represents its meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fb247d28028bef3a19edeb00049211e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The job of a word to vector embedder: turn words into numbers which somehow
+    capture their general meaning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The details can vary from implementation to implementation, but the end result
+    can be thought of as a “space of words”, where the space obeys certain convenient
+    relationships. **Words are hard to do math on, but vectors which contain information
+    about a word, and how they relate to other words, are significantly easier to
+    do math on.** This task of converting words to vectors is often referred to as
+    an “embedding”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Word2Vect, a landmark paper in the natural language processing space, sought
+    to create an embedding which obeyed certain useful characteristics. Essentially,
+    they wanted to be able to do algebra with words, and created an embedding to facilitate
+    that. With Word2Vect, you could embed the word “king”, subtract the embedding
+    for “man”, add the embedding for “woman”, and you would get a vector who’s nearest
+    neighbor was the embedding for “queen”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc588726075ed5b6b704a11e2d222172.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual demonstration of doing algebra on word embeddings. If you think
+    of each of the points as a vector from the origin, if you subtracted the vector
+    for “man” from the vector for “king”, and added the vector for “woman”, the resultant
+    vector would be near the word queen. In actuality these embedding spaces are of
+    much higher dimensions, and the measurement for “closeness” can be a bit less
+    intuitive (like cosine similarity), but the intuition remains the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll cover word embeddings more exhaustively in a future post, but for the purposes
+    of this article they can be conceptualized as a machine learning model which has
+    learned to group words as vectors in a meaningful way. With a word embedding you
+    can start thinking of words in terms of distance. For instance, the distance between
+    a prompt and a document. This idea of distance is what we’ll use to retrieve relevant
+    documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Word Embeddings For Retrieval
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We know how to turn words into a point in some high dimensional space. How can
+    we use those to know which documents are relevant to a given prompt? There’s a
+    lot of ways this can be done, it’s still an active point of research, but we’ll
+    consider a simple yet powerful approach; the manhattan distance of the mean vector
+    embedding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Mean Vector Embedding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have a prompt which can be thought of as a list of words, and we have documents
+    which can also be thought of as lists of words. We can summarize these lists of
+    words by first embedding each word with Word2Vect, then we can calculate the average
+    of all of the embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46b0abb65fc285f74b009544251598fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of calculating the mean vector of all embeddings in a sequence
+    of words. Each index in the resultant vector is simply the average of all the
+    corresponding index in every word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conceptually, because the word vector encodes the meaning of a word, the mean
+    vector embedding calculates the average meaning of the entire phrase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46f67becf61f62d925524abf0f2a075f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of calculating the mean vector of a prompt. The patron
+    to our restaurant asks “When does the restaurant have live bands?” Each of these
+    words is passed through an embedder (like word2vect), and then the mean of each
+    of these vectors is calculated. This is done by calculating the average of each
+    index. Conceptually, this can be thought of as calculating the average meaning
+    of the entire phrase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manhattan Distance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we’ve created a system which can summarize the meaning of a sequence
+    of words down to a single vector, we can use this vector to compare how similar
+    two sequences of words are. In this example, we’ll use the manhattan distance,
+    though many other distance measurements can be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80d24dab52d8ac62d1b681baaed873a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A conceptual diagram of the manhattan distance. On the left we find it’s namesake:
+    instead of a traditional distance measurement between the two points, the manhattan
+    distance is the sum of the distance along the two axis; the y axis and the x axis.
+    On the right you can see this concept illustrated in terms of comparing vectors.
+    We find the distance between the vectors on an element by element basis, then
+    sum those distances together to get the manhattan distance. Conceptually, this
+    method of distance calculation is best when different axis might represent fundamentally
+    different things, which is a common intuition in vector embeddings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combining these two concepts together, we can find the mean vector embedding
+    of the prompt, and all documents, and use the manhattan distance to sort the documents
+    in terms of distance, a proxy for relatedness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90ee7b074a6e1fd0a15a7ef6ee3f3924.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How the most relevant documents are found. The mean vector embedding is calculated
+    for the prompt, as well as all documents. A distance is calculated between the
+    prompt and all documents, allowing the retrieval system to prioritize which documents
+    to include in augmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s the essence of retrieval; you calculate a word vector embedding for
+    all words in all pieces of text, then compute an mean vector which represents
+    each piece of text. We can then use the manhattan distance as a proxy for similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In terms of actually deciding which documents to use, there’s a lot of options.
+    You could set a maximum distance threshold, in which any larger distance would
+    count as irrelevant, or you could always include the document with the minimum
+    distance. The exact details depend on the needs of the application. To keep things
+    simple we’ll always retrieve the document with the lowest distance to the prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Note on Vector Databases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before I move onto augmentation and generation, a note.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article I wanted to focus on the concepts of RAG without going through
+    the specifics of vector data bases. They’re a fascinating and incredibly powerful
+    technology which I’ll be building from scratch in a future post. If you’re implementing
+    RAG in a project, you’ll probably want to use a vector database to achieve better
+    query performance when calculating the distance between a prompt and large number
+    of documents. Here’s a few options you might be interested in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Chroma](https://www.trychroma.com/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Weaviate](https://weaviate.io/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss](https://github.com/facebookresearch/faiss)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Pinecone](https://www.pinecone.io/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: typically RAG is achieved by hooking up one of these databases with LangChain,
+    a workflow I’m planning on tackling in another future post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Augmentation and Generation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Cool, so we’re able to retrieve which documents are relevant to a users prompt.
+    How do we actually use them? This can be done with a prompt formatted to the specific
+    application. For instance, we can declare the following format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This format can then be used, along with whichever document was deemed useful,
+    to augment the prompt. This augmented prompt can then be passed directly to the
+    LLM to generate the final output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAG From Scratch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve covered the theory; retrieval, augmentation, and generation. In order
+    to further our understanding, we’ll implement RAG more or less from scratch. We’ll
+    use a pre-trained word vector embedder and LLM, but we’ll do distance calculation
+    and augmentation ourselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'you can find the full code here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## MLWritingAndResearch/RAGFromScratch.ipynb at main · DanielWarfield1/MLWritingAndResearch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notebook Examples used in machine learning writing and research - MLWritingAndResearch/RAGFromScratch.ipynb
+    at main ·…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/RAGFromScratch.ipynb?source=post_page-----6a39d6fe6fc9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the Word to Vector Encoder
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First we need to download a pre-trained encoder, which has learned the relationships
+    between words and, as a result, knows which words belong in certain regions of
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/eb6e21c8c6765f7e87c9e9a22c617390.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The embedding for the word “apple”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embedding a Document or Prompt
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have an encoder, we can calculate the mean of all embeddings in
+    a given word to embed an entire sequence of text, like a prompt or document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dab78967d1a5f8ea18eb41f723ef2c4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The mean vector of all embeddings in “it’s a sunny day today”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating Distance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can use scipy’s cdist function to calculate the manhattan distance, which
+    is used as a proxy for similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ee8613767e8cc362c91ad112ad9a523b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distance between similar and different phrases. Notice how the similar phrases
+    don’t actually have any of the same words, but have similar general meaning. Also,
+    the last quote is from a book I’m reading called “Beyond Good and Evil”. I’m not
+    trying to be edgy. There’s a part where Nietzsche talks about, perhaps, reality
+    is painful in nature, and the strength of one's will is the capacity to observe
+    it undiluted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining Retrieval and Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we’re calculating relevance, it might be useful to define a few documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can define a function which uses our previous distance calculation to
+    define which documents are relevant to a given prompt
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/fe665c0058e8b27c3c9c0c9f337426ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note, this is just a proof of concept. One of the issue I faced was when the
+    term “guys” showed up in the prompt, i.e. “what pasta dishes do you guys have”.
+    The info states that the restaurant was founded by “two brothers”, and the info
+    would come up instead of the menu. These types of quirks are the reality of the
+    art.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Augmenting and Generating
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we can put it all together. Get a query from a user, retrieve relevant documents,
+    augment the prompt, and pass it to an LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Augmentation might look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/6afd0f4f0276951f0c5e9521d877480c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And generation might look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/cb97520f4847996013dded8755e7748b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: our custom RAG enabled chat bot in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And that’s it! In this post we went over how word vector embeddings play a key
+    part in RAG and how embeddings can be manipulated to summarize a sequence of words.
+    We went over using distance to get relevant information, then tied it all together
+    with augmentation to query an LLM. In the end we created a chatbot that can leverage
+    up-to-date information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I describe papers and concepts in the ML space, with an emphasis on practical
+    and intuitive explanations. I plan on creating more posts on best practice RAG
+    implementation techniques, and implementing a vector database from scratch. Stay
+    tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1/subscribe?source=post_page-----6a39d6fe6fc9--------------------------------)
+    [## Get an email whenever Daniel Warfield publishes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: High quality data science articles straight to your inbox. Get an email whenever
+    Daniel Warfield publishes. By signing up, you…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@danielwarfield1/subscribe?source=post_page-----6a39d6fe6fc9--------------------------------)
+    [![](../Images/1f6f4c8a07d69cf53e055e0130a85b03.png)](https://www.buymeacoffee.com/danielwarfield)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Never expected, always appreciated. By donating you allow me to allocate more
+    time and resources towards more frequent and higher quality articles. [Link](https://www.buymeacoffee.com/danielwarfield)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the images in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any images in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  prefs: []
+  type: TYPE_NORMAL

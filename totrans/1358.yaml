@@ -1,0 +1,326 @@
+- en: Introduction to Sampling Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/introduction-to-sampling-methods-c934b64b6b08](https://towardsdatascience.com/introduction-to-sampling-methods-c934b64b6b08)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Implementing inverse transform sampling, rejection sampling and importance sampling
+    in Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@hrmnmichaels?source=post_page-----c934b64b6b08--------------------------------)[![Oliver
+    S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----c934b64b6b08--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c934b64b6b08--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c934b64b6b08--------------------------------)
+    [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----c934b64b6b08--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c934b64b6b08--------------------------------)
+    ·8 min read·Jan 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08c4a7efaed06bcd1a42a2a74b87d3d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/uKlneQRwaxY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’ll discuss how to sample from a probability distribution. This
+    is a common need, in an ML setting this is most frequently used to run inference
+    for probabilistic models. However, due to the distributions being very complex,
+    this is often intractable. Thus, main focus of this post is introducing approximate
+    methods for this task, in particular using numerical sampling, known as [Monte
+    Carlo methods](https://en.wikipedia.org/wiki/Monte_Carlo_method).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Still, for introductory purposes we’ll introduce inverse transform sampling
+    first, which allows exact inference for arbitrary, tractable distributions. Then,
+    we’ll shift our focus to approximate methods, allowing sampling or moment estimation
+    for (near) arbitrary distributions: we start with rejection sampling and then
+    move to importance sampling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note this post is the first in a series familiarising readers with [1], and
+    this post in particular covers parts of Chapter 11: Sampling Methods.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inverse Transform Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The inverse transform sampling method allows sampling from any distribution
+    for which we know how to calculate the inverse of the [cumulative distribution
+    function](https://en.wikipedia.org/wiki/Cumulative_distribution_function) (CDF).
+    It entails sampling `y` from `U[0, 1]` (the [uniform distribution](https://en.wikipedia.org/wiki/Continuous_uniform_distribution)),
+    and then calculating the desired `x` as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/847febd0b222b048f817600a7c1fcf3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I.e., we are generating a random variable
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53302e119ead29be92d41521d43440b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and then claim that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ad2b65b0642631838162a6dd9a67d44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: — that the inverse of the cumulative distribution (denoted by `F`) follows our
+    desired target distribution (more specifically, its [probability density function](https://en.wikipedia.org/wiki/Probability_density_function),
+    denoted by `f`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the case if and only if the CDFs are the same, i.e.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ee56bc56eb144a9af14b132b6367fe2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To prove this, let’s examine the left side, and apply F on both sides of the
+    equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2856c3357f19bcec77a11fb75c7496e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since for the uniform distribution over [0, 1] we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d1080b0df162d4a7c32904756fdf697.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'we obtain, as desired:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ee56bc56eb144a9af14b132b6367fe2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (proof taken from [COMP 480 / 580](https://www.cs.rice.edu/~as143/COMP480_580_Spring20/scribe/lect14.pdf)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s try this for the [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution),
+    defined by the pdf:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b91eec309ea52b0c8db9def6bd14dde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Taking the CDF and inverting it yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e982ba57732fbc9c7966afcafc4f947.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thus giving us our desired sampling formula! Let’s convert this to Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first define a function `exp_distr` evaluating the pdf at the given `x` values,
+    and then a function `exp_distr_sampled` sampling from the exponential distribution
+    with the inverse transform method and our above derived formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally we plot the true pdf and a histogram of our sampled values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Running this code produces something like the below, showing that indeed our
+    sampling produces correct results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fddaafaffcf1e9b99387ace9f943c17e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Numerical Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If possible, inverse transform sampling works perfectly. However, as mentioned,
+    it requires us being able to invert the CDF. This is only possible for certain,
+    simpler distributions — even for a [normal distribution](https://en.wikipedia.org/wiki/Normal_distribution)
+    this is significantly more complex, albeit possible. And when this is too hard,
+    or not possible — we have to resort to other methods, which we will cover in this
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with rejection sampling and then introduce importance sampling, and
+    conclude this article with a discussion of limitations of these methods and an
+    outlook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that both methods still require that we can evaluate `p(x)` for a given
+    `x`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rejection Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Rejection sampling involves introducing a simpler, proposal distribution `q`
+    from which we can sample — and which we use to approximate `p`. It follows the
+    idea that `q(x) ≥ p(x)` for all `x` and we sample from `q`, but reject all samples
+    which are above `p` — thus resulting exactly in the distribution `p` eventually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As mentioned above, it is possible to apply inverse transform sampling to normal
+    distributions, but hard — thus for the sake of demonstration let us here try to
+    approximate a normal distribution (`p`), and use a uniform distribution as proposal
+    distribution (`q`). Let’s visualise above intuition in this setting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e0e88ef5470cf875f12869feb5cacf84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now with rejection sampling, we would sample from the uniform-like distribution
+    `q`, and reject all samples lying above `p` — thus in the limit resulting in points
+    filling out exactly the area under `p`, i.e. sampling from this distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formally, we first select our proposal distribution `q`, and then a scaling
+    coefficient `k` s.t. `kq(x) ≥ p(x)` for all `x`. Then, we sample a value `x_0`
+    from `q`. Next, we generate a value `u_0` from the uniform distribution over `[0,
+    kq(x_0)]`. If now `u_0 > p(x_0)`, we reject the sample, otherwise we accept it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s implement this in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Yielding the following result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4ee5a140b3367d938abbde4c0d1c15d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`Acceptance probability: 0.24774`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importance Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Often, we are only interested in expectations, which is where importance sampling
+    comes into play: it is a technique to approximate expectations (or other moments)
+    from a complex distribution `p` using again a proposal distribution `q`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The expectation of a (continuous) random variable X is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bfa4ae4493bf6718076cac4cf4253643.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We then use a little mathematical trick to reformulate this into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/461958fa0473f0f7ec2f1d80816db530.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now what does this formula say? It is the expectation of
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31ebb2940253e9718a0e244544be8e5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: under `q` — i.e. to calculate `E[X]` we can now evaluate this term when sampling
+    from `q`! The coefficients `p(x) / q(x)` are called importance weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the sake of demonstration, let’s again set `p` to be a normal distribution
+    — and use another normal distribution for `q`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code, we set `p` to be a normal distribution with mean 3\. Then, we sample
+    `NUM_SAMPLES` from the proposal distribution `q`, which is a normal distribution
+    with mean 2 — and use above introduced reformulation to calculate the expectation
+    of `X` under `p` via this — yielding approximately the right result (~3 vs 3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s finish this section with a discussion about variance: the variance of
+    the resulting samples will be'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/540e85cd55f614df34e5f95def51cca5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For our case, this means an increase in variance the more `p` and `q` vary among
+    each other, i.e. disagree. To demonstrate, compare the variance for `MEAN_Q =
+    3.2` and `5`, we get ~0.20 and ~91.71, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note however, that importance sampling is also commonly used as a variance reduction
+    technique by cleverly choosing `q` — however this might be a topic for a future
+    post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Limitations and Outlook
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this post we introduced three sampling methods: inverse transform sampling,
+    rejection sampling, and importance sampling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inverse transform sampling can be used for relatively simple distributions,
+    for which we know how to invert the CDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more complex distributions, we have to resort to rejection or importance
+    sampling. Still, for both we need to be able to evaluate the pdf of the distribution
+    in question. Furthermore, there are other drawbacks, such as: rejection sampling
+    is wasteful when we cannot “box” `p` properly with `kq` — this gets especially
+    tricky in higher dimensions. Similarly for importance sampling, it is — especially
+    in higher dimensions — hard to find good proposal distributions `q` with suited
+    importance weights.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If any of the above mentioned drawbacks are too severe, we have to resort to
+    more powerful methods — e.g. from the family of [Markov chain Monte Carlo methods](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo)
+    (MCMC). These have way less strict requirements on the distributions we want to
+    approximate, and suffer from less limitations, e.g. in high-dimensional spaces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This finishes this introduction to sampling methods. Please note all images
+    unless otherwise noted are by the author. I hope you enjoyed this post, thanks
+    for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This post is Part 1 of a series about sampling. You can find the others here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 2: [Variance Reduction with Importance Sampling](/variance-reduction-with-importance-sampling-4e5ca4b1c5a7)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Part 3: [Introduction to Markov chain Monte Carlo (MCMC) Methods](https://medium.com/towards-data-science/introduction-to-markov-chain-monte-carlo-mcmc-methods-b5bad18bc243)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**References:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Bishop, Christopher M., “Pattern Recognition and Machine Learning”, 2006,
+    [https://www.microsoft.com/en-us/research/uploads/prod/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf](https://www.microsoft.com/en-us/research/uploads/prod/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,382 @@
+- en: How Does PPO With Clipping Work?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-does-ppo-with-clipping-work-eff71a7a974a](https://towardsdatascience.com/how-does-ppo-with-clipping-work-eff71a7a974a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Intuition + math + code, for practitioners
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@byjameskoh?source=post_page-----eff71a7a974a--------------------------------)[![James
+    Koh, PhD](../Images/8e7af8b567cdcf24805754801683b426.png)](https://medium.com/@byjameskoh?source=post_page-----eff71a7a974a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eff71a7a974a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eff71a7a974a--------------------------------)
+    [James Koh, PhD](https://medium.com/@byjameskoh?source=post_page-----eff71a7a974a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eff71a7a974a--------------------------------)
+    ·9 min read·Oct 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/847c27062f8d23472ca40f8a61a45a03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Tamanna Rumee](https://unsplash.com/@tamanna_rumee?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Reinforcement Learning, Proximal Policy Optimization (PPO) is often cited
+    as the example for a policy approach, as compared to DQN (a value-based approach)
+    and the big family of actor-critic methods which includes TD3 and SAC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I recalled some time ago, when I was learning it for the first time, I was left
+    unconvinced. Many teachers adopt a sort of hand-wavy approach. I don’t buy that,
+    and neither should you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will attempt to explain how PPO works, supporting the math
+    with both intuition and code. You can try different scenarios, and see for yourself
+    that it works not just in principle but also in practice, and that there is no
+    cherry picking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Bother?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PPO and the other SOTA models can be implemented in minutes using stable-baselines3
+    (sb3). Anyone following the documentation can get it running, without knowledge
+    of the underlying model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, whether you are a practitioner or a theorist, fundamentals do matter.
+    If you simply treat PPO (or any model for that matter) as a black box, how do
+    you expect your users to have faith in what you deliver?
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will do a detailed code walkthrough later this month, writing a wrapper such
+    that any environment, be it those from Gymnasium or your own, would work with
+    any sb3 model, regardless of whether the space is ‘*Discrete*’ or ‘*Box*’. (Last
+    month, I showed how Monte Carlo, SARSA, and Q-learning can be [derived from TD(λ)](/a-cornerstone-of-rl-td-λ-and-3-big-names-2e547b37c05?sk=5282ba767da813522872cbf09aaad2b8),
+    all with a single set of code.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enough for tomorrow, let’s be here, right now!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predecessor to PPO
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Vanilla policy gradient is the most basic case of the policy-based methods,
+    where the policy is learnt and updated directly, rather than being derived from
+    some value function. The drawback is that suffers from high variance in the policy
+    updates, which is problematic for convergence, especially in environments with
+    sparse rewards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Math of TRPO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: TRPO (Trust Region Policy Optimization) ensures that the new policy (where ‘new’
+    refers to after an update) does not deviate too far from the old policy. This
+    is done by asserting a constraint that the KL divergence of the new policy with
+    respect to the old policy does not exceed some threshold *δ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8a8b139726c6aeecfbc05e68d157059.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Objective of PPO. Equation typed by author, with reference to [OpenAI Spinning
+    Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that each policy *π*_{*θ*} is, itself, a distribution. *D_{KL}*, with
+    a ‘hat’ above, is the (weighted) average of KL divergence over states visited
+    under the old policy. KL divergence, itself, is an average of the log of probability
+    ratios, weighted according to the first distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/746df19dd62349b2c2c1ac19ad331368.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formula for KL divergence between two discrete distributions *p* and q. For
+    a continuous distribution, we would have probability densities and integral in
+    place of the summation. Equation by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The objective function is the surrogate advantage, which is a ratio (action
+    probability under the new policy divided by that corresponding to the old policy)
+    multiplied by the advantage. This advantage is the expected return over some baseline,
+    which can simply be a moving average of the respective state value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have a constrained optimization problem, and this is solved using Lagrangian
+    multipliers and the conjugate gradient method. The objective and constraint are
+    linearized using Taylor expansion, hence the solution is approximate. In order
+    to ensure the constraint is met, a backtracking line search is employed to adjust
+    the step size in the policy update.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (This is where I draw the line, of not delving further away. The above are math
+    corresponding to a Level 7xx course, which practitioners can skip; knowing the
+    direction as described is good enough in my opinion.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuition of TRPO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If an action is advantageous, ie. **A > 0**, we want to increase its probability.
+    It should be selected more often after updating the policy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If an action is disadvantageous, ie. **A < 0**, we want to reduce its probability.
+    *L* is negative, and we want it to be less negative so as to maximize the objective.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A small KL divergence means that the probability of each action under the old
+    and new policy remains close to each other. At the extreme, we have log(1) which
+    makes the KL divergence zero.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Moving to PPO
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Solving the constrained optimization problem involves the backtracking line
+    search (ie. repeated computations with smaller steps each time, until the constraint
+    is satisfied) as well as computing the Hessian matrix which comprises second order
+    partial derivatives. Can we simplify the process?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first author of the TRPO paper in 2015 gave an improved model in 2017, also
+    as first author. That is PPO, and it remains widely used even today (year 2023).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Math of PPO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I will be showing less math here, so stay with me! There are different variants
+    of PPO, and we will talk about the ‘clip’ version here, which is also the version
+    used by sb3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of imposing a constraint for the KL divergence, the objective function
+    is modified such that it does not benefit from large changes in the policy. We
+    still try to increase the probability of an advantageous action (and reduce the
+    probability of a disadvantageous action), but the effects of the probability ratio
+    going much greater (or much lower) than 1 is bounded by the clipping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A value of 0.2 is commonly chosen for ϵ. This value is also used in the original
+    paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd3668c4b9feb027f1c03eb210bc7888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Objective of TRPO. Equation typed by author, with reference to [OpenAI Spinning
+    Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 1 of the [paper](https://arxiv.org/pdf/1707.06347.pdf) (in page 3) shows
+    that the factor of (1 + ϵ) or (1 — ϵ), depending on whether the advantage is positive
+    or negative, both sets an *upper bound* on the objective function. This is better
+    visualized with the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e70c6e67ad467fafbcafe5e795da6786.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified equation, depending on value of advantage A.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do not get confused by the ‘min’ operator. We want to optimize the objective
+    *L* such that it is as high (positive) as possible. The ‘min’ operator is simply
+    for (1 + ϵ) or (1 — ϵ) to take effect and form the ceiling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuition of PPO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If **A > 0**, our objection function *L* is greater (more positive) when the
+    probability ratio is *above* 1, ie. the new policy selects the *advantageous*
+    action more often. However, there is an **upper bound** due to (1 + ϵ).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If **A < 0**, our objection function *L* is greater (less negative) when the
+    probability ratio is *below* 1, ie. the new policy selects the *disadvantageous*
+    action more often. However, there is an **upper bound** due to (1 - ϵ).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The gradient update can easily be performed using the usual pytorch or tensorflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s first convince everyone that gradient update works, without any clipping
+    involved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 Layer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We set up a simple neural network with one layer, that takes in a state of dimension
+    1, and outputs action probabilities between 3 possible choices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can have a multi-dimensional state, or even an image, and the concept remains
+    — For some given state, the neural network gives you probabilities that sums to
+    1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without Clip
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, let’s prescribe a state. For this exercise, it can be any constant. In
+    practice this state is obtained from observations of the environment and entirely
+    independent of the parameters θ, ie. treated as a constant when computing the
+    gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advantage can be computed using the generalized advantage estimation (see
+    equation 11 of the same paper cited above, by Schulman *et al*. 2017 if interested).
+    It combines information from multiple time horizons in an attempt to balance the
+    trade-off between bias and variance, similar to TD(λ).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: For this exercise, we arbitrarily prescribe a negative advantage for the first
+    action, simulating that the first action had been taken which resulted in a negative
+    advantage. This is for the purpose of verifying whether the parameters are updated
+    such that the probability of the first action decreases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6dbfca798835a5183aa9aa2c19d4620a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of the code cell above, where the first action leading to a negative
+    advantage was taken
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, after the gradient update, the policy outputs a lower probability for
+    the first action, and a higher probability for the other actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With Clip
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, we will implement the clipping aspects. To first check for correctness,
+    a single update will be performed. This time, suppose that the second action is
+    taken, and the advantage is estimated to be 1.8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that a negative sign is added to the sum-product, to get the loss (upon
+    which the back propagation will be performed). This is because we want to maximise
+    the objective function, and are performing gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ea85c186ec8afe6ae32ff0a4901a4737.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of the code cell above, where the second action leading to a positive
+    advantage was taken
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far, so good. When an action leading to a positive advantage was taken, updating
+    the policy increases the probability of that action. Now, we will consider the
+    net effect of many iterations, where each of the different actions are taken multiple
+    times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You would say that in reality, the advantage are noisy, and using a constant
+    is unfair. And you are right! Let’s add a random noise, via `np.random.randn()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: After 500 iterations, with noise included, we have the following action probability
+    under the given state. (Of course, we can easily extend this environment to consider
+    different states.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82de71f620ef213fdbb4e6181b5b4db7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of the code cell above, where actions are taken repeatedly, with noise
+    added
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that the net effect of all updates lead to the probability of the second
+    action increasing, while the probabilities of the other actions decrease. (We
+    started with [0.2149, 0.5257, 0.2594]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is in spite of the fact that the last action has a positive mean advantage.
+    It is a result of the gradient being dependent on not just the sign, but the magnitude,
+    of the advantage. Each time the last action is taken, the probability increases
+    after an update, but this is offset by the effects of updates when the second
+    action is taken.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, let’s see the effect of clipping in action. Repeat the cells above
+    (where `epsilon` ϵ was set to 0.2), but this time set it to a smaller value, say
+    0.02.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b975c69e25774c33300e7544bdbfec9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output when the code is re-run with a smaller value of epsilon
+  prefs: []
+  type: TYPE_NORMAL
+- en: Excellent! We see that the clipping indeed works! By using a smaller ϵ, the
+    policy has changed to a smaller extent, albeit in the same desired direction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we looked at how PPO came about. The math is kept to just the
+    bare essentials — enough for practitioners to present the ideas to other stakeholders
+    without drowning in detailed derivations. We obtained the key intuitions from
+    the math, to understand the principles of how PPO works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, you now have the code to prove that the underlying components of
+    PPO really delivers its promise. We see that the most advantageous actions has
+    its probability increased, even with noise added. Furthermore, we see that by
+    tightening the clipping, the resulting policy changes to a smaller extent.
+  prefs: []
+  type: TYPE_NORMAL

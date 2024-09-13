@@ -1,0 +1,311 @@
+- en: The Semantics of Differing SCD2 Techniques
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/scd2-semantics-and-styles-c9faafe9e537](https://towardsdatascience.com/scd2-semantics-and-styles-c9faafe9e537)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How small differences can have a big impact
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)[![Chad
+    Isenberg](../Images/56e50c1ee292ac672df4b8062e460c8e.png)](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)
+    [Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)
+    ·7 min read·Nov 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1ed07e31161b1274a226214c153a03a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Brad Starkey](https://unsplash.com/@bradstarkey?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recently, I’ve been thinking a lot about dimensional modeling, specifically
+    how we represent different kinds of history in the warehouse / lakehouse. There
+    are many articles that describe how to build an SCD2 table across many languages
+    and platforms. Instead, I want to focus on something more nuanced and less commonly
+    discussed: the semantics of SCD2 and how various design choices have meaningful
+    consequences on use cases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The two major topics I want to cover are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dates you choose to row-version your dimensions matter quite a bit. The
+    choice should never be arbitrary, and your most common use cases should be top-of-mind
+    in your design.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How you row-version records will determine the access patterns against your
+    tables. To some extent this is strictly ergonomic, but I would argue that ergonomics
+    are an important aspect of data quality; making it easy for users to do the right
+    thing should be our goal as data modelers.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choosing reference dates
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The most common pattern for creating an SCD2 table is utilizing some date or
+    timestamp in your data. Once you’ve established that a row has changed meaningfully,
+    either via direct comparison of columns or comparison of hash values, you will
+    have to establish dates to “retire” existing records and insert new records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But which dates do we use? For many types of data, we’ll be able to choose
+    from one of three options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract timestamps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Source system timestamps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Business (entity / event) timestamps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s dive in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract timestamps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This method takes the perspective of, “What the raw data looked like when we
+    captured it.” The source of truth is your warehouse and the processes that load
+    it, as opposed to any essential attributes of the data itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bdf2c573bd2cc2715af4df1e68fd4cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A spreadsheet row representing our contract record
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From this record, we would generate the following SCD2 record (omitting some
+    metadata fields like a surrogate key, hash, dimension insertion timestamp, etc.
+    for readability):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74690939c95283829ee2c853d153f1e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A spreadsheet row representing our SCD2 record created from our contract record
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nothing super exciting so far; the big thing to note is that our record is
+    valid from the *time we extracted*, not some other date. So, what does this look
+    like when we get a new record? For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4dd5a358fc35d086e718171e0c2772a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A spreadsheet row representing an updated view of our contract record
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This new record will generate the following changes in our dimension table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b8d1e32fb860007552b7aeaf6d82b3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two spreadsheet rows representing our SCD2 records created and modified by our
+    new contract record
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll talk a bit more about our choice of `valid_to` and `valid_from` timestamps
+    later, but for now, let’s focus on the semantics of our table. When a user queries
+    `dim_contracts` using our valid metadata dates, what exactly does that mean?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As I mentioned before, this approach considers the landing of data in the warehouse
+    to be our primary point of reference. Our users will need to know (and express
+    to their consumers) that records are valid not according to business processes
+    or even source system processes, but rather data warehouse processes. Personally,
+    I think this approach can get in the way of user intuition, and I would rather
+    use one of the other methods; however, some sources may not have other timestamps
+    available, in which case, you’re stuck with extract timestamps. Just make sure
+    you have good onboarding and documentation so that your users can interpret results
+    correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Source system timestamps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This method takes the perspective of, “What the raw data looked like when the
+    source system created or updated it.” Extending our example from above, let’s
+    look at the table after our insert and update:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1da5233fcd15640b9c377d0f3b033196.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two spreadsheet rows representing our SCD2 table, using source system timestamps
+    as our reference times
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fundamentally, we’re representing the same changes here as we did above; the
+    key difference is that our semantics have shifted subtly. Instead of considering
+    the record validity with respect to when we landed the data in the warehouse,
+    now we’re concerned with when the source system updated these records. The advantage
+    here is that users have an easier story to tell; records are valid when they were
+    valid in the source system!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method can be especially valuable for source system history tables that
+    aren’t true dimensions. You’ll have a representation of the source system that
+    can be referenced when building other dim and fact tables, a necessity if [bitemporal
+    history](https://martinfowler.com/articles/bitemporal-history.html)¹ is important
+    to your analytics capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Business timestamps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This approach takes the perspective of, “What the business entity looked like
+    in relation to a business date.” A key advantage here is that users can join directly
+    on the table with business dates; the effective dates map to “real-world” events,
+    such as when an invoice was created or a contract became effective. These kinds
+    of tables give you the full business history of an entity without the overhead
+    of having to know how the source system generated records or how the warehouse
+    captured them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s consider what a dimension looks like if we use business dates to bound
+    our records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f59b041ca748c70ea9e831f44fd0554.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two spreadsheet rows representing our SCD2 table, using business dates our reference
+    times
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we can actually provide a firm date boundary for the record, since
+    the contract will no longer be effective on 2023–12–31, and thus the record shouldn’t
+    be effective from that date forward, either. This approach can be extremely intuitive
+    for users, as the record reflects the business process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This simplicity does come at a cost. Unlike the other methods, you will need
+    to give more thought to backdating and post-hoc corrections. Will you perform
+    “Type 1” updates (i. e., overwrite the affected fields for the records active
+    over the backdated dates), or will you maintain these “incorrect” records for
+    audit purposes but somehow indicate they aren’t active? If the latter, how will
+    you help users avoid these records for everyday analytics? Views? Entries in the
+    data dictionary? Sample queries?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the format of valid_to and valid_from
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our examples, we used a popular strategy for picking our record effective
+    dates based off of some update columns. dbt snapshots provide this functionality
+    out of the box via their [timestamp strategy](https://docs.getdbt.com/docs/build/snapshots#timestamp-strategy-recommended).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The subtle note on usage is that when the `valid_to` of the “old” record and
+    the `valid_from` of the record that’s replacing it are equal, our query patterns
+    require a strict inequality, as seen above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If instead you go through the additional step of offsetting these dates / timestamps,
+    you can use slightly different and perhaps more ergonomic access patterns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74ecf106b1802d6531a52d458b19bd0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two spreadsheet rows representing our SCD2 table using the source system timestamps
+    and the offset method
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This small change allows us to query the data in two different ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our latter example, however, only works for retired records; “current” records
+    will fail due to our `NULL` value in `valid_to`. One popular method for getting
+    around this is to `COALESCE()` with use some far-future date, like 2999–12–31,
+    9999–12–31, etc.. Whether this additional work is worth it to enable these query
+    patterns is up to you and your users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bonus Round: SCD2 vs. dimensional snapshots'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As you can see, SCD2 introduces a lot of complexity to your data models, and
+    there’s an open question whether this modeling exercise is always worth it. In
+    one of [data engineering’s most seminal works](https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a)²,
+    Maxime Beauchemin discusses this idea in some depth. To summarize, should we be
+    maintaining complex logic to retire existing rows and insert new ones, or is it
+    worth the storage overhead to simply snapshot our dimension tables on a daily
+    basis?
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a math problem. You can figure out how many records your dims contain,
+    how wide the tables are, and then calculate the monthly storage costs. If those
+    costs are acceptable, you can greatly simplify your design; just add a snapshot
+    at the end of your dim update process, and you’re done. Users will love it, too,
+    since they can join directly on a snapshot date rather than trying to wrestle
+    with effective date ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping Up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dimensional modeling is a powerful tool in any data engineer’s or analytics
+    engineer’s toolbox. Being able to track history is crucial to certain analytics
+    use cases, and history can provide you with valuable insights into operational
+    workflows. While there are many different ways you can approach SCD2, you need
+    to be conscious of the decisions you make. These small changes can seem abstract
+    and inconsequential, but in actual usage, these distinctions will become crystal
+    clear. The first time you have to explain why a “missing” record isn’t actually
+    missing, just not valid when a user expects it to be, you’ll know exactly how
+    important these choices are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ¹Martin Fowler. (April 7, 2021). *Bitemporal History*. ([https://martinfowler.com/articles/bitemporal-history.html](https://martinfowler.com/articles/bitemporal-history.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ²Maxime Beauchemin. (January 18, 2018). *Functional Data Engineering — a modern
+    paradigm for batch data processing*. [https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a](https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a)
+  prefs: []
+  type: TYPE_NORMAL

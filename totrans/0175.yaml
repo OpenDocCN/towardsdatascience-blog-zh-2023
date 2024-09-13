@@ -1,0 +1,507 @@
+- en: A comprehensive guide of Distributed Data Parallel (DDP)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-comprehensive-guide-of-distributed-data-parallel-ddp-2bb1d8b5edfb](https://towardsdatascience.com/a-comprehensive-guide-of-distributed-data-parallel-ddp-2bb1d8b5edfb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A comprehensive guide on how to speed up the training of your models with Distributed
+    Data Parallel (DDP)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@francoisporcher?source=post_page-----2bb1d8b5edfb--------------------------------)[![François
+    Porcher](../Images/9ddb233f8cadbd69026bd79e2bd62dea.png)](https://medium.com/@francoisporcher?source=post_page-----2bb1d8b5edfb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2bb1d8b5edfb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2bb1d8b5edfb--------------------------------)
+    [François Porcher](https://medium.com/@francoisporcher?source=post_page-----2bb1d8b5edfb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2bb1d8b5edfb--------------------------------)
+    ·12 min read·Oct 30, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f23ad409732c360931dcb34f473cc0a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hi everyone! I am Francois, Research Scientist at Meta. Welcome to this new
+    tutorial part of the series [Awesome AI Tutorials](https://github.com/FrancoisPorcher/awesome-ai-tutorials).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial we are going to demistify a well known technique called DDP
+    to train models on several GPUs at the same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During my days at engineering school, I recall leveraging Google Colab’s GPUs
+    for training. However, in the corporate realm, the landscape is different. If
+    you’re part of an organization that’s heavily invested in AI — particularly if
+    you’re within a tech giant — you likely have a wealth of GPU clusters at your
+    disposal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: his session aims to equip you with the knowledge to harness the power of multiple
+    GPUs, enabling swift and efficient training. And guess what? It’s simpler than
+    you might think! Before we proceed, I recommend having a good grasp of PyTorch,
+    including its core components like Datasets, DataLoaders, Optimizers, CUDA, and
+    the training loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially, I viewed DDP as a complex, nearly unattainable tool, thinking it
+    would require a large team to set up the necessary infrastructure. However, I
+    assure you, DDP is not only intuitive but also concise, requiring just a handful
+    of code lines to implement. Let’s embark on this enlightening journey together!
+  prefs: []
+  type: TYPE_NORMAL
+- en: A high level intuition of DDP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Distributed Data Parallel (DDP) is a straightforward concept once we break it
+    down. Imagine you have a cluster with 4 GPUs at your disposal. With DDP, the same
+    model is loaded onto each GPU, optimizer included. The primary differentiation
+    arises in how we distribute the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df270a6c028c05c686bd91fc03d3beb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDP, Image taken from PyTorch [tutorial](https://www.youtube.com/watch?v=Cvdhwx-OBBo)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re acquainted with deep learning, you’ll recall the DataLoader, a tool
+    that segments your dataset into distinct batches. The norm is to fragment the
+    entire dataset into these batches, updating the model post each batch’s computation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Zooming in further, DDP refines this process by dividing each batch into what
+    we can term as “sub-batches.” Essentially, every model replica processes a segment
+    of the primary batch, resulting in a distinct gradient computation for each GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In DDP we split this batch into sub-batches through a tool called a **DistributedSampler**,
+    as illustrated on the following drawing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b244a5b37e86fa4c59bccdb3784160e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDP, Image taken from PyTorch [tutorial](https://www.youtube.com/watch?v=Cvdhwx-OBBo)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upon the distribution of each sub-batch to individual GPUs, every GPU computes
+    its unique gradient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2da867016955dafee34c084749757e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDP, Image taken from PyTorch [tutorial](https://www.youtube.com/watch?v=Cvdhwx-OBBo)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now comes the DDP magic. Before updating the model parameters, the gradients
+    calculated on each GPU need to be aggregated so that every GPU has the average
+    gradient computed over the entire batch of data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is done by taking the gradients from all GPUs and averaging them. For instance,
+    if you have 4 GPUs, the average gradient for a particular model parameter is the
+    sum of the gradients for that parameter on each of the 4 GPUs divided by 4.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DDP uses the `NCCL` or `Gloo` backend (NCCL is optimized for NVIDIA GPUs, Gloo
+    is more general) to efficiently communicate and average gradients across GPUs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b92be02a61556de95b8bf21f88d955e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDP, Image taken from PyTorch [tutorial](https://www.youtube.com/watch?v=Cvdhwx-OBBo)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Glossary on terms, nodes and ranks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before diving into the code, it’s crucial to understand the vocabulary we’ll
+    be using frequently. Let’s demystify these terms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Node`: Think of a node as a powerful machine equipped with multiple GPUs.
+    When we speak of a cluster, it’s not just a bunch of GPUs thrown together. Instead,
+    they’re **organized into groups or “nodes.”** For instance, a node might house
+    8 GPUs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Master Node`: In a multi-node environment, one node typically takes charge.
+    This “master node” handles tasks like synchronization, initiating model copies,
+    overseeing model loading, and managing log entries. Without a master node, each
+    GPU would independently generate logs, leading to chaos.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Local Rank:` The term “rank” can be likened to an ID or a position. The local
+    rank refers to the position or ID of a GPU within its specific node (or machine).
+    It’s “local” because it’s confined to that particular machine.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Global Rank:` Taking a broader perspective, the global rank identifies a GPU
+    across all available nodes. It’s a **unique identifier irrespective of the machine.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`World Size:` At its core, this is a count of all **GPUs available to you across
+    all nodes**. Simply, it’s the product of the number of nodes and the number of
+    GPUs in each node.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To put things into perspective, if you’re working with just one machine, things
+    are more straightforward as the local rank equates to the global rank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To clarify this with an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/087ec6f16a70c080667481b3736612cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Local rank, image from [tutorial](https://www.youtube.com/watch?v=KaAJtI1T2x4)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1214b8afb108f666b714925e206e9ee5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Local rank, image from [tutorial](https://www.youtube.com/watch?v=KaAJtI1T2x4)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Understanding DDP Limitations:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Distributed Data Parallel (DDP) has been transformative in many deep learning
+    workflows, but it’s essential to understand its boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The crux of DDP’s limitation lies in its **memory consumption**. With DDP, **each
+    GPU loads a replica of the model, the optimizer, and its respective batch of data.**
+    GPU memories typically range from a few GB to 80GB for the high end GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For smaller models, this isn’t an issue. However, when venturing into the realm
+    of Large Language Models (LLMs) or architectures akin to GPT, the confines of
+    a single GPU’s memory might be inadequate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Computer Vision, while there’s a plethora of lightweight models, challenges
+    arise when **increasing batch sizes**, especially in scenarios involving **3D
+    imagery** or Object Detection tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter Fully Sharded Data Parallel (FSDP). This method extends the benefits of
+    DDP by not only distributing data but also dispersing the model and optimizer
+    states across GPU memories. While this sounds advantageous, FSDP increases inter-GPU
+    communication, potentially slowing down training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Summary:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If your model and its corresponding batch comfortably fit within a GPU’s memory,
+    DDP is your best bet owing to its speed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For mammoth-sized models demanding more memory, FSDP is a more fitting choice.
+    However, bear in mind its trade-off: you’re sacrificing speed for memory.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why you should prefer DDP over DP?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you go on PyTorch’s website, there are actually options: DP and DDP. But
+    I only mention this so you don’t get lost or confused: **Just use DDP, it’s faster
+    and not limited to a single node.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a0813aaad92748692ec721c7dc57ca23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison from Pytorch [tutorial](https://pytorch.org/tutorials/beginner/ddp_series_theory.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Code Walkthrough:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Implementing distributed deep learning is simpler than you might think. The
+    beauty lies in the fact that you won’t be bogged down with manual GPU configurations
+    or the intricacies of gradient distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You will find all the template and script on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/FrancoisPorcher/awesome-ai-tutorials?source=post_page-----2bb1d8b5edfb--------------------------------)
+    [## GitHub - FrancoisPorcher/awesome-ai-tutorials: The best collection of AI tutorials
+    to make you a…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best collection of AI tutorials to make you a boss of Data Science! - GitHub
+    …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/FrancoisPorcher/awesome-ai-tutorials?source=post_page-----2bb1d8b5edfb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a breakdown of the steps we’ll be taking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Process Initialization: This involves designating the master node, specifying
+    the port, and setting up the `world_size`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Distributed DataLoader Setup: Crucial to this step is the partitioning of each
+    batch across the available GPUs. We’ll ensure that the data is evenly spread without
+    any overlap.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Model Training/Testing: In essence, this step remains largely unchanged from
+    the single GPU process.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Training on 1 GPU 1 Node (baseline)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First let’s define a vanilla code that loads a dataset, create a model and
+    train it end to end on a single GPU. This will be our starting point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training on several GPUs, 1 Node
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now we are going to use all the GPUs in a single node with the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Necessary Libraries for distributed training.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Initialize the Distributed Environment: (especially the `MASTER_ADDR` and `MASTER_PORT`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Wrap Model with DDP using the `DistributedDataParallel` wrapper.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Distributed Sampler to ensure that the dataset is divided across the GPUs
+    in a distributed manner.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Adjust the Main Function to `spawn` multiple processes for multi-GPU training.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'For the libraries, we need this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we need to setup each process. For example if we have 8 GPUs on 1 Node,
+    we will call the following functions 8 times, one for each GPU and with the right
+    `local_rank`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A few explanations on the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MASTER_ADDR` is the hostname of the machine on whith the master (or the rank
+    0 process) is running. Here it’s localhost'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`MASTER_PORT`: Specifies the port on which the master is listening for connections
+    from workers or other processes. 12355 is arbitrary. You can choose any unused
+    port number as long as it’s not being used by another service on your system and
+    is allowed by your firewall rules.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`torch.cuda.set_device(rank)`: This ensure that each process uses its corresponding
+    GPU'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Then we need to slightly change the Trainer class. We are simply going to wrap
+    the model with the DDP function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The rest of the Trainer class is the same, amazing!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we have to change the dataloader, because remember, we have to split the
+    batch on each GPU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can modify the `main` function, that will be called for each process
+    (so 8 times in our case):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And finally, when executing the script, we will have to launch the 8 processes.
+    This is done with the `mp.spawn()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Ultimate Step: Training on several nodes'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you have made it so far congratulations! The Ultimate step is be able to
+    recruit all the GPUs available on different nodes. But if you understood what
+    we have done so far, this is very easy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key distinction when scaling across multiple nodes is the shift from `local_rank`
+    to `global_rank`. This is imperative because every process requires a unique identifier.
+    For instance, if you’re working with two nodes, each with 8 GPUs, both processes
+    0 and 8 would have a `local_rank` of 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The global_rank is given by the very intuitive formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: global_rank = node_rank * world_size_per_node + local_rank
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So first let’s modify the `ddp_setup` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And we have to adjust the main function which now takes the `wold_size_per_node`
+    in argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And finally we adjust the `mp.spawn()` function with the `world_size_per_node`
+    as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using a cluster (SLURM)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You are now ready to send the training to the cluster. I’ts very simple you
+    just have to call the number of nodes you want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a template for the SLURM script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now you can launch training from the terminal with the command
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Congratulations, you’ve made it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thanks for reading! Before you go:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more awesome tutorials, check my [compilation of AI tutorials](https://github.com/FrancoisPorcher/awesome-ai-tutorials)
+    on Github
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/FrancoisPorcher/awesome-ai-tutorials?source=post_page-----2bb1d8b5edfb--------------------------------)
+    [## GitHub - FrancoisPorcher/awesome-ai-tutorials: The best collection of AI tutorials
+    to make you a…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best collection of AI tutorials to make you a boss of Data Science! - GitHub
+    …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/FrancoisPorcher/awesome-ai-tutorials?source=post_page-----2bb1d8b5edfb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Y*ou should get my articles in your inbox.* [***Subscribe here.***](https://medium.com/@francoisporcher/subscribe)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you want to have access to premium articles on Medium, you only need a
+    membership for $5 a month. If you sign up* [***with my link***](https://medium.com/@francoisporcher/membership)*,
+    you support me with a part of your fee without additional costs.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you found this article insightful and beneficial, please consider following
+    me and leaving a clap for more in-depth content! Your support helps me continue
+    producing content that aids our collective understanding.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PyTorch guide on DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Tutorial Series](https://www.youtube.com/watch?v=-K3bZYHYHEA&list=PL_lsbAsL_o2CSuhUhJIiW0IkdT5C2wGWj)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,788 @@
+- en: A Guide to Using Window Functions in BigQuery
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-guide-to-using-window-functions-4b2768f589d9](https://towardsdatascience.com/a-guide-to-using-window-functions-4b2768f589d9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Create running totals, moving averages and rankings with ease in BigQuery.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)[![Tom
+    Ellyatt](../Images/8756acdd11fef8db9a868820251e7575.png)](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)
+    [Tom Ellyatt](https://medium.com/@thomas.ellyatt?source=post_page-----4b2768f589d9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b2768f589d9--------------------------------)
+    ·16 min read·Jul 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e881dc2a741d886c4abc1ac4ba0686bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Benjamin Voros](https://unsplash.com/@vorosbenisop?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’ve ever searched for or stumbled upon something like ‘*6 SQL skills you
+    need to know to ace that interview*’ or perhaps ‘*SQL concepts I wish I knew years
+    ago*’. Chances are, window functions get their well-deserved mention somewhere
+    in that list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Window functions are fantastic.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: My goal for this article is to help you understand these window functions and
+    how to use them. Once we’ve covered the tutorial, I’ve prepared a few use cases
+    you can run in your project to play around with, as I’ve used public data for
+    these examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will cover:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**What is a** **window function?**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **syntax of a window function** — namely the partition, order by and frame
+    parts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A close look at how you can create a 7-day moving average and how it works
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What **aggregate** and **window functions** are at your disposal?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, we’ll run through a few use cases to demonstrate how window functions
+    can be applied.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What **is** a window function?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The term ‘window’ may seem strange to use in SQL *(or computing in general)*.
+    Usually, the name of the function type gives you a glimpse of how they can be
+    used, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Aggregate Functions** — take a bunch of things and give you one result that
+    summarises them all'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**String Functions** — toolbox full of methods to manipulate words and sentences'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Array Functions** — work with a collection or group of items all at once'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And so on…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/124972bd1841e122622cafd4a7cb4cc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Cosmic Timetraveler](https://unsplash.com/@cosmictimetraveler?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what is a window function in SQL? Much like a window in the real world, it
+    allows you to view a particular area while the rest remains out of sight. You’re
+    focused solely on what’s being shown through the window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Returning to the world of data, let’s say you have a table containing monthly
+    sales for liquor stores in IOWA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset used in this example is publicly accessible, provided by Google
+    and already exists in BigQuery if you want to try these examples yourself.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ([link](https://console.cloud.google.com/marketplace/product/iowa-department-of-commerce/iowa-liquor-sales?pli=1)
+    (CC0 license))
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`bigquery-public-data.iowa_liquour_sales.sales`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example below provides a simple view of sales by year and month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/355551bd99f2282322cfce2833435c68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I’ve saved the above as a view to keep our future queries as minimal as we can
+    to focus on applying window functions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If you want to use this view, you can use `spreadsheep-20220603.Dashboard_Datasets.iowa_liqour_monthly_sales`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if we also want the monthly average for each year as a separate column?
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a few ways to achieve this, and if you’re new to window functions,
+    you might try calculating the average as a sub-query and then joining to the original
+    table, like below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5483e3292b9fbe584944a59fbb1b13f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This works perfectly fine, but a window function will allow you to reach the
+    same answer **without a sub-query!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/241cec270d76d3f1c68f63f7cf30833c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The window function above allows us to perform an aggregate function, in this
+    case, the **avg** function, over a specific group of rows defined by **partition
+    by year.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thinking back to the window analogy earlier, the *partition by* part is our
+    window in that scenario. Sure, we have the entire dataset in front of us, but
+    the partition limits our view to just the year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time to dive into the syntax.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed424eeb31d664fc70e4c0ff979ba791.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Window Syntax
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the example above, we can split the function into two parts, the function
+    name and the window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this scenario, the function name is the familiar aggregate function called
+    **AVG**. The window part, however, is a little different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once you’ve specified your function, you start your window function with the
+    **over** keyword, which must then be followed by parenthesis ().
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6576ec6fcf2c81ff578026e8fa53f7d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inside the parenthesis, you can specify what window we want to perform the aggregate
+    using the **partition by** keyword, followed by a list of columns you wish to
+    include in your window. Here, we’ve only included one column, **year,** but later
+    we will bring another column into the mix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Partition by is optional**; if you don’t include a **partition by**, the
+    aggregate will consist of all rows in your dataset. As this exists in the SELECT
+    statement, it’s worth noting that the WHERE clause will be actioned before this
+    window function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do I mean by this? Using the example I shared earlier, I specified a window
+    by using **partition by year**. However, in my **WHERE clause,** I have a filter
+    set only to return rows where the **year = 2022**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means the dataset only has one year in view — 2022, when the window function
+    runs. Therefore my **partition by year window is redundant,** and using the line
+    below would give the same result in this scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdfe8b2a5d9507740ddb2520cf4fa0b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s re-run our query earlier and, this time, remove our WHERE clause.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1edde0974c55fe87d072c1d97317dd0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Nik](https://unsplash.com/@helloimnik?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we can see different values for 2023 and 2022\. This is now showing the
+    average monthly sales for each of the years offered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, in **line 7,** we have **2022** with **average monthly sales of
+    35.7 million**, while the **average monthly sales for 2023 (so far) is 35.8 million**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57ad70ec62e55a26bece3f1c3384d864.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Amending the report to focus on 2022 alone, we can cleanly visualise the monthly
+    average revenue for the year to the actuals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accessing the monthly average data makes it easier to visualise and analyse
+    sales trends. Specifically, it becomes evident that the year’s second half contributes
+    significantly to sales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used a window function to determine the average monthly sales for each year.
+    Then, this function applied the result to all rows with that year. It’s like a
+    left-join sub-query that we saw earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/468939b39525889d21c5d78895c4c801.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Daniel K Cheung](https://unsplash.com/fr/@danielkcheung?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Order By**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ve focused mainly on aggregate functions and how to specify the window so
+    far. We can also determine the order the window should carry out its task, which
+    is a key part of ranking or running total/average solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Returning to the Iowa dataset, let’s expand our view to include store_name and
+    then give stores a numbered monthly ranking based on their total sales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: New View
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: spreadsheep-20220603.Dashboard_Datasets.iowa_liqour_monthly_sales_inc_store
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unlike aggregates, for the rank function, which is exclusive to window functions,
+    you don’t specify a column inside the function itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9aec38fbb3c644006f95d25c2190fb85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, if you try and run this as shown above, you’ll be greeted by an error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f1210d976d25c820ad962c14c436839.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The issue here is we’ve told Bigquery we want to rank our results, but we haven’t
+    specified how they should be ranked, which we can achieve using **ORDER BY**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6b27be18dca7d9773e2741a4bd6319c.png)![](../Images/d17df45dc93f434430ace8de8051b988.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This gives us a view of monthly sales on a store level, with a ranking for each
+    store. You can then take this further and answer other questions, such as *What
+    were the top 3 stores for each month in 2022*?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In one of the examples towards the end of this article, we’ll use a new clause
+    called **QUALIFY**, which allows you to filter on results given by window functions
+    easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far, our window functions have applied to all rows in each partition, but
+    what if we only want a subset of the partition? For example, the average daily
+    sales for the last seven days? For this, we need to specify a window frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Window Frame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Time to pull in a new dataset, introducing **Chicago taxies**! This is another
+    public dataset (CC0 license) you can use to experiment. ([link](https://console.cloud.google.com/marketplace/product/city-of-chicago-public-data/chicago-taxi-trips?project=spreadsheep-20220603))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The public dataset is large at 75GB, quickly eating into your free 100GB monthly
+    query allowance. Therefore, I’ve created a new table that only holds data from
+    2023, so we can play around with the data without racking up a hefty bill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve made this table public, so I recommend you try my dataset for testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Anyway, back to the subject…what is a window frame? This clause allows us to
+    define what rows or ranges we need to use inside the partition. A popular use
+    case for this is to create moving averages or running totals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This query provides us with revenue by date between May and June 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/54d9e8504337ccab92e7b973ddb2b565.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Moving averages are very common with time series data, as it allows you to easily
+    compare the performance of a specific day or month to what result you typically
+    see for a given period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s create a simple moving average and to save repeating date conversions
+    and revenue rounding, I’ve put our initial query inside a CTE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/894507e9c1c09c4dbc3ab403b0ac916d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we look at the first five rows, we can see that the first average equals
+    trip_total_revenue. This is because it’s the start of the window as we’ve ordered
+    our data by trip_start_date in asc order. Therefore there isn’t anything to average
+    against yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we now have a daily average between rows 1 and 2 for the second row,
+    and we have a daily average for the third row between rows 1, 2 and 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a good start which shows us that our moving average is working, but let’s
+    take it a step further. Let’s create a moving average which only includes the
+    last seven days of revenue, and if the window doesn’t contain seven days, then
+    show a null value as it’s an incomplete window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To specify your window range, there are three keywords you need to remember:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: current row
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: preceding
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: following
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You then construct your window starting with either rows or ranges (I’ll explain
+    the difference between the two later), followed by between <<start>> and <<end>>.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The example above is the window frame we need for our problem. We’ve specified
+    the window to begin seven rows before the current row and end one before the current
+    row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a simple example of how this window function works with a sum aggregate
+    (running total).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9928f4e257bd211e21957aefa50e4c42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, when we reach the 8th row, the value of the moving sum reaches
+    7, where the window now contains seven rows of data. If you switch the window
+    to 6 preceding and current rows, you’ll see the window has shifted to include
+    the current row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b9275c9a55b62d1b88ea25785061c3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: At the end of this section, I’ll provide some use case examples to highlight
+    how they can be used, but back to the task at hand for now!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s put that window range into our moving average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we have one final challenge, how do we make the value null if the window
+    contains less than seven rows of data? Well, we can use an IF statement to check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ve brought in a second window function that counts how many rows exist in
+    the window frame, which, if equal to 7, will provide the moving average result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d080603ba7ce983011e11f514131d911.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Good to know:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the `ORDER BY` expression isn’t mentioned in your window function, the default
+    specification is `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING.`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the `ORDER BY` expression is specified and you use an aggregation function,
+    the default window frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[BigQuery documentation for window frame specification here.](https://cloud.google.com/bigquery/docs/reference/standard-sql/window-function-calls#def_window_frame)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Difference between ROWS and RANGE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In SQL, both the ROWS and RANGE clauses help control which rows are used by
+    a window function within a group.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ROWS clause works with a fixed number of rows. It counts a specific number
+    of rows before or after the current row, regardless of their values. These rows
+    are included in the window function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The RANGE clause works with rows based on their values. It considers the rows
+    with values within a specific range relative to the current row. The actual values
+    determine which rows are included in the window function calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, while the ROWS clause focuses on the physical position of the rows, the
+    RANGE clause considers the logical value of the rows to determine their inclusion
+    in the window function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Try this as an example to see it in action
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3558a26debfc5e2eed168d20cd763863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Look at rows 3 and 4 to compare the two clauses. The ROWS clause adds each row
+    to the total, even with duplicate sale dates. But with the RANGE clause, rows
+    with the same sale date are grouped as one range. For example, in this case, all
+    rows with the date 2023–01–03 will be considered as one range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c44ef6cece2b28def1a3c1cdfeb2c7f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Christopher Gower](https://unsplash.com/@cgower?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What **are** the window functions?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a bunch of functions you can use with a window function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For **aggregate functions,** you can try:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SUM**: Calculates the sum of a numerical column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**AVG**: Calculates the average of a numerical column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MIN**: Retrieves the minimum value from a column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MAX**: Retrieves the maximum value from a column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**COUNT**: Counts the number of rows in a column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**COUNT** DISTINCT: Counts the number of distinct values in a column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Then you have a bunch of new functions exclusive to the window function, known
+    as analytical functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**ROW_NUMBER**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#row_number):
+    Assigns a unique number to each row within the window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**RANK**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#rank):
+    Assigns a rank to each row based on the order specified in the window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**DENSE_RANK**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#dense_rank):
+    Assigns a rank to each row, without gaps, based on the order specified in the
+    window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**LAG**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#lag):
+    Retrieves the value from a previous row within the window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**LEAD**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#lead):
+    Retrieves the value from a subsequent row within the window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**FIRST_VALUE**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#first_value):
+    Retrieves the value from the first row within the window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**LAST_VALUE**](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#last_value):
+    Retrieves the value from the last row within the window frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The functions above are hyperlinked to the BigQuery documentation.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/81b39427fbba2b01ce00ce8b96780541.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Susan Holt Simpson](https://unsplash.com/@shs521?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Working Examples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Daily Running Total**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the more simple use cases of window functions is the running total. For
+    the Chicago taxies dataset, we could have revenue on a monthly level but require
+    a new column which tracks our total revenue across the year so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0fadd5f53320d91584bed79bff4246a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**12-Week Moving Average**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article’s tutorial highlights that moving averages are common when working
+    with time series data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9c14c861ce0dfbbc629321552e47ef0d.png)![](../Images/6a58b00bf94ee3628f102d3ba5a6dcf8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plotting the revenue alongside the moving average indicates a positive trend,
+    as the moving average has continually climbed each week since April. Without the
+    moving average, our eyes might be drawn to the lower-performing weeks rather than
+    the bigger picture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07ec677747f7459b63e7a8788e6d49ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Randy Fath](https://unsplash.com/@randyfath?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Calculating a Z-score for anomaly detection**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Z-Score calculation = (x — mean) / standard deviation
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A z-score is a way to measure how unusual or typical a number is compared to
+    a group of other numbers. It tells you how far away a specific number is from
+    the group’s average in terms of standard deviations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example, we’ve taken the actual value of trip_total_revenue and subtracted
+    the average daily revenue we’ve seen for the last 30 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then divided that number by the standard deviation for those 30 days. This
+    tells us how close a specific day of revenue is to the average or how many standard
+    deviations that value is from the average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a handy metric to plot on a chart, such as below, as it gives context
+    to your data. Although we only have the last 30 days in view, the z-score compares
+    to the previous 30 days effortlessly, and we can see areas where peaks and dips
+    seem insignificant until the z-score highlights how different that day performed
+    compared to the norm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/226555676a27e43f41f37cd2c4e54293.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With these kinds of reports, you should set a value that suggests you have an
+    abnormal event. I wouldn’t say any dates are abnormal in the chart above, but
+    a typical go-to is a value of 3 (i.e., three standard deviations). However, this
+    depends entirely on the volatility of your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full Query
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/10ec55cd9d4142cbf0839c38595bc667.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Giorgio Trovato](https://unsplash.com/@giorgiotrovato?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Monthly Top Ranking Performers**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are numerous taxi companies in the Chicago taxies dataset, and we may
+    ask ourselves who were the top 3 performing companies each month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To achieve this, we can use the rank analytical function, partitioned by trip_month
+    and ordered by trip_total_revenue in descending order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, this will still provide results for all companies in the dataset for
+    each month rather than just the top 3\. Therefore, we can utilise the **QUALIFY**
+    clause, which functions similarly to the **WHERE** clause, to allow you to filter
+    your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The qualify clause can only be used with window functions and can reference
+    window functions you’ve created in your select statement. More details [here](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#qualify_clause).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results below make it clear three main companies are dominating the taxi
+    ring.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e9df968915093c7ccc8fb596f0743dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/6c1ac4aa546426c43823986a818c0c36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Towfiqu barbhuiya](https://unsplash.com/de/@towfiqu999999?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Monthly/Quarterly Comparisons**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monthly and quarterly reporting is essential for tracking KPIs and to help gauge
+    the direction the business is heading. However, creating a report in BigQuery,
+    which provides month vs month changes, can prove tricky once you know how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once you have your data on the level you want, such as monthly in my example
+    below, you can use the LAG or LEAD functions to return the previous month’s revenue
+    which allows you to calculate the % difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use LAG or LEAD; both achieve the same depending on how you order your
+    data. As we’re pulling the previous month’s revenue, it makes sense to use lag
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c9c87ae76d4f7673bb5a72ffbabbc1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: That brings this article to an end. If you have any questions or challenges,
+    please feel free to comment, and I’ll answer as soon as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I frequently write articles for BigQuery and Looker Studio. If you’re interested,
+    consider following me here on Medium for more!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the author.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Stay classy folks!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tom***
+  prefs: []
+  type: TYPE_NORMAL

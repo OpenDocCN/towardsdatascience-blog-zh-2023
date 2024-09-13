@@ -1,0 +1,257 @@
+- en: SW/HW Co-optimization Strategy for Large Language Models (LLMs)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/sw-hw-co-optimization-strategy-for-large-language-models-llms-855f20a14629](https://towardsdatascience.com/sw-hw-co-optimization-strategy-for-large-language-models-llms-855f20a14629)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to stretch every bit out of your system to run LLMs faster? — best practice
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)[![Liz
+    Li](../Images/78846add1618c8c095dd97adeca87f81.png)](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)[](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)
+    [Liz Li](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)
+    ·5 min read·Dec 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leading Large Language Models (LLMs) like ChatGPT, Llama, etc. are revolutionizing
+    the tech industry and impacting everyone’s lives. However, their cost poses a
+    significant hurdle. Applications utilizing OpenAI APIs incur substantial expenses
+    for continuous operation ($0.03 per 1,000 prompt tokens and $0.06 per 1,000 sampled
+    tokens).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To cut costs, companies tend to host their own LLMs, with expenses varying widely
+    based on model size (larger LLMs with 100–200B parameters can cost ~10 times more
+    compared to smaller ones with 7–15B parameters). This trend has spurred the AI
+    chip race, as major tech companies aim to develop their own AI chips, reducing
+    reliance on expensive hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c20161743022e1acac02f5a2f4dd573f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trend of model size. Source: AWS reInvent'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to squeeze every bit of computing power to run LLMs? In this article, I
+    am going to do a thorough analysis of LLM optimization strategy across models,
+    software, and hardware. It follows the [AI SW/HW co-design methodology](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2)
+    I wrote in previous article, with much more in-depth discussion on LLM-specific
+    cost and performance optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=post_page-----855f20a14629--------------------------------)
+    [## How to co-design software/hardware architecture for AI/ML in a new era?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A holistic view of designing efficient architecture for AI/ML
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=post_page-----855f20a14629--------------------------------)
+    ![](../Images/da5537b614fce3903c75592dafaafb01.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Source: made by author and other colleagues'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The compute and memory demands of running LLM models are growing exponentially,
+    while computing/memory capabilities are lagging behind on a slower trajectory,
+    as depicted in the image above. To bridge this performance gap, it’s crucial to
+    explore enhancements in three key areas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Algorithmic Improvement and Model Compression:** How can we augment models
+    with features to reduce compute and memory demands without compromising quality?
+    What are the latest advancements in LLM quantization technology that reduce model
+    size while maintaining quality?'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Efficient SW Stack and Acceleration Libraries:** What considerations are
+    vital in constructing a software stack that seamlessly connects AI models and
+    hardware? How can we expose hardware features to optimize LLM acceleration? What
+    are the prevailing software challenges and potential enhancements?'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Powerful AI HW Acceleration and Advanced Memory Hierarchy:** What are the
+    contemporary hardware accelerators tailored for LLMs? How can we alleviate the
+    high memory demands through potential advancements in memory hierarchy?'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I am going to write one article for each of the above topics. Let’s dive into
+    the first one (**Algorithmic Improvement and Model Compression)** in this post!
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM is based on transformer architecture (encoder-decoder), and there is decoder-only
+    model architecture including Llama, ChatGPT, etc., encoder-decoder model architecture
+    including Whisper, T5, etc. Emerging models are coming out each day. In this post,
+    we are focusing on 4 new features below to accelerate transformer performance
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Quantization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Converting FP32 models to INT8 models ideally shrinks memory size by approximately
+    4x, while INT4 quantization achieves around 8x model size reduction. Moreover,
+    computation costs decrease significantly as integer matrix multiplication surpasses
+    floating-point computation in speed. There are 2 quantization categories — post-training
+    quantization (PTQ) and quantization-aware training (QAT). For inference, PTQ is
+    recommended. Hugging Face hosts a multitude of quantized LLM models utilizing
+    diverse quantization methods like GPTQ, GGUF, AWQ, among others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f93c6a15e543f030cd92879fd8a265ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Model size reduction through quantization. Source: [https://huggingface.co/TheBloke](https://huggingface.co/TheBloke)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Attention Mechanism
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The scaled dot-product attention is notably compute-intensive, involving multiple
+    matrix multiplications of keys, queries, and values. In multi-head attention,
+    numerous attention layers (referred to as heads) are present, each generating
+    outputs that are concatenated together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4d2abf0432e671d46bc87d4d7d6724f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'An illustration of the scaled dot-product attention (left) and multi-head attention
+    (right), which is simply multiple SDPA heads in parallel. Source: [Attention Is
+    All You Need](https://arxiv.org/pdf/1706.03762.pdf) [Ref 1]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For optimized attention inference, the concept of **multi-query attention**
+    is introduced (Ref [2] [Fast Transformer Decoding](https://arxiv.org/abs/1911.02150)).
+    In this approach, keys and values are shared across different attention heads,
+    reducing the need for fetching new key-value pairs for each attention head and
+    minimizing data transactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, an intermediate mechanism called **grouped-query attention** exists
+    between multi-head and multi-query attention. It involves projecting keys and
+    values into groups, unlike the single projection in multi-query attention. This
+    method effectively reduces memory requirements while maintaining model quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0dcb9a94d45938d773e094d8d3458eb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*A comparison of different attention mechanisms. Source:* [GQA: Training Generalized
+    Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/pdf/2305.13245v2.pdf)
+    [Ref 3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Flash Attention** (Ref [[4]](https://arxiv.org/abs/2205.14135)). Unlike the
+    conventional approach of computing model layers individually, Flash Attention
+    employs tiling to fuse multiple layers and compute the tile to the final result
+    in a single operation. The tile size is system memory hierarchy-aware, optimizing
+    IO operations. The figure below demonstrates the concept and latency improvements
+    of Flash Attention compared to PyTorch’s native implementation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e51b15497beae197fc3c5d551298cff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The tiled Flash Attention computation pattern and the memory hierarchy on a
+    40 GB GPU. Source: [Flash Attention: Fast and Memory-Efficient Exact Attention
+    with IO-Awareness](https://arxiv.org/abs/2205.14135)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Paged KV Cache
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Key-value caches can become substantial with a high number of input and output
+    tokens, featuring dynamic lengths that contribute to memory access inefficiencies
+    due to fragmentation and redundant duplication. Drawing inspiration from the virtual
+    memory mechanism in operating systems, Paged Attention aims to minimize redundancy
+    in KV cache memory and facilitate flexible sharing of KV cache within and across
+    requests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d0fa5c9454b399c8759cc495b812020c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Left: Parameters (gray) persist in memory and KV cache (red) that is allocated
+    per serving request. Right: vLLM helps to slow down memory requirement to boost
+    system throughput. Source: [Efficient Memory Management for Large Language Model
+    Serving with PagedAttention](https://arxiv.org/pdf/2309.06180.pdf) [Ref 5]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Speculative Sampling [Ref [6](https://arxiv.org/abs/2302.01318)]
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In autoregressive generation models, generating a single token requires complete
+    model inference, resulting in repetitive weight loading, which is time-consuming.
+    Speculative sampling aims to narrow the gap between small and large models by
+    delivering high-quality results akin to large models but with faster speeds similar
+    to smaller models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b19e58ce6a4c91a22d98017097784eb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Significant speed up of speculative decoding with AWQ engine. Source: [In the
+    Fast Lane! Speculative Decoding — 10x Larger Model, No Extra Cost](https://medium.com/@TitanML/in-the-fast-lane-speculative-decoding-10x-larger-model-no-extra-cost-f33ea39d065a#:~:text=Speculative%20decoding%20introduces%20an%20innovative,plenty%20more%20room%20for%20improvement.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beyond the aforementioned four major inference acceleration techniques from
+    an algorithm and model perspective, numerous other features exist to expedite
+    LLM model inference. These include model/tensor parallelism, model sparsity, knowledge
+    distillation, and more, with new research emerging regularly. Leveraging these
+    techniques is crucial to accelerate LLM solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s essential to note that optimizing AI workloads always involves a synergy
+    of model, software, and hardware considerations. In upcoming posts, we’ll dive
+    into the software stack/libraries and hardware architecture aspects for LLM acceleration,
+    please stay tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Ashish Vaswani et al, [Attention Is All You Need](https://arxiv.org/pdf/1706.03762.pdf),
+    NIPS 2017, Long Beach, CA'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Noam Shazeer, [Fast Transformer Decoding: One Write-Head is All You Need](https://arxiv.org/abs/1911.02150),
+    2019, arvix'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Joshua Ainslie et al, [GQA: Training Generalized Multi-Query Transformer
+    Models from Multi-Head Checkpoints](https://arxiv.org/pdf/2305.13245v2.pdf), 2023'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Tri Dao et al, [Flash Attention: Fast and Memory-Efficient Exact Attention
+    with IO-Awareness](https://arxiv.org/abs/2205.14135), 2022, arvix'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Woosuk Kwon et al, [Efficient Memory Management for Large Language Model
+    Serving with PagedAttention](https://arxiv.org/pdf/2309.06180.pdf), 2023, arvix'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Charlie Chen et al, [Accelerating Large Language Model Decoding with Speculative
+    Sampling](https://arxiv.org/abs/2302.01318), 2023, arvix'
+  prefs: []
+  type: TYPE_NORMAL

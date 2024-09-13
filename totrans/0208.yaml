@@ -1,0 +1,323 @@
+- en: A Lean Data Pipeline by Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-lean-data-pipeline-by-example-e08bfce58133](https://towardsdatascience.com/a-lean-data-pipeline-by-example-e08bfce58133)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Powerful cloud data platforms like Snowflake and Databricks change how we think
+    about normal forms and data warehousing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://timburnsowlmtn.medium.com/?source=post_page-----e08bfce58133--------------------------------)[![Tim
+    Burns](../Images/70e4b9a6510a60cdf343dd0f7f92e943.png)](https://timburnsowlmtn.medium.com/?source=post_page-----e08bfce58133--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e08bfce58133--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e08bfce58133--------------------------------)
+    [Tim Burns](https://timburnsowlmtn.medium.com/?source=post_page-----e08bfce58133--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e08bfce58133--------------------------------)
+    ·7 min read·Apr 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c75ed1033a8be71c7cc1007e08423f67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [David Di Veroli](https://unsplash.com/@daviddiveroli?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/-m1duEoiJng?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When minimizing cloud data pipeline costs, the first thing that comes to mind
+    is finding the cheapest ETL solution. For example, is Databricks cheaper than
+    Snowflake? Should I use the cloud or run Spark locally on an in-house cluster?
+  prefs: []
+  type: TYPE_NORMAL
+- en: A better way to consider cost minimization is by using the principles of Lean.
+    One of the Lean Startup principles is validating in small increments [[1](https://theleanstartup.com/)].
+    Focusing on value is even more essential for cloud data pipelines because every
+    normalization and dimension costs money. Additionally, 50 years of data pipelining
+    provides a wealth of transformation we *can* do, but only analytical value to
+    the customer defines what we *should* do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I describe how you can approach cost minimization by focusing
+    on developing business value by transforming the data only as needed to answer
+    specific business questions. That way, you can choose from big data platforms
+    based on your unique business cases and not a cost minimization exercise. As long
+    as you know the tradeoffs in minimizing your data transforms, it's a good idea
+    to avoid performing a transform if your business use case doesn't need it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An (Overly) Simple Question
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Because I want to illustrate an idea rather than build an actual data pipeline,
+    I will take a toy problem to demonstrate how we could implement a multi-stage
+    pipeline and then posit that a transformation pipeline is unnecessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The toy business use case is that I want to build a personal music playlist
+    using the top artists played on alternative radio. Thus, I now have a business
+    question to ask that will guide any backend development activities and limit their
+    scope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the top 10 artists on alternative radio since March 2020?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ChatGPT bails out on this question with, "I'm sorry, as a language model, …"
+    and then points me to the Billboard Top 100 chart for alternative, which is equally
+    unhelpful. I want to know what is being played on the radio and use accurate data
+    to give me new ideas for a personal playlist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accurate Data, Real Models, Real Answers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Public API endpoints to download playlist data are abundant. Start with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://rapidapi.com/blog/top-free-music-data-apis](https://rapidapi.com/blog/top-free-music-data-apis/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As data engineers, we identify the data sources and focus on downloading the
+    playlist data cleanly to a data lake on our favorite cloud provider. Cleanliness
+    in this process at every step is essential. That means every step leaves the data
+    complete and free of duplicates. Modern tools like dbt have built-in functionality
+    to make this easy [[8](https://docs.getdbt.com/docs/introduction)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Playlists generally have a schema based on the Airdate and properties like "Artist,
+    Album, Song, and Show." The show is another time-based entity that tracks the
+    performance of each DJ on the radio station. Changes are that the API producers
+    reflect their database, and the best practice is to synchronize the data as is
+    to your data lake. The point is that the data we receive from the API is good
+    enough for analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A [simple Python code](https://github.com/timowlmtn/bigdataplatforms/blob/master/src/kexp/layers/raw_data_api/ApiReader.py)
+    can synchronize raw data from the web to a data lake. So the first response to
+    the question is to show here how the data looks for a single play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0be65f0313f49fff152f8168244c2370.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example Snapshot of JSON Output (source [KEXP API](https://api.kexp.org/v2/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: The vital strategy is to synchronize all the data from the API and ensure we
+    can synchronize data regularly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Make your Data Transformation Choices Intentional
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once the data is synchronized into the data lake, it will have a similar output
+    from the source. The data lake will capture all the data in its original form
+    so it is ready when needed. The data lake required a rigid structure and governance
+    to maintain clear boundaries and security of the data [[9](https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/a-smarter-way-to-jump-into-data-lakes#/)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the data is in the data lake, you are ready to build a Data Warehouse (or
+    Data Lakehouse if you like). Data warehouses have a rich theory, and data quality
+    is crucial. If you answer the question, but the question is wrong, that is worse
+    than not answering the question at all. Thus, fully understanding what you *can*
+    do is as important as knowing what you *should* do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I like to think of a complete understanding of historical data warehousing as
+    "future-proofing knowledge" on my data pipeline. I may not need every transform,
+    but I need to have a transform conceived if a new customer question cannot be
+    resolved with the current data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Normalization and Cleanup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The standard forms (1NF, 2NF, and 3NF) underly the most common data transformations
+    [[2](https://dl.acm.org/doi/10.1145/362384.362685)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **First Normal Form (1NF)** states that each column has a single value,
+    so no arrays or comma-separated lists in columns. There are good reasons for keeping
+    all column values intrinsic because aggregating and exploding in the same query
+    leads to cartesian joins. However, modern data warehouse/lakehouse architectures
+    support complex types like lists and maps. Complex structures are beneficial for
+    maintaining data lineage and allowing flexibility further down the pipeline and
+    are well supported by commercial applications like Snowflake and Databricks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Second Normal form (2NF)** states that the data from the 1NF is de-duplicated
+    according to a set of attributes. In the big data world, we cannot rely on the
+    systems to enforce uniqueness on a key because of distributed data processing.
+    The data is processed in columns across multiple machines, and we want to avoid
+    global operations because they are expensive both in time and money. In the modern
+    bit data world, we pay for what we use by processing time, so managing efficiency
+    is crucial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Third Normal Form (3NF)** states that the data from the 2NF is moved into
+    a separate table, every table has a set of data specific to its domain, and a
+    foreign key relates the data from the particular table to the original. It serves
+    to help performance because data in the 3NF only needs to be queried in a single
+    place, and the foreign key can be used to build reports.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kimball Warehouse Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Kimball Warehouse (Dimensional Model) is the Star Schema model described
+    in The Kimball Data Warehouse Toolkit [[3](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/books/data-warehouse-dw-toolkit/)].
+    It extends ideas from the 3NF and builds on metrics or measures as the core analytical
+    components of the data and dimensions as collections of properties on the entities
+    involved in those measures. It is generally considered the gold standard for data
+    analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kimball Warehouse was designed for relational databases, so it may be optional
+    to implement all the aspects of the Kimball model. For example, in a distributed
+    Spark environment, sequential surrogate keys can be a hindrance to be avoided
+    if possible [[4](/adding-sequential-ids-to-a-spark-dataframe-fa0df5566ff6)]. If
+    you can answer all the customer's questions without surrogate keys, you don't
+    need them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validate Small Increments with an Analytics GUI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '"Build it, and they will come" is not a good model for data products. The sheer
+    volume of potential sources and analytical use cases for most data projects is
+    vast, and it is easy to fall into the trap of focusing on the back end and excluding
+    the customer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Back to cost control: Every transformation and every pipeline execution costs
+    money. An efficient data pipeline does as little as possible. If we can answer
+    the business question: STOP. Show the customer. Get their feedback. Answer the
+    next set of questions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A good analytics GUI is extremely valuable because it gives the public access
+    to the data. Additionally, it lets the customer ask questions about the data.
+    The solutions the customer wants will then be about bringing in new data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used Tableau and published a specific answer for the simple application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/7b6fea7cabaf0b1d7c391d35d3e38037.png)](https://public.tableau.com/views/KexpTopArtists/Artist?:language=en-US&:display_count=n&:origin=viz_share_link)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the ten artists on alternative radio since March 2020? (Source [Author's
+    Public Table](https://public.tableau.com/app/profile/timothy.burns))
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, I didn't need to apply any transformations to achieve the desired
+    use case. It is suitable to stop transforming data when you can answer the business
+    question and then focus on the next business question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, give the customer full access to the data through a GUI like Tableau,
+    and then they can answer some of the following questions themselves. The critical
+    idea is that you publish the data so that the customer can *explore it on their
+    own and provide feedback*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pull more data when you can't answer the question with the data you have—iterate
+    — repeat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incremental Benefits of Analytics-Driven Data Products
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The strongest argument for analytics-driven data products is that users realize
+    value with every iteration. The less-obvious benefit is the separation of concerns
+    from the data lake. The data lake can grow to parallel to generating use cases
+    as a lossless data store. The engineers delivering the use cases can pull more
+    and more data in as they satisfy more sophisticated questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, in the use case for the toy problem, the playlist data can be continually
+    updated while, at the same time, we load ticketing data from sources such as SeatGeek
+    [[10](https://platform.seatgeek.com/)]. Even if we don't use it immediately, more
+    data helps build value. The power of utilizing a data lake in conjunction with
+    big data platforms reveals itself even for a toy problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Data Cloud changes how we gather and use data [5]. We should focus on bringing
+    data into the cloud and utilizing tools like Snowflake, Redshift, or Databricks
+    to query the data. In that case, we open up value based on relationships we can
+    imagine or establish using machine learning or other techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When building data products, it is essential to pull the backend features through
+    analytics use cases to make only the data structures you need, minimize cost,
+    and ensure that your data products provide customer value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[E. Ries (2011) The Lean Startup](https://theleanstartup.com/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: E.F. Codd, (1970) [A relational model of data for large shared data banks](https://dl.acm.org/doi/10.1145/362384.362685)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Kimball, Ross (2013) [The Data Warehousing Toolkit](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/books/data-warehouse-dw-toolkit/)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[M. Karasou (2019) Adding Sequential IDs to a Spark Dataframe](/adding-sequential-ids-to-a-spark-dataframe-fa0df5566ff6)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[F. Slootman, S. Hamm (2020) Rise of the Data Cloud](https://www.snowflake.com/wp-content/uploads/2020/11/Rise-of-the-Data-Cloud-The-Big-Idea.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[AWS (2023) What is Amazon Redshift](https://docs.aws.amazon.com/redshift/latest/mgmt/welcome.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A. Behm et al. (2022) Photon: A Fast Query Engine for Lakehouse Systems](https://cs.stanford.edu/~matei/papers/2022/sigmod_photon.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[dbt Labs (2023) What is dbt?](https://docs.getdbt.com/docs/introduction)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[M. Hagstroem et al. (2017) A Smarter Way to Jump into data lakes](https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/a-smarter-way-to-jump-into-data-lakes#/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Seatgeek (2023) [Client API](https://platform.seatgeek.com/)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

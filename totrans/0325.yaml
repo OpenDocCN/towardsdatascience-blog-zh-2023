@@ -1,0 +1,332 @@
+- en: 'Araucana XAI: Local Explainability With Decision Trees for Healthcare'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/araucana-xai-why-did-ai-get-this-one-wrong-8ee79dabdb1a](https://towardsdatascience.com/araucana-xai-why-did-ai-get-this-one-wrong-8ee79dabdb1a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introducing a new model-agnostic, post hoc XAI approach based on CART to provide
+    local explanations improving the transparency of AI-assisted decision making in
+    healthcare
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@detsutut?source=post_page-----8ee79dabdb1a--------------------------------)[![Tommaso
+    Buonocore](../Images/c842f7d670434ba2315c63adf6fc385f.png)](https://medium.com/@detsutut?source=post_page-----8ee79dabdb1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ee79dabdb1a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ee79dabdb1a--------------------------------)
+    [Tommaso Buonocore](https://medium.com/@detsutut?source=post_page-----8ee79dabdb1a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ee79dabdb1a--------------------------------)
+    ·7 min read·Jul 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22aec8c9f8f98b143838f8990ff864f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The term ‘Araucana’ comes from the monkey puzzle tree pine from Chile, but is
+    also the name of a beautiful breed of domestic chicken. © [MelaniMarfeld](https://pixabay.com/photos/araucana-hen-chicken-poultry-4097906/)
+    from Pixabay
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why did AI get this one wrong?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the realm of artificial intelligence, there is a growing concern regarding
+    the lack of transparency and understandability of complex AI systems. Recent research
+    has been dedicated to addressing this issue by developing explanatory models that
+    shed light on the inner workings of opaque systems like boosting, bagging, and
+    deep learning techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local and Global Explainability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Explanatory models can shed light on the behavior of AI systems in two distinct
+    ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Global explainability**. Global explainers provide a *comprehensive understanding*
+    of how the AI classifier behaves as a whole. They aim to uncover overarching patterns,
+    trends, biases, and other characteristics that remain consistent across various
+    inputs and scenarios.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Local explainability**. On the other hand, local explainers focus on providing
+    *insights into the decision-making process* of the AI system for a *single instance*.
+    By highlighting the features or inputs that significantly influenced the model’s
+    prediction, a local explainer offers a glimpse into how a specific decision was
+    reached. However, it’s important to note that these explanations may not be applicable
+    to other instances or provide a complete understanding of the model’s overall
+    behavior.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The increasing demand for **trustworthy and transparent AI systems** is not
+    only fueled by the widespread adoption of complex **black box models**, known
+    for their accuracy but also for their limited interpretability. It is also motivated
+    by the need to comply with **new regulations** aimed at safeguarding individuals
+    against the misuse of data and data-driven applications, such as the Artificial
+    Intelligence Act, the General Data Protection Regulation (GDPR), or the U.S. Department
+    of Defense’s Ethical Principles for Artificial Intelligence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By delving into the inner workings of AI systems and providing explanations
+    for their outputs, researchers strive to demystify the black box, fostering a
+    greater understanding and trust in the technology that is reshaping our world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce4c84c2f4a8d872c1cfbf3047e4cae3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Black-box model vs. white-box explainable model. In the first pipeline, the
+    butterfly is correctly classified as an insect, but the model does not provide
+    an explanation for its prediction. In the second pipeline, instead, the inner
+    mechanisms of the model are transparent and we can explain why the butterfly is
+    classified as an insect. For intrinsically opaque models, a common strategy is
+    to provide explanations through a surrogate white-box model trained to mimic the
+    black-box model. In our example, this would be formulated as: “an interpretable
+    model that behaves exactly as the black-box model says that the butterfly is an
+    insect because it has six legs”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model-agnostic, Post-hoc, Local Explainers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this blog post, our primary focus will be solely on local explainability,
+    in particular on **model-agnostic**, **post-hoc**, **local** explainers. Model-agnostic
+    explainers can be applied to any machine learning model, regardless of the underlying
+    algorithm or architecture. The term “post-hoc” instead indicates that the explanations
+    are generated after the model has made a prediction for a specific instance. In
+    short, explainers with these properties can analyze any model’s decision-making
+    process for a particular instance, highlighting the features or inputs that had
+    the most significant influence on the prediction, without requiring to modify
+    or retrain the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the time of writing, SHAP [1] and LIME [2] are arguably the two most widely
+    adopted model-agnostic techniques used for explaining the predictions of machine
+    learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SHAP** (SHapley Additive exPlanations) is based on game theory and the concept
+    of Shapley values. It provides explanations by assigning importance scores to
+    each feature in a prediction, considering all possible combinations of features
+    and their contributions to the prediction. SHAP values capture the average marginal
+    contribution of a feature across all possible feature combinations, resulting
+    in a more accurate and consistent explanation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**LIME** (Local Interpretable Model-Agnostic Explanations) approximates the
+    behavior of the underlying model around the prediction of interest by creating
+    a simpler interpretable model, such as a linear model, in the local neighborhood
+    of the instance. LIME explains the model’s prediction by weighting the importance
+    of each feature based on its impact on the local model’s output.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both SHAP and LIME have their particular strengths and limitations, but one
+    main limitation that is common to both approaches is that they deliver explainability
+    through **feature importance** and feature ranking. The importance of a feature
+    represents just one aspect of the broader and more complex concept of explainable
+    AI. In the clinical domain, for instance, physicians dealing with AI-driven tools
+    often complain about the impossibility of checking and navigating the reasoning
+    process that led the model to land on a specific decision, as they would with
+    a medical guideline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AraucanaXAI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: AraucanaXAI [3] was born to address clinicians’ complaints about traditionally
+    used XAI approaches but can be extended to any other scenario where having decision
+    rules is preferable. The AraucanaXAI framework proposes a novel methodological
+    approach for generating explanations of the predictions of a generic ML model
+    for a single instance using **decision trees** to provide **explanations in the
+    form of a decisional process**. Advantages of the proposed XAI approach include
+    improved fidelity to the original model, the ability to deal with non-linear decision
+    boundaries, and native support for both classification and regression problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for SHAP and LIME, also AraucanaXAI is available as a [Python package](https://pypi.org/project/araucanaxai/)
+    that can be easily installed via PyPI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/detsutut/AraucanaXAI?source=post_page-----8ee79dabdb1a--------------------------------)
+    [## GitHub - detsutut/AraucanaXAI: Tree-based local explanations of machine learning
+    model predictions'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasingly complex learning methods such as boosting, bagging and deep learning
+    have made ML models more accurate…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/detsutut/AraucanaXAI?source=post_page-----8ee79dabdb1a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does it work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The algorithm is relatively simple. Given a single instance *x:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute *D* = dist(*x*,*z*) for each element *z* of the training set. The default
+    distance metric is the Gower distance, compatible with mixed-type variables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define subset *T_n* as the closest *N* elements to *x* (i.e., the neighborhood
+    of *x*).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Augment the neighborhood *T_n* with SMOTE oversampling (optional). This makes
+    the local region we want to inspect more dense and balanced.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Re-label the samples of *T_n* (or *T_n* ∪ *S*, the samples generated with oversampling)
+    with the class *y_hat* predicted by the predictive function *f* of the black-box
+    classifier. Define the explainer set *E* as *T_n* ∪ *S* ∪ *x*. Remember that the
+    target of a surrogate model is not to maximize the predictive performance, but
+    to have the same predictive behavior as the original model. That’s why we are
+    interested in *y_hat* and not *y*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train the decision tree *e* on *E*. Optionally prune it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Navigate *e* from the root node to the leaf node corresponding to *x* to get
+    the rule set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/15c5089e4d6215a228845a7bcf5f7806.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Step-by-step visualization of the AraucanaXAI algorithm. (note: re-labeling
+    step not displayed)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use case example: ALS mortality prediction'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we know more about this new XAI approach, when shall we use it? As
+    stated at the beginning of this post, **AraucanaXAI is born to address clinicians’
+    needs**, providing explanations in the form of a navigable tree or a set of hierarchical
+    rules that are easy to compare with guidelines and established medical knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AraucanaXAI has been recently employed to enhance complex prediction models
+    designed to predict mortality for **Amyotrophic Lateral Sclerosis** (ALS) patients
+    based on observations carried out over a period of 6 months. Predicting ALS progression
+    is a challenging problem requiring complex models and many features, including
+    the administration of questionnaires to stratify the severity of ALS. AraucanaXAI
+    can help clinicians to break down the model’s reasoning into simpler-yet-truthful
+    rules, usually to better understand why the model disagrees with them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the example below, for instance, the ground truth says that the ALS patient
+    will die within six months, while a neural network predicts otherwise. The set
+    of rules highlighted by AraucanaXAI can help in understanding the model’s point
+    of view: the onset date happened 3 years before the first ALSFRS-R questionnaire
+    submission (T0), the progression slope is less than 0.35 (i.e., according to the
+    questionnaire, the patient is worsening slowly), the diagnosis date is more than
+    8 months before T0, and the normalized score for “turning in bed and adjusting
+    bed clothes” is low. Overall, this clinical picture is not that bad and this led
+    the model to think that the patient would still be alive six months after.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a62d055bb111044b058347f0d9528628.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Explanations for mortality prediction of a specific ALS patient, provided by
+    SHAP (left), LIME (center), and AraucanaXAI (right)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion and Future Work
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: AraucanaXAI has proven to be a **promising approach for XAI for individual patients
+    in healthcare**, although the same strategy can be generalized to any other field
+    where breaking down explanations as hierarchical rules constitutes an added value
+    for the decision maker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, several limitations are still untackled. Firstly, the healthcare field
+    produces an ever-increasing amount of unstructured data, but AraucanaXAI currently
+    works on tabular data. To be employed in the clinical practice, AraucanaXAI should
+    be upgraded to deal also with text and images, which are essential assets for
+    medical institutions. Secondly, the evaluation of **what constitutes a “good”
+    explanation for a user cannot be thoroughly assessed without clearly defined metrics**
+    (which is currently an acknowledged gap in the XAI literature) and direct involvement
+    of the physician users themselves in a properly designed evaluation study. Such
+    studies constitute future work worth pursuing, with the potential to benefit the
+    explainable AIM community at large. Finally, AraucanaXAI’s way of presenting the
+    generated explanations relies on scikit-learn facilities for decision tree visualization,
+    which is limited and should be improved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in helping with AraucanaXAI, check the G[itHub repository](https://github.com/bmi-labmedinfo/araucana-xai)
+    and **become a contributor**! Extension/improvement will be properly credited.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [S. M. Lundberg and S.-I. Lee — A Unified Approach to Interpreting Model
+    Predictions](https://arxiv.org/abs/1705.07874)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [M. T. Ribeiro, S. Singh, and C. Guestrin — “Why Should I Trust You?”:
+    Explaining the Predictions of Any Classifier](https://arxiv.org/abs/1602.04938)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [E. Parimbelli, T.M. Buonocore, G. Nicora, W. Michalowski, S. Wilk, R.
+    Bellazzi — Why did AI get this one wrong? Tree-based explanations of machine learning
+    model predictions](https://www.sciencedirect.com/science/article/pii/S0933365722002238)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [T.M. Buonocore, G. Nicora, A. Dagliati, E. Parimbelli— Evaluation of XAI
+    on ALS 6-months mortality prediction](https://www.researchgate.net/profile/Tommaso-Buonocore/publication/362761796_Evaluation_of_XAI_on_ALS_6-months_mortality_prediction/links/62fe1002eb7b135a0e422dfd/Evaluation-of-XAI-on-ALS-6-months-mortality-prediction.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If not mentioned otherwise, images are original contributions of the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please leave your thoughts in the comments section and share if you find this
+    helpful! And if you like what I do, you can now show your support by buying me
+    a coffee for a [few extra hours of autonomy](https://www.buymeacoffee.com/detsutut)
+    ☕
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.linkedin.com/in/tbuonocore?source=post_page-----8ee79dabdb1a--------------------------------)
+    [## Tommaso Buonocore — Ph.D. Student — Big Data & Biomedical Informatics — ICS
+    Maugeri SpA Società…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Biomedical Engineer and AI enthusiast, currently researching NLP solutions to
+    improve healthcare-based prediction tasks…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.linkedin.com](https://www.linkedin.com/in/tbuonocore?source=post_page-----8ee79dabdb1a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

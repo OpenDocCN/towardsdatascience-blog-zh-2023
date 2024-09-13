@@ -1,0 +1,511 @@
+- en: Optimizing LLMs with C, and Running GPT, Llama, and Whisper on Your Laptop
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/optimizing-llms-with-c-and-running-gpt-lama-whisper-on-your-laptop-460c8bdd047e](https://towardsdatascience.com/optimizing-llms-with-c-and-running-gpt-lama-whisper-on-your-laptop-460c8bdd047e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this first article, we’ll dive into `ggml`, the fantastic tensor library
+    created by Georgi Gerganov. How does it work? How is the tensor creation process?
+    Can we start with some simple examples?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)[![Stefano
+    Bosisio](../Images/450d904024a4cbf1adf8a625886d852e.png)](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)
+    [Stefano Bosisio](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)
+    ·15 min read·Sep 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3de95b94179dd7cec4a2cc9abeefedba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Aryo Yarahmadi](https://unsplash.com/@aryo_yarahmadi) on [Unsplash](https://unsplash.com/photos/ylMP3TetKoQ)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of content
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Implementing a simple mathematical function](#a6d9)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 1.1 [The definition of a context](#c2ca)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 1.2 [Initialising tensors](#36c0)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[1.3 Forward computation and computation graph](#3427)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 1.4 [Compilation and run](#be10)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[Final remarks on this first part](#0308)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Support my writing](#a985)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Large language models (LLMs) are on a hype everywhere. Newspapers are spending
+    tons and tons of words to describe a new incoming world, assuring that “AI has
+    finally arrived”. Although LLMs are bringing a tangible impact in our lives, we
+    must be calm and critically analyse the entire situation. LLMs hype reminds me
+    the same hype “data scientist” jobs had a few years ago. Back in 2014, when I
+    started my PhD, I saw a steady increase in data scientists’ job positions, which
+    peaked in around 2018\. At that time, news were on hype again writing: “Data scientist:
+    the $1M profession” or “The sexiest job of the 21st century” — do these titles
+    sound familiar with LLMs’ ones?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On one side, LLMs are a GREAT technology and a step forward to a more general
+    AI framework. These models are the starting point for a deeper journey into AI,
+    and I am sure one day most of the apps and technologies will rely on these models.
+    However, I can see often, on Medium too, sometimes there’s a lack of clarity about
+    these models. Regardless of their power and fantastic outcomes, these models are
+    too heavy to be easily run or trained. Therefore companies need to know LLM very
+    well before deciding any move in any strategic business direction. One of the
+    most poignant points is the huge memory cost these models have the large infrastructure
+    they do need for training and the costly infrastructure they need for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we think of the basic LLM structure, namely the transformer, we can recognize
+    the classical encoder-decoder structure. At inference time, the decoder does need
+    to have an in-memory mechanism to establish how much score attention to give to
+    a specific input token. This score is based on the possible position of the token
+    in the sentence, as well as on its agreement with the remaining context. Such
+    a mechanism is known as the KV cache. Given the size of this matrix, it’s very
+    easy to eat up 3 TB of memory for simple models, with a context length of 2048\.
+    To further speed up this calculation we do need to run things on GPUs. Finally,
+    the entire decoder structure is hard to parallelize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given this prelude, is it possible to find a compromise or a tradeoff solution
+    that could allow us to run these calculations on a simpler infrastructure? This
+    article shows you how Georgi Gerganov implemented a new optimised C-based tensor
+    library, called `ggml`. The commit I am referring to throughout the text is the
+    commit [0f4e99b](https://github.com/ggerganov/ggml/commit/0f4e99b1cc357cfff21178dfd5027e70162d7ed6),
+    which dates back to September 2022, at the beginning of the `ggml` adventure.
+    The rationale is to use a base code, to give you a strong understanding of the
+    entire package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing a simple mathematical function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before jumping to LLMs, which will come in a second article soon, let’s try
+    to decompose the key elements of the library, in order to compute values for a
+    very simple function like: *f = ax²* .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The definition of a context
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Everything in `ggml`starts within a context. The context defines the memory
+    requirements, to fit all the tensors in a given model. The context is created
+    starting from a global state:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The global state is built up as a `context_container` which is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the container we can notice the presence of the central element for the
+    first version of `ggml` which is the `ggml_context`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`ggml_context` contains all the information about how much memory we can use
+    as well as a memory buffer, so we can have sufficient memory in case we don’t
+    know how many bytes a tensor can occupy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The context is then used to initialise the entire process. `ggml_init` starts
+    up the initialisation process and returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`*ctx` is a new context pointer. We can investigate over the input objects
+    of `*ctx` by using `GGML_PRINT` within the source code, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: On my Apple MacBook M2 Pro, the context has been initialised with 16 GB of memory,
+    0 objects, and a fresh memory layout with an address 0x0 for `objects_begin` and
+    `objects_end`
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `objects_begin` and `objects_end` are indeed the next step, namely the memory
+    addresses for creating tensors within the `ggml_context`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialising tensors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For all the functions within `ggml` will always find a protocol implementation,
+    for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`function_with_attribute` → `function_general` → `function_implementation`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`function_with_attribute` is a function with a specific task, for example,
+    `ggml_new_tensor_1d` or `ggml_new_tensor_2d`, to generate a 1D or 2D tensor respectively.
+    This specific function calls a`function_general` which is the general layout for
+    the implementation, so for example `ggml_new_tensor_Xd` will call `ggml_new_tensor`.
+    Finally, `function_general` calls the implementation, `function_implementation`.
+    In this way, every time we need to modify the code we just need to act on the
+    implementation rather than modifying all the specific functions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To create a 1D tensor we can use `ggml_new_tensor1d`. From the implementation
+    protocol, we can see that `ggml_new_tensor_1d` is coded as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see we have `ggml_new_tensor_1d` that calls `ggml_new_tensor` that
+    calls the implementation `ggml_new_tensor_impl`. The creation of a new tensor
+    resembles the creation of a list. As stated by Georgi, all the new tensors object
+    will be placed *at the end of the current memory pool*, given a context the end
+    of the context will be the position where the object will be pointing at, where
+    `ggml_object` is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At first, all the tensors are initialised with `data == NULL`. The core is
+    the data type, which in `ggml` can be: `sizeof(int8_t), sizeof(int16_t), sizeof(int32_t)`
+    or `sizeof(float)`. These sizes determine the amount of memory needed within the
+    context, so each tensor is perfectly allocated within the memory segment.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, the object is created with all the retrieved information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once the data buffer for the new tensor is computed `struct ggml_tensor* const
+    result = (struct ggml_tensor*)(memb_buffer + obj_new-> offset);` the resulting
+    allocated tensor is returned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s see a simple example for playing with 1D tensors, by defining a mathematical
+    function *f = ax²* :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before defining an input tensor we need to specify the memory parameters. In
+    this case, we are assuming we want to use 16 GB of memory and this will be part
+    of the context `ggml_context * ctx`. Then, we can start defining a first tensor,
+    `x`, which will be the reference variable (e.g. we want to compute a gradient
+    with respect to `x`). To make aware `ggml` that `x` is our main variable, we can
+    add it as a parameter to the context `ggml_set_param(ctx, x);`
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this moment we are not performing any calculations. We are just instructing
+    `ggml` about our function (or model) and how the tensors interact with each other.
+    The take-home message to grasp is that every tensor comes with a specific `.op`,
+    an operation. All the new tensors are initialised with `GGML_OP_NONE`. This gets
+    modified as soon as we call any new operation on the tensor. This goes into a
+    computational graph so that a user can decide whether to compute a function’s
+    value or a function’s gradient with respect to an input variable ( for example,
+    in our case, we could ask to compute the gradient with respect to `x`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example`ggml_mul` performs a variation of the input tensor operation. At
+    first the `tensor -> op` is transformed from `GGML_NONE` to `GGML_OP_MUL` :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: These calculations are encapsulated in a graph computation structure, that feeds
+    the `forward` calculation at inference time for each model we’re dealing with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward computation and computation graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At the moment we just implemented the function *f = ax²*. To perform the real
+    operation we need to create the graph computation. This is done as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`ggml_build_forward` builds up the forward computation graph. In the forward
+    step we are building the real computational graph, that goes through all the nodes
+    and return a structure `ggml_cgraph`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the example above the code returns a graph with 3 nodes, given by `x`,
+    `x^2` and `a*x^2`and 1 leaf. It’s possible to have a visual representation of
+    the graph through `ggml_graph_dump_dot` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'wherer `&gf` is the reference to the graph structure, and “name_of_your_graph”
+    refers to the name of the `dot` file that `ggml` produces. If you want to convert
+    this to an image you just need to run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For our example the graph is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e0f4b84ff017c22c47d65375802853e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 1: The computation graph for the function f=ax². The first node is the
+    input parameter x, which is then multiply by itself, and, finally, it is multiplied
+    by the variable a. The variable a is a leaf in the graph and its value is 3.00'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we’ll see later, we can associate a value to our variables (e.g. in this
+    case `a = 3.0`) and we can see the graph has the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An initial yellow node, with `GGML_OP_NONE` operation to define `x`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A `GGML_OP_MUL` operation, which is `x*x`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A leaf, in pink, that refers to the value of another variable (`a`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The final node, in green, that is another `GGML_OP_MUL` of `a*x^2`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now once all the tensors have been allocated we will have a final graph with
+    all the operations to perform, starting from the parameters variables, `x` in
+    our case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute operations in the graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`ggml_compute_forward` is where all the calculations are run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The input parameters for this function is `struct ggml_compute_params * params,
+    struct ggml_tensor * tensor`. The `params` specify the operation associated with
+    the tensor within the graph. Through a `switch...case` cycle any forward operation
+    is called:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Each single operation is encoded based on the input type of the tensor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the [0f4e99b](https://github.com/ggerganov/ggml/commit/0f4e99b1cc357cfff21178dfd5027e70162d7ed6)
+    commit only the `GGML_TYPE_F32` was implemented. This calls the main multiplication
+    implementation
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The core of the operation is in the `for` loop. In this loop we are dealing
+    with the result tensor `x`, the multiplying term `src0`, and the multiplier `src1`.
+    In particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`(char *) dst->data` converts the data pointer of `dst` to a `char*`. This
+    is done because pointer arithmetic should be performed in bytes, and `char*` is
+    the most flexible type for this purpose.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`i * (dst->nb[1])` calculates the offset in bytes for the current row. Since
+    `i` increments in each iteration, this effectively moves to the next row in memory,
+    taking into account the striding information.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, `(float *)` is used to cast the result back to a `float*` to ensure
+    that these pointers are interpreted as pointers to floating-point values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the context of numerical computing and tensor operations, striding refers
+    to the step size, typically measured in bytes, between consecutive elements along
+    a particular dimension of a tensor. Understanding and correctly handling striding
+    is crucial for efficient tensor operations and memory management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The operation `ggml_vec_mul_f32` performs the final multiplication as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Inline functions are a mechanism provided by C (via the `inline` keyword) to
+    suggest to the compiler that a particular function should be expanded "in place"
+    at the call site rather than being called as a separate function. When you call
+    a regular function, there is some overhead associated with it. This includes pushing
+    parameters onto the stack, setting up a new stack frame, and performing the return
+    operation. For very small and frequently used functions, this overhead can be
+    relatively expensive compared to the actual computation. Inlining eliminates this
+    overhead because the code is inserted directly at the call site. Inlining allows
+    the compiler to perform optimizations that wouldn’t be possible if the function
+    were called normally. For example, when a function is inlined, the compiler can
+    see its code in the context of the caller and optimize accordingly. This might
+    include constant folding, dead code elimination, and other optimizations that
+    can lead to faster code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A final simple code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’re now ready to implement a full code in `ggml`, computing the function
+    *f = ax²* for some values. Under the folder `exapmles` we can create a new folder
+    called `simple_example` There we’ll have the main file `main.cpp`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Within the same folder we’ll need a `CMakeLists.txt` file, so we can compile
+    the code with the `ggml` library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally add the following line at the end of the file `examples/CMakeLists.txt`
+    : `add_subdirectory(simple_example)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, everything is all interconnected and can be correctly compiled and run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compilation and run
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Back to the `ggml` folder, as explained in the `README.md` file, create a folder
+    called `build` and run the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will compile the `ggml` library and it will compile and create a binary
+    file for the `simple_example` example code. We’re ready to run our code by simply
+    typing `./bin/simple_example`. The code will execute the calculation, as well
+    as it will print out the form of graph information, with all the nodes and leaves
+    and their associated operation. For each operation an estimate of the computational
+    time will be given. Remember, if you want to plot out the final graph you need
+    to run `dot -Tpng final_graph -o final_graph.png && open final_graph.png`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final remarks on first part
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this first article, we started to deeply understand how `ggml` works, and
+    what’s its underlying philosophy. In particular, we had a deep dive in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`ggml_context` and how memory is initialised and used within the `ggml` library'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to initialised a new 1D tensor and the protocol implementations within `ggml`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How the graph computation works, retrieve the graph computation and plot it
+    out
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A simple example, initialising a mathematical function and getting back its
+    computational graph
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the next post, we’ll be dealing with LLM, in particular GPT. We’ll see how
+    to implement them and use them within `ggml` and, finally, run GPT models on our
+    laptop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support my writing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you enjoyed my article, please support my writing by joining Medium’s membership
+    through the link below :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://stefanobosisio1.medium.com/membership?source=post_page-----460c8bdd047e--------------------------------)
+    [## Join Medium with my referral link - Stefano Bosisio'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: stefanobosisio1.medium.com](https://stefanobosisio1.medium.com/membership?source=post_page-----460c8bdd047e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

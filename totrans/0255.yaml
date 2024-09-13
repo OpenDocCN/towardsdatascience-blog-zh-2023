@@ -1,0 +1,222 @@
+- en: Adapting Existing LLM Projects to use LangChain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/adapting-existing-llm-projects-to-use-langchain-cd07028c01b0](https://towardsdatascience.com/adapting-existing-llm-projects-to-use-langchain-cd07028c01b0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Refactoring OpenAI calls into something more powerful with LangChain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)[![Lily
+    Hughes-Robinson](../Images/b610721a40e274e7fb81418395314ae3.png)](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------)
+    [Lily Hughes-Robinson](https://medium.com/@oaguy1?source=post_page-----cd07028c01b0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd07028c01b0--------------------------------)
+    ·6 min read·Jul 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/814da28df7832cee3963ba401e7ba764.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [JJ Ying](https://unsplash.com/@jjying?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Congratulations, you have a working LLM proof-of-concept that you are proud
+    of and ready to show off to the world! Maybe you’ve utilized the OpenAI library
+    directly or perhaps you’re using a different foundation model and HuggingFace
+    transformers. Either way, you worked hard and are looking for the next step. That
+    could mean code refactoring, adding support for multiple foundation models, or
+    adding more advanced functionality such as agents or vector db. This is where
+    LangChain comes in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[LangChain](https://langchain.com) is an open source framework for working
+    with LLMs and developing applications on top of them. It has versions in both
+    Python and JavaScript and supports multiple foundation models and LLM providers.
+    It also has a number of utility functions for handling common tasks such as document
+    chunking or interacting with vector dbs. Convinced it’s something worth checking
+    out? Have a look at this excellent article which is a great place to start understanding
+    what is possible:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----cd07028c01b0--------------------------------)
+    [## Getting Started with LangChain: A Beginner’s Guide to Building LLM-Powered
+    Applications'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A LangChain tutorial to build anything with large language models in Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----cd07028c01b0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article will be not be focused on greenfield development and instead on
+    refactoring an existing app. It will also assume some base understanding of LangChain,
+    but there will be links to relevant documentation. Specifically, I will be looking
+    at refactoring a project that I wrote called [AdventureGPT](https://github.com/oaguy1/AdventureGPT),
+    an autonomous agent for playing the 1977 *Colossal Cave Adventure* text-based
+    adventure game. If you are interested in learning more about that project, check
+    out my previous article about it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://betterprogramming.pub/adventuregpt-using-llm-backed-agents-to-play-text-based-adventure-games-be52f243866a?source=post_page-----cd07028c01b0--------------------------------)
+    [## AdventureGPT: Using LLM Backed Agents to Play Text-Based Adventure Games'
+  prefs: []
+  type: TYPE_NORMAL
+- en: betterprogramming.pub](https://betterprogramming.pub/adventuregpt-using-llm-backed-agents-to-play-text-based-adventure-games-be52f243866a?source=post_page-----cd07028c01b0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There were several areas I was most interested in refactoring:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Utilizing [Chains](https://python.langchain.com/en/latest/modules/chains.html)
+    instead of direct OpenAI calls
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replacing bespoke document utilities for the LangChain [Document/Data](https://python.langchain.com/docs/modules/data_connection/)
+    handling
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Each of these will be addressed in turn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s begin with what a chain is. A chain is a method of combining several prompt
+    manipulation techniques together into a single unit that results in a single foundation
+    model call. Once one has a working chain, chains can be combined and used together
+    to achieve more complex tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain offers a few different types of chains, this article focuses on LLMChain
+    and ConversationChain. LLMChain is the simplest type of chain, combining a prompt
+    templates with the LLM objects LangChain supports. ConversationChains offer an
+    experience tailored conversational workflows such as chatbots. One of the major
+    features of ConversationChain is its ability to include memory and store past
+    parts of the conversation effortlessly into the prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompt templates are one of the most powerful features of LangChain, allowing
+    you to include variables inside the prompts. When manually completing this task,
+    one might us f-strings combined with string concatenation and careful use of [custom
+    __repr__ methods](https://www.digitalocean.com/community/tutorials/python-str-repr-functions)
+    to take your data and insert it into a prompt for a foundation model. With the
+    prompt template, you can format a string by escaping variables with brackets.
+    That’s all you have to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on the type of chain you are creating, some variables are set for
+    you by default, such as the the conversational history or user input. This can
+    take a fair amount of complexity. In a traditional conversational prompt, there
+    are messages from the system, the the AI assistant, and user or human. When writing
+    prompts by hand, you use labels like “System”, “Human”, and “AI” to label each
+    of these messages for the prompt. LangChain can take care of this for you, allowing
+    you to use the [ChatPromptTemplate](https://api.python.langchain.com/en/latest/modules/prompts.html#langchain.prompts.ChatPromptTemplate)
+    method `from_messages` allow you to specify each message as a list of objects,
+    allowing for a higher level of abstraction and automatic history inclusion and
+    formatting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All this power comes at the cost of complexity. Rather than simply adapting
+    the prompts with text, one needs to read the extensive documentation and possible
+    extend the existing code to fit a specific use case. For example, conversational
+    prompts tend to only include the user’s input and conversation history as variables.
+    However, I wanted to include additional game context in my prompt for my PlayerAgent,
+    which was responsible for interacting with the game world. After adding the additional
+    variables to my prompt, I was greeted with the following error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: I did some digging and found an existing [GitHub issue](https://github.com/hwchase17/langchain/issues/891)
+    describing the exact issue I was having, but with no clear resolution. Unperturbed,
+    I looked at the [source code for the ConversationChain](https://github.com/hwchase17/langchain/blob/master/langchain/chains/conversation/base.py)
+    class and saw that there was a specific method used to validate that only the
+    expected variables were passed in as input. I made a new class subclassing the
+    original class and overrode the method. With my CustomConversationChain class
+    in hand, I then needed to specify which variable should be utilized by the ConversationalMemoryBuffer
+    for the user’s (or in my case, the game’s) input since there were multiple input
+    variables. This was simple enough via the input_key instance variable and Bob’s
+    your uncle, everything worked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once I finished converting my OpenAI calls to chains, it was time to address
+    the way I was handling document ingestion. As part of my game loop, I accepted
+    a path to a walkthrough text which would then be converted into game tasks to
+    be completed by the PlayerAgent. When I first added this feature, I simply passed
+    the whole walkthrough to the prompt and hoped for the best. As I found more sophisticated
+    walkthoughs, that was no longer possible as the length of the walkthroughs exceeded
+    the context window OpenAI allowed for ChatGPT. Therefore, I cut the text into
+    chunks of 500 tokens and ran the prompt for converting walkthroughs into game
+    tasks multiple times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I said I chunked the text by around 500 tokens, I did this very crudely,
+    relying on Python’s string’s `split` method to tokenize the text (a very rough
+    approximation that doesn’t match how most LLM’s tokenize text) and then turned
+    the array of tokens back into a string via the `join` method, again from the String
+    class. While this works, LangChain offers better solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain is able to split text in a number of different ways. The most relevant
+    for most people is by token, as it preserves the flow the document. There is an
+    entire page of documentation [here](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/split_by_token)
+    dedicated to the different methods of splitting texts by token. A number of NLP
+    libraries are supported for tokenization, but I chose the LLM native solution
+    tiktoken, which is the first method described. It was only a few lines of code
+    to easily and much more effectively split the text while preserving whitespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is only scratching the surface of the document preparation that LangChain
+    is capable of. It is also capable of converting the text chunks into an appropriate
+    text embedding for storage in a vector database and later retrieval and inclusion
+    in the prompt. I plan on doing this in the future of my project, including a relevant
+    chunk of a supplied walthrough to the PlayerAgent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain is a powerful open source framework that offers a range of features
+    and utility functions for working with LLMs and developing applications on top
+    of them. Whether you’re using the OpenAI library or a different foundation model,
+    LangChain provides support for multiple foundation models and LLM providers, making
+    it a versatile choice for your projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While LangChain may introduce some complexity compared to raw prompt management,
+    it offers numerous benefits and simplifies the interaction with LLMs. It standardizes
+    the process and provides helpful tools to enhance your prompts and maximize the
+    potential of your chosen LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in seeing how LangChain can be implemented in a real project,
+    you can check out the updated code base for AdventureGPT, which utilizes LangChain
+    for refactoring and improving the existing app.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/oaguy1/AdventureGPT/tree/langchain?source=post_page-----cd07028c01b0--------------------------------)
+    [## GitHub - oaguy1/AdventureGPT at langchain'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contribute to oaguy1/AdventureGPT development by creating an account on GitHub.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/oaguy1/AdventureGPT/tree/langchain?source=post_page-----cd07028c01b0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, LangChain is a valuable resource for developers working with LLMs,
+    providing a comprehensive framework and a wide range of functionalities to enhance
+    LLM-powered applications. Explore LangChain and unlock the full potential of your
+    LLM projects!
+  prefs: []
+  type: TYPE_NORMAL

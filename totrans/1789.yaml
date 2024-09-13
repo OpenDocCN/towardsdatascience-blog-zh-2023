@@ -1,0 +1,623 @@
+- en: 'Revolutionizing Language Barriers: Mastering Multilingual Audio Transcription
+    and Semantic Search'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/revolutionizing-language-barriers-mastering-multilingual-audio-transcription-and-semantic-search-5540f038778d](https://towardsdatascience.com/revolutionizing-language-barriers-mastering-multilingual-audio-transcription-and-semantic-search-5540f038778d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unlock the potential of cross-language information accessibility with advanced
+    transcription and semantic search technologies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----5540f038778d--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----5540f038778d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5540f038778d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5540f038778d--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----5540f038778d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5540f038778d--------------------------------)
+    ·12 min read·Dec 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with Rafael Guedes.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our ever-connected world, where information has no borders, the ability to
+    make it accessible to everyone, regardless of their native language or their capacity
+    to learn a new language, is very relevant. Whether you are a content creator or
+    lead a worldwide organization, being able to quickly and effortlessly help your
+    followers/customers search for specific information in several languages has several
+    benefits. For example, it can support customers with the same questions already
+    answered in a different language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a different use case where you frequently have to attend company meetings.
+    Often, you might be unable to participate, and many topics discussed may not be
+    relevant to you. Wouldn’t it be convenient if you could search for the topics
+    that interest you and receive a summary, including the start and end times of
+    the relevant discussions? This way, instead of spending an hour in a meeting,
+    you could spend just ten to fifteen minutes gathering the necessary information,
+    significantly boosting your productivity. Additionally, you might have meetings
+    recorded in Portuguese and English. Nevertheless, you are interested in conducting
+    your search in English.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will show you how to implement multilingual audio transcription
+    and multilingual semantic search so that you can implement it for your use cases.
+    For the multilingual audio transcription, we will explain how Whisper and WhisperX
+    work, their limitations, and how to use them in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we introduce how multilingual semantic search models are trained and why
+    you can get the same information from a vector database regardless of the language
+    you queried with. We also provide a detailed implementation of semantic search
+    resorting to Postgres and PGVector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we show the results of the above on two use cases. We use two videos,
+    one in Portuguese and the other in English, and we query them with the same question
+    in Portuguese and English to check if we obtain the same answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ad29296ec3684072a96bc4d0a36c724.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Multilingual audio transcription and multilingual semantic search
+    have endless use cases to be explored ([i](https://unsplash.com/photos/black-and-gray-condenser-microphone-pfhld_5yQrs)mage
+    by author using DALLE)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the code is available on our [GitHub](https://github.com/zaai-ai/large-language-models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'WhisperX: A robust architecture for audio transcription'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: WhisperX [1] is the evolved form of Whisper [2], a model developed by OpenAI.
+    But what are the differences between them?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whisper and WhisperX are speech recognition models capable of multilingual speech
+    recognition, speech translation, spoken language identification, and voice activity
+    detection. They rely on a transformer sequence-to-sequence architecture to represent
+    various speech-processing tasks as a sequence of tokens to be predicted by the
+    decoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f333564a963146632b3ff13091c5b80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Whisper Architecture ([i](https://arxiv.org/pdf/2303.00747.pdf)mage
+    by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite the excellent performance of Whisper in different domains and languages,
+    it needs to improve when it comes to long audio transcriptions. The main reason
+    for this problem is due to the sliding window approach used during training. It
+    often results in drifting and hallucinations. It also presents limitations when
+    aligning the transcription with the audio timestamps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'WhisperX comes along to solve these problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Drifting and Hallucinations** are solved using Voice Activity Detection (VAD)
+    and a custom approach to cut and merge the audio chunks. VAD detects the presence
+    or absence of human voice and splits the input audio into segments according to
+    that classification. After that, it cuts and merges the segments with human voice
+    into windows of 30 seconds. It tries to define the boundaries in regions with
+    a low probability of speech. The segments are cut in windows of 30 seconds to
+    match the duration of the segments which Whisper was trained with.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Transcription Alignment** is solved using Forced Alignment, the last layer
+    of the architecture. It uses a phoneme recognition model to identify the smallest
+    unit of speech that distinguishes one word from the next, e.g., the element **‘t’**
+    in **‘nut’.** It then obtains the start and end times for each word by taking
+    the start and end times of the first and last phonemes of the same word for a
+    more reliable alignment.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/b5f4df5be91fe105a84d7660812568fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: WhisperX Architecture ([i](https://arxiv.org/pdf/2303.00747.pdf)mage
+    by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whisper and WhisperX in practice
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can use Whisper or WhisperX to transcribe audio with just a few lines of
+    code. We need to install Whisper and WhisperX from `git+https://github.com/openai/whisper.git`
+    and `git+https://github.com/m-bain/whisperx.git`, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the installation is done, we start by importing Whisper or WhisperX. Then,
+    we load the model and, finally, we transcribe the audio file in `.wav` format.
+    The result will be a dictionary with three keys:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*‘text’* is a string with the whole transcription.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*‘segments’* is a list of segments of text with the start and end time and
+    some other metadata.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*‘language’* is a string with the language of the audio.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As mentioned before, Whisper has some limitations when aligning the transcription
+    with the audio timestamps. Therefore, we use WhisperX to solve that problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load the alignment model, and based on the result from Whisper or WhisperX,
+    we correct its alignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Semantic Search: A multilingual approach'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Semantic search is a search engine technology that matches the meaning of a
+    query, as opposed to traditional search approaches that match the keywords of
+    a query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semantic search is made effective through the use of Transformers, which are
+    crucial for their ability to convert documents in free-text form into numerical
+    representations. These representations, called embeddings, are essentially vectors
+    stored in vector databases like [PGVector](https://github.com/pgvector/pgvector).
+    This process enables semantic search to match queries based on meaning or intent,
+    significantly enhancing the accuracy and relevance of search results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08715c2cd0ebc51429c891dd8a56c12d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: Inner workings of semantic search (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When a user submits a query, it is converted into an embedding. This embedding
+    is then utilized by the vector database’s built-in retrieval system, typically
+    based on the k-nearest neighbor (kNN) algorithm. The system uses this algorithm
+    to identify and rank the k most similar documents to the user’s query based on
+    their relevance. This process ensures that the results retrieved are closely aligned
+    with the user’s search intent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cf499f69eda0150993ec3ce8c54c948.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Semantic search embeddings are applied to text, audio, or images.
+    Those embeddings can be stored in vector databases powered by kNN to retrieve
+    the most relevant documents based on a user’s query. ([i](https://www.elastic.co/what-is/semantic-search)mage
+    by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Latest advancements in NLP, particularly in semantic search, have made it possible
+    to create identical embeddings for the same sentence in different languages [3].
+    This brings a huge advantage for organizations that operate worldwide because
+    they can quickly and costlessly extend semantic search to a more significant set
+    of languages. This is possible with relatively few samples and low hardware requirements,
+    as mentioned by the authors of the approach we will follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expanding monolingual models, typically based on the English language, involves
+    using both a **Teacher** and **Student Model**. These models play distinct yet
+    complementary roles in adapting language models to handle multiple languages effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Teacher Model:** This model serves as a reference point or a standard. It
+    is typically a well-trained, high-performance model in the source language, often
+    English. The Teacher Model has a deep understanding of the language and can produce
+    high-quality embedding vectors accurately representing the meanings of various
+    texts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Student Model:** The Student Model is designed to learn from the Teacher
+    Model. Unlike the Teacher Model, which operates solely in the source language,
+    the Student Model works with both the source and translated languages. The primary
+    goal of the Student Model is to replicate the performance of the Teacher Model
+    in the new language context.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The reason these models are used and why they work effectively lies in their
+    training approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Alignment of Embeddings:** The Student Model is trained to minimize the mean-squared
+    error between its embeddings and those produced by the Teacher Model. This process
+    ensures that the embeddings produced by the Student Model in both the source and
+    translated languages closely match those of the Teacher Model.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Language Adaptation:** This training approach enables the Student Model to
+    adapt to a new language while maintaining the quality and characteristics of the
+    original model. By aligning its understanding with the Teacher Model, the Student
+    Model can effectively process and understand the translated language.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Efficient Learning:** The Student Model doesn’t have to learn from scratch.
+    By using the already sophisticated understanding of the Teacher Model, the Student
+    Model can achieve high performance with potentially less data and training time
+    for the new language.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Consistency Across Languages:** This method ensures consistency in the model’s
+    performance across different languages. It is particularly beneficial in maintaining
+    the quality of embeddings, which are crucial for tasks like semantic search, natural
+    language understanding, and translation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Although several architectures can be used, the authors used Sentence-BERT [4]
+    for the Teacher Model and XLM-RoBERTa [5] for the Student Model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c85158814192ffdf58f663ea5d43fd33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: Architecture for multilingual embedding creation where given the
+    same sentence in two different languages, the student model can produce vectors
+    for both languages that are close to the vector produced by the teacher model
+    ([source](https://arxiv.org/pdf/2004.09813.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing Multilingual Semantic Search with PGVector
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we cover the implementation of PGVector on top of Postgres.
+    We also deploy a pgAdmin application to query Postgres and check how our embeddings
+    are stored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We resort to LangChain to encode the transcription from Whisper or WhisperX,
+    insert it into a table in Postgres, and retrieve the documents most similar to
+    a user’s query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since, for our use case, we need to be able to retrieve information regardless
+    of the language of the audio or the user’s query, we use `multi-qa-mpnet-base-dot-v1`
+    from `sentence-transformers` to encode the transcription. We chose this model
+    because it performs best on multilingual semantic searches (you can check the
+    models available for multilingual semantic searches [here](https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set up PGVector
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We deploy Postgres powered by PGVector using Docker. We start by defining the
+    docker-compose.yml file with two containers, `postgres` and `pgadmin`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Postgres:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Image: `ankane/pgvector` allows us to deploy Postgres with PGVector extension.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Ports: 5432'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Environment: user and password to interact with Postgres and a database to
+    store our embeddings.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**pgAdmin:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Image: `dpage/pgadmin4`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Ports: 5050'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Environment: email and password for login.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the docker-compose file is defined, we can start our application by running
+    `docker-compose up -d` command in the same directory of the docker-compose file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With our application running, it is time to create a server in pgAdmin so that
+    we can query our embeddings and documents. To accomplish that, we must follow
+    these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the pgAdmin web interface in a web browser using [http://localhost:5050/](http://localhost:5050/).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Log in using the email and password we set in the `PGADMIN_DEFAULT_EMAIL` and
+    `PGADMIN_DEFAULT_PASSWORD` environment variables in the docker-compose file.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Right-click on the *Servers* node, and select *Register →* *Server.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the *Create — Server* dialog, insert a name for the server in the *Name*
+    field.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In the *Connection* tab, insert the following information:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Host name/address:* `postgres`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Port*: `5432`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Maintenance database*: You can use the `postgres` database for this purpose.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Username*: `POSTGRES_USER` environment variable that we set in the docker-compose
+    file.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Password*: `POSTGRES_PASSWORD` environment variable that we set in the docker-compose
+    file.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Click the *Save* button to create the server.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With the server created, let’s populate the recently created database called
+    `postgres` with embeddings and documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: This pgAdmin is optional; you can skip this step if you do not want to
+    query the embeddings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Populate Postgres with LangChain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once the database is set and ready to store embeddings, it is time to define
+    an encoder. Afterward, we use LangChain to populate and retrieve the most similar
+    documents to a user’s query from the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As mentioned above, the encoder is multilingual and can be defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'LangChain has integration with PGVector. Therefore, to connect LangChain with
+    Postgres, we need to define the string connection as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the `COLLECTION_NAME` must be unique because it will be used as a
+    key by PGVector to identify the documents to retrieve from Postgres. For our use
+    case, we can think of `COLLECTION_NAME` as the meeting ID, allowing us to retrieve
+    information from the meeting the user is interested in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the encoder, connection, and collection name defined, we transform the
+    transcription from Whisper or WhisperX into Documents (the expected format from
+    LangChain). We also create and populate a table with the embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After creating and populating the table, we can query the database and get
+    the most similar documents using LangChain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or we can also go to pdAdmin and query Postgres to check how the embeddings
+    and the documents look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e76dee9ac0a46a220015bd33a2ea1706.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: Query in pgAdmin to check the embedding vectors and the documents
+    (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Does Multilingual Semantic Search work?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We converted two videos of Luis talking about two different subjects into audio.
+    In the first, Luis talks about his previous startup in Portuguese; in the second,
+    he talks about Probabilistic Deep Learning. We then query both using Portuguese
+    and English and compare the retrieved documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the Portuguese use case, we used the following queries
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Portuguese: `marcas e investimentos`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'English: `brands and investments`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As a result, 4 out of the top 4 most relevant documents retrieved were the
+    same in both cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'start 81.401 — end 85.26: uma marca baseada em Berlim, portanto ao invés de
+    esperarmos que esse investimento chegasse,'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'start 111.902 — end 117.26: para maturar o produto, para investir em tecnologia
+    e para investir no business development.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'start 88.58 — end 93.039: Estas duas rondas de investimento que nós já fizemos
+    com uma capacidade também diferente start'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '28.6 — end 32.64: Portanto, damos toda a componente de infraestrutura logística
+    que uma marca precisa.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For the English use case, we used the following queries
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Portuguese: `modelos de aprendizagem profunda`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'English: `deep learning models`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We had to retrieve eight documents for the Portuguese query to find the relevant
+    documents. This happens because, in Portuguese, we usually do not translate ‘*Deep
+    Learning’;* we use the English expression. Thus, the model probably did not have
+    enough data to train with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'start 45.28 — end 51.9: when we are using deep learning models, usually we
+    are relying on maximum likelihood estimation'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: On the other hand, the following queries had the same top 4 results
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Portuguese: `distribuição normal`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'English: `normal distribution`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It shows that for terms often translated, such as ‘*normal distribution’* to
+    *‘distribuição normal’,* our approach produces the relevant outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Multilingual audio transcription and semantic search are valuable assets to
+    build a more connected world. Our examples are just the tip of the iceberg; many
+    more technologies can be combined to tackle different use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a scenario where a Retrieval-Augmented Generation (RAG) system is employed
+    for customer support. Usually, in a customer support system, customers ask questions
+    in any language. We could encode these questions with a multilingual model and
+    use a retriever to pull relevant past responses from customer care experts for
+    context. The Large Language Model (LLM) uses this context to generate an answer
+    translated into the customer’s language. This system efficiently reduces the workload
+    on customer care experts and provides quick, real-time customer support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While our approach offers extensive possibilities, it is not a one-size-fits-all
+    solution. For instance, in our experiments, the retriever failed to semantically
+    link ‘Deep Learning’ with its Portuguese equivalent, ‘Aprendizagem Profunda.’
+    Overcoming such limitations requires fine-tuning with specific data or implementing
+    rule-based mechanisms to improve document retrieval accuracy, especially across
+    different languages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep in touch: [LinkedIn](https://www.linkedin.com/in/luisbrasroque/), [X/Twitter](https://x.com/luisbrasroque),
+    [Medium](https://medium.com/@luisroque).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Max Bain, Jaesung Huh, Tengda Han, Andrew Zisserman. WhisperX: Time-Accurate
+    Speech Transcription of Long-Form Audio. arXiv:2303.00747, 2023'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Alec Radford, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey,
+    Ilya Sutskever. Robust Speech Recognition via Large-Scale Weak Supervision. ********arXiv:2212.04356,
+    2022'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Nils Reimers, Iryna Gurevych. Making Monolingual Sentence Embeddings Multilingual
+    using Knowledge Distillation. arXiv:2004.09813, 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Nils Reimers, Iryna Gurevych. Sentence-BERT: Sentence Embeddings using
+    Siamese BERT-Networks. arXiv:1908.10084, 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Alexis Conneau, Kartikay Khandelwal, Naman Goyal, Vishrav Chaudhary, Guillaume
+    Wenzek, Francisco Guzmán, Edouard Grave, Myle Ott, Luke Zettlemoyer, Veselin Stoyanov.
+    Unsupervised Cross-lingual Representation Learning at Scale. arXiv:1911.02116,
+    2019.'
+  prefs: []
+  type: TYPE_NORMAL

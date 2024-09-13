@@ -1,0 +1,801 @@
+- en: Which Features Are Harmful For Your Classification Model?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6](https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to calculate the Error Contribution of the features of a classifier, with
+    the goal of understanding and improving the model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[![Samuele
+    Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)
+    [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)
+    ·14 min read·Sep 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/76d978549f4c414fe424adb41c37db80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Image by Author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature importance is the most common tool for explaining a machine learning
+    model. It is so popular that many data scientists end up believing that feature
+    importance equals feature goodness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is not so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**When a feature is important, it simply means that the model found it useful
+    in the training set. However, this doesn’t say anything about the ability of the
+    feature to generalize on new data!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To account for that, we need to make a distinction between two concepts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prediction Contribution**: the weight that a variable has in the predictions
+    made by the model. This is determined by the patterns that the model found on
+    the training set. This is equivalent to feature importance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Error Contribution**: the weight that a variable has in the errors made by
+    the model on a holdout dataset. This is a better proxy of the feature performance
+    on new data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this article, I will explain the logic behind the calculation of these two
+    quantities on a classification model. I will also show an example in which using
+    Error Contribution for feature selection leads to a far better result, compared
+    to using Prediction Contribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are more interested in regression rather than classification, you can
+    read my previous article “[Your Features Are Important? It Doesn’t Mean They Are
+    Good](/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4)”.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Starting from a toy example**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Which “error” should we use for classification models?**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**How should we manage SHAP values in classification models?**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Computing “Prediction Contribution”**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Computing “Error Contribution”**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**A real dataset example**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Proving it works: Recursive Feature Elimination with “Error Contribution”**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Conclusions**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 1\. Starting from a toy example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Imagine that we have a classification problem in which we want to predict whether
+    the income of a person is lower or higher than $ 100k. Imagine also that we already
+    have the predictions made by the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cfecf26b6739bf397c87f6df3eaa3c74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ground truth and predictions made by the model. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The computation of Prediction and Error Contribution is mainly based on the
+    error made by the model on each individual and on the SHAP values of each individual.
+    So, we must take a moment to discuss two relevant points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which “error” should we use for classification models?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How should we manage SHAP values in classification models?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I will discuss these points in the next two paragraphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Which “error” should we use for classification models?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Our main objective is to compute the Error Contribution of each feature of
+    the model. So the most important question is: how do we define the “error” in
+    a classification model?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that **we need an error that can be calculated at the individual level
+    and can be then aggregated on the full sample to get an “average error”** (just
+    like we did with absolute error for regression models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most common loss function for classification models is log-loss (a.k.a.
+    cross-entropy). Let’s see if it’s right for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the mathematical formula of log-loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0b20d643911dbcf6a9de9d6b174a8962.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log-loss (a.k.a. cross-entropy). [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The log-loss seems like the perfect choice for us because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**the outer part of the formula is just a simple average**;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as the name says, **it’s a “loss”, which means the-lower-the-better (just like
+    an “error”)**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s try to understand why we can actually call this thing an “error”. Out
+    of simplicity, let’s focus on the quantity inside the sum (so we can get rid of
+    the subscripts):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ef7c082c250f2aa11f5a03b64c35af50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Individual log-loss. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the contribution of a single individual to the global log-loss, so we
+    can call this the “individual log-loss”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This formula may still look scary, but if we consider that — in a binary classification
+    problem — *y* can only be 0 or 1, we may obtain a simpler version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b9c90c18c64623d0e6c6d5a39975b16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Individual log-loss, alternative version (equivalent to the previous one). [Image
+    by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the help of a plot, it’s now easy to understand the main idea behind log-loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d40b46846084e9048166e2a352d16f32.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualization of individual log-loss. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The farther the predicted probability is from the true value (whether it is
+    0 or 1), the higher the loss. Moreover, if the prediction is very far from the
+    truth (for instance, *p*=.2 and *y*=1 or *p*=.8 and *y*=0), then the loss is worse
+    than proportional. Now it should be clearer why log-loss is actually a kind of
+    error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are ready to translate the formula of individual log-loss into a Python function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To avoid dealing with infinite values (which happens when *y_pred* is exactly
+    0 or 1), we will apply a little trick: if *y_pred* is less distant than *ε* from
+    0 or 1, we will set it respectively to *ε* or 1-*ε*. For *ε* we will use 1^-15
+    (this is also the default value used by Scikit-learn).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can use this function to calculate the individual log-loss of every row
+    of our dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d418c49192f096276a38b8cb77d2887.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Target variable, model prediction, and resulting individual log-loss. [Image
+    by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the log-loss (or error) is very small for individuals 1 and
+    2 since the predictions are both very close to the actual observed value, and
+    it’s higher for individual 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. How should we manage SHAP values in classification models?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The most popular models are tree-based, such as XGBoost, LightGBM, and Catboost.
+    Getting the SHAP values of a tree-based classifier on a dataset is as simple as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For example, say that we compute the SHAP values for our toy problem and we
+    get the following result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57331e551d8db676f2d417fc9709ce5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SHAP values for our model’s predictions. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you don’t know about how SHAP values work, you can read my article: [SHAP
+    Values Explained Exactly How You Wished Someone Explained to You](/shap-explained-the-way-i-wish-someone-explained-it-to-me-ab81cc69ef30).
+    However, for the purpose of this article, it’s enough to know that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'a positive SHAP value means: that feature leads to an increased probability
+    for that individual;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'a negative SHAP value means: that feature leads to a smaller probability for
+    that individual.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a consequence, it should be clear that **there is a direct relationship between
+    the sum of the SHAP values of a given individual and the prediction made by the
+    model**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, since the SHAP values can assume any real value (positive or negative),
+    we cannot expect this to be equal to the probability predicted for that individual
+    (which is a number between 0 and 1). So what is the relationship between the SHAP
+    sum and the predicted probability?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since SHAP values can assume any negative or positive value, we need a function
+    to turn the SHAP sum into a probability. This function must have two properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: it should “squeeze” any real value into the interval [0,1];
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: it should be strictly increasing (since a higher SHAP sum must always be associated
+    with a higher prediction).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A function that meets these requirements is the sigmoid function. Thus, **the
+    probability predicted by the model for a given row is equal to the sigmoid of
+    the sum of SHAP values for that individual**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d86897805420615f970b1d95f22c7dee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From SHAP values to predicted probability. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is what the sigmoid function looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c01f86375685e4ef15610eb22dd1546c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Sigmoid function: the relationship between shap sum and predictive probability.
+    [Image by Author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, let’s translate this formula into a Python function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also display it graphically and see where our individuals will lie on
+    the curve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df7baf6370aba1a858f04447f2476031.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Sigmoid function: the relationship between shap sum and predictive probability.
+    [Image by Author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have seen which error we should use and how to treat SHAP values
+    in classification problems, we are ready to see how to compute the Prediction
+    and the Error Contribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Computing “Prediction Contribution”
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we have seen, when a SHAP value is highly positive (highly negative) then
+    the prediction will be much higher (lower) than it would have been without the
+    feature. In other words, **if the SHAP value is large in absolute terms, then
+    that feature influences a lot the final prediction**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is why we can measure the Prediction Contribution of a feature by taking
+    the mean of the absolute SHAP values of that feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the case of our toy dataset, this is what we obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4c902392865a9db95c48dc758abf5d2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction Contribution. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, in terms of feature importance, *job* is the main feature followed by
+    *nationality* and then by *age*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what about the Error Contribution?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Computing “Error Contribution”
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The idea behind Error Contribution is computing what the error of the model
+    would be if we removed a given feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thanks to SHAP values, it’s easy to answer this question: if we exclude a feature
+    from the SHAP sum, we obtain the prediction that the model would make if it didn’t
+    know the feature. But that is not enough: as we have seen, to obtain the predicted
+    probability, we first need to apply the sigmoid function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we first need to subtract the SHAP value of a feature from the SHAP sum,
+    and then we must apply the sigmoid function. And here we have the probabilities
+    that the model would predict if it didn’t know the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Python, we can do that for all the features in a single shot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the result on our dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07b52a27a88d8caf2649262e171cc162.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predictions that we would obtain if we removed the respective feature. [Image
+    by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that, if we didn’t have the feature *job*, the model would predict
+    a probability of 71% for the first individual, 62% for the second one, and 73%
+    for the third one. Instead, if we didn’t have the feature *nationality*, the predictions
+    would be respectively 13%, 95%, and 0%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the predicted probabilities vary a lot depending on which feature
+    we remove. As a consequence, the resulting error (individual log-loss) would be
+    very different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use the function defined above (`individual_log_loss`) to compute what
+    the individual log-loss would be without the respective feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82cf71dcf082988b6afcab719d66d2ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Individual log-loss that we would obtain if we removed the respective feature.
+    [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if we take the first row, we can see that the log-loss would be
+    1.24 without the feature *job*, but only 0.13 without the feature *nationality*.
+    Since we want to minimize the loss, in this case, it would be preferable to remove
+    the feature *nationality*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, **to know whether the model would be better with or without the feature,
+    we can compute the difference between the individual log-loss of the full model
+    and the individual log-loss we would obtain without the feature**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7505a0cd47e9c68fa14cf5352370a0da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Difference between the errors of the model and the errors we would have without
+    the feature. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If this number is:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**negative, then the presence of the feature leads to a reduction in the prediction
+    error, so the feature works well for that observation.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**positive, then the presence of the feature leads to an increase in the prediction
+    error, so the feature is bad for that observation.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can finally compute the Error Contribution of each feature as the mean of
+    these values, by column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d222dec169866d80b22ed301f639192b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Error Contribution. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In general, if this number is negative, then the feature has a positive effect;
+    instead, **if this number is positive then the feature is harmful to the model
+    because it tends to increase the average error made by the model**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we can see that the presence of the feature *job* in the model
+    leads to an average reduction of -0.897 in the individual log-loss, whereas the
+    presence of the feature *nationality* causes the individual log-loss to increase
+    on average by 0.049\. Thus, whereas *nationality* is the second most important
+    feature, it doesn’t work well because it worsens the average individual log-loss
+    by 0.049.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try to apply these concepts to a real dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**6\. A real dataset example**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hereafter, I will use a dataset taken from [Pycaret](https://github.com/pycaret/pycaret)
+    (a Python library under [MIT license](https://github.com/pycaret/pycaret/blob/master/LICENSE)).
+    The dataset is called “Gold” and it contains some time series of financial data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aed43ffc455350813676e97c661b8303.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataset sample. The features are all expressed in percentage, so -4.07 means
+    a return of -4.07%. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The features consist in the returns of financial assets respectively 22, 14,
+    7, and 1 days before the observation moment (“T-22”, “T-14”, “T-7”, “T-1”). Here
+    is the exhaustive list of all the financial assets used as predictive features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d6698ea47e0bafebdd776fcfc44f69b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: List of the available assets. Each asset is observed at times -22, -14, -7,
+    and -1\. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In total, we have 120 features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The goal is to predict whether the Gold return 22 days ahead will be greater
+    than 5%. In other words, the target variable is binary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0, if the Gold return 22 days ahead is smaller than 5%;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1, if the Gold return 22 days ahead is greater than 5%.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/75cd7caa3a3e16b4e9e2983eb8435f49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Histogram of Gold return 22 days ahead. The threshold marked in red is used
+    to define our target variable: whether the return is greater than 5%. [Image by
+    Author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once I loaded the dataset, these are the steps I carried out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Split the full dataset randomly: 33% of the rows in the training dataset, another
+    33% in the validation dataset, and the remaining 33% in the test dataset.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train a LightGBM Classifier on the training dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make predictions on training, validation, and test datasets, using the model
+    trained at the previous step.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute SHAP values of training, validation, and test datasets, using the Python
+    library “shap”.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the Prediction Contribution and the Error Contribution of each feature
+    on each dataset (training, validation, and test), using the code we have seen
+    in the previous paragraph.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'At this point, we have both Prediction and Error Contribution so we can finally
+    compare them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12b830816f5fcbe5d38193cced26a739.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction Contribution vs. Error Contribution (on the Validation dataset).
+    [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at this plot gives us precious insight about the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most important feature is the US Bond ETF at T-22 days, however, it doesn’t
+    bring such a strong reduction in the error. The best feature is 3M Libor at T-22
+    since it’s the one that reduces the error the most.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is something very interesting about the Corn price. Both returns at T-1
+    and T-22 are among the most important features, however, one of them (T-1) is
+    overfitting (because it worsens the error on predictions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In general, we can observe that all the features with higher Error Contribution
+    are relative to T-1 or T-14 (1 or 14 days before the observation moment), whereas
+    all the features with smaller Error Contribution are relative to T-22 (22 days
+    before the observation moment). This seems to indicate that **the most recent
+    features are prone to overfitting, whereas the features referring to older returns
+    tend to generalize better**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Besides getting insight about the model, it’s pretty natural to think about
+    using Error Contribution to perform feature selection. This is what we are going
+    to do in the next paragraph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**7\. Proving it works: Recursive Feature Elimination with “Error Contribution”**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination (RFE) is the process of progressively removing
+    features from a dataset, with the objective of obtaining a better model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithm for RFE is very straightforward:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize the list of features;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train a model on the training set, using the current list of features as predictors;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove the “worst” feature from the list of features;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Go to step 2 (until the list of features is empty).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the traditional approach, “worst” = least important. However, based on what
+    we have seen, **we may object that it would make much more sense to remove the
+    most harmful feature first**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Traditional RFE: removing the most useless feature first** (most useless
+    = lowest Prediction Contribution on the validation set).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Our RFE: removing the most harmful** **feature** **first** (most harmful
+    = highest Error Contribution on the validation set).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To see if this intuition is correct, I made a simulation using both approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the resulting log-loss on the validation set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae9c27debabf663c59d308c4d0244aa9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log-loss of the two strategies on the validation set. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since log-loss is a “the-lower-the-better” metric, we can see that our version
+    of RFE is clearly superior to the classical RFE on the validation dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, you may have doubts that looking at the validation set is not fair,
+    since the Error Contribution is calculated on it. So, let’s look at the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34522ef08da5f89c7f1a7b9ac39c88af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log-loss of the two strategies on the test set. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even if the difference between the two approaches is smaller now, we can see
+    that it’s still huge, and it is enough to conclude that RFE based on Error Contribution
+    is significantly better than RFE based on Prediction Contribution, on this dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Besides log-loss, it would be interesting to consider a metric that has more
+    practical value. For example, let’s take a look at the average precision on the
+    validation set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f567bb6d069557c981362126f9f5b965.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Average precision of the two strategies on the validation set. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s interesting to note that, even though the Contribution Error is based on
+    log-loss, we have an excellent result also on average precision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we want to make a decision based on average precision, then we would select
+    the model with the highest average precision on the validation set. This means:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'RFE based on Error Contribution: the model with 19 features;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'RFE based on Prediction Contribution: the model with 14 features;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If we do that, what performance would we observe on new data? The best proxy
+    to answer this question is the test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c6605f090a4daf2a4989c404e390b96c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Average precision of the two strategies on the validation set. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also in this case, the performance of RFE based on Error Contribution is generally
+    better than RFE based on Prediction Contribution. In particular, based on our
+    previous decision:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'RFE based on Error Contribution (model with 19 features): 72.8% average precision;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'RFE based on Prediction Contribution (model with 14 features): 65.6% average
+    precision.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thus, by using the RFE based on Error Contribution, rather than the traditional
+    RFE based on Prediction Contribution, we would obtain an outstanding additional
+    7.2% in average precision!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The concept of feature importance plays a fundamental role in machine learning.
+    However, the notion of “importance” is often mistaken for “goodness”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to distinguish between these two aspects we have introduced two concepts:
+    Prediction Contribution and Error Contribution. Both concepts are based on the
+    SHAP values of the validation dataset, and in the article we have seen the Python
+    code to compute them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have also tried them on a real financial dataset (in which the task is predicting
+    the price of Gold) and proved that Recursive Feature Elimination based on Error
+    Contribution leads to an additional 7% in average precision compared to traditional
+    RFE based on Prediction Contribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can find all the code used for this article in* [*this notebook*](https://github.com/smazzanti/tds_features_important_doesnt_mean_good/blob/main/classification.ipynb)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thank you for reading!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you find my work useful, you can subscribe to* [***get an email every time
+    that I publish a new article***](https://medium.com/@mazzanti.sam/subscribe) *(usually
+    once a month).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you want to support my work, you can* [***buy me a coffee***](https://ko-fi.com/samuelemazzanti)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you’d like,* [***add me on Linkedin***](https://www.linkedin.com/in/samuelemazzanti/)*!*'
+  prefs: []
+  type: TYPE_NORMAL

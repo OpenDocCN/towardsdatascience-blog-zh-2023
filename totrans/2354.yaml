@@ -1,0 +1,644 @@
+- en: Where Is the Bus? GTFS Will Tell Us!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/where-is-the-bus-gtfs-will-tell-us-f8adc18a2f8e](https://towardsdatascience.com/where-is-the-bus-gtfs-will-tell-us-f8adc18a2f8e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Show the real-time locations of public transport vehicles in the Netherlands
+    based on GTFS real-time data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://leo-vander-meulen.medium.com/?source=post_page-----f8adc18a2f8e--------------------------------)[![Leo
+    van der Meulen](../Images/533301394386083d0768f4717978be60.png)](https://leo-vander-meulen.medium.com/?source=post_page-----f8adc18a2f8e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f8adc18a2f8e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f8adc18a2f8e--------------------------------)
+    [Leo van der Meulen](https://leo-vander-meulen.medium.com/?source=post_page-----f8adc18a2f8e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f8adc18a2f8e--------------------------------)
+    ·15 min read·Jan 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6c103c95ab09741daa4efd1bf8340fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map of actual locations public transport vehicles in Utrecht (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Public transport and open data is a combination with tremendous potential. Timetables,
+    disruptions, routes, it is all there in the public domain, ready to be used for
+    all kind of applications. This time we will look at the available real-time information
+    in the Netherlands. The real-time data is available in GTFS Realtime format and
+    available at [ovapi.nl](https://ovapi.nl) (for the Netherlands).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Warning: it will take some work to get it up and running and implementing a
+    first use case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: General Transit Feed Specification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: GTFS is a standard for sharing public transportation schedules, including the
+    associated geographical information. It consists of two parts. First, there is
+    the static specification for scheduled information on transport services (GTFS
+    Static) and second there is the realtime status information (GTFS Realtime).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The standard originates from 2005 when efforts were made to integrate public
+    transport services in Google Maps. At that time there was no standardized format
+    for sharing time schedule information. Original, the G of GTFS stood for *Google*,
+    but to increase adaption it was changed to *General*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All details of the GTFS standard can be found on [Google Transit](https://developers.google.com/transit)
+    pages and on [gtfs.org](https://gtfs.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: GTFS Static
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The latest version of the static information is available from OVapi [here](https://gtfs.ovapi.nl/nl/)
+    and is always names `gtfs-nl.zip`. It changes, on average, every three or four
+    days. There is also an archive of previous version of the GTFS file in the folder
+    ‘`archive`’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The zipped file contains the following data files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**agency.txt** — The list of agencies for which transit data is provided'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**routes.txt** — All transit routes. A route is a a group of trips and is seen
+    as a service by the customer. An examples is a bus line (line 5 in Amsterdam to
+    *Westergasfabriek*) or train service (serie 3300 is the soptrain between *Hoorn
+    Kersenboogerd* and *Den Haag Central*)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**trips.txt** — All transit trips. A trip is one bus/train on a route, connecting
+    two or more stop locations. Stop locations can differ per trip (e.g. skipping
+    specific stations). A trip belongs to one route.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**calendar_dates.txt** — A table linking dates to services. For each data an
+    entry is present with the trip IDs of all trips running that day. The GTFS standard
+    uses this file as a exception file for the service patterns (e.g. weekly pattern)
+    specified in the optional file *calendar.txt.* This GTFS provider only uses the
+    calendar_dates to map services to dates. A service is one or more trips and is
+    defined by the service ID in the trips specification.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**stops.txt** — All stop locations. This can be a bus stop or train station.
+    Stops are defined on the level of platform and combined to location in the shape
+    of stopareas. A train station has one stop for each platform and one stoparea
+    (the station).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**feed_info.txt** — Generic feed info like source, versioning and validity
+    period'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**shapes.txt** — For each route a list of geographical locations (lat,lon)
+    to draw the transit service on a map. A trip is associated with a shape as individual
+    trips on a route can have a different path.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**stop_times.txt** — For each stop on each trip the arrival and departure time.
+    The largest file of the dataset (1 GB of data).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**transfers.txt** — List of all possible transfers between two stop locations,
+    e.g. one platform to another platform at the same station.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The image below shows the used parts of the GTFS Static standard and there
+    relations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac1dc700e1f9e635bdd839c91d4f6bba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GTFS Static for dutch public transport (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: GTFS Realtime
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The second part of the standard specifies the way real-time information is provided.
+    The specification uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview),
+    a language and platform independent mechanism for serialization of structured
+    data. It is a Google standard with bindings for several languages like C#, Go,
+    Java and Python. Details for the GTFS Realtime standard can be found on the site
+    of [Google Transit](https://developers.google.com/transit/gtfs-realtime).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The GTFS Realtime for The Netherlands uses the three feed types defined by
+    GTFS with an additional feed for train updates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Trip Update** — Updates on trips. For each active trip one, and no more than
+    one, update is available. If there is no update message for a specific trip, the
+    assumption is that the trip is not running.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Vehicle Positions** — If available (depends on vehicle), the current location
+    of a vehicle on a trip. It provides information on the next stop and current delay
+    of the vehicle on this specific trip.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Service Alerts** — A service alert is generated for each disruption in the
+    network. If a disruption leads to cancellations and/or delays, these are communicated
+    as *Trip Updates* and *Vehicle Positions*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Train updates** — Updates on trains, comparable with the trip update but
+    only for the trains. This feed is not part of the default GTFS Realtime specification.
+    It provides updates on arrival and departure times and scheduled tracks. For each
+    stop in a trip the updates are part of the message.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Decoding Protocol Buffers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To start using protocol buffers we need the `protoc` tool from Github. The latest
+    version can be found [here](https://github.com/protocolbuffers/protobuf/releases/).
+    Find the `protoc-<release>-<platform>.zip` and download this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the Protocol Buffer definitions from [OVapi](http://gtfs.ovapi.nl/nl/).
+    Tou need both the `gtfs-realtime.proto` and the `gtfs-realtime-OVapi.proto`. The
+    last file contains the specific OVapi extensions and.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbfb7c493ecf620dfae147e08caac2ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GTFS Realtime data from OVapi (screenshot from the website of OVapi)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also download the latest protocol buffers from this location, named
+    `tripUpdates.pb`, `vehiclePositions.pb`, `alerts.pb` and `trainUpdates.pb`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When all files are placed in the same directory, it is possible to use the
+    protoc tool to decode the protocol buffer messages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which gives the decode contents from the `vehiclePositions.pb`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: After the header, for each entity an entry follows (only one shown here, the
+    file contains approx. 3200 entries) with the update information for a specific
+    vehicle in a JSON like style. The `transit_realtime.ovapi*` fields are the OVapi
+    specific data fields. The header specifies if the file is an increment or a full
+    set. This source always returns a full dataset. This data stream contains information
+    on all forms of public transport, except for trains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each active trip is returned as an `entity`. Within the trip, all stops are
+    listed with a `stop_time_update` (only one given above, but repeated for all stops
+    in a trip). Each update contains around 1600 entities (depending on time, day
+    of week and holiday season) and a total of 50.000 st op time updates. This data
+    stream contains updates on trains, which are not in the vehicle updates, but lack
+    the current geographical location.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The numbers above show we are dealing with some serious data streams in size
+    and frequency (full updates are published every minute).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading protocol buffers in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The next step is to read the protocol buffers in Python. After reading different
+    blogs and websites this seemed a straight forward process, but in practice it
+    is not that simple. Several attempts where needed, with a combination of versions
+    of python and packages. The following combination is working for me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The full install of the packages used in this article contains:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can compile the protocol buffer definitions to the required python files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will generate two files; `gtfs_realtime_pb2.py` and `gtfs_realtime_OVapi_pb2.py`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are working in an Anaconda environment with Jupyter notebooks it might
+    be required to install `protobuf` using `conda` :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Linux environments are simpler but require the `libprotobuf` to be installed
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This part takes some hassle and does not always feel predictable, but once it
+    is running, you are good to go!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parsing protocol buffers messages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now we are able to decode the protocol buffers in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will result in four Python dictionaries, containing the real-time updates
+    from the four different protocol buffer streams.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parse data to dataframes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Panda dataframes have a dictionary converter built into the constructor, but
+    this only works well with dictionaries with one level of data and no nested structures.
+    There are tools like `flatten_jon` that can help in the process, but it is complex
+    to realize and slow to execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The files have the following structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will be translated to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: After some experimentation it seems best to write the code manually to convert
+    to nested dictionaries to a new one level dictionary and convert this to a dataframe.
+    The `protobuf3-to-dict` package ([source](https://pypi.org/project/protobuf3-to-dict/0.1.5/))
+    is used to convert the protocol buffer to a Python dictionary first. This dictionary
+    has the same nested structure as the original protocol buffer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alerts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The least complex buffer is the alert buffer (after conversion to a dictionary):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Structure wise, the entity array needs to be flattened to get one row with one
+    validity period per alert. On a data level a conversion is needed from a UNIX
+    timestamp (field `timestamp` in the header and `start` and `stop` fields in the
+    active_period. The cause and effect fields are enumerations specified in the [GTFS
+    specification](https://developers.google.com/transit/gtfs-realtime/reference).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A utility function is written to convert a timestamp column to a column with
+    `datetime` objects. All UNIX timestamps are in UTC so a conversion to the local
+    time in the Netherlands is required:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now it is time to convert the alert dictionary to a dataframe with one alert
+    per active period per row:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is the following dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f47bc20440f2a0726155b263c94cd17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Alerts dataframe (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cause en effect are optional fields so a check is needed to see if they are
+    part of dictionary. This overview of alerts needs to be related to the stops and
+    routes the alert influences. Two separate tables are created to couple routes
+    and stops to alerts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1502100d50e80f16d6448370b6eed644.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mapping of alerts on stops and routes (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trip Updates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is the conversion of the trip updates. There are some optional
+    fields, like arrival and departure time, some timestamps, some additional fields
+    and something special about the start time of a trip, the so called business day.
+    The hours field does not run from 00 to 23 but from 00 to 27\. The business day
+    in public transport is 28 hours, running till 4:00 in the morning. It a trip is
+    technically part of the previous day, the hours are extended to 27\. If a trip
+    belongs to the actual day, the hour is 00 to 04.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our purposes, we recalculate the business day to a normal 24 hours day.
+    This implies that when the hour is greater than 23, we subtract 24 from the hours
+    and add one day to the date, moving it to the first four hours of a day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This method converts a date (string format ‘20230131’) an time (string format
+    ‘13:23:45’ and converts it to a `datetime` object with a ‘normal’ 24 hour based
+    date an time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The additional fields added by OVapi are parsed by the Protocol Buffer code
+    but are not replaced with their human readable names. I have not been able to
+    parse the buffers and have the field…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '…parsed with their names. The result is always:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: These keys must be used to find the `realtime_trip_id` in the dictionary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is now possible to convert the Trip Update to a data frame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and the resulting dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/800173472bbf00403fce0c7c4f325d48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trip updates dataframe (without id column, image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The dataframe creation is an expensive task. Creating the array of dictionaries
+    is efficient but the DataFrame constructor takes a significant amount of time.
+    In simplified form the dataframe is created in the format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is faster to create a separate array per column and pass theses to the constructor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both implementations result in the same dataframe. In the first implementation,
+    each row added the columns need to be matched on column name. The alternative
+    version prevents this. It requires more code to be written, but the dataframe
+    creation is about 10 to 20 times faster. The implementation on Github uses the
+    alternative form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The implementation on Github also assures that all ID’s are integers, instead
+    of strings to improve lookup and merge performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Parsing of VehiclePositions and TrainUpdates is more or less the same, see
+    the source code on Github for the code. The GTFS Realtime data refers to the trips,
+    routes and stops from the GTFS Static data. The relationships are as follows (white
+    is static, orange is realtime):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72a043b6bbdbcb683c49ffb29b219c89.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Relation between GTFS Realtime and GTFS Static (image by authour)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `calendar`, `shapes` and `transfers` are not shown to keep the image clear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code on Github consists of a `GTFS` class and a notebook with some example
+    usages. The GTFS class contains both the static and real-time information which
+    can be updated independently. Some caching is added to prevent unnecessary parsing
+    of the input files. This is especially useful for the static data where parsing
+    the stop times is time consuming as it contains more than 14 million entries.
+    The cached version is filtered for a specific day and contains around 2 million
+    rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The class is used as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: The static GTFS file is cached for a week. The parsed contents for a few hours
+    and a maximum of a day. The protocol buffer files are also cached for a few minutes
+    to improve performance during development. The last one can be overridden by specifying
+    the maximum age in minutes as parameter of the `update_realtime` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The downloaded an parsed data is stored in the class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: A few of them will be used in the following example. Other use cases might need
+    the other information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting stops and the actual locations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The dataset contains all the public transport stops in the Netherlands. It can
+    be used to generate a heatmap of stops in the country. The `folium` package is
+    used with the plugin to generate heatmaps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e9fbe5096301fa0d29671ade2a90332d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Heatmap of public transport stops (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please note that this heatmap only shows the number of stops as they are distributed
+    over the country. In this plot, a stop with only one stopping bus a day weights
+    the same as a stop with a bus every 5 minutes. It is an indication of the accessibility,
+    not the actual accessibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the GTFS realtime information it is possible to add the location of all
+    vehicles (except trains, the train updates do not contain locations) can be added.
+    For this, we zoom in to a region, in this case the city Utrecht.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, the bounding box of the region is defined. The `stops` dataframe and
+    `vehicle_position` dataframe are geopandas so it is possible to filter them on
+    the bounding box with the `cx` method. This method filters the dataframe so all
+    rows are within the specified bounding box.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A folium map is created at the center of the bounding box with a zoom factor
+    that shows only the region of the bounding box. Then, for all stops a small blue
+    circle is drawn on the map and for all vehicle a red circle. Each stop has a popup
+    with the stop name and each vehicle with the line number and direction. This results
+    in the following map:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6c103c95ab09741daa4efd1bf8340fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map of actual locations public transport vehicles in Utrecht (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This map is created during the afternoon of a weekday. The same map during
+    the evening in the weekend shows less vehicles on the road:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6053def4d800f612fd302b569e5241c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map of actual locations public transport vehicles in Utrecht (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By merging the actual data with the static stops, stop times, trips and routes,
+    all information is available per item on the map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final words
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It took some true effort to get to the goal of this article, a map with the
+    current position of public transport vehicles. We needed to pars all static information,
+    decode protocol buffers and combine all this information. The final map is then
+    made in a breeze.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But all this hard work can be re-used for other purposes; creating dynamic departure
+    lists for a stop, an up to date travel planner, tools to help us in case of disruptions,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be honest, the work was not always enjoyable, especially getting the protocol
+    buffers to work took some hard work and the performance needed a lot of tweaking.
+    But I am happy with the end results. Th final [class](https://github.com/lmeulen/GTFS-Visuals/blob/main/GTFS.py)
+    and [Notebook](https://github.com/lmeulen/GTFS-Visuals/blob/main/GTFS%20Protobuf.ipynb)
+    van be found on [Github](https://github.com/lmeulen/GTFS-Visuals).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope you enjoyed this article. For more inspiration, check some of my other
+    articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Summarize a text in Python — continued](https://medium.com/towards-data-science/summarize-a-text-with-python-continued-bbbbb5d37adb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Using Eurostat statistical data on Europe with Python](/using-eurostat-statistical-data-on-europe-with-python-2d77c9b7b02b)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Solar panel power generation analysis](/solar-panel-power-generation-analysis-7011cc078900)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Perform a function on columns in a CSV file](https://towardsdev.com/perform-a-function-on-columns-in-a-csv-file-a889ef02ca03)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Create a heatmap from the logs of your activity tracker](/create-a-heatmap-from-the-logs-of-your-activity-tracker-c9fc7ace1657)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Parallel web requests with Python](/parallel-web-requests-in-python-4d30cc7b8989)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you like this story, please hit the Follow button!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Disclaimer: The views and opinions included in this article belong only to
+    the author.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,237 @@
+- en: The smart, flexible way to run code on Kubernetes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-smart-flexible-way-to-run-code-on-kubernetes-94d1ae6c46f3](https://towardsdatascience.com/the-smart-flexible-way-to-run-code-on-kubernetes-94d1ae6c46f3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://pascaljanetzky.medium.com/?source=post_page-----94d1ae6c46f3--------------------------------)[![Pascal
+    Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----94d1ae6c46f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94d1ae6c46f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----94d1ae6c46f3--------------------------------)
+    [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----94d1ae6c46f3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94d1ae6c46f3--------------------------------)
+    ·6 min read·Jan 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I was a beginner using Kubernetes, my main concern was getting code to
+    run on the cluster. Thrown into a new world, I saw all these confusing YAML-Files,
+    each line and indentation bringing a new meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77a4045112438f4e57e21a6fb9839dc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Thais Morais](https://unsplash.com/@tata_morais?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once I learned the fastest way to get code into the file, I quickly flooded
+    it with absolute paths. You can see a truncated example below, which I call the
+    *beginner’s way*. Note that this is a perfectly valid way to run code; it just
+    lacks features that upcoming sections focus on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The quick, error-prone way: Full paths to the code’s directory'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s dig a bit into the .yaml-File and highlight the section most relevant
+    for getting code (and data) into a container. Put simply, a container is merely
+    a box that contains relevant stuff. This box is used by a Pod, which we might
+    think of as a virtual computer. This virtual computer helps us run the content
+    of the container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (If you are more versed with containerization, you might notice that this description
+    is a simplification. a) That’s right, and b) you might already know more than
+    this blog article can teach you)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The section in the YAML-File relevant to this article is where we decide which
+    code to run, the “*command:”* portion. That already is the place where it gets
+    tricky. Consider that your local development machine uses the following fictional
+    path: */local/user/path/script.py*. Let’s imagine publishing this code to the
+    compute cluster and storing it under */remote/cluster/path/script.py*. As we now
+    know where the script lies on the Kubernetes cluster, we can turn to the YAML-File
+    and paste its path there. If we are lucky, it will work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But probably it won’t, especially not if we are using imports from other user-defined
+    python files in our *script.py*. Most likely, our code will fail with a *“ModuleNotFoundError:
+    No module named ‘xyz’.”* This error occurs because when we run script.py, python
+    searches at well-known places for modules to import. And if the files we would
+    like to read/import from are not in these locations, our code will not run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate this, consider yourself standing in the hot sun outside, profusely
+    sweating in the summer heat. Something to drink, be it tap water, would be pretty
+    awesome now, you think, and go inside.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the kitchen sink’s faucet, you fill a glass and eagerly drink it. It’s
+    good, so you want something to drink outside, too. Because the water came from
+    the faucet, you simply tear the faucet from its construction site and take it
+    with you. Outside again, you then get: “WaterNotFoundError: No water.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this constructed example, it’s obvious why one does not magically has access
+    to an unlimited water supply simply by ripping a faucet from its place. The problem
+    is the same in the python example: the point we operate from does not know where
+    the required files are located. In the local development environment, the needed
+    code might be in the same folder as the main script. But what happens when we
+    — similar to the faucet case — operate from another folder (i.e., call the python
+    script from another location*) on the cluster, after pushing our code? The answer
+    is *“ModuleNotFoundError: No module named ‘xyz’”*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There’s a quick but dirty fix here (I am guilty of using it not that long ago):
+    In all python files that import from other user-created python files, add the
+    directory where these auxiliary files reside to python’s search path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Repeat this step for all directories, and you are done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That fix does the job, but it’s not the best way. The code is inflated; we do
+    not need the additional lines in the local setup, and what if we move the auxiliary
+    files altogether on the file system? We’d have to update all the hard-coded paths!
+    That’s too much hassle. Luckily, there’s a better way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The smart, flexible way: Relative paths and code included'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The better way to run code is by using relative paths. In the running example,
+    we stored our python file on the cluster under */remote/cluster/path/script.py*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll assume that, following good conventions, all auxiliary code (e.g., “utils.py”)
+    resides in this directory or a subdirectory. With this setup in mind, there are
+    two steps to a more intelligent approach, one regarding the Docker image and one
+    regarding the .yaml file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The improved Docker image** Before showing the improved version, here’s a
+    pretty standard Dockerfile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although this default Dockerile does the job and gets us all packages installed,
+    we can further improve it by slightly altering the *internal* folder structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the improved Dockerfile, we first install the required python packages and
+    then store the code directly in the image. This step is crucial, and the difference
+    from the previous way is huge: before, we called the python scripts from the underlying
+    file system; now, we call them from **within** the Dockerfile.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do that, we create a folder aptly named *code,* set it as the working directory,
+    and, by running “*COPY . .*” copy all our code/data/etc. to this directory in
+    the Docker image. Afterward, we grant ourselves the privilege to run the code
+    from within the container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The improved .yaml-File** With this setup, the improved .yaml-File can be
+    constructed. Where we previously called the script’s full path, e.g., by'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: we can now reduce this to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Again, the difference might seem small: after all, we’ve only removed the path
+    to the script (the */remote/cluster/path* thing).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But under the hood, we are now reading — and running — the python file from
+    within the image. In other words, we have a portable environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**There’s one caveat, though**: what if we push new code to the remote server,
+    thereby updating our scripts? Is this change reflected in the image? No, it is
+    not. The image remains as we’ve last built it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two Dockerfiles for fast build times
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Luckily, there’s a simple trick for this common scenario: Maintaining two Dockerfiles.
+    In this case, my routine is as follows.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have one main Dockerfile, aptly called *Dockerfile_base*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'I first build an image with this file, which contains just enough commands
+    to create a project’s foundation. For example, this might be such a starter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking closely, you can see that I am not copying any code-related files at
+    this step. Instead, I only install the pip-Packages and get some further requirements
+    via apt-get. This structure is unlikely to change, so I store the resulting image
+    as, e.g., *project-audio-analysis-base:0.0.1*. Note the *-base* tag in the image’s
+    name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. After constructing the base, I build a second Docker image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this image, I pull the previously created *project-audio-analysis-base:0.0.1*.
+    This new image is constructed from a separate Dockerfile, which I often call *Dockerfile_update*
+    or similar. An example of its content is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Crucially, I store the resulting image **not** at the same location as the
+    previous base script — this would overwrite our clean starting point. Instead,
+    I store it at a distinct location; usually, I just omit the *base tag*, like so:
+    *project-audio-analysis:0.0.1*. Whenever there has been a published change in
+    the code, I use the thinner *Dockerfile_update*. This approach has the benefit
+    of always having a clean starting point (for cases where you’ve wrecked your code)
+    and significantly reduced build times.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we were to install all the packages all over every time we would create a
+    new Docker image, we would have to wait every single time. That’s unnecessary.
+    Simply store a fixed foundation with all these packages pre-installed and build
+    upon this image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Beginning to work with Kubernetes, one is often confronted with these huge,
+    complicated YAML-Files. Understandably, one is pretty relieved once the code runs
+    as intended. However, a mistake — or flawed design decision — is to use absolute
+    paths and run the code from the file system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To alleviate this, I presented a better, cleaner, and more portable way of
+    running code within a Kubernetes cluster. It consists of two parts: First, including
+    code within the image, and second, maintaining a base and an updated Dockerfile.
+    Armed with these tools, one can produce improved images quickly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* Calling a python script from another location: Usually, we use the command
+    line to change into the folder where the python script sits and then execute *python
+    script.py*. However, when in another folder, we can also run *python /path/to/script.py*.
+    In this case, the problems illustrated in the blog post arise.'
+  prefs: []
+  type: TYPE_NORMAL

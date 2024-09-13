@@ -1,0 +1,680 @@
+- en: Mixture-of-Softmaxes for Deep Session-based Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mixture-of-softmaxes-for-deep-session-based-recommender-systems-aea5727e213d](https://towardsdatascience.com/mixture-of-softmaxes-for-deep-session-based-recommender-systems-aea5727e213d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Modern session-based deep recommender systems can be somehow limited by the
+    softmax bottleneck like their language model cousins
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://biarnes-adrien.medium.com/?source=post_page-----aea5727e213d--------------------------------)[![Adrien
+    Biarnes](../Images/105f2bb62cb2bf825d74ea85b14eabfc.png)](https://biarnes-adrien.medium.com/?source=post_page-----aea5727e213d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aea5727e213d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aea5727e213d--------------------------------)
+    [Adrien Biarnes](https://biarnes-adrien.medium.com/?source=post_page-----aea5727e213d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aea5727e213d--------------------------------)
+    ·15 min read·Jul 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e8ad6bdeba47c5c5c75fc5e30fcb86e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Preethi Viswanathan](https://unsplash.com/@sallybrad2016?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'TL;DR:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The traditional softmax is limited in its capacity to fully model tasks like
+    natural language that are highly context-dependent. This limit in expressiveness
+    called the Softmax bottleneck can be described through the lenses of matrix factorization
+    and the study of the resulting matrix ranks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Mixture of Softmaxes [by Yang et al.](https://arxiv.org/pdf/1711.03953.pdf)
+    [1] allows for overcoming the bottleneck by increasing the expressiveness of the
+    network without exploding the number of parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this work, I study whether this limitation also applies to deep session-based
+    recommender systems and whether the MoS technique can be beneficial. I implemented
+    the technique and applied it to a Gru4Rec architecture using [the movielens-25m
+    dataset](https://grouplens.org/datasets/movielens/25m/) [3]. The result is that
+    it depends…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a previous role, while working on a large-scale sequence-based deep recommender
+    system, I was approached by the product team pointing out an identified use case
+    when then the quality of the recommendation was really low. The recommended items
+    were not coherent with what the user was watching and let’s just say that they
+    were not the cream of the crop of what the company had to offer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what was happening? Well, after careful examination, we understood that it
+    specifically concerned the items manually pushed by the content team to be displayed
+    on the home page (which was even more problematic). The said items were found
+    numerously in the user sequences extracted for learning. At first, it was pretty
+    disturbing because we knew and previously demonstrated that the more the algorithm
+    had examples of user sequences with a given item to learn from, the higher the
+    quality of the recommendation for that specific item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3405d2f7609cc01d5cea45c95f57ae5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Typical increase in performance with volume — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, it was a perfect example of more data is not always better. User
+    sequences with the given featured items were numerous but not coherent. We were
+    switching from one subject (displayed on the home page) to a very different one.
+    It was so because of the diversity of the users landing on the home page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/161074bcfe97d4fefa170b8a2c69866c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It gave me the feeling that this diversity was confusing the algorithm. But
+    that was more an intuition than a properly scientifically grounded fact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few days ago, I stumbled upon the paper “[BREAKING THE SOFTMAX BOTTLENECK:
+    A HIGH-RANK RNN LANGUAGE MODEL](https://arxiv.org/pdf/1711.03953.pdf)” [1] (published
+    at ICLR 2018) that gave me a more formal framework to understand why most classification
+    neural networks are not equipped to handle high contextual diversity. In this
+    blog post, we will first take a close look at the problem and explain the underlying
+    theory. Then we will move on with an experiment to see whether the Mixture-of-Softmaxes
+    technique can improve deep recommender systems which are framed as session-based
+    classification tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, let us recall that in most cases in order to select the correct label,
+    a classification neural network has to score every possible option. In order to
+    do that we produce a vector (let’s call it **h**) in a chosen output dimension,
+    that generally does not exceed three digits, which is compared against other vectors
+    representing the labels (the embedding vectors). This comparison is simply a dot
+    product between the vectors. A dot product produces a scalar. It is a way to measure
+    the similarity of 2 vectors. The result of the comparison with all the items (a
+    matrix multiplication) is a vector called the logits with a dimension equal to
+    the number of possible output classes (let’s call it **V**). Then the logits go
+    through a softmax operation in order to produce the final probability vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1216d552ab88dd9d23dcf58cd7e42433.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model I was using in my previous company was a sequence-based classification
+    recurrent neural network. Given a sequence of consumed items, we want to predict
+    the next consumed item among all the possible ones. It was an implementation of
+    the paper “[Session-based Recommendations with Recurrent Neural Networks](https://arxiv.org/abs/1511.06939)”
+    by Hidasi et al [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c993eb35f1cd7e3d74c96f6eb166934f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of the GRU cell before the scoring operation is just a vector in
+    a relatively small chosen dimension. But what is a vector? Well, it is just a
+    location in a vectorial space. So the goal of the network is to produce vectors
+    that are close to each other (eg. small dot product values) when they are part
+    of the same sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So my question was, how is the algorithm going to handle use cases when the
+    consumed items after a specific one are all very different from one another? If
+    we consider what we just previously said, all the different consumed items (targets)
+    must be close to the sequence item(s) (input). In the end, it is easy to build
+    up the intuition that the more diverse the user sequences, eg. the more we jump
+    from one subject to a completely different one, the harder it is for the algorithm
+    to attain its learning objective. If all the user sequences are very diverse,
+    then the items must be close and far away from one another at the same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Softmax as a Matrix Factorization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we explained above, the softmax operation of a language model or a deep recommender
+    system framed as a classification problem usually have the same last operations.
+    They use a softmax on the logits which is the product of a hidden state **h**
+    and an item embedding vector **w:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aef23dcbd8a343ef493555654995eb6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[The paper](https://arxiv.org/pdf/1711.03953.pdf) introducing the Mixture-of-Softmaxes
+    demonstrates that the above operation can be expressed as a matrix factorization.
+    More formally, let **N** be the number of samples in the training dataset, **d**
+    the chosen dimension for the item embeddings, and **V** the number of recommendable
+    items. We can then define 3 matrices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae8b53d30a478cdf765476f417f3f15d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**H** ∈ R (N×d), the encoded contexts matrix'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**W** ∈ R (V×d), the item embeddings matrix'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**A** ∈ R (N×M), the log probabilities of the true data distribution P*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The demonstration is above the scope of this blog post, but basically what the
+    authors manage to demonstrate is that the softmax operation increases the rank
+    of the logits matrix by at most 1\. This means that the rank of the output log
+    probability matrix is determined by the rank of the logits matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what is the link with the bottleneck?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If somehow, we had a way to get the probability matrix of the true contextual
+    data distribution P*, we could (depending on the complexity of the task) manage
+    to show that the rank of this matrix in the real world is very high. Theoretically,
+    the rank of this matrix could reach the size of the vocabulary V.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, as we just explained, in our modelization, the rank of the output matrix
+    is determined by the rank of the logits which is the multiplication of matrices
+    H and W. Also, for any two matrices X and Y, we have rank(XY) = min(rank(X), rank(Y)).
+    In our case, this means that the rank of the logits matrix can not be higher than
+    d (the maximum rank of both W and H— the embedding dimension of the items). This
+    can be a severe limitation in cases when we are trying to model a highly contextual-dependent
+    task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why the bottleneck is a problem?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As demonstrated by the authors, the vanilla softmax operation can be considered
+    a small-rank matrix transformation. As a reminder, the rank of a matrix is the
+    dimension of the vector space generated by its columns (or its rows). It determines
+    the number of bases (the set of linearly independent vectors) that can be used
+    to create the output using any linear combination. For language modeling, one
+    could make the interpretation that it translates into the number of fundamental
+    semantic meanings that a model can combine. Given the complexity of natural language,
+    it is highly unlikely that a small rank is sufficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To overcome the softmax bottleneck, the authors of the paper introduce the
+    Mixture-of-Softmaxes. MoS formulates the conditional distribution of an output
+    class given the context as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01af9cb0d674ceb46ef25c81414c608c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'K softmaxes are used instead of one. A set of mixture weights **π** (the priors)
+    dictate how much attention should be paid to each softmax. Both the mixture weights
+    and the logits used by each softmax are dependent on the context **c** and the
+    mixture component **k**. This means that MoS introduces two new weight matrices
+    **P** ∈ R (Kd × d), and **W** ∈ R (K × d). They allow for the following computations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d26a27aebe8ddc759f8b33ceef8b8b3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the above, **g** is the equivalent of the hidden state **h** of the vanilla
+    softmax. Let’s try to visualize what is happening here. First, we use the projection
+    matrix to create the hidden states that will be used by each of the softmax heads
+    out of **g**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fe96dbce0524ff2b81da714985f26fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then we compute the set of mixture weights **π** also out of **g**. Note that
+    we use the softmax activation to ensure that the mixture weights sum up to 1 for
+    every context:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb4aec8864676bd6a34d8a58b15ab2f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final computation can be pictured below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b940c6dd46c398d5697c4ec24b32d73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: So why does it solve the bottleneck issue?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Recall that the cross-entropy loss (that we use to train the network) applies
+    a logarithm transformation on the output probabilities. It means that we are approximating
+    the log probabilities of the true data distribution with the following expression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c7b5bc581f3c621ed8474dce1069d1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where **Π**k is an (N × N) diagonal matrix with elements being the prior **π**c,k.
+    Because it is a nonlinear function (log_sum_exp) of the context vectors and the
+    word embeddings, the above function can be arbitrarily high-rank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Does the softmax bottleneck apply to deep recommender systems?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The softmax bottleneck indicates that the expressiveness is bounded by the embedding
+    dimension d. If d is too small then the softmax does not have enough capacity
+    to express the true data distribution. But this is only true if the true data
+    distribution complexity requires a high capacity like when modeling natural language.
+    Now what about sequential recommendation systems? Is the probability of a user
+    consuming a specific item highly dependent on the context? Well, my feeling is
+    that it depends on numerous factors like the quality and quantity of the features
+    used by the model but also on factors like the one I described in the introduction.
+    In the end, what I like to do about those questions is to perform experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The experimentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the following part, I am going to describe the experiments I performed trying
+    to assess whether the Mixture Of Softmaxes can improve the recommendation quality
+    of a deep recommender system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The model I chose to implement is the one introduced earlier known as Gru4Rec.
+    Here we implement the vanilla version. We only include the sequence of item identifiers
+    and do not use any side information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c12f37937392e70a206c8a8f80c0e42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The dataset I chose for these experiments is [the famous MoviLens dataset](https://grouplens.org/datasets/movielens/)
+    [3]. More specifically I chose the 25M version which contains 25 million ratings
+    of 62,000 movies by 162,000 users. [The zip file](https://files.grouplens.org/datasets/movielens/ml-25m.zip)
+    comes with several CSV files but here we are only going to use the ratings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5c80806f5cb8298e729b488de7bd467.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First few ratings of the dataframe
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data preprocessing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We have a typical example of an explicit user preference dataset. But here
+    we want to frame the recommendation as a classification problem. To do so we need
+    to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: transform it into an implicit user preference dataset by only keeping the ratings
+    greater than 2.0 (chosen arbitrarily) and dropping the rating column
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: split the dataset into a training set and a validation set (temporal split)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: group the ratings by user id
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: only keep the users with more than one rating (because we need sequences with
+    a minimal length of 2 to have a least one input and a target)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: for every user, sort the ratings by timestamp and apply a sliding window to
+    create the sequences
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: save every sequence in a serialized tensorflow record
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: also in parallel, count and save the number of distinct movies in the training
+    set (so that we know the size of the vocabulary)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/b42d9d92941f6eaf5040d3f76d94b840.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the size of this data, I had to use a distributed framework (dataflow
+    in this case, the google cloud managed version of apache beam) to perform all
+    the preprocessing in parallel on 4 different workers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As with any other neural network, we have a number of important hyper-parameters
+    to tune. In our case, the most important ones are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the batch size
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the learning rate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the movie id embedding dimension
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the number of softmax heads
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Modern recommender system architectures operate in multiple steps in order to
+    increase performance. Take a look at [my article on multi-stage recommendations](https://medium.com/mlearning-ai/building-a-multi-stage-recommendation-system-part-1-1-95961ccf3dd8)
+    if you want to learn more. The model we are using is generally employed as a candidate
+    generation model. This means that the most important metric we want to care about
+    is recall. Here, we chose to report Recall@100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I initially wanted to perform a full grid search on the hyper-parameters but
+    given the size of the dataset, it appeared to be very costly. After a few experiments,
+    I learned that a relatively low batch size would translate into better performance
+    (64 was chosen). Also, I fixed the number of softmax heads to 4 (for cost matters).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I here report the results, for 3 different embedding dimensions (32, 64, 128)
+    with the vanilla softmax versus the mixture of softmax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48c66eb832d917cc4be54e1942a26de6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can generally observe with these embedding-based networks, the larger
+    the embedding dimension, the better the performance. Also, it is not entirely
+    obvious from this graph, but the Mixture-of-Softmaxes performance is a little
+    bit better than the vanilla softmax. Now, is the improvement significant? Not
+    really, we only score a very low 0.090% improvement for the 32 dimensions version,
+    0.333% for the 64 version, and 0.314% for the 128 version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Was this result expected?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, as we explained in the introduction, the Mixture-of-Softmaxes allows
+    us to overcome the low-rank bottleneck of the vanilla softmax. But is this bottleneck
+    a problem in the first place? The authors demonstrated that for language modeling
+    it is indeed. Now, for a sequential-based recommendation task, it is not obvious.
+    My guess was that it would depend on the contextual complexity of the recommendation.
+    Things like sequence lengths and variety of consumption patterns might have a
+    significant impact on the effectiveness of MoS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, as we explained in the theoretical section, the rank of the log probability
+    output matrix is upper-bounded by the embedding dimension of the movie identifiers.
+    The replacement of the vanilla softmax with a mixture of softmaxes, theoretically
+    removes this limitation. Therefore I was expecting that MoS would be more beneficial
+    for the low embedding dimensions than for high dimensions. So what happened?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Performance breakdown by #observations'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gru4Rec is a collaborative recommender system. And as with any of its cousins,
+    its performance on a given item is highly dependent on the volume of data it has
+    for the said item. When a new item enters the platform (it is in the cold start
+    regime), we do not have a lot of sequences with it and the system does a poor
+    job at providing relevant recommendations. Hence, performance is directly correlated
+    with the number of training examples per item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cd825aa12f5cca4612eae6fe5f023b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: I created the bin limits in order to obtain the same volume of observations
+    for every bin. As one can see, the more a movie is found in the dataset, the better
+    the performance. Now, we also see another trend. This time, the MoS version has
+    a lower performance than the vanilla softmax in the low number of views bucket
+    (on the most left bucket). This indicates that the increase in modeling complexity
+    does not benefit the recommendation on cold start items. MoS increases the requirements
+    in terms of data volume. MoS is beneficial only when sufficient data is available
+    for an item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance breakdown by diversity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You might recall that in the introduction I described a specific use case in
+    my previous company where the performance was pretty low because of the diversity
+    in the training sequences. Another interesting analysis I would like to perform
+    is to study the correlation between the effectiveness of MoS and the diversity
+    of user sequences. Is MoS more effective when user sequences are very diverse?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To answer that question, the first thing we need is to be able to quantify the
+    diversity of a user sequence, eg. quantify how much a view is different from the
+    previous one in the sequence. In order to do that, we are going to rely on the
+    user-item interaction matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5ac90d410ea0ac71149c9bbe74e8e0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The user-item interaction matrix is a sparse matrix made of ones and zeros.
+    The users are represented by the rows and the items by the columns. In each cell,
+    we have a 1 if a user has seen a specific movie and 0 otherwise. From this matrix,
+    we can compute the collaborative distance between 2 items by simply computing
+    the cosine distance between the 2 associated columns. 2 items are close when they
+    have been viewed by common users. If we consider that we have N items, the result
+    of the overall computation is a N by N squared matrix that gives us the distance
+    between any two pairs of items. Finally, in order to determine the diversity of
+    a sequence, I simply return the distance between the target and the previous item
+    in the sequence. I could have considered the distances between the target and
+    all the previous items but the results were good enough like that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b84a3b007c1c867f6dc740e18dd5daea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As one can see, the higher the diversity in the sequences, the harder it is
+    for the algorithm to correctly predict the next item to watch. We could have computed
+    the distance between 2 items in a content-based fashion by exploiting the metadata
+    of the items, but I am pretty sure that the insights would have been equivalent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, another insight from the above is that we see that the MoS technique does
+    not seem to be effective for the most diverse sequences (the right-most bin).
+    This seems rather counter-intuitive because the point of using a high-rank modeling
+    technique was to better handle the more complex recommendation settings. So does
+    the MoS fails at helping with highly diverse user sequences?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Performance breakdown by #observations x diversity'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to fully answer the above question, we need to break down the performance
+    by the combination of volume of data and diversity. Once the Recall@100 is computed
+    for every combination, we can study in greater detail MoS impact on performance.
+    Let’s first do it for the 32-dimension version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e17358ab07a1f4793ca09e5c73761f83.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As one can see, the diminishment of MoS effectiveness is largely due to the
+    low views / high diversity bucket. This makes quite a lot of sense. Introducing
+    more complexity in the modelization increases the volume requirements. In a situation
+    when the sequences for an item are not numerous and also very diverse, the introduction
+    of MoS is not beneficial. On the contrary, when the volume of data is sufficient,
+    one can see that the more diverse the user sequences, the more effective the MoS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now for the 64-dimension version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30e15b6ea989f2a1605c574fe5cf9167.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And for the 128 version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a3fd7587c9ac3de96e35093d5e58fb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we compute the performance by removing all the observations from the first
+    low number of views bucket (0 to 814), we observe an overall positive performance
+    for MoS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: +0.618% for the 32-dimension version
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: +0.459% for the 64-dimension version
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: +0.320% for the 128-dimension version
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As expected, MoS is more beneficial for low-dimensional embeddings. This is
+    because the lower the embedding dimension, the bigger the bottleneck that MoS
+    was made to remove.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The main takeaways from this work are the following. The MoS effectiveness
+    is correlated with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: data volume. It introduces an additional burden on the data volume requirements
+    per item by increasing modeling complexity. Performance is increased when the
+    number of observations per item is sufficient.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: diversity in user sequences. It is only effective if the complexity of the session-based
+    dataset requires it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: embedding dimension size. MoS is more effective on low-dimensional embeddings
+    than on high-dimensional ones.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'PS: You can find [all the code](https://github.com/biarne-a/mos) that served
+    this analysis on [my personal GitHub](https://github.com/biarne-a).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Final note: Although the improvements are pretty small for this dataset. I
+    still think improvements might be much more important for some industrial datasets
+    having very long sequences and a lot of diversity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Zhilin Yang, Zihang Dai, Ruslan Salakhutdinov, William W. Cohen. BREAKING
+    THE SOFTMAX BOTTLENECK: A HIGH-RANK RNN LANGUAGE MODEL. [https://arxiv.org/pdf/1711.03953.pdf](https://arxiv.org/pdf/1711.03953.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Balázs Hidasi, Alexandros Karatzoglou, Linas Baltrunas, Domonkos Tikk.
+    Session-based Recommendations with Recurrent Neural Networks. [https://arxiv.org/abs/1511.06939](https://arxiv.org/abs/1511.06939)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] F. Maxwell Harper and Joseph A. Konstan. 2015\. The MovieLens Datasets:
+    History and Context. ACM Transactions on Interactive Intelligent Systems (TiiS)
+    5, 4: 19:1–19:19\. [https://doi.org/10.1145/2827872](https://doi.org/10.1145/2827872)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,606 @@
+- en: 'Automating Chemical Entity Recognition: Creating Your ChemNER Model'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/text-mining-for-chemists-a-diy-guide-to-chemical-compound-labeling-ea3145e24dc4](https://towardsdatascience.com/text-mining-for-chemists-a-diy-guide-to-chemical-compound-labeling-ea3145e24dc4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://victormurcia-53351.medium.com/?source=post_page-----ea3145e24dc4--------------------------------)[![Victor
+    Murcia](../Images/0041e70a3e7b6b643338a9570257a719.png)](https://victormurcia-53351.medium.com/?source=post_page-----ea3145e24dc4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea3145e24dc4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea3145e24dc4--------------------------------)
+    [Victor Murcia](https://victormurcia-53351.medium.com/?source=post_page-----ea3145e24dc4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea3145e24dc4--------------------------------)
+    ·15 min read·Nov 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f85d501be5dff1e61e9629b62c49954.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Aakash Dhage](https://unsplash.com/@aakashdhage?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/a-group-of-gold-and-silver-spheres-uV5n4TrFs8M?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve always had a strong interest in chemistry, and it has played a significant
+    role in shaping both my academic and professional journey. As a data professional
+    with a background in chemistry, I’ve found many ways to apply both my scientific
+    and research skills like creativity, curiosity, patience, keen observation, and
+    analysis to data projects. In this article, I’ll walk you through the development
+    of a simple Named Entity Recognition (NER) model that I’ve dubbed ChemNER. This
+    model can identify chemical compounds within text and classify them into categories
+    such as alkanes, alkenes, alkynes, alcohols, aldehydes, ketones, or carboxylic
+    acids.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you just want to play around with the ChemNER model and/or use the Streamlit
+    app I made, you can access them via the links below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***HuggingFace link:*** [https://huggingface.co/victormurcia/en_chemner](https://huggingface.co/victormurcia/en_chemner)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Streamlit App***: [ChemNER Link](https://chemner-5i7mrvyelw79tzasxwy96x.streamlit.app/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'NER approaches can be generally classified into one of the following 3 categories:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lexicon-based: Define a dictionary of classes and terms'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Rule-based: Define rules the terms that correspond to each class'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Machine Learning (ML) — based: Let the model learn the naming rules from a
+    training corpus'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each of these approaches has their strengths and limitations and as always,
+    a more complicated and sophisticated model isn’t always the best approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, the lexicon-based approach would be limiting in terms of scope
+    since for every class of compounds we are interested in classifying we’d have
+    to manually define ALL the compounds that fall within that category. In other
+    words, for this approach to be all encompassing you’d need to manually enter every
+    chemical compound for every compound class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ML approach could be the most powerful way to go, however, annotating a
+    dataset can be quite laborious (spoiler alert: I’ll end up training a model but
+    I want to show the entire process for educational purposes). Instead, how about
+    we start with some predefined naming rules?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Chemical nomenclature has a well-established and defined set of rules that allow
+    you to readily determine what functional groups are present in a molecule. These
+    rules have been established by the International Union of Pure and Applied Chemistry
+    (IUPAC) and can be readily accessed via a the [IUPAC Blue Book](https://iupac.org/what-we-do/books/bluebook/),
+    a variety of websites, or in any Organic Chemistry textbook. For instance, hydrocarbons
+    are compounds composed solely of Carbon and Hydrogen atoms. There are three main
+    classes of hydrocarbons named alkanes, alkenes, and alkynes which can be readily
+    identified based on whether they have single, double or triple bonds respectively
+    as part of their chemical structure. Below I’m showing an example of three chemical
+    compounds (ethane, ethene, and ethyne) depicting that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1cb61b47fb9b27efeb79734874746989.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ethane, ethene, and ethyne. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The important thing for us here are the endings of the names (i.e., their suffixes)
+    since it is what will allow us to differentiate between chemical compounds. For
+    example, alkanes are identified by the suffix of *-ane*, alkenes by the suffix
+    *-ene*, and alkynes by the suffix *-yne*. Every class of chemical compounds like
+    alcohols, ketones, aldehydes, carboxylic acids, etc. has unique naming schemes
+    like that which will serve as the basis for this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Establishing the Rules**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have a bit of background to understand what’s going on, I’ll show
+    how a rule-based approach can be implemented in Python using Spacy. I’ll start
+    simple by just dealing with the hydrocarbons. We’ll add the other classes later.
+    To do this, we’ll first load a blank English model with Spacy and add an ‘Entity
+    Ruler’ component to our pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we’ll establish the rules/patterns that define each class and add them
+    to the rules component:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s it! Now let’s make some text to feed to our model and see how it
+    does!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of this is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That’s pretty good! However, there are two immediate limitations that you probably
+    realized with this initial approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plural versions of a compound will not be detected with the current regex.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Basing the classification purely on the suffixes will result on lots of incorrectly
+    labeled entities.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Though chemical compounds are typically considered as uncountable nouns (think
+    of words like air or music) there are still instances where the plural version
+    can be utilized. For instance, if you were dealing with a collection of ethane
+    molecules, someone might refer to that as a group of ethanes instead. Therefore,
+    the first point can be easily addressed by modifying our regex to the form below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now both singular and plural instances will be recognized by the entity ruler.
+    However, the second point remains. As an example, words like arcane, humane, thane,
+    lane and mundane to name but a few, if present in the text would be incorrectly
+    labeled as alkanes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Though there are other rules that could be implemented to bolster this approach,
+    they would require a fair amount of extra work. Because of that there are three
+    approaches I’m considering to deal with our limitation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build a corpus to train a ML-based NER model for this application
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Named Entity Linking (NEL) to aid in correcting any labeling mistakes made
+    by the model output
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fine-tune a transformer model like SciBERT or PubMedBERT on a custom dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For this article, I’ll just cover the first two approaches. However, if there
+    is interest, I’ll show how the fine-tuning process could be achieved in a future
+    article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making the Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are a variety of different ways to create a corpus. A quick and easy
+    way to generate this corpus is to have chatGPT create a set of sentences that
+    contained compounds involving the various classes that I want to extract from
+    text. The reason this works nicely is because this approach allows me to curate
+    and tailor my dataset which makes the subsequent annotation process much easier.
+    My prompt was simply:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And then I repeated that prompt for the other classes I was interested in (i.e.,
+    alkenes, alkynes, alcohols, ketones, aldehydes, and carboxylic acids). Since I
+    have 7 classes, I ended up with a total of 350 sentences making up my corpus.
+    Ideally, this corpus would be larger but it is a good enough start since I’m primarily
+    interested in illustrating this as a proof of concept more than anything else.
+    Plus, it is always easier to simply add more data as needed to improve performance.
+    I saved my sentences into a document called chem_text.txt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/455a61682039610e633814072a023265.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of corpus made for ChemNER. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a final step, I’ll use a sentence tokenizer to split each sentence in the
+    document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that I have this corpus made, we need to start labeling it. There’s a couple
+    ways to do this. For instance, we can use an annotation tool like [Prodigy](https://prodi.gy/)
+    (which is amazing and you should use it if you do any kind of NLP) or we can use
+    the rule-based approach from earlier to help us with the initial annotation. For
+    now, I’ll use the model approach since I’m not annotating a huge dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To include all the classes I’m interested in, the rules will need to be updated
+    to the ones below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result of running the rule-based approach allows us to quickly annotate
+    our dataset as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f09d24df9497b2fbe923820a948d229.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Annotated corpus for ChemNER. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are almost ready to split our corpus into training and test sets, however,
+    we need to verify the quality of our annotations before moving forward. Upon,
+    inspecting my dataset, I noticed that we ran into the mislabeling issue I alluded
+    to earlier. Words like “essential”, “crystals”, “potential”, “materials” amongst
+    several others were found in the dataset and were labeled as aldehydes which highlights
+    the limitation of the rule-based approach. I manually removed these labels using
+    the method below and reprocessed the annotations on the corpus:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we are ready to create our training and test sets. This can be easily done
+    with the train_test_split function from scikit-learn. I used the standard 80:20
+    train:test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have our training data ready and we can go ahead and start training our
+    model. To train the model, I used the default Spacy NER training parameters like
+    an Adam optimizer and a 0.001 learning rate. The training took just over an hour
+    on a CPU in Google Colab which could be greatly reduced if using a GPU instead.
+    The results of the training are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5912100df7ddecfcec5a75bf024e5b39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training results of ChemNER model. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plots above show the F1 score, Precision, Recall, and Overall Score of this
+    model tended to increase over the course of training which is good. The NER loss
+    which corresponds to the loss of the NER component overall tended to a minimum.
+    The ultimate performance score of the model is 0.97 which seems promising.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Tok2Vec loss however noticeably spiked at around Epoch 300 which could be
+    a result of too high of learning rate, vanishing/exploding gradients causing numerical
+    instabilities, or overfitting issues amongst others. The Tok2Vec loss represents
+    the effectiveness of the token-to-vector part of the model responsible of converting
+    tokens to vectors. There are a variety of ways to handle this if we so choose,
+    but for now, I’ll carry on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start by doing a simple test. I’ll feed it a few sentences and see how
+    well it classifies them. You can see the result below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/774034f3aa76aeea5e3ccb59771cdd7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initial test of ChemNER model. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nice! It extracted all the relevant entities AND it labeled them all correctly!
+    That’s the cool thing about the ML approach. Instead of us having to explicitly
+    write the rules, the algorithm will learn it over the course of training. As cool
+    as this is however, let’s now put the model onto a bit more stress.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Querying Wikipedia (stress testing)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I want to stress test my model a bit more, therefore, I figured that a quick
+    and easy way to do this is by feeding the model an entire Wikipedia article and
+    see how it performs. I’ll write a quick routine to accomplish this via the wikipedia-api
+    package in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With that, I will now look for the Wikipedia article on Benzene:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the result of this produces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b42ff1469ae35d21054f3cae60c926cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of query for Benzene Wikipedia article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Neat! Now that we’ve verified the querying works let’s run the ChemNER model.
+    The ChemNER model extracted a total of 444 entities from the Benzene article.
+    The extraction of these entities took less than a second. I placed the results
+    into a dataframe and visualized the label counts in a count plot below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4b804735e27d7d70b1c0a0fb38671ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ChemNER results on Benzene Wikipedia article. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most common class within that article was alkene which makes sense given
+    that that’s the class of compound Benzene corresponds to. Something that I thought
+    was a bit surprising was that this particular article had entities belonging to
+    each class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is neat, however, a quick inspection of the first few rows in the dataframe
+    of extracted entities we can see that there are issues with the model. The words
+    ‘chemical ‘and ‘hexagonal’ were labeled as an aldehyde and the word ‘one’ was
+    labeled as a ketone. These are clearly not chemical compounds and should not be
+    classified as such. I went ahead and manually identified each entity as being
+    correct or not and I determined that the extraction accuracy was 70.3%. Though
+    all the extracted entities that were extracted were labeled ‘correctly’ based
+    on the rules the model learned, the model has not yet truly learned the context
+    of the words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40f57f8a7b9917a8a9f1df97ad94b94a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of correctly and incorrectly labeled entities on Benzene article
+    by ChemNER. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cool thing that I noticed though, is that the correctly labeled entities
+    were all chemical compounds. In other words, if we had a way to determine whether
+    an entity is a chemical compound, then we could significantly bolster the labeling
+    performance of this application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, there are a couple avenues we can take. One avenue is to go back
+    to the corpus and produce more data to give our model examples to learn from.
+    Another avenue, is to use named entity linking (NEL) to help correct the labeling.
+    I’ll go with the latter option since it is a little less time consuming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using PubChem for NEL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The ChemNER model is performing exceptionally well at labeling entities according
+    their chemical class so long as the entity is a chemical compound. In order to
+    better inform the model, I’ll connect to [PubChem](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest)
+    via their API and conduct a query for a chemical compound. The idea here is that
+    a query for a chemical compound will return information whereas a query for nonchemical
+    compound will return an empty query. I can use the results of this query to improve
+    the labeling performance of my application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example to showcase this, let’s query for Benzene to start off. The code
+    below can be used to query the PubChem API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results of this query are shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0b753cbff662d2f5031629e39272dc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Benzene query via the PubMed API. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is A LOT of information on Benzene from this query that we can use later.
+    But for now, all that matters is that the query returned something. On the other
+    hand, if I use this same method to query for something that is not a chemical
+    compound, like the word ‘humans’ or ‘giraffe’, for instance, then the result of
+    that query is ‘None’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9392a16b852339ff52a309ac9f1b5e4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Querying for non-chemical compounds on PubMed API. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can use this to my advantage to aid my application. The queries are quite
+    fast, however, to speed up the process a bit more, I’ll remove any duplicate entities
+    from my dataframe in order to query only unique terms. In addition to this, the
+    PubChem API appears to assume that we are querying for an individual chemical
+    compound so words like cinammaldehydes for instance would return an empty query.
+    This can be easily fixed by stripping any terminal ‘s’ from any plural terms.
+    I used the following code to create a new column in my dataframe called ‘Chemical
+    Compound’ that will allow me to classify each entity as either a chemical compound
+    or not based on the result of the query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88d2a3955a460072909f6b70dc2830f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That worked quite well! One more thing that I noticed upon doing this however
+    is that the class labels themselves result in null queries. In other words, if
+    I query PubChem for alkane, alkene, alkyne, etc. I get an empty query because
+    these are not specific compounds themselves but rather classes of compounds. There
+    is a bit of nuance here regarding how to proceed. I decided that I did want these
+    classes of compounds to be recognized as chemical entities since the class labels
+    can be used independently in sentences devoid of specific compounds (e.g., Alkanes
+    are commonly found in petrochemical applications). To resolve this, I simply added
+    a simple routine that would check whether the entry in the Entity column is either
+    a singular or plural variant of any of our class labels and then set the value
+    in the Chemical Compound column to 1 if the entity matches the label or 0 if it
+    doesn’t.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Cool! Now I can now merge these results into the original dataframe containing
+    all 444 results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7a7c245ecabdc41ed3d2a3bd5362f7a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Entity dataframe after using the PubChem API to check whether an entity is a
+    chemical compound. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, I’ll drop any rows that don’t correspond to a chemical compound.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e7e63c150e714f8283ba558f5c7c56b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Resulting dataframe after removing entities that are not chemical compounds.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And now let’s see how it performed!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7b5f05d610a860c0e00617bba487031.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of ChemNER after performing NEL via PubChem. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Very nice! All of the extracted entities are now correctly labeled. By combining
+    our NER model alongside NEL via PubChem we are now able to not only extract the
+    entities from the text but also disambiguate results and use that to vastly improve
+    our labeling accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying the Model into HuggingFace
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a little bonus, I thought it would be cool to take all of these routines
+    I’ve showed and deploy the model into HuggingFace so that I can showcase it in
+    a streamlit application. You can find the model in HuggingFace in this [https://huggingface.co/victormurcia/en_chemner](https://huggingface.co/victormurcia/en_chemner).
+    The Inference API results are shown below which look pretty good:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c630e630b1f18e81b3a9f8bfdeea68ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ChemNER in action via the HuggingFace Inference API. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let me know if you use it or if you have any suggestions! I’m planning on expanding
+    the model in the future and there are other functionalities I want to explore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connecting Everything with a Streamlit App
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that the model is deployed, I can use it in a Streamlit App. This app will
+    allow a user to either link to a Wikipedia article or enter raw text that will
+    then be processed by the ChemNER model. The output of this routine will be a downloadable
+    dataframe with the extracted and labeled entities, a count plot showing the counts
+    for each of the labels in the provided text, and a fully annotated version of
+    the text. You can find the Streamlit app hosted here: [https://chemner-5i7mrvyelw79tzasxwy96x.streamlit.app/](https://chemner-5i7mrvyelw79tzasxwy96x.streamlit.app/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ef419cdb751cd07ec390bb6580fa6939.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of ChemNER Streamlit App. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, I’ll run a query for the Wikipedia article on Benzene below using
+    the app. The result is an annotated version of the article as shown below where
+    each class has been uniquely color coded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43ce6b39b06b7867ca0515c0debcec56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Annotated text from ChemNER. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output is also a dataframe that you can download as a .csv file containing
+    the entities and their corresponding labels and a count plot that shows
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a88fe9a5051a3792173776e666fa3e6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output from Streamlit app. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope you found this piece informative and helps you build your own NLP applications.
+    I plan on continue to work on this model and application a bit more since I think
+    there is some nifty stuff I’d like to further explore. For instance, after a bit
+    of testing I noticed that there were still certain entities that the model extracted
+    and the PubChem method classified as chemical compounds that were not organic
+    compounds. For instance, the word ‘pm’ was extracted as an entity and labeled
+    as an aldehyde. The PubChem search returned a non-empty query since ‘pm’ (or more
+    appropriately Pm) is the chemical symbol for the element Promethium. The model
+    is not perfect but I hope it shows that you can get a pretty powerful tool without
+    requiring a LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL

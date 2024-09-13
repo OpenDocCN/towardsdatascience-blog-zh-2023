@@ -1,0 +1,452 @@
+- en: 'Our MLOps story: Production-Grade Machine Learning for Twelve Brands'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/our-mlops-story-production-grade-machine-learning-or-twelve-brands-a8727fd56c94](https://towardsdatascience.com/our-mlops-story-production-grade-machine-learning-or-twelve-brands-a8727fd56c94)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Things we learned building an MLOps platform with limited means at DPG Media
+    in the Netherlands
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeffluppes?source=post_page-----a8727fd56c94--------------------------------)[![Jeffrey
+    Luppes](../Images/f55d5e76fcf7e992582b45096500c215.png)](https://medium.com/@jeffluppes?source=post_page-----a8727fd56c94--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a8727fd56c94--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a8727fd56c94--------------------------------)
+    [Jeffrey Luppes](https://medium.com/@jeffluppes?source=post_page-----a8727fd56c94--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8727fd56c94--------------------------------)
+    ·12 min read·Jun 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying a machine learning model once is a straightforward task; repeatedly
+    bringing machine learning models into production is much harder. To address this
+    complex process, the concept of MLOps (Machine Learning Operations) emerged. MLOps
+    represents the convergence of DevOps, machine learning, and software engineering
+    practices. There are several nuances needed here, but a better definition of what
+    exactly MLOps entails is an open discussion and a battleground for vendors to
+    pitch their products. For brevity’s sake, I’d rather move on to our MLOps story.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our MLOps journey started around September 2021\. Our team had only been created
+    six months earlier, and we started with a handful of inherited projects. Our team’s
+    goal was simple on paper: we were to provide a data / ML platform for *Online
+    Services,* a part of DPG Media that focuses on websites and communities. Our “portfolio”
+    consisted of a dozen brands that included amongst others: a popular tech news
+    website and its’ community, two job portals, a community for expecting parents,
+    several websites where one could buy second-hand cars, and a couple more with
+    similar audiences. This is relevant for the rest of the post.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8961d6ab97f05ce9d2ee41a878ce0f6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Back when we started building the platform, we intended to support these twelve
+    (Dutch) brands
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the time, the ML part of the team was just a Data Scientist and me, a Machine
+    Learning Engineer. Both of us were hired two weeks apart, completely new to the
+    organisation that we were expected to roll in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Back then, our ML production landscape (I use this term leniently) looked as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A recommendation job to provide suggestions to users, running in Spark via
+    Airflow for brand #1.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A pricing suggestions model giving suggestions for cars, also running from
+    Airflow as a batch job, for brand #2.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A model to target the right audiences in Databricks as a scheduled notebook,
+    yet again running as a batch job, for brand #3.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A single flask application on EC2 that loaded various models into memory to
+    facilitate demos and showcases of projects for various brands.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With twelve brands, each potentially on their own systems and clouds, we could
+    not make strong assumptions on how anything we developed would be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two Data Scientists, now gone, had done all previous projects. Most of their
+    projects lived in Jupyter Notebooks and the Flask application that served them
+    was hosted on EC2 — and went down frequently. A single MLflow server was running
+    on EC2, but it was outdated, and there were some security concerns with it. The
+    Databricks project was just a single notebook, not even under version control.
+    We didn’t even know who paid for the cluster on which we had the job scheduled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our team needed to scale, take on more projects, and spend only a little time
+    supporting old ones. We could not afford to continue as things were, especially
+    if we wanted to run real-time inference. Good opportunities for machine learning
+    started coming in, and our clients demanded live models. The case for a structured
+    approach towards MLOps was clear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formulating a plan
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We could rely on some help from Data Engineers (our team had four dedicated
+    data engineers) Architects, and System Engineers across DPG, but it was clear
+    that we should own the platform ourselves. Our data engineers in particular, were
+    stretched thin and had their own deadlines and migrations In the future we needed
+    to be the ones managing and updating our systems. We had to own it ourselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We organised a few brainstorming sessions within our team and interviewed a
+    couple of architects across the org. Slowly but surely, things became more set
+    in stone and less scribbled on a white board in some dark corner on the fifth
+    floor of our office. We wanted to give MLflow another chance and try to keep as
+    much on AWS as possible. After all, it was clear that AWS SageMaker was evolving
+    towards a more mature platform. We were urged by one of the leads of another team
+    to adapt Terraform (or some form of IaC) early on. Since our data engineers were
+    already using Terraform, this became a cornerstone of our platform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e53c3ec23ed64b36063b7f4c1b9f2b0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*slaps whiteboard* this fella can fit just so many features in it. Image by
+    author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I joined the MLOps community to learn more about the tools and had a couple
+    of conversations with vendors. Started going to meetups. Luckily, we had an AWS
+    enterprise support team also available to help us since we’re a large user of
+    AWS already. Lots of ideas, perhaps too many, started pouring in. The MLOps scene
+    was (still is) a bit of a mess and [that is to be expected](https://www.mihaileric.com/posts/mlops-is-a-mess/);
+    what was important for us was moving fast and deciding what the things were that
+    mattered most to us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We eventually decided that the principles of the platform would be more or
+    less the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do everything in Terraform, *unless we couldn’t..*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Try to adhere to data mesh (which our org adapted in 2021), *unless..*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use managed services where possible, *unless..*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Go serverless, *unless..*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Avoid Kubernetes for as long as possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build *as we go* and migrate old projects when we revisit them
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Artefacts and Experiment Tracking and our first MLOOPS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Despite the intention to migrate only when it was needed, one of the first things
+    we tried was to migrate the MLflow server to AWS Fargate and have the database
+    on AWS RDS, instead of running on the same EC2 instance as the server. Per business
+    unit we decided to host one instance, with separate servers for test and prod.
+    With four BUs, this would mean 4 x 2 almost identical set-ups
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c6cfcfcc90f52a3f22b9c67ea7b46d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example architecture for MLflow on AWS. Taken from [https://aws.amazon.com/blogs/machine-learning/managing-your-machine-learning-lifecycle-with-mlflow-and-amazon-sagemaker/](https://aws.amazon.com/blogs/machine-learning/managing-your-machine-learning-lifecycle-with-mlflow-and-amazon-sagemaker/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This turned out to be a fairly expensive idea (8 copies of this set up, all
+    with their own load balancers and databases!) and the amount of projects we were
+    doing didn’t warrant it yet by far. We would later bring this down to two instances.
+    Starting out big like this meant also figuring out terraform, elastic load balancers,
+    IAM, and route 53 head on. The learning curve was pretty steep, and a lot of time
+    was spent getting familiar with all the different parts of AWS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our first ML-OOPS was trying to set-up a ton of (expensive) instances and maintain
+    them, way before they were needed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For experimentation (AKA Jupyter notebooks) we settled on using AWS SageMaker’s
+    Notebook instances. The notebook instances were supplied with a lifecycle script
+    that would set the correct MLflow uri as a environment variable. We created some
+    scripts to update these in bulk as well as monitor the notebooks themselves, such
+    as throwing an alert in our slack channels if someone left their instance on outside
+    office hours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Deployment and training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It soon became time to deploy our first models. We used SageMaker’s model endpoints
+    and settled for a Lambda and API gateway set-up. SageMaker can essentially be
+    a one stop shop for deployment, although there is a premium you pay over spinning
+    up your own EC2 instances and hosting your own models. It is more expensive over
+    trying to run everything yourself on a Kubernetes cluster you manage yourself.
+    You get a lot back for the premium you pay, though. SageMaker handles various
+    deployment strategies, autoscaling, and allows us to select GPU types when needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our models were easily deployed via the SageMaker SDK from both local and cloud
+    environments (e.g. Jupyter notebook or Airflow). The AWS Lambda gave us extra
+    control over in- and output to the model, and the API Gateway provided a restful
+    interface that we could use with API keys for our users. Apart from only the model
+    itself, all elements were deployed via terraform and adding new models was simply
+    adding a terraform module, mainly specifying a name and where to pull the lambda’s
+    code from. This also meant we could improve the (pre-)processing to the model
+    without changing the SageMaker endpoint, and have CI/CD for the lambdas set up
+    separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9935ad5113dc3ad6d40d32cee590968d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Typical deployment on AWS. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training jobs were also delegated to SageMaker. It took considerable effort
+    to create a template for our first few ML training jobs (LSTM models for text
+    categorization made with TensorFlow) and log them to MLflow from *inside* the
+    training job’s container. We made a generic template for training jobs. SageMaker
+    is fairly opinionated on how it wants to receive training jobs, which means you
+    need to adhere to certain conventions by the platform — even when using TensorFlow.
+    Luckily, under the hood SageMaker’s model serving still uses TensorFlow Extended
+    for TensorFlow Models, so there is some intuitive operability with SavedModels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We orchestrated our training jobs from Airflow, and explicitly did not include
+    retraining on any code merges. Some of our models are fairly expensive, some are
+    not, but almost all have needs for large compute or storage. If needed before
+    scheduled to run, we can simply trigger the dag and run the pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monitoring and Alerting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The last item on our AWS shopping list was monitoring and alerting. We first
+    tried out Amazon Managed Prometheus and Amazon Managed Grafana, hoping we could
+    somehow get the data in there that we were seeing in CloudWatch and save on our
+    CloudWatch costs. It turned out this was possible with exporter tools. We set
+    our sights on YACE ([yet-another-cloudwatch-exporter](https://github.com/nerdswords/yet-another-cloudwatch-exporter))
+    but that had to live somewhere. That somewhere would soon be EC2, and later ECS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also had some metrics coming in from one of our business units that we needed
+    to track ourselves. This meant that we needed some kind of interface for them
+    to interact with. This first seemed possible with Managed Prometheus’s Remote
+    Write capability, but we needed more control and were setting up YACE (which was
+    to be scraped every five minutes by Prometheus) anyway. We opted to move YACE
+    and Prometheus to an ECS cluster and set up Remote Write plus a pushgateway to
+    receive metrics from outside our environment. Finally, we did away with Amazon
+    Managed Prometheus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, YACE did not support all of the AWS services we used. We lacked
+    exporting for SageMaker and were totally in the dark regarding our model endpoints.
+    Luckily the Amazon Managed Grafana instance also pulls stats from CloudWatch,
+    again at a slight premium.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Amazon Managed Grafana we made a generic dashboard that we converted into
+    a template by taking the json model and parameterizing it. Once that was done,
+    we rolled out dashboards for every model via terraform. Unfortunately, Amazon
+    Managed Grafana demands an API key, for our terraform and ci/cd to function, which
+    has a max life of 30 days. We set up a key-rotation Lambda to destroy and re-create
+    a key every 29 days and store it in an AWS secret we can request inside our terraform
+    code. The impact of this is that when deploying a model we could now automatically
+    generate an API, monitoring and logging, and a custom dashboard, within a few
+    seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since Grafana could also be set to send alerts when metrics pass a certain threshold,
+    this set up also allows us to trigger alerts upon issues and forward them to slack
+    or OpsGenie. Since we were still with two, we made an on-call schedule with each
+    of us taking a week of on-call at a time. The trick is never defining an alert
+    with a high priority.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/89a0c416f54cdc88e1ff0c9df4919f77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The most important services that make up the “deployment” platform at a glance.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our resulting “framework” is fairly lightweight and the keen reader will have
+    noticed it doesn’t actually strive to fully automate anything end-to-end. We currently
+    have about 15 models deployed for real-time inference, a year down the line with
+    a team of two. Above is an AWS-centric view of the platform, while the below blueprint,
+    using the template by [the AI Infrastructure Alliance](https://github.com/ai-infrastructure-alliance/blueprints),
+    provides an overview of the features of the stack so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b30e139ec5d7fb5c8f6721fb659c38e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our MLOps stack. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We wanted to be flexible, and felt that going in with a heavier “do everything
+    for us” framework might be more restricting and more costly. We try to make no
+    strong assumptions. For instance, not every project has fresh data coming in or
+    has access to feedback from production. We might not be allowed to store predictions
+    all the time. Not every model is deployed on SageMaker (some can live in the Lambda
+    perfectly fine!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like Lak Lakshmanan’s recent post (triggeringly titled “[No, you don’t need
+    MLOps](https://becominghuman.ai/no-you-dont-need-mlops-5e1ce9fdaa4b)”) and the
+    now-famous [MLOps without much Ops](https://towardsdatascience.com/tagged/mlops-without-much-ops)
+    blog series (“[You don’t need a bigger boat](https://github.com/jacopotagliabue/you-dont-need-a-bigger-boat)”)
+    we have a platform that strives to keep things simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/913d53d2829a671ad035fcc0bf44c8bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is, if you want to remain flexible, save time, budget or complexity. Meme
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, we did have a lot of needs when building the platform. A high level-diagram
+    of the ML lifecycle with our needs mapped out shows we now cover most of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5283f2feacac1d59540f207a530193ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A visualization of features we wanted in the platform and those that we covered.
+    Note that we did not discuss all features in this blog post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thinking forward
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So now we’ve talked a lot about what we’ve built and how it fits into the larger
+    picture. What’s next for us?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The platform still has a blind spot when it comes to testing and validation.
+    We have no formal framework apart from the odd test here and there. It’s relatively
+    hard to build these up front and make sure that you’re not prematurely optimising,
+    especially under pressure. At the same thing it’s something we really can’t do
+    without from a software development perspective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Being a media company, we have models that work on text, images, click streams,
+    graphs, vectors, and tabular data. Some models consume multiple data types. Models
+    can include anything from XGBoost and Random Forests to Transformers and various
+    Recurrent Neural Networks and Convolutional Neural Nets. How could we even hope
+    to build or buy something to test all data types and all models?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another issue to be addressed is reducing the cold start times for our Lambda
+    functions. Lambda functions are functions as a service that run when invoked.
+    After the first invocation the lambda stays alive for about 15 minutes, unless
+    another invocation follows, up to a max lifespan of about two hours. When allocating
+    the resources and image for the lambda the first time around there is a cold start.
+    Sometimes this is a few seconds, but toss in a TensorFlow import into a Lambda
+    and you shouldn’t be surprised to see your APIs time out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a fact of life and inherent to using lambdas — but it means that we, or
+    the user of an API needs to have error handling to deal with it if they go on
+    for too long. While it’s recommended to not use lambdas for low volumes of traffic
+    it’s by far the cheapest option we have and it helps to off-set the cost premium
+    we have for SageMaker. Furthermore, they’re incredibly easy to maintain. Whether
+    the cold start is actually a problem, though, is something that entirely depends
+    on the business context and request volume.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m hoping to move away from our self-hosted MLflow at some point. It has no
+    role-based access. This means that every user can see (and delete) every model,
+    and users will need to scroll through potentially hundreds of models in order
+    to find the one they’re looking for. There’s also a cognitive load for using it;
+    any Data Scientist using it will have to actively pay attention to setting their
+    experiment and calling things like mlflow.log or mlflow.autolog. Since we don’t
+    use the option to deploy from MLflow to SageMaker we can switch to one of the
+    many other tools in this niche. We literally only use MLflow as a way to keep
+    track of past model runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In summary, in this post I’ve gone over our process in creating a MLOps stack
+    that suited our needs. We used AWS services and open source tools to select a
+    suite of tools to allow us to handle the majority of our use cases. It will continue
+    to evolve over time as our team evolves. Our main takeaways are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Go for managed services and don’t look back.** If your team is relatively
+    small it’s a great idea togo for managed services so you do not have the same
+    overhead.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Get Sagemaker.** Sagemakeris great for small teams and excels in deployment
+    (not updates, but thats for another time), but it takes a while to get comfortable
+    with it.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Go with the flow.** Airflow and MLFlow are great tools in a ML stack because
+    they allow orchestration and ML-bookkeeping, which again allow you to focus on
+    the work that matters most.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Infrastructure as code is the cloud 10x multiplier.** No, seriously. It’s
+    insane how much work Terraform has saved us from doing.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I hope this fully open discussion allows other teams to decide on their stack
+    and evaluate their needs. Hopefully, in the future the platforms and tools we
+    used become more mature and integrate better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post benefitted from help by [Gido Schoenmacker](https://www.linkedin.com/in/g-schoenmacker/),
+    [Joost de Wit](https://www.linkedin.com/in/jjdewit/), [Kim Sterenborg](https://www.linkedin.com/in/kimsterenborg/),
+    and [Amine Ben Slama](https://www.linkedin.com/in/amineslama/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[*Jeffrey Luppes*](https://www.linkedin.com/in/jeffluppes/) *is a Machine Learning
+    Engineer at* [*DPG Media*](https://www.dpgmediagroup.com/en-NL) *in Amsterdam,
+    the Netherlands.*'
+  prefs: []
+  type: TYPE_NORMAL

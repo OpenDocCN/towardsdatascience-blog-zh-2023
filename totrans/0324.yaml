@@ -1,0 +1,563 @@
+- en: “Approximate-Predictions” Make Feature Selection Radically Faster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/approximate-predictions-make-feature-selection-radically-faster-0f9664877687](https://towardsdatascience.com/approximate-predictions-make-feature-selection-radically-faster-0f9664877687)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Feature selection is so slow because it requires the creation of many models.
+    Find out how to make it blazingly faster thanks to approximate-predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mazzanti.sam?source=post_page-----0f9664877687--------------------------------)[![Samuele
+    Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----0f9664877687--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0f9664877687--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0f9664877687--------------------------------)
+    [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----0f9664877687--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0f9664877687--------------------------------)
+    ·10 min read·Nov 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/966d9bfba9303c9a87213f6ba5d91239.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Image by Author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When developing a machine learning model, we usually start with a large set
+    of features resulting from our feature engineering efforts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Feature selection is the process of choosing a smaller subset of features
+    that are optimal for our ML model**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why doing that and not just keeping all the features?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Memory**. Big data take big space. Dropping features means that you need
+    less memory to handle your data. Sometimes there are also external constraints.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Time**. Retraining a model on less data can save you much time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Accuracy**. Less is more: this also goes for machine learning. Including
+    redundant or irrelevant features means including unnecessary noise. Frequently,
+    it happens that a model trained on less data performs better.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Explainability**. A smaller model is more easily explainable.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Debugging**. A smaller model is easier to maintain and troubleshoot.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, the main problem with feature selection is that it is **very slow because
+    it requires training many models**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will see a trick that makes feature selection extremely
+    faster thanks to “approximate-predictions”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A very hard problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s try to visualize the problem of feature selection. We start with *N* features,
+    where *N* is typically hundreds or thousands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, the output of feature selection can be seen as an array of length *N*
+    made of “yes”/“no”, where each element of the array tells us whether the corresponding
+    feature is selected or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/25287df1dfeb78a203d6ca69447d2139.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of feature selection. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of feature selection consists of trying different “candidates” and
+    finally picking the best one (according to our performance metric).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/54bcc4d018d224e5cbbf1c7f0a6fe78e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each candidate is a different set of features. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we have *N* features and any of them can be either selected or not selected,
+    this means that **we have 2^*N* possible candidates**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This number becomes huge quickly. For example, with just 50 features and supposing
+    that evaluating a candidate requires on average 1 second, trying all the possible
+    candidates would require 35 million years!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, it should be clear why, in most practical cases, the number of candidates
+    that are evaluated is just a tiny fraction of all the possible candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Candidate proposal and evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many feature selection methods exist, but all of them can be framed as an iterative
+    process made of two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proposing a new candidate
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluating the candidate
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/9f8669e0360e24c04bbcb19d1e04cf68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A very general framework for feature selection. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usually, all the attention is placed on the first step. The purpose of Step
+    1 is usually to find candidates that will likely perform well, based on what we
+    have learned so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, however, we will completely disregard Step 1 to focus solely
+    on Step 2: candidate evaluation. To this aim, **we will propose new candidates
+    completely at random**. In particular, we will use the following function to propose
+    new candidates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Regarding Step 2, we will compare two strategies of evaluation based on different
+    types of predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exact-predictions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Approximate-predictions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Don’t worry if you are not familiar with these terms now, the next paragraphs
+    will make things clearer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature selection based on “exact-predictions”
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Given a new candidate, all the feature selection methods you have seen so far
+    probably follow this structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train a model on the data frame made of the training observations and the candidate
+    features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the model to get the predictions on the validation set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the performance metric on the validation set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Graphically, this is equivalent to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f840f9c38a08be9347d2a6f506e7905.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature selection based on exact-predictions. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach is based on **“exact-predictions” because we obtain the actual
+    predictions made by the model trained exclusively on the candidate features**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This process, translated in Python, would look more or less like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, a new model is trained at each iteration, making this process
+    very slow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, is there a way to exploit the information we have about the features, without
+    having to train a new model at each iteration?
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where “approximate-predictions” come into play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The intuition behind approximate-predictions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To help ourselves understand “approximate-predictions”, let’s use an example
+    dataset from [Pycaret](https://github.com/pycaret/pycaret) (a Python library under
+    [MIT license](https://github.com/pycaret/pycaret/blob/master/LICENSE)). The dataset
+    is called “Concrete”, and the task is to predict the strength of concrete given
+    some of its features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by dividing the observations into a training set and a validation
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can train a model on the training dataset (I will use LightGBM, but any
+    model will work):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Since we have a trained model, we can compute the SHAP values (if you don’t
+    know about the topic, you can read my [introduction to SHAP values](/shap-explained-the-way-i-wish-someone-explained-it-to-me-ab81cc69ef30)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can easily display the SHAP values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd2f8e390a89ae823310b0a91585e32e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SHAP values of the validation set of the Concrete dataset. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each SHAP value represents the contribution brought by a feature to the final
+    prediction for that observation. For example, if we take the first feature of
+    the first row (-14.708), this means that that feature lowers the final prediction
+    by -14.708.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The most important property of SHAP values is that they are additive**. This
+    means that if we sum the SHAP values of the first row (-14.708185 +7.572576 -0.366994
+    +…), we obtain exactly the prediction made by the model for that row.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This holds true for all the rows. Don’t believe me? You can check it yourself
+    with the following piece of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This proves that by summing the SHAP values of any individual we obtain exactly
+    the model prediction for that individual (there is actually a small rounding difference
+    at the tenth decimal, which is negligible).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We can exploit the additive property of SHAP values to simulate the predictions
+    that a model trained on a particular subset of features would produce**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say that we want to answer the following question: “What predictions
+    would the model make if it had just the features *Fly Ash*, *Water,* and *Age*?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c19541414c0f94b2ede73aecc1600216.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Selecting a subset of features from the SHAP values. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: SHAP values allow us to answer this question. In fact, since they are additive
+    and keep into account the feature interactions, **it’s enough to sum the SHAP
+    values relative to those features to obtain our estimate of the predictions that
+    a model trained only on those features would produce**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of course, this is just an approximation! If we wanted the exact-predictions,
+    we would need to train a new model specialized on the candidate features only.
+    This is why I am calling the **predictions obtained in this way “approximate predictions”**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how are approximate-predictions useful for feature selection?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature selection based on “approximate-predictions”
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Approximate-predictions allow us to simulate any possible candidate of features
+    without having to train a new model**. All we need is the SHAP values of the model
+    trained on all the features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can you see why this is a game-changer? **With exact-predictions, we needed
+    to train a new model at each iteration. Instead, to obtain approximate-predictions,
+    we just need to sum some columns of a data frame!** This makes the process incredibly
+    faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Graphically, this is what happens with approximate-predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1180e1811d72acf1928ee8ab6a3af466.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature selection based on approximate-predictions. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Translated in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, in this case, just one model is trained at the beginning. Then,
+    at each iteration, we just perform a simple sum of columns, which is of course
+    much faster than training a brand-new model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This seems amazing, but we must remember that summing the SHAP values of some
+    features is just like obtaining a *proxy* of the real predictions that we would
+    have if we trained a model exclusively on those features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, as with any approximation, the question becomes: **is the approximation
+    good enough for our purposes?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is the proxy good enough?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To answer this question, let’s take an example dataset from [Pycaret](https://github.com/pycaret/pycaret)
+    (a Python library under [MIT license](https://github.com/pycaret/pycaret/blob/master/LICENSE)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The dataset is called “heart” and contains 15 features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: AGE_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MD_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SBP_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DBP_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: HT_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: WT_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CHOL_50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SES
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CL_STATUS
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MD_62
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SBP_62
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DBP_62
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CHOL_62
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: WT_62
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: IHD_DX
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Using these features, I randomly generated 50 different candidates (i.e. 50
+    different sets of features). As a performance metric, I used average precision.
+    For each candidate, I tried both the Exact-Prediction and the Approximate-Prediction
+    method and, for both of them, I computed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Actual AP: the average precision computed using the exact-predictions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Predicted AP: this is the average precision computed using the approximate-predictions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can say that the proxy is good if the Predicted AP is very similar to the
+    Actual AP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize the 50 candidates with their Predicted AP and Actual AP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/86c7a14f63499a9544ebaea6c60596ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Heart dataset. Each dot represents a candidate set of features. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: By way of example, I put some labels showing which features are included in
+    that candidate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Out of curiosity, let’s also visualize how many features every candidate contains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/662265618a0fd75b117741b91a23f1cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Heart dataset. Each dot represents a candidate set of features. The labels represent
+    the number of features for that candidate. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicted AP and Actual AP seem very correlated, this is good news!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s measure it. I will use the Spearman correlation instead of the Pearson
+    correlation because, in this case, we are more interested in the relative order
+    of the candidates rather than in their linear relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The correlation in this case is 89%, so really high. This is good news for us
+    because it means that **if we select the best candidate using approximate predictions,
+    this is probably also the best candidate (or one of the best candidates) according
+    to exact predictions.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can repeat the same procedure also for some other datasets that are in Pycaret.
+    For each dataset, I randomly draw 50 feature set candidates and measure both the
+    Predicted AP and the Actual AP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These are the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e608150d988bda5efd353c851a16de8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 13 datasets, 50 candidates for each dataset. Each dot represents a candidate.
+    [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a glance, it seems that all the datasets have a strong correlation. This
+    again confirms our intuition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But let’s do it more rigorously and compute the Spearman correlation between
+    Predicted AP and Actual AP, for each dataset separately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04fb58f564d6f18a29f5c63cc4a05c2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Correlation between Predicted AP and Actual AP, by dataset. [Image by Author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These numbers confirm our previous impression: the correlation coefficients
+    are always very high, spanning between a minimum of 87% and a maximum of 100%.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we can conclude that **approximate-predictions are actually a good proxy
+    of exact predictions,** and we can use them to make feature selection much faster
+    and, at the same time, reliable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Any feature selection method consists at least of two steps: proposing a new
+    candidate set of features and evaluating that candidate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we focused on the second step (evaluation) showing how to leverage
+    SHAP values to obtain “approximate-predictions”. This approach allows to obtain
+    an estimate of the “exact-predictions” that we would obtain if we trained a different
+    model specialized on each set of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The benefit is that approximate-predictions are obtained with a simple sum,
+    thus making the evaluation step much faster and allowing to evaluate many more
+    candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also showed that the approximate-predictions are reliable enough since the
+    performance metric that we obtain with this method is very much correlated with
+    the performance metric we would obtain using exact-predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can reproduce all the code used for this article with* [*this notebook*](https://github.com/smazzanti/tds_approximate_predictions_for_feature_selection/blob/main/tds_approximate_predictions_for_feature_selection.ipynb)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thank you for reading!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you find my work useful, you can subscribe to* [***get an email every time
+    that I publish a new article***](https://medium.com/@mazzanti.sam/subscribe) *(usually
+    once a month).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Want to show me your support for my work? You can* [***buy me a cappuccino***](https://ko-fi.com/samuelemazzanti)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you’d like,* [***add me on Linkedin***](https://www.linkedin.com/in/samuelemazzanti/)*!*'
+  prefs: []
+  type: TYPE_NORMAL

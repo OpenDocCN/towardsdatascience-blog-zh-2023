@@ -1,0 +1,323 @@
+- en: Unboxing DINOv2, Meta’s new all-purpose computer vision backbone
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unboxing-dinov2-metas-new-all-purpose-computer-vision-backbone-d8e22c059040](https://towardsdatascience.com/unboxing-dinov2-metas-new-all-purpose-computer-vision-backbone-d8e22c059040)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Artificial Intelligence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Are vision foundational models catching up with LLMs?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michaloleszak.medium.com/?source=post_page-----d8e22c059040--------------------------------)[![Michał
+    Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----d8e22c059040--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d8e22c059040--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d8e22c059040--------------------------------)
+    [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----d8e22c059040--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d8e22c059040--------------------------------)
+    ·8 min read·May 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a82bce14167223d4394f5857aa29d74f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Self-supervised training methods continue to deliver breakthrough after breakthrough.
+    Last week, Meta AI released the second version of their self-DIstillation with
+    NO labels or DINO model. The model can supposedly be used as a backbone to solve
+    virtually any computer vision task without fine-tuning! Have the foundational
+    models in computer vision caught up to the level of versatility that Large Language
+    Models have held for some time? Let’s take DINO for a walk to see what it can
+    do!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you’re mainly interested in playing with the new DINO, feel free to scroll
+    down to the “Testing DINOv2” section. Before that, we look in more detail at the
+    model’s architecture and training routine.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e80a57e6282193550776bff71480756.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 🦖 Self-supervised learning in computer vision
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Self-supervision has been gaining popularity in computer vision applications
+    for a couple of years now. And to no surprise: the possibility to train models
+    without labeled examples allows for using a much larger pool of training data,
+    and in some [applications where labels are hard or expensive to get](/self-supervised-learning-in-computer-vision-fd43719b1625),
+    it may even enable training where it was previously impossible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Models trained in a self-supervised way learn from the images alone, without
+    annotations. Indeed, they create their own pseudo-labels from unlabeled data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This has been an established practice in NLP for a time now, where language
+    models are often trained to predict the next word in a sentence. Given the input
+    body of text, the features and labels for training can be created automatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In computer vision, however, self-supervised approaches haven’t really taken
+    off until a couple of contrastive models from Google and Meta ([SimCLR](https://arxiv.org/abs/2002.05709),
+    [MoCo](https://arxiv.org/abs/1911.05722), [SwAV](https://arxiv.org/abs/2006.09882),
+    and [BYOL](https://arxiv.org/abs/2006.07733)) showed state-of-the-art results,
+    sometimes matching or even exceeding those of fully supervised models with access
+    to labeled training data. In [my earlier work](/self-supervised-learning-in-computer-vision-fd43719b1625),
+    I have shown how MoCo improves the performance of X-ray diagnosis in an environment
+    where annotated training examples are scarce.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In 2021, Meta described their first DINO in the paper titled [Emerging Properties
+    in Self-Supervised Vision Transformers](https://arxiv.org/abs/2104.14294). Their
+    model, although inspired by the previously reigning contrastive architectures,
+    took a slightly different approach. Let’s take a look at the original DINO first
+    since its second version is very similar to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3254f09427bd8711da7fecfb0bbe8a30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 🦖 The DINO model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '“DINO” is actually sort of an acronym, standing for self-**di**stillation with
+    **no** labels. As the name suggests, it combines two learning techniques: self-supervised
+    learning with no labels which we have already discussed, and knowledge distillation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Knowledge distillation is a method typically used to compress model size. In
+    it, a smaller model (referred to as a “student”) is typically trained to produce
+    the same predictions as a larger, already-trained model (called the “teacher”).
+    If the student can learn to mimic the teacher truthfully, we can keep the same
+    performance while using a smaller model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DINO uses what the authors call self-distillation, in which the two models
+    — the student and the teacher — are effectively the same model: they have the
+    same size and architecture. They only differ in how their parameters get updated
+    during training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40458d754516b8e13ff093e42259abdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'DINO’s training process. Image source: [arXiv:2104.14294](https://arxiv.org/abs/2104.14294)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To train DINO, we set up two identical networks — the authors originally use
+    Vision Transformers (ViTs). As mentioned, both networks have the same architecture
+    but different parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, from each training image, a number of random crops are cut out. Some of
+    these crops cover just a small area of the original image — we will call them
+    local views. Other crops are larger and cover a significant part of the original
+    image — these are global views.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, all the crops are passed through the student network while only the global
+    views are passed through the teacher network. Each network produces latent representations,
+    or embeddings, of the crops it got as inputs. The similarity between the embeddings
+    from the student and the teacher is then evaluated with a cross-entropy loss.
+    This idea is based on [SwAV](https://arxiv.org/abs/2006.09882) and its goal is
+    to encourage the model to learn global-to-local correspondence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the gradients based on the loss are propagated back through the student
+    network to teach it to produce representations similar to those of the teacher.
+    The teacher’s weights, on the other hand, are updated with an exponential moving
+    average of the student’s weights. This idea is based on [the MoCo model](https://arxiv.org/abs/1911.05722),
+    but in contrast to it, DINO doesn’t use any memory bank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The original DINO paper was titled “[Emerging Properties in Self-Supervised
+    Vision Transformers](https://arxiv.org/abs/2104.14294)” since the authors were
+    somewhat amazed at the properties that emerged from the model. The DINO backbone
+    turned out to comprise information about the semantic segmentation of an image,
+    as well as to allow for a great performance on downstream image classification
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s new in V2?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How does DINOv2 differ from its predecessor, I hear you asking. Well, not that
+    much, at least not in terms of the model architecture or training routine. The
+    authors themselves confess that in the [DINOv2 paper](https://arxiv.org/abs/2304.07193),
+    “most of the technical contributions aim at accelerating and stabilizing the training
+    at scale”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The one thing that’s different is the data that DINOv2 was trained on. So far,
+    most advances in self-supervised learning for vision applications were made while
+    pre-training the models on small datasets such as the infamous ImageNet, whose
+    lack of diversity impedes learning useful features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DINOv2 authors build a data pipeline allowing them to curate a relatively large
+    and diverse dataset. To do this, they employ a clustering algorithm to group candidate
+    images into semantically similar clusters, and then they rebalance the clusters
+    to prevent the model from overfitting to a couple of the most dominants modes
+    in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5cc85a38afec33445b0d2afe9d507252.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 🦖 Testing DINOv2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s put the model to a simple test! The paper claims the DINOv2 backbone can
+    be used as a feature extractor without fine-tuning. Let’s see how well it does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the test task, we will have DINO recognize what alphabet a handwritten character
+    comes from using a subset of the Omniglot dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00a55d913bcd15b0eca61de2c218aced.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A sample from the Omniglot dataset. Source: [https://github.com/brendenlake/omniglot](https://github.com/brendenlake/omniglot).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, we will pass 9543 character drawings (964 different characters
+    from 30 different alphabets) through the DINOv2 backbone. Then, we will split
+    the embeddings we get into training and testing sets, and train a logistic regression
+    classifier on top of them to classify the images to one of the 30 alphabets. This
+    evaluation method is known as a linear readout — we just read the embeddings from
+    the frozen backbone and put a single linear layer (or a liner classifier) on top.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is quite a challenging task: with around 9.6k images and around 960 distinct
+    characters, there are only 10 images per character (and only 7 end up in the training
+    data — the rest are used for testing). Effectively, we create a few-shot learning
+    problem in which a random classifier would score an accuracy of 1/30, or 3.3%.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's start with setting up a dataloader.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we load the DINOv2 model. [Four different architectures are available](https://github.com/facebookresearch/dinov2#pretrained-models)
+    from PyTorch Hub, with varying sizes and performances. Let’s use the lightest
+    *ViT-S/14 distilled* with 21M parameters and the heaviest *ViT-L/14 distilled*
+    with 300M parameters (there is also an undistilled version of 1'100M params, but
+    it’s quite heavy and very close in performance to the 300M params version). Here
+    is the snippet to load *ViT-S/14 distilled.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: With that done, let’s pass all the images through the DINOv2 backbone and collect
+    the embeddings and their associated target labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we split the data into train and test sets and train a logistic regression
+    classifier on top of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We got a test accuracy of just over 54%. Much better than random guessing, but
+    far from perfect. Let’s see how it compares to a larger, 300M params DINO, and
+    to a ResNet50.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50657b79b9d684275db82125c58a8928.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Model comparison: two DINOs and a ResNet.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ResNet50 and the small DINOv2 using *ViT-S/14* are of similar size — DINO is
+    actually even smaller — but DINO yields an accuracy score roughly 15 percentage
+    points higher. A larger DINO can bump the score by another 10 to 15 percentage
+    points, that is to 65–70% accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this a good score? Upon getting the results, my first reaction was a slight
+    disappointment. Unconsciously, I must have been hoping for an accuracy score in
+    the 90s. But after all, the task is not easy and we only used (the equivalent
+    of) a single linear layer to train. DINOv2 definitely does a better job than a
+    similarly-sized ResNet, which is often used as a go-to visual features extractor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do you think about these results? Let me know in the comments!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81d2029b4efe2686af74c4fc3e095953.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you liked this post, why don’t you [**subscribe for email updates**](https://michaloleszak.medium.com/subscribe)
+    on my new articles? And by [**becoming a Medium member**](https://michaloleszak.medium.com/membership),
+    you can support my writing and get unlimited access to all stories by other authors
+    and yours truly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to always keep your finger on the pulse of the increasingly faster-developing
+    field of machine learning and AI? Check out my new newsletter, [**AI Pulse**](https://pulseofai.substack.com/).
+    Need consulting? You can ask me anything or book me for a 1:1 [**here**](https://topmate.io/michaloleszak).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also try one of [my other articles](https://michaloleszak.github.io/blog/).
+    Can’t choose? Pick one of these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----d8e22c059040--------------------------------)
+    [## Self-Supervised Learning in Computer Vision'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to train models with only a few labeled examples
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----d8e22c059040--------------------------------)
+    [](/model-optimization-with-tensorflow-629342d1a96f?source=post_page-----d8e22c059040--------------------------------)
+    [## Model Optimization with TensorFlow
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reduce your models' latency, storage, and inference costs with quantization
+    and pruning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/model-optimization-with-tensorflow-629342d1a96f?source=post_page-----d8e22c059040--------------------------------)
+    [](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----d8e22c059040--------------------------------)
+    [## Forget About ChatGPT
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bard, Sparrow, and multimodal chatbots will render it obsolete soon, and here
+    is why.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pub.towardsai.net](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----d8e22c059040--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images, unless otherwise noted, are by the author.
+  prefs: []
+  type: TYPE_NORMAL

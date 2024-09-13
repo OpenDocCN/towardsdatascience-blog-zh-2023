@@ -1,0 +1,269 @@
+- en: Comprehensive Guide to Concurrency and Parallelism in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/comprehensive-guide-to-concurrency-and-parallelism-in-python-415ee5fbec1a](https://towardsdatascience.com/comprehensive-guide-to-concurrency-and-parallelism-in-python-415ee5fbec1a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using multiprocessing, threading and asyncio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)[![Oliver
+    S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------)
+    [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----415ee5fbec1a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----415ee5fbec1a--------------------------------)
+    ·8 min read·Apr 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’ll give a detailed introduction to concurrency and parallelism
+    in Python. We’ll introduce these terms, and then show how they can be applied
+    in Python using `multiprocessing`, `threading` and `asyncio`. We’ll learn when
+    to use multiple processes and when to use multiple threads, and give practical
+    examples for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d46b0e529b898fbbd9fbb143c1f18a48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Tomas Sobek](https://unsplash.com/@tomas_nz?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/plwud_FPvwU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s first introduce the two terms used in the title from a general computer
+    science perspective: concurrency means accessing the same resources, e.g. CPU
+    cores or disk, “simultaneously” — while parallelism describes multiple tasks accessing
+    separate resources, e.g. different CPU cores.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of Python, parallelism is made available by the `multiprocessing`
+    package — which allows the creation of multiple, separate processes. Concurrency
+    can be realised using the `threading` package, allowing the creation of different
+    threads — or `asyncio`, which follows a slightly different philosophy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the differences and similarities? A *process* is a separate process
+    managed by the underlying operating system. A process can start multiple *threads*
+    — a thread can be thought of as a subroutine of a process. By default, processes
+    are separate entities and do not share memory or similar. Their creation induces
+    overhead, as well as data-sharing and passing is not trivial, and needs to be
+    managed e.g via inter-process communication (IPC). In contrast, threads are light-weight,
+    and sharing data is easy, as they are part of the same process and same memory
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python differs from several other languages by the fact it’s using a [Global
+    Interpreter Lock (GIL)](https://betterprogramming.pub/pythons-gil-vs-c-with-mutexes-301b244e42),
+    to manage concurrent access to the Python interpreter. This lock becomes effective
+    for multi-threaded applications, making sure that only one thread at a time is
+    allowed to run Python code. Due to this, every multi-threaded Python application
+    effectively is single-core!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this, we can now define use cases and recommendations, when to use multi-processing
+    and when to use multi-threading: if your application is CPU-bound, meaning access
+    to the CPU is the main bottleneck, use multi-processing. Only with this your application
+    will effectively use multiple cores at the same time, and speed-up code which
+    can be parallelised over multiple cores. The downside is the increased overhead
+    for creating the processes, as well as the added complexity if data is to be shared.
+    However, there can be other bottlenecks besides the CPU, e.g. I/O bound applications.
+    These are defined by long waiting times of input / output operations, e.g. waiting
+    for user input or for a web request to return. If this is the case, multi-threading
+    is probably the better alternative, as we can avoid the overhead from multi-processing
+    and share data natively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following, we will now introduce these concepts, starting with multi-processing.
+    We will then implement the same CPU bound sample application using multiple threads
+    and show that it is indeed limited to one core at a time. We then give an example
+    using an I/O bound application and implement this using `threading` and `asyncio`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: CPU Bound Applications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For parallelism in Python we use the package `multiprocessing`. Using this,
+    we can natively define processes via the `Process` class, and then simply start
+    and stop them. The following example starts four processes which all count to
+    100000000\. This means, the application is CPU-bound — the faster the CPU(s) can
+    increment the counter, the faster they are done:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: On my laptop, above program takes around 3s to execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the check for `__main__` is important in this context, as new processes
+    will be spawned based on the same code. Without the check, we run into an error,
+    as otherwise this would trigger an infinite loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-threading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now let’s have a look how to solve this same problem using multi-threading.
+    For this, we see that we can simply exchange `multiprocessing.Process` by `threading.Thread`,
+    and otherwise run the code basically analogously:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Upon execution, this code takes about 10s to finish — 3x slower than when using
+    different processes. We can empirically observe the GIL kicking in, and indeed
+    restricting parallel code execution to a single core, as claimed above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But for now, let’s dive slightly deeper into multi-processing, and in particular
+    using some more high-level abstractions to simplify starting multiple processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: multiprocessing.Pool
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One such abstraction is `multiprocessing.Pool`. This is a convenience function
+    to generate a pool of workers / processes, which automatically split the given
+    work amongst each other and execute it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we can see, we instantiate a `Pool` with the number of workers to use. It
+    is recommend to set this to the number of CPU cores you have (`os.cpu_count`).
+    We then use the `map` function, passing as first argument the function we want
+    each worker to run, and as second the input data to be used. In our case, this
+    is simply the argument `max_count`. Since we pass an array of length 5, `count`
+    will be run 5 times. With the number of pool workers set to 4, this results in
+    2 “cycles”: in the first cycle, workers 0–3 process the first 4 arguments / datasets,
+    and in the second that worker which finished first processes the last dataset.
+    In this example `count` also returns a value to show-case how `map` handles return
+    values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pool.imap**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To conclude this section, let’s have a look at a very similar function to `map`,
+    namely `imap`. The difference between `map` and `imap` is how tasks are processed:
+    `map` converts all tasks to a list, and then passes them all at once to the workers,
+    breaking them into chunks. `imap` on the other hand passes them one by one. This
+    can be more memory efficient, but also slower. Another difference is that `imap`
+    returns immediately after each task finished, whereas map blocks until all tasks
+    are done. We can use `imap` as such:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: I/O Bound Applications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This concludes our introduction to parallelism, which is useful and recommended
+    for CPU bound applications. Now, let’s talk about applications which are not CPU-bound,
+    and in particular are IO-bound. For this, we use concurrency. In particular, we
+    will introduce this using an example using multi-threading for which it does not
+    make sense to use multi-processing because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The application is not CPU-bound, and thus the extra overhead from multi-processing
+    is not worth it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The threads communicate between each other, which would induce additional overhead
+    and complexity when used with multi-processing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We chose the following example representing an I/O bound application: there
+    is a publisher thread which generates data, in our example coming from the user.
+    And there will be N subscriber threads, which wait for a specific condition in
+    the data, and when this becomes active start some operation which involves lots
+    of idling, i.e. CPU is not the bottle-neck.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see, that for this case the CPU is not the limit: a lot of time will
+    be spent waiting for inputs, and also the subsequent operation is not CPU-heavy.
+    Still, we want / need some form of concurrency — we have different threads which
+    run independently (producers vs subscribers), and also want to execute the follow-up
+    tasks “in parallel”, and not sequentially.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, we employ the package `threading`, with which this example looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The producer thread continuously queries for user input, and once the user inputs
+    “Start” a flag is toggled, signalling the consumers to start. In the consumer,
+    we react to this, and upon receiving this signal count to 10 within 10s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: asyncio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To conclude this post, we want to quickly introduce `[asyncio](https://medium.com/towards-data-science/introduction-to-asyncio-57a5a1290ce0)`
+    and how to use it in this scenario. For a full introduction, I’d like to refer
+    to the linked post. Here, let’s just briefly say that `asyncio` can be thought
+    of a slightly different paradigm of writing / structuring multi-threaded code
+    — which is prefered by many developers in multiple scenarios, mainly due to its
+    simplicty. `asyncio` is made for I/O bound applications, and it employs the notion
+    of coroutines: while only one is being executed at a time, when it is waiting
+    for a certain condition (such as user input, a web request finishing …), it can
+    “yield” control and allow another coroutine to run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using this principle, the example above can be written as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that in this case there is no need to use a lock, as we decide when to
+    yield execution and switch to a different thread: we only do so (in this simple
+    example) in the “wait” periods, where no shared variable is written or accessed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we introduced the concepts parallelism and concurrency, and described
+    how these translate to multi-processing and multi-threading with Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the GIL, multi-threaded applications in Python essentially are single-core
+    — and thus, this paradigm is not suitable for CPU bound applications. For these,
+    we showed how to manage multi-processing — and then empirically proved the slow
+    down due to the GIL, by re-writing the same example to use multiple threads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still, there are many scenarios where also multi-threading is beneficial and
+    desired, in particular for IO-bound applications. For these, we introduced multi-threading
+    in Python, and concluded by converting the example to `asyncio`, which is a slightly
+    different paradigm of writing multi-threaded applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This finishes this tutorial, I hope, it was informative. See you next time!
+  prefs: []
+  type: TYPE_NORMAL

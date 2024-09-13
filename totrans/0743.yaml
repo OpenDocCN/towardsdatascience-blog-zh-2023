@@ -1,0 +1,1052 @@
+- en: Discovering Differential Equations with Physics-Informed Neural Networks and
+    Symbolic Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/discovering-differential-equations-with-physics-informed-neural-networks-and-symbolic-regression-c28d279c0b4d](https://towardsdatascience.com/discovering-differential-equations-with-physics-informed-neural-networks-and-symbolic-regression-c28d279c0b4d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A case study with step-by-step code implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----c28d279c0b4d--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----c28d279c0b4d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c28d279c0b4d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c28d279c0b4d--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----c28d279c0b4d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c28d279c0b4d--------------------------------)
+    ·25 min read·Jul 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/feb76e9bafbe81909b3d783c4332a1eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Steven Coffey](https://unsplash.com/@steeeve?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differential equations serve as a powerful framework to capture and understand
+    the dynamic behaviors of physical systems. By describing how variables change
+    in relation to each other, they provide insights into system dynamics and allow
+    us to make predictions about the system’s future behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, a common challenge we face in many real-world systems is that their
+    governing differential equations are often only *partially known*, withthe unknown
+    aspects manifesting in several ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **parameters** of the differential equation are unknown. A case in point
+    is wind engineering, where the governing equations of fluid dynamics are well-established,
+    but the coefficients relating to turbulent flow are highly uncertain.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **functional forms** of the differential equations are unknown. For instance,
+    in chemical engineering, the exact functional form of the rate equations may not
+    be fully understood due to the uncertainties in rate-determining steps and reaction
+    pathways.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both **functional forms** and **parameters** are unknown. A prime example is
+    battery state modeling, where the commonly used equivalent circuit model only
+    partially captures the current-voltage relationship (the functional form of the
+    missing physics is therefore unknown). Moreover, the model itself contains unknown
+    parameters (i.e., resistance and capacitance values).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/0dc9da76d5f88c55a5a1ea99dd496e18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. The governing equations of many real-world dynamical systems are
+    only partially known. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such partial knowledge of the governing differential equations hinders our understanding
+    and control of these dynamical systems. Consequently, inferring these unknown
+    components based on observed data becomes a crucial task in dynamical system modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Broadly speaking, this process of using observational data to recover governing
+    equations of dynamical systems falls in the domain of **system identification**.
+    Once discovered, we can readily use these equations to predict future states of
+    the system, inform control strategies for the systems, or enable theoretical investigations
+    using analytical techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Very recently, [Zhang et al.](https://arxiv.org/abs/2307.08107)(2023) proposed
+    a promising strategy that leverages **physics-informed neural networks** (PINN)
+    and **symbolic regression** to discover unknowns in a system of ordinary differential
+    equations (ODEs). While their focus was on discovering differential equations
+    for Alzheimer’s disease modeling, their proposed solution holds promise for general
+    dynamical systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we will take a closer look at the concepts put forth by the
+    authors and get hands-on to reproduce one of the case studies investigated in
+    the paper. Toward that end, we will build a PINN from scratch, leverage the [PySR
+    library](https://github.com/MilesCranmer/PySR) to perform symbolic regression,
+    and discuss the obtained results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are interested in learning best practices in physics-informed neural
+    networks, feel free to check out my blog series here:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Physics-Informed Neural Networks: An Application-Centric Guide](/physics-informed-neural-networks-an-application-centric-guide-dc1013526b02)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Unraveling the Design Pattern of Physics-Informed Neural Networks](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: With that in mind, let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Table of Content**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**·** [**1\. Case Study**](#83d2) **·** [**2\. Why do traditional approaches
+    fall short?**](#1f2c) **·** [**3\. PINN for System Identification (Theory)**](#bdd1)
+    **·** [**4\. PINN for System Identification (Code)**](#1f5f)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.1 Define the Architecture](#29d6)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.2 Define ODE loss](#7d83)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.3 Define gradient descent step](#2fcd)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.4 Data preparation](#741c)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.5 PINN Training](#83c2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**·** [**5\. Symbolic Regression**](#fef3)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [5.1 PySR library](#0a5b)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [5.2 Implementation](#e2f3)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [5.3 Identification results](#fa91)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·[**6\. Take-away**](#889f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Reference](#1485)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Case Study
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start by introducing the problem we aim to solve. In this blog, we will
+    reproduce the first case study investigated in [Zhang et al](https://arxiv.org/abs/2307.08107).’s
+    original paper, i.e., discovering the Kraichnan-Orszag system from data. The system
+    is described by the following ODEs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4160891a7e1d7f249bdbcd7d9e79508f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: with an initial condition of *u*₁(0)=1, *u*₂(0)=0.8, *u*₃(0)=0.5\. The Kraichnan-Orszag
+    system is commonly used in turbulence studies and fluid dynamics research, where
+    the goal is to develop theoretical insights into turbulence, its structures, and
+    its dynamics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To mimic a typical system identification setup, we assume we only know partially
+    about the governing ODEs. Specifically, we assume that we don’t know anything
+    about the differential equations for *u*₁ and *u*₂. In addition, we assume we
+    only know that the right-hand side of the differential equation for *u*₃ is a
+    linear transformation of *u*₁ and *u*₂. Then, we can rewrite the ODE system as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/03c35582b0c5f142b22932c1dae697e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *f*₁ and *f*₂ denote the unknown functions, and *a* and *b* are the unknown
+    parameters. **Our objective is to calibrate the values of *a* and *b*, as well
+    as estimate the analytical functional form of *f*₁ and *f*₂**. Essentially, we
+    are dealing with a challenging system identification problem where both unknown
+    parameters and function forms exist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Why do traditional approaches fall short?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the traditional paradigm of system identification, we typically employ numerical
+    methods (e.g., Euler’s method, Runge-Kutta methods, etc.) to simulate and predict
+    system states *u*₁, *u*₂, and *u*₃. However, those methods are fundamentally limited
+    in that they generally require a complete form of governing differential equations,
+    and are incapable of handling scenarios when the differential equations are only
+    partially known.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In cases where the parameters of the equations are unknown, traditional methods
+    often resort to optimization techniques, where an initial guess for the parameters
+    is made, and then refined in an iterative process to minimize the difference between
+    the observed data and the data predicted by the numerical solver. Since each optimization
+    iteration necessitates one run of the numerical solver, this approach, while feasible,
+    can be computationally very expensive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that the above discussion only describes the case of calibrating the unknown
+    parameters. The problem becomes even more complex when we need to estimate unknown
+    functions in differential equations. Theoretically, we can adopt a similar methodology,
+    i.e., making assumptions about the forms of the unknown functions before optimization.
+    However, issues would immediately rise if we go down this path: If we assume an
+    overly simple form, we run into the risk of **underfitting**, which may lead to
+    substantial prediction errors. On the other hand, if we assume an overly complex
+    form (e.g., with many tunable parameters), we run into the risk of **overfitting**,
+    which may lead to poor generalization performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary, the traditional approach faces significant challenges when dealing
+    with partially known differential equations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Traditional numerical methods rely on having a complete form of governing
+    differential equations to run simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Combining traditional numerical methods with optimization algorithms can
+    address parameter estimation problems, but often at a high computational cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3️⃣ For estimating unknown functions embedded in differential equations, traditional
+    approaches may yield results that are highly sensitive to the assumed functional
+    form, which creates risks of underfitting or overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given these challenges, traditional approaches often fall short in addressing
+    system identification problems where unknown parameters and functional forms coexist.
+    This naturally leads us to the topic of physics-informed neural networks (PINNs).
+    In the next section, we will see how PINN can effectively address the challenges
+    faced by traditional approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. PINN for System Identification (Theory)**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The physics-informed neural network (or PINN in short) is a powerful concept
+    proposed by [Raissi et al.](https://www.sciencedirect.com/science/article/abs/pii/S0021999118307125)
+    back in 2019\. The basic idea of PINN, like other *physics-informed machine learning*
+    techniques, is to create a hybrid model where both the observational data and
+    the known physical knowledge (represented as differential equations) are leveraged
+    in model training. PINN was originally designed as an efficient ODE/PDE solver.
+    However, researchers soon recognized that PINNs have (arguably) even greater potential
+    in tackling inverse, system identification problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following, we will explain how PINNs can be leveraged to overcome the
+    challenges we discussed in the previous section, one by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Traditional numerical methods rely on having a complete form of governing
+    differential equations to run simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '📣**PINN’s response**: Unlike traditional methods, I am capable of working with
+    partially known differential equations, thus not confined by a complete equation
+    to run simulations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From an exterior perspective, PINN just resembles a conventional neural network
+    model that takes the temporal/spatial coordinates (e.g., *t*, *x*, *y*) as input
+    and outputs the target quantities (e.g., velocity *u*, pressure *p*, temperature
+    *T*, etc.) we are trying to simulate. However, what sets PINNs apart from conventional
+    NNs is that in PINN, the differential equations are used as constraints during
+    the training process. Specifically, PINN introduces an extra loss term that accounts
+    for the residuals of the governing differential equations, which is calculated
+    by supplying the predicted quantities into the governing equations. By optimizing
+    this loss term, we effectively make the trained network aware of the underlying
+    physics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea45326f2cd4ae4f4d2a7a2054350c86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Physics-informed neural networks incorporate differential equations
+    into the loss function, therefore effectively making the trained network aware
+    of the underlying physics. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the differential equations are solely used in constructing the loss function,
+    they have no impact on the PINN model architecture. This essentially means that
+    we do not need to have complete knowledge of the differential equations for training.
+    Even if we only know part of the equation, this knowledge can still be incorporated
+    to enforce the output to obey the known physics. This flexibility of accommodating
+    varying degrees of knowledge completeness presents a significant advantage over
+    traditional numerical approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Combining traditional numerical methods with optimization algorithms can
+    address parameter estimation problems, but often at a high computational cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '📣**PINN’s response**: I can provide a computationally efficient alternative
+    for estimating unknown parameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike traditional approaches that treat parameter estimation as a separate
+    optimization task, PINNs seamlessly integrate this process into the model training
+    stage. Specifically, in PINNs, the unknown parameters are simply treated as additional
+    trainable parameters, which are optimized along with the other neural network
+    weights and biases during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e87cddadb163478ef75654173c1e5060.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Unknown parameters are optimized jointly with the weights and biases
+    of PINN. At the end of the training, the final values of *a* and *b* we obtained
+    constitute the estimates of the unknown parameters. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, PINNs fully leverage the modern deep learning framework to perform
+    training. This allows for rapid computation of the gradients (i.e., via automatic
+    differentiation) needed for advanced optimization algorithms (e.g., Adam), therefore
+    greatly accelerating the parameter estimation process, especially for problems
+    with a high-dimensional parameter space. All these factors make PINNs a competitive
+    alternative for parameter estimation problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3️⃣ For estimating unknown functions embedded in differential equations, traditional
+    approaches may yield results that are highly sensitive to the assumed functional
+    form, which creates risks of underfitting or overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '📣**PINN’s response**: The unknown functions can be effectively parameterized
+    by additional neural networks, which can be trained jointly with me, just like
+    the previous parameter estimation scenario.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of assuming the form of unknown functions, we can approximate the unknown
+    functions with separate neural networks, and later integrate them into the main
+    PINN model. Just as in the previous parameter estimation scenario, here, we can
+    view those extra neural nets as an extensive set of unknown parameters to be estimated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44e745359b4f6cee0d0649b3b12bb55e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. The unknown functions can be parameterized by a separate neural network
+    and trained jointly with the original PINN. The ODE/PDE residual loss term regularizes
+    the auxiliary neural network such that the governing equations are satisfied.
+    In this way, the auxiliary neural network can automatically learn the optimal
+    functional forms directly from the data. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: During training, the weights and biases of those auxiliary neural nets will
+    be trained simultaneously with the original PINN to minimize the loss function
+    (data loss + ODE residual loss). In doing so, those auxiliary neural networks
+    can learn the optimal functional forms directly from the data. By removing the
+    need to make risky assumptions about the functional form, this strategy helps
+    alleviate the problems of underfitting and overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In summary, the power of PINN lies in its ability to work with partially known
+    differential equations and efficiently learn unknown parameters and function forms
+    directly from the data. This versatility sets them apart from traditional approaches,
+    therefore making them an effective tool for system identification tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will start working on our case study and turn theory
+    into actual code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. PINN for System Identification (Code)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we will implement a PINN (in TensorFlow) to address our target
+    case study. Let’s start by importing the necessary libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4.1 Define the Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For the main PINN, we use one neural network to predict ***u***, which has
+    1-dimensional input (i.e., *t*) and 3-dimensional output (*u*₁, *u*₂, and *u*₃).
+    In addition, as discussed in the previous section, we use an auxiliary neural
+    network to approximate the unknown functions *f*₁ and *f*₂, which has 4-dimensional
+    input (i.e., *t*, *u*₁, *u*₂, and *u*₃) and 2-dimensional output (*f*₁ and *f*₂).
+    The architecture of the overall PINN is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/335fd393f34cf3ca8a2d48b78cd079de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. The architecture of the employed PINN model.(Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing worth emphasizing again is that it is necessary to feed the auxiliary
+    neural network with all the available features (in our current case, *t*, *u*₁,
+    *u*₂, and *u*₃), as we do not know the precise functional forms of *f*₁ and *f*₂.
+    During training, the auxiliary neural network will automatically determine which
+    features are necessary/important in a data-driven manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s define the neural network that predicts ***u***. Here, we use
+    two hidden layers, each of which is equipped with 50 neurons and hyperbolic tangent
+    activation functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we define the auxiliary neural network that predicts ***f***. We adopt
+    the same network architecture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above, we add *a* and *b* to the collection of the neural network
+    model parameters. This way, *a* and *b* can be optimized jointly with the other
+    weights and biases of the neural network. We achieved this goal by defining a
+    custom layer `ParameterLayer`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that this layer does nothing besides introducing the two parameters as
+    the model attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we put *u*-net and *f*-net together and define the architecture for
+    the full PINN:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code above, we concatenate the input *t* and the *u*-net outputs *u*₁,
+    *u*₂, and *u*₃ before feeding them into the *f*-net. Also, we output both ***u***
+    and ***f*** in the overall PINN model. Although only ***u*** is needed in practice
+    (as ***u*** is our modeling target), the prediction of ***f*** will become useful
+    later for distilling its analytical functional forms (see section 5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4.2 Define ODE loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we define the function to compute the ODE residual loss. Recall that
+    our target ODEs are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b38eab8013ffaefb44572f7be65d94c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, we can define the function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Although the code above is mostly self-explanatory, several things are worth
+    mentioning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used `tf.GradientTape.batch_jacobian()` (instead of the usual `GradientTape.gradient()`)
+    to calculate the gradient of *u*₁, *u*₂, and *u*₃ w.r.t *t.* `GradientTape.gradient()`
+    won’t work here as it computes the sum d*u*₁/dt + d*u*₂/dt + d*u*₃/dt. Potentially
+    we could also use `GradientTape.jacobian()` here to compute the gradient of each
+    output value w.r.t each input value. For more details, please refer to the [official
+    page](https://www.tensorflow.org/api_docs/python/tf/GradientTape#methods).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We used `@tf.function` decorator to convert the above Python function into a
+    TensorFlow graph. It is useful to do that as gradient calculation can be quite
+    expensive and executing it in Graph mode can significantly accelerate the computations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4.3 Define gradient descent step
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we configure the logic for calculating the gradients of total loss with
+    respect to the parameters (network weights and biases, as well as the unknown
+    parameters *a* and *b*). This is necessary for performing the gradient descent
+    for model training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We consider three loss terms: the initial condition loss `IC_loss`, the ODE
+    residuals loss`ODE_loss`, and the data loss `data_loss`. The `IC_loss` is calculated
+    by comparing the model-predicted ***u***(*t*=0) with the known initial value of
+    ***u***,the `ODE_loss` is calculated by calling our previously defined `ODE_residual_calculator`
+    function, and the data loss is calculated by simply comparing the model predictions
+    (i.e., *u*₁, *u*₂, *u*₃) with their observed values.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We define the total loss as a weighted sum of `IC_loss`,`ODE_loss`, and`data_loss`.
+    Generally, the weights control how much emphasis is given to the individual loss
+    terms during the training process. In our case study, it is sufficient to set
+    all of them as 1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 4.4 Data preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this subsection, we discuss how to organize data for PINN model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall that our total loss function contains both ODE residual loss and data
+    loss. Therefore, we need to generate both collocation points in the time dimension
+    (for evaluating ODE loss) and the paired input(*t*)-output(***u***) supervised
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above, we allocated 10000 equally-spaced collocation points within
+    our target time domain [0, 10]. For facilitating data loss computation, we pre-generated
+    the paired input(*t*)-output(***u***) dataset `u_obs`, with its first column being
+    the time coordinates, and the remaining three columns representing *u*₁, *u*₂,
+    and *u*₃, respectively. `u_obs` contains 1000 data points and is calculated with
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'where `simulate_ODEs` is the ODE solver that simulates ***u***-trajectory given
+    the initial conditions and simulation domain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The following figure shows the target ***u*** profiles. Note that we have sampled
+    1000 equally-spaced (*t* — *u*₁), (*t* — *u*₂), and (*t* — *u*₃) data pairs (contained
+    in `u_obs`) as the supervised data for data loss calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41569446dc20349a0521acc759aafbfe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Output profiles of our currently investigated ODEs. (Image by this
+    blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4.5 PINN Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following code defines the main training and validation logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: As discussed previously, we set the weights for different loss components as
+    1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the initial guess for *a* and *b* as -1 and 1, respectively. Recall that
+    these values are different from their true values, which are -2 and 0, respectively.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For validation, we add up the ODE residual loss and initial condition loss to
+    serve as the final validation loss. Note that we do not consider data loss here
+    as we assume we have no access to additional paired *t* — **u** datasets for validation
+    purposes. The computed validation loss is used to adapt the learning rate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The following figure displays the loss convergence curve. We can see that all
+    three loss components converged properly, indicating that the training is done
+    satisfactorily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd9788e21fc94bbf65450ede3abd0962.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Loss convergence plot. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following figure shows the comparison between the predicted ***u***’s and
+    the ground truth calculated by the ODE solver. Here, we can also see that the
+    PINN is able to accurately solve our target ODEs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f0a4ec20674c126dda63aa99008a376.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. Comparison of predicted **u**’s and the ground truth computed by
+    ODE solver.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, training the PINN is not our end goal. Instead, we are more interested
+    in estimating the unknowns embedded in our target ODEs. Let’s start with the parameter
+    estimation. The following figure depicts the evolution of *a* and *b*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3592d8cbb99c73826e321f9a816bc1c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. The unknown parameters a and b quickly moved away from the specified
+    initial values and converged to their true values. This demonstrates that the
+    adopted PINN strategy is capable of performing parameter estimation for ODE systems.
+    (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can clearly see that as the training proceeds, the values of *a* and *b*
+    quickly converge to their respective true values. This indicated the effectiveness
+    of our PINN strategy for parameter estimation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition to the unknown parameters, we have also obtained the estimates
+    of unknown functions *f*₁ and *f*₂, thanks to the trained auxiliary *f*-net. To
+    examine the approximation accuracy of the *f*₁ and *f*₂, we can compare them to
+    the calculated derivative of d*u*₁/dt and d*u*₂/dt, as shown in the code below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see in the following figure that the *f*-net predictions fully fulfill
+    the governing ODEs, which is in agreement with the previous observations that
+    the ODE residuals are very small.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fc0758840eec2ad6f74ee4b6b634bfd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. Comparison between the calculated derivatives and predicted **f**
+    function values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although we can accurately approximate the unknown functions *f*₁ and *f*₂
+    with an *f*-net, at the end of the day, *f*-net is a **black-box** neural network
+    model. Naturally, we would like to ask: what is the exact functional form of these
+    estimated functions? The answer could provide us with a deeper understanding of
+    the underlying physical process, and help us generalize the results to other similar
+    problems.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how can we extract these precise functional forms from our trained neural
+    network model? We will look into that in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Symbolic Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Symbolic regression is a powerful supervised machine learning technique that
+    can be used to discover the underlying mathematical formula that best fits a given
+    dataset. This technique, as the name suggests, comprises two key components: **symbolic**
+    and **regression**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Symbolic* refers to the use of symbolic expressions to model the input-output
+    relationship, e.g., “+” for addition, “-” for subtraction, “cos” for cosine function,
+    etc. Instead of fitting a predefined model (e.g., polynomial model, etc.), symbolic
+    regression methods search through an entire space of potential symbolic expressions
+    to find the best fit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Regression* refers to the process of creating a model to predict an output
+    variable based on the input variables, thus capturing the underlying relationship
+    between them. Although the term “regression” may invoke thoughts of linear regression,
+    in the context of symbolic regression, it is not restricted to any specific model
+    forms but can take a wide array of mathematical operators and structures.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this section, we will implement the symbolic regression technique to distill
+    the learned *f*-net into interpretable and compact mathematical expressions, which
+    aligns with the strategy proposed by Zhang et al. in their original paper. We
+    will begin by introducing the library PySR, which we will use for symbolic regression.
+    Subsequently, we will apply this library to our problem and discuss the choice
+    of hyperparameters. Finally, we analyze the obtained results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.1 PySR library
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PySR](https://astroautomata.com/PySR/) is an open-source Python library designed
+    for practical, high-performance, scientific symbolic regression. It uses advanced
+    *evolutionary* optimization algorithms to search through the space of simple analytic
+    expressions for accurate and interpretable models, such that the prediction error
+    and model complexity are jointly minimized.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although PySR exposes a simple Python frontend API that resembles the style
+    of `scikit-learn`, its backend is written in pure-Julia under the library named
+    *SymbolicRegression.jl*. This gives the user the flexibility of customizing operators
+    and optimization loss functions while enjoying high computation performance. For
+    more details on the working principles of PySR, please refer to [this paper](https://arxiv.org/abs/2305.01582).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started with PySR, you would need to [install Julia](https://julialang.org/downloads/)
+    first. Afterward, run
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then install Julia dependencies via
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: or from within IPython, call
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: PySR can also be installed via conda or docker. Please check the [installation
+    page](https://astroautomata.com/PySR/) for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2 Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we apply the PySR library to distill the learned *f*-net into interpretable
+    and compact mathematical expressions. To begin with, we need to generate the dataset
+    for symbolic regression learning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that for our current problem, the inputs for the symbolic regression learning
+    are *t*, *u*₁, *u*₂, and *u*₃, and the outputs are *f*₁ and *f*₂. This is because,
+    in our target ODEs, we assume *f*₁=*f*₁(*t*, *u*₁, *u*₂, *u*₃) and *f*₂=*f*₂(*t*,
+    *u*₁, *u*₂, *u*₃). We saved the generated dataframe (see figure below) for later
+    usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b0a3ff76c4ad0f3a7ddfc87cfd11ef4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11\. The generated dataframe for symbolic regression learning. (Image
+    by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After generating the dataset, we are ready to perform symbolic regression with
+    PySR. Note that it is recommended to run the PySR code in terminals instead of
+    in Jupyter Notebook. Although PySR provides support for Jupyter Notebook, the
+    printing (e.g., search progress, current best results, etc.) is much nicer in
+    a terminal environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Following the `scikit-learn` style, we start by defining a model object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the break-down of the specified hyperparameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`niterations`: Number of iterations of the algorithm to run. Generally, a larger
+    iteration number yields better results, at the cost of higher computational cost.
+    However, since PySR allows terminating the search job early, a good practice is
+    to simply set `niterations` to some very large value and keep the optimization
+    going. Once the identified equation looks satisfactory, the job can be stopped
+    early.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`binary_operators`: List of strings for binary operators used in the search.
+    The built-in binary operators supported by PySR include `+`, `-`, `*`, `/`, `^`,
+    `greater`, `mod`, `logical_or`, `logical_and`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`unary_operators`: List of unary operators used in the search. Note that unary
+    operators only take a single scalar as input. The built-in ones include `neg`,
+    `square`, `cube`, `exp`, `abs`, `log`, `log10`, `log2`, `log1p`, `sqrt`, `sin`,
+    `cos`, `tan`, `sinh`, `cosh`, `tanh`, `atan`, `asinh`, `acosh`, `atanh_clip` (=atanh((x+1)%2
+    - 1)), `erf`, `erfc`, `gamma`, `relu`, `round`, `floor`, `ceil`, `round`, `sign`.
+    Note that to supply a custom operator, we need to pass in “myfunction(x) = …”
+    to the operator list, like what we did with “inv(x) = 1/x”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`extra_sympy_mappings`: Provides mappings between custom `binary_operators`
+    or `unary_operators` defined in julia strings, to those same operators defined
+    in [sympy](https://www.sympy.org/en/index.html). This is useful when exporting
+    the results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`loss`: String of Julia code specifying an elementwise loss function (as defined
+    in LossFunctions.jl). Commonly used losses include `L1DistLoss()`(the absolute
+    distance loss), `L2DistLoss()`(the least squares loss), `HuberLoss()`(the Huber
+    loss function used for robustness to outliers). The loss function specifies the
+    optimization target for the symbolic regression search.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`model_selection`: Model selection criterion when selecting a final expression
+    from the list of best expressions at each complexity. `score` means that the candidate
+    model will be selected based on the highest score, which is defined as -Δlog(loss)/ΔC,
+    where C refers to the complexity of the expression and Δ denotes local change.
+    Therefore, if an expression has a much better loss at a slightly higher complexity,
+    it is preferred.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`complexity_of_operators`: By default, all operators have a complexity of 1\.
+    To change the default complexity setting and give preference to different operators,
+    we can supply a dictionary with the key being the operator string and the value
+    being its corresponding complexity level. In our current case, we set all unary
+    operators to have a complexity level of 3, which was also adopted in the original
+    paper of Zhang et al.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is worth mentioning that `PySRRegressor` exposes many other hyperparameters
+    for setting up the algorithm, data preprocessing, stopping criteria, performance
+    and parallelization, monitoring, environment, and results exporting. For the complete
+    list of options for controlling the symbolic regression search, please check out
+    the [PySRRegressor Reference page](https://astroautomata.com/PySR/api/#pysrregressor-parameters).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3 Identification results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After specifying the model object, we can kick off the fitting process with
+    three lines of code (for distilling the analytical forms of *f*₁):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: While the script is running, you should be able to see the progress bar and
+    the current best equations, as shown in the figure below. Note that x0, x1, x2,
+    and x3 correspond to *t*, *u*₁, *u*₂, and *u*₃, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f2c28ee599036a30c260a4ebed307a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once the optimization job is finished, a list of candidate equations will appear
+    in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1edf4cea529a1bb841e2301629d11c77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we rank the equations based on their **score values**, we can see the top-3
+    equations are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*u*₂ *u*₃ *exp*( -0.1053391 *t* )'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 0.60341805 *u*₂ *u*₃
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*u*₂ *u*₃'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall that our true ODE is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ee90229681ba8c80eac60db10d85852.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is quite impressive to see that the PySR has accurately identified the essential
+    inputs (i.e., it recognized that *u*₁ does not play a role in *f*₁) and discovered
+    an analytical expression (top-1 result) that is fairly close to the true expression
+    of *f*₁.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We replicate the same analysis to *f*₂. The optimization results are shown
+    in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e935b2f1899d6929c72c6abaf0b6b43.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This time, we notice that the true expression of *f*₂, i.e., *f*₂=*u*₁*u*₃,
+    only appears as the second-best (in terms of score) equation. However, note that
+    the best one, i.e., *u*₃, has a score that is only marginally higher than the
+    second-best one. On the other hand, the loss value of *u*₁*u*₃ is one magnitude
+    lower than using *u*₃ alone. These observations indicate that in practice, we
+    would need domain knowledge/experience to make an informed decision regarding
+    whether the incurred complexity for high accuracy is worth pursuing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog post, we investigated the problem of discovering differential
+    equations from observational data. We followed the strategy proposed by Zhang
+    et al., implemented it in code, and applied it to address a case study. Here are
+    the key take-aways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Physics-informed neural network (PINN) is a versatile tool for performing
+    system identifications, particularly in scenarios where only partial information
+    is known about the governing differential equations. By assimilating observational
+    data and available physical knowledge, PINN can effectively estimate not only
+    the unknown parameters but also unknown functions, if we adopt the trick of parameterizing
+    the unknown functions with auxiliary neural networks, which can be jointly trained
+    with the main PINN. All these factors contribute to a substantial advantage over
+    traditional system identification methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Symbolic regression is a powerful tool in opening the black box of the learned
+    neural networks. By searching through an entire space of symbolic expressions
+    with advanced evolutionary algorithms, symbolic regression is able to extract
+    interpretable and compact analytical expressions that can accurately describe
+    the hidden input-output relationship. This knowledge-distillation process is greatly
+    appreciated in practice as it can effectively enhance our understanding of the
+    underlying system dynamics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we conclude this blog, there are a couple of points worth considering
+    when applying PINN+symbolic regression for practical problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Uncertainty quantification (UQ)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Throughout this blog, we have operated under the assumption that our observed
+    data for *u*₁, *u*₂, and *u*₃ is noise-free. However, this assumption is generally
+    not true, as the observational data can easily be contaminated by noise for practical
+    dynamical systems. Consequently, both the *accuracy* and *reliability* of our
+    system identification results will suffer. Therefore, a crucial aspect to consider
+    is the quantification of uncertainty within our system identification workflow.
+    Techniques such as Bayesian Neural Networks and [Monte Carlo simulation](https://medium.com/towards-data-science/how-to-quantify-the-prediction-error-made-by-my-model-db4705910173)
+    could properly account for noise in the observed data and provide an estimation
+    of the confidence interval for the predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Sensitivity of symbolic regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Generally speaking, the results yielded by symbolic regression may be sensitive
+    to the employed loss function, supplied candidates of unary and binary operators,
+    as well as the defined complexities of the operators. For example, in my attempt
+    to reproduce the results published by Zhang et al., I was unable to obtain the
+    exact top-3 equations for *f*₂ as shown in the original paper, although I have
+    adopted the exact same settings (to my best knowledge). Several factors may contribute
+    to this mismatch: first of all, the evolutionary optimization techniques are intrinsically
+    stochastic, therefore results can vary across different runs. Secondly, it is
+    likely that the PINN trained in the first stage is different, therefore the resultant
+    dataset (i.e., *t*, *u*₁, *u*₂, *u*₃ → *f*₁, *f*₂) is also different, which in
+    turn impacts the symbolic regression outcome.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, these observations suggested that symbolic regression outcomes should
+    not be accepted blindly. Instead, it's crucial to rely on the domain understanding/knowledge
+    to critically assess the plausibility of the identified equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you find my content useful, you could buy me a coffee [here](https://www.buymeacoffee.com/Shuaiguo09f)
+    🤗 Thank you very much for your support!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the companion notebook and script with full code [here](https://github.com/ShuaiGuo16/PINN_symbolic_regression)
+    *💻*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To learn the best practices of physics-informed neural networks: [Unraveling
+    the Design Pattern of Physics-Informed Neural Networks](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To learn more about physics-informed operator learning: [Operator Learning
+    via Physics-Informed DeepONet](/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Feel free to subscribe to my [newsletter](https://shuaiguo.medium.com/subscribe)
+    or follow me on [Medium](https://shuaiguo.medium.com/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Zhang et al., Discovering a reaction-diffusion model for Alzheimer’s disease
+    by combining PINNs with symbolic regression. arXiv, 2023.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Cranmer et al., Interpretable Machine Learning for Science with PySR and
+    SymbolicRegression.jl. arXiv, 2023.'
+  prefs: []
+  type: TYPE_NORMAL

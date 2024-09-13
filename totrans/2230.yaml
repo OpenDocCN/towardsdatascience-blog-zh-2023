@@ -1,0 +1,464 @@
+- en: 'Unraveling the Design Pattern of Physics-Informed Neural Networks: Part 04'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde](https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Leveraging gradient-enhanced learning to improve PINN training efficiency
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----c778f4829dde--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----c778f4829dde--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c778f4829dde--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c778f4829dde--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----c778f4829dde--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c778f4829dde--------------------------------)
+    ·7 min read·May 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e855acaf7bff2a3df94f4786a4b3f626.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Hassaan Qaiser](https://unsplash.com/es/@hassaanhre?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to the 4th blog of this series, where we continue our exciting journey
+    of exploring design patterns of physics-informed neural networks (PINN)🙌
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog, we will check out a research paper that proposed a new variant
+    of PINN called *gradient-enhanced* PINN. More concretely, we will look into the
+    **problem**,the **solution**,the **benchmark**, as well asthe **strengths & weaknesses**,
+    to distill the design pattern proposed by the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As this series continues to expand, the collection of PINN design patterns
+    grows even richer*🙌* Here’s a sneak peek at what awaits you:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 02: Dynamic solution interval expansion](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: training PINN with gradient boosting](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: automated hyperparameter tuning](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 06: Causal PINN training](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 07: Active learning with PINN](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Paper at a glance 🔍
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Title**: Gradient-enhanced physics-informed neural networks for forward and
+    inverse PDE problems'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Authors**: J. Yu, L. Lu, X. Meng, G. E. Karniadakis'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Institutes**: St. Mark’s School of Texas, University of Pennsylvania, Brown
+    University'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Link**: [arXiv](https://arxiv.org/abs/2111.02801)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Design pattern 🎨
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2.1 Problem 🎯
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In practice, it is commonly observed that conventional PINNs tend to have limited
+    accuracy even with many training points, especially when dealing with challenging
+    PDEs with stiff solutions. This limitation impacts the current state of research
+    and applications in PINNs by restricting their effectiveness in solving diverse
+    forward and inverse PDE problems with high precision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c58b062804e13c1d4d790b5587653193.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN workflow. Conventional PINNs usually limited accuracy even with many residual
+    points. One promising way to boost PINNs’ accuracy is by training PINNs with **gradient-enhanced
+    learning** algorithms. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Solution 💡
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One promising way to boost PINNs’ accuracy is by adopting a **gradient-enhanced
+    learning** approach to train PINN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient-enhanced learning has been proven to be useful in traditional machine
+    learning [2]. As shown in the illustration below, in addition to the usual input-output
+    pair (*x*, *y*), gradient-enhanced learning also incorporates the known value
+    of the function gradient *dy/dx* as an extra supervision signal. This type of
+    learning can be effective if the gradient information can be cheaply obtained
+    (e.g., analytically available, easily measured, etc.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd281200e61a443229cf7d5d15aadecc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convention learning (upper) only requires the model predictions at x to match
+    with true function value f(x); Gradient-enhanced learning (lower) additionally
+    requires that the derivative of the model predictions at x matches with known
+    gradient value df(x)/dx. (Image adapted from [Wikipedia](https://en.wikipedia.org/wiki/Gradient-enhanced_kriging))
+  prefs: []
+  type: TYPE_NORMAL
+- en: The same idea can also be applied to PINN training, as demonstrated in the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take a simple 2D Laplace’s equation (∂²u/∂x² + ∂²u/∂y² = 0) as an example, when
+    employing a PINN to solve the equation, we would enforce the PDE residual *f*
+    to be zero, where *f* = ∂²u/∂x² + ∂²u/∂y². *f* essentially measures if the prediction
+    aligns with the governing equation and constitutes the PDE loss term in the overall
+    loss function used to train PINN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In gradient-enhanced PINN (gPINN), we can additionally enforce the derivatives
+    of the PDE residual to be zero as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a49af02caaa7dc18432776d74e7ae8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The rationale to do this is simple: because *f* is zero across the entire simulation
+    domain, we know that the gradients of *f* are also zero. As a result, we would
+    have two additional loss terms besides the usual PDE loss *f* = 0.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 Why the solution might work 🛠️
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The key that could make gPINN effective is the fact that the gradient provides
+    additional information about the function’s behavior. As a result, it can guide
+    the learning process more effectively. This feature is known in the domain of
+    traditional machine learning, but the current paper shows that the same benefits
+    can also be gained for PINN training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Benchmark ⏱️
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The paper considered a total of 6 different benchmark problems, including 2
+    forward problems, 2 inverse problems, and 2 PDEs with stiff solutions addressed
+    by the standard gPINN and gPINN+RAR ([*residual-based adaptive refinement*](https://arxiv.org/abs/1907.04502)
+    for sampling residual points):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1D Poisson equation (forward problem, solved with standard gPINN): the Poisson
+    equation is a fundamental partial differential equation in mathematical physics
+    relating the distribution of matter in a system.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/833223fa631bf933277f33cafc3ed08a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Dirichlet boundary conditions: u( x=0 ) = 0, u( x=π ) = π'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Diffusion-reaction equation (forward problem, solved with standard gPINN):
+    this equation models reactions combined with the diffusion of substances. The
+    forward problem here involves predicting the concentration of substances given
+    initial conditions and reaction rates.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/842c5e8e188e87957e95862bdffc06be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: D=1 (diffusion coefficient)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82ff8d1718fe7b8bf4d43485c1b228ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: R is the chemical reaction
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/252a01226b67f6aa3c442b361396597d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initial and boundary conditions
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Brinkman-Forchheimer equation (inverse problem to identify the effective viscosity
+    **νₑ** and permeability **K,** solved with standard gPINN): this equation describes
+    flow in porous media, which is prevalent in fields such as oil recovery and groundwater
+    flow.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ccee13a1a26aed5cd3d00ad1b6576926.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Boundary condition: u(0) = u(1) = 0, H=1, ν=1e-3, ε=0.4, g=1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1D diffusion-reaction system (inverse problem to identify the space-dependent
+    reaction rate *k*(*x*), solved with standard gPINN): similar to the second problem,
+    this is also a diffusion-reaction equation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/433c23f5d6e6c2e570cda37f4fc1d8b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diffusion coefficient λ = 0.01, f = sin(2πx). A separate neural network is used
+    to approximate k, in addition to the network to predict u.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1D Burgers equation (forward problem, solved with gPINN+RAR): this is a fundamental
+    equation in fluid dynamics, combining non-linear convection and diffusion.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/56936edbc82f61fde41a791b3801fe7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Initial condition: u(x, 0) =-sin(πx), boundary conditions: u(-1, t) = u(1,
+    t) = 0, ν=0.01/π'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Allen-Cahn equation (forward problem, solved with gPINN+RAR): this equation
+    models the process of phase separation, which is crucial in materials science.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/1a40486adc81c5d8901efbae2211a6d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Initial condition: u(x, 0) = x² cos(πx), boundary conditions: u(-1, t) = u(1,
+    t) = -1, D = 0.001'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The benchmark studies yielded that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the proposed gradient-enhanced PINN learning (gPINN) achieved higher accuracy
+    with fewer residual points compared to conventional PINN;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: gPINN combined with advanced residual points sampling schemes (e.g., RAR) delivered
+    the best performance for challenging PDEs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.5 Strengths and Weaknesses ⚡
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Strengths** 💪'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improved accuracy of not only the function predictions but also the function
+    derivatives predictions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Faster convergence rate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performs better than traditional PINN with fewer training points.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Suitable for both forward and inverse problems.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can be easily combined with advanced residual points sampling schemes ([see
+    previous blog](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527))
+    to further enhance the performance, especially in PDEs with solutions that have
+    steep gradients.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Weaknesses** 📉'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduced new weighting parameters for balancing the gradient loss terms in
+    the overall PINN loss function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Increased complexity of the model training, as well as a potentially increased
+    computational cost.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.6 Alternatives 🔀
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As this is the first paper that introduced the gradient-enhanced learning paradigm
+    to the PINN field, there are currently no other similar approaches in the same
+    line. In the paper, all the comparisons are conducted between vanilla PINN, gPINN,
+    as well as gPINN+RAR sampling scheme.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 Potential Future Improvements 🌟
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are several possibilities to further improve the proposed strategy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Automated parameter tuning for the weights of the gradient loss term.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Improved selection of residual points to evaluate the extra gradient loss. The
+    current paper uses the same residual points to evaluate both PDE residuals and
+    the gradients of PDE residuals. However, better performance may be achieved if
+    the two sets of residual points are not the same.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More efficient automatic differentiation strategy for computing high-order derivatives.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 Takeaways 📝
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog, we looked at enhancing PINN accuracy and training efficiency
+    through gradient-enhanced learning. Here are the highlights of the design pattern
+    proposed in the paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Problem]: How to enhance PINNs’ accuracy and training efficiency?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Solution]: **Gradient-enhanced learning**, where not only the PDE residuals
+    but also their gradients are enforced to be zero in the PINN loss function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Potential benefits]: 1\. Better performance than naive PINN with fewer residual
+    points. 2\. Improved accuracy of not only the function predictions but also the
+    function derivatives predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As usual, I have prepared a PINN design card to summarize the takeaways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/740382790faf3b8bde92d713de0b1855.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN design pattern proposed in the paper. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope you found this blog useful! To learn more about PINN design patterns,
+    feel free to check out other posts in this series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 02: Dynamic solution interval expansion](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: PINN training with gradient boost](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: Hyperparameter tuning for PINN](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 06: Causal PINN training](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 07: Active learning with PINN](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Looking forward to sharing more insights with you in the upcoming blogs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference 📑
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Yu et al., Gradient-enhanced physics-informed neural networks for forward
+    and inverse PDE problems, [arXiv](https://arxiv.org/abs/2111.02801), 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Laurent et al., An overview of gradient-enhanced metamodels with applications,
+    [Arch Computat Methods Eng](https://link.springer.com/article/10.1007/s11831-017-9226-3#article-info),
+    2019.'
+  prefs: []
+  type: TYPE_NORMAL

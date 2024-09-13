@@ -1,0 +1,449 @@
+- en: 'Unraveling the Design Pattern of Physics-Informed Neural Networks: Part 02'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791](https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Enhancing PINN training stability through ensemble learning and dynamic solution
+    interval expansion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----2156516f2791--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----2156516f2791--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2156516f2791--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2156516f2791--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----2156516f2791--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2156516f2791--------------------------------)
+    ·7 min read·May 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96f9d77f92cae57a4a95d217344c3fdd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Clay Banks](https://unsplash.com/de/@claybanks?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to the 2nd blog of this series on the design patterns of physics-informed
+    neural networks (PINN)🙌 Here, we will look at techniques of **ensemble learning**
+    and **dynamic solution interval expansion** to enhance PINN training stability
+    and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking ahead, we will start with the specific problem the proposed strategy
+    is trying to address,followed bydetailing the proposed strategy, how it is implemented,
+    and why it might work. Afterward, we will take a look at what physical problems
+    are benchmarked, as well asthe strengths & weaknesses of the proposed approach.
+    Finally, we discuss the alternatives and future opportunities for the proposed
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As this series continues to expand, the collection of PINN design patterns
+    grows even richer*🙌* Here’s a sneak peek at what awaits you:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: training PINN with gradient boosting](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 04: gradient-enhanced PINN learning](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: automated hyperparameter tuning](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 06: Causal PINN training](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 07: Active learning with PINN](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Paper at a glance:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Title**: Improved training of physics-informed neural networks with model
+    ensembles'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Authors**: K. Haitsiukevich, A. Ilin'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Institutes**: Aalto University'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Link**: [arXiv](https://arxiv.org/abs/2204.05108)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Design pattern
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2.1 Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Physics-Informed Neural Networks (PINNs) provide a compelling avenue for solving
+    partial differential equations (PDEs) due to their inherent advantages such as
+    flexibility, elegance, and seamless integration of observed data. Despite these
+    advantages, training PINNs in practice often presents a significant challenge:
+    the networks have the tendency to converge to **incorrect solutions** due to their
+    complexity and sensitivity to hyperparameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This issue has a significant impact on the current state of applications in
+    PINNs, as it limits the accuracy and reliability of the solutions they can produce.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now the question is: How can we improve the training process to ensure that
+    PINNs converge to the correct solutions?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84f3dec8ab2fe1b64f76dec967d1a41f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN workflow. In practice, PINNs may converge to wrong solutions during training.
+    One promising way to address this issue is by **gradually expanding the solution
+    interval** within the simulation domain. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The key ideas are to **gradually expand the solution interval** and leverage
+    **ensemble learning***.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1cb4a4b522549edf62ca905a4004da8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Residual points are gradually included to mimic the behavior of solution domain
+    expansion. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the beginning **(a)**, only residual points (pre-sampled to fill the entire
+    solution domain) that are close to the points sampled at known initial conditions
+    (solid blue rectangles) are deployed for PDE loss computation. This kicks off
+    the PINN training, where multiple PINN models initialized with different weights
+    are trained, thus forming an ensemble of PINN. After training for certain iterations
+    **(b)**, some of the previously deployed residual points are considered “pseudo
+    points”, if the variances of PINN ensemble predictions are sufficiently small
+    at those locations. Afterward, the solution domain can be expanded **(c)**, such
+    that a new set of residual points will be deployed if there are close enough to
+    the “pseudo points”. The iteration goes on **(d)** until all residual points are
+    deployed for loss calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above walk-through assumes only initial conditions are known. For other
+    cases where observation data is available inside of the simulation domain, the
+    solution interval can also expand from there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to the authors’ implementation, several new hyperparameters were introduced
+    for this strategy, which determine the *threshold of distance* to deploy new residual
+    points, the *threshold of distance* to turn deployed residual points into “pseudo
+    points”, as well as the *threshold of variance* to decide if PINN ensembles agree
+    with each other. Please refer to the original paper for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 Why the solution might work
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The gradual expansion of the solution interval mimics the behavior of the classical
+    numerical solvers that “propagate” the solution from the initial and boundary
+    conditions to the entire domain. As a result, the physical causality is respected,
+    which potentially contributes to more stable PINN training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By leveraging an ensemble of PINNs, the proposed algorithm would have a higher
+    chance to escape from wrong solutions that are often found with traditional, single-PINN
+    training methods. This explains why the proposed algorithm could reach a higher
+    level of accuracy and reliability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Benchmark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The paper extensively benchmarked the proposed strategy’s performance on five
+    diverse problems, each representing a unique physical phenomenon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Convection equation: this equation models transport phenomena, which are fundamental
+    in various fields, including fluid dynamics, heat transfer, and mass transfer.
+    In these scenarios, understanding the movement of quantities such as energy, mass,
+    or momentum, primarily due to differential forces or gradients, is crucial.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fa990d8d9e87307bf7eae2ae7358a7d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Reaction system: this problem category models chemical reactions. From basic
+    chemistry classes to complex bioengineering processes, understanding reaction
+    kinetics and equilibrium can be the difference between successful experiments
+    or industrial processes and catastrophic failures.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d732e72389e97a1724199d83e1a45860.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Reaction-diffusion equation: this equation models reactions combined with the
+    diffusion of substances. This type of problem is pivotal in areas like biology,
+    where they describe processes like pattern formation in developmental biology,
+    or in chemistry, where they model the spread and interaction of different species
+    in a medium.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e627ae53c2301c09e36a3ea65ff080c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Diffusion equation (with periodic boundary conditions): this type of equation
+    is central to understanding heat conduction, fluid flow, and Brownian motion,
+    among other things. Periodic boundary conditions mean that the system behavior
+    repeats over time or space, a common assumption in problems dealing with cyclic
+    or repeating systems.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/378c10865ca6837387f17e9c2465fc2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Diffusion equation (same equation as shown above, but with boundary conditions
+    of the Dirichlet-type): Dirichlet-type boundary conditions stipulate the values
+    a solution must take on the boundary of the domain.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/37726066e1d359b477eefd1707c295a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The benchmark studies yielded that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The proposed algorithm provides stable training and shows competitive performance
+    for all considered problems;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The proposed algorithm is generally stable with little sensitivity to the hyperparameter
+    choices.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Additionally, the paper suggested that the following practices can help improve
+    PINN accuracy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Normalizing the inputs (both spatial input *x* and temporal input *t*) to [-1,
+    1];
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fine-tuning the PINN training with L-BFGS after the usual Adam optimization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.5 Strength and Weakness
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 👍**Strengths**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Able to stabilize PINNs’ training and yield competitive performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Do not need a pre-defined schedule of interval expansion (in contrast to the
+    time-adaptive strategies explained in the “Alternatives” section).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Treat time and space equally.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Flexible enough to allow easy incorporation of measurements in arbitrary locations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Confidence intervals of the predictions are automatically obtained thanks to
+    the ensemble approach.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 👎**Weaknesses**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computationally expensive compared to vanilla PINNs (common for all ensemble
+    approaches).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduced extra hyperparameters (although the proposed solution is shown to
+    be insensitive to hyperparameter values).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.6 Alternatives
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Other methods that address a similar problem are the family of time-adaptive
+    techniques, which heavily influenced the current approach. Time-adaptive techniques
+    split the time interval [*T*₁, *T*₂] into multiple sub-intervals and solve the
+    equation on each individual sub-interval sequentially by a separate PINN. The
+    solution from one sub-interval is then used as an initial condition for the subsequent
+    sub-interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current algorithm inherits the merits of time-adaptive techniques, i.e.,
+    capable of achieving a more accurate and stable propagation of the solution in
+    time. On top of that, it also removes the constraints of requiring a pre-defined
+    schedule of interval expansion. As a result, the current approach is more flexible
+    to incorporate known measurements in arbitrary locations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 Potential Future Improvements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are several possibilities to further improve the proposed strategy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Efficient ways of creating model ensembles (e.g., dropout).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Combine the current algorithm with other PINN best practices (e.g., intelligent
+    sampling of residual points, as discussed in the [first blog](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this blog, we looked at enhancing PINN training stability through ensemble
+    learning and dynamic solution interval expansion. This topic is highly relevant
+    as it directly impacts the accuracy of the PINNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the takeaways from the design pattern proposed in the paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Problem]: How to ensure that PINNs converge to the correct solution?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Solution]: **1\. Gradually expand the solution interval**, where residual
+    points are gradually deployed until fill the entire domain. **2.** **Ensemble
+    learning**, where multiple PINNs initialized with different weights are.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Potential benefits]: 1\. Stabilize PINN training. 2\. Uncertain estimates
+    of the PINN predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the PINN design card I prepared if you prefer a visual presentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6d8167b8cfe0bde8d8fe6c58fc0c9af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN design pattern proposed in the paper. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope you found this blog useful😃If you want to learn more about PINN design
+    patterns, feel free to take a look at other posts in this series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: PINN training with gradient boost](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 04: gradient-enhanced PINN learning](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: Hyperparameter tuning for PINN](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 06: Causal PINN training](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 07: Active learning with PINN](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Looking forward to sharing more insights with you in the upcoming blogs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Haitsiukevich et al., Improved training of physics-informed neural networks
+    with model ensembles, [arXiv](https://arxiv.org/abs/2204.05108), 2022.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,435 @@
+- en: Solving The Taxi Environment With Q-Learning — A Tutorial
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/solving-the-taxi-environment-with-q-learning-a-tutorial-c76c22fc5d8f](https://towardsdatascience.com/solving-the-taxi-environment-with-q-learning-a-tutorial-c76c22fc5d8f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Python implementation of Q-learning to solve the Taxi-v3 environment from
+    OpenAI Gym in an animated Jupyter Notebook
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wvheeswijk.medium.com/?source=post_page-----c76c22fc5d8f--------------------------------)[![Wouter
+    van Heeswijk, PhD](../Images/9c996bccd6fdfb6d9aa8b50b93338eb9.png)](https://wvheeswijk.medium.com/?source=post_page-----c76c22fc5d8f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c76c22fc5d8f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c76c22fc5d8f--------------------------------)
+    [Wouter van Heeswijk, PhD](https://wvheeswijk.medium.com/?source=post_page-----c76c22fc5d8f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c76c22fc5d8f--------------------------------)
+    ·8 min read·Mar 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c60a0923b3fdf481b97b7be803bcebf7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Alexander Redl](https://unsplash.com/@alexanderredl?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of the Taxi Environment in OpenAI’s Gym — yes, from the [company behind
+    ChatGPT](https://medium.com/datadriveninvestor/how-does-the-company-behind-chatgpt-and-dall-e-make-its-money-d6aa5121a849)
+    and Dall⋅E — is simple and straightforward, making for an excellent introduction
+    to the field of Reinforcement Learning (RL).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article provides a step-to-step guide to implement the environment, learn
+    a policy using tabular Q-learning, and visualize the learned behavior in animations.
+    If you are looking to make your first strides in RL, this tutorial might be just
+    for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem setting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the Taxi environment, a taxi should pick up passengers and drop them at their
+    destination on a small parking lot, driving the shortest path possible. How hard
+    can it be to learn such a task with RL? Let’s find out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before diving into the implementation, it is good practice to first formulate
+    the setting as a [Markov Decision Process](https://medium.com/towards-data-science/the-five-building-blocks-of-markov-decision-processes-997dc1ab48a7)
+    (MDP), getting a grasp on the mathematical structure of the problem at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: State space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An MDP states contains the information needed to (i) determine actions, (ii)
+    compute the action reward and (iii) compute the transition to the next state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most obvious state property is the location of the taxi; the 5*5 grid gives
+    us 25 options. Furthermore, a passenger waiting for pickup can be waiting at 1
+    or 4 points (labeled Y, R, G, B) or they can be in the taxi, giving us (4+1) options.
+    Finally, the destination can also be Y, R, G or B. We denote the state by the
+    following vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`State = [x_pos_taxi, y_pos_taxi, pos_passenger, dest_passenger]`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although a very simple problem setting, we thus already deal with 5*5*(4+1)*4=500
+    states! Scale the problem to thousands of locations, and it is easy to see how
+    quickly the size of MDPs explodes (the so-called curse of dimensionality).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of **reachable** states is slightly smaller than 500, e.g., a passenger
+    will never have the same pickup point and destination. Due to modelling complexities,
+    we typically focus on the full state space, representing the worst-case scenario.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Action space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The state space may be bigger than you’d expect at first glance, but the action
+    space contains only six decisions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Down
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Up
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Left
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Right
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Drop passenger
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pick up passenger
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In case the action is not allowed (e.g., trying to drive through a wall, attempting
+    to pick up a customer when there is none at the present location), the agent will
+    remain still.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The action_mask (found in `env.action_mask(state)`) informs us which actions
+    are feasible, but this feasibility check is not automatically enforced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reward function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Three types of reward can be distinguished in this environment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Move: -1\.** Every move comes with a small penalty, to encourage following
+    the shortest path from origin to destination.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Failed drop-off: -10\.** A passenger will naturally be unhappy when dropped
+    at the wrong location, so a large penalty is appropriate.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Successful drop-off: 20\.** To encourage the desired behavior, a large bonus
+    is incurred.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Designing rewards in a way that encourages desired behavior is known as reward
+    shaping. For instance, we might simply end the game without a reward upon successful
+    drop-off (thus ending the stream of costs), but a clear reward signal often eases
+    learning considerably.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Transition function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Unlike most realistic environments, the taxi environment exhibits no randomness.
+    This feature considerably simplifies learning, as the **next state is dictated
+    solely by our action**. In case an infeasible action is selected — such as trying
+    to drive through a wall or picking up a non-existent passenger — the agent simply
+    remains in place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In an abstract sense, we could denote the transition function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`new_state = f(state,action)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An explicit definition would consider all grid moves, (in)feasible drop-offs
+    and (in)feasible pickups, which is not necessary hard but requires some focus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The game ends upon successfully dropping off a passenger at their destination,
+    denoting the terminating state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having mathematically defined the problem (although not in excruciating detail),
+    we will move towards implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we install the necessary libraries and subsequently import them. Obviously
+    we need to install the `gym` environment. Other than that, we just require some
+    visual stuff and your typical data science libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assuming all imports went correctly, it is time for a sanity check. Lets create
+    and render a Taxi-v3 environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should see an action between 0 and 5, a state between 0 and 499, and an action
+    mask to block infeasible actions. Most importantly, we should have rendered a
+    still frame to affirm we are truly up and running!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78a49c24b3980432b5f0125f124f1447.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of initialization output [image by author, using [OpenAI Gym](https://github.com/openai/gym/blob/master/LICENSE.md)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, let’s set up two functions : one for the console output and animation,
+    one for storing GIFs. Note that the animation is simply a repeated plot of the
+    RGB frame. It is also very time-consuming, and therefore not recommended to run
+    during training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing a random agent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having asserted that the environment works as expected, it is time to let a
+    random agent run wild. As you guessed, this agent takes random action at every
+    moment in time. This is essentially how the learning agent sets out, having **no
+    reliable Q-values** to work with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will see the agent trying to drive through walls, pick up passengers at
+    deserted sports, or drop off passenger at the wrong location. It might take thousands
+    of actions before — strictly by accident — dropping the passenger at the right
+    location.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can imagine, the random agent frustrates the passenger to no end:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b47a4e00828fa23dd51d9fe2e3f6555b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation of an untrained agent. The taxi selects random actions at each time
+    step, including infeasible ones, until eventually dropping of the passenger at
+    the correct stop by accident [image by author, using [OpenAI Gym](https://github.com/openai/gym/blob/master/LICENSE.md)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why sit through this lengthy animation? Well, it really gives an impression
+    how an untrained RL agent behaves, and how long it takes to get a meaningful reward
+    signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: by applying the **action mask** — a Boolean vector that essentially assigns
+    a probability of 0 to selecting infeasible actions — we restrict ourselves to
+    only sensible actions, typically substantially shortening the episode’s length.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Training the agent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Time to learn something useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will deploy a [basic Q-learning algorithm](https://medium.com/towards-data-science/walking-off-the-cliff-with-off-policy-reinforcement-learning-7fdbcdfe31ff)
+    with ϵ-greedy exploration, selecting random actions with probability ϵ and use
+    Q-values to select actions for the remainder of the time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Q-values are updates using the following equation after making an observation.
+    Note that with 500 states and 6 actions, we must fill a Q-table of size 500*6=3000,
+    with each state-action pair requiring multiple observations to learn its value
+    with any degree of accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d1b28ed0b65945438e798622046ba67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In Q-learning, we update values of state-action pairs after each observation,
+    using off-policy learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code looks as follows. You can tinker with the hyper-parameters; in my experience
+    this problem is fairly insensitive to them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converge of training is visualized below. After 2000 episodes, it seems we have
+    learned a pretty good and consistent policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b080cb5baa9ef3c3483892086b7f0af9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initially, the agent requires many steps to successfully complete an epsiode.
+    Ultimately, positive rewards are recognized and the agent starts taking increasingly
+    efficient actions, culminating in shortest path solutions [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: the code ignores the action mask and selects the first Q-value in case
+    of a tie. Although alternatives for both issues are provided, they substantially
+    increase the computational effort per episode, while providing no clear performance
+    benefit in this setting.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Testing the policy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s see what we learned. Depending on the state we are in, we look up the
+    corresponding Q-values in the Q-table (i.e., six values for each state, corresponding
+    to the actions) and select the action with the highest associated Q-value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Effectively, the Q-value captures the expected cumulative reward associated
+    with the action. Note that we no longer select random actions with probability
+    ϵ — this mechanism was required strictly for learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you performed sufficiently many iterations, you should see the taxi always
+    drive directly to the passenger, take the shortest path to the destination, and
+    successfully drop of the passenger. Indeed, we’ve come a long way since driving
+    around at random.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d6fb42df9bb360b32658485e1d00b11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation of a successfully learned policy. The taxi will follow the shortest
+    path both to pick up and drop off the passenger, maximizing the reward [image
+    by author, using [OpenAI Gym](https://github.com/openai/gym/blob/master/LICENSE.md)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although it requires many observations to learn this policy in a seemingly trivial
+    environment, you might appreciate the result more if you realize the algorithm
+    learned all of this without knowing anything at all about the environment it operates
+    in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Taxi environment is a nice one to get started with Reinforcement Learning.
+    The problem setting is simple and intuitive, yet could easily be extended towards
+    something more realistic (think realistic urban networks, managing taxi fleets,
+    uncertain travel times). It is computationally well-manageable, but also illustrates
+    the computational effort required even to learn policies for trivial problem settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are new to Reinforcement Learning, playing around with the OpenAI Gym
+    environments is highly recommended before moving to designing and solving your
+    own problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The full Jupyter Notebook can be found on my GitHub:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/woutervanheeswijk/taxi_environment](https://github.com/woutervanheeswijk/taxi_environment)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b940d5c28484743ce42d461519ae29cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Lexi Anderson](https://unsplash.com/@lexianderson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*An introduction to Q-learning and SARSA:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/walking-off-the-cliff-with-off-policy-reinforcement-learning-7fdbcdfe31ff?source=post_page-----c76c22fc5d8f--------------------------------)
+    [## Walking Off The Cliff With Off-Policy Reinforcement Learning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An in-depth comparison of off-policy and on-policy reinforcement learning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/walking-off-the-cliff-with-off-policy-reinforcement-learning-7fdbcdfe31ff?source=post_page-----c76c22fc5d8f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Structuring Markov Decision Processes:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/the-five-building-blocks-of-markov-decision-processes-997dc1ab48a7?source=post_page-----c76c22fc5d8f--------------------------------)
+    [## The Five Building Blocks of Markov Decision Processes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define and communicate your Reinforcement Learning models by mastering the foundational
+    principles of a Markov Decision…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-five-building-blocks-of-markov-decision-processes-997dc1ab48a7?source=post_page-----c76c22fc5d8f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A tutorial for implementing Deep Q-learning:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-minimal-working-example-for-deep-q-learning-in-tensorflow-2-0-e0ca8a944d5e?source=post_page-----c76c22fc5d8f--------------------------------)
+    [## A Minimal Working Example for Deep Q-Learning in TensorFlow 2.0'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A multi-armed bandit example to train a Q-network. The update procedure takes
+    just a few lines of code using TensorFlow
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-minimal-working-example-for-deep-q-learning-in-tensorflow-2-0-e0ca8a944d5e?source=post_page-----c76c22fc5d8f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The notebook detailed in this article is partially based on and adapts code
+    from the following sources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] OpenAI Gym. [Taxi-v3 environment](https://github.com/openai/gym/blob/master/gym/envs/toy_text/taxi.py).
+    The OpenAI Gym environment is available under the [MIT License](https://github.com/openai/gym/blob/master/LICENSE.md).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] LearnDataSci. [Reinforcement Q-Learning from Scratch in Python with OpenAI
+    Gym](https://www.learndatasci.com/tutorials/reinforcement-q-learning-scratch-python-openai-gym/).
+    Taxi-v2 implementation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Botforge. [Save OpenAI Gym renders as GIFS](https://gist.github.com/botforge/64cbb71780e6208172bbf03cd9293553).
+    Public GitHub Gist.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,471 @@
+- en: Productionize Machine Learning Models with Serverless Container Services
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/productionize-machine-learning-models-with-serverless-container-services-9323fdb8f60c](https://towardsdatascience.com/productionize-machine-learning-models-with-serverless-container-services-9323fdb8f60c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*How to create serverless containerized inference endpoint for your machine
+    learning models with Azure Container App*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@edwin.tan?source=post_page-----9323fdb8f60c--------------------------------)[![Edwin
+    Tan](../Images/7db7b2f72bdbeb1675df3a2c6eddf91f.png)](https://medium.com/@edwin.tan?source=post_page-----9323fdb8f60c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9323fdb8f60c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9323fdb8f60c--------------------------------)
+    [Edwin Tan](https://medium.com/@edwin.tan?source=post_page-----9323fdb8f60c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9323fdb8f60c--------------------------------)
+    ·7 min read·Jan 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3117ecde779f597268070c22634e534.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jan Canty](https://unsplash.com/@jancanty?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serverless container architecture is an approach to building and running containerized
+    applications and services without having to manage the underlying infrastructure.
+    In this architecture, containers are used to package and deploy applications,
+    and these containers are run in a fully managed environment provided by a cloud
+    provider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cloud provider is responsible for the infrastructure needed to run the containers,
+    such as the hardware and operating system. The developer does not need to worry
+    about setting up or maintaining this infrastructure, and can instead focus on
+    writing code and building applications. The containers are typically run in a
+    cluster, and the cloud provider automatically scales the number of containers
+    up or down based on demand. This allows the application to handle fluctuations
+    in traffic without the need for manual intervention. Serverless architectures
+    can be more cost-effective than traditional architectures, since users only pay
+    for the resources that was actually use, rather than paying for a fixed amount
+    of computing power that may or may not be fully utilized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some examples of serverless container services include Azure Functions, Azure
+    Container Apps , AWS Lambda, and Google Cloud Functions. In this article we will
+    demonstrate how to leverage on Azure Container Apps, a fully managed serverless
+    container service for building and deploying apps at scale, for productionizing
+    machine learning models. Common uses of Azure Container Apps include deploying
+    API endpoints, hosting background processing applications, handling event-driven
+    processing and running microservices [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are the steps that we will take in order to train and deploy a scikit-learn
+    model with Azure Container Apps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train model locally
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create inference API with FastAPI
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Dockerize the application
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Deploy to Azure Container Apps
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 0\. Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is the setup used for the following example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Development Environment**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visual Studio Code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Azure CLI
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Python 3.8
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Docker
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Python Packages: Refer to Section 3 for `requirements.txt`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Project Structure**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The project folder structure as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Dataset**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The UCI Heart Disease dataset [3] is a public dataset that contains data about
+    patients who have been diagnosed with heart disease. It includes various patient
+    characteristics, such as age, gender, blood pressure, and cholesterol levels.
+    `1` and `0` values in the `condition` column represents the presence or absence
+    of heart disease respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Train model locally
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'File: `train.py`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the purpose of illustration, we will train a Gradient Boosting Classifier
+    using only 5 features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run the training using CLI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Create prediction endpoint with FastAPI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'File: `app.py`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the `app.py` file we
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define `app` , an instance of FastAPI.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the trained model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define the input data format (`ModelData`) which the API will accept
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define the API response format (`ResponseData`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define the `/predict` route which will trigger the `predict` function when a
+    post request is made to this route.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The `predict` function receives the input data from the post request, predict
+    and returns the probability that a patient has heart disease.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At this point we can test the FastAPI application locally. The `--reload` flag
+    helps with speeding up the development process. FastAPI auto reloads every time
+    a change in the code is detected. This means that the developer does not need
+    to manually restart FastAPI to test the code changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You will see the following message on the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The given URL will bring us to the Swagger UI where we can test out the API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Containerize the application using Docker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Create a** `**requirements.txt**` **file**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `requirements.txt` file contains all the python packages required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Create a** `**.dockerignore**` **file**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of the `.dockerignore` file is to avoid copying over files that
+    are not required for inference such as the training script and data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Create a** `**Dockerfile**` **file**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s a brief description of the Dockerfile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use`python:3.8` as the base image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creat a working directory named `/app`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Copy all the files in our project folder over to the working directory with
+    the exception of those files or sub-directories that were listed in the `.dockerignore`
+    file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Install the python packages listed in `requirements.txt`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`CMD` runs the FastAPI application on port 80 when the docker container is
+    launched. Unlike in the local test, we do not include — reload flag when we run
+    uvicorn here. The reload flag is useful for speeding up the development process,
+    however it is not required in production.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Build docker image**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Launch docker container**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We map port 80 in the container, which FastAPI is running on, to port 8080 on
+    the Docker host.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Test the app**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this point we can test the application through the Swagger UI again by going
+    to the URL: `[http://127.0.0.1:8080/docs](http://127.0.0.1:8080/docs)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Deploy to Azure Container Apps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will push the docker image to Azure Container Registry and
+    subsequently deploy the docker container in Azure Container Apps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To deploy the containerized application to Azure Container Apps we require
+    the following prerequisites:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Azure Resource Group
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Azure Container Registry
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Azure Container App Environment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The following commands are executed in the command line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Create resource group**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A resource group is a logical grouping of Azure services used to support the
+    application. We created a `heartdisease_rg` resource group in `eastus` location.
+    All the subsequent resources will be assigned to`heartdisease_rg`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Create Azure Container Registry**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Azure Container Registry (ACR) is a collection of repositories used to store
+    and manage container images. We create a container registry named `heartdisease`
+    under the `heartdisease_rg` resource group and chose the `Basic` SKU pricing plan.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the container registry is provisioned we can check the ACR login server
+    using
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above command returns a long string which contains the login server. Take
+    note of the login server details as we will be using it in the next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Tag docker image**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To push the local docker image to ACR, the docker image `heart-disease-app`
+    is tagged the following format `{login server}/{docker image name}/{version}`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Login to ACR**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ensure that you are logged in before pushing image to ACR.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Push docker image to ACR**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker push is a command that uploads a local docker image to a container registry.
+    This will make the docker image available to Azure Container Apps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The docker image will be shown in ACR’s UI upon successful docker push.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5609d71a4f8366eebe74890a3398c64a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Create Azure Container App Environment**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before creating Azure Container Apps, we define the `heartdiseaseenv` environment
+    which the Container App will run in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Create Azure Container Apps**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this step, we create the `heart-disease-container-app` Azure Container Apps
+    using the `heartdiseaseenv` environment which we created in the step before. We
+    also defined the docker image that should be used: `heartdisease.azurecr.io/heart-disease-app:v0.1.0`
+    and the login server of the container registry: `heartdisease.azurecr.io`. The
+    `ingress` is set to `external` as this API is meant to be exposed to the public
+    web.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: If `az containerapp create` command is successful, it will return a URL for
+    accessing your app.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Test the app**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can test the app using either the Swagger UI, curl or python request. To
+    access the Swagger UI, simply append `docs` at the end of the given URL: `[https://heart-disease-container-app.nicehill-f0509673.eastus.azurecontainerapps.io/docs](https://heart-disease-container-app.nicehill-f0509673.eastus.azurecontainerapps.io/docs.)`[.](https://heart-disease-container-app.nicehill-f0509673.eastus.azurecontainerapps.io/docs.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To use CURL, the command as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also send a post request to the prediction endpoint `https://heart-disease-container-app.nicehill-f0509673.eastus.azurecontainerapps.io/predict`
+    using python’s request library in the following manner:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we discussed the advantage of using serverless containerized
+    machine learning inference endpoint and walked through an example of how to create
+    an API endpoint with FastAPI, containerized it with Docker and deployed the containerized
+    application with Azure Container Apps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Join medium](https://medium.com/@edwin.tan/membership) to read more articles
+    like this!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [Serverless computing and applications | Microsoft Azure](https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-serverless-computing/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [Azure Container Apps overview | Microsoft Learn](https://learn.microsoft.com/en-us/azure/container-apps/overview)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Heart Disease Dataset from [UCI Machine Learning Repository](https://archive-beta.ics.uci.edu/ml/datasets/heart+disease).
+    Licensed under CC BY 4.0.'
+  prefs: []
+  type: TYPE_NORMAL

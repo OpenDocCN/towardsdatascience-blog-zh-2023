@@ -1,0 +1,375 @@
+- en: How I Built A Cascading Data Pipeline Based on AWS (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-997b212a84d2](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-997b212a84d2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Automatic, scalable, and powerful
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)[![Memphis
+    Meng](../Images/5a2b214eb5d5ab884b18224c471662c0.png)](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------)
+    [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----997b212a84d2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----997b212a84d2--------------------------------)
+    ·14 min read·Jul 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Today I’m going to share some experience of building a data engineering project
+    that I always take pride in. You are going to learn the reasons behind why I used
+    the tools and AWS components, and how I designed the architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f95b8b2918bb62a2337706df55ff6e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Disclaimer**: The content of this text is inspired by my experience with
+    an unnamed entity. However, certain critical commercial interests and details
+    have intentionally been replaced with fictional data/codes or omitted, for the
+    purpose of maintaining confidentiality and privacy. Therefore, the full and accurate
+    extent of the actual commercial interests involved is reserved.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prerequisites
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Knowledge of Python
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Understanding of AWS components, such as DynamoDB, Lambda serverless, SQS and
+    CloudWatch
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Comfortable coding experience with [YAML](https://en.wikipedia.org/wiki/YAML)
+    & [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s say you are a data engineer and you need to constantly update the data
+    in the warehouse. For example, you are responsible to sync up with the sales records
+    of [Dunder Mifflin Paper Co.](https://dundermifflinpaper.com) on a regular basis.
+    (I understand this is not a realistic scenario but have fun :) !) The data is
+    sent to you via a vendor’s API and you are held accountable for making sure the
+    information of the branches, employees (actually only salespersons are considered),
+    and sales are up-to-date. The provided API has the following 3 paths:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`/branches` , accepting branch name as a query parameter for retrieving the
+    metadata of a specified branch;'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`/employees` , accepting branch ID as a query parameter for retrieving the
+    information of all its employees of a certain branch, the response includes a
+    key-value pair that indicates the employees’ occupations;'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`/sales` , accepting employee ID as a query parameter for retrieving the all-time
+    sales records of a salesperson, the response includes a key-value pair that indicates
+    when the transaction was complete.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'So generally speaking, the returns of API look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`/branches` path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`/employees` path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`/sales` path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s expected that your final work will facilitate the data analysts who are
+    able to retrieve data for their analyses only with SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It’s quite an easy call to say that in the end, we are going to have 3 different
+    places to respectively store the data of branches, salespersons, and sales. The
+    data will be imported by accessing certain API paths respectively. However, due
+    to the fact that the identifiers for all those entities are mostly automatically
+    generated, it’s not likely for a practitioner to have the IDs beforehand. Instead,
+    since it’s normally available for us to find the branch names so it’s plausible
+    that we use the first path to grab the metadata of branches, as well as the IDs
+    of its employees. And we can access the `/employees` path using the employee IDs
+    and so can we do to the `/sales` path. ***That’s exactly why I call this pipeline
+    cascading.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: To assure our database is up-to-date most of the time, it is necessary to execute
+    these operations frequently enough. But on the other, we are also obligated to
+    take into consideration the cost and the potential API visit quotas. Hence, running
+    it once an hour is proper though arguably not yet optimal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last but not least, let’s discuss AWS. First of all, the codes executing those
+    operations are going to be run by [**AWS Lambda**](https://aws.amazon.com/lambda/)
+    because of its capacity of having 200+ AWS services and applications as its triggers,
+    including [SQS](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-pipes-sqs.html)
+    and [EventBridge](https://docs.aws.amazon.com/eventbridge/index.html). The data
+    is going to be delivered via **SQS** as one of the most established messaging
+    services provided by AWS. Finally, the information scraped from API is going to
+    be stored in **DynamoDB**. To some experienced readers here, it’s probably confusing
+    to leverage **DynamoDB** as the data warehousing tool since this is a NoSQL database
+    service while data warehouses are generally incompatible with NoSQL databases.
+    I’m surely aware of it, and the DynamoDB tables here will only be the staging
+    ones as I can make use of its flexibility in key-value/document data model schemas
+    before eventually converting JSON-formatted API retrievals into data warehouse
+    records. Check out [**this article**](https://medium.com/plumbersofdatascience/a-real-time-streaming-channel-c8bbae187c83)
+    if you are interested in the details of my implementation of DynamoDB-S3 loading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here is the structure of my final work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are 3 folders (*/branches*, */salespersons*, */sales*) respectively containing
+    the codes of each lambda function. *Utils.py* is a Swiss-army-knife-like file
+    where the functions, variables, and classes are globally applied. And template.yml
+    is the AWS CloudFormation template that we will use to declare and deploy AWS
+    resources to establish our data pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lambda_function.py in each folder is the entrance function of the code execution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '/Service/config.py returns the environment variables input in the *template.yml*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: /Service/service.py is where we actually wrangle the data. Basically speaking,
+    the function is invoked by a trigger or two (time schedulers), before retrieving
+    data from a data source (API or SQS queue). Data will be packaged in a set of
+    key-value pairs and if in need, updated into its corresponding DynamoDB table
+    before the function distributes the identifiers of its members (i.e., all employees
+    in a branch, all sales records of a salesperson).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Take `/branches/service/service.py` as an example. Its functionality includes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: acquire all the data from the API `/branches` as soon as it is wakened up;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: check the existence and accuracy of the personal information of each salesperson
+    in the DynamoDB data table, if it’s not up-to-date, upsert the data record;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: get all the IDs of their employees, and deliver them along with their branch
+    ID as a message via an SQS queue to the tailing function (*/salespersons*).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In practice, the implementation will be like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the end, we need to prepare for the build and deployment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Q&A
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Yes, I’m doing a Q&A session with myself. It’s usually helpful to challenge
+    myself with “Why?” or “How?” when coding, by doing so I will have more confidence
+    in solidifying each decision I made, as well as justifying every tool I used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: a. How do I monitor the functions?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I use [CloudWatch alarms](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html).
+    CloudWatch alarms watch any available metric or the calculation of the metrics
+    supported by AWS CloudWatch. They can conduct customized action(s) based on the
+    metric or the calculation relative to the given threshold value within a specified
+    period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To me, it’s most pivotal to learn and relieve it as soon as an error happens.
+    So I set up alarms towards all 3 functions with 1 error as the threshold, that’s
+    to say, alarms will be pulled whenever there is an error. I want to recognize
+    the errors without constantly keeping an eye on a CloudWatch dashboard, so the
+    alarms’ actions are to push a notification to an SNS topic which forwards the
+    alert to my email inbox.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are working in a collaborative environment, I suggest you extend the
+    visibility by sending it to a Slack channel, distributing it to all addresses
+    in a distribution list, or including it in a shared mailbox.
+  prefs: []
+  type: TYPE_NORMAL
+- en: b. Why do you define the keys of the tables as they are?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s based on reality. Apparently, branches differentiate from each other so
+    their IDs are sufficient to be the sole **hash key** in the branches’ table under
+    the [1NF constraint](https://en.wikipedia.org/wiki/Database_normalization). By
+    contrast, both salespersons and sales tables take extra keys to be normalized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because in reality, a branch is likely to have multiple employees in the book,
+    while an employee is allowed to transition from one branch to another, the relationship
+    between branches and employees, from the perspective of data schemas, is many-to-many.
+    Also, it is because of it that only a combination of sale record ID + salesperson
+    ID + branch ID (the branch when the transaction took place) shall point to an
+    exact record in the sales table. The bottleneck is a document-based database like
+    DynamoDB allows as many as 2 attributes to serve as keys, I picked the salesperson
+    ID as the **sort key** over the branch ID in favor of the certainty between a
+    sales-record-salesperson relationship. The variance between sales and branches
+    is going to be explained in the following question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: c. How do I establish the linkage between the sales and branches? And why?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The data vendor falls short in including branch information in the sales records.
+    The cookie cutter to take care of it is to attach the branch ID from the very
+    top (branch collector function) down to the end. This manner, nevertheless, omits
+    some extreme scenarios. For instance, [Jim Halpert](https://en.wikipedia.org/wiki/Jim_Halpert)
+    placed a sale on his last day in the Scranton branch. owing to some technical
+    issues, this record wasn’t appended to his sales record list or published on the
+    API, until the second business day when his status had been preset to transfer
+    as a Stamford worker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s hard to sniff the mislabeling without any context especially when the root
+    reason is from the vendor. From my experience, the debugging at this stage relies
+    heavily on our feedback. This is why I let the branch ID in the sales table be
+    a loose key-value pair; otherwise, it takes additional effort to remove and rewrite
+    the item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: d. How do I trigger the salespersons and sales collector functions?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SQS queue is one of the invoking actions officially allowed by the Lambda function,
+    and hence the natural choice to wake up these 2 functions since they are set to
+    listen to queues already. I took a detour, to walk around the maximum visit cap
+    imposed by the API owner. Should I let my functions pick up the messages and hit
+    the API from the queues as soon as they come, there would be multiple functions
+    processing the messages nearly at the same time, which rendered the pipelining
+    architecture no longer functionable as it could easily exceed the API quota. With
+    time schedulers set up every minute (I created 2 schedulers for each function),
+    the processing frequency is declined from the millisecond level to the second
+    level. In this way, the message traffic in the data pipeline is mitigated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: e. How do I avoid repetitive operations?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is almost impossible to tell whether the data collected is up-to-date or
+    not without actually visiting the API, the source of truth. So we can’t reduce
+    API visits, but instead, can do what I do in the last question to lower the chance
+    that the API visit quota is exceeded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the destination of the dataflow is DynamoDB, it’s all set to fully upsert
+    each record every single time when we receive it from the API. The horror is that
+    our firehose stream from DynamoDB to S3 is short of bandwidth, which leads to
+    a halt in transportation occasionally. In light of this fact, I insert a sanity
+    check before an upsertion. This check compares each value of the record’s attributes
+    with those recently withdrawn from the API. The existing record shall be overwritten
+    unless it is totally unchanged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Attached is the sanity check function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deployment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In each folder, do
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And go back to the parent folder:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Final Work
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[My GitHub repo](https://github.com/MemphisMeng/Cascading-ETL-pipeline/tree/dev)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Credits
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Diagrams as Code](https://diagrams.mingrammer.com/) for all the tools that
+    support concise visualizations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[The Office](https://www.imdb.com/title/tt0386676/) for a brilliant show, the
+    laughter it brings, and the inspiration'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

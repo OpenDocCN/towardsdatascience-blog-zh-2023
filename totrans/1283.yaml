@@ -1,0 +1,717 @@
+- en: Hyperbolic Deep Reinforcement Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hyperbolic-deep-reinforcement-learning-b2de787cf2f7](https://towardsdatascience.com/hyperbolic-deep-reinforcement-learning-b2de787cf2f7)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: RL meets hyperbolic geometry
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Many RL problems have hierarchical tree-like nature. Hyperbolic geometry offers
+    a powerful prior for such problems.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----b2de787cf2f7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b2de787cf2f7--------------------------------)
+    ·17 min read·Apr 30, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many problems in Reinforcement Learning manifest a hierarchical tree-like nature.
+    Hyperbolic spaces, which can be conceptualised as continuous analogies of trees,
+    are thus suitable candidates to parameterise the agent’s deep model. In this post,
+    we overview the basics of hyperbolic geometry, show empirically that it provides
+    a good inductive bias for many RL problems, and describe a practical regularisation
+    procedure allowing to resolve numerical instabilities in end-to-end optimisation
+    with hyperbolic latent spaces. Our approach shows a near-universal performance
+    improvement across a broad range of common benchmarks both with on-policy and
+    off-policy RL algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6bdc310bab65aab0cc8849bfb1a4359.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Stable Diffusion prompted with “Hyperbolic Atari Breakout game, icon design,
+    flat design, vector art” (courtesy of [David Ha](https://twitter.com/hardmaru?lang=en))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with* [*Edoardo Cetin*](https://aladoro.github.io/)*,*
+    [*Ben Chamberlain*](https://twitter.com/DrBPChamberlain)*, and* [*Jonathan Hunt*](https://twitter.com/jjh)
+    *and is based on the paper E. Cetin et al.,* [*Hyperbolic deep reinforcement learning*](https://arxiv.org/pdf/2210.01542.pdf)
+    *(2023) ICLR. For more details, find us at ICLR 2023!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basics of Reinforcement Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'RL problems can be described as a Markov Decision Process (MDP), where the
+    agent observes some *state* *s*∈*S* from the environment’s state space, based
+    on which it executes some *action* *a*∈Afrom its action space, and, finally, receives
+    a reward *r* from its *reward function* *r: S×A ↦ R*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The evolution of the environment relies on the *markovian property*, meaning
+    that it is independent of past states given the current one, and is fully described
+    by the transition dynamics *P* : *S×A×S ↦ R* and initial state distribution *p₀*:
+    *S ↦ R*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A *policy* isaparameterised distribution function over actions *a∼π*(*⋅|s*)
+    given the current state *s,* representing the agent’s behaviour. Each episode
+    of interaction between the agent and the environment produces a trajectory, *τ
+    = (s₀,a₀,s₁,a₁,…),* according to the policy and transition dynamics. For each
+    state *s∈ S*, the policy’s *value function* represents the expected discounted
+    sum of future rewards over the agent’s possible trajectories starting from *s*
+    [*].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The agent’s objective is to learn a policy maximising its expected discounted
+    sum of rewards over encountered trajectories, or equivalently, the expected value
+    function over the possible initial states*.* In deep RL, the policy and value
+    functions are typically modeled as neural networks. The RL training loop involves
+    alternating between an *experience collection* phase (deploying the current policy
+    in the environment) and a *learning* phase (updating the agent’s models to improve
+    its behaviour). Based on how the collected experience data is used, we can distinguish
+    between two main classes of RL algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*On-policy* algorithms collect a new set of trajectories with the latest policy
+    for each training iteration, discarding old data. They use these trajectories
+    to learn the current policy’s value function which is then used to compute the
+    *policy gradient* [1]and maximize the probability of performing the best-observed
+    current actions. Proximal Policy Optimisation (PPO) [2] is currently one of the
+    most established and robust algorithms within this class [3].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Off-policy* algorithms instead store many different trajectories collected
+    with a mixture of old policies in a large replay buffer dataset of experiences.
+    They use this data to directly learn a model of the optimal value function using
+    a squared loss based on the Bellman backup [4]. The policy is then implicitly
+    defined based on the actions leading to the highest expected estimated value.
+    Rainbow DQN [5] is a modern popular instantiation of the seminal off-policy DQN
+    algorithm [6], introducing several auxiliary practices that stabilise and speed
+    up learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generalisation in Deep Reinforcement Learning**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generalisation is key requirement of effective RL agents, since most real-world
+    and even complex simulated tasks entail a large degree of diversity in their state
+    space (e.g., the space of natural images). From the agent’s perspective, exploring
+    and memorising the exact value for this (possibly infinite) set of inputs is clearly
+    intractable. Moreover, for many applications, controlled laboratory settings used
+    for training might not reflect the full diversity of possible configurations for
+    a given task. Therefore, the agent’s behaviour should ideally be robust to small
+    distribution shifts it might observe during deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep neural network-based agent models serve as a practical approach to tackle
+    these problems, effectively serving as a functional prior that tries to capture
+    only the *most relevant and causal* features of the states that the agent should
+    require for effective decision-making. However, providing a precise understanding
+    of how different design choices affect neural network training and its resulting
+    generalisation is very much still an open question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our recent paper [7], we study the geometric properties that make a deep
+    RL model generalise robustly and effectively. In particular, we focus on the model
+    of *hyperbolic geometry*, which we describe next [8].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7cdd5dea837803c23323e1fc25219da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The hierarchical relationship between states in Breakout, visualised in the
+    Poincaré disk model of the hyperbolic space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperbolic Geometry
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Most applications in machine learning (and more broadly, computer science and
+    mathematics) utilise Euclidean spaces to represent data and perform numerical
+    operations. Euclidean spaces can be easily visualised and most of their properties
+    are inherently intuitive to understand. For instance, the total volume grows polynomially
+    with the radius from the origin [9], and translating two points by the same vector
+    does not affect their distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperbolic spaces [10] do not possess such intuitive properties and, formally,
+    can be described as a special type of *Riemannian manifolds*, i.e., *n-dimensional*
+    objects embedded in *n*+1 dimensions that are only *locally* Euclidean. One of
+    the defining properties of hyperbolic spaces is their *constant negative curvature*
+    resulting in distances and volumes growing exponentially rather than polynomially.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a7bae5263380d37c2a3e7e41bbb60ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Shortest paths (geodesics) between points in hyperbolic space (𝔹²) and nodes
+    in an embedded tree.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This allows interpreting hyperbolic spaces as continuous analogs of trees, in
+    which the number of leaf nodes also grows exponentially as we increase the depth.
+    Due to this fact, a tree can be embedded isometrically (i.e., in a manner preserving
+    the relative distances between nodes) in a hyperbolic space of only two dimensions
+    [11]. In contrast, embedding a tree in a Euclidean space results in distortions,
+    which can be decreased by using a high dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There exist several equivalent models of hyperbolic geometry; here, we consider
+    the *Poincaré ball* (denoted by 𝔹*ⁿ*), which can be conceptualised as an *n*-dimensional
+    unit ball that preserves the notion of angles from Euclidean spaces. Since total
+    volume of the Poincaré ball grows exponentially with the radius from the origin,
+    the geodesics (shortest paths) are circular arcs perpendicular to the boundary
+    rather than straight, as in Euclidean spaces [12].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/682c28537fec44ba001ca9f2c315d613.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Poincaré and Beltrami-Klein models of hyperbolic geometry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to work with hyperbolic spaces in machine learning, we have to redefine
+    standard operations with vectors, the notions of hyperplanes, and the relative
+    distances between these elements [13]. The conceptual difficulty of doing this
+    stems from the fact that we need to work in the *tangent space*, a local Euclidean
+    representation of the hyperbolic space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is achieved by the *exponential map* exp**ₓ**(**v**), which takes a unit
+    step along a geodesic starting from point **x** in the direction of an input vector
+    **v**. We use the exponential map from the origin of the Poincaré ball to map
+    Euclidean input vectors **v** into 𝔹*ⁿ* [14]*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Gyrovector spaces* [15] allow extending common vector operations to non-Euclidean
+    geometries. One such operation is denoted by **x**⊕**y**and is referred to as
+    *Möbius addition* [16].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Gyroplanes* (denoted by *H*) are a generalisation of an oriented hyperplane
+    in a gyrovector space. A gyroplane on the Poincaré ball is parameterised by *n*-dimensional
+    shift **p** and normal **w**, such that *H =* {**y***∈* 𝔹*ⁿ* : *<***y**⊕**p***,***w***>=0*}.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In machine learning problems, hyperplanes and gyroplanes can be used as *oriented
+    decision boundaries*. The shift and normal vectors (**p** and **w**) provide an
+    alternative parametrisation to define linear affine transformation [17]. An analogy
+    of a fully connected layer with *m* output units is a set of *m* gyroplanes in
+    𝔹ⁿ: given an *n*-dimensional input vector **x**in the hyperbolic space, the layer
+    output *f*(**x**) is computed as the signed and scaled distance between *x* and
+    each gyroplane H:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*f*(**x**) *=* 2 sign(*<***x**⊕–**p***,***w***>*) *||***w***||d*(**x***,H*)
+    */* (*1 — ||***p***||*²)¹ᐟ²*,*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *d*(**x***,H*)is the distance function between *x* and *H* on the Poincaré
+    ball [18].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly to prior work for supervised [19] and unsupervised learning [20],
+    we use these parameterised *gyroplane fully-connected layers* within standard
+    natural network architectures by substituting the standard Euclidean layer. The
+    hyperbolic geometry of the resulting feature space introduces a different inductive
+    bias that should be more appropriate for many RL problems, as we motivate next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperbolicity of RL problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Due to the markovian property in RL problems, the evolution of the state in
+    a trajectory can be conceptualised as a tree with the policy and dynamics determining
+    the probability of ending up in each of its possible branches. Intuitively, the
+    value and optimal policy for each state are naturally related to its possible
+    successors in the MDP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, there are many examples where other fixed, non-hierarchical information
+    about the state (such as the general appearance of the environment), should be
+    ignored. For instance, Raileanu and Fergus [21] observed the agents’ value function
+    and policy models overfitting to spurious correlations from non-hierarchical features
+    in *Procgen* environments [22] (e.g., background color), leading to poor generalisation
+    to unseen levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on these observations, we hypothesise that effective features should encode
+    information directly related to the hierarchical state relationships of the MDPs,
+    reflecting its tree-like structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to validate our hypothesis, we analyze the representation spaces learned
+    by RL agents, testing whether they manifest a hierarchical structure. We use the
+    notion of Gromov *δ*-*hyperbolicity* [11]: a metric space (*X,d*) is said to be
+    *δ*-hyperbolic if every possible geodesic triangle △ABC is *δ*-slim, i.e., for
+    every point on any side of △ABC there exists some point on one of the other sides
+    whose distance is at most *δ*. A characteristic of tree structures is that every
+    point in any possible △ABC belongs to at least two of its sides, yielding *δ=0*.
+    Thus, we can interpret *δ*-hyperbolicity as measuring the deviation of a given
+    metric from a tree metric.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7c3e8634f50ea4cb0ea5cd2b31345a83.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The necessary *δ* such that for every point on any side of △ABC there exists
+    some point on one of the other sides whose distance is at most *δ* in a tree triangle
+    (left), a hyperbolic triangle (center), and a Euclidean triangle (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final representations learned by an RL agent from encoding the collected
+    states span some finite subset of Euclidean space, effectively yielding a discrete
+    metric space. Similarly to [19], we *normalise* our *δ*-hyperbolicity recordingsby
+    the diameter of the space, yielding a *relative* measure that tries to be agnostic
+    to the scale of the learned representations [23].
+  prefs: []
+  type: TYPE_NORMAL
+- en: This allows us to practically interpret the hyperbolicity of the learned latent
+    representations, spanning values between 0 (exact tree-like structure) and 1 (perfectly
+    non-hyperbolic space). We train a standard PPO agent with the standard Impala
+    architecture [24] and analyze how its performance and our *δ*-hyperbolicity measure
+    evolve as training progresses, on four different Procgen environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We observe that *δ* quickly drops to low values (0.22–0.28) in the first training
+    iterations in all environments, reflecting the largest relative improvements in
+    agent performance. Subsequently, an interesting dichotomy seems to take place.
+    In the *fruitbot* and *starpilot* environments, *δ* further decreases throughout
+    training as the agent recovers high performance with a low generalisation gap
+    between the training and test distribution of levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, in *bigfish* and *dodgeball*, *δ* begins to increase again after the
+    initial drop, suggesting that the latent representation space starts losing its
+    hierarchical structure. Correspondingly, in these last two environments, the agent
+    starts overfitting as test levels performance stagnates while the generalization
+    gap with the training levels performance keeps increasing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56479195563a0e88b5c97d8b6ba2dbe6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance and relative *δ*-hyperbolicity of the final latent space of a PPO
+    agent in Procgen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results support our hypothesis, empirically showing the importance of
+    encoding hierarchical features and suggesting that PPO’s poor generalisation in
+    some environments is due to the observed tendency of Euclidean latent spaces to
+    encode spurious features that hinder hyperbolicity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training agents with hyperbolic latent spaces
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Based on our findings, we propose to employ hyperbolic geometry to encode the
+    final latent representations of deep RL models. Our approach has the objective
+    of introducing a different inductive bias that incentivises modeling the agent’s
+    policy and value function based on features that reflect the causal hierarchical
+    evolution observed in common MDPs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our basic implementation tries to make minimal changes to the underlying algorithm
+    and models. We start with a simple extension to PPO, replacing the final ReLU
+    and linear layer with an exponential map to 𝔹*ⁿ* and a gyroplane fully-connected
+    layer outputting the value function and policy logits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23ce148581eee208b86533481577d927.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Integration of hyperbolic space with the Impala architecture used to model PPO’s
+    policy and value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, this naïve approach results in underwhelming performance, lagging considerably
+    behind the performance of standard PPO. Furthermore, we found that the hyperbolic
+    policy struggles to start exploring and later annealing back to more deterministic
+    behaviour as performance improves, as we would normally expect from PPO’s entropy
+    bonus. These results appear to indicate the presence of optimisation challenges
+    stemming from end-to-end RL training with hyperbolic representations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23d2a5c2556a8df1e939877d6c881947.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance and gradients from our unregularised integration of hyperbolic representations
+    with RL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To overcome similar optimisation issues, prior work using hyperbolic space for
+    supervised and unsupervised learning introduced careful initialisation schemes
+    [25] and stabilisation practices such as representation clipping [26]. While we
+    do also make use of such practices in our implementation, they appear to be largely
+    ineffective for RL problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This should not be surprising: the main purpose of these strategies is to facilitate
+    learning appropriate angular layouts in the first few training iterations, without
+    which later end-to-end optimisation can often result in failure modes with low
+    performance [13]. However, the inherent high variance and non-stationarity characterising
+    RL make stabilisation strategies focused mostly on early iterations insufficient.
+    The trajectory data and loss landscapes in RL can change significantly throughout
+    training, making early angular layouts inevitably suboptimal in the long term.
+    Furthermore, the high variance policy gradient optimisation [1] can much more
+    easily enter the aforementioned unstable learning regimes, leading to the observed
+    failure modes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another sub-field of machine learning having to deal with similar non-stationarity
+    and brittle optimisation is generative modeling with adversarial networks (GANs)
+    [27]. In GAN training, the generated data and discriminator’s parameters constantly
+    evolve, making the loss landscape highly non-stationary as in the RL setting.
+    Furthermore, the adversarial nature of the optimisation makes it very brittle
+    to exploding and vanishing gradients instabilities which lead to common failure
+    modes [28].
+  prefs: []
+  type: TYPE_NORMAL
+- en: We take inspiration from stabilisation practices in this parallel literature
+    and make use of *spectral normalisation* (SN) [29], based on the recent analysis
+    and empirical results showing its effects to precisely prevent exploding gradients
+    phenomena [30]. Our implementation applies SN to all layers in the Euclidean encoder
+    part of our model, leaving the final linear hyperbolic layer unregularised. Moreover,
+    we also scale the final latent representations before mapping them to 𝔹ⁿ, such
+    that modifying the dimensionality of the representations should not significantly
+    affect their own and their gradients’ magnitudes. We call our stabilisation recipe
+    *Spectrally Regularised Hyperbolic Mappings* (S-RYM, pronounced *ɛs-raɪm*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying S-RYM to our hyperbolic RL agents appears to resolve their optimisation
+    challenges. Furthermore, they also attain considerably higher performance relative
+    to the original Euclidean implementation and maintain low gradient magnitudes
+    throughout training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99c4c90167bc2c90f9822e963da8aeff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance and gradients applying S-RYM to both hyperbolic and Euclidean RL
+    agents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We evaluate hyperbolic deep RL across different benchmarks, RL algorithms, and
+    training conditions. In addition to PPO, we also apply our methodology to the
+    off-policy Rainbow DQN algorithm. We test our agents on both the full Procgen
+    benchmark (16 environments) [22] and the Atari 100K benchmark (26 environments)
+    [31].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0accfda16a746ab49d4197de2c00382c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Renderings of the different environments from Procgen (left) and Atari (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the Procgen benchmark, we compare our hyperbolic implementations also to
+    using random crop data augmentations [32], a more traditional way of incentivising
+    generalisation by inducing hand-picked invariances. Moreover, we also test an
+    alternative version of the hyperbolic model that further constrains the dimensionality
+    of the final representation to 32 (from 256 in the original Euclidean architecture)
+    with the aim of increasing its focus on features that can be efficiently encoded
+    in hyperbolic space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both our hyperbolic PPO and Rainbow DQN implementations yield conspicuous performance
+    gains in the great majority of the environments. Remarkably, we find that reducing
+    the size of the hyperbolic representations provides even further benefits with
+    significant improvements for both algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c84dfa3879bc99927d59414ed15e53e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance of hyperbolic and Euclidean versions of PPO on Procgen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1a5df8d6f5a19c69378bf7f02af8d5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance of hyperbolic and Euclidean versions of Rainbow DQN on Procgen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, applying data augmentations appears to yield lower and inconsistent
+    gains. We also find that test performance gains do not always correlate with gains
+    on the specific 200 training levels to which the agent has access for exploration,
+    resulting in a significantly reduced generalisation gap for the hyperbolic agents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, the exact same hyperbolic deep RL framework provides consistent and
+    significant benefits also on the Atari100K benchmark. Hyperbolic Rainbow shows
+    improvements over the Euclidean baseline on most Atari environments, almost doubling
+    the final human normalised score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c08915dcdfee772e763fcc6198fd0a67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Absolute difference in normalised performance (Y-axis) and relative improvements
+    (above bars) from integrating our regularised hyperbolic representations onto
+    Rainbow DQN on the Atari benchmark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, our results empirically validate that introducing hyperbolic representations
+    to shape the prior of deep RL models can be remarkably effective across a diverse
+    range of problems and algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our hyperbolic RL agents come very close to the current SotA algorithms which
+    incorporate different expensive and domain-specific practices (e.g., ad-hoc auxiliary
+    losses, larger specialised architecture, etc.). Taken together, we believe these
+    results show the great potential of our hyperbolic framework to become a standard
+    way of parameterising deep RL models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualisation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using a two-dimensional version of our hyperbolic PPO for visualisation purposes,
+    we observe a recurring phenomenon, where the magnitude of the representations
+    monotonically increases within the considered subsets of the trajectory as more
+    obstacles and/or enemies appear in the environments. Furthermore, we observe that
+    the representations form tree-like structures, with their magnitudes from encoding
+    on-policy states growing in directions mostly aligned to the value function’s
+    gyroplane’s normal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This growth intuitively reflects that as new elements appear the agent recognises
+    a larger opportunity for rewards (e.g., obtained for defeating its new enemies),
+    yet, requiring also a finer level of control as distances to the other policy
+    gyroplanes will also grow exponentially, reducing entropy. Instead, following
+    random behaviour deviations, the representations’ magnitudes tend to grow in directions
+    that appear almost orthogonal to the value gyroplane’s normal. Hence, this growth
+    still reflects the higher precision required for optimal decision-making but also
+    the agent’s higher uncertainty to obtain future rewards in states reached from
+    suboptimal behaviour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8546e540b74d427d92c84f61a7671157.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two-dimensional hyperbolic embeddings in Procgen as we progress through a trajectory
+    obtained encoding states following either on-policy behaviour (green) or random
+    behaviour (red).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our experiments provide strong evidence for the advantages and generality of
+    using hyperbolic geometry in deep RL, yielding near-universal improvements across
+    benchmarks and classes of RL algorithms. Our findings show that geometry can greatly
+    affect the prior induced by learning with deep models, perhaps, suggesting we
+    should re-evaluate its role and relevance to tackle many additional challenges
+    in machine learning. For instance, using hyperbolic space could have implications
+    also for unsupervised and offline RL, providing a more appropriate prior to deal
+    with the under-specified objectives and limited data characterising these problem
+    settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] R. S. Sutton and A. G. Barto, *Reinforcement learning: An introduction*
+    (2018) MIT Press, provide a comprehensive introduction to the field of RL. See
+    also other great [online resources](https://rail.eecs.berkeley.edu/deeprlcourse/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] J. Schulman, [Proximal policy optimization algorithms](https://arxiv.org/pdf/1707.06347.pdf)
+    (2017)arXiv:1707.06347.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] PPO improves stability by restricting the policy update from making changes
+    >*ϵ* to its current probabilities and employs an auxiliary entropy bonus.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] R. E. Bellman, *Dynamic programming* (2010) Princeton University Press.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] M. Hessel et al., [Rainbow: Combining improvements in deep reinforcement
+    learning](https://ojs.aaai.org/index.php/AAAI/article/view/11796/11655) (2018)
+    *AAAI*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] V. Mnih et al., [Human-level control through deep reinforcement learning](https://www.nature.com/articles/nature14236)
+    (2015) *Nature* 518 (7540):529–533.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] E. Cetin et al., [Hyperbolic deep reinforcement learning](https://openreview.net/pdf?id=TfBHFLgv77)
+    (2023) *ICLR*. See also the accompanying [code](https://sites.google.com/view/hyperbolic-rl).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] For an overview of hyperbolic spaces and their early applications in machine
+    learning, we refer to [a great introductory blog post](https://bjlkeng.github.io/posts/hyperbolic-geometry-and-poincare-embeddings/)
+    by Brian Keng. For a more formal introduction, see e.g. J. W. Cannon et al., Hyperbolic
+    geometry (1997) in *Flavors of Geometry* 31:59–115.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Most know this from school geometry: the area of a circle (i.e., volume
+    of a 2-dimensional ball) is *πr*². The general formula for the volume of an *n*-dimensional
+    Euclidean ball of radius *r* is *πⁿ*ᐟ²*rⁿ /* Γ*(n*/2 +1*)*. Notice that while
+    it is polynomial in *r*, it is *exponential in dimension n*. For this reason,
+    in order to represent tree-like structures (that have exponential volume growth)
+    in a Euclidean space, one has to increase the dimension.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Hyperbolic geometry was the first successful construction of non-Euclidean
+    geometry, in which the classical Parallels Postulate does not hold. Early unsuccessful
+    attempts go back to Omar Khayyam and Giovanni Saccheri. The priority over the
+    first successful construction is disputed between Carl Friedrich Gauss, János
+    Bolyai, and Nikolai Lobachevsky (the first to publish his results). Eugenio Beltrami
+    (and later Felix Klein) showed the self-consistency of hyperbolic geometry and
+    proposed a projective model bearing their names (Beltrami-Klein).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] M. Gromov, *Hyperbolic groups* (1987) Springer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] This makes geodesics between distinct points pass through some midpoint
+    with a lower radius, analogously to how tree geodesics between nodes must go through
+    their closest shared parent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] O. Ganea, G. Bécigneul, and T. Hofmann, [Hyperbolic neural networks](https://proceedings.neurips.cc/paper_files/paper/2018/file/dbab2adc8f9d078009ee3fa810bea142-Paper.pdf)
+    (2018) *NeurIPS*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] The exponential map is given in closed form as exp₀(**v**) = **v** tanh(**v**)
+    */ ||***v***||.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] A. A. Ungar, [*Analytic hyperbolic geometry and Albert Einstein’s special
+    theory of relativity*](https://www.worldscientific.com/worldscibooks/10.1142/6625#t=aboutBook)(2008),
+    World Scientific.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] In hyperbolic space, the Möbius addition of two vectors is given by'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**x**⊕**y** *=* ((1 + 2**x***<***x**,**y***> + ||***y***||*²)**x** *+* (1 +
+    *||***x***||*²)**y**) */* (1 + 2*<***x**,**y***> + ||***x***||*² *||***y***||*²),
+    see equation (4) in our paper [7].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[17] G. Lebanon and J. Lafferty, [Hyperplane margin classifiers on the multinomial
+    manifold](https://icml.cc/Conferences/2004/proceedings/papers/13.pdf) (2004) *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[18] The distance is given in closed form as *d*(**x***,H*)*=*sinhᐨ¹(2*|<****x***⊕–**p***,***w***>|*
+    / (1 — *||***x**⊕–**p***||*²*||***w***||*)), see equation (6) in our paper [7]*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[19] V. Khrulkov et al., [Hyperbolic image embeddings](https://openaccess.thecvf.com/content_CVPR_2020/papers/Khrulkov_Hyperbolic_Image_Embeddings_CVPR_2020_paper.pdf)
+    (2020) *CVPR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[20] E. Mathieu et al., [Continuous hierarchical representations with Poincaré
+    variational auto-encoders](https://proceedings.neurips.cc/paper_files/paper/2019/file/0ec04cb3912c4f08874dd03716f80df1-Paper.pdf)
+    (2019) *NeurIPS*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[21] R. Raileanu and R. Fergus, [Decoupling value and policy for generalization
+    in reinforcement learning](https://arxiv.org/pdf/2102.10330.pdf) (2021), *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[22] Procgen, introduced by K. Cobbe et al., [Leveraging procedural generation
+    to benchmark reinforcement learning](http://proceedings.mlr.press/v119/cobbe20a/cobbe20a.pdf)
+    (2020) *ICML*, consists of 16 visual environments with procedurally-generated
+    random levels. While the different levels share a high-level objective (e.g.,
+    reach the door, defeat all enemies, etc.), they might have considerable differences
+    in their layout and appearance. Moreover, while training in this benchmark, the
+    agents only have access to the first 200 levels of each environment for experience
+    collection, but their performance is tested on the full distribution of levels.
+    Hence, this benchmark allows assessing RL agents with a specific focus on their
+    generalisation to unseen levels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[23] M. Borassi, A. Chessa, and G. Caldarelli, [Hyperbolicity measures democracy
+    in real-world networks](https://arxiv.org/pdf/1503.03061.pdf) (2015) *Physical
+    Review E* 92.3: 032812.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[24] L. Espeholt et al., [Impala: Scalable distributed deep-RL with importance
+    weighted actor-learner architectures](https://proceedings.mlr.press/v80/espeholt18a/espeholt18a.pdf)
+    (2018) *ICML.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[25] M. Nickel and D. Kiela, [Poincaré embeddings for learning hierarchical
+    representations](https://papers.nips.cc/paper_files/paper/2017/file/59dfa2df42d9e3d41f5b02bfc32229dd-Paper.pdf)
+    (2017) *NeurIPS*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[26] Y. Guo et al., [Clipped hyperbolic classifiers are super-hyperbolic classifiers](https://openaccess.thecvf.com/content/CVPR2022/papers/Guo_Clipped_Hyperbolic_Classifiers_Are_Super-Hyperbolic_Classifiers_CVPR_2022_paper.pdf)
+    (2022), *CVPR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[27] I. Goodfellow et al., [Generative adversarial nets](https://arxiv.org/pdf/1406.2661.pdf)
+    (2014), *NIPS*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[28] M. Arjovsky and L. Bottou, [Towards principled methods for training Generative
+    Adversarial Networks](https://openreview.net/pdf?id=Hk4_qw5xe) (2017) *ICLR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[29] T. Miyato et al., [Spectral normalization for generative adversarial networks](https://arxiv.org/pdf/1802.05957.pdf)
+    (2018) *arXiv*:1802.05957.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[30] Z. Lin, V. Sekar, and G. Fanti, [Why spectral normalization stabilizes
+    GANs: Analysis and improvements](https://arxiv.org/pdf/2009.02773.pdf) (2021),
+    *NeurIPS*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[31] Atari 100K, introduced by Kaiser, Lukasz, et al., [Model-based reinforcement
+    learning for Atari](https://openreview.net/pdf?id=S1xCPJHtDB) (2019) *arXiv*:1903.00374,
+    consists of 26 different visual environments consisting of iconic Atari games
+    from M. G. Bellemare et al., [The arcade learning environment: An evaluation platform
+    for general agents](https://arxiv.org/pdf/1207.4708.pdf) (2013) *Journal of Artificial
+    Intelligence Research* 47: 253–279\. However, agents are allowed access only to
+    100K total environment steps of data for experience collection, corresponding
+    roughly to 2 hours of playtime. The environments are modified with the specifications
+    from M. C. Machado et al., [Revisiting the arcade learning environment: Evaluation
+    protocols and open problems for general agents](https://arxiv.org/pdf/1709.06009.pdf)
+    (2018) *Journal of Artificial Intelligence Research* 61:523–562, introducing considerable
+    randomness through *sticky actions* (i.e., random repeats of each executed action).
+    Thus, due to the severe data constraints and added randomness, this benchmark
+    places a specific focus on assessing generalization to unseen states.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[32] D. Yarats, I. Kostrikov, and R. Fergus, [Image augmentation is all you
+    need: Regularizing deep reinforcement learning from pixels](https://openreview.net/pdf?id=GY6-6sTvGaf)
+    (2021), *ICLR*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*We are grateful to* [*David Ha*](https://twitter.com/hardmaru?lang=en) *(a.k.a.
+    hardmaru) for generating the title image, the first AI-generated illustration
+    on this blog! See additional information on the* [*project webpage*](https://medium.com/r?url=https%3A%2F%2Fsites.google.com%2Fview%2Fhyperbolic-rl)*,*
+    [*Towards Data Science*](https://towardsdatascience.com/graph-deep-learning/home)
+    *Medium posts,* [*subscribe*](https://michael-bronstein.medium.com/subscribe)
+    *to Michael’s posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
+    get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
+    or follow* [*Michael*](https://twitter.com/mmbronstein)*,* [*Edoardo*](https://twitter.com/edo_cet)*,*
+    [*Ben*](https://twitter.com/DrBPChamberlain), and [*Jonathan*](https://twitter.com/jjh)
+    *on Twitter.*'
+  prefs: []
+  type: TYPE_NORMAL

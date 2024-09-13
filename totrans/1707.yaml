@@ -1,0 +1,423 @@
+- en: 'Putting Your Forecasting Model to the Test: A Guide to Backtesting'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/putting-your-forecasting-model-to-the-test-a-guide-to-backtesting-24567d377fb5](https://towardsdatascience.com/putting-your-forecasting-model-to-the-test-a-guide-to-backtesting-24567d377fb5)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/d92886eef96d6f3b904a3be033fdc241.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image generated using Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to properly evaluate the performance of time series models through
+    backtesting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://eryk-lewinson.medium.com/?source=post_page-----24567d377fb5--------------------------------)[![Eryk
+    Lewinson](../Images/56e09e19c0bbfecc582da58761d15078.png)](https://eryk-lewinson.medium.com/?source=post_page-----24567d377fb5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----24567d377fb5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----24567d377fb5--------------------------------)
+    [Eryk Lewinson](https://eryk-lewinson.medium.com/?source=post_page-----24567d377fb5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----24567d377fb5--------------------------------)
+    ·9 min read·Nov 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating time series models is not a simple task. In fact, it is quite easy
+    to make serious errors while evaluating forecasting models. While these errors
+    may not break the code or prevent us from obtaining some output numbers, they
+    can significantly affect the accuracy of such performance estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will demonstrate how to properly evaluate time series models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why are standard machine learning methods not suitable for time series?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The simplest way to evaluate the performance of a machine learning model is
+    to split the dataset into two subsets: training and test sets. To further improve
+    the robustness of our performance estimate, we may want to split our dataset multiple
+    times. This procedure is called cross-validation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following diagram represents one of the most popular types of cross-validation
+    — the k-fold approach. In the case of 5-fold validation, we first divide the dataset
+    into 5 chunks. Then, we train the model using 4 of these chunks and evaluate its
+    performance on the 5th chunk. This process is repeated 4 more times, each time
+    holding out a different chunk for evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/639b2f535b64a97ee71a9fda71ed5265.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 5-fold cross-validation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the diagram, you can probably identify the problem with using this
+    approach for forecasting. In most cases, we would train the model using data that
+    chronologically comes after the evaluation set. This leads to *data leakage*,
+    which we should absolutely avoid. A potential risk is that a model might learn
+    patterns from the future that have not yet revealed themselves in the past. As
+    such, it would lead to overly optimistic performance estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-fold cross-validation, along with many other approaches, operates under the
+    assumption that the observations are independent. The temporal dependencies in
+    time series data clearly do not align with this assumption, which makes most of
+    the validation approaches popular in regression or classification unusable. That’s
+    why we must use validation methods that are tailored to time series data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: Bergmeir et al. show that in the case of a purely autoregressive model,
+    the use of standard K-fold CV is possible as long as the considered models have
+    uncorrelated errors. You can read more about it* [*here*](https://robjhyndman.com/publications/cv-time-series/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is backtesting?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Backtesting** (also known as **hindcasting** or **time series cross-validation**)
+    is a set of validation approaches designed to meet the specific requirements of
+    time series. Similar to cross-validation, the goal of backtesting is to obtain
+    a reliable estimate of a model’s performance after being deployed. We can also
+    use these approaches for hyperparameter tuning and feature selection.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea of backtesting is to replicate a realistic scenario. The training data
+    should correspond to the data available for training a model at the moment of
+    making a prediction. The validation set should reflect the data we would encounter
+    after deploying that model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we present a diagram of an approach called **walk-forward validation**
+    (or **expanding window validation**), which follows the characteristics we have
+    just described. At each subsequent time point, we have a bit more data to train
+    our model, and correspondingly, our test set advances by the same time interval.
+    This type of validation preserves the temporal order of the time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6dcf6ac1bf6385fd7c3093c7a4f434d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Walk-forward (expanding window) validation
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Walk-forward validation is the simplest approach to backtesting. We could consider
+    some of its modifications, which might better suit our use case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have assumed an expanding window. However, we might want to train our model
+    using only the latest subset of our time series. Then, we should use a rolling
+    window of a fixed size instead.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can follow various strategies when it comes to refitting our model. In the
+    simplest case, we refit the model in each iteration of the backtest. Alternatively,
+    we could fit the model only in the first iteration and then create predictions
+    using an already fitted model (with potentially updated features). Or we could
+    refit it every X iterations. Once again, we should select a solution that closely
+    mirrors the real-life use case of the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could introduce a gap between the training and validation sets, as the initial
+    part of the validation set might be highly correlated with the final part of the
+    training set. By creating a gap (for example, by removing the training observations
+    close to the validation set), we enhance the independence between the two sets.
+    This process is also known as **purging**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Another complexity might arise when working with multiple time series, such
+    as sales of different products. Since time series in our dataset are likely correlated
+    with each other (at least to some extent), we might want to keep each series in
+    specific folds to prevent information leakage. For more information on that, please
+    refer to the links mentioned in the *References* section.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the next part of the article, we will demonstrate how to create a custom
+    backtesting class using the simplest case of walk-forward validation. I highly
+    encourage you to experiment and try coding the other possibilities yourself. Alternatively,
+    you can always use the backtesting capabilities of popular Python libraries dedicated
+    to time series forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48d652692ffec3c25c17ec57264c2d36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image generated using Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hands-on example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, we import the required libraries. As we want to create a custom backtesting
+    class, we will be using standard libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Generating data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To keep things simple, we will generate a daily time series spanning 4 years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Later on, we will test a few models, including two ML models. To prepare for
+    that, we will create monthly dummies as a way of accounting for seasonality. Please
+    refer to [this article](/three-approaches-to-feature-engineering-for-time-series-2123069567be)
+    for more details on that approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the backtester class
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The custom backtester class is quite lengthy, so we will first take a look at
+    the code here and then analyze it piece by piece.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with the inputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`pred_func` — a function that generates the forecasts given training data and
+    the required features. We decided to use this approach, as we want to keep our
+    class flexible and allow the users to use whichever ML libraries/frameworks they
+    want to.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`start_date` — the start date of the backtest.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`end_date` — the end date of the backtest.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`backtest_freq` — how frequently should we train the model and create predictions.
+    For example, by providing “7D” we will create a new set of predictions every week
+    starting from the start date.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`data_freq` — the frequency of the data. We use this to create the predictions
+    for the correct dates.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`forecast_horizon` — combined with `data_freq`, we use this one to make sure
+    that we create forecasts for the desired horizon.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the `run_backtest` method, we iterate through each forecast date within the
+    backtest. For each date, we separate the training set (containing all the information
+    available at the time of making the forecast) from the validation set (determined
+    by the forecast horizon). Subsequently, we generate forecasts and store the predicted
+    values together with the actual values. In the final step, we combine all the
+    individual DataFrames into one DataFrame that contains all the predictions made
+    throughout the backtest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the `evaluate_backtest` method, we use the previously generated DataFrame
+    to compute various evaluation metrics. These metrics can be specified by providing
+    a dictionary containing the metric’s name and the corresponding function used
+    for its calculation. We then calculate each of the requested metrics separately
+    for each forecast horizon and on the whole.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step of the `evaluate_backtest` method is to check if the DataFrame
+    with the backtests is available (it becomes available after we have used the `run_backtest`
+    method). If it not available, we first need to actually run the backtest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running backtests
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now it is time to run the backtests. We will compare the performance of four
+    “models”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The naive forecast: In this approach, the forecast is equal to the last known
+    value at the moment of making the forecast.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The mean forecast: This forecast is equal to the mean of the training set.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A linear regression model with month dummies as features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A random forest model with month dummies as features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The first two models will serve as simple benchmarks, while the latter two aim
+    to actually learn something. However, these are by no means good models. We use
+    them only to illustrate the backtesting capabilities of our class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following snippet, we define the functions used for obtaining the predictions.
+    As mentioned earlier, we chose this approach to maintain flexibility and the ability
+    to wrap any type of ML model into a function that returns predictions for the
+    expected horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following snippet, we define constants used to run the backtests. We
+    also define a dictionary which we will populate with scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For metrics, we chose to focus on Mean Absolute Error (MAE) and Mean Squared
+    Error (MSE). We chose those two to show that we can use multiple metrics in this
+    approach. For the actual comparison of the models, we will focus on MAE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following snippet, we backtest the naive model. Because we set `verbose`
+    to True, we can also inspect each of the iterations of the backtest. We print
+    the ranges of the training and validation sets, together with the number of observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, we store the MAE scores in a dictionary, indicating the approach
+    from which the scores come from. We do this to combine them later for evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, we perform backtests for each of the three remaining forecasting
+    functions. For brevity, we do not include all of the code here, as it is quite
+    similar. We only provide an example of a linear model, as we had to add the list
+    of features as an additional argument to the `run_backtest` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backtest results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By combining the results of the backtests, we can see that the ML models outperformed
+    the benchmarks in terms of MAE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a potential extension of the backtesting class it would be nice to plot some
+    of the predictions vs. actuals to further evaluate the quality of the forecasts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Due to temporal dependencies present in time series, traditional validation
+    approaches such as k-fold cross-validation cannot be used.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Backtesting (or time series cross-validation) consists of validation approaches
+    designed to meet the specific requirements of time series.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can use backtesting to obtain a reliable estimate of a model’s performance
+    after being deployed. Additionally, we can also use these approaches for hyperparameter
+    tuning and feature selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can find the code used in this post [here](https://deepnote.com/workspace/eryks-sandbox-c1f480c2-5a18-4fd6-9cf4-e147f5297b3f/project/Medium-Articles-0fb8b8c3-20f4-42b6-8571-a2968c4d72c2/notebook/introduction_to_backtesting-d9997b101e2741cdbf712f1ce6f0e497).
+    As always, any constructive feedback is more than welcome. You can reach out to
+    me on [LinkedIn](https://www.linkedin.com/in/eryklewinson/), [Twitter](https://twitter.com/erykml1)
+    or in the comments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Liked the article? Become a Medium member to continue learning by reading
+    without limits. If you use* [*this link*](https://eryk-lewinson.medium.com/membership)
+    *to become a member, you will support me at no extra cost to you. Thanks in advance
+    and see you around!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You might also be interested in one of the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/the-comprehensive-guide-to-moving-averages-in-time-series-analysis-3fb2baa749a?source=post_page-----24567d377fb5--------------------------------)
+    [## The Comprehensive Guide to Moving Averages in Time Series Analysis'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring the Nuances of Simple Moving Averages and Exponentially Weighted Moving
+    Averages
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-comprehensive-guide-to-moving-averages-in-time-series-analysis-3fb2baa749a?source=post_page-----24567d377fb5--------------------------------)
+    [](/a-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae?source=post_page-----24567d377fb5--------------------------------)
+    [## A Comprehensive Guide on Interaction Terms in Time Series Forecasting
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to improve the fit of your linear models by making them more flexible
+    to trend changes
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-comprehensive-guide-on-interaction-terms-in-time-series-forecasting-16bfa468ae?source=post_page-----24567d377fb5--------------------------------)
+    [](/three-approaches-to-feature-engineering-for-time-series-2123069567be?source=post_page-----24567d377fb5--------------------------------)
+    [## Three Approaches to Feature Engineering for Time Series
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using dummy variables, cyclical encoding and radial basis functions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/three-approaches-to-feature-engineering-for-time-series-2123069567be?source=post_page-----24567d377fb5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Bergmeir, Christoph, Mauro Costantini, and José M. Benítez. “On the usefulness
+    of cross-validation for directional forecast evaluation.” Computational Statistics
+    & Data Analysis 76 (2014): 132–143.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bergmeir, C., Hyndman, R. J., & Koo, B. (2018). A note on the validity of cross-validation
+    for evaluating autoregressive time series prediction. *Computational Statistics
+    & Data Analysis*, *120*, 70–83.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Racine, Jeff. “Consistent cross-validatory model-selection for dependent data:
+    hv-block cross-validation.” Journal of econometrics 99.1 (2000): 39–61.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://www.kaggle.com/code/jorijnsmit/found-the-holy-grail-grouptimeseriessplit](https://www.kaggle.com/code/jorijnsmit/found-the-holy-grail-grouptimeseriessplit)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://stackoverflow.com/questions/51963713/cross-validation-for-grouped-time-series-panel-data](https://stackoverflow.com/questions/51963713/cross-validation-for-grouped-time-series-panel-data)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://datascience.stackexchange.com/questions/77684/time-series-grouped-cross-validation](https://datascience.stackexchange.com/questions/77684/time-series-grouped-cross-validation)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All images, unless noted otherwise, are by the author.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,736 @@
+- en: 'XGBoost: The Definitive Guide (Part 1)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/xgboost-the-definitive-guide-part-1-cc24d2dcd87a](https://towardsdatascience.com/xgboost-the-definitive-guide-part-1-cc24d2dcd87a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A step-by-step derivation of the popular XGBoost algorithm including a detailed
+    numerical illustration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@roiyeho?source=post_page-----cc24d2dcd87a--------------------------------)[![Dr.
+    Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----cc24d2dcd87a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc24d2dcd87a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cc24d2dcd87a--------------------------------)
+    [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----cc24d2dcd87a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc24d2dcd87a--------------------------------)
+    ·15 min read·Aug 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6146a3f112054a1a9ea8ef91d58e7b4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Sam Battaglieri](https://unsplash.com/@st_b?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/_PXtCCQ4Dj0?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost (short for eXtreme Gradient Boosting) is an open-source library that
+    provides an optimized and scalable implementation of gradient boosted decision
+    trees. It incorporates various software and hardware optimization techniques that
+    allow it to deal with huge amounts of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Originally developed as a research project by Tianqi Chen and Carlos Guestrin
+    in 2016 [1], XGBoost has become the go-to solution for solving supervised learning
+    tasks on structured (tabular) data. It provides state-of-the-art results on many
+    standard regression and classification tasks, and many Kaggle competition winners
+    have used XGBoost as part of their winning solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although significant progress has been made using deep neural networks for tabular
+    data, they are still outperformed by XGBoost and other tree-based models on many
+    standard benchmarks [2, 3]. In addition, XGBoost requires much less tuning than
+    deep models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main innovations of XGBoost with respect to other gradient boosting algorithms
+    include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clever regularization of the decision trees.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using second-order approximation to optimize the objective (Newton boosting).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A weighted quantile sketch procedure for efficient computation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A novel tree learning algorithm for handling sparse data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Support for parallel and distributed processing of the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Cache-aware block structure for out-of-core tree learning.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In this series of articles we will cover XGBoost in depth, including the mathematical
+    details of the algorithm, implementation of the algorithm in Python from scratch,
+    an overview of the XGBoost library and how to use it in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this first article of the series, we are going to derive the XGBoost algorithm
+    step-by-step, provide an implementation of the algorithm in pseudocode, and then
+    illustrate its working on a toy data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The description of the algorithm given in this article is based on XGBoost’s
+    original paper [1] and the official documentation of the XGBoost library ([https://xgboost.readthedocs.io/](https://xgboost.readthedocs.io/en/stable/)).
+    However, the article goes beyond the existing documentation in the following respects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It explains every step of the mathematical derivation in detail. Understanding
+    the mathematical details of the algorithm will help you grasp the meaning of the
+    various hyperparameters of XGBoost (and there are quite a lot of them) and how
+    to tune them in practice.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provides a complete pseudocode of the algorithm (the pseudocode in [1] only
+    describes specific parts of the algorithm in a very concise way).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Goes through a detailed numerical example of applying XGBoost to a toy data
+    set.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This article assumes that you are already familiar with gradient boosting.
+    If not, please check out the article below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050?source=post_page-----cc24d2dcd87a--------------------------------)
+    [## Gradient Boosting from Theory to Practice (Part 1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understand the math behind the popular gradient boosting algorithm and how to
+    use it in practice
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050?source=post_page-----cc24d2dcd87a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The XGBoost Algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Recall that in [supervised learning](https://medium.com/@roiyeho/introduction-to-supervised-machine-learning-313730eb5aa2)
+    problems, we are given a training set with *n* labeled samples: *D* = {(**x**₁,
+    *y*₁), (**x**₂, *y*₂), … , (**x***ₙ, yₙ*)}, where **x***ᵢ* is a *m*-dimensional
+    vector that contains the features of sample *i*, and *yᵢ* is the label of that
+    sample. Our goal is to build a model whose predictions are as close as possible
+    to the true labels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similar to gradient tree boosting, XGBoost builds an ensemble of regression
+    trees, which consists of *K* additive functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e7e0d281a62a8f361c170cd2c28e6c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *K* is the number of trees, and *F* is the set of all possible regression
+    tree functions. Note that we use here *f*(**x**) to denote the hypothesis of the
+    base models instead of our typical notation *h*(**x**), since the letter *h* will
+    be used later to represent another entity (the Hessian of the loss function).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given a loss function *L*(*y*, *F*(**x**)) that measures the difference between
+    the true label *y* and the ensemble''s prediction *F*(**x**), XGBoost aims to
+    find an ensemble that minimizes the loss on the training set, while also not being
+    overly complex. To that end, it defines the following *regularized* cost function
+    as the objective function of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e0da6c9b4fa289a93d4e3bc27754761.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The regularized cost function
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where *ω*(*fₖ*) is the complexity of the tree *fₖ*, which will be defined in
+    detail later. Similar to [ridge regression](https://medium.com/@roiyeho/regularization-19b1879415a1),
+    this cost function consists of two parts: the total loss of the model on the training
+    set and a regularization term that penalizes the complexity of the base trees.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that in XGBoost regularization is an integral part of the tree learning
+    objective, rather than being imposed by external heuristics such as limiting the
+    maximum tree depth or maximum number of leaves as in other tree-based models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additive Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the objective function *J* includes functions as parameters (the regression
+    tree functions), it cannot be optimized using traditional optimization methods
+    such as gradient descent. Instead, the model is trained in a greedy stepwise manner,
+    by adding one new tree at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally, let *Fₖ* be the ensemble at the *k-*th iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3550ab69d8e2542427a888e0e5d34c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'At this iteration, we add to the previous ensemble a tree *fₖ*,which minimizes
+    the following objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7345cfd98afb54825e0a0a78b954ec67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is, we would like to find a tree *fₖ* that reduces the overall training
+    loss, but also is not too complex (has a low complexity *ω*(*fₖ*)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Newton Boosting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Finding the best tree *fₖ* for an arbitrary loss function *L* is computationally
+    infeasible, since it would require us to enumerate all the possible trees and
+    pick the best one. Instead, we use an iterative optimization approach: in every
+    boosting iteration we choose a tree *fₖ* that will get us one step closer to the
+    minimum cost.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the original (unextreme) gradient boosting algorithm, the function *fₖ* was
+    chosen as the one that pointed in the negative gradient direction of the loss
+    function with respect to the predictions of the previous ensemble. This made the
+    optimization process work as gradient descent in the function space (hence it
+    is known as functional gradient descent).
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost uses a similar idea, but instead of working as gradient descent in the
+    function space (i.e., using a first-order approximation), it works as a [Newton-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method)
+    method in the function space (i.e., using a second-order approximation). Newton’s
+    method usually converges faster to the minimum, when the second derivative of
+    the objective function is known and easy to compute (which is true of the XGBoost
+    objective function when using common loss functions such as squared loss or log
+    loss).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, Newton’s method tries to find the minimum of a twice-differentiable
+    function *f*: *R* → *R*, by building a sequence {*xₖ*} from an initial guess *x*₀
+    ∈ *R* . This sequence is constructed from the second-order Taylor approximations
+    of *f* around the elements *xₖ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2615913639b06f046cc532536d97653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The next element in the sequence *xₖ*₊₁ is chosen as to minimize the quadratic
+    expansion written on the right-hand side of this equation. We can find the minimum
+    of that expansion by taking its derivative with respect to the step size *t*,
+    and set it to 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ceb6e19b1685d180a4b2e7a81440433.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, the minimum is achieved for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52831f103e73813a29ea6a78a83a0328.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Accordingly, Newton’s method performs the following iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96d5000d99ad41012a8672d83183e139.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This sequence is guaranteed to converge to the minimum *x** of *f* quadratically
+    fast, if *f* is a strongly convex function and provided that *x*₀ is close enough
+    to *x**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aaace1506c87bb9d967b08d7e70627c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Newton’s method (red) uses curvature information (the second derivative) to
+    take a more direct route to the minimum than gradient descent (green). Image made
+    by Oleg Alexandrov and released to public domain ([https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization#/media/File:Newton_optimization_vs_grad_descent.svg](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization#/media/File:Newton_optimization_vs_grad_descent.svg))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Coming back to XGBoost, we first write the second-order Taylor expansion of
+    the loss function around a given data point **x***ᵢ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58b7266359e33a7d0893bba11d3b7db9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *gᵢ* is the first derivative (gradient) of the loss function, and *hᵢ*
+    is the second derivative (Hessian) of the loss function, both with respect to
+    the predicted value of the previous ensemble at **x***ᵢ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc21ea773dd7cb0d6ff99f38e00b26bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Plugging this approximation into our objective function at iteration *k* yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/65c96f27beb89fa68b0d13d27002c676.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After removing the constant terms, we obtain the following simplified objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56d6f7d263d260408fcbed099ba01540.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our goal is to find a tree *fₖ*(**x**) (our “step size”) that will minimize
+    this objective function. Note that this function only depends on *gᵢ* and *hᵢ*,
+    which allows XGBoost to support any custom loss function that is twice differentiable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Definition of Tree Complexity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have introduced the training step, we need to define a measure for
+    the complexity of the tree. To that end, we first write a more explicit expression
+    for the function *f*(**x**) computed by the regression tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let *T* be the number of leaves in the tree, **w** = (*w*₁, …, *wₜ*) ∈ *Rᵗ*
+    a vector of the scores (or weights) at the leaf nodes, and *q*(**x**): *Rᵐ* →
+    {1, 2, …, *T*} a function that assigns each sample **x** (an *m*-dimensional vector)
+    to its corresponding leaf index (according to the decision rules in the tree nodes).
+    Then we can write *f*(**x**) as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c42787fedc14f09da8a7ce5624a1d36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is, the output value assigned to a sample **x** is the weight of the leaf
+    node to which this sample is mapped to by the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now define the complexity of the tree as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1b24f9c56cf8a29fcf24c96c14004ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is, the complexity of the tree is a function of the number of its leaves
+    (*γT*, where *γ* is a hyperparameter), and the sum of the weights of the leaves
+    squared multiplied by another hyperparameter *λ.* Increasing *γ* tends to create
+    smaller trees, while increasing *λ* encourages assigning smaller weights to the
+    leaves, which in turn decreases the contribution of the tree to the reduction
+    in the loss function (similar to the shrinkage factor in gradient boosting).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using this definition for the tree complexity, we can now rewrite the objective
+    function at step *k* as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b83a45b70f1e8ad2488dc32dd567924.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *Iⱼ* = {*i*|*q*(**x***ᵢ*) = *j*} is the set of indices of the samples
+    that are assigned to the *j*-th leaf. Note that in the second line of the equation
+    we changed the index of the summation from *i* to *j*, since all the samples at
+    the same leaf node get the same weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can further simplify the objective function by defining:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29576859b75402fd7aa5c25fe2c0e298.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Gⱼ* is the sum of gradients of the loss function with respect to the samples
+    at leaf *j*, and *Hⱼ* is the sum of Hessians of the loss function with respect
+    to the same samples.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7409c484380bf3266caf4000ce85de3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our goal is to find the weights for the leaves that will minimize this cost
+    function. To that end, we take the partial derivative of *Jₖ* with respect to
+    each weight *wⱼ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5db10540d074227510f758408f00fbe9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Setting this derivative to 0 gives us the optimal weight for leaf *wⱼ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cfe587938f2cc0a6785ee589fa0227e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Plugging the optimal weights back into the objective function gives us the
+    best objective reduction we can get from this tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d13f82b08416488b91fc9749c9cd0b3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Learning the Tree Structure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we know how to measure the quality of a given tree, theoretically we
+    could enumerate all the possible trees and pick the best one. In practice this
+    is intractable. Instead, we build the regression tree in a greedy top-down fashion,
+    similar to how standard decision trees are built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In each node of the tree, we evaluate every possible split by computing how
+    much reduction in the cost function *Jₖ* can be obtained from that split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally, let *Iₗ* and *Iᵣ* be the sets of samples at the left and right child
+    nodes after the split, respectively, and let *I* = *Iₗ* ∪ *Iᵣ* be the set of samples
+    at the parent node*.* Then the sums of the gradients and Hessians in the child
+    nodes are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7610124302c1998b21c0ce2c4c7b8c96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the sums of gradients and Hessians in the parent node are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/118db0775a45bc8ec0b35e2f3bd594fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the reduction in the cost we get after the split is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/056d7b71b708348adcd73fc28b02206d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We use this formula to evaluate all the split candidates and then choose the
+    split with the highest gain (highest reduction in the cost). If the gain obtained
+    by the best split is less than 0, i.e., the reduction in the cost is less than
+    *γ*, then we choose not to split the parent node at all (it will become a leaf
+    in the tree).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the equation for computing the contribution of each leaf node to the
+    gain is very similar to the equation for the optimal weight of a leaf, except
+    that we do not square the sum of the gradients in the numerator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Complete Algorithm in Pseudocode
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The following pseudocode shows the XGBoost algorithm in its full glory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/678187956dbd7f09c7b9c9f0e4f25b59.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The algorithm uses a helper function called Build-Tree to build the next regression
+    tree in the ensemble:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d79f96305421f8a248e94db0bc20eae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This function in turn uses another helper function Find-Best-Split, which evaluates
+    every possible split at a given node and returns the split with the highest gain
+    (called an **exact greedy algorithm** in the original XGBoost paper). The best
+    split is returned as a tuple that contains the subsets of samples that go to the
+    left and the right child nodes and also the sum of their gradients and Hessians.
+    The pseudocode of this function is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc400ffb7f3f2bc9234b848da1005a0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As an exercise, try to implement the algorithm in your favorite programming
+    language (a Python implementation is provided in the [next article](https://medium.com/towards-data-science/xgboost-the-definitive-guide-part-2-c38ef02f74d0)
+    of this series).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following sections we will derive more explicit formulas for the gradient
+    and Hessian of the loss function for different types of problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost for Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In regression problems, the most commonly used loss function is the squared
+    loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e47907f9a2bc14da524a7280d823a7e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Its first derivative with respect to the predicted value of the previous ensemble
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6a8a26f70f181c58d1189554b1d3341.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And its second derivative is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d217ca971789b9f8712d1bef937a991e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the optimal output value for leaf *j* in this case is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/384c312a8813e638ecd09bd4abd5efc8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the contribution of this leaf to the reduction in the loss is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a24ef2355a782a5e12f36a7cdc1a5b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: XGBoost for Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In binary classification, we use log loss as the loss function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa7e0542287e1d240b3a8e728276a8d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where pi is the previously predicted probability:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6d72af3aa7b0be536cc2465739c7eae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have already found the first and second order derivatives of log loss in
+    the article on [gradient boosting](https://medium.com/towards-data-science/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050)
+    (see the section “Gradient Tree Boosting for Classification”):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6432001e27cb698317dc527f380b6e79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the optimal output value for leaf *j* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09aa0e91a6de76bb2fcc33e7d3e7693f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that with the exception of lambda, this is the same formula we used to
+    find the output value for the leaves in gradient boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The contribution of this leaf to the reduction in the loss is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a5ef5984b6d2e7c17c49ca75ae2f5c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Demonstration on a Toy Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For illustration, we are going to use the same data set that we used to illustrate
+    the classical, unextreme gradient boosting algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/267dc3df98529f56affc475935ff8b37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The goal in this data set to predict whether a customer will buy a given product
+    based on three attributes: the customer’s age, level of income (Low, Medium or
+    High) and level of education (High School or College).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem we will build an ensemble of XGBoost trees with a maximum
+    depth of 2, and a learning rate of *η* = 0.5\. To keep the example simple, the
+    regularization parameters will be set to 0 (*λ* = 0 and *γ* = 0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we initialize the model with a constant value, which is the log odds
+    of the positive class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13efb5fb81fe206610ccfe8a69549225.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we calculate the gradients and Hessians of the samples in the training
+    set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d67031cf350522402ce215b5b3b305cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now build the first XGBoost tree. We start by finding the best split for
+    the root node. The sums of the gradients and Hessians at the root node are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1be584da34a195a2c72c1c6fcb33a02c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we compute the gain that can be achieved by every possible split in every
+    feature. We start from the two categorical attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa88d9ede8276c1ac65693a6824dc2be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For the Age attribute, we first sort the gradients and Hessians according to
+    the age value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ages (sorted) = [22, 25, 28, 30, 35, 40]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradients (sorted) = [-0.333, -0.333, 0.667, -0.333, 0.667, -0.333]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hessians (sorted) = [0.222, 0.222, 0.222, 0.222, 0.222, 0.222]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now consider each middle point between two consecutive ages as a candidate
+    split point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e325b694002f96b0e540402c29ae095.png)![](../Images/007896a1caabc80d8be06eee9ce279e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The split with the highest gain is Age < 26.5\. Therefore, the first level
+    of the tree looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91a826364c79fd3cfbc7c1cec9490e32.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The gradients and the Hessians of the two samples at the left child node are
+    exactly the same, thus there is no need to split it anymore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now need to find the best split for the right child node. The sums of the
+    gradients and Hessians of the samples at this node (samples 2, 4, 5, 6) are *G*
+    = 0.666 and *H* = 0.888 (as shown inside the node). We consider all the possible
+    splits of these samples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/739b9fff9b1a9f5be923dd16e31ceb3f.png)![](../Images/b5ae93677bde81f877e3c4791d96dabb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this case we have multiple candidate splits that lead to the maximum gain
+    (1.5). Let’s choose arbitrarily the split Income = Medium. The resulting tree
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b459935c727cebc3b9b465dbe5965265.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we compute the optimal output values (weights) for the leaf nodes. The
+    weight of the leftmost leaf is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd8ee575899f22948e22dfb3a7d505a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, the weights of the other two leaves are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/229011b27d31f028d2ba5d2f06c4dc56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, we get the following predictions from the first XGBoost tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/da26e447e72481979872a4a064478548.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now scale these predictions by the learning rate and add them to the predictions
+    of the previous iteration. We then use the new predictions to calculate the gradients
+    and Hessians for the next iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/513f2ab1f312855900f2c8a5d265d5a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now build a second XGBoost tree. Following the same process as in the previous
+    iteration, we get the following tree (verify that this is indeed the correct tree!):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b480d898772d74066f3830638d6f95bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now scale the predictions of the second tree by the learning rate and add
+    them to the predictions of the previous ensemble:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff9ab8fffc00d814a6bfdee7d4e7a989.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that after three iterations, our ensemble correctly classifies all
+    the samples in the training set!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The keen reader may have noticed that the resulting ensemble is exactly the
+    same ensemble we have obtained with the classical, unextreme gradient boosting
+    algorithm. This is not surprising, since in classification problems the classical
+    algorithm also uses a second-order approximation to optimize the log loss function.
+    The advantage of XGBoost over the classical algorithm is that it allows us to
+    incorporate a regularization coefficient as part of the objective function (which
+    we did not take advantage of in this example).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Notes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All the images are by the author unless stated otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system.
+    *Proceedings of the 22nd acm sigkdd international conference on knowledge discovery
+    and data mining*, 785–794.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Grinsztajn, L., Oyallon, E., & Varoquaux, G. (2022). Why do tree-based
+    models still outperform deep learning on typical tabular data?. *Advances in Neural
+    Information Processing Systems*, 35: 507–520.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Shwartz-Ziv, R., & Armon, A. (2022). Tabular data: Deep learning is not
+    all you need. *Information Fusion*, 81: 84–90.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,358 @@
+- en: Analysing NYC Yellow Taxi Trip Records with InterpretML
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/analysing-nyc-yellow-taxi-trip-records-with-interpretml-d4421bff32ac](https://towardsdatascience.com/analysing-nyc-yellow-taxi-trip-records-with-interpretml-d4421bff32ac)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Regression Analysis and Counterfactual Explanations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mgcodesandstats.medium.com/?source=post_page-----d4421bff32ac--------------------------------)[![Michael
+    Grogan](../Images/af9ce19e2f61efb07664124e664c7e81.png)](https://mgcodesandstats.medium.com/?source=post_page-----d4421bff32ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d4421bff32ac--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d4421bff32ac--------------------------------)
+    [Michael Grogan](https://mgcodesandstats.medium.com/?source=post_page-----d4421bff32ac--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d4421bff32ac--------------------------------)
+    ·9 min read·Jan 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/64c4442ade0c015dd072fde8ac9621d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: Photo by [StockSnap](https://pixabay.com/users/stocksnap-894430/) from
+    [Pixabay](https://pixabay.com/photos/coding-programming-working-macbook-924920/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[InterpretML](https://interpret.ml/) is an **interpretable machine learning**
+    library designed by Microsoft, with the purpose of making machine learning models
+    more understandable and open to human interpretation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This has particular value when communicating findings with business stakeholders,
+    who in many cases are non-technical and seek to understand the business implications
+    of findings yielded by a machine learning model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this article is to illustrate how interpretable machine learning
+    and counterfactual analysis can allow for a better understanding of underlying
+    trends in a dataset and the ways in which InterpretML can communicative such findings
+    in an intuitive way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The dataset used for this example is the **NYC Taxi & Limousine Commission
+    — yellow taxi trip records** dataset. This dataset was sourced using [Azure Open
+    Data](https://learn.microsoft.com/en-us/azure/open-datasets/dataset-taxi-yellow?tabs=azureml-opendatasets),
+    which in turn was sourced from the [nyc.gov](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+    website and is governed under the nyc.gov [Terms of Use](https://www.nyc.gov/home/terms-of-use.page).
+    The dataset is made available by NYC Open Data, which makes its data available
+    under the CC0: Public Domain license as cited under the company’s [Kaggle](https://www.kaggle.com/datasets/nycopendata/new-york)
+    account.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that **Python 3.8.0** was used for conducting the below analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset and Preprocessing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The aforementioned dataset contains data points on the numerous aspects of yellow
+    taxi trips across NYC, including total amount charged, trip distance, tip amount,
+    and tolls amount.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset provides numerous other variables such as pick-up and drop-off times
+    and locations, passenger counts, and rate types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, for the purposes of determining the main influences on **total amount
+    charged** (which will be the dependent variable for the below analysis) — **trip
+    distance**, **tip amount**, and **tolls amount** are chosen as the independent
+    (feature) variables for this analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this analysis, one month of data (May 6 2018 to June 6 2018) was used for
+    modelling purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Over 9 million rows of data were yielded for analysis — here is a snippet of
+    the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is worth noting that the dataset in its raw format contains some spurious
+    data which needs to be dealt with during the preprocessing stage. For instance,
+    looking at descriptive statistics for the variables of interest shows variables
+    such as *tipAmount* contain negative values — when clearly paying a “negative
+    tip” is not possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In order to deal with this issue, negative values were replaced with a 0 value
+    across the variables of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, checking the minimum value for each of these variables yields a minimum
+    of 0 — which is what we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the raw dataset is extremely large in size — with 1.5B rows as of
+    2018 — over 50 GB. Additionally, data for this dataset has been collected since
+    2009\. In this regard, the 9 million rows of data being analysed in this instance
+    is still only the tip of the iceberg.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, traffic patterns over winter months may look quite different to
+    that of May and June, and there is no guarantee that findings yielded across this
+    particular month will necessarily translate to other time periods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that being said, the goal in this instance is to use InterpretML to get
+    a better understanding of the data — which should be achievable given the segment
+    of data that is analysed in this instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'InterpretML: Regression Analysis'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To conduct the analysis, the relevant libraries are imported and a train-test
+    split is performed across the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, a regression analysis is run across the training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will notice from the above code that both **global** and **local** explanations
+    are being generated by the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'According to the Microsoft whitepaper [“InterpretML: A toolkit for understanding
+    machine learning models”](https://www.microsoft.com/en-us/research/uploads/prod/2020/05/InterpretML-Whitepaper.pdf):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Global** explanations allow a user to get a better understanding of a model’s
+    holistic behaviour'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Local** explanations allow for a better understanding of individual predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the above model — global explanations illustrate the overall relationship
+    between the features and the dependent variable, while local explanations illustrate
+    the relationships across five separate observations across the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cdc3900cc0096f1374db54a86070ba69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: Graph produced by InterpretML library through Plotly.js'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When looking at the above graph for global explanations, we can see that feature_0001
+    (or *tripDistance*) is ranked as the most important feature, followed by *tipAmount*
+    and *tollsAmount*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at the local explanations across the five observations in
+    the test set. The *y_test[:5]* variable contains the following values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: A similar graph to the previous is produced — but with the purpose of predicting
+    each value as indicated above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, a value of 12.2 is predicted for the actual y_test value of 9.95,
+    with the most importance being yielded to the *tripDistance* feature with *tipAmount*
+    as a secondary feature of importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a04696b8a67a7b499724975271b38f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: Graph produced by InterpretML library through Plotly.js'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, when predicting a value of 13.3 for the actual y_test value of 15.3,
+    we can see that only *tripDistance* is ranked as having importance — the other
+    two features are not included:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f64acd80435d1a12a040f797fd69abc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: Graph produced by InterpretML library through Plotly.js'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the graph for the predicted value of 22.8 against an actual value of
+    19.1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22a6201a5eee804d552f846fb342ce27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: Graph produced by InterpretML library through Plotly.js'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Counterfactual Explanations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The purpose of counterfactual explanations is to assess how a change in certain
+    feature metrics can be expected to influence the outcome variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the purposes of this example, the totalAmount variable is converted to a
+    categorical one — any totalAmount value above $10 is considered a substantial
+    fare and assigned a value of **1**. Any totalAmount value below $10 is considered
+    a low fare and given a value of **0**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the question we wish to answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What changes in trip distance and tip amount would result in a 1 value changing
+    to a 0, and vice versa?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To conduct the analysis, the dice_ml library is used — with the continuous
+    features and outcome variable defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The data is split into training and test sets, with numerical and categorical
+    variables defined, and the preprocessing pipelines for the numeric and categorical
+    data is created — with the model then trained using a Random Forest Classifier.
+    The full code for accomplishing this is available at the DiCE [repository](https://github.com/interpretml/DiCE/blob/main/docs/source/notebooks/DiCE_model_agnostic_CFs.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the counterfactual results as provided by dice-ml:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looking at these counterfactual results provides a couple of interesting insights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, we can see that when the tipAmount variable has been higher than 1,
+    the totalAmount variable also shows a value of 1 — i.e. indicating the total amount
+    charged was higher than $10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When looking at instances where the outcome variable changes to 0 (a fare less
+    than $10), we can see that the tipAmount variable is no higher than 1.0 and the
+    trip distance is shorter than 1.0 in all instances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This might indicate that tips are more likely to be paid on journeys with longer
+    distances. It could also indicate that tips are a substantial contributor to the
+    total amount received by the taxi driver for that particular journey — there may
+    be instances where a trip might be short in distance, but the payment of a tip
+    yields a higher total amount than may be yielded across journeys where the distance
+    is longer but no tip is paid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this article, we have explored:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ways to analyse and preprocess large datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to use InterpretML to conduct regression analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The difference between global and local explanations in an InterpretML model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The use of DICE-ML for generating counterfactual explanations and insights that
+    can be yielded from this technique
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you would like, you can also try running the above models across different
+    time periods for the dataset and see what you come up with. Hope you enjoyed this
+    article and would appreciate any questions or feedback!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[DiCE: Generating counterfactual explanations with any ML model](https://github.com/interpretml/DiCE/blob/main/docs/source/notebooks/DiCE_model_agnostic_CFs.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[geeksforgeeks.org: Replace Negative Number by Zeros in Pandas DataFrame](https://www.geeksforgeeks.org/replace-negative-number-by-zeros-in-pandas-dataframe/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[InterpretML: A toolkit for understanding machine learning models](https://www.microsoft.com/en-us/research/uploads/prod/2020/05/InterpretML-Whitepaper.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[InterpretML: Linear Model](https://interpret.ml/docs/lr.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[learn.microsoft.com: NYC Taxi & Limousine Commission — yellow taxi trip records](https://learn.microsoft.com/en-us/azure/open-datasets/dataset-taxi-yellow?tabs=azureml-opendatasets)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[nyc.gov](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Python for Data Science: Descriptive Statistics](https://www.pythonfordatascience.org/descriptive-statistics-python/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Disclaimer: This article is written on an “as is” basis and without warranty.
+    It was written with the intention of providing an overview of data science concepts,
+    and should not be interpreted as professional advice. The findings and interpretations
+    in this article are those of the author and are not endorsed by or affiliated
+    with any third-party mentioned in this article. The author has no relationship
+    with any third parties mentioned in this article.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1331 @@
+- en: Build a back-end with PostgreSQL, FastAPI, and Docker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/build-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06](https://towardsdatascience.com/build-a-back-end-with-postgresql-fastapi-and-docker-7ebfe59e4f06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A step-by-step guide to develop a map-based application (Part IV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)[![Jacky
+    Kaub](../Images/e66c699ee5a9d5bbd58a1a72d688234a.png)](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------)
+    [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----7ebfe59e4f06--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ebfe59e4f06--------------------------------)
+    ·28 min read·Mar 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c94c9aabf27aae32cad325a9448c7da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Caspar Camille Rubin](https://unsplash.com/@casparrubin?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maps are a powerful tool for visualizing and understanding geographic data but
+    they need specific skills to be designed efficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this step-by-step guide, we are going to take a deep dive into building a
+    map-based application to show the customers prices of gas stations around them.
+    We will cover the different key steps of a product, from original proof of concept
+    (POC) to the minimum viable product (MVP)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Articles in the series:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Part I: The proof-of-concept — Build a minimalist demo](/a-step-by-step-guide-to-develop-a-map-based-application-part-i-757766b04f77)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Part II: How to use React to build web apps (Static Layout)](/a-step-by-step-guide-to-develop-a-map-based-application-part-ii-6d3fa7dbd8b9)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Part III: Add interactivity to your web apps with React](/a-step-by-step-guide-to-develop-a-map-based-application-part-iii-ad501c4aa35b)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part IV: Build a back-end with PostgreSQL, FastAPI, and Docker'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A bit of context around this article
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous articles in this series, we built the front end of the gas station
+    finder using **React**, and we considered the back end as a “black box” that was
+    only providing the relevant data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this part, we are going to detail step by step how to build the back end
+    using powerful tools such as **PostgreSQL** or **FastAPI**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the full code of this project in my [Github page](https://github.com/jkaub/station-prices-app-full).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why do we need a clean back end?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the first part of this series, we created some utility functions to obtain
+    data on-the-fly from fuel stations directly from the public provider. While this
+    was sufficient for our proof of concept, we now need a more robust system for
+    several reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Performances & Latency: Processing the data in real-time, including parsing
+    the XML, formatting, and filtering, is computationally expensive and would be
+    impractical for an application that expects frequent use.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Reliability: To ensure that our application is not impacted by unexpected changes
+    or downtime of third-party data sources. Relying solely on data from external
+    portals would put our application at risk, as even a simple change to a field
+    name by the provider could generate bugs and downtime on our side while we patch
+    the change. By building our own database, we have greater control over the data,
+    and we can perform necessary updates and maintenance without relying on external
+    parties.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Customization: With our own database, we can customize the data to meet our
+    technical specs, add other external data sources, build custom views of the data
+    for different use cases, etc…'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To address these requirements, we will build our own database and API that can
+    handle data acquisition, processing, and delivery to the front end. This will
+    involve running a PostgreSQL database with **Docker**, using P**ython** and s**qlalchemy**
+    to interact with the database, and making geo-queries using the **PostGIS** extension.
+    We will also explore how to build a simple API using **FastAPI** and **SQLmodel**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The chart below is a simple schema of the different components of the app:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82f48ca69d17fa4fea7c496bd09b7ad1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simple view of the different components of our app, Author Illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: What this article covers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this article, we focus on our internal database and the creation of the
+    API. In particular, we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run a PostgreSQL database using Docker
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use python and sqlalchemy to interact with the database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Make geo-queries with PostGIS extension
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build a simple API using FastAPI and SQLmodel
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Containerizing our Project and running it with **docker-compose**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a local PostgreSQL instance with Docker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Docker is an open-source containerization platform that allows you to run applications
+    in a consistent and isolated environment. Setting up a PostgreSQL server with
+    Docker has several advantages, including being able to install the application
+    in a standardized way without risking conflicts with other configurations on your
+    system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we will set up our Postgre server directly inside a container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll assume here you already have Docker installed on your computer, as the
+    installation method differs from system to system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get the container image
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A docker image can be seen as the specification of everything that is needed
+    to build a container dedicated to a particular task. It does nothing on its own,
+    but it is used to build the containers (a dedicated virtual environment) where
+    your application will live. We can create our own custom images using a Dockerfile
+    (we will cover this later) or we can download pre-made images from a wide range
+    of open-source images shared by the community.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we want an image that will help us to create a container with PostgreSQL
+    running in it, and we can use the [official image](https://hub.docker.com/_/postgres)
+    for that purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by downloading the PostgreSQL image on docker. This is done in the
+    Shell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Run the Postgre container
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once the image is downloaded in Docker, we can build the container based on
+    it with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s decrypt it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-itd is a combination of 3 parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -d means we run the container in detached mode. In this mode, the container
+    will run in the background and we can continue to use our terminal for other stuff.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: -i specifies that our container will run in interactive mode. It will allow
+    us to go inside the container and interact with it
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: -t means a pseudo-terminal will be available inside of the container to interact
+    with it, which will bring a more seamless and intuitive interaction with the container
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: -e generate environmental variables inside the container. In this case, the
+    environmental variables POSTGRES_USER and POSTGRES_PASSWORD are also used to generate
+    a new user of our PostgreSQL instance with the given password. Without this, we
+    could still access the PostgreSQL instance with the default user/password (postgre/postgre)
+  prefs: []
+  type: TYPE_NORMAL
+- en: -p is used to map a port from the local machine to the docker container. The
+    default port used for PostgreSQL is 5432\. If it was already used in your local
+    machine, you could use this parameter to map the 5432 from the container to another
+    port of your machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-v is a very important parameter in our case: it allows us to map a volume
+    from our machine (in our case the folder `~/db` ) to the volume inside of the
+    container where the SQL data are stored by default (`/var/lib/postgresql/data`
+    ). By doing this mapping, we create a persistent volume that will remain even
+    after the container is stopped. Thus, our database will persist even when we stop
+    using the container, and will be available for later uses.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: — name is just a flag to name the container, which will be useful to access
+    it later on
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can check that the container is active by using the below command which
+    will display the list of running containers on our machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Returning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: First interactions with PostgreSQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our PostgreSQL instance is now running inside our container, we can now interact
+    with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create the Database
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As a starting point, let’s create a first database that will contain the different
+    tables of our project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do so, we need to enter our container. Remember that this is possible as
+    we specified the -it parameters when initializing the container. The below command
+    line will do the job:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The command prompt now should be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'meaning we are logged with the root user in the container. We can connect to
+    PostgreSQL using the user (-U)/password (-d) as follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once in the PostgreSQL instance, we can interact with it using SQL queries,
+    and in particular, create a new database to host our future tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can verify that the database has been created by running
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which will show the different databases in the system. Among some default databases
+    created at the initialization of the instance, we can find the one we just created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have set up our PostgreSQL instance, we could interact with our
+    database by manually writing SQL queries in **psql** to create tables and import
+    data from .csv files. While this approach is suitable for one-time use, it can
+    become cumbersome and error-prone in the long run if we need to frequently update
+    our tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, to facilitate automation, we will use a Python framework to interact
+    with the database and its tables. This will allow us to easily create, update,
+    and query our database using code, making the process more efficient and less
+    error-prone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open a session with sqlalchemy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SQLalchemy is an open-source SQL toolkit and Object Relational Mapper (ORM)
+    for Python developers. It proposes a set of high-level functions to interact with
+    databases rather than writing SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is particularly convenient as it will allow us to define the structure of
+    our tables using Python classes (also named “models” here) and work with object-oriented
+    paradigms. Our python ORM, **sqlalchemy** will be particularly useful in the next
+    part when we build the backend API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by installing the libraries needed for the project. On top of sqlalchemy,
+    we will also use **psycopg2** which is a PostgreSQL adapter for python and can
+    be used as a connector by sqlalchemy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now effectively create a session to our database directly in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Explaining step by step this script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The create_engine method is used to hold the connection to the database. We
+    need to specify here a database URL that includes all the information required
+    to connect to our database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first part of that URL postgresql**://** is there to specify that we are
+    using a PostgreSQL connection and that what will follow will be the specs of a
+    connection for that type of database. If you are using a different database such
+    as SQLite, you will have a different base and different specs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: jkaub:jkaubis the login information to connect to our database.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: localhostis the server on which we run the database. A server IP could also
+    be used to connect to remote servers, or, as we will see later in the case of
+    a cluster of containers, we could also use a container name in certain cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: /stations is used to specify the database we want to connect to. In our case,
+    we connect to the one we just created, “stations”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: This part of the code is just used for now to test that the connection worked
+    well. Our database has no table to query yet, so we are just running a dummy query.
+    It should return (1,), which means the connexion succeeded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the API with FastAPI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have set up our PostgreSQL database in a Docker container and accessed
+    it using the SQLAlchemy engine, it’s time to develop the API for interacting with
+    the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are several benefits of using an API here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It offers reusability and platform/language agnosticism, allowing multiple services
+    to use the same API endpoint.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It separates the database logic from the application logic, making it easier
+    to modify one without affecting the other as long as the inputs/outputs are respected.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It adds a layer of security as you can control who has access to the database
+    with an authorization system.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, an API is scalable and can run on multiple servers, making it flexible
+    for managing the workload. By creating a well-defined set of URLs, we will be
+    able to retrieve, modify, insert, or delete data from our database via the API.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: About FastAPI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[FastAPI](https://fastapi.tiangolo.com/) is a modern python framework particularly
+    efficient in building lightweight API developed by [Sebastián Ramírez](https://github.com/tiangolo).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is particularly efficient when combined with **sqlalchemy** and [**pydantic**](https://docs.pydantic.dev/),
+    a python library used for data validation (for example it can control that a date
+    is actually a date, that a number is a number, etc…). Used together, it allows
+    us to handle and query effectively tables directly via the framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even better, [Sebastián Ramírez](https://github.com/tiangolo) designed also
+    another library, [**sqlmodel**](https://sqlmodel.tiangolo.com/) that combines
+    both pydantic and sqlalchemy to remove some of the redundancies and simplify even
+    more the architecture of the APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have yet to become familiar with FastAPI, I recommend you to have a look
+    at [this tutorial](https://fastapi.tiangolo.com/tutorial/) first, which is really
+    well done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before starting the project, we will need to install multiple libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**uvicorn** is the tool that will run the API server and is well-suited to
+    work in tandem with FastAPI'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**fastapi** is the core engine of the API, that we will use to create the different
+    endpoints'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**sqlmodel** combines the sqlalchemy ORM with the power of type verification
+    of pydantic'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**geolochemy2** is an extension of sqlalchemy used to perform geoqueries'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Initialize the models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s create a new repository for our API Project, starting with the definition
+    of our models with **sqlmodel**. A “model” is nothing more than a python class
+    that represents a table in SQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our project will have 3 tables and will follow the initial design we built in
+    [part I](/a-step-by-step-guide-to-develop-a-map-based-application-part-i-757766b04f77).
+  prefs: []
+  type: TYPE_NORMAL
+- en: One table containing the information related to cities (postal codes, locations)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One table containing information about the gas prices
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One table containing information about the stations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Combining those tables with joins and geofilters will help us build the final
+    output requested by the front-end side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s have a look at the first table, the Cities table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The class “Cities” inherit from the class SQLModel, combining both sqlalchemy**’s**
+    ORM features and pydantic’s typing control.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The parameter table=True indicates to automatically create the corresponding
+    table if it does not exist yet in the database, matching columns names and columns
+    typing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each attribute of the class will define each column with its type. In particular,
+    “id” will be our primary key. Using Optional will indicate sqlalchemy to automatically
+    generate ids by incrementation if we don’t provide one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also provide the models for the two other tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that in the case of the table Stations, we are using station_id as the
+    primary key, and unlike GasPrices, the field will be mandatory. If the field is
+    empty when sent to the table, it will generate an error message.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize the engine
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In another dedicated file to keep the project structured, we are going to initiate
+    the engine. We call that file services.py.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: The connection to the DB is done in the same way as the one presented before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note the function create_db_and_tables(): this function will be called during
+    the initialization of the API, will look-up the models defined in models.py, and
+    will create them directly inside the SQL database if they don’t already exist.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hands-on the API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now start the development of the main component in which we are going
+    to put the endpoints (= the URL that will allow us to interact with the database).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first thing we want to do is configure FastAPI when it starts up and deal
+    with API authorizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'An important point to note: by default, our front does not have the access
+    to make API calls, and if you forget to configure the middleware part, you will
+    expose yourself to errors on the front-end side. You could decide to allow all
+    origins by using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: but this is not something I recommend for safety reasons, as you would basically
+    open your API to the world once it is online. Our front end is currently running
+    locally at localhost:3000, so this is the domain we will allow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At that point, we can already launch the API, by using the following command
+    line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: The — reload simply means that each time we will save a modification in the
+    API while it is running, it will reload to include those changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once started, you can see some logs displayed in the shell, in particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: indicates that the API server is running on localhost (equivalent to the IP
+    127.0.0.1), port 8000.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As explained earlier, starting the API will also trigger the creation of empty
+    tables in the DB (if they don’t already exist). So from the moment you have initiated
+    your API for the first time, the models you create with table=True will have a
+    dedicated table in the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can check this easily from within the PostgresSQL container in psql. Once
+    connected as the main user, we first connect to the database station:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now check that our tables have been well created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which will return:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also verify that the columns match our models by running a description
+    query in psql, for example, for cities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Building our first request — Adding rows to Cities with a POST request
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Cities table will be filled only one time and is used to match postal codes
+    with lat/lon of cities, which will be particularly helpful later to query around
+    those locations using a postal code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As of now, the data are stored in a .csv and we want to design a POST call that
+    will be used to update the table adding one row at a time if it is not yet in
+    the database. The API calls are put inside the main.py file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s have a look at this piece of code line by line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Each API endpoint is defined using a decorator. We are defining here two things:
+    the type of request (get, post, put, delete…) and the URL endpoint associated
+    (/add-city/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this particular case, we will be able to do a POST request at http://127.0.0.1:8000/add-city/
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: We pass in the function the different parameters to be used in the query. In
+    our case, the post request will look for an instance of Cities, which will be
+    passed via a JSON in our request. This JSON will contain the values for each column
+    of the Cities Table for the new row we want to add.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To connect to the database we open a Session. Each query needs its own session.
+    Using this methodology will be particularly useful in case something unexpected
+    happens inside the session: all changes made between the initialization of the
+    session and the commit() will be rolled back in case of a problem.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, the object is added to the database and then commit. From the moment it
+    is committed the operations cannot be rolled back. The refresh is used to update
+    the “city” object with any modification operated by the DB. In our case, for example,
+    an incremental “id” is automatically added.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: We conclude the request by sending the object city in the form of a JSON.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now try the request in python (this need to be done with the API running,
+    of course):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the keys of the JSON we are sending in the request match the name
+    of the columns of the table we want to update. The parameter “id” is optional,
+    it will be automatically added to the operation and we don’t need to bother about
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This should trigger in the API shell the following line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Meaning the request was successful. We can then verify that the line has been
+    well-added. Going back to psql in our docker, we can try the following query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which will display:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: demonstrating that the row has been effectively added by the API in our DB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of that, we don’t want a postal code to be added twice. To do so, we
+    are going to query the Cities table, filter the table based on the postal code
+    we are trying to send, and return an HTML error in case we find a row with that
+    postal code, which will result in avoiding postal_code duplicates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this new block of code we are performing our first database query using
+    sqlalchemy ORM: instead of writing classical SQL (“SELECT FROM”) we are using
+    a set of functions to query directly our database.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: .query is equivalent to SELECT … FROM …, in our case, we select everything from
+    the table cities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: .filter is equivalent to the WHERE statement. In particular, we want to match
+    entries that are equal to the postal code of the object we are sending (represented
+    by the variable city)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: .first() is self-explanatory and is equivalent to LIMIT 1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if no row is found, exist will be None and the exception will not be raised,
+    so we will add the object to the database. If a row matches with the postal code,
+    the API request will return an error with status_code 400 and the post request
+    will be interrupted without the element being added.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If we try now to send the exact same request as before, we will see the API
+    returning an error message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the row has not been added to the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From that point, we can simply loop through our .csv and add all the cities
+    one by one to populate the table cities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding rows to the Gasprices and Stations tables with a POST request
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will pass very quickly on the construction of these API calls as they are
+    very similar to the previous one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: The only interesting thing to notice here is that we are using a double filter
+    query to make sure that we add a row only if there was a new update for the oil_id.
+    This way, we ensure that future updates will not create duplicates if a price
+    has not moved from one day to another, saving some space in the DB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To retrieve the gas prices and ingest them, we are simply recycling our parsing
+    code from [Part I](/a-step-by-step-guide-to-develop-a-map-based-application-part-i-757766b04f77),
+    get the corresponding dataset and loop through it making a POST call for each
+    entry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The script below is executed outside of the API scope to upload data to the
+    DB:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: I chose here for simplicity to push the data row by row. We could have
+    also designed the endpoint to push the data by batches and send a list of JSON.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the GET query used in the front-end
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point, our database is fully filled and the script above could be eventually
+    used to update it with more recent data, and we can start building the GET request
+    used in the front end to query the prices of a specific fuel for the stations
+    around a particular city.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I decided to dedicate a full section to this particular query, due to its complexity
+    (we are going to use all the tables defined so far, make joins and geofilters)
+    but also because we need to operate some changes at this point to integrate spatial
+    features to our database, installing add-ons and modifying some models. While
+    this could have been done directly from the start, it is common in real projects
+    to operate modifications and I think it is interesting to show you how we can
+    do it here smoothly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing PostGIS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: PostGIS is an extension to PostgreSQL that will allow us to build geo-queries,
+    which implies a spatial component. For example in our case, we would be able to
+    select all rows from stations in a 30km radius from a point of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we don’t want to install directly PostGIS in our running container, because
+    this installation will be “lost” every time we need to pop a new container, which
+    is based on an image in which only PostgreSQL is installed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, we are going to simply change the image we are using to build the container
+    and replace it with one containing both PostgreSQL and PostGIS. We will provide
+    the same persistent storage where our DB is currently located, so the new container
+    will also have access to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To build the container with the PostGIS extension, we first pull the latest
+    PostGIS image from docker, then we kill and remove the current PostgreSQL container,
+    and build the new one with the new image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then access the container as we were doing previously, but we are now
+    using a version of PostgreSQL including PostGIS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now need to add the extension to our existing database. We first reconnect
+    to the DB:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we include in it the PostGIS extension:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Modifying our Stations model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have PostGIS up and running in our database, we need to modify our
+    Stations table to be able to perform a geo-query. More precisely, we need to add
+    a “geometry” field that is understood and converted to an actual location on Earth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are multiple ways of building maps or indicating a location on Earth,
+    each way with its own projections and referenced coordinate system. To make sure
+    one system can speak to another, we need to make sure they speak the same language
+    which can include making conversion of units (the same way we could convert meters
+    to feet, or kilograms to pounds).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For coordinates, we are using something called a “Geodetic Parameter Dataset”
+    (EPSG). Latitudes and Longitudes (EPSG 4326) are expressed as angles and it is
+    not possible to directly convert this to distances (Euclidean Geometry, including
+    distance calculation, cannot be applied on the surface of a sphere directly as
+    it is, because, by nature, this is not a euclidean surface..). Instead, they need
+    to be projected to a plan representation, which is handled nicely in PostGIS as
+    long as we are aware of it and apply the appropriate conversions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a starting point, we need to add a new field in our Stations database which
+    can be interpreted as a “geometrical” coordinate. From within our database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: This line will modify our stations' table with a new field “geom” which is a
+    PostGIS geomtry of type “point”, expressed using EPSG 4326 (the EPSG of latitude/longitude
+    system). The field is for now empty for all the rows, but we can fill it very
+    easily still in SQL to update the current table (which is not empty at this point).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above SQL query will SET the geom column for each row of the Stations table
+    with a Point made from the longitudes/latitudes. Note that we are using here two
+    PostGIS functions, ST_MakePoint and ST_SetSRID to help us define the geometry
+    in SQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can check how this new geometry is stored in the DB
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can see here that the geometry is encoded in a string which is the Well-Known
+    Binary (WKB) format, which is efficient to store geometries. I’ll not expand on
+    this, but don’t be surprised if you see this in your datasets, you might need
+    to decode this to a more readable format if needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we also need to also update the Stations class in our model.py file to
+    include this new field, and for this, we are using the type “Geometry” from **geoalchemy**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Last modification to make: we want the geometry to be automatically calculated
+    in the POST call (in main.py) using the latitude and longitude parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we are creating a point via a string using another format named WKTElement,
+    which is a way to encode geometry using human-readable strings. Our string is
+    then converted to geometry via the **geolalchemy** function WKTElement, which
+    implicitly converts it into the WKB format to be encoded in the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that “geom” is not JSON serializable, so we need to modify it or remove
+    it before sending back the station object via the API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build the final GET query
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The goal of the GET query is to retrieve all the stations within a 30km radius
+    from a city identified via its postal code and show the fuel latest price of a
+    certain type (also used in the query) of all the stations queried with a bunch
+    of prettified stuff like a normalized address or a google map link.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We are going to do this in two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First building an efficient SQL query to perform the joins and filtering operations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Modify the output of the query using python functions before sending the results
+    via the API
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Unlike other queries where the parameters were passed as a JSON in the body
+    of the request, we will use here another convention, in which the query parameters
+    are passed directly in the URL, see the example below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In FastAPI, this is done very naturally by simply adding inputs to the function
+    used to build the endpoint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first thing we want to retrieve now is the latitude and longitude of the
+    city associated with a postal code. If no city is associated with the postal code,
+    the API should return an error code stating that no postal code was found.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we are going to build a series of subqueries. Each subquery will not be
+    evaluated until the final query is fully executed. It will help us keep a readable
+    code and optimize the query as sqlalchemy ORM dynamically optimize the query based
+    on those subqueries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first subquery we want to make is to select all the stations from the Stations
+    table that are within a 30km radius of the city already queried.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: Numerous interesting things to note here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We select only a few columns in session.query( … ) and we are not keeping the
+    geom column which is done only for filtering purposes. In standard SQL, it would
+    have been made doing “SELECT station_id, adress, cp, city, latitude, longitude
+    FROM stations”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are using **ST_Distance**, an in-built function of geoalchemy used to compute
+    the distance between two geographies (another geoalchemy type).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ST_Distance could work also with geometries, but the output would become an
+    angular distance (remember that lat/lon are expressed in angles), which is not
+    what we want.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To convert geometries to geographies, we simply use another inbuilt function,
+    ST_GeoFromWKB, which will automatically project our geometry in their reference
+    system to a point on Earth.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next, we filter the Gasprices table based on the desired oil_type (SP95, Gazole,
+    etc..)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also need to filter the Gasprices table based on the latest prices available
+    in the dataset. This is not an easy task because all updates are not done at the
+    same time for all the prices. We are going to build the subquery in two steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we perform an aggregation by taking the station_id and the last update
+    date from the price_wanted_gas sub-table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: This information is then used to help us filter price_wanted_gas via a join
+    where only the rows with the latest update prices are kept. The “and_” method
+    allows us to use multiple conditions in our join operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we operate a final join between the last_price_full subtable (containing
+    all the latest prices of a given fuel) and the stations subtable (including all
+    the stations within a 30km radius) and retrieve all the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Arrived at that point, we retrieved a filtered list of relevant stations merged
+    with the relevant information from the GasPrices table (ie: prices) and we just
+    need to post-process the output to fit the requirements of the front. As the table
+    has been already cleaned and filtered at that point, this final postprocessing
+    step can be done in raw Python without impacting too much the performances.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will only elaborate a little on that final post-processing step as it is not
+    in the core of the article but fill free to check the [GitHub](https://github.com/jkaub/station-prices-app-full)
+    repository for more information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now test and verify that the query is returning the relevant output.
+    We could use a request in Python to check, but FastAPI also provides in-built
+    documentation for all your endpoint in which you can test your API, available
+    at [http://localhost:8000/docs](http://localhost:8000/docs)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d98f30901a0a542ae5e477d2d7662e46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of FastAPI in-built documentation, Author Illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: Containerizing the application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have an API up and running, we will finish this article by packaging
+    our application in containers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is how our project will be organized:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are going to use the Dockerfile in api/ to containerize the API, and use
+    docker-compose to manage simultaneously the API and the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The folder db/ is the volume the PostgreSQL container uses to persist the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Packaging our API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To package our API we will simply build a docker image that will replicate the
+    environment and dependencies required to run our API. This docker image will contain
+    everything necessary to run our API, including the code, runtime, system tools,
+    libraries, and configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do so, we need to write a Dockerfile which will contain the series of instructions
+    to set up a FastAPI environment. Writing a Dockerfile is relatively easy when
+    you understood the principle: it is like configuring a new machine from the beginning.
+    In our case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to install the relevant version of python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setup the working directory
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Copy the relevant files in our working directory (including the requirements.txt
+    which is mandatory to pip install all the libraries needed for the project
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Installing the libraries with pip install
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Expose FastAPI port
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Run the command that initializes the API (uvicorn main:app — reload)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Translated in Docker language, this becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also need to take care of the requirement.txt file in which we precise all
+    the libraries used and their versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With these updates made, we can now build the image of our container (from
+    within the folder with the Dockerfile):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using docker-compose
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**docker-compose** is a tool for defining and running multi-container Docker
+    applications. In our case, we want to run both our SQL container as well as the
+    FastAPI container. I will assume you have already docker-compose installed on
+    your computer. If this is not the case, please follow [those instructions](https://docs.docker.com/compose/install/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to use docker-compose, we simply need to configure a `docker-compose.yml`
+    file in the root directory of our project, which defines the services that make
+    up our application and their respective configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `docker-compose.yml` file uses YAML syntax to define a set of services,
+    each representing a container that will be run as part of the global application.
+    Each service can specify its image, build context, environment variables, persistent
+    volumes, ports, etc…
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is how looks our docker-compose.yml:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, we are defining two services:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: one for the API, named now FastAPI, which is built on the Docker image fast-api-station
+    that we created in the previous sub-section. For this service, we are exposing
+    port 80 from the container to our local port 8000.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: one for the DB, running on the PostGIS image. We are specifying the same environmental
+    variable as we were doing before and the same volume to persist in the database.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One last small modification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We used to connect to the SQL engine using the local IP. As we are now running
+    the API and PostgreSQL in two different environments, we need to switch the way
+    we connect to the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'docker-compose manage on its own network between the different containers and
+    make it easy for us to connect from one service to another. In order to connect
+    to the SQL service from the API service, we can specify the name of the service
+    to which we want to connect in the engine creation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running the back-end
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have configured everything, we can just run our back-end application
+    by doing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the API will be available via port 8000
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have been working on the back end of our GasFinder Application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We decided to store all the relevant data of the Application in our own storage
+    solution to avoid all problems that could have been related to relying on a third-party
+    connection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We leveraged Docker and PostgreSQL+PostGIS to build a database allowing us to
+    perform efficient geo-queries and used the Python framework FastAPI + SQLModel
+    to build an efficient API that can be used to interact with the database and serve
+    data to the frontend developed in the previous articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As of now, we have a Prototype based on “production standard” tools (React,
+    PostgreSQL, FastAPI… ) that can run 100% locally. In the final part of this series,
+    we will have a look at how to make the application live and automatically update
+    our SQL tables to always provide the latest information available.
+  prefs: []
+  type: TYPE_NORMAL

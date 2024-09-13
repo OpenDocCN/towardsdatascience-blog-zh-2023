@@ -1,0 +1,351 @@
+- en: 4 Ideas for Physics-Informed Neural Networks that FAILED
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/4-ideas-for-physics-informed-neural-networks-that-failed-ce054270e62a](https://towardsdatascience.com/4-ideas-for-physics-informed-neural-networks-that-failed-ce054270e62a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Here is a list of extensions for PINNs that either did not improve their performance,
+    or broke them completely — so you do not have to try them yourself.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://rabischof.medium.com/?source=post_page-----ce054270e62a--------------------------------)[![Rafael
+    Bischof](../Images/a1d468ea5b61c26a18541f0c0f42c5c6.png)](https://rabischof.medium.com/?source=post_page-----ce054270e62a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ce054270e62a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ce054270e62a--------------------------------)
+    [Rafael Bischof](https://rabischof.medium.com/?source=post_page-----ce054270e62a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ce054270e62a--------------------------------)
+    ·9 min read·Feb 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cf70f1cea6074bd3edb27d1586c5dfd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [DeepMind](https://unsplash.com/es/@deepmind?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the world of [Physics-informed neural networks (PINNs)](https://www.sciencedirect.com/science/article/pii/S0021999118307125)
+    [1], just like in any other emerging field of Machine Learning, it seems like
+    everyone is eager to share the amazing techniques they have discovered for improving
+    these models. I myself am not an exception, having published three articles with
+    useful extensions for improving the performance of PINNs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Improving PINNs through Adaptive Loss Balancing](https://medium.com/@rafael.bischof07/improving-pinns-through-adaptive-loss-balancing-55662759e701)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Mixture of Experts for PINNs (MoE-PINNs)](https://medium.com/@rafael.bischof07/mixture-of-experts-for-pinns-moe-pinns-6520adf32438)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[10 useful Hints and Tricks for improving Physics-Informed Neural Networks
+    (PINNs)](https://medium.com/@rafael.bischof07/10-useful-hints-and-tricks-for-improving-pinns-1a5dd7b86001)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: However, what often goes untold is the countless ideas that did not pan out.
+    The reality is that the journey to enhance PINNs is not always a straightforward
+    one, and many promising ideas end up falling by the wayside.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have not failed. I’ve just found 10,000 ways that won’t work. — **Thomas A.**
+    **Edison**
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this article, I want to explore some promising ideas for enhancing PINNs
+    that, unfortunately, did not deliver the desired results. So, in the spirit of
+    Thomas Edison, join me as we dive into the abyss of unsuccessful extensions to
+    PINNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As usual, the article is accompanied by a notebook containing the concepts
+    introduced in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## Burgers_PINN_fails.ipynb'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Colaboratory notebook
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: drive.google.com](https://drive.google.com/file/d/1dEJeWjmHjmKBzpDnQQqw0IIEXlnr-Rj1/view?usp=sharing&source=post_page-----ce054270e62a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'PINNs differ from classical neural networks in the way they process and represent
+    data. This immediately becomes apparent when looking at the TSNE plots of the
+    latent representations in a PINN:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f7fccf8759b3badfc2883e2a6582adc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '3D TSNE representation of latent vectors in a PINN with three layers trained
+    on the Kirchhoff PDE. Left: reference solution of the Kirchhoff PDE. Center: representations
+    in first (blue), second (green) and third layer (orange). Right: data-points coloured
+    according to the x + y values of the collocation points, where x controls the
+    amount of red and y the amount of blue in the pixel colour. Figure by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a classical neural network, collocation points evaluating to similar results
+    would be represented close together in the latent vectors. This is not the case
+    in PINNs. Not only do the representations of each layer live in completely different
+    regions of the manifold, even the coordinates of the collocation points do not
+    mix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These peculiar properties can make working with PINNs difficult and counter-intuitive,
+    even for experienced data scientists. While progress in this field has mainly
+    come from the theoretical and mathematical community, empirically-driven researchers
+    have struggled to get a foothold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article is an attempt at increasing the understanding of the inner workings
+    of PINNs by showcasing extensions and ideas that did NOT work, meaning that they
+    either did not yield any improvement in accuracy, or broke the training pipeline
+    of PINNs completely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Batch Normalisation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Batch normalisation is a popular technique in deep learning for normalising
+    the activations of each layer, which can improve the training stability and reduce
+    overfitting. However, batch normalisation can not be used in PINNs due to the
+    particular nature of their training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In PINNs, the training process involves minimising a loss function that measures
+    the discrepancy between the predictions of the model and the underlying physics
+    of the system. These laws usually do not contain information about how to deal
+    with inputs that are dynamically shifted and scaled based on the mean and standard
+    deviation of the points in the mini-batch. By messing with the data based on statistics
+    from a stochastic batch of samples, batch normalisation “breaks” the physics that
+    guide the training of PINNs and should therefore not be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatives to batch normalisation could be layer normalisation, which normalises
+    the values on the nodes based on the values on the nodes in the same layer, or
+    learnable normalisation, where a dense layer is in charge of producing the shift
+    and scale and is regularised to make the values in a layer have zero mean and
+    unit variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, after conducting various experiments, I have found that normalising
+    on a layer-level may not be necessary in PINNs. In fact, an effective and straightforward
+    way to speed up the convergence of the model is by adding a layer right after
+    the input to the network. This layer scales the collocation points to a range
+    of [-1, 1] by using the extents of the physical domain where the collocation points
+    are sampled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. ReLU**(n+1) activation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is crucial to ensure that the activation function used in the network is
+    differentiable a sufficient number of times. This is because the outputs of PINNs
+    are derived multiple times with respect to the input (based on the order of differentiation
+    of the PDE) and an additional time with respect to the model’s weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, the activation function should have n+1 non-zero derivatives,
+    where n is the order of differentiation in the PDE being solved. This requirement
+    eliminates the popular activation function ReLU, as its first derivative is constant
+    (either 0 or 1) and its second derivative is zero everywhere (excluding the undefined
+    zero point).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, raising the ReLU activation to a power n, it can be made differentiable
+    n times, which could be a promising idea to overcome this limitation. Even better,
+    by initialising PINNs with several layers in parallel, each using ReLU raised
+    to a different value k ≤ n+1, we would ensure that patterns in different orders
+    of differentiation are captured by different parts of the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/951539246a5ad15d9861eb75b5ac2309.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example architecture of a PINN with several parallel layers using the ReLU activation
+    raised to a different power k ≤ n + 1\. Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, to my great disappointment, this architecture failed to converge. I
+    can only conjecture that this is caused by the layers with power k not receiving
+    updates from terms in the loss operating on higher orders of differentiation.
+    But, at inference time, when predicting u, all layers contribute to its calculation,
+    even if not having been informed by all components of the PDE. This probably leads
+    to injection of noise, thus limiting the architecture’s modelling capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Convolutional Neural Networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When solving PDEs on a 2D domain, one could be tempted to sample the collocation
+    points in a grid and then treating them like pixels in an image. This would then
+    allow the use of a CNN, which, thanks to its inductive bias of spatial invariance,
+    is a widely used architecture for image processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, remember that PINNs are trained through physical laws. These laws generally
+    do not contain information about how to aggregate values from several collocation
+    points. Therefore, having a kernel that takes more than one collocation point
+    into account does not make much sense. In addition, a great property of CNNs is
+    the fact that they can find localised patterns at several levels of abstraction,
+    with the first few layers acting essentially as edge detectors. But in PINNs,
+    the inputs to the kernels of the first layers would just be coordinates of equally
+    spaced collocation points. There are not patterns to be learned from that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to make CNNs work, you would have to [modify the PINNs’ problem setting
+    and objective](https://arxiv.org/abs/2004.13145) [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Vector Quantisation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Vector quantisation](https://arxiv.org/abs/1711.00937) [3] is a machine learning
+    technique that maps high-dimensional continuous data into a set of discrete symbols.
+    The idea behind using vector quantisation layers in PINNs is to introduce a discrete
+    component that would help capturing discontinuities in PDEs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neural networks are notoriously bad at modelling sharp discontinuities, as their
+    approximation would require the use of a step function which is not per-se differentiable.
+    By incorporating vector quantisation into the architecture, one could be forgiven
+    for thinking that PINNs would be better equipped to handle these sharp transitions.
+    This is because the vector quantisation layer essentially serves as a “discretisation”
+    step, breaking the continuous input space into smaller, more manageable segments
+    with sharp boundaries between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ad5a78570a2e614a4e082d450b38624.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sketch of how what Vector Quantised PINNs (VQPINNs) could look like. Figure
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the coordinates x and y are mapped onto a higher-dimensional space using
+    a dense layer. Then the cosine-similarity between this vector and a set of vectors
+    in a trainable dictionary is calculated and the most similar vector is selected
+    to serve as additional input to the PINN. The PINN thus receives as input the
+    collocation points as well as a vector originating from a discrete operation.
+    This operation is made approximately differentiable by a [straight-through estimator](https://arxiv.org/abs/1308.3432)
+    [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, adhering to the topic of this article, this endeavour was filled with
+    frustration and disappointment, as, again, a promising idea did not bear fruit.
+    When I trained a PINN on the [Buckley-Leverett equation](https://arxiv.org/pdf/2112.14826.pdf)
+    [5] featuring a discontinuity across the entire domain, my model indeed broke
+    the it into two segments with a sharp boundary in-between. But the boundary was
+    never at the correct place and the modelling of the governing equation inside
+    the sub-region was unsatisfactory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b7125210073ddb489644e79a956acbe1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Buckley-Leverett PDE with a sharp discontinuity across the entire domain. Figure
+    by [Diab et al.](https://arxiv.org/pdf/2112.14826.pdf) [5]
+  prefs: []
+  type: TYPE_NORMAL
+- en: My best guess is that the discontinuities made a hard split of the physical
+    domain, with different parts of the network focussing on distinct sub-domains.
+    This means that parts of the network could be disconnected from boundary- or initial
+    conditions if they applied only to regions outside of the own sub-domain. This
+    is also why ensembles of PINNs, like [MoE-PINNs](https://medium.com/@rafael.bischof07/mixture-of-experts-for-pinns-moe-pinns-6520adf32438)
+    [6], must ensure that the gating network remains a continuous function, i.e. do
+    not make the softmax operation too sharp. Otherwise, the boundary- and initial
+    conditions are not enforced on the entire domain, thus leading to incorrect solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The successful implementation and extension of PINNs is a difficult and oftentimes
+    counter-intuitive endeavour. The fact that established (batch normalisation, CNNs)
+    or promising features (vector quantisation) coming from other fields of machine
+    learning can not be applied to PINNs goes to show that practitioners need a deep
+    understanding of the inner workings in order to propose effective extensions and
+    ideas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such ideas are dearly needed for making PINNs more robust, speeding up convergence,
+    and finally making them a promising alternative to established numerical methods
+    like the Finite Element Method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thank you for taking the time to read this article. I encourage you to try
+    out these ideas for yourself and would be thrilled to hear about someone adding
+    a small tweak to these ideas that suddenly made them work! To pave the way for
+    such discoveries, I have set up a notebook where you can play with the implementation
+    of these ideas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## Burgers_PINN_fails.ipynb'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Colaboratory notebook
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: drive.google.com](https://drive.google.com/file/d/1dEJeWjmHjmKBzpDnQQqw0IIEXlnr-Rj1/view?usp=sharing&source=post_page-----ce054270e62a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have more suggestions or recommendations, I would love to hear about
+    them in the comments! You can find more information about my colleague Michael
+    Kraus on [mkrausai.com](http://mkrausai.com/) and about myself on [rabischof.ch](http://rabischof.ch/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] M. Raissi, P. Perdikaris, and G. E. Karniadakis, Physics-informed neural
+    networks: A deep learning framework for solving forward and inverse problems involving
+    nonlinear partial differential equations, *Journal of Computational Physics* 378
+    (2019), 686–707.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Gao, Han, Luning Sun, and Jian-Xun Wang. “PhyGeoNet: Physics-informed geometry-adaptive
+    convolutional neural networks for solving parameterized steady-state PDEs on irregular
+    domain.” *Journal of Computational Physics* 428 (2021): 110079.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Van Den Oord, Aaron, and Oriol Vinyals. “Neural discrete representation
+    learning.” *Advances in neural information processing systems* 30 (2017).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Bengio, Yoshua, Nicholas Léonard, and Aaron Courville. “Estimating or propagating
+    gradients through stochastic neurons for conditional computation.” *arXiv preprint
+    arXiv:1308.3432* (2013).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Diab, Waleed, and Mohammed Al Kobaisi. “PINNs for the Solution of the Hyperbolic
+    Buckley-Leverett Problem with a Non-convex Flux Function.” *arXiv preprint arXiv:2112.14826*
+    (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] R. Bischof and M. A. Kraus, “[Mixture-of-Experts-Ensemble Meta-Learning
+    for Physics-Informed Neural Networks](https://scholar.google.com/scholar?oi=bibs&cluster=12593425659851579449&btnI=1&hl=en)”,
+    Proceedings of 33\. Forum Bauinformatik, 2022'
+  prefs: []
+  type: TYPE_NORMAL

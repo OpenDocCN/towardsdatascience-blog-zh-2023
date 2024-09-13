@@ -1,0 +1,512 @@
+- en: 'Aliasing: Your Time Series is Lying to You'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/aliasing-your-time-series-is-lying-to-you-c073d1aa7fdd](https://towardsdatascience.com/aliasing-your-time-series-is-lying-to-you-c073d1aa7fdd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An intuitive introduction to signal aliasing with Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)[![Harrison
+    Hoffman](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------)
+    [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----c073d1aa7fdd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c073d1aa7fdd--------------------------------)
+    ·12 min read·Jul 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63aeedd4da3a06e394880eb32ae045ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Aliased Fan. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series data is everywhere and full of rich information. Financial markets,
+    industrial processes, sensor readings, health monitors, network traffic, and economic
+    indicators, to name a few, are example applications where time series analysis
+    and signal processing are necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With advances in deep learning and other time series forecasting techniques
+    taking the spotlight, attention has been drawn away from some fundamental properties
+    of time series. Before embarking on any time series project, we must ask ourselves,
+    “Can we trust this data?”
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will explore a pathological property of discrete time series known
+    as aliasing. Anyone concerned with frequency or seasonality analysis of time series
+    must be keenly aware of aliasing and how it affects their bottom line. We will
+    use the terms “time series” and “signal” interchangeably. Enjoy!
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Motivating Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To understand what aliasing is and how deceiving it can be, let’s begin with
+    a canonical example. We will attempt to answer a question about an elementary
+    oscillating signal. If you’re unfamiliar with aliasing, the answer may be shocking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Question
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Consider the following time series plotted over a one second duration. Each
+    dot represents a sample from a signal, and the lines are linear interpolations
+    through the samples that (supposedly) help us visualize the signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09b7597b57312bb526f98592e46b1baa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An Oscillating Signal Sampled Over One Second. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, assume the underlying signal from which we are sampling is [continuous](https://en.wikipedia.org/wiki/Continuous_or_discrete_variable).
+    This means, at any time t, it is possible to measure the signal’s value. Due to
+    computational and memory constraints, we pick a finite number of time points to
+    sample the signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The question we need to answer is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How many peaks does the underlying signal have?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Said differently, what is the [frequency](https://en.wikipedia.org/wiki/Frequency)
+    at which the signal oscillates? Before reading ahead to the answer, think critically
+    about this question. How would you go about answering it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perhaps an intuitive first approach would be to count the number of dots that
+    equal 1\. By doing this, you might say the signal has 10 peaks during the second.
+    That is, the signal has a [fundamental frequency](https://en.wikipedia.org/wiki/Fundamental_frequency)
+    of 10 hertz (Hz), or 10 repeating occurrences per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Answer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s impossible to know how many peaks the underlying signal has without more
+    information.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You read that right. If all we have is the data given in this example, it’s
+    impossible to know with 100% certainty what the fundamental frequency of the underlying
+    signal is. Lucky for us, we know how this data was generated and what the true
+    frequency content should be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Believe it or not, the underlying signal has 90 peaks during the second. That
+    is, the fundamental frequency is not 10 Hz, but 90 Hz. This means, in a one second
+    duration, the signal oscillates 90 times. Here’s the equation for the signal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/85cdffc1c801c1efd80ee2f12f29e9d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Equation for the Underlying Signal. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This signal is a pure cosine with a frequency of 90 Hz, and the plot above
+    samples from this signal at *discrete time* points during the second. If you’re
+    like me and still struggling to accept this, consider the Python code that was
+    used to generate the example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code plots samples from the pure 90 Hz cosine, exactly as the equation
+    reads. So why do we only see 10 peaks in the original plot? The answer lies in
+    the `SAMPLING_RATE` parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are sampling the signal 100 times per second, or at 100 Hz. The time array,
+    `t = np.arange(0, NUM_SECONDS, 1 / SAMPLING_RATE)` , generates 100 time points
+    from 0 to 1 at which we sample the cosine. The time array looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are 100 time samples in the array because we are sampling from the signal
+    at 100 Hz for 1 second. The issue is **a 100 Hz sampling rate isn’t high enough**
+    to capture a signal that oscillates at 90 Hz — this phenomenon is called **aliasing**.
+    We can see the aliasing with the following plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e02497b62f7780389aeeee03af947a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An Aliased Signal. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this plot, we’ve zoomed in on the first 0.25 seconds of the signal to get
+    a better view of the aliasing. The orange line represents the underlying signal
+    — a 90 Hz cosine function. The blue dots represent samples taken at 100 Hz, or
+    every 0.01 seconds. The samples clearly do a poor job of approximating the signal.
+    Sampling the signal 100 times a second, or 25 times in 0.25 seconds, isn’t enough
+    to characterize the 90 Hz cosine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To capture this higher frequency information, we have to increase the sampling
+    rate of the system:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/437c47de827bdf02388b7140b1d9e904.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Increasing the Sampling Rate of the System. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It may not be surprising that increasing the sampling rate results in a better
+    approximation of the signal. However, the implications of this phenomenon are
+    profound. Two critical questions arise from this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How frequently do we need to sample a signal to sufficiently approximate its
+    behavior?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can we detect or prevent aliasing?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will try to tackle these questions at a high level in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nyquist-Shannon Sampling Theorem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With an understanding of what aliasing is and the catastrophic effects it can
+    have on time series data, we need to know how often to sample a signal to preserve
+    characteristics of interest. [The Nyquist-Shannon Sampling Theorem](https://www.youtube.com/watch?v=FcXZ28BX-xE)
+    gives us insight into this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a few variants of the Nyquist-Shannon Sampling Theorem, but the wording
+    we’re interested in goes something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the highest frequency in a continuous signal is F units/time, you can capture
+    all of the information in the signal by sampling at least 2F units/time.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This simple yet powerful theorem gives us everything we need to properly sample
+    from signals that are [band-limited](https://en.wikipedia.org/wiki/Bandlimiting).
+    This means Nyquist theorem assumes there are a finite number of frequencies in
+    the underlying signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, an example will help us get a better grasp of Nyquist theorem and
+    its implications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example — A Pure Cosine
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s return to the 90 Hz cosine sampled at 100 Hz. Here’s the code again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the sampled signal plotted over 1 second:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b5379bb697c68b4c7cd33f0fc036c01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An Aliased Signal. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we will analyze the sampled cosine in the [frequency domain](https://en.wikipedia.org/wiki/Frequency_domain#:~:text=In%20mathematics%2C%20physics%2C%20electronics%2C,to%20frequency%2C%20rather%20than%20time.)
+    by computing its fast [Fourier transform](https://www.thefouriertransform.com/)
+    (FFT). The FFT gives us a clearer picture of the frequency content in the signal,
+    and it will deepen our understanding of aliasing. Here’s the code to compute the
+    FFT of the sampled signal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the corresponding plot of the FFT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c241b92b2b1604137f26e2d5b8fbe1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The FFT of the Aliased Signal. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This plot shows the power, or strength, contained at each frequency in the signal.
+    In this case, there is only one frequency in the sampled signal, and this is represented
+    by spikes at -10 Hz and 10 Hz. A [negative frequency](https://www.khanacademy.org/science/electrical-engineering/ee-circuit-analysis-topic/ee-ac-analysis/v/ee-negative-frequency#:~:text=Real%20sinusoidal%20signals%20have%20only,one%20with%20a%20negative%20exponent.)
+    is present because this is a real-valued signal, and the FFT is a complex-valued
+    transformation. For this example, all you need to know is that the negative axis
+    is a mirror image of the positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We should make two important observations when looking at this FFT. The first
+    is that all the frequency content concentrates at +/- 10 hz, despite the underlying
+    signal being a 90 Hz cosine. The second observation is that the absolute value
+    of the frequency axis only goes to 50 Hz, which is half of the sampling rate of
+    100 Hz. From this, we draw the following conclusions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of the implications of Nyquist Theorem, the FFT can only detect frequencies
+    in a sampled signal that are less than half the sampling rate.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If a frequency higher than half the sampling rate is present in the underlying
+    signal, t**he true frequency will alias to a false lower frequency**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To solidify this idea further, notice what happens to the sampled signal, and
+    it’s FFT, as the frequency of the underlying signal increases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04ed328062c595b5b788ed0d99d776be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sampling from Higher Frequency Cosines at 100 Hz. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this animation, we observe that the FFT can detect increasing frequencies
+    in the signal up to the Nyquist frequency of 50 Hz. Once the underlying frequency
+    exceeds 50 Hz, the signal begins to alias in the opposite direction, and the FFT
+    detects increasingly lower frequencies. In particular, frequencies beyond 50 Hz
+    predictably map back to a frequency between 0 and 500 Hz in the sampled signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this example, if we want to detect the 90 Hz cosine, we need to increase
+    the sampling rate beyond 180 Hz to satisfy Nyquist theorem. Here’s an animation
+    showing the effect of increasing the sampling rate on both the sampled signal
+    and its FFT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f1c5745fefa441ebe3ec18036872d3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Increasing the Sampling Rate. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the sampling rate increases, the domain of the FFT increases to (+/-) half
+    of the sampling rate (the Nyquist frequency). Once the sampling rate exceeds 180
+    Hz, the dominant frequency in the FFT stays at (+/-) 90 Hz, and there is no longer
+    any aliasing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bonus:** You might have noticed the FFT has more than two non-zero values
+    at some samping rates. This is a phenomenon known as [spectral leakage](https://dspillustrations.com/pages/posts/misc/spectral-leakage-zero-padding-and-frequency-resolution.html),
+    and it happens when the sampled signal is not perfectly periodic. There are ways
+    around this in practice, but this is generally a limitation of sampling.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Practical Implications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After this example, you might still be wondering whether aliasing and Nyquist
+    theorem are relevant considerations in your time series project. While this depends
+    on the application and project requirements, here are some general guidelines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sensor data:** When collecting data from sensors such as temperature sensors,
+    pressure sensors, or accelerometers, the sampling rate needs to be carefully chosen
+    to avoid aliasing. If the sensor outputs contain high-frequency components, inadequate
+    sampling rates can lead to aliasing.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Audio and music processing:** In digital audio processing, aliasing can occur
+    when sampling [analog](https://saving.em.keysight.com/en/knowledge/glossary/oscilloscopes/what-is-an-analog-signal-meaning-definition#:~:text=at%20set%20intervals.-,What%20is%20an%20analog%20electrical%20signal%3F,all%20examples%20of%20analog%20signals.)
+    audio signals. If the sampling rate is not high enough to capture the entire frequency
+    range of the audio signal, high-frequency components can fold back into the audible
+    range, resulting in unwanted artifacts and distortion.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Video processing:** Video signals also need to be sampled at a sufficiently
+    high rate to avoid aliasing. If the sampling rate is too low, high-frequency components
+    in the video signal can cause aliasing, leading to visual artifacts and degradation
+    in the image quality.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Financial time series analysis:** In financial markets, high-frequency trading
+    involves capturing market data at very short time intervals. If the sampling rate
+    is inadequate, aliasing can distort the underlying patterns in the data, leading
+    to incorrect trading decisions and financial analysis. This is one motivation
+    for analyzing financial time series at [high frequency resolutions](/financial-machine-learning-part-0-bars-745897d4e4ba)
+    close to the transaction level, rather than aggregating the data into arbitrary
+    time bins.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With any time series project, a major key to success is to know your data and
+    domain well. Does it make sense to aggregate data to a lower frequency, or will
+    this eliminate too much valuable information? Always check your assumptions and
+    make sure you’re analyzing your time series at the correct resolution.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Overcoming Aliasing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we understand what aliasing is and when it can occur, we should ask
+    ourselves what we can do to combat it. Years of research in time series analysis
+    and signal processing has gone into aliasing, and we won’t cover the solutions
+    in depth here. Instead, here are three common ways to deal with aliasing in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increase the Sampling Rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most effective way to combat aliasing is to increase the sampling rate.
+    However, this approach incurs higher computational costs and increased data storage
+    requirements. In short, if you suspect aliasing, and you have the means, increasing
+    the sampling rate is the best option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anti-Aliasing Filters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Anti-aliasing](https://en.wikipedia.org/wiki/Anti-aliasing_filter) filters
+    are crucial components in signal processing systems. These filters are designed
+    to attenuate or eliminate frequency components above the Nyquist frequency, preventing
+    them from aliasing and corrupting the signal. By applying an anti-aliasing filter
+    before sampling or downsampling a signal, we remove unwanted high-frequency components,
+    ensuring a clean and accurate representation of the signal. Butterworth, Chebyshev,
+    and elliptic filters are commonly employed anti-aliasing filter designs, each
+    offering different trade-offs between filter performance and complexity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compressed Sensing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Compressed sensing](https://www.youtube.com/watch?v=SbU1pahbbkc) is a relatively
+    new technique that enables the reconstruction of sparse signals using a limited
+    number of non-uniform samples, well below the Nyquist rate. This method capitalizes
+    on the sparsity or compressibility of signals in specific domains, such as wavelets
+    or Fourier analysis, facilitating precise signal recovery while avoiding aliasing
+    effects.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While compressed sensing may not be applicable in all scenarios, its effectiveness
+    is remarkable when it proves suitable. In particular, compressed sensing has demonstrated
+    significant success in addressing image compression challenges due to the inherent
+    compressibility of images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Aliasing is a fundamental limitation of discrete time series that can deceive
+    us and lead to incorrect interpretations of data. This article has provided an
+    intuitive introduction to aliasing using a simple example of an oscillating signal.
+    We learned that aliasing occurs when the sampling rate is insufficient to capture
+    the frequency content of the underlying signal accurately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Nyquist-Shannon Sampling Theorem was introduced as a guideline for determining
+    the minimum sampling rate required to avoid aliasing. By sampling at least twice
+    the highest frequency in the signal, we can preserve the information in the original
+    signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Practical implications of aliasing were discussed across various domains, such
+    as sensor data, audio and music processing, video processing, and financial time
+    series analysis. In each case, choosing an appropriate sampling rate is crucial
+    to avoid aliasing artifacts and distortion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To combat aliasing, three common approaches were presented: increasing the
+    sampling rate, using anti-aliasing filters, and employing compressed sensing techniques.
+    Each method has its advantages and considerations, depending on the specific application
+    and resource constraints.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding aliasing and its implications is essential for anyone working
+    with time series data. By being aware of aliasing and employing appropriate techniques,
+    we can ensure accurate and reliable analysis of our data, leading to more informed
+    decision-making and insights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Become a Member:* [*https://harrisonfhoffman.medium.com/membership*](https://harrisonfhoffman.medium.com/membership)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Fundamental_frequency](https://en.wikipedia.org/wiki/Fundamental_frequency)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Frequency](https://en.wikipedia.org/wiki/Frequency)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Anti-aliasing_filter](https://en.wikipedia.org/wiki/Anti-aliasing_filter)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/watch?v=SbU1pahbbkc](https://www.youtube.com/watch?v=SbU1pahbbkc)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[https://medium.com/r?url=https%3A%2F%2Ftowardsdatascience.com%2Ffinancial-machine-learning-part-0-bars-745897d4e4ba](https://medium.com/r?url=https%3A%2F%2Ftowardsdatascience.com%2Ffinancial-machine-learning-part-0-bars-745897d4e4ba)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/watch?v=FcXZ28BX-xE](https://www.youtube.com/watch?v=FcXZ28BX-xE)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

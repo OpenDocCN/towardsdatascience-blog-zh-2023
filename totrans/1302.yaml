@@ -1,0 +1,511 @@
+- en: 'Image Classification with PyTorch and SHAP: Can you Trust an Automated Car?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea](https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Build an object detection model, compare it to intensity thresholds, evaluate
+    it and explain it using DeepSHAP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[![Conor
+    O''Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)
+    [Conor O''Sullivan](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)
+    ·14 min read·Mar 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e0f878484110a05545a3b8a001d4b868.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '(source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the world was less chaotic self-driving cars would be simple. But it’s not.
+    To avoid serious harm, AI has to consider many variables — speed limits, traffic
+    and obstacles in the road (such as a distracted human). AI needs to be able to
+    detect these obstacles and take appropriate actions when encountered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thankfully, our application is not as complicated. Even more, thankfully, we
+    will be using tin cans instead of humans. We will build a model used to detect
+    this obstacle in front of a mini-automated car. The car should **STOP** if the
+    obstacle gets too close or **GO** otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At the end of the day, this is a binary classification problem. To tackle it,
+    we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a benchmark using an intensity threshold
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build a CNN using PyTorch
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluate the model using accuracy, precision and recall
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interpret the model using SHAP
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will see that the model not only performs well but the *way it makes predictions*
+    also seems reasonable. Along the way, we will discuss the Python code and you
+    can find the full project on [GitHub](https://github.com/conorosully/medium-articles/blob/master/src/image_tools/pytorch_image_classification.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imports and Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In Figure 1 you can see examples of the images in our dataset. These are all
+    of dimension 224 x 224\. If there is no black can or if the can is far away the
+    image is classified as GO. If the can gets too close, the image is classified
+    as STOP. You can find the full dataset on [Kaggle](https://www.kaggle.com/datasets/conorsully1/jatracer-images).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c97bfc3b7fd98e5ba65bfc0a2eadf47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: example images (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We display the above images using the code below. Notice the names of the images.
+    It will always start with a number. This is the **target variable**. We have 0
+    for GO and 1 for STOP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Benchmark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we get to the modelling, it is worth creating a benchmark. This can provide
+    some insight into our problem. More importantly, it gives us something to compare
+    our model results to. Our more complicated deep learning model should outperform
+    the simple benchmark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Figure 1 we can see that the tin can is darker than it’s surroundings. We’re
+    going to take advantage of this when creating our benchmark. That is we will classify
+    an image as STOP if it has many dark pixels. Getting to that point will require
+    a few steps. For each image, we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Greyscale so each pixel has a value between 0 (black) and 255 (white)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using a cutoff, convert each pixel to a binary value — 1 for dark pixels and
+    0 for light
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate average intensity — the percentage of dark pixels
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the average intensity is above a certain percentage, we classify the image
+    as STOP
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Combined steps 1 and 2 is a type of feature engineering method for image data.
+    It is known as an **intensity threshold**. You can read more about this and other
+    feature engineering methods in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/feature-engineering-with-image-data-14fe4fcd4353?source=post_page-----4d8d12714eea--------------------------------)
+    [## Feature Engineering with Image Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cropping, grayscale, RGB channels, intensity thresholds, edge detection and
+    colour filters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/feature-engineering-with-image-data-14fe4fcd4353?source=post_page-----4d8d12714eea--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We apply the intensity threshold using the function below. After scaling, a
+    pixel will have a value of either 0 (black) and 1 (white). For our application,
+    it makes sense to invert this. That is so pixels that are originally dark will
+    be given a value of 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In Figure 2, you can see some examples of when we apply the intensity threshold.
+    We are able to vary the cutoff. A smaller cutoff means we include less background
+    noise. The downside is we capture less of the tin can. In this case, we’ll go
+    with a cutoff of 60.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53f27a71b447255ad4b9407909dd5557.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: feature engineering with an intensity threshold (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load all our images (line 5) and target variables (line 6). We then apply
+    the intensity threshold to each of these images (line 9). Note that we have set
+    **invert=True**. Finally, we calculate the average intensity of each of the processed
+    images (line 10). In the end, each of the images is represented by a single number
+    — average intensity. This can be interpreted as the **percentage of dark pixels.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Figure 3 gives the box plots of the average intensity for all the images labelled
+    as GO and STOP. In general, we can see the values are higher for STOP. This makes
+    sense — the can is closer and so we will have more dark pixels. The red line is
+    at 6.5%. This seems to separate the image classes well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bbee980983566b9bd4f150e16fa3a23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: average intensity by target variable (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use a cutoff of 6.5% to make predictions (line 2). That is if the percentage
+    of dark pixels is above 6.5% it is predicted as STOP (1) otherwise we predict
+    GO (0). The remaining code is used to evaluate these predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the end, we have an accuracy of 82%, a precision of 77.1% and a recall of
+    82.96%. Not bad! In the confusion matrix, we can see that most of the errors are
+    due to false positives. These are images predicted as STOP when we should GO.
+    This corresponds to the box plot in Figure 3\. See the long tail for the GO intensity
+    values that are above the red line. This could potentially be caused by background
+    pixels increasing the number of dark pixels in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ff7962fb40f317ad80e85ae5e87da27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: confusion matrix of benchmark predictions (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convolutional Neural Network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If an AI car was only 82% accurate you’d probably be a bit concerned. So let’s
+    move on to the more complicated solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We start by defining the **ImageDataset** class. This is used to load our images
+    and target variables. As parameters, we need to pass in the list of all image
+    paths and methods used to transform the images. Our target variables will be tensors
+    — [1,0] for GO and [0,1] for STOP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use common image transformations. To help create a more robust model,
+    we will Jitter the color (line 2). This will randomly vary the brightness, contrast,
+    saturation and hue of the image. We also normalise the pixel values (line 4).
+    This will help the model converge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We load all our image paths (line 1) and randomly shuffle them (line 4). We
+    then create **ImageDataset** objects for our training (line 8) and validation
+    data (line 9). To do this we’ve used an 80/20 split (line 7). In the end, we will
+    have **3,892** images in the training set and **974** images in the validation
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point, there is actually no data loaded to memory. Before we can use
+    the data to train PyTorch models, we need to create **DataLoader** objects. For
+    the **train_loader**, we have set **batch_size=128**. This allows us to iterate
+    over all the training images loading 128 of them at a time. For the validation
+    images, we set the batch size to the full length of the validation set. This allows
+    us to load all 974 images at once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Model architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next we define our CNN architecture. You can see a diagram of this in Figure
+    5\. We start with 224x224x3 image tensors. We have 3 convolutional and max pooling
+    layers. This leaves us with 28x28x64 tensors. This is followed by a drop-out layer
+    and two fully connected layers. We use ReLu activation functions for all hidden
+    layers. For the output nodes, we use the sigmoid function. This is so our predictions
+    will be between 0 and 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c6789b10af43a4c11133cccbecc3dcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: CNN architecture (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We capture this architecture in the **Net** class below. One thing to point
+    out is the use of **nn.Sequential()** functions. You must use this method of defining
+    PyTorch models otherwise the SHAP package will not work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We create a model object (line 2). We move this to a GPU (lines 6–7). I am using
+    an Apple M1 laptop. You will have to set the device that is appropriate for your
+    machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: We define our loss function (line 2). As our target variable is binary, we will
+    use binary cross-entropy loss. Lastly, we use Adam as our optimizer (line 5).
+    This is the algorithm used to minimize the loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now for the fun part! We train our model for 20 epochs and select the one that
+    had the lowest validation loss. The model is available in the same [GitHub Repo](https://github.com/conorosully/medium-articles/tree/master/models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: One thing to mention is the **optimizer.zero_grad()** line. This sets the gradients
+    of all parameters to 0\. For each training iteration, we want to update the parameters
+    using the gradients from only that batch. If we do not zero the gradients they
+    will accumulate. This means we will update the parameters using a combination
+    of the gradients from the new and old batches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now lets see how well this model has done. We start by loading our saved model
+    (line 2). It is important to switch this to evaluation mode (line 3). If we do
+    not do this some model layers (e.g. dropout) will be used incorrectly for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We load the images and target variables from the validation set (line 2). Remember,
+    the target variables are tensors of dimension 2\. We get the second element for
+    each of the tensors (line 4). This means we will now have a binary target variable
+    — 1 for STOP and 0 for GO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use our model to make predictions on the validation images (line 2). Again,
+    the output will be tensors of dimension 2\. We consider the second element. If
+    the probability is above 0.5 we predict STOP otherwise we predict GO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we compare the **target** to the **prediction** using the same code
+    we used to evaluate the benchmark. We now have an accuracy of 98.05%, a precision
+    of 97.38% and a recall of 97.5%. A significant improvement over the benchmark!
+    In the confusion matrix, you can see where the errors are coming from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fb172362d143fa80c754290c5a933c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: confusion matrix of the model on the validation set (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Figure 7, we take a closer look at some of these errors. The top row gives
+    some false positives. These are images predicted at STOP when the car should GO.
+    Similarly, the bottom row gives false negatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd3e9d6ed1c209a8a4160c1447cf7b39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: examples of prediction errors (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may have noticed that all the obstacles are at a similar distance. When
+    the images were labelled we used a cutoff distance. That is once the obstacle
+    was closer than this cutoff it was labelled STOP. The above obstacles are all
+    close to this **cutoff**. They could have been incorrectly labelled so the model
+    may be “confused” when the obstacle is close to this cutoff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting the model using SHAP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our model seems to be doing well. We can be even more certain by understanding
+    how it makes these predictions. To do this we use SHAP. If you are new to SHAP,
+    you may find the video below useful. Otherwise, check out my [**SHAP course**](https://adataodyssey.com/courses/shap-with-python/)**.**
+    You can get free access if you sign up for my [**Newsletter**](https://mailchi.mp/aa82a5ce1dc0/signup)
+    :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code below calculates and displays the SHAP values for the 3 example images
+    we saw in Figure 1\. If you want more detail on how this code works, then check
+    out the article mentioned at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can see the output in Figure 8\. The first two rows are images labelled
+    as GO and the third is labelled as STOP. We have SHAP values for each of the elements
+    in the target tensors. The first column is for the GO prediction and the second
+    is for the STOP prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The colours are important. Blue SHAP values tell us that those pixels have decreased
+    the predicted value. In other words, they have made it less likely that the model
+    predicts the given label. Similarly, Red SHAP values have increased the likelihood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdc97c8e9bbca541d975b2bad66f29ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: SHAP values for example images (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand this, let’s focus on the top right corner of Figure 8\. In Figure
+    9, we have the image labelled as GO and the SHAP values from the GO prediction.
+    You can see that the majority of the pixels are red. These have increased the
+    value for this prediction leading to a correct GO prediction. You can also see
+    that the pixels are clusters around the obstacle cutoff — tin can location where
+    the label changes from GO to STOP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d0674f68a026332d803c1324d88dd886.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9: SHAP values for GO prediction and GO label.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Figure 10, we can see the SHAP values for the image labelled as STOP. The
+    can is blue for the GO prediction and red for the STOP prediction. In other words,
+    the model is using pixels from the can to decrease the GO value and increase the
+    STOP value. That makes sense!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5bc3b6180af9d611d7118df9b7d5b1f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10: SHAP values for STOP prediction'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is not only making predictions accurately but the way it is making
+    those predictions seems logical. However, one thing you may have noticed is that
+    some of the background pixels are highlighted. This doesn't make sense. Why would
+    the background be important to a prediction? It could change when we remove objects
+    or move to a new location.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason is the model has become overfitted to the training data. These objects
+    are present in many of the images. The result is the model associates them with
+    the STOP/GO labels. In the article below, we do a similar analysis. We discuss
+    ways how to prevent this type of overfitting. We also spend more time explaining
+    the SHAP code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=post_page-----4d8d12714eea--------------------------------)
+    [## Using SHAP to Debug a PyTorch Image Regression Model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using DeepShap to understand and improve the model powering an autonomous car
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=post_page-----4d8d12714eea--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you enjoyed this article! You can support me by becoming one of my [**referred
+    members**](https://conorosullyds.medium.com/membership) **:)**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/membership?source=post_page-----4d8d12714eea--------------------------------)
+    [## Join Medium with my referral link — Conor O’Sullivan'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: conorosullyds.medium.com](https://conorosullyds.medium.com/membership?source=post_page-----4d8d12714eea--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| [Twitter](https://twitter.com/conorosullyDS) | [YouTube](https://www.youtube.com/channel/UChsoWqJbEjBwrn00Zvghi4w)
+    | [Newsletter](https://mailchi.mp/aa82a5ce1dc0/signup) — sign up for FREE access
+    to a [Python SHAP course](https://adataodyssey.com/courses/shap-with-python/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**JatRacer Images** (CC0: Public Domain) [https://www.kaggle.com/datasets/conorsully1/jatracer-images](https://www.kaggle.com/datasets/conorsully1/jatracer-images)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: stack overflow, **Why do we need to call zero_grad() in PyTorch?** [https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch](https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Kenneth Leung](https://medium.com/u/dcd08e36f2d0?source=post_page-----4d8d12714eea--------------------------------),
+    **How to Easily Draw Neural Network Architecture Diagrams**, [https://towardsdatascience.com/how-to-easily-draw-neural-network-architecture-diagrams-a6b6138ed875](/how-to-easily-draw-neural-network-architecture-diagrams-a6b6138ed875)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,527 @@
+- en: 'Electric Cars In the Netherlands: Exploratory Data Analysis with Python and
+    SQLAlchemy (Part 2)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-and-sqlalchemy-part-2-c12c6cc2a902](https://towardsdatascience.com/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-and-sqlalchemy-part-2-c12c6cc2a902)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data analysis and visualization with Python, SQLAlchemy, and Bokeh
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----c12c6cc2a902--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----c12c6cc2a902--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c12c6cc2a902--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c12c6cc2a902--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----c12c6cc2a902--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c12c6cc2a902--------------------------------)
+    ·17 min read·Mar 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb70cab9e1b8d3ded4a77f3599684a30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Smart EQ Car, Image Source [https://en.wikipedia.org/wiki/Smart_electric_drive](https://en.wikipedia.org/wiki/Smart_electric_drive)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When was the first electric car registered? (Spoiler: it was much earlier than
+    most people may think.) Which cars are more expensive, the electric Porcshe or
+    Jaguar? Exploratory data analysis (EDA) is not only an important part of building
+    every data pipeline, but it is also a pretty interesting process. In the [first
+    part](/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-d01477949984),
+    I analyzed the RDW (Netherlands Vehicle Authority) dataset with Python and Pandas,
+    and one of the challenges was the large (about 10 GB) dataset size. As a workaround,
+    I specified the columns list, which needs to be loaded in Pandas. It works, but
+    what if the dataset is larger, and there is still not enough RAM to put all the
+    data in memory, or if the dataset is placed on a remote database? In this article,
+    I will show how to make a similar analysis using SQLAlchemy. This will allow making
+    “heavy” data processing using SQL, without the need to load all data in Pandas.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The **RDW** (“Rijks Dienst Wegverkeer”, [https://www.rdw.nl](https://www.rdw.nl/))
+    is a Dutch organization that handles approvals and registration of motorized vehicles
+    and driving licenses in the Netherlands. I will use the “Gekentekende voertuigen”
+    (“Vehicles with license plates”) dataset. As was described in the first part,
+    it is available under a Public Domain license and can be downloaded from [opendata.rdw.nl](https://opendata.rdw.nl/Voertuigen/Open-Data-RDW-Gekentekende_voertuigen/m9d7-ebf2).
+    For data processing, I will be using [SQLite](https://www.sqlite.org/index.html),
+    which is a free and lightweight database engine, it can easily run on any PC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the beginning, we need to download and import the CSV file to SQLite. The
+    file size is about 10 GB; it can be downloaded for free and no registration is
+    required. To import the data, I run the “*sqlite3 rdw_data.db”* command, and enter
+    3 commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here “Open_Data_RDW__Gekentekende_voertuigen.csv” is the original CSV file,
+    and “rdw_data” is a table, which should be created. The import process takes some
+    time, and after that, we are done with the command line and can return to Jupyter
+    Lab. First, let’s make the needed imports and see which database columns we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I am using Pandas DataFrame for displaying the results because its output is
+    much more convenient to read. For example, the “display(columns)” will show the
+    output like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2377c1b73fdee568bdfaf83ffad23cd2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'At the same time, the “display(pd.DataFrame(columns))” output looks much better:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b71c7750022f84e386c8619e2cdf5389.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s check what we get. We can see that all columns have TEXT type, so we will
+    need to convert the values. There are 91 columns in the database, but from the
+    actual analysis, I need only the car’s type, license plate, model name, price,
+    and registration date. I will also use a “Number of cylinders” as a helper to
+    detect if the car is electric or not. Last but not least, I am going to analyze
+    only “personal” (“Personenauto” in Dutch) cars, not tracks or buses, so I will
+    use this filter in the SQL query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s do this conversion using SQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here I created a new table and converted Integer and Date columns into proper
+    formats. I replaced all empty strings with NULLs, and as a bonus for readers,
+    I translated Dutch column names to English. I also created the “Is electric” column,
+    which I will use later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initial conversion is done, and we are ready to go.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the beginning, let’s see the main properties of the dataset, like data samples,
+    dimensionality, and the number of NULL values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using SQL, we can get the total amount of records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In total, we have 9,487,265 cars, registered in the Netherlands at the time
+    of writing this article (for those readers, who will download the dataset later,
+    this number will obviously, be bigger). The total amount is also equal to the
+    number, I got in the [first part](/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-d01477949984),
+    where I did a similar analysis using Pandas-only — it’s an easy way to check if
+    the processing is right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now see the first 5 samples in the database; it is easy to do using SQL.
+    Here and later I will be using Pandas to display tables, it’s convenient because
+    Pandas has native SQL binding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea773726c399f2b8a9f26574d5c55fa0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s check how many missing/NULL numbers we have in different columns. Pandas
+    DataFrame has a convenient method “df.isna().sum()”, but I was not able to find
+    something similar in SQL. We need to specify all the columns, we need to check:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using SQL, I calculate the sum of values, which can be NULL or empty. The result
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9816496d6f548387930784ae00a2df9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here we can see the total amount of cars (9,487,265). Every car has a license
+    plate and a registration date; those fields are probably mandatory for registration.
+    But 2,480,506 records do not have a price. 864 do not have a “trade name”, and
+    so on. And here I can see a problem — those 864 records with empty “trade name”
+    fields do not match the 1,405 empty records, I got in Pandas in the [first part](/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-d01477949984).
+    This is obviously, not right, where is the difference? It is impossible to check
+    9,487,265 records manually, and the easiest way to debug the problem was to save
+    unique “trade name” values to the text file and to compare both files using the
+    “Diff” tool. And it turned out, that the problem was simple but interesting —
+    in the first part, I was using the “pd.read_csv” method to load the data. This
+    method is “smart enough” to automatically replace “NULL”, “NA”, “N/A” and some
+    other values (a full list can be found in [the manual](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html))
+    with NULLs, and this conversion is *enabled* by default. In our case, [Mazda NA](https://en.wikipedia.org/wiki/Mazda_MX-5_(NA))
+    is a real car model, and Pandas automatically converted all names “NA” to NULL
+    for those cars (it also reminds me of the [old story](https://www.wired.com/2015/11/null/)
+    about the man with the last name Null, who was “invisible for computers”;). Anyway,
+    the Mazda NA car is not electric, so it does not affect the results of the first
+    part, but it is good to keep in mind that such problems may occur.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But let’s return to analysis. Using SQL, we can easily make useful requests,
+    for example, let’s see the top 10 most expensive cars in the Netherlands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66051c65fd6c256701f259e4c845bc45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I was expecting to see Porsche, Mercedes, or BMW on this list, but having Peugeot
+    or Fiat here is surprising for me, though, I’m not an expert in luxury cars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data transform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We already did some basic analysis using SQL requests, but the purpose of this
+    article is to analyze *electric cars.* To detect if the car is electric or not,
+    we need to know its manufacturer and model name. Ideally, if electric cars would
+    have “ELECTRIC” in their name, the task would be straightforward. But in the real
+    life, there is no logic in the model naming at all. “Mazda MX-30” is electric,
+    but “Mazda MX-5” is not. “Kia Niro” is electric and “Kia Sorento” is not, and
+    so on. The is no rule in this, and the easiest way is just to create a table of
+    electric car models and use it. But first, let’s check if car models and trade
+    names in the dataset are consistent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s verify **car** **models** first, for example, let’s see all PEUGEOT cars:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3eb2fa7000664fa27f4e2a508b812995.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Almost all cars in the database have the name “PEUGEOT”, which is fine, but
+    several cars have longer names, like “PEUGEOT BOXER”. The first word is enough
+    to know the car model, so we can easily remove the rest. And it will be more convenient
+    for future analysis; for example, we can group cars by model and see how many
+    Peugeot cars were sold. In the first part, I already created a method to remove
+    redundant words from the model name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s now check the next column. Car **trade names** in the dataset can sometimes
+    be duplicated with models, like the “NISSAN” car in this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61af9b5e0cc94364a27fd67b4302d428.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I created a method to remove these duplicates, in this example, it will convert
+    the “NISSAN MURANO” field to just “MURANO”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can finally figure out if the car **is electric** or not. In the [first
+    part](/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-d01477949984),
+    I already created a method for that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, I search for specific keywords; for example, if the model is “BMW”,
+    then the “I3” trade name will show us that this car is electric. And as an extra
+    check (some cars may be electric or hybrid), I also analyze the number of cylinders
+    which must be 0 or NULL for electric cars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All 3 methods were already tested in the first part, and they work well, for
+    example, I can easily apply a *model_normalize* method to the Pandas dataset using
+    one line of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: But how can we use it with SQL? Well, directly we can’t, but we can do this
+    with the help of ORM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQLAlchemy ORM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ORM (Object Relational Mapping) is a technology, used for creating a “bridge”
+    between the OOP language and relational databases. Practically, we can create
+    a special Python class, and SQLALchemy will automatically transform all requests
+    to this class into SQL. Which is pretty convenient, and allows developers to write
+    code in pure Python, without ugly brackets and long SQL strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s create a “Car” class and put the needed methods there:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As an example of this approach, let’s display the most expensive cars of the
+    specific model in the Netherlands. With a standard SQL, we can make a request
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a result, we get the table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0feb89557eef33feb27aef90729a5cbf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It works, but the SQL string is pretty long, and I had to use the f-string
+    to add the needed variables to the request. With the help of Object Relational
+    Mapping, I can just use standard Python code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: SQLAlchemy will create a proper SQL request “under the hood”, and as a result,
+    we have an easier-to-read Python code. The major drawback, though, is that SQL
+    is more or less standard; there are many resources and tutorials about it, but
+    the SQLAlchemy code is specific only to this library. But for our task, this approach
+    works well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using ORM, we can easily apply our “check_electric” method to all the records
+    in the database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, I read records from the database, update the parameters, and save
+    data back to the table. SQLAlchemy will update the table using SQL requests, and
+    it is definitely slower than updating Pandas Dataframe directly in memory. Calling
+    the same methods in Pandas took only 130 seconds, and the SQLAlchemy requests
+    took 390 seconds, so the difference is about 3 times. On the other side, for the
+    batch update, we need much less memory, and there is no need to keep the whole
+    dataframe in RAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After updating the table, we’re finally ready to go. As a warm-up, let’s calculate
+    the car prices' mean and percentiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Calculating **the mean** is easy, and can be done with SQLAlchemy in 1 line
+    of code. Let’s get the total amount of cars and their arithmetic price mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Getting **the percentiles** is a bit more tricky, and we have two ways of doing
+    that. We can load only the “prices” column, then it’s possible to use NumPy “percentile”
+    method to do the math:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If the dataset is large and we want to avoid loading the data at all, we can
+    get the percentile using pure SQL by combining “order_by”, “limit” and “offset”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results are interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a6b9c80de01a2c31eb44f33983321f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Netherlands is a country with pretty high average salaries, but at the moment
+    of writing this article, only 2,93% of cars are electric. The median price for
+    all cars is €26,341, and electric cars are “on average” 2x more expensive; their
+    median price is €49,975\. The 95th percentile for all cars is €73,381, which means
+    that 95% of the cars have a lower price. At the same time, 95% of electric cars
+    have a price lower than €106,989.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now find something more fun. Let’s get the Top-20 electric cars in the
+    Netherlands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we can see, Tesla has the first place, with more than 55,000 cars registered
+    in the country:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c6874bb4aa8e723c5de48753e2d0af7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top-20 electric car manufacturers, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I was curious about which Tesla model is the most popular. To know this, we
+    can change the request:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is clear that the “Model 3” is the most popular electric car at the moment
+    of writing this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75b9746effc62cf4c416d825e844b751.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tesla models bar chart, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But we can also see that the dataset obviously needs more cleaning: some Tesla
+    cars were registered as “MODEL 3”, some as “MODEL3”, some cars were saved as a
+    “ROADSTER”, and some as “RAODSTER”, and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now group the **electric car registrations per date**. To make the graph
+    more clear, I want to group dates by quarter, but the code for extracting quarters
+    in SQL can be bulky. Instead, I will group registrations per day using SQL, then
+    I can calculate quarters using the internal Pandas function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, I first converted the SQL result to the Pandas dataframe; then
+    I converted Python “date” objects to “datetime” (for some reason, the quarter
+    calculation works with “datetime” only). The code is almost similar to the first
+    part, but here I use Pandas “groupby.sum()” instead of “size()”, because the data
+    retrieved from SQL was already grouped by days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result is interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/795a2d8c4fee6577e7183eafd445fd69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Electric car registrations, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As was described in the first part, the first electric car was registered in
+    the Netherlands in 1992\. It was a [Fiat Panda Elettra](https://www.fcaheritage.com/en-uk/heritage/stories/fiat-panda-elettra),
+    a small two-seat car with a 70 km/h maximum speed, 100 km range, and 12 lead-acid
+    6V batteries as a power source. It was the only electric car in the whole country
+    for 15 years; the 3 next [Tesla Roadster](https://en.wikipedia.org/wiki/Tesla_Roadster_(first_generation))
+    cars were registered only in 2009.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now get a **price distribution** of electric cars. I want to draw a box
+    and whisker plot, and for that, I need to know the minimum, maximum, and quartile
+    values per model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code, first I get the list of all car models; then I get the prices
+    for each model and aggregate those prices using Pandas. Then I combine the data
+    into a single dataframe. The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42adf5e6f024da5912f92a5e1c11a0b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Having this dataframe, it is easy to draw a box plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4ce1b8b1cfb400f70076fc2954ba3b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Electric car manufacturers and prices box plot, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the help of SQLAlchemy, it is also easy to get all prices of electric cars
+    and build the **histogram** using the “np.histogram” method. The code is almost
+    the same as in the [first part](/electric-cars-in-the-netherlands-exploratory-data-analysis-with-python-d01477949984);
+    those who wish can do it on their own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Analyzing the data from the real dataset is interesting, and it turned out that
+    SQL and Pandas work together pretty well. The “heavy lifting” of retrieving and
+    pre-processing the data can be done using SQLAlchemy, then this data can be used
+    in Pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for the processing of the data itself, a lot of work can be done. It may
+    be interesting to combine this data with the [Kaggle Electric Vehicles](https://www.kaggle.com/datasets/geoffnel/evs-one-electric-vehicle-dataset)
+    dataset and find the correlation between the maximum distance range, price, and
+    car release date (newer models should have a longer range). I tried to do this,
+    but the car model names in both datasets do not match, and I am not an expert
+    in cars to do this manually for every model. Also, as was shown before, the RDW
+    dataset needs more cleaning, and not all the names are consistent. Readers, who
+    are interested, can continue these experiments on their own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

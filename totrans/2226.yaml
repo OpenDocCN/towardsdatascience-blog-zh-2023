@@ -1,0 +1,591 @@
+- en: 'Unlocking the Secrets of Slowly Changing Dimension (SCD): A Comprehensive View
+    of 8 Types'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unlocking-the-secrets-of-slowly-changing-dimension-scd-a-comprehensive-view-of-8-types-a5ea052e4b36](https://towardsdatascience.com/unlocking-the-secrets-of-slowly-changing-dimension-scd-a-comprehensive-view-of-8-types-a5ea052e4b36)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deep Dive Guide for When and How to Use 8 Types of SCD
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chengzhizhao.medium.com/?source=post_page-----a5ea052e4b36--------------------------------)[![Chengzhi
+    Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----a5ea052e4b36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5ea052e4b36--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5ea052e4b36--------------------------------)
+    [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----a5ea052e4b36--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5ea052e4b36--------------------------------)
+    ·12 min read·Jul 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62d6484416ffb7efede0a361a2155b00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Donald Tran](https://unsplash.com/@donald_tr4n?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/Lvy_S3ELzIs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are designing a data warehouse, it is essential to understand the methodology
+    of dimensional modeling. One of the most important concepts in this methodology
+    is the Slowly Changing Dimension (SCD). Many online resources provide a general
+    overview of the slowly changing dimension, but they often need a deep dive into
+    explanations regarding which type of SCD to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This story will discuss the eight types of SCDs, each with its unique characteristics
+    and situations. By the end, you will clearly understand each type and be able
+    to differentiate between them when creating your next SCD in dimensional modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is SCD needed in dimensional modeling?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Typically, OLTP only stores recent data. When executing an update statement,
+    the current data is replaced, and the previous data is lost unless the system
+    is specifically designed to retain historical data, which could cause added latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, an OLAP system, which often uses dimensional modeling, would
+    be interested in the trend and derive insights for business, and keeping historical
+    records is usually preferred.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The primary goal for SCD is to track the history of the change.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In dimensional modeling, the most commonly used schema is the star schema. This
+    schema revolves around a large fact table that houses various measurement fields
+    for your business. The dimension tables that surround the fact table contain fields
+    that allow for data manipulation and analysis within the fact table. Fact tables
+    usually have many rows and expect to update rapidly. On the other hand, dimensions
+    are changing slowly or never.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Importance of Surrogate Key
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The connection between the fact and dimensions are keys in each table. Those
+    are usually surrogate keys rather than the IDs used in the OLTP system. The surrogate
+    key is usually generated during data warehouse processing the data and decided
+    after looking up the OLTP ids. This is critical for some types of SCD to avoid
+    losing primary keys on a table, and we will cover them later in this type 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why must we generate a "surrogate" key but not reuse the original business id
+    in the dimensional modeling? One advantage of using a surrogate key is its ability
+    to track historical changes while avoiding duplicated keys.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's take an example of a table named "Company" with the following schema in
+    an OLTP system. For example, we only have one company called Xesla, which HQ is
+    in Palo Alto, California. Then Xesla decided to move to Austin, California. However,
+    it gets too humid in summer, so Xesla returns to Palo Alto, California again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we look at the OLTP side, it usually only keeps the current location_id,
+    and the HQ movement from California -> Austin -> California is invisible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e1d0d695c2c12fd6fcd2c195b601187.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: OLTP Schema for Company Table | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing analytics queries in OLTP directly has disadvantages. The ignorance
+    of historical data might not be preferable for the business. We cannot answer
+    questions like "How is the company's profit performing due to HQ relocation?",
+    "What's the turnover ratio due to HQ relocation?"
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, keeping track of the historical data that come to the rescue and
+    the surrogate key helps maintain the row's uniqueness and the table's integrity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have incorporated a "Key" column as a surrogate key, which has addressed
+    multiple issues. Firstly, it enables us to track the movement history of the company's
+    headquarters. Secondly, it provides a unique primary key that replaces the business
+    id, eliminating any violation of the foundational database rule that requires
+    the primary key to be unique for each row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a63dcd8df90b9ca3d6e6f1872f89dea1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Surrogate Key For Dimension | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We still need to discuss the connection between the dimension table and the
+    fact table and their usage. We will address these topics as we go through each
+    SCD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 0 — No Change Allowed
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Overview**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD is a "special" type of SCD that doesn't track changes. Essentially, Type
+    0 signifies that the dimension will remain unchanged. Once an entry gets into
+    SCD type 0, it won't change. For instance, we can have a date dimension that won't
+    change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A confusing point here is date dimension will be fixed (SCD type 0), but how
+    we interpret the date could be different. For example, we could have a fiscal
+    year different from the calendar year. We could design our fact table with one
+    key calenderKey and another key for fiscalCalenderKey.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 0 can also include the business ID since changes are not tracked, and
+    the original entry cannot be overwritten.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Regarding fixed dimensions, such as date and time, SCD Type 0 is the way to
+    go. This type is best used when you are confident that the dimension will only
+    require adding new records and no future updates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 1 — Change Overwrite
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The SCD Type 1 is similar to many OLTP designs that replace the original data
+    with new data, making it impossible to track changes to individual rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike SCD Type 0, updating dimension rows in Type 1 is achievable. However,
+    type 1 does not keep the history. Users consuming the data can assume that the
+    current snapshot of the dimension is always up-to-date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'SCD type 1 implementation can be straightforward: looking up the correct id
+    and performing the update.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*"Do we always want to keep history?"*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whether or not you need to track historical data depends on your business use
+    case. Keeping more data points can provide a more comprehensive understanding
+    of your dataset. Incorporating history into your dimensional modeling design can
+    be advantageous. However, not tracking history can simplify ETL management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly, the first two types of SCD cannot track any changes. The more
+    powerful SCD type starts with SCD type 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 2 — Tracking History with New Rows
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 2 is a powerful SCD type widely used to track changes in dimensional
+    modeling. It is practical with its ability to tell the history of changes with
+    a single view quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When changes are made to the data, SCD Type 2 replicates the unchanged fields,
+    which can be repetitive and increase storage costs. To better accommodate rapidly
+    updated dimensions, improvements are needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We already have the surrogate key similar to the schema we looked at for the
+    Xelsa example. Now, we can add the effective start and end date to indicate the
+    period when the row was active.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, the currently active row has the effective ended date in the future
+    — 12/31/9999, so it never (at least for an extended period) expires.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b60171407ef9de0a101c9cdc730d2676.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SCD Type 2 Example | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To execute SCD type 2, we will need to perform two tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add surrogate key
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Add a current row identifier, which could be: the start/end date, version number,
+    or the current flag.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'When it comes to ETL, the implementation process is more intricate compared
+    to SCD type 1\. This process typically involves the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize the dimension table with all rows of the end effective date as 12/31/9999
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When an update is recognized, look up the ID to identify the correct rows
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Update the existing row with the ended date as desired.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Insert a new row with the same ID but a different surrogate key. Use the previous
+    ended date + 1 as the start date for the new row, and make the end effective date
+    12/31/9999
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/e085224aa1a8cc16c474219d26445e75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Steps for SCD Type 2 Implementation | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Regarding SCD, the type 2 option is often chosen by default due to its simplicity
+    to consumers. However, there may be better choices if a dimension undergoes frequent
+    changes, as it can be costly to replicate unchanged fields multiple times. For
+    example, we have a flattened dimension with 50 fields, and one field update could
+    lead to the remaining 49 repeating again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 3— Tracking History with New Fields
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/c03946d50a0821554550d6d382a1e1f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Super Snapper](https://unsplash.com/ja/@supersnapper27?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/sdTL4qTynfM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I consider SCD type 3 as a "queue" option. Instead of replicating the entire
+    row and tracking the table history, SCD type 3 only tracks the changes for the
+    selected fields. Since type 3 is at the column level, keeping a limited number
+    of history (usually the current & previous) is the implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continue on the example for Xesla, assuming we are only interested in tracking
+    the state and the city history. We can include columns for the previous state
+    and city to follow the history. The history is limited here with only the last
+    one, but we can trace back as far as possible with additional columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d06c9f220a357fdab1e10ee83f32942b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SCD Type 3 Example | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 3 is like a sized queue. During updates, a lookup needs to perform,
+    the previous value will be dropped, and then the current value will be moved to
+    the previous value field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you're looking to keep track of the history of a small set of columns, SCD
+    Type 3 is advantageous. To effectively grasp the nature of the business and the
+    frequency of changes, it is crucial to have a solid knowledge base. This is especially
+    important when extending SCD type 3 to a new field, as it requires adding extra
+    columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 4— Tracking History with Separate Table (Mini-Dimension)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have covered tracking history in the same table vertically by SCD Type 2
+    and horizontally by SCD Type 3\. SCD Type 4 is like Z-axis that we follow the
+    history in another table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One table is the current view table, and another table is for history. This
+    is a similar idea to [CDC](https://en.wikipedia.org/wiki/Change_data_capture).
+    The current table shows the present; the history table change log can reconstruct
+    everything from the beginning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6d1a959f20fe5ea6944e028d7b30a36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SCD Type 4 | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we combine the two tables, that's SCD type 2\. So why do we want to split
+    the current and historical views? The main reason is the help improve the query
+    performance if the dimension table updates rapidly and ends up with millions of
+    records. Keeping the current view relatively minor can enhance the query performance
+    for the end users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Regarding updating data, SCD Type 2 involves updating information in the same
+    table. However, with SCD Type 4, you must work with two separate tables. The process
+    for updating data in SCD Type 4 follows the same pattern as in SCD Type 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the SCD Type 2 becomes too large and starts affecting the speed of queries,
+    it may be worth considering switching to SCD Type 4\. Additionally, if you notice
+    that the dimension table is updated frequently, SCD Type 4 may be a better choice
+    to track the complete history accurately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following SCD type 5,6,7 are all hybrid approaches
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: SCD Type 5 — Type 4 Mini-Dimension + Type 1 **Outrigger**
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 5 is an enhancement to SCD Type 4 that incorporates elements of Type
+    1\. It allows the current view of a dimension to be embedded into another dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 5 created a snowflake schema and kept the current view as an addon
+    dimension. However, for any BI tool or presentation layer, it's better to collapse
+    those two dimensions into one so it's less confusing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, we'd want to embed our company dimension into the employee table
+    and link to employer_key. The Current_Company_D is the current view. As we discussed
+    in SCD Type 4, it was referred to by employer_key as a foreign key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It will function like SCD Type 1 if you need to make updates. This means we
+    must overwrite the employer_key with the new reference to the current company
+    ID. To avoid any confusion with historical data as part of SCD Type 4, it is best
+    to prefix the current table with "Current_."
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fdd0d4276cbe664511f8013bffcec68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SCD Type 5 | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Maintaining SCD Type 5 at the ETL layer can be a complex task. It requires significant
+    effort to combine with SCD Type 4 and Type 1\. In addition, it is crucial to ensure
+    proper reference and perform accurate lookups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The three tables must be consistent and implemented when updates occur: the
+    primary table, the current view table, and the historical table.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 5 has been usually less discussed compared with other SCD types. The
+    level of effort to manage SCD type 5 at ETL is significant. The situation to leverage
+    SCD type 5 is if the update velocity increases rapidly on the current view, it
+    becomes hard to keep track of all the changes with only the reference key change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 6— Blended SCD 1 + SCD 2 +SCD 3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 6 is how the type comes from blending SCD 1 + SCD 2 + SCD 3\. This
+    might be too lengthy initially, but it suits the time when you need clarification
+    on the potential change in the future. Ralph Kimball said SCD type 6 is "Unpredictable
+    Changes with Single-Version Overlay."
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's continue to use the example to illustrate how SCD type 6 works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fce39c4f2ce90417f03c80c33fb8d465.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SCD Type 6 | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To split SCD Type 6 into individual types, we can breakdown them by checking
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'SCD Type 1: we overwrite the current state and current city for all the rows
+    for the specific ID'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'SCD Type 2: when new changes happened, we created a second row to track the
+    evolution and history, also flipped the current row flag and effective date'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'SCD Type 3: we also add the history state and history city fields, so we know
+    the past values are'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 6 is a combination of SCD Type 1 to 3\. The implementation detail can
+    refer to the previous implementation above
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SCD Type 6 has a wealthy context and can perform queries relatively quickly.
+    Given it is a hybrid SCD approach, it has all the features within a single view,
+    and it might be appealing to you at first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, SCD Type 6 increases the dimension by rows and columns to grow exponentially
+    than the users expected. In those cases, finding a balance between flexibility
+    and richness is crucial, and conducting the business interview and alignment is
+    critical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you want to showcase how information is presented and demonstrate various
+    SCD types in one view, SCD Type 6 is an excellent choice for a POC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 7 — Rethink Type 6 By Logically Splitting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The SCD Type 7 is a variant of the SCD Type 6, also called the "Dual Type 1
+    and Type 2 Dimensions." In SCD Type 7, we divide one SCD Type 6 dimension table
+    into two different tables: the historical and current views. We use dual foreign
+    keys to refer to these tables in the fact table.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55e3abd62f58299f05e024d88247502d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SCD Type 7 | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: One advantage of utilizing SCD Type 7 is that it enables us to maintain separate
+    keys for historical and current tables, preserving their respective histories.
+    This eliminates the need for binding the current company table to the same surrogate
+    keys as the historical one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Based on the current view, SCD type 7 requires less ETL effort as it is a derived
+    view from the historical table. Once you have the SCD Type 2 table, the only remaining
+    task is to create the current view table and connect the key to the fact table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to consider using
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With SCD Type 7, users can quickly access the current view and historical data
+    without spending time understanding the dimensional table’s structure. Unlike
+    SCD Type 2, which requires selecting an effective date or current row flag to
+    view the existing data, SCD Type 7 simplifies the process by deriving the current
+    view into another key within the fact table. This saves users time and effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Understanding the Slow Change Dimension (SCD) is crucial in dimensional modeling
+    for data warehouses. While SCD Type 2 or Type 3 are often preferred for tracking
+    history, other types of SCD can also help solve specific problems based on user
+    requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope that my deep dive into dimensional modeling Slow Change Dimension (SCD)
+    can be helpful to you in designing and building the data warehouse.
+  prefs: []
+  type: TYPE_NORMAL

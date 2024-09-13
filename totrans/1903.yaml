@@ -1,0 +1,387 @@
+- en: Leveraging analytic functions in SQL for faster data extraction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/sql-window-functions-939ed24c9752](https://towardsdatascience.com/sql-window-functions-939ed24c9752)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Analytic functions provide an incredibly powerful and yet easy to implement
+    way to process and analyze data. This post will show you how to incorporate analytic
+    functions in your SQL statements.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)[![Günter
+    Röhrich](../Images/31a1d0dc835c7ad31197f8c387023d10.png)](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)[](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------)
+    [Günter Röhrich](https://guenterroehrich.medium.com/?source=post_page-----939ed24c9752--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----939ed24c9752--------------------------------)
+    ·8 min read·Jul 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an analytics professional, you will likely find yourself in a scenario where
+    you’re required to query data for your analysis. Quite often, data is obtained
+    from a SQL database and then imported through a programming language like Python
+    using powerful frameworks such as Pandas or NumPy. This is a perfectly fine pipeline
+    to work with data, however, the heavy lifting is mainly done by your local machine.
+    With small datasets, this is not an issue, but when it comes to larger datasets,
+    one might encounter issues achieving the heavy processing solely in the PC’s local
+    memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You may think that this is not a common problem. Therefore, let me give an
+    everyday example to prove this assumption wrong:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you worked in a manufacturing company and you were interested in collecting
+    machine sensor data. This data is often collected frequently and might also be
+    quite noisy. To better understand what’s going on with your machine, smoothing,
+    and pre-processing the densely collected data (e.g. measurements could be collected
+    several times per second) quickly results in immense dataset sizes! Let’s assume
+    we have 150 sensors placed alongside a machine, and each one of them is reading
+    4 measurements per second. One single day would then produce
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4×60×60×24x150 ≈ 52m records (Readings x Seconds x Minutes x Hours x Sensors)
+  prefs: []
+  type: TYPE_NORMAL
+- en: data points. Usually, as a rule of thumb, we look at at least one week of data
+    (but we might also increase readings or even the number of sensors)… you see where
+    this is going.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this reason, you might be better off shifting your computationally expensive
+    aggregations to the source database. In particular, analytic or window functions
+    are straightforward in its syntax, yet a powerful tool to read, transform, and
+    extract data on a more aggregated level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The key take away**:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Whenever you see the need for a rolling / moving window or calculations within
+    a logical partition (e.g. continously ranking, lowest ro highest value, within a certain group of sensors),
+    it is certainly worthwhile considering the application of window functions in
+    a SQL query directly, rather than achieving similar functionality with more expensive
+    functions implemented in Pandas.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How is this brief article structured?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A [short introductory](#c6e6) example and theory how window functions work
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A [quick guide to install some SQL demo data](#819b) as well as a ready-to-go
+    database on your computer (this is easy!). We will use the famous **New York Taxi**
+    data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Examples](#f9cd) to get yourself familiar to the functions'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/07f82d39dbfab5144ca87e8f110b152d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A bunch of windows by [Julio César Bosch](https://unsplash.com/@jcbossch?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intro
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Why do you need window functions?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all the buzz around the more attractive domains of data science, we often
+    oversee the fact that most of a data scientist’s time is spent on obtaining, processing,
+    and cleaning data. Whenever you see the need for computationally expensive running
+    sums or a moving average, you should consider shifting those transformations to
+    the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This type of **functions is performed on a series of rows that do contextually
+    belong together**. Typically, we think of sums, averages, min or max calculations
+    when it comes to such transactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How are window functions structured in general?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To begin with the structure of a query that uses a window function, let’s have
+    a look at a SQL statement that uses a rolling sum — Just have a look at the code
+    block, there is *no need yet to fully understand* the concept, just consider the
+    code as a simple demonstration for now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First, we specify the type of analysis we would like to perform. In general
+    there **are three types of functions** to use:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Aggregate functions**, such as min(), max(), count() or avg() — this is what
+    was shown in the first example above'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Numbering functions**, such as rank() or row_number()'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Navigation functions** such as lead(), lag() [to return the proceeding or
+    preceding value)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. In a next step, we start thinking of **logical partitions**. As an example,
+    we could select a user ID as a partitioning example, hence we look into blocks
+    of users and perform further operations on each of the user subsets. Partitions
+    are required to pass to the function!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Similar to a group by statement, we should also consider an ordering argument
+    in an analytic function. Ordering is applied on the selected sub block, as defined
+    before. Ordering is optional and may be omitted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4\. Lastly, the core element of an analytic (or window) function: the window
+    frame clause. This clause specifies the rolling time window we would like to look
+    into.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get into more theory, follow the link below — Please note that window functions
+    may behave slightly differently between different SQL databases, however, their
+    general structure is pretty much identical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.sqlite.org/windowfunctions.html?source=post_page-----939ed24c9752--------------------------------)
+    [## Window Functions'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A window function is an SQL function where the input values are taken from a
+    "window" of one or more rows in the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.sqlite.org](https://www.sqlite.org/windowfunctions.html?source=post_page-----939ed24c9752--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quick Installation Guide
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To illustrate how window functions work, I’ll provide some examples using one
+    subset of the the famous New York taxis datasets. In general you will need the
+    following tools to work your way through the examples yourself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python installed (used for extraction, requires sqlite3 and pandas libraries)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A tool to write queries and look at data (When it comes to SQL, [DBeaver](https://dbeaver.io/)
+    is an incredibly powerful tool to query data, yet it is easy to work with and
+    open source
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And that’s it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you would like to replicate the steps shown, simply follow the link below
+    and get your download:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## TLC Trip Record Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yellow and green taxi trip records include fields capturing pick-up and drop-off
+    dates/times, pick-up and drop-off…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.nyc.gov](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page?source=post_page-----939ed24c9752--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Legal side note:* [***There are no restrictions on using the data, given the
+    intended purpose of use is lawful***](https://opendata.cityofnewyork.us/faq/)
+    *as outlined in the terms of use. More license details and the dataset citation
+    are added at the* [***end of the article***](#55c1)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After the download succeeded I suggest transforming the parquet file to a sqlite3
+    database. Using Python and the Pandas as well as sqlite3 packages, this is achieved
+    in no time — just copy paste the code in a script and you’re all set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Done! We can now work in a very trivial SQL database that is stored on our hard
+    drive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with the simple task of obtaining the sum and average of fares over
+    the whole data. For this we can use the arguments SUM and AVG and omit the grouping
+    criteria in the braces following the over statement. As we are only aggregating
+    over the whole dataset, there is no need to use a window function yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/06436db2bdcf52ed992317bb26256d77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Assuming we would like to know the sum and average fares for every individual
+    Vendor (*VendorID*) for every day of the month — this task becomes slightly more
+    challenging:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/549e85fece5f8d334761342f1f4ede5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we can see, in order to achieve a grouping effect we need the group by key
+    word that allows us to aggregate according to *VendorId* and *dropdate*. Although
+    group by is very powerful, it **does not allow us to further break down the individual
+    rows as an trailing sum or moving average** — and this is where the window function
+    comes in handy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assume now, we would like to calculate the rolling sum and mean values for the
+    *fare_amount*, broken down by the *VendorID*s and related trips on every day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our window operates within our dedicated “partitions”. We define a partition
+    to be a whole day, hence, we expect to see rolling sum and means for each day
+    and vendor (or equivalently, within each partition).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/eac4044ad950a0b8b8737d8c29746276.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Every partition (dropdate + VendorID) shows the fare amount per row as well
+    as a rolling sum
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the following, we used “*unbounded preceding*” as frame clause. This means
+    we look at all preceding values WITHIN OUR PARTITION — and again, our partition
+    is defined as *Date* + *VendorID.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we only want to look at a rolling sum/mean that considers the **previous
+    as well as the current fare** (again under the partition of *Date*+*VendorID*)
+    we need to adjust the frame clause to *only 1 preceding row and the current row*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ff00522d98c3c7c3e385011179813d0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “1 Preceding” results in a moving sum/mean that only looks at the current and
+    previous trip fare_amount — again, this is always within partition
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the last example we will combine all the previous steps to show how we can
+    elegantly query simple aggregated data and use this data to perform the rank()
+    statement — which is an analytic numbering function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We would like rank the days by the highest total amount of fares collected,
+    for each of the vendors. We will therefore break this into two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Aggregate the fares by day and vendor through a simple “*group by*”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use an analytics function to rank the days within the partition of “*VendorID*”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/36e5e85ac50aae1644d0bf97f7dc1e0f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Starting with *VendorID=1*, the best day in January was 26th, which ranks first
+    (highest revenue)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: By now I believe you got the gist behind how analytics function work and how
+    flexible they are to achieve rather complex query results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While data is nowadays often transformed on a local machine or cloud instance,
+    modifying the data before actually importing it to subsequent software is often
+    the better choice — that said, SQL is an incredibly powerful language to do so!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If you found this post helpful, I would appreciate a “follow” 🫀, until then:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*{Take care of yourself, and if you can, someone else too}*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*— borrowed from Stephen Dubner*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dataset citation** and terms of use:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: New York City Taxi and Limousine Commission (TLC) Trip Record Data was accessed
+    on July 13 from [https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full terms of use can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.nyc.gov/home/terms-of-use.page?source=post_page-----939ed24c9752--------------------------------)
+    [## Terms of Use'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to New York City's Official Website. PLEASE READ THE FOLLOWING TERMS
+    OF USE ("TERMS") CAREFULLY BEFORE USING…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.nyc.gov](https://www.nyc.gov/home/terms-of-use.page?source=post_page-----939ed24c9752--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

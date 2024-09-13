@@ -1,0 +1,570 @@
+- en: 'Master Semantic Search at Scale: Index Millions of Documents with Lightning-Fast
+    Inference Times using FAISS and Sentence Transformers'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88](https://towardsdatascience.com/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Dive into an end-to-end demo of a high-performance semantic search engine leveraging
+    GPU acceleration, efficient indexing techniques, and robust sentence encoders
+    on datasets up to 1M documents, achieving 50 ms inference times
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----fa395e4efd88--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----fa395e4efd88--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa395e4efd88--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fa395e4efd88--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----fa395e4efd88--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa395e4efd88--------------------------------)
+    ·15 min read·Mar 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In search and information retrieval, semantic search has emerged as a game-changer.
+    It allows us to search and retrieve documents based on their meaning or concepts
+    rather than just keyword matching. The semantic search leads to more sophisticated
+    and relevant results than traditional keyword-based search methods. However, the
+    challenge lies in scaling semantic search to handle large corpora of documents
+    without being overwhelmed by the computational complexity of analyzing every semantic
+    content of a document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we rise to the challenge of achieving scalable semantic search
+    by harnessing the power of two cutting-edge techniques: FAISS for efficient indexing
+    of semantic vectors and Sentence Transformers for encoding sentences into these
+    vectors. FAISS is an outstanding library designed for the fast retrieval of nearest
+    neighbors in high-dimensional spaces, enabling quick semantic nearest neighbor
+    search even at a large scale. Sentence Transformers, a deep learning model, generates
+    dense vector representations of sentences, effectively capturing their semantic
+    meanings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article shows how we can use the synergy of FAISS and Sentence Transformers
+    to build a scalable semantic search engine with remarkable performance. By integrating
+    FAISS and Sentence Transformers, we can index semantic vectors from an extensive
+    corpus of documents, resulting in a rapid and accurate semantic search experience
+    at scale. Our approach can enable new applications such as contextualized question-answering
+    and advanced recommendation systems with inference times as low as 50 ms when
+    searching a corpus of 1M documents. We will guide you through implementing this
+    state-of-the-art end-to-end solution and demonstrate its performance on benchmark
+    datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d6e13617bc14df0e964b33fe23e756f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Search is all you need to navigate this world ([source](https://unsplash.com/photos/afW1hht0NSs))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article belongs to “Large Language Models Chronicles: Navigating the NLP
+    Frontier”, a new weekly series of articles that will explore how to leverage the
+    power of large models for various NLP tasks. By diving into these cutting-edge
+    technologies, we aim to empower developers, researchers, and enthusiasts to harness
+    the potential of NLP and unlock new possibilities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Articles published so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Summarizing the latest Spotify releases with ChatGPT](https://medium.com/towards-data-science/summarizing-the-latest-spotify-releases-with-chatgpt-553245a6df88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As always, the code is available on my [Github](https://github.com/luisroque/large_laguage_models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sentence Transformers for Semantic Encoding
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Deep learning brings forth the power of sentence transformers, which craft dense
+    vector representations that capture the essence of a sentence’s meaning. Trained
+    on massive amounts of data, these models produce contextualized word embeddings,
+    aiming to reconstruct input sentences accurately and draw semantically similar
+    sentence pairs closer together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To harness the potential of sentence transformers in semantic encoding, you’ll
+    first need to choose a suitable model architecture, such as BERT, RoBERTa, or
+    XLNet. With a model in place, we will feed a corpus of documents into it, generating
+    fixed-length semantic vectors for each sentence. These vectors are compact numerical
+    representations of the core themes and topics within the sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take two sentences as examples: ‘The dog chased the cat’ and ‘The cat
+    chased the dog.’ When processed through a sentence transformer, their resulting
+    semantic vectors will be closely related, even with word order differences, because
+    the underlying meaning is similar. On the other hand, a sentence like ‘The sky
+    is blue’ will yield a more distant vector due to its contrasting meaning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using sentence transformers to encode an entire corpus, we obtain a collection
+    of semantic vectors that encapsulate the overarching meanings of the documents.
+    To make this transformed representation ready for efficient retrieval, we index
+    it using FAISS. Stay tuned, as we’ll dive into this topic in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: FAISS for Efficient Indexing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: FAISS supports various index structures optimized for different use cases. It
+    is a library designed for scenarios where one must quickly find the closest matches
+    to a given query vector in a large collection of vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inverted files (IVF): Indexes clusters of similar vectors. Suitable for medium-dimensional
+    vectors.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Product quantization (PQ): Encodes vectors into quantized subspaces. Suitable
+    for high-dimensional vectors.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Cluster-based strategies: Organizes vectors into a hierarchical set of clusters
+    for multi-level search. Suitable for very large datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To use FAISS for semantic search, we first load our vector dataset (semantic
+    vectors from sentence transformer encoding) and construct a FAISS index. The specific
+    index structure we choose depends on factors like the dimensionality of our semantic
+    vectors and desired efficiency. We then index the semantic vectors by passing
+    them into the FAISS index, which will efficiently organize them to enable fast
+    retrieval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For search, we encode a new sentence into a semantic vector query and pass it
+    to the FAISS index. FAISS will retrieve the closest matching semantic vectors
+    and return the most similar sentences. Compared to linear search, which scores
+    the query vector against every indexed vector, FAISS enables much faster retrieval
+    times that typically scale logarithmically with the number of indexed vectors.
+    Additionally, the indexes are highly memory-efficient because they compress the
+    original dense vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inverted Files Index
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Inverted Files (IVF) index in FAISS clusters similar vectors into ‘inverted
+    files’ and is suitable for medium-dimensional vectors (e.g., 100–1000 dimensions).
+    Each inverted file contains a subset of vectors that are close together. At search
+    time, FAISS searches only the inverted files closest to the query vector instead
+    of searching through all vectors, enabling efficient search even with many vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To construct an IVF index, we specify the number of inverted files (clusters)
+    we want and the maximum number of vectors per inverted file. Then, FAISS assigns
+    each vector to the closest inverted file until no inverted file exceeds the maximum.
+    The inverted files contain representative points that summarize the vectors within
+    them. At query time, FAISS computes the distance between the query vector and
+    each inverted file representative point and searches only the closest inverted
+    files for the closest matching vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if we have 1024-dimensional image feature vectors and want to perform
+    a fast search over 1 million vectors, we could create an IVF index with 1024 inverted
+    files (clusters) and a maximum of 1000 vectors per inverted file. In this approach,
+    FAISS would search only the closest inverted files to the query, resulting in
+    faster search times than linear search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Putting It All Together
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will build a scalable semantic search with FAISS and Sentence
+    Transformers. We will show you how to evaluate the performance benchmarks of this
+    approach and discuss further improvements and applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalable Semantic Search Engine
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To build a scalable semantic search engine, we first initialize the `ScalableSemanticSearch`
+    class. This class takes care of encoding sentences using Sentence Transformers
+    and indexing them using FAISS for efficient searching. It also provides utility
+    methods for saving and loading indices, measuring time, and memory usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we encode the large corpus of documents using the encoding method, which
+    returns a numpy array of semantic vectors. The method also creates a mapping between
+    indices and sentences that will be useful later when retrieving the top results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we build the FAISS index using the build_index method, which takes the
+    embeddings as input. This method creates an IndexIVFPQ or IndexFlatL2 index, depending
+    on the number of data points in the embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Selecting Indexing Approaches Based on Dataset Size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We define two indexing approaches: Exact Search with L2 distance and Approximate
+    Search with Product Quantization and L2 distance. We will also discuss the rationale
+    behind selecting the first approach for smaller datasets (less than 1500 documents)
+    and the second for larger datasets.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. Exact Search with L2 distance**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exact Search with L2 distance is an exact search method that computes the L2
+    (Euclidean) distance between a query vector and every vector in the dataset. This
+    method guarantees to find the exact nearest neighbors but can be slow for large
+    datasets, as it performs a linear scan of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Use case:* This method is suitable for small datasets where the exact nearest
+    neighbors are required, and the computational cost is not a concern.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Approximate Search with Product Quantization and L2 distance**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approximate Search with Product Quantization and L2 distance is an approximate
+    nearest neighbor search method that combines an inverted file structure, product
+    quantization, and L2 distance to search for similar vectors in large datasets
+    efficiently. The method first clusters the dataset using k-means (faiss.IndexFlatL2
+    as the quantizer) and then applies product quantization to compress the residual
+    vectors. This approach allows for a faster search using less memory than brute-force
+    methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Use case:* This method is suitable for large datasets where the exact nearest
+    neighbors are not strictly required, and the primary focus is on search speed
+    and memory efficiency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The rationale for selecting different approaches based on dataset size**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For datasets containing less than 1500 documents, we set the Exact Search with
+    L2 distance approach because the computational cost is not a significant concern
+    in this case. Furthermore, this approach guarantees to find the nearest neighbors,
+    which is desirable for smaller datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We prefer using the Approximate Search with Product Quantization and L2 distance
+    approach for larger datasets because it offers a more efficient search and consumes
+    less memory than the exact search method. The Approximate Search approach proves
+    to be more suitable for large datasets when prioritizing search speed and memory
+    efficiency over finding the exact nearest neighbors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Search Procedure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After building the index, we can perform a semantic search by providing an input
+    query and the number of top results to return. The `search` method computes cosine
+    similarity between the input sentence and the indexed embeddings and returns the
+    indices and scores of the top matching sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can retrieve the top sentences using the `get_top_sentences` method,
+    which takes the index to sentence mapping and the top indices as input and returns
+    a list of the top sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Complete Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The complete class of our model looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: End-to-End Demo
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This section will provide an end-to-end demo of the scalable semantic search
+    engine using the SemanticSearchDemo class and the
+  prefs: []
+  type: TYPE_NORMAL
+- en: main function from the code above. The goal is to understand how the different
+    concepts and components combine to create a practical application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initializing the SemanticSearchDemo class**: To initialize the SemanticSearchDemo
+    class, provide the dataset path, the ScalableSemanticSearch model, an optional
+    index path, and an optional subset size. This flexibility enables using different
+    datasets, models, and subset sizes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Loading data**: The `load_data` function actively reads and processes data
+    from a file, then returns a list of sentences. The system uses this data to train
+    the semantic search model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Training the model**: The `train` function trains the semantic search model
+    on the dataset and returns the training process’s elapsed time and memory usage.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Performing inference**: The `infer` function takes a query, a list of sentences
+    to search in, and the number of top results to return. It performs inference on
+    the model and returns the top matching sentences, elapsed time, and memory usage
+    for the inference process.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The full class for the demo is below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Performance Evaluation of our Scalable Semantic Search Engine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In order to evaluate the performance of our scalable semantic search engine,
+    we can measure the time and memory usage for various operations like training,
+    inference, and loading indices. The `ScalableSemanticSearch` class provides the
+    `timed_train`, `timed_infer`, and `timed_load_index` methods to measure these
+    benchmarks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The plots for both the training and inference performance in terms of execution
+    time and memory usage can be found below. We will be discussing and interpreting
+    the results in light of the selection of algorithms based on the size of the corpus
+    we used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f0a97496eea4a7bc7ca428e5ff5e322.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Training time and memory usage for different dataset sizes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/190e671ff8caa676573355fb3f30353d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Inference time and memory usage for different dataset sizes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exact Search using L2 distance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Exact Search using L2 distance is an exhaustive search method that performs
+    a linear scan to find the nearest neighbors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Theoretical Complexity**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Time Complexity: O(n) — Because it needs to compare the query vector with every
+    vector in the dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Memory Complexity: O(n) — It stores all the vectors in the dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Observed Complexity**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the plots above, we can observe that for less than 1500 documents, both
+    the training time and memory usage increase linearly with the number of documents,
+    which matches the expected theoretical complexity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Approximate Search using Product Quantization and L2 distance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Approximate Search using Product Quantization and L2 distance is an approximate
+    nearest neighbor search method that employs product quantization and an inverted
+    file structure for improved efficiency. The number of clusters (k) is an essential
+    factor in this method, and it is calculated using the formula: max(2, min(n_data_points,
+    int(np.sqrt(n_data_points)))).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In simpler terms, this formula ensures that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are at least 2 clusters, providing a minimum level of partitioning.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The number of clusters doesn’t exceed the number of data points.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As a heuristic, the square root of the number of data points is used to balance
+    search accuracy and computational efficiency.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Theoretical Complexity**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Time Complexity (Training): O(n * k) — The complexity of the k-means clustering
+    algorithm used in the training phase.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Memory Complexity (Training): O(n + k) — It stores the centroids of clusters
+    and residual codes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Time Complexity (Inference): O(k + m) — Where m is the number of nearest clusters
+    to be searched. It is faster than linear search due to the hierarchical structure
+    and approximation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Memory Complexity (Inference): O(n + k) — It requires storing the inverted
+    file and the centroids.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Observed Complexity**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the plots above, we can observe that for more than 1500 documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Training time complexity: The growth is faster than linear, which matches the
+    expected theoretical complexity of O(n * k) since k grows with the number of data
+    points (n).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Training memory complexity: The memory usage increases non-linearly with the
+    number of documents, which matches the expected theoretical complexity of O(n
+    + k).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Inference time complexity: The execution time remains almost constant, which
+    is consistent with the expected theoretical complexity of O(k + m), as m is usually
+    much smaller than n.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Inference memory complexity: The memory usage increases linearly with the number
+    of documents, which matches the expected theoretical complexity of O(n + k).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could also evaluate the accuracy and recall of the search engine by comparing
+    the top results against a manually curated set of ground truth results for a given
+    query. We can calculate the average accuracy and recall for the entire dataset
+    by iterating over various queries and comparing the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The demonstrated approach highlights the scalability of semantic search using
+    FAISS and Sentence Transformers while revealing enhancement opportunities. For
+    instance, integrating advanced transformer models for encoding sentences or testing
+    alternative FAISS configurations could speed up the search process. Additionally,
+    investigating state-of-the-art models like GPT-4 or BERT variants might improve
+    semantic search tasks’ performance and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Several potential applications for the scalable semantic search engine include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieving documents in extensive knowledge bases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Answering questions in automated systems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Providing personalized recommendations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generating chatbot responses
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Taking advantage of FAISS and Sentence Transformers, we developed a scalable
+    semantic search engine capable of efficiently processing billions of documents
+    and delivering accurate search results. This innovative approach can significantly
+    influence the future of semantic search and its impact across various industries
+    and applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As digital data grows, the demand for efficient and accurate semantic search
+    engines becomes more critical. Based on FAISS and Sentence Transformers, the scalable
+    semantic search engine lays a strong foundation for overcoming these challenges
+    and revolutionizing how we search for and access relevant information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Future advancements involve incorporating more advanced natural language processing
+    and machine learning techniques to enhance search engine capabilities. These improvements
+    could encompass unsupervised learning methods for better understanding context,
+    intent, and relationships between query words and phrases and approaches for handling
+    ambiguity and variations in language use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serial entrepreneur and leader in the AI space. I develop AI products for businesses
+    and invest in AI-focused startups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Founder @ ZAAI](http://zaai.ai) | [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)
+    | [X/Twitter](https://x.com/luisbrasroque)'
+  prefs: []
+  type: TYPE_NORMAL

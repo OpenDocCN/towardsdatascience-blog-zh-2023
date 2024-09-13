@@ -1,0 +1,656 @@
+- en: Presenting Spatial Data With Web Maps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/presenting-spatial-data-with-web-maps-4069c01e26ac](https://towardsdatascience.com/presenting-spatial-data-with-web-maps-4069c01e26ac)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into map tiles, base maps, map layers and vector data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mm1718?source=post_page-----4069c01e26ac--------------------------------)[![Mary
+    M](../Images/549561899f2bd146ef32039ab1495875.png)](https://medium.com/@mm1718?source=post_page-----4069c01e26ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4069c01e26ac--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4069c01e26ac--------------------------------)
+    [Mary M](https://medium.com/@mm1718?source=post_page-----4069c01e26ac--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4069c01e26ac--------------------------------)
+    ·15 min read·Aug 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a11fdfd0efd8f0644ba1bcdf58e4d19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map of historical peat bogland in the west of Ireland, Corine Land Cover data
+    2000
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/mmc1718/webmap-ireland](https://github.com/mmc1718/webmap-ireland)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🗺 Contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- [How web maps work](#5d68)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[**Preparing the Base Map**](#3ae2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- [Creating a vector tileset](#a134)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- [Identifying required changes](#c058)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- [Modifying the tileset](#f889)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[**Styling the Base Map**](#f083) **-** [Create a JSON style file](#96b2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- [Serve styled map tiles](#d5a8)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[**Creating the Web Map**](#ea4d) **-** [Loading the base map](#c765)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- [Overlaying data on the map](#883f)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: There are many ways to make a map. We can use desktop GIS software such as QGIS
+    or ArcGIS, web frameworks such as Leaflet or Mapbox GL JS, or do things the old
+    fashioned way with ink and paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web maps are a great choice for presenting spatial data because they are easily
+    shareable and have the benefit of being interactive. There are a number of tools
+    available that make the process of creating a web map straightforward whilst giving
+    us full control over the different elements of the map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**I will be going through of the full process of creating your own map using
+    open source software and open data sources**, including how to create a custom
+    vector base map with **OpenStreetMap** and **Natural** **Earth** data, serve tiles
+    using **Tileserver**, load your base map on a web page and overlay spatial data
+    on the map using **Maplibre**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, I will create a peat bog of Ireland showing bog loss over a ten
+    year period. I have prepared data from the Corine Land Cover inventory so that
+    it is ready to display on a web map. The result will be an aesthetically pleasing
+    map of Ireland’s bogs viewable in the browser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can view a deployed version of the final map here: [https://marymcguire.dev/ireland-bog-map](https://marymcguire.dev/ireland-bog-map.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The repository for this project is found [here](https://github.com/mmc1718/webmap-ireland):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/mmc1718/webmap-ireland?source=post_page-----4069c01e26ac--------------------------------)
+    [## GitHub - mmc1718/webmap-ireland: webmap displaying peat bogs in Ireland'
+  prefs: []
+  type: TYPE_NORMAL
+- en: webmap displaying peat bogs in Ireland. Contribute to mmc1718/webmap-ireland
+    development by creating an account on…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/mmc1718/webmap-ireland?source=post_page-----4069c01e26ac--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker will be the main dependency in this project, so if you haven’t already
+    you will need to install it in order to follow along. Some basic knowledge of
+    GIS concepts will be assumed, along with basic use of the terminal, reading JSON
+    files, and an ability to follow simple examples using JavaScript and HTML.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How web maps work
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Digital maps are comprised of two main parts: the base map, and the data layer.
+    If you aren’t already familiar with web maps, they are no different.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e345905b73b9fa9195ccc40937cd8690.png)![](../Images/43af9a50646f79bd82da4a20c15a17d7.png)![](../Images/1118d9d74e974465a05e4d8583c6abdd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Three web map views of Dublin, map data copyright OpenStreetMap
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data layer is usually the reason for making a map in the first place. The
+    base map provides a basic map for us to overlay our data on. Styling is important
+    both for the base map, to support the data layer whilst not being distracting,
+    and for the data layer by making the data legible and conveying additional information
+    about its value (darker or lighter colours, or larger or smaller symbols convey
+    meaning).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, web base maps come in the form of sets of individual map tile pieces,
+    which fit together to make a map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb58f4bc4fd4fe639f279659a113f506.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Diagram taken from **Web Map Tile Services for Spatial Data Infrastructures:
+    Management and Optimization**, chapter published under CC BY license available
+    at [https://www.intechopen.com/chapters/38302#F1](https://www.intechopen.com/chapters/38302#F1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importantly, the map tiles are sorted into different zoom levels, meaning that
+    a complete map tileset actually includes many versions of the map — one for each
+    zoom level. As you scroll in and out on a web map (or ‘slippy map’), the features
+    become more or less detailed, with some only appearing once you have hit certain
+    zoom levels. In the background, the page loads new tile pieces corresponding to
+    the zoom level and section of the map you are viewing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Put together, this collection of tiles is known as a tile pyramid. We visualise
+    it as a pyramid because the higher the zoom, the more tiles are needed to cover
+    the entire area. [Maptiler has a great visualisation of this](https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/#3/-46.28/26.66)
+    which you can refer to when getting started with web maps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You have likely heard of the distinction between vector and raster data when
+    working with geospatial data. Map tiles are no different; the individual tiles
+    can either be vector tiles, usually in the form of a .pbf file, or raster (.png)
+    files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will be creating a tileset of vector tiles stored in Mapbox’s MBTiles format
+    for the base map. I prefer vector because of the flexibility they provide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing The Base Map
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Creating a vector tileset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first step is to create the base map tileset. There are many pre made base
+    maps available, however I want the map to put the focus on the island of Ireland,
+    excluding Great Britain. This is not commonly available, so I will be making my
+    own base map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I use [**Planetiler**](https://github.com/onthegomap/planetiler) to create vector
+    tile base maps. Planetiler is a tool for creating vector map tilesets and is impressively
+    fast. There is even a Docker image available, which makes generating a full tileset
+    using Planetiler easy. Planetiler uses OpenStreetMap data to create map tiles
+    and luckily for me, data extracts for Ireland and Northern Ireland are already
+    available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Running the following command will download the required data and generate
+    a tileset using the OpenMapTiles schema as default:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the minzoom parameter is set to 4\. This is because since our map focuses
+    on Ireland only, there is no need to generate tiles at the very low zooms where
+    Ireland is too small to see properly. Zoom 4 is the lowest that we need to go
+    and setting a limit will save us tile generation time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The amount of time Planetiler will take to finish will vary depending on your
+    hardware, but can take an hour or more. Leave the process running and do something
+    else while waiting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the tiles are finished, we are ready to view them. I use [**Tileserver**](https://github.com/maptiler/tileserver-gl)
+    to do this. Once again, we can use Docker to run this step and save us time. Make
+    sure you run this command in your terminal from the same directory as the tiles,
+    or run using the full path to the mbtiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our tiles will now be viewable at http://localhost:8080.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By default, Tileserver gives us the option to view either the raw tile data
+    or styled tiles using the basic style. This is useful for checking our tiles are
+    as expected and identifying any problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though the raw data isn’t styled, the features are colour coded according
+    the data layer they are in, with a legend at the side with the details. This will
+    be important to note when it comes to styling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identifying required changes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Viewing the tile data reveals an immediate problem with the tiles as they are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98dd783a9410ac2c9070723852d6cfe1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Viewing the unstyled vector tileset using Tileserver GL
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though we used data for Ireland and Northern Ireland only to generate our
+    map, the outline of Great Britain is still visible. This is because Planetiler
+    generates ocean polygons to fill in the water extent, leaving the land mass empty.
+    What we are seeing is a hole in the ocean where the island of Great Britain should
+    be — if you click on the island, you will see there are no features, not even
+    land mass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do about the cut-out ocean effect? There is nothing we can do to
+    fill in the hole, but what matters for our purposes is that we can style the background
+    and land borders. Usually this would be done by styling the ocean around the land
+    so that the background fills in the land. We will need to do this the other way
+    around, and include a landmass polygon for the island of Ireland to style and
+    contrast with the background.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before creating a style file, some changes will need to be made. Firstly we
+    will need to supplement the data with an extra feature — the land mass of Ireland.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a second issue with the tileset as it is which is a little less obvious
+    but seen when zooming in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f61c0260c556546df0260d4c4855d094.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice the county boundaries (in pink) disappear after zoom 4\. Between zooms
+    1–4, the Planetiler OpenMapTiles schema uses data from Natural Earth instead of
+    OSM for generating a lower resolution map of the planet. After zoom 4, data from
+    OpenStreetMap is used. Since we generated tiles starting from zoom 4, this is
+    noticeable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because the Planetiler OpenMapTiles schema applies for the whole planet, there
+    are inevitably some inconsistencies between countries. Irish county borders being
+    filtered out of the OSM data is one of these inconsistencies. Our map is of Ireland
+    in particular, so we want to get this right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Aside from the inconsistency, county boundaries are an important feature in
+    a map of Ireland that we would prefer to include at all zooms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The easy solution is to add the county boundaries from Natural Earth back into
+    the tileset from zoom 4 upwards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modifying the tileset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[**Tippecanoe**](https://github.com/felt/tippecanoe) is a really useful tool
+    for working with MBTiles tilesets. It allows us to create mbtiles from GeoJSON
+    data and merge MBtiles files together. All we need is the required extra data
+    in GeoJSON format and we can merge the required features into the tileset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/felt/tippecanoe?source=post_page-----4069c01e26ac--------------------------------)
+    [## GitHub - felt/tippecanoe: Build vector tilesets from large collections of
+    GeoJSON features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Build vector tilesets from large collections of GeoJSON features. - GitHub
+    - felt/tippecanoe: Build vector tilesets…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/felt/tippecanoe?source=post_page-----4069c01e26ac--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For fetching a polygon representing Ireland - or more likely multipolygon, thanks
+    to its islands - I turn to OpenStreetMap, specifically [Overpass Turbo](https://overpass-turbo.eu/).
+    It is not immediately clear which feature we need (the island of Ireland? Ireland
+    and Northern Ireland?) so some exploration is needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By using the ‘query features’ tool on [openstreetmap.org](https://www.openstreetmap.org/),
+    I am able to find two relations which when combined, result in exactly the feature
+    I need. By inspecting the tags I can create a query to use with Overpass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fetching the two features using **Overpass Turbo** looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f751f4fd2ba3c1d59a8bd059d9f833d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of Overpass Turbo with relations of Ireland and Ulster displayed
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The export button gives us the option to save the results as a GeoJSON file.
+    All that is left to do is merge the two features so that we are left with one
+    MultiPolygon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The county boundaries are available to download from the [Natural Earth site](https://www.naturalearthdata.com/downloads/10m-cultural-vectors/).
+    In fact, Planetiler will have already downloaded a copy of the Natural Earth data
+    for you, but since we need country boundaries only, it will be simpler to download
+    this extract separately. The file is called *Admin 1 — States, Provinces* and
+    the download link here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces.zip](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces.zip)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find an example notebook preparing the two [GeoJSON files in the repo
+    for this project](https://github.com/mmc1718/webmap-ireland/blob/main/notebooks/ireland_outline_counties.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the GeoJSON files are ready, you can clone the [Tippecanoe repo](https://github.com/felt/tippecanoe)
+    from GitHub and build the image using Docker or install from source (see the README
+    for instructions). The commands I used to merge the data to my tileset are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using Tileserver to preview the new tiles after merging the new data in, we
+    notice some changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tip: when running Tileserver, make sure you are using the correct mbtiles file,
+    the one you created using Tippecanoe. Use the parameter `--mbtiles` when running
+    Tileserver to specify the file.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17d7441d51a350009b991bbcec93d8c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unstyled view of the vector data including Ireland and county boundary layers
+  prefs: []
+  type: TYPE_NORMAL
+- en: The legend provides a quick way to verify our new layers are present. We can
+    see two new layers here; ‘ireland’ and ‘counties*’*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Styling the base map
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Creating a JSON style file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we have prepared our base tileset, we are ready to start styling. When making
+    the style I chose to highlight natural features such as mountains, with a reduced
+    focus on man made infrastructure such as motorways, in-keeping with the subject
+    matter of bogs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you aren’t familiar with map styles, they are JSON documents which contain
+    information about how to style the vector data in your tileset. [**Maputnik**](https://maputnik.github.io/)
+    is an style editor we can use for creating and editing styles which allows us
+    to preview our style as well as the raw data whilst working. It is an open source
+    alternative to Mapbox’s style editor and can be run using the publicly available
+    Docker image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/maputnik/editor?source=post_page-----4069c01e26ac--------------------------------)
+    [## GitHub - maputnik/editor: An open source visual editor for the ''Mapbox Style
+    Specification'''
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An open source visual editor for the ''Mapbox Style Specification'' - GitHub
+    - maputnik/editor: An open source visual…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/maputnik/editor?source=post_page-----4069c01e26ac--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once Maputnik is open, open an empty style.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first thing we need to do is connect it to our tileset. This is done using
+    the ‘Data Sources’ tab. You will need to copy the link to your TileJSON file —
+    viewable using Tileserver — and paste it into the `#OpenMapTiles` active data
+    source. The TileJSON file is a JSON metadata file containing information about
+    your tileset including the source URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af62051af037826a81fe2bae5a6f2444.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of Maputnik with Sources window open
+  prefs: []
+  type: TYPE_NORMAL
+- en: If all is working well, you should be able to switch the view from ‘Map’ to
+    ‘Inspect’ and see your data on the screen. The data will look similar to the raw
+    data viewed using Tileserver. Until you have created some style layers, your ‘Map’
+    view will just show a blank screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/141d2f4ba24e4005b9b4bc7af3afd5f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Switching between map and inspect views in Maputnik
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifying how the features should be styled is done using style layers. These
+    layers can be edited in the side panel in Maputnik and will be translated into
+    JSON objects in the ‘layers’ field within our final style JSON file. Click the
+    ‘Add Layer’ button to get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first layer to create is typically the background. After that, add layers
+    to target different features as you wish. Note the ordering of the layers makes
+    a difference — features will be rendered on top of or behind each other depending
+    on the style ordering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which features a style layer affects depends on its source (which data layer
+    the features are in, e.g. transportation or landuse) and the filters we set. You
+    can specify this when making the layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, we can filter the boundary style layer to only affect land boundaries
+    within the boundary source layer, ignoring the sea boundaries present by using
+    the maritime tag:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9154a6b2b79503b53f820b81a0dc2d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: County boundary style options viewed in Maputnik
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the JSON this field ends up being the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the side panel at the bottom you can see what the raw JSON looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that multiple style sheets can affect the same feature(s). This makes it
+    possible to render different versions of the same feature, e.g. a point feature
+    can show as both a label and an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Styles created using Maputnik adhere to the Mapbox Style Specification, so if
+    in doubt you can [check the documentation](https://docs.mapbox.com/mapbox-gl-js/style-spec/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can view my final style [here](https://github.com/mmc1718/webmap-ireland/blob/main/tileserver/styles/ireland.json).
+  prefs: []
+  type: TYPE_NORMAL
+- en: There in a wealth of information online when it comes to tips on cartography.
+    Esri has published [a list of online resources](https://www.esri.com/arcgis-blog/products/product/mapping/favorite-tools-and-resources-for-cartographers/),
+    which is a great place to start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note for the style I have added an extra remote source for fonts and sprites
+    (logos or images). This can be done in the sources window in Maputnik where we
+    added our tile source. The sources I use are `https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf`
+    for fonts and `https://openmaptiles.github.io/osm-bright-gl-style/sprite` for
+    sprites. (check out Orange Mug’s custom fonts repo here [https://github.com/orangemug/font-glyphs](https://github.com/orangemug/font-glyphs))
+  prefs: []
+  type: TYPE_NORMAL
+- en: Serving styled map tiles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once your style is ready, download it from Maputnik and save it in the same
+    directory as your MBTiles tileset. We will need to create a config file for Tileserver
+    so that it can find your custom style when serving tiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new file called config.json and make sure it contains something like
+    the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This config file will load an mbtiles file named ireland.mbtiles (using the
+    path defined under options -> paths -> mbtiles). Tileserver will look for a style
+    file called ireland.json found in the styles directory (options -> paths -> styles)
+    to serve. Note that the paths for fonts, styles and mbtiles are assumed to be
+    relative to root.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Restarting Tileserver in the directory containing our new config file will make
+    our new style available for viewing at localhost:8080.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tip: If you want your tiles to be available somewhere other than localhost,
+    you will need to include ‘domains’ in your config. See the [Tileserver docs](https://tileserver.readthedocs.io/en/latest/config.html)
+    for details.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating the Web Map
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Loading the base map
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have our base map and style. Now all that is left is to overlay the data
+    on the map. I have two data files concerning bogs across Ireland. The steps I
+    took to prepare the data can be viewed [on GitHub](https://github.com/mmc1718/webmap-ireland/tree/main/notebooks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am using [Maplibre](https://maplibre.org/) to create my map. Maplibre is the
+    open source alternative to Mapbox GL JS and is very similar. We can add a JavaScript
+    script directly in our HTML file, or we can use a JavaScript file and import it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following the example in [Maplibre’s documentation,](https://maplibre.org/maplibre-gl-js/docs/)
+    get started by creating an HTML file. Include a `<script>` tag with the following
+    snippet which will create a map instance using the newly created custom base map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note I have included the link to my style file being served by Tileserver in
+    the ‘style’ field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Setting bounds means the user will not be able to pan the map outside the defined
+    bounding box coordinates, which is useful since our data is confined to a small
+    area of the map. By default it is possible to pan accross the whole world, not
+    what we want in our case. Custom bounds can be found using this handy tool: [https://norbertrenner.de/osm/bbox.html](https://norbertrenner.de/osm/bbox.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To view our page we will need a web server. I use [VSCode’s Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+    extension for quickly viewing web pages while developing locally. It is free to
+    install and means you can serve web apps with the click of a button. Loading the
+    page will show us our base map:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b09e5c4d3090e556143ab75257f3435.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Base map of Ireland, styled by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overlaying data on the map
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we add the data layers to our map. Again, the Maplibre website has many
+    examples covering a range of scenarios which you can use when creating your map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To load GeoJSON files, we first need to add the file paths as sources. Once
+    we have defined the file sources, we can then add layers with styling options
+    to the map. This is all done inside a function which is run when the map’s ‘load’
+    event triggers (this is what `map.on(“load" …)`means). I have named the new function
+    `setUpMap` and passed it into`map.on(“load")` as the second parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Each layer is styled using a different colour and is slightly transparent to
+    allow place labels and details in the base map to show through. I used [this handy
+    tool](https://www.colorhexa.com/647433) for choosing and comparing colours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I also added an interactive legend using a plug-in called maplibre-gl-legend
+    found here: [https://github.com/watergis/maplibre-gl-legend](https://github.com/watergis/maplibre-gl-legend).
+    The following code defines the legend:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The legend also provides a way for me to include an attribution for the data
+    source without having to add this elsewhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Viewing the final result shows us a map of bogland complete with an interactive
+    legend:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55218bc6cdf3434c780312d6c6b4090f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map of peat bog loss in Ireland between 2000–2012 with legend
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thanks for reading! If you found this article useful, consider leaving a clap,
+    following the author or starring the project on GitHub👏*'
+  prefs: []
+  type: TYPE_NORMAL

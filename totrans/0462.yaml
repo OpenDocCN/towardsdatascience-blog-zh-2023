@@ -1,0 +1,272 @@
+- en: Caching in GitHub Actions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/caching-in-github-actions-7ff11b6c1874](https://towardsdatascience.com/caching-in-github-actions-7ff11b6c1874)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Speed up your CI/CD Pipelines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@hrmnmichaels?source=post_page-----7ff11b6c1874--------------------------------)[![Oliver
+    S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----7ff11b6c1874--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ff11b6c1874--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ff11b6c1874--------------------------------)
+    [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----7ff11b6c1874--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ff11b6c1874--------------------------------)
+    ·7 min read·Nov 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we will discover how to cache [GitHub Actions](https://docs.github.com/en/actions).
+    Github Actions is a platform from Github with which one can automate workflows,
+    and is commonly used for CI/CD (continuous integration / delivery) pipelines —
+    e.g. to automatically run unit tests when wanting to merge a new PR. Since these
+    pipelines are run frequently, and their execution time can grow significantly,
+    it makes sense to see where to save time — and caching action outputs is one such
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60ed35c51b86a7f2379b590ccccb0a4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Possessed Photography](https://unsplash.com/@possessedphotography?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/sodimm-ram-stick-nuc3NFB_6po?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post we will cover said caching. I felt the official documentation
+    is quite brief and leaves some questions unanswered — thus I here wanted to shed
+    a bit more light into this. We begin by a short introduction to Github Actions
+    and how caching works, and then demonstrate this using two examples: the first
+    follows the original toy example about creating prime numbers, while the second
+    one is more realistic — we cache a full Python environment.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to Github Actions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In a [previous post](https://medium.com/gitconnected/introduction-to-github-actions-e742b5370bfa)
+    I introduced this topic in more details — thus here we will just briefly cover
+    this, and I would like to refer to the linked article for details. However, in
+    summary Github Actions allows to automatize workflows, often used for CI/CD pipelines,
+    e.g. for running unit tests, checking style guides etc. After receiving certain
+    trigger events, runners (which can be hosted by Github or custom ones) pick up
+    jobs consisting of different steps. Let’s use an example from the previous post
+    for demonstration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we define a workflow “Sample Workflow”, and set code pushes and opening
+    of new PRs as event triggers. The workflow then consists of a single job running
+    on “ubuntu-20.04” — which is a freely available Git instance running said Ubuntu
+    version. The job has different steps, which checkout the repo, setup Python, and
+    output different messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order for this to be run, we need to place it into the `.github/workflows`
+    folder. Once there and pushed to Github, this workflow will automatically be run
+    on the defined event triggers — and we can see status and output of the defined
+    workflows conveniently, e.g. as such:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/523d8d1e0325b167b34056fc5c7564bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Caching Actions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With the foundations laid, let’s move to caching. Via the [cache action](https://github.com/actions/cache),
+    we can define a cache step. Borrowing from our toy example to come, this can look
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A cache is uniquely identified by a key, and a path: if both of these are present
+    / filled, the cache is loaded — otherwise generated. When the workflow is run
+    for the first time (or some dependencies change) and the cache is generated, the
+    contents of the folder specified under `path` are uploaded to some Github storage.
+    This way, the cache is independent of the runner the previous run was executed
+    on, and always available (in particular, you do not need your own runner to persist
+    the cache — but can use the publicly available Github runners).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, in a following step, we can check if the cache is available (cache hit),
+    and skip it (typically the step generating the contents of the cache):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Caching Generating Prime Numbers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With this being said, let’s give a first full example: via Github Actions we
+    generate the first `N` prime numbers, and cache this output. Note this is motivated
+    by the original docs, albeit somewhat more complete in my opinion.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The example consists of two bash scripts. Via the first, `generate_primes.sh`,
+    we generate the first `N` prime numbers and write them to `prime-numbers/generate_primes.sh`
+    :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The other script, `primes.sh`, reads this file, and simply prints the stored
+    prime numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Assuming we want to find a lot of prime numbers, and that this takes a while,
+    it lies close wanting to cache this process, which is exactly what we do with
+    `prime_workflow.yml`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We checkout the repository, and in step 2 call the cache action: the key is
+    composed of the runner OS and the suffix “-primes”, and the cache path is the
+    folder our first script dumps the resulting file into.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we ask the workflow to generate the prime numbers (i.e. run `generate_primes.sh`)
+    — if there is no cache hit, e.g. when executing this script for the first time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lastly, we use the generated or cached prime numbers in the script `primes.sh`
+    . Looking at the second run of this workflow, we observe that indeed the “generate”
+    step was skipped:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8097ba7337afc860f3e306fafcfc69bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also find the full example on [Github](https://github.com/hermanmichaels/github_actions_cache).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Caching Poetry Environments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now, let’s come to a slightly more realistic example: it is strongly recommended
+    that any Python project is bundled with an environment, s.t. all developers are
+    guaranteed to work with the same packages and versions. On Github Actions runners,
+    the repository is mostly checked out freshly, meaning every time the set environment
+    has to be installed anew. Thus, here we show how to cache this environment — meaning
+    instead of downloading and installing the packages, the full environment is cached
+    and downloaded from the cache. In particular, this example will show the usage
+    of [poetry](https://medium.com/towards-data-science/dependency-management-with-poetry-f1d598591161),
+    which I prefer for managing my environments.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The sample file `main.py` in this project looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: I.e., we plot a simple sinus curve using [matplotlib](https://matplotlib.org/),
+    and thus need this and numpy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consequently, our `pyproject.toml` file for poetry contains the following (here,
+    I am assuming basic knowledge of poetry — and otherwise would like to refer to
+    the [linked post](https://medium.com/towards-data-science/dependency-management-with-poetry-f1d598591161)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see, we install the needed packages — as well as some other [useful
+    tools no Python project should miss](https://medium.com/towards-data-science/best-practices-for-python-development-bf74c2880f87).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, the corresponding Github Actions workflow to setup the environment (including
+    caching) looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We initially install Python and poetry. In the last step, we run `poetry install`,
+    which installs all required packages into the poetry environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Key focus of this post is the second last step: in this, we define a cache
+    with target path `~/.cache/pypoetry` — which is where poetry environments are
+    stored by default. Thus, if this workflow is run again, and this key / folder
+    combination is present in the cache, we skip the poetry install — and instead
+    download the full environment from the cloud cache.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also this example is available in the same [demo repository](https://github.com/hermanmichaels/github_actions_cache).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NOTE: there is a trade-off to this. In the version without caching, we download
+    all packages and then install them. In the version employing the cache, we do
+    not have to install anything, but instead need to download all installed packages
+    from the cache. Whatever is faster should depend on various factors, such as bandwidth,
+    package size and installation duration. Let me know in the comments if you have
+    practical data points here, and how you prefer to handle this!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Managing Caches
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Lastly, a word about monitoring and managing your caches: when opening your
+    repository on Github, and navigating to “Actions / Caches”, we see the following
+    image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87d157982af78ec3961720d1ee18c233.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: All caches used in this repository are displayed, e.g. indicating their size,
+    and we can remove them if needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This finishes our introduction to caching for Github Actions. This is an extremely
+    useful feature, as CI/CD pipelines often have developers waiting impatiently —
+    and by caching we can reduce the time these need to run, and also reduce load
+    on the overall system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After a general introduction to the topic, we showed how to apply caching via
+    two concrete examples: we started with a toy example caching generated prime numbers,
+    and then showed how to cache a poetry environment. This [Github repository](https://github.com/hermanmichaels/github_actions_cache)
+    contains all sample code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL

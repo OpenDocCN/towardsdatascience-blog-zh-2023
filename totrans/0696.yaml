@@ -1,0 +1,1109 @@
+- en: 'Deep GPVAR: Upgrading DeepAR For Multi-Dimensional Forecasting'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deep-gpvar-upgrading-deepar-for-multi-dimensional-forecasting-e39204d90af3](https://towardsdatascience.com/deep-gpvar-upgrading-deepar-for-multi-dimensional-forecasting-e39204d90af3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Amazon’s new Time-Series Forecasting model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nikoskafritsas?source=post_page-----e39204d90af3--------------------------------)[![Nikos
+    Kafritsas](../Images/de965cfcd8fbd8e1baf849017d365cbb.png)](https://medium.com/@nikoskafritsas?source=post_page-----e39204d90af3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e39204d90af3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e39204d90af3--------------------------------)
+    [Nikos Kafritsas](https://medium.com/@nikoskafritsas?source=post_page-----e39204d90af3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e39204d90af3--------------------------------)
+    ·19 min read·Mar 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5191da2e60488dbedbc2c1d45651487.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Created with DALLE [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Warning**: The information about this model, including the tutorial below
+    is not up-to-date. Read the updated version [here](https://aihorizonforecast.substack.com/p/deep-gpvar-upgrading-deepar-for-multi)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'What is the most enjoyable thing when you read a new paper? For me, this is
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine a popular model suddenly getting upgraded — with just a few elegant
+    tweaks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Three years after [*DeepAR*](https://medium.com/towards-data-science/deepar-mastering-time-series-forecasting-with-deep-learning-bc717771ce85)[1],
+    Amazon engineers published its revamped version, known as ***Deep GPVAR* [2] *(D****eep*
+    ***G****aussian-****P****rocess* ***V****ector* ***A****uto-****r****egressive)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is a much-improved model of the original version. Plus, it is open-source.
+    In this article, we discuss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How *Deep GPVAR* works in depth.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**How DeepAR and *Deep GPVAR* are different.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What problems does *Deep GPVAR* solve and why it’s better than DeepAR?**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**A hands-on tutorial on energy demand forecasting.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’ve launched [**AI Horizon Forecast**](https://aihorizonforecast.substack.com/)**,**
+    a newsletter focusing on time-series and innovative AI research. Subscribe [here](https://aihorizonforecast.substack.com/)
+    to broaden your horizons!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*What is Deep GPVAR?*'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Deep GPVAR is an autoregressive DL model that leverages low-rank Gaussian Processes
+    to model thousands of time-series jointly, by considering their interdependencies.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s briefly review the advantages of using *Deep GPVAR :*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multiple time-series support:** The model uses multiple time-series data
+    to learn global characteristics, improving its ability to accurately forecast.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Extra covariates:** *Deep GPVAR* allows extra features (covariates).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Scalability:** The model leverages *low-rank gaussian distribution* to scale
+    training to multiple time series **simultaneously.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Multi-dimensional modeling:** Compared to other global forecasting models,*Deep
+    GPVAR* models time series together, rather than individually. This allows for
+    improved forecasting by considering their interdependencies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The last part is what differentiates *Deep GPVAR from* DeepAR. We will discuss
+    this more in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Global Forecasting Mechanics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A global model trained on multiple time series is not a new concept. But why
+    the need for a global model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At my previous company, where clients were interested in time-series forecasting
+    projects, the main request was something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “We have 10,000 time-series, and we would like to create a single model, instead
+    of 10,000 individual models.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The time series could represent product sales, option prices, atmospheric pollution,
+    etc. — it doesn't matter. What’s important here is that a company needs a lot
+    of resources to train, evaluate, deploy, and monitor (for **concept drift**) *10,000*
+    time series in production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, that is a good reason. Also, at that time, there was no [*N-BEATS*](https://medium.com/towards-data-science/n-beats-time-series-forecasting-with-neural-basis-expansion-af09ea39f538)
+    or [Temporal Fusion Transformer](https://medium.com/towards-data-science/temporal-fusion-transformer-time-series-forecasting-with-deep-learning-complete-tutorial-d32c1e51cd91).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if we are to create a global model, what should it learn? Should the
+    model just learn a clever mapping that conditions each time series based on the
+    input? But, this assumes that time series are **independent**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Or should the model learn global temporal patterns that apply to all time
+    series in the dataset?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interdependencies Of Time Series
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Deep GPVAR* builds upon DeepAR by seeking a more advanced way to utilize the
+    dependencies between multiple time series for improved forecasting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For many tasks, this makes sense.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A model that considers time series of a global dataset as independent loses
+    the ability to effectively utilize their relationships in applications such as
+    finance and retail. For instance, risk-minimizing portfolios require a forecast
+    of the covariance of assets, and a probabilistic forecast for different sellers
+    must consider competition and cannibalization effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Therefore, a robust global forecasting model cannot assume the underlying
+    time series are independent.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Deep GPVAR is differentiated from DeepAR* in two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**High-dimensional estimation:** *Deep GPVAR* models time series together,
+    factoring in their relationships. For this purpose, the model estimates their
+    **covariance matrix** using a **low-rank Gaussian approximation**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Scaling:** *Deep GPVAR*does not simply normalize each time series, like its
+    predecessor. Instead, the model learns how to scale each time series by transforming
+    them first using **Gaussian Copulas.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The following sections describe how these two concepts work in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Low-Rank Gaussian Approximation — Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we said earlier, one of the best ways to study the relationships of multiple
+    time series is to estimate the covariate matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, scaling this task for thousands of time series is not easily accomplished
+    — due to memory and numerical stability limitations. Plus, covariance matrix estimation
+    is a time-consuming process — the covariance should be estimated for every time
+    window during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address this issue, the authors simplify the covariance estimation using
+    **low-rank approximation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the basics. Below is the matrix form of a Multivariate normal`N**∼**(μ,Σ)`with
+    mean `**μ** **∈** (k,1)`and covariance `**Σ** **∈** (k,k)`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c316b88c85d984a5ce6a287c1b09c5d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 1:** Multivariate Gaussian distribution in matrix form'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem here is the size of the covariance matrix `**Σ**`that is quadratic
+    with respect to `N`, the number of time series in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can address this challenge using an approximated form, called the **low-rank
+    Gaussian approximation.** This method has its roots in factor analysis and is
+    closely related to [SVD (Singular Value Decomposition)](https://medium.com/towards-data-science/how-to-use-singular-value-decomposition-svd-for-image-classification-in-python-20b1b2ac4990).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead of computing the full covariance matrix of size `**(**N,N**)**`**,**
+    we can approximate by computing instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33f2c0aeb9ff6e8ae5d9334c88aefe18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 2:** Low-rank covariance matrix formula'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where `**D** **∈** R(N,N)`is a diagonal matrix and `**V** **∈** R(N,r)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But why do we represent the covariance matrix using the low-rank format? Because
+    since`r<<N`, it is proved that the Gaussian likelihood can be computed using `O(Nr²
+    + r³)` operations instead of `O(N³)` (the proof can be found in the paper’s Appendix).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The low-rank normal distribution is part of PyTorch’s **distributions** module.
+    Feel free to experiment and see how it works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deep GPVAR Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Notation:** From now on, all variables in bold are considered either vectors
+    or matrices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** Find a hands-on project for Deep GPVAR in the [AI Projects folder](https://aihorizonforecast.substack.com/p/ai-projects)
+    — which is constantly updated with fresh tutorials on the latest time-series models!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Now that we have seen how low-rank normal approximation works, we delve deeper
+    into *Deep GPVAR’s* architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, *Deep GPVAR* is similar to DeepAR *—* the model also uses an LSTM network.Let’s
+    assumeour dataset contains `N` time series, indexed from `i= [1…N]`
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At each time step `t` we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An LSTM cell takes as input the target variable `z_t-1` of the previous time
+    step `t-1` **for a subset of time series**. Also, the LSTM receives the hidden
+    state `**h_t-1**` of the previous time step.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The model uses the LSTM to compute its hidden vector `**h_t**`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The hidden vector `**h_t**` will now be used to compute the`**μ**, **Σ**` parameters
+    of a multivariate Gaussian distribution `N∼(μ,Σ)`. This is a special kind of normal
+    distribution called **Gaussian copula (**More to that later**).**
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This process is shown in **Figure 1:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81fdb9b2b6e49070894141d5b932ef8b.png)![](../Images/8668ca3908cd12d4d4738e286e9ee156.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1:** Two training steps of Deep GPVAR. The covariance matrix Σ is
+    expressed as Σ=D+V*V^T ([Source](https://arxiv.org/abs/1910.03002))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At each time step `t`, *Deep GPVAR* randomly chooses`B << N` time-series to
+    implement the low-rank parameterization: On the left, the model chooses from (1,2
+    and 4) time series and on the right, the model chooses from (1,3 and 4).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors in their experiments have configured `B = 20`. With a dataset containing
+    potentially over `N= 1000` time series, the benefit of this approach becomes clear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are 3 parameters that our model estimates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **means** `**μ**` of the normal distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The covariance matrix parameters are `d` and `**v**`according to **Equation
+    2.**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'They are all calculated from the `**h_t**` LSTM hidden vector. **Figure 2**
+    shows the low-rank covariance parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2d204f15dea0ffd4de84b0df258bbb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2:** Parameterization of the low-rank covariance matrix, as expressed
+    in **Equation 2**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Careful with notation: `μ_i`, `d_i`, `**v_i**` refer to the`i-th` time series
+    in our dataset, where `i ∈ [1..N]`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'For each time-series `i`, we create the `**y_i**` vector, which concatenates
+    `**h_i**` with `**e_i**` — the `**e_i**` vector contains the features/covariates
+    of the `i-th` time series. Hence we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58073208219d430b9f51f8f59c8e433a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3** displays a training snapshot for a time step `t`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f553782e64272b650bb415d98b3e6562.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3:** A detailed architecture of low-rank parameterization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`μ` and `d` are scalars, while `**v**` is vector. For example, `μ = **w_μ**^T
+    * **y**` with dimensions `(1,p)`*`(p,1`), therefore `μ` is a scalar.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The same LSTM is used for all time series, including the dense layer projections
+    `**w_μ**` ,`**w_d**` ,`**w_u**`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hence, the neural network parameters `**w_μ**` ,`**w_d**` ,`**w_u**`and`**y**`are
+    used to compute the `**μ**` and `**Σ**`parameterswhich are shown in **Figure 3.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gaussian Copula Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Question: What does the `**μ**` and `**Σ**`parameterize?'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: They parameterize a special kind of multivariate Gaussian distribution, called
+    **Gaussian Copula.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: But why does Deep GPVAR needs a Gaussian Copula?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Remember, *Deep GPVAR* does multi-dimensional forecasting, so we cannot use
+    a simple univariate Gaussian, like in DeepAR.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok. So why not use our familiar multivariate Gaussian distribution instead of
+    a Copula function — like the one shown in **Equation 1?**
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '2 reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1)** **Because a multivariate Gaussian distribution requires gaussian random
+    variables as marginals.** We could also use mixtures, but they are too complex
+    and not applicable in every situation. Conversely, Gaussian Copulas are easier
+    to use and can work with any input distribution — and by input distribution, we
+    mean an individual time series from our dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence, the copula learns to estimate the underlying data distributions without
+    making assumptions about the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2) The Gaussian Copula can model the dependency structure among these different
+    distributions by controlling the parameterization of the covariance matrix** `***Σ***`***.***
+    That’s how *Deep GPVAR* learns to consider the interdependencies among input time
+    series, something other global forecasting models don’t do.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Remember: time series can have unpredictable interdependencies.** For example,
+    in retail, we have product cannibalization: a successful product pulls demand
+    away from similar items in its category. So, we should also factor in this phenomenon
+    when we forecast product sales. With copulas, Deep GPVAR learns those interdependencies
+    automatically.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What are copulas?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A copula is a mathematical function that describes the correlation between multiple
+    random variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** If you are completely unfamiliar with copulas, [this article](https://medium.com/towards-data-science/copulas-an-essential-guide-applications-in-time-series-forecasting-f5c93dcd6e99)
+    explains in-depth what copulas are and how we construct them.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Copulas are heavily used in quantitative finance for portfolio risk assessment.
+    [Their misuse also played a significant role in the 2008 recession.](http://samueldwatts.com/wp-content/uploads/2016/08/Watts-Gaussian-Copula_Financial_Crisis.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More formally, a copula function `**C**` is a CDF of `N` random variables,
+    where each random variable (marginal) is uniformly distributed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b6dbbc8c39b1b59ab8718f0a16d712e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4** belowshows the plot of a bivariate copula, consisting of 2 marginal
+    distributions. The copula is defined in the [0–1]² domain (x, y-axis) and outputs
+    values in [0–1] (z-axis):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30a5e70fb487c96888bb47d5d6c3904a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4:** A Gaussian copula CDF function consisting of 2 beta distributions
+    as marginals'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A popular choice for `**C**`is the Gaussian Copula — the copula of **Figure
+    4** is also Gaussian.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How we construct copulas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We won’t delve into much detail here, but let’s give a brief overview.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Initially, we have a random vector — a collection of random variables. In our
+    case, each random variable `z_i` represents the observation of a time series `i`
+    at a time step `t`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/664fdec17126ab7f2f266ca7fcf9a9f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then, we make our variables **uniformly distributed** using the [*probability
+    integral transform*](https://medium.com/towards-data-science/copulas-an-essential-guide-applications-in-time-series-forecasting-f5c93dcd6e99)*:*
+    The CDF output of any continuous random variable is uniformly distributed,`F(z)=U`
+    :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db326ee56efd02d5ce456390b83aa496.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And finally, we apply our Gaussian Copula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7321552dd36eea752dadccde0a581061.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where **Φ**^-1 is the inverse standard gaussian CDF `N∼(0,1)`, and **φ** (lowercase
+    letter) is a gaussian distribution parameterized with `*μ*` and `*Σ*` *.* Note
+    that `Φ^-1[F(z)] = x`, where `x~(-Inf, Inf)` because we use the standard inverse
+    CDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**So, what happens here?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can take any continuous random variable, marginalize it as uniform, and
+    then transform it into a gaussian. The chain of operations is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8188b43a463a65d9f50c0fb1093e1f8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'There are 2 transformations here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`F(z) = U`, known as *probability integral transform*. Simply put, this transformation
+    converts any continuous random variable to uniform.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Φ^-1(U)=x`, known as [*inverse sampling*](https://en.wikipedia.org/wiki/Inverse_transform_sampling).
+    Simply put, this transformation converts any uniform random variable to the distribution
+    of our choice — here `Φ` is gaussian, so `x` also becomes a gaussian random variable.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In our case, `**z**`are the past observations of a time series in our dataset.
+    Because our model makes no assumptions about how the past observations are distributed,
+    we use the **empirical CDF —** a special function that calculates the CDF of any
+    distribution non-parametrically (empirically).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** If you are not familiar with the **empirical CDF**, refer to my [article](https://medium.com/towards-data-science/copulas-an-essential-guide-applications-in-time-series-forecasting-f5c93dcd6e99)
+    for a detailed explanation.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In other words, at the `F(z) = U` transformation, `F` is the empirical CDF and
+    not the actual gaussian CDF of the variable `z` . The authors use `m=100` past
+    observations throughout their experiments to calculate the empirical CDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Recap of copulas**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To sum up, the Gaussian copula is a multivariate function that uses `μ` and
+    `Σ` to directly paremeterize the correlation of two or more random variables.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: But how a Gaussian copula differs from a Gaussian multivariate probability distribution(PDF)?
+    Besides, a Gaussian Copula is just a multivariate CDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gaussian Copula can use any random variable as a marginal, not just a Gaussian.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The original distribution of the data does not matter — using the probability
+    integral transform and the empirical CDF, we can transform the original data to
+    gaussian, **no matter how they are distributed**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Gaussian Copulas in Deep GPVAR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have seen how copulas work, it’s time to see how *Deep GPVAR* uses
+    them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go back to **Figure 3\.** Using the LSTM, we have computed the `*μ*`
+    and `*Σ*`parameters. What we do is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Transform our observations to Gaussian**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the copula function, we transform our observed time-series datapoints
+    `**z**` to gaussian `**x**` using the copula function. The transformation is expressed
+    as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/da801c95a5e88dd990a01bb6453e9a13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where `f(z_i,t)` is actually the marginal transformation `Φ^-1(F(z_i))` of the
+    time-series `i`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, our model makes no assumptions about how our past observations
+    `z` are distributed. Therefore, no matter how the original observations are distributed,
+    our model can effectively learn their behavior, including their correlation —
+    all these thanks to the power of Gaussian Copulas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2: Use the computed parameters for the Gaussian.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I mentioned that we should transform our observations to Gaussian, but what
+    are the parameters of the Gaussian? In other words, when I said that `f(z_i) =
+    Φ^-1(F(z_i))`, what are the parameters of `Φ` ?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer is the `*μ*` and `*Σ*` parameters — these are calculated from the
+    dense layers and the LSTM shown in **Figure 3.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3: Calculate the loss and update our network parameters**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To recap, we transformed our observations to Gaussian and we assume those observations
+    are parameterized by a low-rank normal Gaussian. Thus, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/453c8a175f78d70f9cd5fa72ec5c354a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where `f1(z1)` is the transformed observed prediction for the first time series,
+    `f2(z2)` refers to the second one and `f_n(z_n)` refers to the N-th time series
+    of our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we train our model by maximizing the **multivariate** **gaussian log-likelihood
+    function.** The paper uses the convention of minimizing the loss function **—**
+    the gaussian log-likelihood preceded with a minus:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a125c011c6b9b865364db9162d3bf096.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the gaussian log-likelihood loss, *Deep GPVAR* updates its LSTM and the
+    shared dense layer weights displayed in **Figure 3.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, notice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `**z**`is not a single observation, but the vector of observations from
+    all `N` time-series at time `t`. The summation loops until `T`, the maximum lookup
+    window — upon which the gaussian log-likelihood is evaluated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And since **z** is a vector of observations, the gaussian log-likelihood is
+    actually **multivariate**. In contrast, DeepAR uses a univariate gaussian likelihood.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Deep GPVAR: The Big Picture**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I recommend going over the article several times to grasp how the model works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generally speaking, you can view Deep GPVAR as a Gaussian stochastic process.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For those unfamiliar with **stochastic processes**, you can think of a stochastic
+    process as a collection of random variables — each variable represents the outcome
+    of a random event at a given time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The random variables are indexed by some set, usually time, and the values of
+    the random variables depend on each other. Hence the outcome of one event can
+    influence the outcome of future events. This interdependence also explains the
+    temporal nature of a stochastic process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our case, each datapoint `y_i` of a time-series `i` can be viewed as a random
+    variable. Hence, *Deep GPVAR* can be considered a Gaussian process `GP`, evaluated
+    at every data point `y` as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7c8d35297e83da00fabfd26cde061e2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, the parameters of a gaussian process are functions, not variables. In the
+    equation above, the `**μ**`, `**d**`, `**v**` **(with tilde)** are time functions,
+    indexed by `**y**` — where `**y**` is an observation of vectors at a certain time
+    step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At each time step, the functions `**μ**`, `**d**`, `**v**` **(with tilde)**
+    which essentially are the LSTM and the Dense layers have a realization `**μ**`,
+    `**d**`, `**v**` **(without tilde) .** This realization parameterizes the `*μ*`
+    and `*Σ*` of the copula function at a time step `*t*`. Hence during training,
+    at each time-step, `*μ*` and `*Σ*` change, such that they optimally explain our
+    observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, the notion that *Deep GPVAR* works as a Gaussian stochastic process
+    is entirely justified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep GPVAR Variants
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From the current paper, Amazon created 2 models, **Deep GPVAR** (which we describe
+    in this article) and **DeepVAR**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DeepVARis similar to *Deep GPVAR.* The difference is that DeepVAR uses a global
+    multivariate LSTM that receives and predicts all time series at once. On the other
+    hand, *Deep GPVAR* unrolls the LSTM on each time series separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In their experiments, the authors refer to the DeepVAR as **Vec-LSTM** and *Deep
+    GPVAR as* **GP***.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *Vec-LSTM*and*GP*terms are mentioned in **Table 1** of the original paper.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The *Deep GPVAR* and *DeepVAR* terms are mentioned in Amazon’s Forecasting library
+    [Gluon TS](https://ts.gluon.ai/stable/getting_started/models.html).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This article describes the ***Deep GPVAR* variant**, which is better on average
+    and has fewer parameters than *DeepVAR.* Feel free to read the original paper
+    and learn more about the experimental process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Tutorial — Demand Energy Forecasting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This tutorial uses the **ElectricityLoadDiagrams20112014** [4]dataset from
+    UCI. The notebook for this example can be downloaded [here](https://aihorizonforecast.substack.com/p/ai-projects):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note :** Currently, the PyTorch Forecasting library provides the DeepVAR
+    version. That’s the variant we show in this tutorial. You can also try all DeepAR
+    variants, including GPVAR from Amazon’s open-souce [Gluon TS library](https://github.com/awslabs/gluonts/tree/dev/src/gluonts/mx/model).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Download Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data Preprocessing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8d4ffbf8701559ff5f1bd0f8ce6eb654.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each column represents a consumer. The values in each cell are the electrical
+    power usages in each quarter-of-an-hour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, we aggregate into hourly data. Due to the model’s size and complexity,
+    we train our model using 5 consumers only (considering only non-zero values).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we convert our dataset to a special format that PyTorch Forecasting understands
+    — called ***TimeSeriesDataset****.* This format is handy because it lets us specify
+    the nature of our features (e.g. if they are time-varying, or static).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** If you want to learn more about the ***TimeSeriesDataset*** format,
+    check my [Temporal Fusion Transformer article](https://medium.com/towards-data-science/temporal-fusion-transformer-time-series-forecasting-with-deep-learning-complete-tutorial-d32c1e51cd91)
+    that explains in detail how this format works.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To modify our dataset for the TimeSeriesDataset format, we stack all time series
+    vertically instead of horizontally. In other words, we convert our dataframe from
+    “wide” to “long” format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, we create new features from the date column such `day` and `month` -those
+    will help our model capture the seasonality dynamics better
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The final preprocessed dataframe is called `time_df`. Let’s print its contents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce0186cef0e4fa8d3a621ab395d58320.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The `time_df` is now in the proper format for the *TimeSeriesDataset*. Moreover,
+    the *TimeSeriesDataset* format requires a **time index** for our data. In this
+    case, we use the `hours_from_start` variable. Also, the `power_usage` is the **target
+    variable** our model will try to predict.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create DataLoaders
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this step, we pass our `time_df` to the *TimeSeriesDataSet* format. We do
+    this because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It spares us from writing our own Dataloader.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can specify how our model will handle the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can normalize our dataset with ease. In our case, normalization is mandatory
+    because all time sequences differ in magnitude. Thus, we use the **GroupNormalizer**
+    to normalize each time series individually.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our model uses a lookback window of one week (7*24) to predict the power usage
+    of the next 24 hours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, notice that the `hours_from_start` is both the time index and a time-varying
+    feature. For the sake of demonstration, our validation set is the last day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Baseline Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Also, remember to create a baseline model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We create a naive baseline that predicts the power usage curve of the previous
+    day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Building and Training our Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are now ready to train our model. We will use the *Trainer* interface from
+    the PyTorch Lightning library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we have to configure hyperparameters and callbacks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **EarlyStopping** callback to monitor the validation loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tensorboard** to log our training and validation metrics.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `hidden_size` and `rnn_layers` refer to the number of LSTN cells and the
+    number of LSTM layers respectively.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We also use `gradient_clip_val` (gradient clipping) to prevent overfitting.
+    Also, the model has a default dropout of `0.1` — we leave the default value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Our loss function is the`**MultivariateNormalDistributionLoss**(rank : int)`
+    . The function takes the **rank** parameter as an argument — this is the `R` value
+    we explained in the beginning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember, the lower the value, the biggest the speedup during training. The
+    authors in their experiments use **rank**=10 — we do the same here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: After 6 epochs, EarlyStopping kicks in the training finishes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** If you want to run DeepAR instead of DeepVAR, use the [NormalDistributionLoss](https://pytorch-forecasting.readthedocs.io/en/stable/api/pytorch_forecasting.metrics.distributions.NormalDistributionLoss.html)
+    instead.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Load and Save the Best Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Don’t forget to download your model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is how you load the model again — you only have to remember the best model
+    path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tensorboard Logs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Take a closer look at training and validation curves with Tensorboard. You
+    can start it by executing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Model Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Get predictions on the validation set and calculate the average **P50** (quantile
+    median) **loss**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that we got a slightly worse score compared to the [TFT implementation](https://medium.com/towards-data-science/temporal-fusion-transformer-time-series-forecasting-with-deep-learning-complete-tutorial-d32c1e51cd91).
+    The loss function we used is probabilistic — thus, each time you will get a slightly
+    different score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last two time series have a slightly higher loss because their relative
+    magnitude is high compared to the others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot Predictions on Validation Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/06810a5dfe9056de790441ad79a59212.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5:** Predictions on validation data for MT_002'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8221abe2eee378543f06a92b5646d8a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 6:** Predictions on validation data for MT_004'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/296881231e8ac8fec22168bf2b83e217.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 7:** Predictions on validation data for MT_005'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0613e83a4a18e6e829ee64dff68c5f59.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 8:** Predictions on validation data for MT_006'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8b86c21ff8afddd84a8e0f09c9bf96b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 9:** Predictions on validation data for MT_008'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The predictions on the validation set are quite impressive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, notice that we did not perform any hyperparameter tuning, meaning we could
+    get even better results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot Predictions For A Specific Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Previously, we plotted predictions on the validation data using the `idx` argument,
+    which iterates over all time series in our dataset. We can be more specific and
+    output predictions of a specific time series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/267d7a183f429edd937291ab15e065d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 10:** Day ahead predictions for MT_004 on the training set'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In **Figure 10,** we plot the day-ahead of the **MT_004** consumer for time
+    index=26512.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember, our time-indexing column `hours_from_start` starts from 26304 and
+    we can get predictions from 26388 onwards (because we set earlier `min_encoder_length=max_encoder_length
+    // 2` which equals `26304 + 168//2=26388`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting the Covariance Matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The biggest advantage of *Deep (GP)VAR* is the estimation of the covariance
+    matrix — which provides some insight about the interdepencies of the time series
+    in our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our case, it makes no sense to do this calculation because we only have
+    5 time series in our dataset. Nevertheless, here is the code that shows how to
+    do it if you have a dataset with many time series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, the PyTorch Forecasting library provides additional features such as
+    **out-of-sample forecasts and hyperparameter tuning with Optuna**. You can learn
+    more about this in the [TFT tutorial](/temporal-fusion-transformer-time-series-forecasting-with-deep-learning-complete-tutorial-d32c1e51cd91),
+    where they are explained in-depth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing Remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Deep GPVAR* and its variants are a powerful family of TS forecasting, bearing
+    the expertise of Amazon’s research.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model addresses multivariate forecasting by considering the interdependencies
+    among thousands of time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, if you want to learn more about the initial architecture of [DeepAR](https://medium.com/p/bc717771ce85),
+    feel free to check this companion article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Follow me on [Linkedin](https://www.linkedin.com/in/nikos-kafritsas-b3699180/)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Subscribe to my [newsletter](https://aihorizonforecast.substack.com/welcome),
+    AI Horizon Forecast!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://aihorizonforecast.substack.com/p/autogluon-timeseries-creating-powerful?source=post_page-----e39204d90af3--------------------------------)
+    [## AutoGluon-TimeSeries : Creating Powerful Ensemble Forecasts - Complete Tutorial'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazon's framework for time-series forecasting has it all.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: aihorizonforecast.substack.com](https://aihorizonforecast.substack.com/p/autogluon-timeseries-creating-powerful?source=post_page-----e39204d90af3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Created with Stable Diffusion, CreativeML Open RAIL-M license. Text prompt:
+    “a nebula traveling through space, digital art, illustration”, to rg'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] D. Salinas et al. [*DeepAR: Probabilistic forecasting with autoregressive
+    recurrent networks*](https://arxiv.org/pdf/1704.04110.pdf), International Journal
+    of Forecasting (2019)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] D. Salinas et al. [High-Dimensional Multivariate Forecasting with Low-Rank
+    Gaussian Copula Processes](https://arxiv.org/abs/1910.03002)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [ElectricityLoadDiagrams20112014](https://archive.ics.uci.edu/ml/datasets/ElectricityLoadDiagrams20112014)
+    dataset by UCI, CC BY 4.0.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images are created by the author, unless stated otherwise*'
+  prefs: []
+  type: TYPE_NORMAL

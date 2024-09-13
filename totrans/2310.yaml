@@ -1,0 +1,339 @@
+- en: 'Vosk for Efficient Enterprise-Grade Speech Recognition: An Evaluation and Implementation
+    Guide'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/vosk-for-efficient-enterprise-grade-speech-recognition-an-evaluation-and-implementation-guide-87a599217a6c](https://towardsdatascience.com/vosk-for-efficient-enterprise-grade-speech-recognition-an-evaluation-and-implementation-guide-87a599217a6c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A comprehensive walkthrough of implementing and assessing Vosk-based speech
+    recognition systems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----87a599217a6c--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----87a599217a6c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87a599217a6c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----87a599217a6c--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----87a599217a6c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87a599217a6c--------------------------------)
+    ·9 min read·May 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our latest articles, we have been working extensively with different models
+    and approaches to perform speech recognition. The open-source community has been
+    developing solutions in this space for the last few years, giving us many options
+    to select from. We have tried Whisper, WhisperX, and Whisper-JAX. All of them
+    are based on the Whisper model trained and open-sourced by OpenAI recently. It
+    is an Automatic Speech Recognition (ASR) system trained on multilingual and multiple
+    tasks, making it general-purpose for speech and even language tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the downsides of Whisper is the resources it takes to run it, especially
+    in terms of execution time for longer audio files. In this article, we guide you
+    through developing your enterprise-grade speech recognition model using Vosk,
+    an open-source offline speech recognition toolkit. These models are significantly
+    faster, which, in a significant number of use cases, is a decisive factor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We dive into the performance of four Vosk speech recognition models, highlighting
+    their strengths and weaknesses in terms of accuracy, execution time, and model
+    size. Our findings reveal interesting insights, such as the 20% improvement in
+    accuracy when transitioning from the smaller models to bigger ones. We also shed
+    light on the trade-offs between speed and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ff0f43043ccd4bbccc7d9dc24eee0a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Speech to text is getting us closer to the machines ([source](https://unsplash.com/photos/zoG585VYsV8))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article belongs to “Large Language Models Chronicles: Navigating the NLP
+    Frontier”, a new weekly series of articles that will explore how to leverage the
+    power of large models for various NLP tasks. By diving into these cutting-edge
+    technologies, we aim to empower developers, researchers, and enthusiasts to harness
+    the potential of NLP and unlock new possibilities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Articles published so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Summarizing the latest Spotify releases with ChatGPT](https://medium.com/towards-data-science/summarizing-the-latest-spotify-releases-with-chatgpt-553245a6df88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Master Semantic Search at Scale: Index Millions of Documents with Lightning-Fast
+    Inference Times using FAISS and Sentence Transformers](https://medium.com/towards-data-science/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Unlock the Power of Audio Data: Advanced Transcription and Diarization with
+    Whisper, WhisperX, and PyAnnotate](https://medium.com/towards-data-science/unlock-the-power-of-audio-data-advanced-transcription-and-diarization-with-whisper-whisperx-and-ed9424307281)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Whisper JAX vs PyTorch: Uncovering the Truth about ASR Performance on GPUs](https://medium.com/towards-data-science/whisper-jax-vs-pytorch-uncovering-the-truth-about-asr-performance-on-gpus-8794ba7a42f5)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As always, the code is available on my [Github](https://github.com/luisroque/large_laguage_models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Speech Recognition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Speech recognition is the technology that enables computers and other devices
+    to understand and process human speech, converting spoken language into written
+    text. There are several steps in how these systems learn to convert speech to
+    text. They automatically extract the raw audio waveform, essentially the audio
+    signal’s acoustic features. Then, they map those features to phonemes and, using
+    a language model, map the phonemes to words. More advanced systems also incorporate
+    contextual information and semantic understanding to refine the transcript.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speech recognition faces numerous challenges due to the complexity of human
+    speech and the factors that introduce variability and ambiguity. Some challenges
+    include speaker variability, background noise, disfluencies and filler words,
+    and homophones and coarticulation. Speaker variability originates from different
+    speakers’ unique accents, speaking styles, and pronunciations. Background noise,
+    such as that found in noisy environments, interferes with the clarity of the speech
+    signal, posing a challenge for accurate recognition. Disfluencies and filler words
+    present another hurdle, as hesitations, repetitions, and filler words (e.g., “uh”
+    and “um”) commonly occur in natural speech. Lastly, homophones and coarticulation
+    create additional obstacles. Some words sound identical but have different meanings
+    (homophones). The pronunciation of others can change depending on their position
+    in a sentence (coarticulation). All these factors introduce ambiguity to the recognition
+    task and make it harder for our models to perform accurately in certain tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Practical Guide to Building an Enterprise-Grade Speech Recognition Model with
+    Vosk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We leverage the power of Vosk, an open-source offline speech recognition toolkit,
+    to build a custom speech recognition system. Vosk offers a flexible and efficient
+    solution for implementing speech recognition on various platforms, including Android,
+    iOS, Windows, Linux, and Raspberry Pi. Its key features include support for multiple
+    languages, speaker identification, compatibility with small-footprint devices,
+    and large-scale server deployments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following sections, we guide you through creating your speech recognition
+    system using Vosk. We discuss popular frameworks and libraries, outline the steps
+    for data collection, preprocessing, and model training, and provide tips for fine-tuning
+    the model for specific use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Collection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To evaluate different models, we will use the [LibriSpeech](https://www.openslr.org/12)
+    ASR corpus dataset (CC BY 4.0). The dataset comprises recordings of LibriSpeech
+    is a corpus of approximately 1000 hours of read English speech. The dataset is
+    ideal for benchmarking speech recognition models as it provides various accents,
+    speaking styles, pronunciations and background noises. As we discussed previously,
+    these are often large obstacles for these models to perform well. We are interested
+    in testing if Vosk is capable to work in these challenging environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transcription and Word Representation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The Vosk API is quite rich; we have access to several attributes for each word
+    transcribed. It returns the following attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`conf`: Degree of confidence for the recognized word, ranging from 0 to 1.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`start`: Start time of pronouncing the word, in seconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`end`: End time of pronouncing the word, in seconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`word`: The recognized word.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To streamline our process, we create a `WordVosk` class that represents each
+    word returned by the Vosk API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As our primary interest lies in obtaining transcriptions, we create a `Transcription`
+    class that takes a list of `WordVosk` objects. The `to_raw_text` method generates
+    the final raw transcription:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: These classes help manage the output from the Vosk speech recognition API more
+    efficiently, allowing for easier manipulation of the transcription results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the Main Model Class
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `ModelSpeechToText` class is designed to handle speech-to-text conversion
+    using the Vosk API. It takes an audio file and a Vosk model as input, and it returns
+    a list of transcribed words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `speech_to_text` method transcribes speech to text using the Vosk API. It
+    reads the audio file in chunks and processes each chunk using the `KaldiRecognizer`.
+    The transcription results are collected in the `results` list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `results_to_words` method takes the transcription results and converts them
+    into a list of `WordVosk` objects. This method allows us to easily manipulate
+    and process the transcribed words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `ModelSpeechToText` is the final abstraction that we needed to efficiently
+    use the Vosk API. It allows us to transcribe audio files and obtain a list of
+    transcribed words, which are represented as `WordVosk` objects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating Speech-to-Text Models Using Word Error Rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To evaluate speech-to-text models, we can use the Word Error Rate (WER) metric.
+    It is the average number of insertions, deletions, and substitutions needed to
+    transform the hypothesis transcription into the reference transcription, divided
+    by the total number of words in the reference transcription. Lower WER values
+    indicate better performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `calculate_wer` function computes the average WER between reference and
+    hypothesis transcriptions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `evaluate_models` function evaluates multiple speech-to-text models using
+    a given evaluation dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Evaluating Vosk Speech-to-Text Models: Accuracy, Execution Time, and Memory
+    Consumption'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, let’s introduce the four models that we are testing. These models vary
+    in size and complexity, which can potentially affect their performance. We compared
+    them in terms of accuracy, execution time, and memory consumption. The models
+    and their respective sizes are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'vosk-model-small-en-us-0.15 (Size: 40M)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'vosk-model-en-us-0.22 (Size: 1.8G)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'vosk-model-en-us-0.22-lgraph (Size: 128M)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'vosk-model-en-us-0.42-gigaspeech (Size: 2.3G)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Comparing Model Performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After evaluating the four Vosk models on a dataset rich in accents and complex
+    sentences, we observed noticeable differences in their performance. The best models
+    in terms of accuracy were the 0.42-gigaspeech and 0.22, with the latter showing
+    an improvement of about 20% compared to the smaller 0.15 and 0.22-lgraph models.
+    This improvement can be attributed to the larger size of the 0.42-gigaspeech and
+    0.22 models, which allows them to better handle diverse accents and complex language
+    structures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/048b43887c8668fc1c459b4fbf12e5e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Word error rate (WER) for each model tested (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In terms of execution time, the 0.22 and 0.15 models were the best performers,
+    taking around 150 seconds to complete the transcription process. On the other
+    hand, the 0.22-lgraph model took considerably longer, at over 750 seconds. This
+    highlights an interesting trade-off between accuracy and speed, with the 0.22
+    model emerging as an appealing option that achieves a good balance between performance
+    and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63b105fd85b3c54fda538f17b0ccec6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Execution time for each model tested (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering the results, the 0.22 model offers a promising combination of accuracy
+    and efficiency, making it suitable for a wide range of applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we evaluated four different Vosk speech recognition models
+    to compare their performance in terms of accuracy and execution time. We observed
+    that the 0.42-gigaspeech and 0.22 models exhibited superior accuracy, with the
+    0.22 model demonstrating a 20% improvement over the smaller 0.15 and 0.22-lgraph
+    models. This improvement can be attributed to the larger size of the 0.42-gigaspeech
+    and 0.22 models, allowing them to handle diverse accents and complex language
+    structures better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When considering execution time, the 0.22 and 0.15 models emerged as the best
+    performers. The 0.22 model, in particular, stands out as an appealing option that
+    achieves a good balance between performance and accuracy. It is important to note
+    that the choice of the optimal model depends on the specific requirements of each
+    project. Always consider the trade-offs between speed and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep in touch: [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)'
+  prefs: []
+  type: TYPE_NORMAL

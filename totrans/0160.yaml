@@ -1,0 +1,310 @@
+- en: A better symbolic regression method, by explicitly considering units
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-better-symbolic-regression-method-by-explicitly-considering-units-35b3630165b](https://towardsdatascience.com/a-better-symbolic-regression-method-by-explicitly-considering-units-35b3630165b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Could help to blend machine learning with classical approaches to sciences and
+    engineering, by providing more interpretable models rooted in fundamental concepts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://lucianosphere.medium.com/?source=post_page-----35b3630165b--------------------------------)[![LucianoSphere
+    (Luciano Abriata, PhD)](../Images/a8ae3085d094749bbdd1169cca672b86.png)](https://lucianosphere.medium.com/?source=post_page-----35b3630165b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----35b3630165b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----35b3630165b--------------------------------)
+    [LucianoSphere (Luciano Abriata, PhD)](https://lucianosphere.medium.com/?source=post_page-----35b3630165b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----35b3630165b--------------------------------)
+    ·7 min read·Mar 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/948d15e8e2e9706e5b347d1ff8c707b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure created by the author by combining different Dall-E-2 generations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Symbolic regression is a technique that helps us understand how different
+    pieces of data are related to each other, by finding mathematical equations that
+    describe the relationships in place. I am very expectant of symbolic regression
+    methods and advocate for them, because by providing explicit equations they are
+    in principle highly interpretable, in straightforward manners -in contrast to
+    most modern AI models which behave like black boxes that we can’t understand,
+    making it difficult to know how and why they work.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A new work, by Tenachi et al and available as a preprint in arXiv, presents
+    a new approach that uses deep reinforcement learning to find equations for the
+    variables of a dataset while taking into account the units associated with the
+    data. This approach helps eliminate physically impossible solutions and improves
+    performance by restricting the freedom of the equation generator.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Index
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**-** [**Introduction**](#619f) **-** [**About symbolic regression, and introducing
+    the new methodology**](#b64e) **-** [**How the new symbolic regression method
+    works**](#ae40) **-** [**Concluding notes, preprint, and code**](#5f56)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A fundamental problem in the natural sciences and in engineering is that of
+    discovering quantitative relationships between the independent and dependent variables
+    measured for a given system. While one can perfectly model such relationships
+    through black box-like models like those produced by most modern conventional
+    AI methods, it is far more desirable to quantify the relationships in terms of
+    symbolic equations, like say *a=F/m* or *I=I0exp(-kt)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why? Well, there are a number of reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equations are interpretable and thus more intelligible by the human mind, possibly
+    even connecting the variables through relationships that are backed up by the
+    science or engineering concepts already known. For example, in *a=F/m* we can
+    directly understand that a stronger force applied to an object causes a stronger
+    acceleration, in a linear fashion; and in *I=Ioexp(-kt)* we know the decay of
+    the dependent variable is exponential over time, from which we can play with maths
+    to obtain equations for half-life times, linearized forms (through logarithms),
+    and more.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If interpretable in simple terms, equations connecting variables have a good
+    chance of relating directly to the underlying concepts, ideas and axioms of the
+    science or engineering problem being modeled. Think for example of the *I=I0exp(-kt)*
+    applied to radioactive decay, from whose derivative (*dI/dt = -kt*) we can understand
+    that the rate at which the isotope decays is proportional to the total number
+    of radioactive nuclei left in the sample at the time, hence this is a first-order
+    process.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Propagating independent variables (inputs) through an equation to model the
+    resulting outputs (dependent variables) is an extremely fast calculation, virtually
+    immediate, compared to propagating the inputs through all the units of a neural
+    network. This might not have an impact for individual predictions, but may be
+    relevant when large numbers of predictions need to be done. Besides, equations
+    that relate variables symbolically can be integrated into other programs seamlessly
+    by just plugging in the fitted equations. See for example a great use case of
+    this [here](/google-proposes-new-method-to-derive-analytical-expressions-for-terms-in-quantum-mechanics-d70fff6e1ef2).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Importantly, equations relating variables analytically might be more safely
+    extrapolable outside of the domains for which input data was sampled.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: None of these points holds, at least not in such a straightforward manner, for
+    regular machine learning models as they work by merely convoluting and mixing
+    signals through lots of nested functions and combinations until they can model
+    the dependent variables properly, in ways that might work perfectly but are hardly
+    interpretable -if at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All that explanation above is why when a relationship can be modeled through
+    equations, you better go for that. But what happens when you cannot find a mathematical
+    expression to relate the variables? Then you either try regular neural networks,
+    or you can try symbolic regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About symbolic regression, and introducing the new methodology
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Symbolic regression aims to find free-form symbolic analytical function/s that
+    fit the variables of a given dataset, being more general than methods which simply
+    fit coefficients inside linear or non-linear functions. To get it straight, symbolic
+    regression is not simply fitting equations but actually finding their expressions
+    (and then yes, fitting the coefficients they contain). Summarizing from the introduction
+    but using different terms, the advantages of symbolic regression include compactness,
+    generalization (meaning that if correct, an analytical expression can be much
+    better at extrapolating outside of the training range), and intelligibility and
+    interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make these advantages clear and to understand the role that symbolic regression
+    can play in modeling datasets, look at the recent advances and examples I have
+    covered from recent literature about symbolic regression used for scientific applications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/real-world-applications-of-symbolic-regression-2025d17b88ef?source=post_page-----35b3630165b--------------------------------)
+    [## Real-world applications of symbolic regression'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Less of a black box than regular neural networks, and offering models that not
+    only predict data but also rationalize…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/real-world-applications-of-symbolic-regression-2025d17b88ef?source=post_page-----35b3630165b--------------------------------)
+    [](/google-proposes-new-method-to-derive-analytical-expressions-for-terms-in-quantum-mechanics-d70fff6e1ef2?source=post_page-----35b3630165b--------------------------------)
+    [## Google proposes new method to derive analytical expressions for terms in quantum
+    mechanics…
+  prefs: []
+  type: TYPE_NORMAL
+- en: The new method derives accurate functionals (elements of quantum mechanical
+    calculations) in symbolic form, hence…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/google-proposes-new-method-to-derive-analytical-expressions-for-terms-in-quantum-mechanics-d70fff6e1ef2?source=post_page-----35b3630165b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, implementing symbolic regression for discovering new physical
+    laws is extremely challenging. More so is achieving compact, simple equations
+    that can truly be interpretable in terms of the underlying science or engineering
+    concepts. I stress this because many models for symbolic regression come up with
+    such complicated equations, that they end up being very hard to interpret and
+    add little or nothing in comparison to standard machine learning models. And in
+    the most successful cases, finding simple enough equations usually requires long
+    execution times as the program needs to explore the different branches of the
+    huge tree of possible mathematical operations that must be combined and tested
+    while building up possible equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This last two points, i.e. the need for simplified equations and possibly fast
+    convergence into them, were the main motivation behind the new work by Tenachi
+    et al. And here’s their main contribution: The authors realized that the units
+    of the variables to be connected by the symbolic regression procedure impose a
+    strong constraint on the shape of the equation. They then explored how this fact
+    could be exploited to optimize equation search, and thus came up with a specific
+    framework to incorporate information about physical units into the symbolic regression
+    procedure.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors realized that the units of the variables to be connected by the
+    symbolic regression procedure impose a strong constraint on the shape of the equation
+    they are looking for. They exploited this to optimize equation search, and came
+    up with a framework to incorporate information about physical units into symbolic
+    regression procedure.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By including units as constraints during the equation search process, the new
+    framework effectively addresses the combinatorial challenge of the huge search
+    space of trial expressions. The search space shrinks dramatically, resulting in
+    much faster search for equations. Moreover, the authors found that the procedure
+    results in simpler expressions that are hence more interpretable and accurate
+    than those obtained by other symbolic regression methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How the new symbolic regression method works
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At its core, the framework includes a novel symbolic embedding, here tailored
+    for physics but in principle scalable more broadly, that allows to control the
+    units of each symbol generated in a partially composed mathematical expression.
+    This results in the procedure automatically guiding the search space exclusively
+    through paths where units remain consistent. As the procedure runs, it uses a
+    recurrent neural network to generate analytical expressions and cycles them through
+    steps of reinforcement learning under the constraints that impose the units, thus
+    resulting in physically meaningful combinations of the input variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In more detail, the procedure begins by generating symbolic expressions using
+    binary trees where each node represents a symbol of the expression in a library
+    of available symbols. The expressions are treated as sequences of categorical
+    vectors, and token sequences are generated using the recurrent neural network.
+    (By the way, these categorical vectors can be artificially tuned to incorporate
+    prior knowledge; and some priors are adopted at this stage, for example restraining
+    the maximum possible size of the analytical expressions, allowing no more than
+    two levels of nested trigonometric operations and no self-nesting of exponent
+    and log operators which are unusual in sciences, etc.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The generated expressions are subjected to physical unit constraints, which
+    are computed in situ using a procedure that computes the required units whenever
+    possible and leaves them as free otherwise. Then, in the reinforcement learning
+    part, a set of trial symbolic functions is generated as indicated and a reward
+    is computed for each function by confronting it to the data. The network is then
+    required to generate a new batch of trial functions, encouraging it to produce
+    better results by reinforcing behavior associated with high reward values. The
+    approach reinforces candidates which are sampled based on not only the output
+    of the reinforcement network but also on the local units constraints derived from
+    the prior distribution, which ensures the physical correctness of token choices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notably, the methodology allows the candidate functions to contain constants
+    with fixed units, but with free numerical values, which allows for modeling situations
+    where the problem has some unknown physical scales. Finally, the optimal value
+    of the constants is found via gradient descent using a standard optimization routine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concluding notes, preprint, and code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After demonstrating the effectiveness of the new approach on a range of examples
+    from astrophysics, the authors of this new work aim to build a powerful general-purpose
+    symbolic regression algorithm for other physical sciences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can read the full preprint here at arXiv:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://arxiv.org/abs/2303.03192?source=post_page-----35b3630165b--------------------------------)
+    [## Deep symbolic regression for physics guided by units constraints: toward the
+    automated discovery of…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Symbolic Regression is the study of algorithms that automate the search for
+    analytic expressions that fit data. While…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: arxiv.org](https://arxiv.org/abs/2303.03192?source=post_page-----35b3630165b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And you can try the program here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/WassimTenachi/PhySO?source=post_page-----35b3630165b--------------------------------)
+    [## GitHub - WassimTenachi/PhySO: Physical Symbolic Optimization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The physical symbolic regression ( $\Phi$-SO ) package physo is a symbolic regression
+    package that fully leverages…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/WassimTenachi/PhySO?source=post_page-----35b3630165b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may also find useful the presentation by the preprint’s lead author, and
+    in the Twitter thread he rolled out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As Tenachi himself concludes in his Twitter thread,
+  prefs: []
+  type: TYPE_NORMAL
+- en: While neural networks are excellent tools for modeling physical systems, they
+    lack interpretability and generalization capabilities. [The new method] offers
+    a chance to open up these black boxes and recover underlying equations, which,
+    as physicists, we all know and love.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[***www.lucianoabriata.com***](https://www.lucianoabriata.com/) *I write and
+    photoshoot about everything that lies in my broad sphere of interests: nature,
+    science, technology, programming, etc.* [***Become a Medium member***](https://lucianosphere.medium.com/membership)
+    *to access all its stories (affiliate links of the platform for which I get small
+    revenues without cost to you) and* [***subscribe to get my new stories***](https://lucianosphere.medium.com/subscribe)
+    ***by email****. To* ***consult about small jobs,*** *check my* [***services page
+    here***](https://lucianoabriata.altervista.org/services/index.html)*. You can*
+    [***contact me here***](https://lucianoabriata.altervista.org/office/contact.html)***.***'
+  prefs: []
+  type: TYPE_NORMAL

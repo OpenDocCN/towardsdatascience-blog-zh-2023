@@ -1,0 +1,193 @@
+- en: 'How-To: Cross Validation with Time Series Data'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-cross-validation-with-time-series-data-9802a06272c6](https://towardsdatascience.com/how-to-cross-validation-with-time-series-data-9802a06272c6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: When it comes to time series data, you have to do cross validation differently
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@pelletierhaden?source=post_page-----9802a06272c6--------------------------------)[![Haden
+    Pelletier](../Images/8f73fc8222e783883c4ebcaee14513e0.png)](https://medium.com/@pelletierhaden?source=post_page-----9802a06272c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9802a06272c6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9802a06272c6--------------------------------)
+    [Haden Pelletier](https://medium.com/@pelletierhaden?source=post_page-----9802a06272c6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9802a06272c6--------------------------------)
+    ·5 min read·Dec 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6086d85a950ceb80f3d99b0979ecd94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Standard k-fold cross validation. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cross-validation** is an important part of training and evaluating an ML
+    model. It allows you to get an estimate of how a trained model will perform on
+    new data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most people who learn how to do cross validation first learn about the **K-fold
+    approach.** I know I did. In K-fold cross validation, the dataset is randomly
+    split into n folds (usually 5). Over the course of 5 iterations, the model is
+    trained on 4 out of the 5 folds while the remaining 1 acts as a test set for evaluating
+    performance. This is repeated until all 5 folds have been used as a test set at
+    one point in time. By the end of it, you’ll have 5 error scores, which, averaged
+    together, will give you your cross validation score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the catch though — this method really only works for non-time series
+    / non sequential data. If the order of the data matters in any way, or if any
+    data points are dependent on preceding values, **you cannot use K-fold cross validation.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason why is fairly straightforward. If you split up the data into 4 training
+    folds and 1 testing fold using KFold you will randomize the order of the data.
+    Therefore, data points that once preceded other data points can end up in the
+    test set, so when it comes down to it, ***you’ll be using future data to predict
+    the past.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a big no-no.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way test your model in development should mimic the way it will run in the
+    production environment.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you’ll be using past data to predict future data when the model goes to production
+    (as you would be doing with time series), you should be testing your model in
+    development the same way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where TimeSeriesSplit comes in. TimeSeriesSplit, a scikit-learn class,
+    is a self-described “variation of KFold.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the kth split, it returns first k folds as train set and the (k+1)th fold
+    as test set.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/d032f75daaf1de474b296e726e277ef9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: TimeSeriesSplit as defined by scikit-learn documentation
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main differences between TimeSeriesSplit and KFold are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In TimeSeriesSplit, the training dataset gradually increases in size, whereas
+    in KFold, it remains static.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In TimeSeriesSplit, the training set gets larger each time, so the training
+    data will always contain values from the previous iteration’s training data. In
+    KFold, the current iteration’s train data could have been part of the test data
+    in the previous iteration and vice versa.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In KFold, every data point in the dataset will at some point be part of a test
+    set. This is not the case for TimeSeriesSplit, where the first chunk of train
+    data will never be included in the test set.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here’s how it works: On the first iteration, the data is divided into train
+    and test sets. The test size (unless specified as an argument test_size) defaults
+    to n_samples // (n_splits + 1)) and the train size defaults to i * n_samples //
+    (n_splits + 1) + n_samples % (n_splits + 1) where i=current split. As the current
+    split increases, i increases, and the train size increases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01912b1b7b5e8049c0995feaaf33fe2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A visual diagram of time series cross validation. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To better illustrate how TimeSeriesSplit works, I’ll walk you through an example
+    in Python. First, I created a very simple sample dataset: 1 feature, 12 values.
+    Then I instantiated a TimeSeriesSplit object tss and specified that I wanted 5
+    splits. To actually perform the split, I called .split on tss and passed in my
+    dataset X. This produces a set of indices that will be used to determine where
+    to split the dataset during the cross validation process. To view how the data
+    was split, I iterated through the folds and corresponding indices and printed
+    out the values at those indices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first result looked like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fold 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: train:[[1] [2]]
+  prefs: []
+  type: TYPE_NORMAL
+- en: test:[[3] [4]]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and the last one like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fold 5:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: train:[[ 1] [ 2] [ 3] [ 4] [ 5] [ 6] [ 7] [ 8] [ 9] [10]]
+  prefs: []
+  type: TYPE_NORMAL
+- en: test:[[11] [12]]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that the object and splitting indices have been defined, it’s time to perform
+    the actual CV. I chose a random forest regressor, but this can be done with any
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckily, scikit-learn provides an easy way to do cross validation with its function
+    **cross_validate**, which takes in a model object, X and y arrays, a cv strategy,
+    and a scoring metric(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you want to cross validate on multiple metrics, you can pass in a list. You
+    just have to make sure each is one of scikit-learn’s [acceptable metric values](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cross_validate returns a Python dictionary containing fit_time, score_time,
+    and test_score. To find the mean CV score, simply call .mean() on the test_score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this, you’ll have an accurate estimate of a time series model’s performance.
+    Time series problems carry a variety of different considerations and approaches
+    beyond the standard ML template. It’s important to research each step in a time
+    series problem, from EDA to CV to predictions, and learn how to properly apply
+    time series specific techniques to time series data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sources**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “TimeSeriesSplit.” scikit-learn, scikit-learn developers, 2023, https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html.
+  prefs: []
+  type: TYPE_NORMAL

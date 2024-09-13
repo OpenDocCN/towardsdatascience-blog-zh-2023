@@ -1,0 +1,539 @@
+- en: Conversations as Directed Graphs with LangChain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/conversations-as-directed-graphs-with-lang-chain-46d70e1a846c](https://towardsdatascience.com/conversations-as-directed-graphs-with-lang-chain-46d70e1a846c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Building a chatbot designed to understand key information about new prospective
+    customers.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----46d70e1a846c--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----46d70e1a846c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46d70e1a846c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46d70e1a846c--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----46d70e1a846c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46d70e1a846c--------------------------------)
+    ·18 min read·Sep 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e4c31cbbc41f201ecdab003a52889978.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Daniel Warfield using MidJourney. All images by the author unless otherwise
+    specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’ll use LangChain to do lead qualification in a real-estate context.
+    We imagine a scenario where new potential customers contact a real-estate agent
+    for the first time. We’ll design a system which communicates with a new prospective
+    lead to extract key information before the real-estate agent takes over.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Anyone interested in applying natural language
+    processing (NLP) in a practical context.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** This example is conceptually straightforward,
+    but you might struggle to follow along if you don’t have a firm grasp of Python
+    and a general understanding of language models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prerequisites:** Fundamental programming knowledge in Python, and a high
+    level understanding of language models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Description of the Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This use case is directly inspired by a work request I received while operating
+    as a contractor. The prospective client owned a real-estate company, and found
+    that a significant amount of their agent’s time was spent performing the same
+    repetitive task at the beginning of each conversation: lead qualification.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lead qualification is the real-estate term for the first pass at a lead. Getting
+    their contact information, their budget, etc. It’s a pretty broad term, and the
+    details can fluctuate from organization to organization. For this post, we’ll
+    consider extracting the following information as “qualifying” a lead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Name:** the name of the lead.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Contact Info:** The email or phone number of the lead.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Financing:** Their budget to rent monthly.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Readiness:** How quickly can they meet with an agent.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The Approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The naive approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'While large language models are incredibly powerful, they need proper contextualization
+    of the use case to be consistently successful. You could, for instance, give a
+    language model a prompt saying something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, you could put your new client in a chat room with a model initialized
+    with that prompt. This would be a great way to start experimenting with an LLM
+    in a particular business context, but is also a great way to begin realizing how
+    fragile LLMs are to certain types of feedback. The conversation could quickly
+    derail if a user asked a benign but irrelevant question like “Did you catch the
+    game last night?” or “Yeah, I was walking down the road and I saw your complex
+    on second.” This may or may not be a serious issue depending on the use case,
+    but imposing a rigid structure around the conversation can help keep things on
+    track.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversations as Directed Graphs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can frame a conversation as a directed graph, where each node represents
+    a certain conversational state, and each edge represents an impetus to change
+    the conversational state, like a completed introduction or acquired piece of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9cdbcb8fe724aeec7bb01e703f9417a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of what directed graph traversal might look like in the context of the
+    problem we’re trying to solve
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just about the most fundamental directed graph we could compose for
+    this problem. It’s worth noting that this approach can easily grow, shrink, or
+    otherwise change based on the needs of the system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, if your clients consistently ask the chatbot about sports, which
+    was unanticipated in the initial design phase, then you can add the relevant logic
+    to check for this type of question and respond appropriately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d75387683582c046884ecfc7107d4be1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example modification of dealing with sports related questions. We’ll stick with
+    the original simple graph, but it’s easy to see how emerging edge cases and poor
+    performance scenarios can be mitigated by adding additional elements to an existing
+    directed graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When creating a new system which interacts with humans in an organic way it’s
+    vital for it to be easily iterated on as new and unexpected issues arise. We’ll
+    keep it simple for the purposes of this example, but extensibility is one of the
+    core abilities of this approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key Technologies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’ll be using LangChain to do most of the heavy lifting. Specifically, we’ll
+    be using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**an LLM:** We’ll be using OpenAI’s Text DaVinci 3 model.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Output Parsing:** We’ll be using LangChain’s Pydantic parser to parse results
+    into easy to consume formats.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’ll also be implementing a **Directed Graph** from scratch, with some functionality
+    baked into that graph to achieve the desired functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this example we’re using OpenAI’s *Text Davinci 3* model. While you could
+    use almost any modern large language model, I chose to use this particular model
+    because it’s widely used in LangChain examples and documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain does its best to be a robust and resilient framework, but working
+    with large language models is fiddly work. Different models can behave drastically
+    differently to a given prompt. I found that Text Davinci 3 behaved consistently
+    with prompts from LangChain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain allows you to use self-hosted models, models hosted for free on Hugging
+    Face, or models from numerous other sources. Feel free to experiment with your
+    choice of model; it’s pretty easy to swap between them (though, in my experience,
+    you will probably have to adjust your prompts to the particular model you’re using).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text Davinci 3 is a transformer model, feel free to read the following article
+    for more information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----46d70e1a846c--------------------------------)
+    [## Transformers — Intuitively and Exhaustively Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yet another post exploring the modern wave of machine learning. I hope you’ll
+    find this one intuitive and thought…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@danielwarfield1/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----46d70e1a846c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain Parsing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: LangChain has a variety of parsers designed to be used with large language models.
+    We’ll be using the PydanticOutputParser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LangChain parsers not only extract key information from LLM responses, but
+    also modify prompts to entice more parsable responses from the LLM. With the Pydantic
+    parser you first define a class representing the format of the results you want
+    from the LLM. Let’s say you want to get a joke, complete with setup and punchline,
+    from an LLM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: you can then define the actual query you want to send to the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This query then gets modified by the parser, combining the user’s query and
+    information about the final parsing format to construct the prompt to the llm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The prompt for this particular example is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{"properties": {"setup": {"title": "Setup", "description": "question to set
+    up a joke", "type": "string"}, "punchline": {"title": "Punchline", "description":
+    "answer to resolve the joke", "type": "string"}}, "required": ["setup", "punchline"]}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the query from the user “Tell me a joke about parrots” is combined
+    with information about the desired end format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This formatted query can then be passed to the model, and the parser can be
+    used to extract the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s the result from this particular example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The PydanticOutputParser is both powerful and flexible, which is why it’s the
+    most commonly used parser in LangChain. We’ll be exploring this parser more throughout
+    this post. The OutputFixingParser and RetryOutputParser are two other very useful
+    output parsers which will not be explored in this post, but certainly could be
+    used in this use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversations as a Directed Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll be abstracting a conversation into a directed graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9cdbcb8fe724aeec7bb01e703f9417a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The approach in its most basic form. A series of conversational states, where
+    the state of the conversation progresses once certain information is received
+    from the human being communicated with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each node and edge will need to be customized, but will follow the same general
+    structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd5c5a4cb2bb07c7bd42bfda364c635e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How nodes and edges will work. The box in blue represents a conversational state,
+    so the entire box in blue represents a single node and its functionality. The
+    box in red represents the required steps to transition between conversational
+    states, so the entire box in red represents an edge and its functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth noting that LangChain has a similar structure, called a Chain. We
+    won't be discussing Chains in this post, but they are useful for direct and sequential
+    LLM tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining Nodes and Edges
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is where we start coding up an LLM supported directed graph with the core
+    aforementioned structure. We’ll be using Pydantic parsers for both the input validation
+    step as well as the actual content parsing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’m including the code for reference, but don’t be daunted by the length. You
+    can skim through the code, or not refer to the code at all if you don’t want to.
+    The final notebook can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://colab.research.google.com/drive/1oSKFO2ho6BN__pZp0uQNwP-HWeXGPpKU?source=post_page-----46d70e1a846c--------------------------------#scrollTo=IgzZooHUoIQw)
+    [## Google Colaboratory'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edit description
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: colab.research.google.com](https://colab.research.google.com/drive/1oSKFO2ho6BN__pZp0uQNwP-HWeXGPpKU?source=post_page-----46d70e1a846c--------------------------------#scrollTo=IgzZooHUoIQw)
+  prefs: []
+  type: TYPE_NORMAL
+- en: General Utilities
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For demonstrative purposes, all of this will exist within a single Jupyter
+    notebook, and the final back and forth between the model will be executed in the
+    final cell. In order to improve readability, we’ll define three functions: one
+    for model output to the user, one for user input to the model, and another for
+    printing key information for demonstration, like the results of parsing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Defining the Edge
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As the code suggests, an edge takes some input, checks it against a condition,
+    and then parses the input if the condition was met. The edge contains the relevant
+    logic for recording the number of times it’s been attempted and failed, and is
+    responsible for telling higher level units whether we should progress through
+    the directed graph along the edge or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: I created a few unit tests in the code [here](https://colab.research.google.com/drive/1oSKFO2ho6BN__pZp0uQNwP-HWeXGPpKU#scrollTo=Dc7XI7NlU71j&line=1&uniqifier=1)
+    which illustrate how the edge functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the Node
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have an Edge, which handles input validation and parsing, we can
+    define a Node, which handles conversational state. The Node requests a user for
+    input, and passes that input to the directed edges coming from that Node. If none
+    of the edges execute successfully, the Node asks the user for the input again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this implemented, we can begin seeing conversations take place. We’ll
+    implement a Node which requests contact information, and two edges: one which
+    attempts to parse out a valid email, and one that attempts to parse out a valid
+    phone number.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s a few examples of conversations with this single node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: In example 1 the user includes some irrelevant information, but has a valid
+    email in the response. In example 2 the user does not have a valid email or phone
+    number in the first response, but does have one in the second. In example 3 the
+    user has no valid responses, and one of the edges gives up and allows the conversation
+    to progress.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth noting, from a user feel perspective, this approach feels a bit robotic.
+    While not explored in this post, it’s easy to imagine how the user input could
+    be used to construct the systems output to the user, either through string formatting
+    or by asking an LLM to format a response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the Conversation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have Nodes and Edges, and have defined their functionality, we
+    can put it all together to create the final conversation. We covered a general
+    blueprint previously, but let’s brush it up to be more reflective of what the
+    graph will actually be doing. Recall the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nodes have an initial prompt and a retry prompt**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Edges have a condition, a parsing prompt, and a parsing structure**. The
+    condition is a boolean question asked about the users input. If the condition
+    is satisfied, the parsing structure is parsed based on the parsing prompt and
+    the users input. This is done by asking the large language model to reformat the
+    users input into a parsable representation using the pydantic parser.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Lets construct a conversational graph based on these definitions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/403d709d4121109480cb4aac503222f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The conversational graph we’ll be implementing, complete with all the necessary
+    parameters for the nodes and edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen in the diagram above, some prompt engineering has been done to
+    accommodate certain edge cases. For instance, the parsing prompt for Budget allows
+    the parser to parse user responses like “my budget is around 1.5k”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of the flexibility of LLMs, it’s really up to the engineer exactly how
+    a graph like this might be implemented. if price parsing proves to be an issue
+    in the future, one might have a few edges, each with different conditions and
+    parsing prompts. For instance, one could imagine an edge that checks if a budget
+    is over a certain value, thus implying that they’re providing a yearly budget
+    instead of a monthly budget. The power of this system is for the seamless addition
+    or removal of these modifications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the Conversational Graph
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’ve already done all the heavy lifting, now we just need to code it up and
+    see how it works. Here’s the implementation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here are a few example conversations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article we formatted a lead qualification use case as a directed graph,
+    implemented the necessary parsing functionality and data structures, and made
+    an example graph which extracts key information from users. As can be seen in
+    the example conversations this system is by no means perfect, but because of the
+    nature of directed graphs we can easily add new nodes to alleviate the impact
+    of certain edge cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While not discussed in this article, there’s a lot of ways to improve upon
+    this system:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use different LangChain parsers to attempt to re-try or correct queries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could use an LLM Cache to try to cache certain common responses, thus saving
+    on budget.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could connect this system with a vector database to allow question answering
+    against a knowledge base.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could use the LLM to construct the prompts to the user, along with context
+    about the conversation, to encourage more organic responses.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While my contracting gig didn’t pan out, I think this approach highlights a
+    flexible and robust framework which is extensible and applicable to a variety
+    of applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I describe papers and concepts in the ML space, with an emphasis on practical
+    and intuitive explanations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the images in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any images in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  prefs: []
+  type: TYPE_NORMAL

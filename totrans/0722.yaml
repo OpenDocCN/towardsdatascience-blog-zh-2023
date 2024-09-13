@@ -1,0 +1,568 @@
+- en: Deploying a TFLite Model on GCP Serverless
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-tflite-model-on-gcp-serverless-b4cd84f86de1](https://towardsdatascience.com/deploying-tflite-model-on-gcp-serverless-b4cd84f86de1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to deploy a quantized model in a Serverless fashion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://vishal-ai.medium.com/?source=post_page-----b4cd84f86de1--------------------------------)[![Vishal
+    Rajput](../Images/c43407d7df1f099832cbaa5381a0bb74.png)](https://vishal-ai.medium.com/?source=post_page-----b4cd84f86de1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b4cd84f86de1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b4cd84f86de1--------------------------------)
+    [Vishal Rajput](https://vishal-ai.medium.com/?source=post_page-----b4cd84f86de1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b4cd84f86de1--------------------------------)
+    ·11 min read·Jul 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model deployment is tricky; with the continuously changing landscape of cloud
+    platforms and other AI-related libraries updating almost weekly, back compatibility
+    and finding the correct deployment method is a big challenge. In today’s blog
+    post, we will see how to deploy a **tflite model** on the **Google Cloud Platform**
+    in a **serverless** fashion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This blog post is structured in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Serverless and other ways of Deployment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is Quantization and TFLite?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deploying TFLite model using GCP Cloud Run API
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/c1719de604d34543f57af5f33b0bf5ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Img Src: [https://pixabay.com/photos/man-pier-silhouette-sunrise-fog-8091933/](https://pixabay.com/photos/man-pier-silhouette-sunrise-fog-8091933/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Serverless and other ways of Deployment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Let’s first understand what do we mean by serverless because serverless doesn’t
+    mean without a server.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An AI model, or any application for that matter can be deployed in several different
+    ways with three major categorisations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Serverless:** In this case, the model is stored on the cloud container registry
+    and only runs when a user makes a request. When a request is made, a server instance
+    is automatically launched to fulfill the user request, which shuts down after
+    a while. From starting, configuring, scaling, and shutting down, all of this is
+    taken by the Cloud Run API provided by the Google Cloud platform. We have AWS
+    Lambda and Azure Functions as alternatives in other clouds.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Serverless** has its own advantages and disadvantages.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The biggest advantage is the **cost-saving**, if you don’t have a large user
+    base, most of the time, the server is sitting idle, and your money is just going
+    for no reason. Another advantage is that we don’t need to think about **scaling**
+    the infrastructure, depending upon the load on the server, it can automatically
+    replicate the number of instances and handle the traffic.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the disadvantage column, there are three things to consider. It has a **small
+    payload limit**, meaning it can be used to run a bigger model. Secondly, the server
+    automatically shuts down after 15 min of idle time, thus when we make a request
+    after a long time, the first requests take much longer time than the consecutive
+    ones, this problem is called **Cold Start Problem**. And lastly, there are **no
+    proper GPU-based instances** yet for serverless.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Server instances:** In this schema, the server is always up and you are always
+    paying up the money even if no one requests our application. For applications
+    with larger user bases, keeping the server up and running is important. In this
+    strategy, we can deploy our apps in multiple ways, one way is to launch a single
+    server instance that you scale manually every time the traffic increases. In practice,
+    these servers are launched with the help of **Kubernetes** **clusters** which
+    define the rule for scaling the infrastructure and do traffic management for us.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The biggest advantage is that we can work with the biggest-sized models and
+    applications and get precise control over our resources, from GPU-based instances
+    to regular instances. But managing and scaling these server instances properly
+    is quite a big task and often requires a lot of fiddling. These can get super
+    expensive for **GPU-based instances** since many AI models require GPU for faster
+    inference.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Two great resources to understand Kubernetes and Docker:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/aiguys/docker-for-dummies-8e8edc8af0ea?source=post_page-----b4cd84f86de1--------------------------------)
+    [## Docker for dummies… 🐳 🧠💡'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🚀 Dockerize a hello-world node app with me, in 15 mins.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'medium.com](https://medium.com/aiguys/docker-for-dummies-8e8edc8af0ea?source=post_page-----b4cd84f86de1--------------------------------)
+    [](https://medium.com/aiguys/kubernetes-101-introduction-to-container-orchestration-b88e60c04ed2?source=post_page-----b4cd84f86de1--------------------------------)
+    [## Kubernetes 101: Introduction to Container Orchestration 🎵 🐳'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are reading this article, you most likely are to be familiar with the
+    concept of containerization, images and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/aiguys/kubernetes-101-introduction-to-container-orchestration-b88e60c04ed2?source=post_page-----b4cd84f86de1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Edge Deployment:** When we need the fastest response in places without internet,
+    we go with edge deployment. This deployment type is meant for **IoT devices**
+    and other smaller devices that do not have large memory or connection with the
+    internet. For instance, if we want AI in a drone, we want the AI module to be
+    deployed in the drone itself, not on some cloud server.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This deployment type can only handle a very small payload due to the devices'
+    hardware-based limitation. In this deployment mode, there is zero cost because
+    everything runs locally. Making models small enough to fit on an IoT device is
+    quite challenging and requires a completely new set of strategies.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deployment strategies have a ton of things; covering in one blog is almost impossible.
+    Here’s another good blog giving an overview of the entire MLOPS strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/aiguys/mlops-deploying-and-managing-models-at-scale-9a51f8fc0406?source=post_page-----b4cd84f86de1--------------------------------)
+    [## MLOps: Managing AI models at Scale'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model building is excellent, but if we can’t deploy these models then it becomes
+    useless. Unlike Deep learning, finding…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/aiguys/mlops-deploying-and-managing-models-at-scale-9a51f8fc0406?source=post_page-----b4cd84f86de1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Quantization and TFLite?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Quantization** is a model compression technique in which we convert our weights
+    to lower precision to **reduce the size of the model** thus making our models
+    smaller and faster at inference. Quantization can greatly improve **speed** and
+    is often used for edge deployment. Deploying a quantized model in a serverless
+    fashion can be great cost-saving as this makes the AI model small enough to be
+    used in a serverless fashion.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE:** People often think they need GPU instances to serve the AI models
+    as they used GPU instances to train them, but that’s not true. Most AI applications
+    with CPU instances and proper deployment strategy can serve even a billion users.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization is one of many ways to compress model size, there are a lot of
+    other methodologies like pruning, weight sharing, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s an article detailing all the **model compression techniques**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/aiguys/reducing-deep-learning-size-16bed87cccff?source=post_page-----b4cd84f86de1--------------------------------)
+    [## Deep learning model compression'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With each passing year, models are getting more complex and bigger. A lot of
+    AI models developed in research labs never…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/aiguys/reducing-deep-learning-size-16bed87cccff?source=post_page-----b4cd84f86de1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is TFLite
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: According to the TensorFlow website, “TensorFlow Lite is a set of tools that
+    enables on-device machine learning by helping developers run their models on mobile,
+    embedded, and edge devices.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many ways to quantize AI models; two main categorizations are **post-training
+    quantization and quantization-aware training**. In the prior one, we normally
+    train our models. After the training is complete, quantization is applied to model
+    weights, whereas for the latter, during the training itself, quantization is active.
+    Usually, quantized-aware training performs better than post-training quantization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s directly jump into the code for quantization. We are using a post-training
+    quantized image segmentation model for this blog. Given below image shows the
+    architecture of our AI Pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7a7de87920f7d11c6a6c85a15be31e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'AI Pipeline architecture (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’m making the following assumptions here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You already have an image segmentation model saved in .hdf5 or .h5 format.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If not, follow this tutorial from Keras official website: [https://keras.io/examples/vision/oxford_pets_image_segmentation/](https://keras.io/examples/vision/oxford_pets_image_segmentation/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You have a variable called ***train_input_img_paths*** storing paths to all
+    the training images. Once again, you can follow the Keras official example link
+    of Step 1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you have your own custom data loaders, modify the ***represetative_dataset()***
+    method.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we are ready to deploy our TFLite model in a serverless fashion using Google
+    Cloud Run API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying TFLite model using GCP Cloud Run API
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We need these resources and files to deploy our model and make predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dockerfile
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: app.py
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: client.py
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: requirements.txt
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: quantized model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s first understand the flow of deployment first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The serverless deployment flow starts with **containerizing** of our application
+    app.py (we use docker here), then **pushing the docker image to a container registry**
+    (Google container registry in our case); we need a container registry to ensure
+    the versioning, availability, and security of our images. Then configuring and
+    deploying it to a serverless platform (Google Cloud Run API), and then allowing
+    the platform to handle the execution and scaling of our functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The serverless mode of deployment abstracts away infrastructure management and
+    provides automatic scaling, giving us more time to focus on developing and deploying
+    our application code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dockerfile**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Overall, this Dockerfile sets up the necessary environment and dependencies
+    for running the Flask application (`app.py`) inside a Docker container. It ensures
+    that the required Python packages and the pre-trained model file are available
+    within the container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**app.py**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**client.py**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Note:** When I trained my image segmentation model, I used BGR format (default
+    mode of OpenCV); if you used RGB, remove ***line 30*** from the app.py.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, put your own endpoint URL in client.py ***line 8,*** which you will get
+    after successfully deploying the Google Cloud RUN API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And latly, use the same version of Python in your Dockerfile and local environment
+    to avoid breaking anything during the deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**requirements.txt**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Quantized model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And lastly, we need to keep our **model_quantized_float16.tflite** in the same
+    folder as our app.py as we copy our quantized model in our docker image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is how my directory looks after collecting all the resources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c64d26ef869ef20b754722938704489.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Img Src: Belongs to author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting Up Serverless
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first step is to get the gcloud CLI (Command Line Interface), I used Windows
+    it’s pretty straightforward: [https://cloud.google.com/sdk/docs/install](https://cloud.google.com/sdk/docs/install)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 2\. Navigate to your folder using the standard CLI command
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Login into gcloud CLI
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will open up a window in your browser and ask for a few permissions, allow
+    that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Setup a project in gcloud, better use the GUI interface for this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the link to create a GCP project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://developers.google.com/workspace/guides/create-project?source=post_page-----b4cd84f86de1--------------------------------)
+    [## Create a Google Cloud project | Google Workspace | Google for Developers'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Google Cloud project is required to use Google Workspace APIs and build Google
+    Workspace add-ons or apps. This…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: developers.google.com](https://developers.google.com/workspace/guides/create-project?source=post_page-----b4cd84f86de1--------------------------------)
+    ![](../Images/d306e4ddae1d3bba879df811fc98a7fd.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GCP project Dashboard (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Setup project ID in gcloud CLI, you can see your project ID in your dashboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 6\. Build container in gcloud CLI. Replace <PROJECT_ID> everywhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/52a2c7122581c08fe5dd3009d144c776.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Building container (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Push Docker image to Container registry through gcloud CLI
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/08f5edf767b9bea3b1e51f7248bbd668.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Google Container registry (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. Deploy the Coud RUN API through gcloud CLI. This will ask to choose server
+    locations and some other authentications, allow all of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/797936fcd94d0d2ef0284ffcb52f90a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Model Deployed (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If everything is successful, you will see a link in your gcloud CLI, that you
+    need to paste into your client.py. Otherwise, go to logs and try to fix the errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d0b43da956b78aa1de4600633cebbd39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Cloud Run API console (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Key things to Note here:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s almost guaranteed that something or other will break in this deployment;
+    the biggest reason is version mismatch in packages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use the exact same version in your requirements.txt and Dockerfile as you used
+    to train the model and quantize the model. Remember GCP runs quite behind the
+    TF’s and Python’s latest version. It’s better to use an older version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I trained my model on Python 3.8.15; the rest are given in the requirements.txt.
+    The errors in the logs are often unclear, so always use the exact same versions;
+    if you can’t find the required versions in GCP, change the version for your local
+    environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, the biggest reason for failed deployment is that you haven’t activated
+    the required APIs or you don’t have the required permissions and IAM roles. It’s
+    better to use the account as owner with all the permissions enabled if you use
+    GCP for the first time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just run `client.py` in your gcloud CLI or your standard command prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s what my output looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11c8a54ffa4b58e442c58f79562e5f8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Model prediction (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I trained a binary image segmentation model on some private data. Due to privacy,
+    I can neither reveal the details of my model nor the data. But all the mentioned
+    things should work with any image segmentation model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Versioning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: And lastly, if you need more resources from the start or want to minimize the
+    cold start problem, we can create a new version of the same with just a few additional
+    steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Go to your gcloud console in** **GUI > Search cloud run API > Select the
+    deployed service > Click on edit and deploy new revision button**. And you will
+    get the following options, choose according to your needs, save them, and automatically,
+    a new version of your model will be set up for the next sets of requests.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ab775f6e179512f6bfe95c2d07eb9eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Solving cold start problem (Img Src: Belongs to author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Choosing the right strategy for deployment is crucial for cost saving.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can make our models faster and smaller using the quantization techniques.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Serverless deployment with quantized model is a great strategy and can easily
+    serve many requests without using costly GPU instances.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Serverless takes away the hastle of scaling.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks for your time and patience, happy learning ❤. Follow me for more of such
+    awesome content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Here’s my reading list for MLOps, discussing several other key concepts and
+    strategies:**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![Vishal Rajput](../Images/a96ad11c1783cef37c01eb5b36ffbe0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Vishal Rajput](https://vishal-ai.medium.com/?source=post_page-----b4cd84f86de1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLOps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[View list](https://vishal-ai.medium.com/list/mlops-ff7f2453a835?source=post_page-----b4cd84f86de1--------------------------------)10
+    stories![](../Images/f43ac8226531c0d15a3fdd2c774f939c.png)![](../Images/f6516179d1713c465b1fff8a3017344f.png)![](../Images/65ceb6ecc46ce9f7e4159979b811b308.png)'
+  prefs: []
+  type: TYPE_NORMAL

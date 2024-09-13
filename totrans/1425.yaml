@@ -1,0 +1,372 @@
+- en: Linear Regression, Kernel Trick, and Linear-Kernel.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/linear-regression-kernel-trick-and-linear-kernel-39b6be3a3bf5](https://towardsdatascience.com/linear-regression-kernel-trick-and-linear-kernel-39b6be3a3bf5)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Sometimes the kernel trick is useless.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mocquin.medium.com/?source=post_page-----39b6be3a3bf5--------------------------------)[![Yoann
+    Mocquin](../Images/b30a0f70c56972aabd2bc0a74baa90bb.png)](https://mocquin.medium.com/?source=post_page-----39b6be3a3bf5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----39b6be3a3bf5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----39b6be3a3bf5--------------------------------)
+    [Yoann Mocquin](https://mocquin.medium.com/?source=post_page-----39b6be3a3bf5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----39b6be3a3bf5--------------------------------)
+    ·8 min read·Nov 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6708b3bf40f4fefc9efecd19bc5729e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unless otherwise noted, all images are by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post, I want to show an interesting result that was not obvious to
+    me at first, which is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear regression and linear-kernel ridge regression with no regularization
+    are equivalent.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: There are actually a lot of concepts and techniques involved here, so we will
+    review each one by one, and finally use them all to explain this statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**First, we’ll review the classic linear regression. Then I’ll explain what
+    the kernel trick is and the linear-kernel, and finally we’ll show a mathematical
+    proof for the statement above.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quick reminder of the classic Linear Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The maths of linear regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The classic — Ordinary Least Squares or OLS- linear regression is the following
+    problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c47d013a9630701921ca1623f68468e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Y is a vector of length n and consists of the target value of the linear model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'beta is a vector of length m: this is the unknown the model will have to “learn”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X is the data matrix with shape n rows and m columns. We often say that we have
+    n vectors recorded in the m-features space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'So the goal is to find the values of beta that minimizes the squared errors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63bba3a4c278cd1f2ef575c61e2eb3cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This problem actually has a closed form solution, and is known as the Ordinary
+    Least Squares problem. The solution is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b47f6a853ba2f944be1b0fea5730e68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once the solution is known, we can use the fitted model to compute new Y-values
+    given new X-values using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40e21df22bdfc3ecf72ae0cb1d438c4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Python for linear regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s verify our math with scikit-learn: here is a python code that gives an
+    example of a linear regression, using sklearn linear regressor, as well as a numpy-based
+    regression'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, both methods give identical results (duh!):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b194088833789c942503ab5aac1231d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Kernel-trick
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Lets now review a common technique known as the kernel trick.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our original problem (can be anything like classification or regression) lives
+    in the space of the input data matrix X, of shape n-vectors in a m-features space.
+    Sometimes, the vectors cannot be separated or classified in this low dimension
+    space, so we want to transform the input data to a high dimension space. We can
+    do this by hand, by creating new features manually. As the number of feature grows,
+    the numerical computation will increase as well: imagine computing the dot product
+    of 2 vectors of length 1 billion, and repeat for all vectors in your matrix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The kernel trick consists in using well-designed transformation functions —
+    usually noted T or phi — that creates a new vector x’ of length m’ from a vector
+    x of length m, such that our new data will indeed have high dimension, but by
+    keeping the computation load to a minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To achieve this, the function phi must fill some properties, such that the
+    dot product in the new high dimension feature-space can be written as a function
+    — the kernel function- of the corresponding input vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/795133ba90788793e7a018ddeaf320a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What this means is that the inner product in the high dimension space can be
+    expressed as a function of the input vectors. In other words, we can compute the
+    inner product in the high dimension space only using the low dimension vectors.
+    That is the kernel trick: we can benefit from the high-dimension space versatility,
+    while never actually doing any computation there.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only condition is that we only need the dot product in the high-dimension
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are actually powerful mathematical theorems that describe what are the
+    conditions to create such transformation phi and/or such kernel functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples of kernel functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A first example of kernel to create a m^2 dimension space from a m dimension
+    is by using the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7db348dd13aec2a1e13bf11f5655449.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Another example: adding a constant in the kernel function increases the number
+    of dimension, with new features that are scaled input features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/227cd30b9c9c5154e6aab694a32fa78b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Another kernel that we’ll use below is the linear-kernel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4aad91bf2ca5f559d668b49d24d1f5b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So the identity transformation is equivalent to using a kernel function that
+    compute the inner product in the original space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are actually a lot of other useful kernels, like the radial (RBF) kernel
+    or the more general polynomial kernel, that create high-dimension AND non-linear
+    feature spaces. For completeness, here is an example of using RBF kernel to compute
+    non-linear regression in a linear regression context:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/029202d2fe7775921b5d825b92764bc7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear-kernel in linear regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If the transformation phi transforms x to phi(x), then we can write a new linear
+    regression problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e307ab72b9c73215b67d9db64f8390b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Notice how the dimensions change: the input matrix for the linear regression
+    problem goes from [nxm] to [nxm’], so the coefficient vector beta goes from length
+    m to m’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this where the kernel trick appears: when computing the solution beta’,
+    notice that the product of X’ with its transpose appears, which is actually the
+    matrix of all the dot product, called the Kernel matrix for obvious reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ba62cab46f3bc9b75bcaf726e37a9cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Linear-kernelized and linear regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, lets see a proof of the original statement: that using the linear-kernel
+    in a linear regression is useless as it is equivalent to standard linear regression.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear-kernel is usually used in the context of Support Vector Machines, but
+    I was wondering how it would perform in linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To show that both approaches are equivalent, we have to proove that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a0eaac7880c51b75871ba58ccd27bdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first method using beta is the original linear regression, and the second
+    using beta’ is using linear-kernalized approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can prove this actually using matrix properties and relations seen above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d631ec69cd7cd59962cd56880a5ddf7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can verify this again using python and scikit learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2d70922fa57610a798e4743d1318df37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Wrapup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we reviewed the simple linear regression, including the matrix
+    formulation of the problem and its solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then saw what the kernel trick is and how it allows us to benefit from very
+    high dimension space without actually moving our low dimension data to this computation-intensive
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, I showed that the linear-kernel in the context of linear regression
+    is actually useless and correspond to the simple linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If you’re considering joining Medium, use this link to quickly subscribe
+    and become one of my referred member** :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mocquin/membership?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## Join Medium with my referral link - Yoann Mocquin'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@mocquin/membership?source=post_page-----39b6be3a3bf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**and subscribe to get an notification when I publish new post:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mocquin.medium.com/subscribe?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## Get an email whenever I publish !'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever I publish ! New publication will include data transformation,
+    advanced plotting and simulation…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: mocquin.medium.com](https://mocquin.medium.com/subscribe?source=post_page-----39b6be3a3bf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finaly, you can check out some of my other post, on Fourier transform, pandas
+    dtypes, or linear algebra techniques for datascience:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/pandas-work-on-your-dtypes-20d9d32d2e42?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## pandas: work on your dtypes!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having the right dtypes in pandas is a must for clean data-analysis! Here’s
+    how and why.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/pandas-work-on-your-dtypes-20d9d32d2e42?source=post_page-----39b6be3a3bf5--------------------------------)
+    [](/fourier-transform-for-time-series-detrending-f0f470f4bf14?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## Fourier-transform for time-series : detrending'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detrending your time-series might be a game-changer.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/fourier-transform-for-time-series-detrending-f0f470f4bf14?source=post_page-----39b6be3a3bf5--------------------------------)
+    [](/pca-lda-ica-a-components-analysis-algorithms-comparison-c5762c4148ff?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## PCA/LDA/ICA : a components analysis algorithms comparison'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Review the concepts and differences between these famous algorithms.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/pca-lda-ica-a-components-analysis-algorithms-comparison-c5762c4148ff?source=post_page-----39b6be3a3bf5--------------------------------)
+    [](/pca-whitening-vs-zca-whitening-a-numpy-2d-visual-518b32033edf?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## PCA-whitening vs ZCA-whitening : a numpy 2d visual'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of whitening data consists in a transformation such that the transformed
+    data has identity matrix as…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/pca-whitening-vs-zca-whitening-a-numpy-2d-visual-518b32033edf?source=post_page-----39b6be3a3bf5--------------------------------)
+    [](/300-times-faster-resolution-of-finite-difference-method-using-numpy-de28cdade4e1?source=post_page-----39b6be3a3bf5--------------------------------)
+    [## 300-times faster resolution of Finite-Difference Method using numpy
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finite-difference method is a powerfull technique to solve complex problems,
+    and numpy makes it fast !
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/300-times-faster-resolution-of-finite-difference-method-using-numpy-de28cdade4e1?source=post_page-----39b6be3a3bf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

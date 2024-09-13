@@ -1,0 +1,549 @@
+- en: 'Survival Analysis: Leveraging Deep Learning for Time-to-Event Forecasting (Part
+    II)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/survival-analysis-leveraging-deep-learning-for-time-to-event-forecasting-5c55bd4bb066](https://towardsdatascience.com/survival-analysis-leveraging-deep-learning-for-time-to-event-forecasting-5c55bd4bb066)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/b9fbc07c43c92a2032ad02c8e6952a78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Practical Application to Rehospitalization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://linafaik.medium.com/?source=post_page-----5c55bd4bb066--------------------------------)[![Lina
+    Faik](../Images/24a3aa67a2d9dc3e074ceead04ab4cc8.png)](https://linafaik.medium.com/?source=post_page-----5c55bd4bb066--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c55bd4bb066--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5c55bd4bb066--------------------------------)
+    [Lina Faik](https://linafaik.medium.com/?source=post_page-----5c55bd4bb066--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c55bd4bb066--------------------------------)
+    ·10 min read·Apr 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Survival models are great for predicting the time for an event to occur. These
+    models can be used in a wide variety of use cases including predictive maintenance
+    (forecasting when a machine is likely to break down), marketing analytics (anticipating
+    customer churn), patient monitoring (predicting a patient is likely to be re-hospitalized),
+    and much more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By combining machine learning with survival models, the resulting models can
+    benefit from the high predictive power of the former while retaining the framework
+    and typical outputs of the latter (such as the survival probability or hazard
+    curve over time). For more information, check out the first article of this series
+    [here](/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in practice, ML-based survival models still require extensive feature
+    engineering and thus prior business knowledge and intuition to lead to satisfying
+    results. So, why not use deep learning models instead to bridge the gap?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Objective
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This article focuses on how deep learning can be combined with the survival
+    analysis framework to solve use cases such as predicting the likelihood of a patient
+    being (re)hospitalized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After reading this article, you will understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can deep learning be leveraged for survival analysis?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What are the common deep learning models in survival analysis and how do they
+    work?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How can these models be applied concretely to hospitalization forecasting?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*This article is the second part of the series around survival analysis. If
+    you are not familiar with survival analysis, it is best to start by reading the
+    first one* [*here*](/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46)*.
+    The experimentations described in the article were carried out using the libraries*
+    [*scikit-surviva*](https://scikit-survival.readthedocs.io/en/stable/)*l,* [*pycox*](https://github.com/havakv/pycox)*,
+    and* [*plotly*](https://plotly.com/)*. You can find the code here on* [*GitHub*](https://github.com/linafaik08/survival_analysis)*.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://github.com/linafaik08/survival_analysis?source=post_page-----5c55bd4bb066--------------------------------)
+    [## GitHub - linafaik08/survival_analysis'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Author: Lina Faik Creation date: February 2023 Last update: April 2023 This
+    repository contains the code and notebooks…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/linafaik08/survival_analysis?source=post_page-----5c55bd4bb066--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Survival Analysis & Deep Learning: How Can They Be Combined?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 1.1\. Problem statement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by describing the problem at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are interested in predicting the likelihood that a given patient will be
+    rehospitalized given the available information about his health status. More specifically,
+    we would like to estimate this probability at different time points after the
+    last visit. Such an estimate is essential to monitor patient health and mitigate
+    their risk of relapse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is a typical survival analysis problem. The data consists of 3 elements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Patient’s baseline data including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Demographics: age, gender, locality (rural or urban)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Patient history: smoking, alcohol, diabetes mellitus, hypertension, etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Laboratory results: hemoglobin, total lymphocyte count, platelets, glucose,
+    urea, creatinine, etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More information about the source dataset [here](https://www.kaggle.com/datasets/ashishsahani/hospital-admissions-data).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A time t and an event indicator δ∈{0;1}:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the event occurs during the observation duration, t is equal to the time
+    between the moment the data were collected and the moment the event (i.e., rehospitalization)
+    is observed, In that case, δ = 1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If not, t is equal to the time between the moment the data were collected and
+    the last contact with the patient (e.g. end of study). In that case, δ = 0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e3e77620a18b3a6c27965c933b880b50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1 — Survival analysis data, illustration by the author. Note: patients
+    A, and C are censored.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '⚠️ With this description, why use survival analysis methods when the problem
+    is so similar to a regression task? The initial paper gives a pretty good explanation
+    of the main reason:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“If one chooses to use standard regression methods, the right-censored data
+    becomes a type of missing data. It is usually removed or imputed, which may introduce
+    bias into the model. Therefore, modeling right-censored data requires special
+    attention, hence the use of a survival model.” Source [*[*2*](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1)*]*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1.2\. DeepSurv
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Approach**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s move on to the theoretical part with a little refresher on the hazard
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“The hazard function is the probability an individual will not survive an
+    extra infinitesimal amount of time δ, given they have already survived up to time
+    t. Thus, a greater hazard signifies a greater risk of death.”*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/f5b8ecc8a984dc09f6424e5852554da3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Source [*[*2*](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1)*]*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Similar to the Cox proportional hazards (CPH) model, DeepSurv is based on the
+    assumption that the hazard function is the product of the 2 functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**the baseline hazard function:** λ_0(t)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**the risk score**, r(x)=exp(h(x)). It models how the hazard function varies
+    from the baseline for a given individual given the observed covariates.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More on CPH models in the [first article](/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46)
+    of this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d2005158f70b317257cd0e68c7172fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The function h(x) is commonly referred to as the **log-risk function**. And
+    this is precisely the function that the Deep Surv model aims at modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, CPH models assume that *h(x)* is a linear function: h(x) = β . x.
+    Fitting the model consists thus in computing the weights *β* to optimize the objective
+    function. However, the linear proportional hazards assumption does not hold in
+    many applications. This justifies the need for a more complex non-linear model
+    that is ideally capable of handling large volumes of data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Architecture**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this context, how can the DeepSurv model provide a better alternative? Let’s
+    start by describing it. According to the original paper, it’s a “deep feed-forward
+    neural network which predicts the effects of a patient’s covariates on their hazard
+    rate parameterized by the weights of the network θ.” [[2](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does it work?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*‣ The input to the network is the baseline data x.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*‣ The network propagates the inputs through a number of hidden layers with
+    weights θ. The hidden layers consist of fully-connected nonlinear activation functions
+    followed by dropout.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*‣ The final layer is a single node that performs a linear combination of the
+    hidden features. The output of the network is taken as the predicted log-risk
+    function.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Source [*[*2*](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1)*]*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/2c652f43146874fb360756b03fdebada.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 — DeepSurv architecture, illustration by the author, inspired by source
+    [[2](https://www.researchgate.net/publication/323409041_DeepSurv_Personalized_treatment_recommender_system_using_a_Cox_proportional_hazards_deep_neural_network)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result of this architecture, the model is very flexible. Hyperparametric
+    search techniques are typically used to determine the number of hidden layers,
+    the number of nodes in each layer, the dropout probability and other settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about the objective function to optimize?
+  prefs: []
+  type: TYPE_NORMAL
+- en: CPH models are trained to optimize the Cox partial likelihood. It consists of
+    calculating for each patient *i* at time *Ti* the probability that the event has
+    happened, considering all the individuals still at risk at time *Ti*, and then
+    multiplying all these probabilities together. You can find the exact mathematical
+    formula here [[2](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1)].
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Similarly, the objective function of DeepSurv is the log-negative mean of the
+    same partial likelihood with an additional part that serves to regularize the
+    network weights. [[2](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Code sample**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is a small code snippet to get an idea of how this type of model is implemented
+    using the [pycox](https://github.com/havakv/pycox) library. The complete code
+    can be found in the notebook examples of the library [here](https://nbviewer.org/github/havakv/pycox/blob/master/examples/cox-ph.ipynb)
+    [6].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1.3\. DeepHit
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Approach**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of making strong assumptions about the distribution of survival times,
+    what if we could train a deep neural network that would learn them directly?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the case with the DeepHit model. In particular, it brings two significant
+    improvements over previous approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It does not rely on any assumptions about the underlying stochastic process.
+    Thus, the network learns to model the evolution over time of the relationship
+    between the covariates and the risk.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It can handle competing risks (e.g., simultaneously modeling the risks of being
+    rehospitalized and dying) through a multi-task learning architecture.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Architecture**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As described here [[3](https://humboldt-wi.github.io/blog/research/information_systems_1920/group2_survivalanalysis/)],
+    DeepHits follows the common architecture of multi-task learning models. It consists
+    of two main parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A shared subnetwork, where the model learns from the data a general representation
+    useful for all the tasks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Task-specific subnetworks, where the model learns more task-specific representations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'However, the architecture of the DeepHit model differs from typical multi-task
+    learning models in two aspects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It includes a residual connection between the inital covariates and the input
+    of the task-specific sub-networks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It uses only one softmax output layer. Thanks to this, the model does not learn
+    the marginal distribution of competing events but the joint distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The figures below show the case where the model is trained simultaneously on
+    two tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of the DeepHit model is a vector *y* for every subject. It gives
+    the probability that the subject will experience the event k ∈ [1, 2] for every
+    timestamp *t* within the observation time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7aef1455c0b24e7f5adfc3e79c4b6ad0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 — DeepHit architecture, illustration by the author, inspired by source
+    [[4](https://www.semanticscholar.org/paper/DeepHit%3A-A-Deep-Learning-Approach-to-Survival-With-Lee-Zame/803a7b26bdc0feafbf45bc5d57c2bc3f55b6f8fc#references)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2\. Use Case Application: How Do These Models Perform in Practice?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2.1\. Methodology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data set was divided into three parts: a training set (60% of the data),
+    a validation set (20%), and a test set (20%). The training and validation sets
+    were used to optimize the neural networks during training and the test set for
+    final evaluation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Benchmark**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The performance of the deep learning models was compared to a benchmark of models
+    including CoxPH and ML-based survival models (Gradient Boosting and SVM). More
+    information on these models is available in the first [article](/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46)
+    of the series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Metrics**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Two metrics were used to evaluate the models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Concordance index (C-index): it measures the capability of the model to provide
+    a reliable ranking of survival times based on individual risk scores. It is computed
+    as the proportion of concordant pairs in a dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Brier score: It’s a time-dependent extension of the mean squared error to right
+    censored data. In other words, it represents the average squared distance between
+    the observed survival status and the predicted survival probability.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.2\. Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In terms of C-index, the performance of the deep learning models is considerably
+    better than that of the ML-based survival analysis models. Moreover, there is
+    almost no difference between the performance of Deep Surval and Deep Hit models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b0fee5c6f6e07e90fe4ba28055eb185.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 — C-Index of models on the train and test sets
+  prefs: []
+  type: TYPE_NORMAL
+- en: In terms of Brier score, the Deep Surv model stands out from the others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When examining the curve of the Brier score as a function of time, the curve
+    of the Deep Surv model is lower than the others, which reflects a better accuracy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/4815a6c1392cf9b765a460a44f1b13ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5— Brier score on the test set
+  prefs: []
+  type: TYPE_NORMAL
+- en: This observation is confirmed when considering the integration of the score
+    over the same time interval.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fa5af2fbbb6e2b5c3bfea6e9c81388ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6 — Integrated Brier score on the test set
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note that the Brier wasn’t computed for the SVM as this score is only applicable
+    for models that are able to estimate a survival function.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/d92279c637bb8588fdb1145e2392abdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7— Survival curves of randomly selected patients using DeepSurv Model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, deep learning models can be used for survival analysis as well as statistical
+    models. Here, for instance, we can see the survival curve of randomly selected
+    patients. Such outputs can bring many benefits, in particular allowing a more
+    effective follow-up of the patients that are the most at risk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ✔️ Survival models are very useful for predicting the time it takes for an event
+    to occur.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ They can help address many use cases by providing a learning framework and
+    techniques as well as useful outputs such as the probability of survival or the
+    hazard curve over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ They are even indispensable in this type of uses cases to exploit all the
+    data including the censored observations (when the event does not occur during
+    the observation period for example).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ ML-based survival models tend to perform better than statistical models (more
+    information [here](/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46)).
+    However, they require high-quality feature engineering based on solid business
+    intuition to achieve satisfactory results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ This is where Deep Learning can bridge the gap. Deep learning-based survival
+    models like DeepSurv or DeepHit have the potential to perform better with less
+    effort!
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ Nevertheless, these models are not without drawbacks. They require a large
+    database for training and require fine-tuning multiple hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Bollepalli, S.C.; Sahani, A.K.; Aslam, N.; Mohan, B.; Kulkarni, K.; Goyal,
+    A.; Singh, B.; Singh, G.; Mittal, A.; Tandon, R.; Chhabra, S.T.; Wander, G.S.;
+    Armoundas, A.A. [An Optimized Machine Learning Model Accurately Predicts In-Hospital
+    Outcomes at Admission to a Cardiac Unit](https://doi.org/10.3390/diagnostics12020241).
+    Diagnostics 2022, 12, 241.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Katzman, J., Shaham, U., Bates, J., Cloninger, A., Jiang, T., & Kluger,
+    Y. (2016). [DeepSurv: Personalized Treatment Recommender System Using A Cox Proportional
+    Hazards Deep Neural Network](https://doi.org/10.1186/s12874-018-0482-1), ArXiv'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Laura Löschmann, Daria Smorodina, [Deep Learning for Survival Analysis](https://humboldt-wi.github.io/blog/research/information_systems_1920/group2_survivalanalysis/),
+    Seminar information systems (WS19/20), February 6, 2020'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Lee, Changhee et al. [DeepHit: A Deep Learning Approach to Survival Analysis
+    With Competing Risks.](https://www.semanticscholar.org/paper/DeepHit%3A-A-Deep-Learning-Approach-to-Survival-With-Lee-Zame/803a7b26bdc0feafbf45bc5d57c2bc3f55b6f8fc#references)
+    AAAI Conference on Artificial Intelligence (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Wikipedia, [*Proportional hazards model*](https://en.wikipedia.org/wiki/Proportional_hazards_model)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [Pycox library](https://github.com/havakv/pycox)'
+  prefs: []
+  type: TYPE_NORMAL

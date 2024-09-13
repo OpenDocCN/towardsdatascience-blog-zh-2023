@@ -1,0 +1,299 @@
+- en: Controllable Medical Image Generation with ControlNets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/controllable-medical-image-generation-with-controlnets-48ef33dde652](https://towardsdatascience.com/controllable-medical-image-generation-with-controlnets-48ef33dde652)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Guide on using ControlNets to control the generation process of Latent Diffusion
+    Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@walhugolp?source=post_page-----48ef33dde652--------------------------------)[![Walter
+    Hugo Lopez Pinaya](../Images/0c132d0d1321790b0cea880800d231e0.png)](https://medium.com/@walhugolp?source=post_page-----48ef33dde652--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48ef33dde652--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48ef33dde652--------------------------------)
+    [Walter Hugo Lopez Pinaya](https://medium.com/@walhugolp?source=post_page-----48ef33dde652--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48ef33dde652--------------------------------)
+    ·9 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will present a guide on training a **ControlNet** to empower
+    users with precise control over the generation process of a **Latent Diffusion
+    Model** **(like Stable Diffusion!)**. Our aim is to showcase the remarkable capabilities
+    of these models in translating brain images across various contrasts. To achieve
+    this, we will leverage the power of the recently introduced **open-source extension
+    for MONAI,** [**MONAI Generative Models**](https://github.com/Project-MONAI/GenerativeModels)**!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/802d4dc3c60ef6342ff0aa9478c0bad4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating T1-weighted brain images (right) from FLAIR images (left) using ControlNet
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Our project code is available in this public repository*** [***https://github.com/Warvito/generative_brain_controlnet***](https://github.com/Warvito/generative_brain_controlnet)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In recent years, text-to-image diffusion models have witnessed remarkable advancements,
+    enabling the generation of highly realistic images based on open-domain text descriptions.
+    These generated images have rich details, well-defined outlines, coherent structures,
+    and meaningful contextual representation. However, despite the significant achievements
+    of diffusion models, there remains a challenge in achieving precise control over
+    the generative process. **Even with lengthy and intricate text descriptions, accurately
+    capturing the user’s desired ideas can be a struggle.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The introduction of **ControlNets**, as proposed by Lvmin Zhang and Maneesh
+    Agrawala in their groundbreaking paper “[*Adding Conditional Control to Text-to-Image
+    Diffusion Models*](https://arxiv.org/abs/2302.05543)” (2023), has significantly
+    enhanced the controllability and customization of diffusion models. These neural
+    networks act as lightweight adapters, enabling precise control and customization
+    while preserving the original generation capability of diffusion models. By fine-tuning
+    these adapters while keeping the original diffusion model frozen, text-to-image
+    models can be efficiently augmented for a diverse range of image-to-image applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What sets ControlNet apart is its solution to the challenge of spatial consistency.
+    In contrast to previous methods, ControlNet allows for explicit control over spatial,
+    structural, and geometric aspects of generated structures, while retaining semantic
+    control derived from textual captions. The original study introduced various models
+    that enable conditional generation based on edges, pose, semantic masks, and depth
+    maps, paving the way for exciting advancements in the computer vision field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the field of medical imaging, numerous image-to-image applications hold
+    significant importance. Among these applications, one notable task involves translating
+    images between different domains, such as converting computational tomography
+    (CT) scans to magnetic resonance imaging (MRI) or transforming images between
+    distinct contrasts, for instance, from T1-weighted to T2-weighted MRI images.
+    In this post, we will focus on a specific case: using **2D slices of brain images
+    obtained from a FLAIR image to generate the correspondent T1-weighted image**.
+    Our objective is to demonstrate how our new extension for MONAI ([MONAI Generative
+    Models](https://github.com/Project-MONAI/GenerativeModels)) and ControlNets can
+    be effectively utilized to train and evaluate generative models on medical data.
+    By delving into this example, we aim to provide insights into the practical application
+    of these technologies in the medical imaging domain.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c375ecdab449c61cfdde33f301c92d7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: FLAIR to T1w Translation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Latent Diffusion Model Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/43544d640b73ae5bff77412a659a6e63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Latent Diffusion Model Architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: To generate T1-weighted (T1w) images from FLAIR images, **the initial step involves
+    training a diffusion model capable of generating T1w images**. In our example,
+    we utilize 2D slices extracted from brain MRI images sourced from the [UK Biobank
+    dataset](https://www.ukbiobank.ac.uk/) (available under this [data agreement](https://www.ukbiobank.ac.uk/media/p3zffurf/biobank-mta.pdf)[).](https://www.ukbiobank.ac.uk/media/p3zffurf/biobank-mta.pdf).)
+    After having the original 3D brains registered to an MNI space using your favourite
+    method (for example, [ANTs](http://stnava.github.io/ANTs/) or [UniRes](https://github.com/brudfors/UniRes)),
+    we extract five 2D slices from the central part of the brain. We chose this region
+    since it presents various tissues, making it easier to evaluate the image translation
+    we are performing. Using this [script](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/preprocessing/create_png_dataset.py),
+    we ended with about **190,000 slices** with a spatial dimension of **224 × 160
+    pixels**. Next, we divide our image into the train (~180,000 slices), validation
+    (~5,000 slices), and test (~5,000 slices) sets using this script. With our dataset
+    prepared, we can start to train our Latent Diffusion Model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: To optimize computational resources, the latent diffusion model employs an **encoder**
+    to transform input image x into a lower-dimensional latent space z, which can
+    then be reconstructed by a **decoder**. This approach enables training diffusion
+    models even with limited computational capacity, while still preserving their
+    original quality and flexibility. Similar to what we did in our previous post
+    **(**[***Generating Medical Images with MONAI***](https://medium.com/towards-data-science/generating-medical-images-with-monai-e03310aa35e6)**)**,
+    we use the [**Autoencoder with KL-regularization model**](https://github.com/Project-MONAI/GenerativeModels/blob/main/generative/networks/nets/autoencoderkl.py#L579)from
+    MONAI Generative models to create our compression model. By using [this configuration](https://github.com/Warvito/generative_brain_controlnet/blob/main/configs/stage1/aekl_v0.yaml)
+    and the L1 loss together with the KL-regularisation, [perceptual loss](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/losses/perceptual.py#L21)
+    and [adversarial loss](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/losses/adversarial_loss.py#L29),
+    **we created an autoencoder capable of encoding and decoding brain images with
+    high fidelity** [(with this script)](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/training/train_aekl.py).
+    The quality of the autoencoder’s reconstruction is crucial for the performance
+    of the Latent Diffusion Model since it defines the ceiling of the quality of our
+    generated images. If the autoencoder’s decoder produces blurry or low-quality
+    images, our generative model will not be able to generate higher-quality ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed59d3f19e84b64518ba86a2b5b4d483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using this [script](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_msssim_reconstruction.py),
+    we can quantify the fidelity of the autoencoder by using the **Multi-scale Structural
+    Similarity Index Measurement (MS-SSIM)** between the original images and their
+    reconstructions. In this example, we obtain a high performance with an MS-SSIM
+    metric equal to 0.9876.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After we train the autoencoder, we will train the [**diffusion model**](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/networks/nets/diffusion_model_unet.py#L1632)
+    **on the latent space z**. The diffusion model it is a model that is able to generate
+    images from a pure noise image by iteratively denoising it over a series of timesteps.
+    It usually uses an **U-Net architecture** (that has an encoder-decoder format),
+    where we have layers of the encoder skip connected with layers in the decoder
+    part (via long **skip connections**), enabling feature reusability and stabilize
+    training and convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a9a40bef9b19b542c683181e50c34bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diffusion Model’s U-Net architecture with skip connections between the encoder
+    and decoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During the training, the Latent Diffusion Model learns a conditional noise prediction
+    given these prompts. Again, we are using MONAI to create and train this network.
+    In this [script](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/training/train_ldm.py),
+    we are instantiating the model with this [configuration](https://github.com/Warvito/generative_brain_controlnet/blob/main/configs/ldm/ldm_v0.yaml),
+    where the training and evaluation are performed in this [part of the code](https://github.com/Warvito/generative_brain_controlnet/blob/bb47f9c359e2d280b23bda84b5c14b65dd5b7af3/src/python/training/training_functions.py#L408).
+    Since we are not too interested in the textual prompts in this tutorial, we are
+    using the same one for all the image (a sentence saying [“*T1-weighted image of
+    a brain.*”](https://github.com/Warvito/generative_brain_controlnet/blob/bb47f9c359e2d280b23bda84b5c14b65dd5b7af3/src/python/training/util.py#L38)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f66db9ca3d59810a16ef620b751e791.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Synthetic brain images generated with our Latent Diffusion Model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we can quantify the performance of our trained generative model, this
+    time we evaluate the quality of the samples (using the **Fréchet inception distance
+    (FID)**) and the diversity of the model (computing the MS-SSIM between all pair
+    of samples of a group of 1,000 samples). Using these couple of scripts ([1](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_fid.py)
+    and [2](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_msssim_sample.py)),
+    we obtained an FID = 2.1986 and an MS-SSIM Diversity = 0.5368.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see in the previous images and results, we now have a model that
+    can generate high-resolution images with great quality. However, we do not have
+    any spatial control over how the images look like. For this, we will use a ControlNet
+    to guide the generation of our Latent Diffusion Model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ControlNet Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e66262faa4ed439dc9139cb1bbe85de4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ControlNet Architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The [ControlNet architecture](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/networks/nets/controlnet.py#L125)
+    comprises two main components: a **trainable version** of the encoder from the
+    U-Net model, including the middle blocks, and a **pre-trained “locked” version**
+    of the diffusion model. Here, the locked copy preserves the generative capability,
+    while the trainable copy is trained on specific image-to-image datasets to learn
+    conditional control. These two components are interconnected using a **“zero convolution”
+    layer** — a 1×1 convolution layer with initialized weights and biases set to zeros.
+    The convolution weights gradually transition from zeros to optimized parameters,
+    ensuring that during the initial training steps, the outputs of both the trainable
+    and locked copies remain consistent with what they would be if the ControlNet
+    were absent. In other words, when a ControlNet is applied to certain neural network
+    blocks prior to any optimization, it does not introduce any additional influence
+    or noise to the deep neural features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By integrating these two components, the ControlNet enables us to govern the
+    behaviour of each level in the Diffusion Model’s U-Net.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our example, we instantiate the ControlNet in [this script](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/training/train_controlnet.py),
+    using the following equivalent snippet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since we are using a Latent Diffusion Model, this requires ControlNets to convert
+    image-based conditions to the same latent space to match the convolution size.
+    For that, we use a [convolutional network](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/networks/nets/controlnet.py#L45)
+    trained jointly with the full model. In our case, we have three downsampling levels
+    (similar to the autoencoder KL) defined in *“conditioning_embedding_num_channels=[64,
+    128, 128, 256]”*. Since our conditional image is a FLAIR image with one channel,
+    we also need to specify its input number of channels in *“conditioning_embedding_in_channels=1”*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After initialising our network, we train it similarly to a diffusion model.
+    In the following snippet ([and in this part of the code](https://github.com/Warvito/generative_brain_controlnet/blob/bb47f9c359e2d280b23bda84b5c14b65dd5b7af3/src/python/training/training_functions.py#L623)),
+    we can see that first we pass our conditional FLAIR image to the trainable network
+    and obtain the outputs from its skip connections. Then, these values are inputted
+    into the diffusion model when computing the predicted noise. Internally, the diffusion
+    model sums the skip connection from the ControlNets with its own ones before feeding
+    the decoder part ([code](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/networks/nets/diffusion_model_unet.py#L1901)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: ControlNet Sampling and Evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After training our models, we can sample and evaluate them. [Here](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/sample_flair_to_t1w.py),
+    we are using the FLAIR images from the test set to generate conditioned T1w images.
+    Similar to our training, the the sampling process is very close to the one used
+    with the diffusion model, the only difference is that we pass the condition image
+    to the trained ControlNet, and we use its output to feed the diffusion model in
+    each sampling timesteps. As we can observe from the figure below, **our generated
+    images follow with high spatial fidelity the original conditioning**, with the
+    cortex gyri following similar shapes and the images preserving the boundary between
+    different tissues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2ce5162a27dae654d7bd4739ffca9f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examples from the test set of the original FLAIR image used as input to the
+    ControlNet (left), the generated T1-weighted image (middle), and the original
+    T1-weighted image, a.k.a. the expected output (right)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After we sample the images of our models, we can quantify the performance of
+    our ControlNet when translating the images between different contrasts. Since
+    we have the expected T1w images from the test set, we can also check their differences
+    and compute the distance between the real and synthetic images using the **mean
+    absolute error (MAE)**, **peak** **signal-to-noise ratio (PSNR)**, and **MS-SSIM**.
+    In our test set, we got a PSNR= 26.2458+-1.0092, MAE=0.02632+-0.0036 and MSSIM=0.9526+-0.0111
+    when executing this [script](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_controlnet_performance.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that is it! ControlNet offers incredible control over our diffusion models
+    and recent approaches have extended its method to combine different trained ControlNets
+    ([Multi-ControlNet](https://github.com/Mikubill/sd-webui-controlnet#multi-controlnet)),
+    work with different types of conditioning in the same model ([T2I adapters](https://arxiv.org/abs/2302.08453)),
+    and even condition the model on styles (using methods like ControlNet 1.1 — [reference
+    only](https://github.com/Mikubill/sd-webui-controlnet/discussions/1236)). If these
+    methods sound interesting, do not forget to follow me for more guides like this
+    one! 😁
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more MONAI Generative Model’s tutorials and to learn more about our features,
+    check out our [Tutorial page](https://github.com/Project-MONAI/GenerativeModels/tree/main/tutorials)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: All images unless otherwise noted are by the author*'
+  prefs: []
+  type: TYPE_NORMAL

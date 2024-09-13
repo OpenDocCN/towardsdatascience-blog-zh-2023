@@ -1,0 +1,637 @@
+- en: Practical Guide for Anomaly Detection in Time Series with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/practical-guide-for-anomaly-detection-in-time-series-with-python-d4847d6c099f](https://towardsdatascience.com/practical-guide-for-anomaly-detection-in-time-series-with-python-d4847d6c099f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A hands-on article on detecting outliers in time series data using Python and
+    sklearn
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@marcopeixeiro?source=post_page-----d4847d6c099f--------------------------------)[![Marco
+    Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----d4847d6c099f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d4847d6c099f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d4847d6c099f--------------------------------)
+    [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----d4847d6c099f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d4847d6c099f--------------------------------)
+    ·13 min read·Mar 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b3f1bd78c54730bd401ce05e9b15b28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Will Myers](https://unsplash.com/@will_myers?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly detection is a task in which we want to identify rare events that deviate
+    significantly from the majority of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly detection in time series has a wide range of real-life applications,
+    from manufacturing to healthcare. Anomalies indicate unexpected events, and they
+    can be caused by production faults or system defects. For example, if we are monitoring
+    the number of visitors on a website, and the number falls to 0, it might mean
+    that the server is down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also useful to detect anomalies in time series data before modelling for
+    forecasting. Many forecasting models are autoregressive, meaning that they take
+    into account past values to make predictions. A past outlier will definitely affect
+    the model, and it can be a good idea to remove that outlier to get more reasonable
+    predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will take a look a three different anomaly detection techniques,
+    and implement them in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean absolute deviation (MAD)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Isolation forest
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Local outlier factor (LOF)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The first one is a baseline method that can work well if the series satisfies
+    certain assumptions. The other two methods are machine learning approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Learn the latest time series analysis techniques with my*** [***free time
+    series cheat sheet***](https://www.datasciencewithmarco.com/pl/2147608294) ***in
+    Python! Get the implementation of statistical and deep learning techniques, all
+    in Python and TensorFlow!***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Types of anomaly detection tasks in time series
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are two main types of anomaly detection tasks with time series data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Point-wise anomaly detection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pattern-wise anomaly detection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the first type, we wish to find single points in time that are considered
+    abnormal. For example, a fraudulent transaction is a point-wise anomaly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second type is interested in finding subsequences that are outliers. An
+    example of that could be a stock that is trading at an abnormal level for many
+    hours or days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will focus only on point-wise anomaly detection, meaning
+    that our outliers are isolated points in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The scenario: CPU utilization on the AWS cloud'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We apply the different anomaly detection techniques on a dataset that monitors
+    the CPU utilization on an EC2 instance in the AWS cloud. This is real-world data
+    that was recorded every 5 minutes, starting on February 14th, 2014 at 14:30\.
+    The dataset contains 4032 data points. It was made available through the [Numenta
+    Anomaly Benchmark (NAB)](https://github.com/numenta/NAB) under the AGPL-3.0 license.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The particular dataset for this article can be found [here](https://github.com/numenta/NAB/blob/master/data/realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv),
+    and the associated labels are [here](https://github.com/numenta/NAB/blob/master/labels/combined_labels.json).
+    Full source code is available on [GitHub](https://github.com/marcopeix/datasciencewithmarco/blob/master/time_series_anomaly_detection.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get started, we need to format our data in order to label each value
+    as either an outlier or an inlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, an outlier gets a label of -1, and an inlier gets a label of 1\. This matches
+    the output of anomaly detection algorithms in scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/48b39a86bf1504a0c73dd2b1e7226575.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formatted data with the timestamp, the value, and a label to determine if is
+    it an outlier (-1) or an inlier (1). Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, we have a dataset with the right timestamp format, the value,
+    and a label to indicated whether the value is an outlier (-1) or an inlier (1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s plot the data to visualize the anomalies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8803146e1e998c3319afffb1cf83ca5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Monitoring CPU usage on an EC2 instance. The two red dots indicated anomalous
+    points, while the other blue dots are considered normal. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the figure above, we can see that our data only contains two outliers,
+    as indicated by the red dots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This shows how challenging anomaly detection can be! Because they are rare events,
+    we have few occasions to learn from them. In this case, only 2 points are outliers,
+    which represent 0.05% of the data. It also makes the evaluation of the models
+    more challenging. A method basically has two occasions of getting it right, and
+    4030 occasions of being wrong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all that in mind, let’s apply some techniques for anomaly detection in
+    time series, starting with the mean absolute deviation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean absolute deviation (MAD)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If our data is normally distributed, we can reasonably say that data points
+    at each end of the tails can be considered an outlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To identify them, we can use the Z-score, which is a measurement in terms of
+    standard deviations from the mean. If the Z-score is 0, the value is equal to
+    the mean. Typically, we set a Z-score threshold of 3 or 3.5 to indicate if a value
+    is an outlier or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, recall that the Z-score is calculated as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87d492189d18a7d3083679f6d2eeeed6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Equation for the Z-score. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where *mu* is the mean of the sample and *sigma* is the standard deviation.
+    Basically, if the Z-score is large, it means that the value is far from the mean
+    and towards one end of the distribution’s tail, which in turn can mean that it
+    is an outlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de982122e3febefb67266f9215c7f351.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A normal distribution with the Z-score. We can see that when the Z-score is
+    3, we reach the tails of the distribution, and so we can say that beyond that
+    threshold, the data are outliers. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the figure above, we can visualize the classical Z-score threshold of 3
+    to determine if a value is an outlier or not. As shown by the black dashed lines,
+    a Z-score of 3 brings us to the ends of the normal distribution. So, any value
+    with a Z-score greater than 3 (or less than -3 if we are not working in absolute
+    values) can be labelled as an outlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, this works great under the assumption that we have a perfectly normal distribution,
+    but the presence of outliers necessarily affects the mean, which in turns affect
+    the Z-score. Therefore, we turn our attention to the median absolute deviation
+    or MAD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The robust Z-score method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To avoid the influence of outliers on the Z-score, instead use the median, which
+    is a more robust metric in the presence of outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The median absolute deviation or MAD is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d608cd3d231b2bdc8fe5375a6663d86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The MAD is the median of the absolute difference between a value and the median
+    of the sample. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Basically, the MAD is the median of the absolute difference between the values
+    of a sample and the median of the sample. Then, we can calculate the robust Z-score
+    with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/484d48fce120d5619883d7d44cc8958f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Robust Z-score formula. Note that 0.6745 is the 75th percentile of the standard
+    normal distribution to which the MAD converges to. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the robust Z-score takes the difference between a value and the median
+    of the sample, multiplies it by 0.6745 and we divide everything by the MAD. Note
+    that 0.6745 represents the 75th percentile of a standard normal distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why 0.6745? (optional read)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Unlike the traditional Z-score, the robust Z-score uses the median absolute
+    deviation, which is always smaller than the standard deviation. Thus, to obtain
+    a value that resembles a Z-score, we must scale it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a normal distribution with no outliers, the MAD is about 2/3 (0.6745 to be
+    precise) as big as the standard deviation. Therefore, because we are dividing
+    by the MAD, we multiply by 0.6745 to get back to the scale of the normal Z-score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The robust Z-score method will work best under two important assumptions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data is close to a normal distribution
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The MAD is not equal to 0 (happens when more than 50% of the data has the same
+    value)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The second point is interesting, because if that is the case, then any value
+    that is not equal to the median will be flagged as an outlier, no matter the threshold,
+    since the robust Z-score will be incredibly large.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all that in mind, let’s apply this method to our scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying the MAD for outlier detection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we need to check the distribution of our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e216f583307e317516864b7cb9e47561.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of our data. Already, we see that we do not have a normal distribution!
+    Even worse, a lot of data points fall right on the median (black dashed line),
+    meaning that the MAD is either 0 or very close to 0\. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the figure above, we can already see two problems. First, the data is close
+    to a normal distribution. Second, the black dashed line indicates the median of
+    the sample, and it fall right on the peak of the distribution. This means that
+    a lot of data points are equal to the median, meaning that we are in a situation
+    where the MAD is potentially 0 or very close to 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, let’s continue applying the method, just so that we understand
+    how to work with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step, is to compute the MAD and the median of the sample to calculate
+    the robust Z-score. The *scipy* package comes with an implementation of the MAD
+    formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we simply write a function to calculate the robust Z-score and create
+    a new column to store the score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we get a MAD of 0.002, which definitely close to 0, meaning that this
+    baseline is likely not going to perform very well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once this is done, we decide on a threshold to flag outliers. A typical threshold
+    is 3 or 3.5\. In this case, any value with a robust Z-score greater than 3.5 (right-hand
+    tail) or smaller than -3.5 (left-hand tail) will be flagged as an outlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can plot a confusion matrix to see if our baseline correctly identified
+    outliers and inliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d6bffc49f5cd8ef27ecc24323f0be5d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix of the baseline outlier detection method. Clearly, a lot of
+    inliers were flagged as anomalies, which is expected since our data did not respect
+    the assumptions of the MAD method. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsurprisingly, we see that the baseline method performs poorly, since 1066
+    inliers were flagged as outliers. Again, this was expected since our data did
+    not respect the assumptions of the method, and the MAD was very close to 0\. Still,
+    I wanted to cover the implementation of this method in case it serves you in another
+    scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the results are disappointing, this method still holds when the assumptions
+    are true for your dataset, and you now know how to apply it when it makes sense.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s move on to the machine learning approached, starting with isolation
+    forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Isolation Forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The isolation forest algorithm is a tree-based algorithm that is often used
+    for anomaly detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm starts by randomly selecting an attribute and randomly selecting
+    a split value between the maximum and minimum values for that attribute. This
+    partitioning is done many times until the algorithm has isolated each point in
+    the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, the intuition behind this algorithm is that an outlier will take fewer
+    partitions to be isolated than a normal point, as shown in the figures below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27a7c0261401deb2477d19830352ec9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Isolating an inlier. Notice how the data has to be partitioned many times before
+    the point is isolated. Image by Sai Borrelli — [Wikipedia](https://commons.wikimedia.org/w/index.php?curid=82709489)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d456164b1a2801e575d9499036d1997f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Isolating an outlier. Now, we see that less partitions were required to isolate
+    it. Therefore, it it likely an anomaly. Image by Sai Borrelli — [Wikipedia](https://commons.wikimedia.org/w/index.php?curid=82709491)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the two figures above, we can see how the number of partitions differ when
+    isolating an inlier and an outlier. In the top figure, isolating an inlier required
+    many splits. In the bottom figure, fewer splits were necessary to isolate the
+    point. Therefore, it is likely to be an anomaly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we see how in an isolation forest, if the path to isolate a data point is
+    short, then it is an anomaly!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying the isolation forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, let’s split our data into a training and a test set. That way, we can
+    evaluate if the model is able to flag an anomaly on unseen data. This is sometimes
+    called novelty detection, instead of anomaly detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we can train our isolation forest algorithm. Here, we need to specify
+    a level of contamination, which is simply the fraction of outliers in the training
+    data. In this case, we only have one outlier in the training set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once trained, we can then generate predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again, we can plot the confusion matrix to see how the model performs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b7a0966b20d32421c0fb468077a81ee7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix of the isolation forest algorithm. Here, we can see that the
+    algorithm did not flag any of the anomalies. It also mislabelled an anomaly as
+    a normal point. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the figure above, we notice that the algorithm was not able to flag the
+    new anomaly. It also labelled an anomaly as a normal point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, this is a disappointing result, but we still have one more method to
+    cover, which is the local outlier factor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local outlier factor
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Intuitively, the local outlier factor (LOF) works by comparing the local density
+    of a point to the local densities of its neighbours. If the densities of the point
+    and its neighbours are similar, then the point is an inlier. However, if the density
+    of the point is much smaller than the densities of its neighbours, then it must
+    be an outlier, because a lower density means that the point is more isolated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, we need to set the number of neighbours to look at, and *scikit-learn*’s
+    default parameter is 20, which works well in most cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the number of neighbours is set, we calculate the *reachability distance.*
+    It is a bit tricky to explain this with words and pictures only, but I will do
+    my best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44737a3754b4972abba7ac5125c01aa0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualizing the reachability distance, Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that we are studying point A, and that we set the number of neighbours
+    to 3 (k=3). Drawing a circle while keeping point A in the middle results in the
+    black dotted circle you see in the figure above. Points B, C and D are the three
+    closest neighbours to A, and point E is too far in this case, so it is ignored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, the reachability distance is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69369779b5f660ab492552f1d7bba59f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reachability equation. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In words, the reachability distance from A to B is the largest value between
+    the k-distance of B and the actual distance from A to B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The k-distance of B is simply the distance from point B to its third nearest
+    neighbour. That’s why in the figure above, we drew a blue dotted circle with B
+    at its center, to realize that the distance from B to C is the k-distance of B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the reachability distance is calculated for all the k-nearest neighbours
+    of A, the local reachability density will be computed. This is simply the inverse
+    of the average of the reachability distances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuitively, the reachability density tells us how far we have to travel to
+    reach a neighbouring point. If the density is large, then points are close together
+    and we don’t have too travel for long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the local outlier factor, is simply a ratio of the local reachability
+    densities. In the figure above, we set *k* to 3, so we would have three ratios
+    that we would average. This allows us to compare the local density of a point
+    to its neighbour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned before, if that factor is close to 1 or smaller than 1, then it
+    is a normal point. If it is much larger than 1, then it is an outlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, this methods comes with drawbacks, as a value that is larger than
+    1 is not a perfect threshold. For example, an LOF of 1.1 could mean an outlier
+    for a dataset, and not for another one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying the local outlier factor method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the use of *scikit-lean* applying the local outlier factor method is straightforward.
+    We use the same train/test split as for the isolation forest to have comparable
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we can generate the predictions to flag potential outliers in the test
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we plot the confusion matrix to evaluate the performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/203bb5e4b53dfff6cab3f7fdd6761e4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix for local outlier factor. We see that the algorithm successfully
+    identified the only outlier in the test set. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure above we see that the LOF method was able to flag the only outlier
+    in the test set, and correctly labelled every other point as a normal point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, this does not mean that local outlier factor is better method than
+    isolation forest. It simply means that it worked better in this particular situation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we explored three different methods for outlier detection in
+    time series data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we explored a robust Z-score that uses the mean absolute deviation (MAD).
+    This works well when your data is normally distributed and if your MAD is not
+    0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we looked at isolation forest, which a machine learning algorithm that
+    determines how many times a dataset has to be partitioned in order to isolate
+    a single point. If few partitions are necessary, then the point is an outlier.
+    If many partitions are required, then the point is likely an inlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we looked at the local outlier factor (LOF) method, which is an unsupervised
+    learning method that compares the local density of a point to that of its neighbours.
+    Basically, if the density of a point is small compared to its neighbours, it means
+    it is an isolated point, and likely an outlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope that you enjoyed this article and learned something new!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interested in mastering time series forecasting? Check out [Applied Time Series
+    Forecasting in Python](https://www.datasciencewithmarco.com/offers/zTAs2hi6/checkout?coupon_code=ATSFP10),
+    the only course that covers statistical, deep learning, and state-of-the-art models,
+    in 100% Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cheers 🍻
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Enjoying my work? Show your support with [Buy me a coffee](http://buymeacoffee.com/dswm),
+    a simple way for you to encourage me, and I get to enjoy a cup of coffee! If you
+    feel like it, just click the button below 👇
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/7ad9438bd50b1698fdd722fa6661b16c.png)](http://buymeacoffee.com/dswm)'
+  prefs: []
+  type: TYPE_NORMAL

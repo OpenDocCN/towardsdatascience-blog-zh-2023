@@ -1,0 +1,312 @@
+- en: Deploying PyTorch Models with Nvidia Triton Inference Server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387](https://towardsdatascience.com/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A flexible high-performant model serving solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----bb139066a387--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----bb139066a387--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb139066a387--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb139066a387--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----bb139066a387--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb139066a387--------------------------------)
+    ·7 min read·Sep 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb2afba9c81fb0c85c927e7f318bc8e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/8fVK5TFKaSE)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine Learning’s (ML) value is truly recognized in real-world applications
+    when we arrive at [Model Hosting and Inference](https://cloud.google.com/bigquery/docs/inference-overview#:~:text=Machine%20learning%20inference%20is%20the,machine%20learning%20model%20into%20production.%22).
+    It’s hard to productionize ML workloads if you don’t have a highly performant
+    model-serving solution that will help your model scale up and down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is a model server/what is model serving?** Think of a model server as
+    a bit of an equivalent to a web server in the ML world. It’s not enough to just
+    throw large amounts of hardware behind the model, you need a communication layer
+    that will help process your client’s requests while efficiently allocating the
+    hardware needed to address the traffic your application is seeing. Model Servers
+    are a tunable feature for users: we can squeeze performance from a latency perspective
+    by controlling aspects such as gRPC vs REST, etc. Popular examples of model servers
+    include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[TensorFlow Serving](https://www.tensorflow.org/tfx/guide/serving)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[TorchServe](https://pytorch.org/serve/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multi-Model Server (MMS)](https://github.com/awslabs/multi-model-server)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Deep Java Library (DJL)](https://github.com/deepjavalibrary/djl-serving)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The one we explore today is [Nvidia Triton Inference Server](https://github.com/triton-inference-server/server),
+    a highly flexible and performant model serving solution. Each model server requires
+    for model artifacts and inference scripts to be presented in its own unique way
+    that it can understand. In today’s article we take a sample PyTorch model and
+    show how we can host it utilizing Triton Inference Server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: This article assumes basic understanding of Machine Learning and
+    does not delve into any theory behind model building. A fluency of Python and
+    a basic understanding of Docker containers is also assumed. We will also be working
+    in a [SageMaker Classic Notebook Instance](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html)
+    for development, so please create an AWS account if needed (you can also run this
+    sample elsewhere if you prefer).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DISCLAIMER**: I am a Machine Learning Architect at AWS and my opinions are
+    my own.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Triton Inference Server?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Triton Inference Server is an open source model serving solution that has a
+    variety of benefits including the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Framework Support**: Triton natively supports a multitude of frameworks such
+    as PyTorch, TensorFlow, ONNX, and custom Python/C++ environments. Triton recognizes
+    these different frameworks in its setup as a “backend”. In this example we use
+    the PyTorch backend it provides for hosting our TorchScript model.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Dynamic Batching**: Inference performance tuning is an iterative experiment.
+    Dynamic Batching is one inference optimization technique where you can group together
+    multiple requests into one. With Triton you can enable Dynamic Batching and control
+    the Maximum Batch Size to try to optimize both throughput and latency.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Ensembles/Model Pipelines**: Via ensembles and model pipelines you can stitch
+    together multiple ML models along with any pre/post processing logic you have
+    into a universal execution flow behind a single container.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Hardware Support**: Triton supports both CPU/GPU based workloads. This makes
+    it easy to pair with a hosting platform such as [SageMaker Real-Time Inference](https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html),
+    where you can host thousands of models utilizing [Multi-Model Endpoints with GPUs](https://aws.amazon.com/blogs/machine-learning/run-multiple-deep-learning-models-on-gpu-with-amazon-sagemaker-multi-model-endpoints/)
+    and Triton as the model serving stack.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Triton Inference Server like other Model Servers has its pros and cons depending
+    on the use-case, so based off of your model and hosting requirements, it’s essential
+    you choose the right model server option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local Model Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this example, we will be working in a SageMaker Classic Notebook Instance
+    on the PyTorch Kernel. The instance will be a g4dn.4xlarge, so we can run our
+    Triton container on a GPU based instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started with we will work with a sample PyTorch Linear Regression model
+    that we will train on some dummy data generated by numpy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then save this model as a [TorchScript](https://pytorch.org/docs/stable/jit.html)
+    model for our Triton PyTorch backend and run a sample inference so we can understand
+    what a sample input for our model’s inference will look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have our model.pt and understand how to run inference with this
+    model, we can focus on setting up Triton to host this specific model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Triton Inference Server Hosting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we can work on the getting the Triton Inference Server up we need to
+    understand what artifacts it requires and the format it expects it to be presented
+    in. We already have our model.pt, this is our model metadata file. Triton also
+    expects a config.pbtxt file that essentially defines your serving properties.
+    In this case we define a few fields that are necessary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**model_name**: This is the model name in our model repository, you can also
+    version it incase there are multiple versions of the model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**platform**: This is the backend environment for the Server, in this case
+    we define the backend as pytorch_libtorch to setup the environment for our TorchScript
+    model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**input/output**: For Triton we have to define our input/output data shapes
+    and format (you can find out this info with numpy if you are unaware)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Optionally you can also define more advanced parameters such as enabling dynamic
+    batching, max batch size, and backend specific variables that you would like to
+    tweak for performance testing. Our base config.pbtxt looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Triton also expects this file and the model.pt to be presented in a specific
+    format before we can kickstart the server. For the PyTorch backend the following
+    model repository structure is expected for your artifacts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then shift our artifacts into this existing structure using the following
+    bash command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: To start the Triton Inference Server, ensure you have [Docker](https://www.docker.com/)
+    installed in your environment; this comes pre-installed in SageMaker Classic Notebook
+    Instances (not SageMaker Studio at the time of this article).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To start out container we first pull the latest Triton image utilizing the
+    following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then utilize [Nvidia CLI](https://developer.nvidia.com/nvidia-system-management-interface)
+    utility commands in conjunction with Docker to start our Triton Inference Server.
+    Triton has three default ports it exposes for inference that we specify in our
+    Docker run command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**8000**: HTTP REST API requests, we utilize this port in this example'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**8001**: [gRPC requests](https://aws.amazon.com/compare/the-difference-between-grpc-and-rest/#:~:text=In%20gRPC%2C%20one%20component%20(the,updates%20data%20on%20the%20server.),
+    this is especially useful for optimizing Computer Vision workloads'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**8002**: Metrics and monitoring related to Triton Inference Server via Promotheus'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Make sure to also replace the path provided with the path to your model repository
+    directory. In this instance it is ‘/home/ec2-user/SageMaker’, which you want to
+    replace with the path to your model repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we run this command you should see the Triton Inference Server has been
+    started up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cad6fcc0e41b0f7e77a85c5ad882307.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Triton Server Started (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now make requests to the model server, which we can conduct in two separate
+    ways that we’ll explore:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Python Request Library](https://pypi.org/project/requests/): Here you can
+    pass in the inference URL for the Triton Server address and specify your input
+    parameters.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Triton Client Library](https://github.com/triton-inference-server/client/tree/main):
+    A client provided by Triton that you can instantiate and use their built-in API
+    calls. We use Python in this case, but you can also use Java and C++.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'For the requests library we pass in the appropriate URL with our model name
+    and version like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the Triton Client Library we use the same values we specified in our config
+    file and above, but utilize the HTTP client specific API calls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/triton-inference-server-examples/blob/master/pytorch-backend/triton-pytorch-ann.ipynb?source=post_page-----bb139066a387--------------------------------)
+    [## triton-inference-server-examples/pytorch-backend/triton-pytorch-ann.ipynb
+    at master ·…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Triton Inference Server PyTorch Example. Contribute to RamVegiraju/triton-inference-server-examples
+    development by…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/triton-inference-server-examples/blob/master/pytorch-backend/triton-pytorch-ann.ipynb?source=post_page-----bb139066a387--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The entire code for the example can be found at the link above. Triton Inference
+    Server is a dynamic model serving option that can be used for advanced ML model
+    hosting. For more Triton specific examples please refer to the following [Github
+    repository](https://github.com/triton-inference-server/tutorials). In coming articles
+    we will continue to explore how we can harness different model servers to host
+    various ML models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always thank you for reading and feel free to leave any feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,276 @@
+- en: The Rise of Two-Tower Models in Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-rise-of-two-tower-models-in-recommender-systems-be6217494831](https://towardsdatascience.com/the-rise-of-two-tower-models-in-recommender-systems-be6217494831)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep-dive into the latest technology used to debias ranking models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@samuel.flender?source=post_page-----be6217494831--------------------------------)[![Samuel
+    Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----be6217494831--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be6217494831--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be6217494831--------------------------------)
+    [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----be6217494831--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be6217494831--------------------------------)
+    ·7 min read·Oct 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2ea8cba8c6d13e4bf5926fa05096305.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Evgeny Smirnov](https://unsplash.com/@smirik)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommender systems are among the most ubiquitous Machine Learning applications
+    in the world today. However, the underlying ranking models are plagued by [numerous
+    biases](/biases-in-recommender-systems-top-challenges-and-recent-breakthroughs-edcda59d30bf)
+    that can severely limit the quality of the resulting recommendations. The problem
+    of building unbiased rankers — also known as unbiased learning to rank, ULTR —
+    remains one of the most important research problems within ML and is still far
+    from being solved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post, we’ll take a deep-dive into one particular modeling approach
+    that has relatively recently enabled the industry to control biases very effectively
+    and thus build vastly superior recommender systems: the two-tower model, where
+    one tower learns relevance and another (shallow) tower learns biases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While two-tower models have probably been used in the industry for several years,
+    the first paper to formally introduce them to the broader ML community was Huawei’s
+    2019 PAL paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PAL (Huawei, 2019) — the OG two-tower model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Huawei’s paper [PAL](https://github.com/tangxyw/RecSysPapers/blob/main/Debias/%5B2019%5D%5BHuawei%5D%5BPAL%5D%20a%20position-bias%20aware%20learning%20framework%20for%20CTR%20prediction%20in%20live%20recommender%20systems.pdf)
+    (“position-aware learning to rank”) considers the problem of position bias within
+    the context of the Huawei app store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Position bias has been observed over and over again in ranking models across
+    the industry. It simply means that users are more likely to click on items that
+    are shown first. This may be because they’re in a hurry, because they blindly
+    trust the ranking algorithm, or other reasons. Here’s a plot demonstrating position
+    bias in Huawei’s data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39763b8fc1bce8500988b90981c66c3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Position bias. Source: Huawei’s paper [PAL](https://github.com/tangxyw/RecSysPapers/blob/main/Debias/%5B2019%5D%5BHuawei%5D%5BPAL%5D%20a%20position-bias%20aware%20learning%20framework%20for%20CTR%20prediction%20in%20live%20recommender%20systems.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Position bias is a problem because we simply can’t know whether users clicked
+    on the first item because it was indeed the most relevant for them or because
+    it was shown first — and in recommender systems we aim to solve the former learning
+    objective, not the latter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution proposed in the PAL paper is to factorize the learning problem
+    as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: where x is the feature vector, and `seen` is a binary variable indicating whether
+    the users has seen the impression or not. In PAL, `seen` depends only on the position
+    of the item, but we can add other variables as well (as we’ll see later).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on this framework, we can then build a model with two towers, each of
+    which outputs one of the two probabilities on the right hand side, and then simply
+    multiply the two probabilities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26a05297dd86a7206de4b19d8c4c6a6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: Huawei’s paper [PAL](https://github.com/tangxyw/RecSysPapers/blob/main/Debias/%5B2019%5D%5BHuawei%5D%5BPAL%5D%20a%20position-bias%20aware%20learning%20framework%20for%20CTR%20prediction%20in%20live%20recommender%20systems.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The clouds in this image are simply neural networks: a shallow one for the
+    position tower (because it only needs to process a single features), and a deep
+    one for the CTR tower (because it needs to process a large number of features
+    and create interactions between those features). We also call these two towers
+    the bias tower and engagement tower, respectively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notably, at inference time, where positions aren’t available, we run a forward
+    pass only using the engagement tower, not the bias tower. Similar to Dropout,
+    the model thus behaves differently at training time at inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Does it work? Yes, indeed, PAL works remarkably well. The authors build 2 different
+    version of the DeepFM ranking model (which I wrote about [here](/deep-learning-in-recommender-systems-a-primer-96e4b07b54ca)),
+    one version with PAL and baseline version with a naive way of treating item position:
+    simply passing it as a feature into the engagement tower. Their online A/B test
+    shows that PAL improves both click-through rates and conversion rates by around
+    25%, a huge lift!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PAL showed that positions themselves can be used as inputs to a ranking model,
+    but they need to be passed through a dedicated tower, not the main model (a rule
+    that has also been added as [Rule 36](https://developers.google.com/machine-learning/guides/rules-of-ml#rule_36_avoid_feedback_loops_with_positional_features)
+    to Google’s “Rules of ML”). The two-tower model was officially born — even though
+    it has been likely used across the industry prior to the PAL paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Watch Next” (YouTube, 2019) — the additive two-tower model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'YouTube’s paper “[Recommending What Video to Watch Next](https://daiwk.github.io/assets/youtube-multitask.pdf)”
+    — commonly known simply as the “Watch Next” paper — came out around the same time
+    as PAL and tried to solve the same problem: debiasing of recommender systems using
+    a two-tower model. However, compared to PAL, YouTube used an *additive* two-tower
+    model instead of a multiplicative one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To see why this works, consider again the factorization of the learning objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Because probabilities are sigmoids of logits, sigmoids are simply weighted
+    exponential functions, and the exponential function follows the product rule for
+    exponents, we can also write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: which is, alas, the two-tower additive model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b68128643857a9aa4c3ef64089a6406.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The two-tower additive model. Source: “[Recommending What Video to Watch Next](https://daiwk.github.io/assets/youtube-multitask.pdf)”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another notable innovation compared to PAL is the use of other features besides
+    position in the shallow tower. One example is the user device type. This makes
+    sense because different devices are expected to exhibit different forms of position
+    bias: for example, position bias may be more severe on phones with smaller screens
+    where the user can see fewer positions at the same time and has to swipe more.
+    As such, the shallow tower in YouTube’s model doesn’t just learn position bias,
+    it learns all sorts of selection biases, depending on which features are being
+    passed into the shallow tower.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to ensure the shallow tower actually leverages all of these features,
+    the authors add a Dropout layer with a dropout probability of 10% on top of the
+    position feature alone. Without it, the model may over-rely on the position feature
+    and not learn any other selection biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using A/B testing, the authors show that adding the shallow tower improves their
+    “engagement metric” (unfortunately no details were given on what that metric is)
+    by 0.24%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disentangling relevance and bias in ULTR (Google, 2023)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Up until this point, we’ve made the assumption that the two towers in ULTR can
+    learn independently during model training. Alas, this assumption is not true,
+    show the authors of recent Google paper, “[Towards Disentangling Relevance and
+    Bias in Unbiased Learning to Rank](https://arxiv.org/abs/2212.13937)”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a [Gedankenexperiment](https://www.britannica.com/science/Gedankenexperiment)
+    to see why: suppose there’s a perfect relevance model, that is, a model that can
+    perfectly explain clicks. In such a case, once we re-train the model on new data,
+    all the bias tower needs to do is learn how to map positions to clicks. The relevance
+    tower wouldn’t have to learn anything — it would be entirely useless!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, relevance has a confounding effect on position, as shown in
+    the red arrow in the causal graph below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b8e236dd5723ff1974126bedc060891.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The confounding effect of the relevance tower on the bias tower. Source: [Zhang
+    et al 2023](https://arxiv.org/abs/2212.13937)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But that’s not what we want: we want the relevance tower to keep learning as
+    new data comes in. One simple method to solve this problem — eliminate the red
+    edge in the causal graph — is by adding a Dropout layer on top of the bias logit,
+    as shown in the plot below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc33470348cb5b182aa65c9b8011bc5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Adding dropout on top of the bias tower. Source: [Zhang et al 2023](https://arxiv.org/abs/2212.13937).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Dropout? The key idea is that by randomly dropping out the bias logit, we
+    “nudge” the model to rely a little bit more on the relevance tower instead of
+    simply learning the mapping between historic positions and relevance. Note that
+    this idea is very similar to YouTube’s Watch Next paper, however here we drop
+    out the entire bias logit instead of only the position feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order for this to work, the logit dropout probability needs to be high:
+    with a dropout of 0.5 (that is, randomly zeroing out the bias logit in 50% of
+    the training examples) the authors beat PAL by 1% click NDGC on production data
+    from the Chrome App store — a strong demonstration of this simple technique.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s recap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The two-tower model powerful approach to build unbiased ranking models: one
+    tower learns relevance while the other tower learns position bias (and, optionally,
+    other biases).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can combine the output from the two towers either by multiplying their probabilities
+    (as done in Huawei’s PAL), or by adding their logits (as done in YouYube’s Watch
+    Next). We call the latter the additive two-tower model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The input to the bias tower is usually the position of the item, but we can
+    also add other features that introduce bias such as the user device type.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dropout (either on the positions or on the entire bias logit) prevents the model
+    from over-relying on historic positions and has been shown to improve generalization.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'And that’s just the tip of the iceberg. Given the importance of recommender
+    systems in today’s tech industry, and the discovery that two-tower modeling can
+    substantially improve predictive performance, this research domain is probably
+    still far from its full potential: we’re really just getting started!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you like this content and want to stay on top of the latest technologies
+    in ML, make sure to* [*subscribe*](https://samflender.substack.com)*.*'
+  prefs: []
+  type: TYPE_NORMAL

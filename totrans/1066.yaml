@@ -1,0 +1,583 @@
+- en: How Does a Decision Tree Know the Next Best Question to Ask from the Data?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-does-a-decision-tree-know-the-next-best-question-to-ask-from-the-data-0d44c9433b06](https://towardsdatascience.com/how-does-a-decision-tree-know-the-next-best-question-to-ask-from-the-data-0d44c9433b06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Build your own decision tree classifier (from scratch in Python) and understand
+    how it uses entropy to split a node
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)[![Gurjinder
+    Kaur](../Images/d5c6746466025dad06077b1a89a789d1.png)](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)
+    [Gurjinder Kaur](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)
+    ·14 min read·Nov 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f9f5b9174a45c2bfe56d92a8282fcbc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Daniele Levis Pelusi](https://unsplash.com/@yogidan2012?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Decision trees are versatile machine learning algorithms that can perform both
+    classification and regression tasks. They make decisions by asking questions about
+    the data based on its features, using an IF-ELSE structure to follow a path, that
+    ultimately leads to the final prediction. The challenge is to find out what question
+    to ask at each step of the decision-making process, which is also equivalent to
+    asking how to determine the best split at each decision node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will attempt to build a decision tree for a simple binary
+    classification task. The objective of this article is to understand how an impurity
+    measure (*e.g. entropy*) is used at each node to determine the best split, eventually
+    constructing a tree-like structure that uses a rule-based approach to get to the
+    final prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To gain intuition behind entropy and gini impurity (another metric used to measure
+    randomness and determine the quality of split in decision trees), quickly check
+    out this [article](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem definition and data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Problem:** Given its length and weight measurements, predict whether a fish
+    is tuna or salmon.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The challenge is to predict the *type* (target variable) of fish given its *weight*
+    and *length*. This is an example of a binary classification task since there are
+    two possible values of our target variable *type* i.e., *tuna* and *salmon.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can download the dataset from [here](https://github.com/gurjinderbassi/Machine-Learning/blob/main/fish.csv).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s highly encouraged to code along as you’re reading this article to get the
+    maximum understanding :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code-along prerequisites
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s make sure you have everything to get started (I bet you already do, but
+    just in case).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[***Python***](https://www.python.org/downloads/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Any ***code editor*** that lets you work with Python (.ipynb extension) notebooks,
+    [Visual Studio Code](https://code.visualstudio.com/), [Jupyter Notebook](https://jupyter.org/install),
+    and [Google Colab](https://colab.research.google.com/?utm_source=scs-index) to
+    name a few.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Libraries*:** [pandas](https://pandas.pydata.org/docs/getting_started/install.html)
+    and [numpy](https://numpy.org/install/) for data manipulation; [plotly](https://plotly.com/python/getting-started/)
+    for visualization. (Feel free to use any other data viz library of your choice
+    if you want).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[***Data***](https://github.com/gurjinderbassi/Machine-Learning/blob/main/fish.csv),
+    of course.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: That’s all we need, and most probably you are already good to go. Now let’s
+    start coding!
+  prefs: []
+  type: TYPE_NORMAL
+- en: A step-by-step solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Create a new .ipynb file and import the libraries first.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Read the data into a pandas data frame.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Cell Output:`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e8d1c7256af0d8151f6de75bdcf5596.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There are 1000 rows and 3 columns in our data frame. ‘length’ and ‘weight’ are
+    the features and ‘type’ is the target variable. Since the ‘type’ column has values
+    — ‘tuna’ and ‘salmon’, let’s label encode them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Label encoding our target column:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We have labeled our classes as: `{salmon: 0 and tuna: 1}`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s **plot a scatter plot to visualize our classes.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Cell Output:`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de8ddf4c7f4f68e80ce4cfa22beea6a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now clearly see our two classes marked in red and blue colors. This was
+    all about data preparation, let’s get into the decision tree now. Assign the feature
+    column names to a list that we will use later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Finding our first split**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **split** at a node in decision tree refers to the (feature, value) pair that
+    divides the data into two (or more) partitions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In case of numerical feature, the split will cause two partitions of data —
+    one with **feature ≤ value** and the other with **feature > value**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In case of categorical feature, the split will cause two partitions of data
+    — one with **feature=value** and the other with **feature not equal value**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running this cell will produce an error because we haven’t defined the function
+    `compute_impurity` yet. We need this function to compare the impurity in data
+    before making the split and after making the split. The (feature, value) pair
+    that results in the lowest impurity after splitting will be chosen as the best
+    split at the current node and we will update the *best_params* accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Define the function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This function uses another helper function `compute_entropy` that gives us
+    the entropy of a given list of classes. Let’s define this as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now as both of our helper functions are defined, run the cell again which previously
+    led to an error, it should run successfully now. Print the *best_params* dictionary
+    to check if it got updated or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Cell Output:`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/989ee647c08e6b66d676165d687d6ea0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Voila! We got our first best split at `length = 3` which means we will split
+    our data into two partitions now — `data['length']<=3` and `data['length']>3.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *Here we are going with the split that results in the minimum entropy.
+    Decision trees can vary in terms of this split criterion, for example,* ***ID3
+    uses******Information Gain*** *(which is the difference in entropy of data before
+    split and the weighted sum of entropy of branches after split), and* ***CART uses
+    the Gini index*** *as their respective split criteria.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following is how our decision tree looks right now. Since the data at the left
+    branch consists of a single class, we will make it a leaf node; so any data point
+    with `length<=3` will be predicted as *tuna.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(***Reminder:*** according to our color_map, we have assigned blue color to
+    tuna and red color to salmon):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the data at the right branch, we can recursively follow the same process
+    and find the best split, repeat for subsequent branches until we reach a maximum
+    depth or no further splitting is possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/358412cd61839e3cf75d0089b273a6d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualizing decision tree after making first split (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This process then gets repeated for each of the partitions until a stopping
+    condition is met (such as the maximum depth of the tree is reached, or the number
+    of samples in a leaf node is below a threshold, etc.). This is what *hyperparameters*
+    allow us to define when we use classifiers or regressors from packages such as
+    scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generalize the code using recursion**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will wrap the above code in a function `build_tree`that can be called recursively
+    to build the decision tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Helper functions:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`compute_entropy:` Returns the entropy of a dataset with two classes. Defined
+    above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`compute_gini:` Returns the gini index of a dataset with two classes. We can
+    choose between entropy and gini index as our impurity measures.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`compute_impurity:` An extension of compute_impurity function defined above,
+    it returns the *impurity* of the dataset. It uses `compute_entropy` and `compute_gini`
+    functions to calculate the entropy and the Gini index at the given split point,
+    according to the criterion specified.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`get_best_params:` Returns the *best_params* dictionary containing the feature
+    and value to use for split at the current node.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Main function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`build_tree:` It is the main driver function that makes use of helper functions
+    to build the decision tree recursively for the given data. I have also added additional
+    statements in an attempt to print the decision tree in an interpretable format
+    as it is created.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can pass our fish dataset and test the output of our code as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Cell Output:`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a6cdb5c5b8311c3319f4849f90e4075.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Following is what our final decision tree looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f2c327a26b137d97f75628fa60f6327.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This corresponds to the following decision boundaries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/868c6d0d1b4dbae53e9e139286993b98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** What happens if the leaf node is not pure i.e., there is more than
+    one class in a leaf node partition? *Simply go for the majority class.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Link to Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can get the final code notebook from [here.](https://github.com/gurjinderbassi/Machine-Learning/blob/main/Decision%20Tree%20-%20Fish%20dataset.ipynb)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’ve come so far, you will now be much more comfortable making sense out
+    of a lot of important things related to decision trees such as *interpretability*
+    being an advantage, and *overfitting* being a top disadvantage — that you might
+    already come across during your previous encounter with decision trees. And it
+    will be unfair if we leave out these topics here, so touching briefly on them
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s first look at the advantages. There are more, but we are sticking with
+    the most important ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the (top) advantages of a decision tree?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***Interpretability****:* A decision tree prediction is easier to interpret
+    as compared to other machine learning models since we can take a visual look at
+    the path that was followed to get to the final prediction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A decision tree is intuitive, and can be explained easily, even to a non-technical
+    person.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For example, let’s say a bank is using a decision tree to predict whether it
+    should grant a loan to a customer based on their attributes such as income, bank
+    balance, age, profession, etc. If the classification system suggests that the
+    bank should not grant a loan to a customer, then the bank needs to draft a proper
+    response stating the reasons for rejection. Otherwise, it can harm their business
+    and reputation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***No need for heavy-duty preprocessing:*** Decision trees don’t expect the
+    data to be normalized (or standardized) as opposed to some other machine learning
+    models.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You do minimal data pre-processing and the decision tree won’t mind much.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Moreover, it can intrinsically handle categorical features and we don’t need
+    to worry about one-hot encoding (or other solutions) as distinct categories will
+    simply be considered as different branches during a split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that major drawback —> Overfitting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Overfitting is when our model is toooo good to be real i.e., the model adapts
+    to the training data so closely that it loses its ability to generalize and fails
+    to show similar level of accuracy when presented with test data.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Decision trees when not controlled properly are highly prone to overfitting.**
+    Notice in our example above that if we keep splitting the training data without
+    defining any limit then the decision tree would keep creating more decision boundaries,
+    learning the noise in training data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to retain the model’s generalizability property, it’s important to
+    follow measures to avoid overfitting. In the case of decision trees, we can take
+    the following **steps to prevent overfitting:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Pre-pruning:* Pruning refers to preventing the decision tree from growing
+    at its full capacity. It can be done proactively by:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Setting *max_depth:* Don’t allow the tree to grow beyond a pre-defined depth.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setting *min_samples_split:* Don’t allow the split to happen if the number of
+    samples is below this value at a decision node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setting *min_samples_leaf:* Don’t allow the split to happen if the number of
+    samples at any of the resulting leaf nodes is lower than this value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These (plus many others) are the ***hyperparameters*** that we can tune as per
+    our needs when we implement decision trees via packages such as scikit-learn.
+    You can find all the hyperparameters and their definitions in this [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*2\. Post-pruning:* It refers to letting the decision tree grow at its full
+    capacity and then discarding some sections/branches afterward that seem unnecessary
+    or are leading to high variance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. Another possible solution is: *don’t use decision trees!* But rather opt
+    for their advanced versions — such as *random forests or gradient-boosted trees
+    :)* which still requires you to have basic knowledge of their predecessors, so
+    reading this article is not a waste of time at all!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bonus Points
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are some other properties of decision trees that are worth noting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Non-parametric**: Decision trees are non-parametric machine learning models,
+    which means that they do not make assumptions about the training data related
+    to its distribution, independence of features, etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Greedy approach**: Decision trees follow a greedy approach, which means that
+    they opt for the split that they think is the best at the given node (*i.e.*,
+    locally optimal solution) and cannot backtrack, leading to a sub-optimal solution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we learned to build a decision tree for a binary classification
+    task without making use of any packages to get strong at the conceptual level.
+    We went through a step-by-step process to understand how a decision rule is generated
+    at each node using data impurity measures such as entropy, and then later implemented
+    a recursive algorithm in Python to output the final decision tree. The goal of
+    this article was to get the fundamentals of the decision tree by looking under
+    the hood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, however, when dealing with real-life data and challenges at hand,
+    we will never have the need to do this from scratch as there are numerous packages
+    available that make things far more convenient and robust for us. But having a
+    strong background is going to help us better utilize those packages, and we will
+    be more confident while leveraging them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hopefully, next time we go on to build our next Decision Tree or Random Forest
+    (which is an ensemble of multiple decision trees), we will be more thoughtful
+    while configuring our models (and there will be less struggle to understand what
+    a hyperparameter really means 😺).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this was helpful. Open to any feedback or suggestions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’d like to acknowledge [Ritvik Kharkar](https://medium.com/u/ddca178f703?source=post_page-----0d44c9433b06--------------------------------)
+    for his amazing YouTube video that helped me better understand decision trees
+    conceptually. I’ve taken inspiration from his video to write this article, using
+    the same example he used, and taking the solution a step ahead by adding recursive
+    implementation and logic to print the decision tree. The link to his video is
+    in the references below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Related Reading**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Want to get the intuition behind impurity measures?** Check out this article
+    related to Entropy and Gini index:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe?source=post_page-----0d44c9433b06--------------------------------)
+    [## Entropy and Gini Index'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding how these measures help us quantify uncertainty in a dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe?source=post_page-----0d44c9433b06--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How to evaluate a decision tree classifier?** Check out the article below
+    to learn about different evaluation metrics for classification models:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gurjinderkaur95/evaluation-metrics-for-classification-beyond-accuracy-1e20d8c76ba0?source=post_page-----0d44c9433b06--------------------------------)
+    [## Evaluation Metrics for Classification- beyond Accuracy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfolding Confusion Matrix, Precision, Recall, F1 Score, and ROC Curve
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@gurjinderkaur95/evaluation-metrics-for-classification-beyond-accuracy-1e20d8c76ba0?source=post_page-----0d44c9433b06--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Aurélien Géron, (2019). *Hands-on machine learning with Scikit-Learn, Keras
+    and TensorFlow: concepts, tools, and techniques to build intelligent systems*
+    (2nd ed.). O’Reilly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] ritvikmath’s YouTube [video](https://youtu.be/dCez6oGZilY?si=slDWXQG5ZJgSv36W)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [StatQuest](https://www.youtube.com/watch?v=_L39rN6gz7Y&ab_channel=StatQuestwithJoshStarmer)'
+  prefs: []
+  type: TYPE_NORMAL

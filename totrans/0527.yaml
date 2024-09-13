@@ -1,0 +1,246 @@
+- en: Combine dbt Models Into a Single Target Table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/combine-dbt-models-into-a-single-target-table-9873679ffd9b](https://towardsdatascience.com/combine-dbt-models-into-a-single-target-table-9873679ffd9b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tutorial covering 3 patterns and their trade-offs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)[![Jay
+    Peterman](../Images/94587c88cb7981fa58fa8137d27b9588.png)](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)
+    [Jay Peterman](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)
+    ·6 min read·Jan 3, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7f8c181012add6ebd4d042b7666b54b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re looking for a simple way to build analytics pipelines, dbt is likely
+    on your radar. It’s tailored to empower data analyst/scientist to focus on their
+    areas of expertise, and reduce their dependencies on data engineers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have noticed that newcomers to dbt often pose a common question: How do I
+    load several dbt models with a common schema into a single target table? I will
+    introduce a few patterns that can be adapted to different use cases, and discuss
+    some of the trade-offs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The remainder of this tutorial assumes you already have dbt set up, and have
+    some familiarity using the tool. Even if you don’t, I think you can extract some
+    useful insights. This tutorial uses BigQuery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This will be a trivial example where we will combine 3 dbt models with a simple
+    schema:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ce2303591b0d0b5a9f9266b391aaeec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get started, we will created a new directory in `models` and name it `dbt-test`.
+    Inside of `dbt-test` we will then create the following 4 files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**table_1.sql**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. **table_2.sql**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. **table_3.sql**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. **schema.yml**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note: `union_table` will be the name of the target table (discussed below).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The SQL files represent upstream tables that will be loaded into the target
+    table. The `dbt-test` directory should now look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a5492044692d558ec7adc57837762d20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pattern 1: Manual UNION'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first pattern will simply create a new model that will `UNION` each of our
+    tables, and materialize as a new table, `union_table`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**union_table.sql**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This solution is likely where most SQL developers will start, and it works well.
+    This pattern emphasizes simplicity/readability at the cost of scalability. That
+    is, it would quickly become unmanageable if we need to `UNION` 100 tables, or
+    if the number of tables frequently changes. Further, if any of source tables fail
+    or don’t exist, the entire model will fail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pattern 2: UNION using for-loop'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This pattern helps with scalability, but perhaps comes at the cost of readability.
+    To test this pattern, modify the contents of `union_table.sql` as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**union_table.sql**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code ultimately achieves the same target output as Pattern 1, except this
+    time we use a Jinja for-loop. The first step assigns an array containing each
+    of the upstream tables, and assigns it to a variable called `tables`. We will
+    then use a for-loop to iterate through `tables` and pass the iterating variable,
+    `table`, through the `ref` function in the `FROM` statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the `FROM` statement, there is a conditional statement that controls whether
+    the `UNION ALL` statement will be added to that iteration of the loop. In this
+    case, we need to add a `UNION ALL` in all but the final iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To help understand what this model is doing, you can look at the compiled SQL
+    code, which is the result of running `dbt compile`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, this dbt model compiles into the same code as Pattern 1\. While
+    the readability might be a bit worse than Pattern 1, I think it’s a bit easier
+    to maintain and scale. However, we still face the problem that if any of the source
+    tables fail, the entire model will fail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To scale this pattern, you will need to update the `tables` array to include
+    the appropriate tables to `UNION`. While I think this is an improvement to Pattern
+    1, it can still be better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pattern 2.1: Programmatically include the correct source tables'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This pattern adds a scalability improvement to Pattern 2 that queries `INFORMATION_SCHEMA.TABLES`
+    from BiqQuery to get the appropriate tables to include in the array. For this
+    to work, you have to follow a naming convention for the tables, which is `table_<id>`
+    in this example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**union_table.sql**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code queries `INFORMATION_SCHEMA.TABLES` to get the appropriate tables,
+    by filtering for tables that follow the defined naming convention. The `data`
+    element of the result is then saved to the `tables` variable. We can then iterate
+    through the array as we did in Pattern 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Pattern 2.1, `tables` is no longer an array of strings (like it was in Pattern
+    2), but rather it’s an array of `tuples` that looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since the iterating variable is now a `tuple`, we need to access the element
+    at index 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The compiled code should look familiar:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point, our model scales pretty well. However, it will still completely
+    fail if any of the source tables fail, which very well might be the desired behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pattern 3: Load into target table using hooks'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To get more flexible loading patterns, you can try using hooks. This pattern
+    independently loads each model into the target table, and a single failing model
+    will not break the whole thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example of how you would modify `table_1.sql` to use a `post-hook`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example, the post-hook will run the SQL query when the model completes.
+    In this case, it will `INSERT` the materialized table into `hook_table`. This
+    example assumes that `hook_table` already exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You would then add the hook to all dbt models that you need to load into the
+    target table. In the event that a single source table fails, the rest should still
+    get loaded into `hook_table`. The trade-off here is that you will lose visibility
+    in the lineage, and it will be harder to scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You just learned how to load several dbt models into a single target table.
+    While the examples are trivial, they should be easy to adapt to your specific
+    use case. Thanks for reading, and I hope you found it useful.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,557 @@
+- en: Metal Programming in Julia
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/metal-programming-in-julia-2db5fe8ee32c](https://towardsdatascience.com/metal-programming-in-julia-2db5fe8ee32c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/1b0fa479f9906bf1570e41eed0082af9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Little Heavy | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leveraging the power of macOS GPUs with the Metal.jl Framework.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://lausena.medium.com/?source=post_page-----2db5fe8ee32c--------------------------------)[![Gabriel
+    Sena](../Images/713235a9a7f276a72862c38293d7ac89.png)](https://lausena.medium.com/?source=post_page-----2db5fe8ee32c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2db5fe8ee32c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2db5fe8ee32c--------------------------------)
+    [Gabriel Sena](https://lausena.medium.com/?source=post_page-----2db5fe8ee32c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2db5fe8ee32c--------------------------------)
+    ·11 min read·Dec 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just last year, we were [introduced](https://www.youtube.com/watch?v=IARikXzRU7s&ab_channel=TheJuliaProgrammingLanguage)
+    to the [Metal.jl](https://github.com/JuliaGPU/Metal.jl) Framework, a GPU backend
+    for Apple Hardware. This is exciting news for [Julia](https://julialang.org/)
+    practitioners looking to leverage the full potential of their macOS M-series chips.
+    In particular, data scientists and ML engineers can speed up their computational
+    workflows by tapping into the parallel processing power of [GPUs](/what-is-a-gpu-and-do-you-need-one-in-deep-learning-718b9597aa0d),
+    resulting in faster training and inference times. The integration of Metal.jl
+    into the Julia ecosystem signifies an important push towards aligning the language’s
+    capabilities with the continually evolving landscape of scientific computing and
+    machine learning on Apple platforms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [2020](https://www.apple.com/newsroom/2020/06/apple-announces-mac-transition-to-apple-silicon/),
+    Apple began transitioning its Mac lineup from Intel-based processors to Apple
+    Silicon, starting with the M1 chip. While this has been a historic and impressive
+    achievement from Apple it did come with its fair share of criticisms and issues.
+    Since picking up my 32-core Mac Studio M1-chip, I have been looking to fully leverage
+    the GPU and tinker with new applications. I must say, it hasn’t been all fun and
+    games. From [ARM](https://en.wikipedia.org/wiki/ARM_architecture_family) architecture
+    compatibility issues to unsupported machine learning libraries — it has been a
+    challenge at times to get a working environment. This is expected with any huge
+    major transition and way of operating. I remain hopeful and have seen major improvements
+    across the board for stability and features.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**In this article, we will preview the Metal.jl Framework in order to understand
+    its capabilities. We will also demonstrate a practical example using** [**Flux**](https://fluxml.ai/)**,
+    a library for machine learning in Julia, with the Metal backend.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Here is the outline for the topics covered:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**I.** [**Project Setup**](#35fc)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: i. [Julia environment setup](#39c6)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii. [Dependency overview](#8e23)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**II.** [**Leveraging the Metal API**](#6b3d)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: i. [Kernel Functions](#0501)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii. [Benchmarking](#0ab7)
+  prefs: []
+  type: TYPE_NORMAL
+- en: iii. [Profiling](#9a1c)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**III.** [**Working with Flux and Metal Backend**](#4dd6)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: i. [Dataset overview](#29ea)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii. [Simple neural network](#76ed)
+  prefs: []
+  type: TYPE_NORMAL
+- en: iii. [Model evaluation](#3777)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Readers who wish to follow along should have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic knowledge of the [Julia programming language](https://pub.aimind.so/getting-started-with-the-julia-programming-language-0c0d8521a381).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: High-level understanding of Machine Learning concepts.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Let’s dive in!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**PROJECT SETUP**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: i. Julia Environment Setup
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It is considered good practice to set up an environment unique to your project.
+    By doing so you will isolate exact versions of packages required for a project
+    and allow for an easily reproducible environment for yourself and team members.
+    This is easily done in [Julia](https://pub.aimind.so/getting-started-with-the-julia-programming-language-0c0d8521a381)
+    as seen below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii. Dependency overview
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[**Metal**](https://github.com/JuliaGPU/Metal.jl)**:** This is the framework
+    that makes it possible to program GPUs on macOS. As mentioned by the contributors,
+    the package is a **work-in-progress** and there are bugs, functionality missing,
+    and performance that hasn’t been fully optimized yet. **Please ensure you have
+    also met the following system requirements:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔ Mac device with M-series chip️️️
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔ Julia 1.8–1.10
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔ macOS 13 (Ventura) or 14 (Sonoma)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**BenchmarkTools**](https://github.com/JuliaGPU/Metal.jl)**:** We will be
+    using this library to execute benchmarks for some of the operations we send to
+    our GPU via the Metal APIs. This package makes it easy to configure, execute,
+    and analyze results.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Flux**](https://fluxml.ai/Flux.jl/stable/)**:** Flux is an intuitive machine
+    learning library for Julia; it is designed to provide a high-level and user-friendly
+    interface for building and training neural networks. We will be using this library
+    for the example and leveraging the Metal Backend to leverage our GPUs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are the versions for the dependencies at the time of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: With our environment configured and a high-level understanding of the libraries
+    in use, let’s explore the Metal API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LEVERAGING THE METAL API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Metal.jl interfaces with Apple’s Metal Graphics API — a low-level API developed
+    by Apple for their various platforms (macOS, iPhone, watch,…).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This gives users direct control over the [GPU (Graphics Processing Unit)](https://en.wikipedia.org/wiki/Graphics_processing_unit)
+    for tasks such as rendering graphics and parallel computations. Let’s look at
+    a basic example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: i. Kernel Functions
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the context of the Apple Metal framework, a **Kernel Function** is a special
+    type of function that is executed on the GPU. These functions are written in a
+    shading language; in our case, the [Metal Shading Language](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
+    (MSL).
+  prefs: []
+  type: TYPE_NORMAL
+- en: “MSL allows users to write a *shader program,* which is graphics and data-parallel
+    compute code that runs on the GPU. Shader programs run on different programmable
+    units of the GPU. MSL is a single, unified language that allows tighter integration
+    between the graphics and compute programs.” ³
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Prior to getting started, let’s ensure we can monitor our GPU’s load. Apple
+    has built-in GPU history. In the Activity Monitor app on your Mac, choose Window
+    > GPU History. You should see something similar to mine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/046fd1e1d9cfc2121cbcc352daec59af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GPU History. Spikes to the top indicate max GPU usage | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we will create a *matrix multiplication kernel*. To make use
+    of the GPU, we will intentionally create compute complexity by iterating *N =
+    1 million* times over the matrix operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will define **A** as an *m x n* matrix, **B** an *n x p* matrix, and **C**
+    as the resulting matrix product defined by *m x p.* **C=AB.** The resulting Kernel
+    Function is shown below; other than a few tweaks to the Kernel Function and the
+    Matrix variables defined at the bottom, the code is quite similar to what you
+    would expect in Julia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The subtle differences, or additions, are as follows: The **thread_position_in_grid_1d()**
+    function returns the index of the current thread within its one-dimensional grid.
+    Essentially, it will know which data on each thread the GPU should operate. This
+    fine-grained approach in controlling thread assignment gives the user the power
+    to maximize the computational power of their system.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we initialize our matrices **A**, **B**, and **C** we want to ensure we
+    are initializing values on the GPU using Metal; this ensures we are making it
+    suitable for GPU-accelerated computations. In addition, the **storage=Shared**
+    parameter indicates that the matrix data should be stored in [shared memory](https://developer.apple.com/documentation/metal/mtlstoragemode/mtlstoragemodeshared?language=objc),
+    giving access to both CPU and GPU. By doing so, we need to ensure we synchronize
+    prior to accessing that resource:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Ensure that all changes you schedule on either the CPU or GPU for a resource
+    that uses shared memory complete before accessing that resource on the other processor.”
+    ²
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Last thing to mention is the `C_cpu` variable at the end. The `unsafe_wrap`
+    function is used to create a CPU array, `C_cpu`, that shares the same underlying
+    memory as the GPU array `C`. This enables us to transfer data between the CPU
+    and GPU in order to perform computations later on. In the example below, I will
+    show that we can modify the resulting matrix C by doing a inverse on it after
+    all GPU operations have completed (*inv(C_cpu)).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great! Now that we have our kernel ready, let’s move on to do the computation
+    and benchmarking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii. Benchmarking
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The **benchmark** macro (*macros start with “@”*) is used to measure the performance
+    of the GPU kernel **matrix_multiplication_kernel.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior to executing our `begin...end` block we will use the `Metal.@sync` to
+    ensure synchronization between the CPU and GPU occurs and that all GPU commands
+    have completed prior to moving onto the CPU code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Within the **metal** macro, we specify both the number of `threads`and `groups`.
+    Each thread is responsible for performing a computation. This number also determines
+    how many operations occur in parallel. For instance, if we specify 256 threads
+    then each thread will be responsible for a portion of the computation. Threads
+    are organized in groups; a thread group is a collection of threads that can work
+    together and coordinate the parallel execution of threads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In total, the M1 GPU contains up to 128 [Execution units](https://en.wikipedia.org/wiki/Execution_unit)
+    or 1024 ALUs,⁴ which Apple says can execute up to 24,576 threads simultaneously
+    and which have a maximum floating point (FP32) performance of 2.6 [TFLOPs](https://en.wikipedia.org/wiki/TFLOPS).⁵
+    ⁶
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Here are the results after playing around with the ***N (100)***, ***threads
+    (256)***, and ***groups (256)*** parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8aa87b1f71d7a814246f48f7a8e3ae48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Benchmark Results | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: iii. Profiling
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*In order to Profile and view the results you must have* [*XCode*](https://developer.apple.com/xcode/)
+    *installed.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Profiling code, an often overlooked discipline, is a crucial aspect of software
+    development and performance optimization. Profiling involves measuring various
+    aspects of a program’s execute. This can be things such as time taken by different
+    functions, frequency of function calls, memory and usage or leaks. Profiling is
+    also useful for ensuring any code changes made are quantified by means of performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’ve experienced a scenario where code deployed to production unexpectedly
+    causes a significant slowdown in system performance, only to discover later that
+    a junior programmer inadvertently introduced a nested loop with quadratic time
+    complexity O(n²), you’re not alone. While nested for-loops may seem acceptable
+    in some situations the implications become increasingly problematic with a large
+    number of values — leading to considerable performance challenges. **Catch this
+    early, catch this with profiling!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Profiling is done trivially with two steps. First, we need to specify the `Metal.@profile`
+    macro in front of our `metal` macro. Next, ensure you have the following environment
+    variable set: **ENV[“METAL_CAPTURE_ENABLED”] = 1**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now you can execute the following line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Metal.@profile @metal threads=n_threads groups=n_groups matrix_multiplication_kernel(A,
+    B, C)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From there, we get a resulting **julia_capture_*N*.gputrace** stored in the
+    same directory as the project. To interact with this, open it in XCode and replay
+    the trace. We are presented with various useful metrics that we can dig into.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/679ccf8c1699e5581792249c64d55f66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Xcode | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, we have covered how to interact with Apple’s Metal Graphics API
+    through Metal.jl — giving us direct GPU control for parallel computations. We
+    have introduced Kernel Functions in the Metal Shading Language with a matrix multiplication
+    kernel that intentionally increases GPU workloads. Additionally, we have introduced
+    benchmarking tools and profiling capabilities through Metal’s macros.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Let’s move on to a practical scenario!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: WORKING WITH FLUX AND METAL BACKEND
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: i. Dataset overview
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will be using a Breast Cancer database obtained from the University of Wisconsin
+    Hospitals, Madison from Dr. William H. Wolberg.¹⁰ ¹¹ The ***Class*** feature will
+    be the target where there are two possible values (2 for benign and 4 for malignant).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For brevity, I will not demonstrate the preprocessing required for the dataset,
+    instead I will refer the reader to [Appendix I: The Julia source code](#e585).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii. Simple neural network
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will be building a simple neural network with [Flux](https://fluxml.ai/Flux.jl/stable/)
+    that leverages the [Metal](https://developer.apple.com/documentation/metal) backend.
+    Starting with v0.14, Flux doesn’t force a specific GPU backend and the corresponding
+    package dependencies on the users.⁷ Although we are using Metal as the backend,
+    Flux supports other [backends](https://fluxml.ai/Flux.jl/stable/gpu/) such as
+    AMDGPU and CUDA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s do a quick sanity check to ensure our environment is setup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/afda8bc58b7407e04fdf3adcdc2dd4d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing Metal with Flux | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have the `device` variable we will be using that to move data and
+    model to the GPU. **Be careful here as you can perform all business logic in Flux
+    without ever exporting the model to the GPU — meaning, you’re still using the
+    CPU (yikes)!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4611a46eaa8be2e2c617e2a9deba28b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model Definition (This will be a Logistic Regression model for our 2-class problem)
+    | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To prepare our data for the run, we will be leveraging [Flux.DataLoader](https://fluxml.ai/Flux.jl/previews/PR1786/data/dataloader/).
+    This module handles iterations over mini-batches of data. I’ve keep it simple
+    for this demo with a `batchsize=1` . This means that if my data contains 800 rows
+    each batch is associated to a row. In a more efficient scenario you may want to
+    split that up so you can group the data you are processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before jumping into the next section, it is important to note that I faced issues
+    passing my DataFrame directly to the DataLoader, so here are a few workarounds
+    I had to implement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/515646d0995f178f0a87d144b469105c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Prep | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: iii. Model evaluation
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The following code illustrates the model training and evaluation process. It
+    is crucial to utilize the GPU when the `x_cpu` and `y_cpu` variables (our rows
+    and labels) are returned from the [DataLoader](https://fluxml.ai/Flux.jl/previews/PR1786/data/dataloader/)
+    — a failure to do so will crash due to compatibility issues as our model is expecting
+    data on the GPU to work with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/716e15b34c3f867abfe2b083e390b83d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Demo of project running and leveraging M1-Max GPU! | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this brief look into the Metal.jl Framework, we have covered the basics
+    of GPU programming on Apple’s hardware. By exploring three core concepts — *Kernel
+    Functions, Benchmarking, and Profiling* — the reader now has a high-level understanding
+    of how to get started and is encouraged to dive deeper into the API’s capabilities.
+    Additionally, we have demonstrated a practical example that leverages Flux to
+    build a simple neural network application that leverages the [Metal backend](https://fluxml.ai/Flux.jl/stable/gpu/).
+    If you’re a data scientist or ML engineer looking to tap into the power of your
+    Apple M-series GPU, I hope this article has served as a starting point for accelerating
+    your computational workflows. From here, I will leave the reader with a few more
+    resources to check out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://fluxml.ai/Flux.jl/stable/?source=post_page-----2db5fe8ee32c--------------------------------)
+    [## Welcome · Flux'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flux is a library for machine learning. It comes "batteries-included" with many
+    useful tools built in, but also lets…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: fluxml.ai](https://fluxml.ai/Flux.jl/stable/?source=post_page-----2db5fe8ee32c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I hope you enjoyed this article, thank you for reading!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👏
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Lastly, I want to give a big shoutout to the creators of the Metal.jl project.
+    I am looking forward to the continued success of the project. For anyone looking
+    to contribute, please check out their Github page** [**here**](https://github.com/JuliaGPU/Metal.jl)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Appendix I: Julia Source Code'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Prior to running the source code found in the Github, I highly recommend matching
+    the versions found in this article to ensure a successful compilation. Furthermore,
+    the Metal.jl library is a work in progress and may lack or contains different
+    features depending on the version specified.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 🔗 [https://github.com/lausena/JuliaExperiments/tree/main](https://github.com/lausena/JuliaExperiments/tree/main)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A supplement for preprocessing can be found in this* [*post*](https://medium.com/ai-mind-labs/practical-julia-logistic-regression-4e97a3cc3df8)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/subscribe/@lausena?source=post_page-----2db5fe8ee32c--------------------------------)
+    [## Get an email whenever Gabriel Sena publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Gabriel Sena publishes. By signing up, you will create
+    a Medium account if you don't already have…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/subscribe/@lausena?source=post_page-----2db5fe8ee32c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***References***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] [https://www.youtube.com/watch?v=IARikXzRU7s&ab_channel=TheJuliaProgrammingLanguage](https://www.youtube.com/watch?v=IARikXzRU7s&ab_channel=TheJuliaProgrammingLanguage)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://juliagpu.org/post/2022-06-24-metal/index.html](https://juliagpu.org/post/2022-06-24-metal/index.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Frumusanu, Andrei. [“The 2020 Mac Mini Unleashed: Putting Apple Silicon
+    M1 To The Test”](https://www.anandtech.com/show/16252/mac-mini-apple-m1-tested).
+    [*www.anandtech.com*.](http://www.anandtech.com.) [Archived](https://web.archive.org/web/20210201183558/https://www.anandtech.com/show/16252/mac-mini-apple-m1-tested)
+    from the original on 2021–02–01\. Retrieved 2021–01–30.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [“Apple M1 Chip”](https://www.apple.com/mac/m1/). *Apple.com*. Apple. [Archived](https://web.archive.org/web/20201110184757/https://www.apple.com/mac/m1/)
+    from the original on 10 November 2020\. Retrieved 11 November 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Kingsley-Hughes, Adrian (10 Nov 2020). [“Apple Silicon M1 chip: Here’s
+    what we know”](https://www.zdnet.com/article/apple-silicon-m1-chip-heres-what-we-know/).
+    *ZDnet*. Red Ventures. [Archived](https://web.archive.org/web/20210917094527/https://www.zdnet.com/article/apple-silicon-m1-chip-heres-what-we-know/)
+    from the original on 17 September 2021\. Retrieved 1 July 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [https://fluxml.ai/Flux.jl/stable/gpu/](https://fluxml.ai/Flux.jl/stable/gpu/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] [https://juliagpu.org/post/2023-03-03-metal_0.2/](https://juliagpu.org/post/2023-03-03-metal_0.2/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] [https://fluxml.ai/Flux.jl/stable/tutorials/logistic_regression/](https://fluxml.ai/Flux.jl/stable/tutorials/logistic_regression/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] William H. Wolberg and O.L. Mangasarian: “Multisurface method of'
+  prefs: []
+  type: TYPE_NORMAL
+- en: pattern separation for medical diagnosis applied to breast cytology”,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proceedings of the National Academy of Sciences, U.S.A., Volume 87,
+  prefs: []
+  type: TYPE_NORMAL
+- en: December 1990, pp 9193–9196\.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] This dataset is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode)
+    (CC BY 4.0) license. [https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.names](https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.names)'
+  prefs: []
+  type: TYPE_NORMAL

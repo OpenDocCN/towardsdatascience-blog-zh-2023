@@ -1,0 +1,3013 @@
+- en: Understanding the Denoising Diffusion Probabilistic Model (DDPMs), the Socratic
+    Way
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/understanding-the-denoising-diffusion-probabilistic-model-the-socratic-way-445c1bdc5756](https://towardsdatascience.com/understanding-the-denoising-diffusion-probabilistic-model-the-socratic-way-445c1bdc5756)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into the motivation behind the denoising diffusion model and detailed
+    derivations for the loss function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)[![Wei
+    Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)[](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)
+    [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)
+    ·69 min read·Feb 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/207ffc71c7a7072f719d371f7f6f951f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Chaozzy Lin](https://unsplash.com/@chaozzy?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)
+    by Jonathan Ho et. al. is a great paper. But I had difficulty understanding it.
+    So I decided to dive into the model and worked out all the derivations. In this
+    article, I will focus on the two main obstacles to understand the paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: why is the denoising diffusion model designed in terms of the forward process,
+    the forward process posteriors, and backward process. And what is the relationship
+    among these processes? By the way, in this article I call the forward process
+    posteriors “the reverse of the forward process” because I find the word “posteriors”
+    confuses me, and/or subconsciously I want to avoid that word as it frightens me
+    — every time it appears, things become complicated.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: how to derive the mysterious loss function. In the paper, there are many skipped
+    steps in deriving the loss function *Lₛᵢₘₚₗₑ.* I went through all derivations
+    to fill in the missing steps. Now I realize the derivation of the analytical formula
+    for *Lₛᵢₘₚₗₑ* tells a truly beautiful Bayesian story. And after all the steps
+    filled in, the whole story is easy to understand.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Some notations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Medium supports Unicode in text. This allows me to write many math subscript
+    notations such as *x₀* and *xₜ.* But I could not write down some other subscripts.
+    For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e69161a9e9d5a0b5c88149d75511c267.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For those things, I will use an underscore “_” to lead the subscriptions, such
+    as *x_T*, and *p(x_0:T)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If some math notations render as question marks on your phone, please try to
+    read this article from a computer. This is a known Unicode rendering issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The task of generating natural images from noise
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our goal is to use a neural network to generate natural images from noise. The
+    input to the neural network is noise, and the output should be a natural image,
+    such as a human face. Different noises will result in different natural images,
+    for example, one noise may lead to a woman’s face, another noise to a man’s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may ask, what kind of noise? Without other constraints, a sensible researcher
+    who is in love with Bayesian method will start with a Gaussian noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the dimensionality of this noise? Well, the desirable output is a colorful
+    2D image with red-green-blue (RGB) values. Let’s simplify it by first transform
+    a colorful image into grayscales between [0, 255] and then scale the grayscales
+    to the range of [0, 1]. And then reshape this 2D array of scaled grayscale values
+    into a long 1D vector, with length *d*. I will mention the name *d* multiple times
+    in the article. Let’s use the above as our easy definition of the image generation
+    task. But please know that in reality, neural networks can generate colorful images
+    directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is natural to assume the dimension and structure of the input noise is the
+    same as the dimension and structure of the output image, which is a vector of
+    length *d*. So the noise should be a *d*-dimensional multivariate standard Gaussian
+    *N*(**0**, **1**) — that’s the academic default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now the task of generating images from noise is more concrete: design a neural
+    network that takes a sample from a *d*-dimensional multivariate standard Gaussian
+    and outputs a *d*-dimensional vector of scaled grayscale values. Turning the output
+    vector into a 2D shape and RGB colors is something we all know [how](https://lukemelas.github.io/image-colorization.html)
+    to do, and not of interest of this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating an image iteratively
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Generating an natural image from noise in one step is difficult. How about generating
+    an image in many smaller steps? Sort of like to let an image emerge from a Kodak
+    film in old fashion photography. This way, in each step, the neural network should
+    have a simpler task, as the input and output in each step is more similar to each
+    other than from pure noise to a final natural image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This iterative generating idea comes with its own problem. What should the in-between
+    images look like? A person old enough (like me) to have experience with old fashion
+    photography would suggest that the in-between images should be gradual — it should
+    not be the case that during this iterative process, an image of a cat first appears,
+    and then the cat turns into a human face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “gradual-ness” constraint over in-between images is sensible. But how to
+    formulate it mathematically?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward process turns a natural image into noise
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Even though it is not clear how to formulate the gradual-ness of the iterative
+    generation process, it is easy to formulate the opposite process — the process
+    that turns a natural image into pure noise by successively adding a little bit
+    of Gaussian noise into it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process of turning a natural image into pure noise by adding successive
+    noise to it is called the *forward diffusion process*, or *forward process* in
+    short.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reverse process turns noise into a natural image
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: On the other hand, we call the process of turning a Gaussian noise into a natural
+    image *the reverse process*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Illustration of forward and reverse process
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following figure from the paper depicts these two processes, with the forward
+    process at the bottom, and the reverse process at the top.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/711f02e0c314ba040754b33d495c557e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf),
+    page 2
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure *x₀, x₁*, *x₂,…, x_T* are *d*-dimensional multivariate Gaussian
+    random variables. We use the random variable *x₀* to represent natural images.
+    This means if we draw a sample, which is a *d*-dimensional vector, from *x₀’s*
+    probability density function, the drawn sample vector, once re-arranged in 2D,
+    should look like a grayscale natural image. We haven’t talked about how the probability
+    density function for *x₀* looks like*.* I will get to that later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure, the random variables *x₁*, *x₂,…, x_T* correspond to the in-between
+    images, that is, images with noise added to them (if we are looking at the forward
+    process on the bottom) or with noise removed from them (if we are looking at the
+    reverse process on the top). Later, I will also introduce the probability density
+    functions for these random variables from both the forward process point of view
+    and the reverse process point of view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To remember that *x₀* is the natural image and *x_T* is pure noise, and not
+    the other way round, please remember: small subscript, small noise, big subscript,
+    big noise. I got this idea from [this video](https://www.youtube.com/watch?v=HoKDTa5jHvg).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now there is a way to mathematically define the gradual-ness of in-between images.
+    Every image *xₜ* generated from the reverse process must be close to (don’t worry,
+    we will define what “close to” means later) the corresponding image diffused from
+    the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The forward process
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The forward process is a probabilistic model. Why? Because every step adds a
+    Gaussian noise into an image. So the result is not deterministic — starting from
+    the same natural image *x₀*, you may end up with different samples of standard
+    multivariate Gaussian noise *x_T.* Just like dipping a drop of ink into a glass
+    of water at different times will give you different diffusions each time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this probabilistic model, *x₀, x₁*,… to *x_T* are random variables. Each
+    of them is a *d*-dimensional random variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the forward process is probabilistic, the appropriate mathematical tool
+    to talk about it is probability density function and probability theory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above figure uses *q(xₜ|xₜ₋₁)* to denote the probability density function
+    for a single step from image *xₜ* to image *xₜ₋₁* in the forward diffusion process.
+    We define its probability density function as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d2e0601dedb499f2d8b51486a702141.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Forward process conditional with fixed mean vector and covariance matrix
+  prefs: []
+  type: TYPE_NORMAL
+- en: with *βₜ* being a value that changes over time, much like scheduling learning
+    rate*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the reparameterization trick (see derivation [here](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/))
+    the random variable *xₜ* can be equivalently described as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/281094f86f87cba19525f7a68d27eb46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *ϵₜ₋₁* is *d*-dimensional standard Gaussian noise. This formula reveals
+    that the more noisier image *xₜ* is a weighted average between the less noisier
+    image *xₜ₋₁ and* some noise *ϵₜ₋₁.* In other words, the forward process adds noise
+    *ϵₜ₋₁* into the less noisier image *xₜ₋₁*. The value of *βₜ* controls the amount
+    of noise to add on timestamp *t*. That’s why *βₜ* is scheduled to be really small
+    values, from *β₁=10⁻⁴* to *β_T=10⁻²*. And *T* is set to 1000 — otherwise, noise
+    will quickly dominate the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*q(xₜ|xₜ₋₁)* is the probability density function for the random variable *xₜ,*
+    which describes a single step in the forward process. The following joint probability
+    density function describes the full forward process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f09e9229b294b8963a9491ff6a6cc26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the *first factorization* of the forward process *q(x_1:T|x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why does the above joint probability density function of the forward process
+    *q(x_1:T|x₀)* depend on the random variable *x₀*? This is because when *t=1*,
+    *q(xₜ|xₜ₋₁)* turns into *q(x₁|x₀)*, which mentions *x₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Random variable dependency**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since this article will talk a lot about some random variable depends on some
+    other random variables, let’s use *q(x₁|x₀)* as an example to clarify the meaning
+    of **random variable *x₁* depends on random variable *x₀***. The following derivation
+    shows the probability density function of *q(x₁|x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/494359b47e4bc16d0185bf36681e995f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formula for probability density function of *q(x₁|x₀)*
+  prefs: []
+  type: TYPE_NORMAL
+- en: We define *q(x₁|x₀)* as a multivariate Gaussian, sufficiently denoted in line
+    (2) with the *N(x₁; mean vector, covariance matrix)* notation, because a multivariate
+    Gaussian distribution is fully specified by its mean vector and covariance matrix.
+    “fully specified” means after writing down the mean vector and the covariance
+    matrix, the multivariate Gaussian distribution is a fixed function, with the structure,
+    such as the exponential function, the determinant, as in line (3) assumed by the
+    letter *N*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then in line (3) we expand this notation to the mathematical formula for the
+    probability density function of a multivariate Gaussian distribution. *d* is the
+    dimension of the random variable *x₁,* that is, the number of pixels *height×width*
+    in an image. [*det*](https://en.wikipedia.org/wiki/Determinant) is the determinant
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So it is clear that line (3) is the probability density function for the random
+    variable *x₁*. From line (3), we also know the following things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, being a probability density function for the random variable *x₁*, the
+    function at line (3) **integrates to 1** over the domain of*x₁.* This is because
+    all proper probability density functions integrates to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f49896c95df1089075fb2676e8adb999.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*q(x₁|x₀) integrates to 1 over the domain of* x₁'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, line (3) is the probability density function for the random variable
+    *x₁*, but it also mentions another random variable *x₀*. This is why the random
+    variable *x₁* **depends** on the random variable *x₀ —* evaluating *q(x₁|x₀)*
+    for some value of *x₁* requires a value for *x₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now you may ask, can we view line (3) as the probability density function of
+    the random variable *x₀* and say *x₀* depends on the random variable *x₁*?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer is no. Indeed, from the mathematical function point of view, we can
+    interpret *q(x₁|x₀)*, line (3)*,* as either a single argument function of *x₁*
+    or a single argument function of *x₀.* But line (3) is not a proper probability
+    density function for the random variable *x₀* because it does not integrate to
+    1 over the domain of *x₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Probability density function for the random variable *x₀?***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After making it clear that line (3) cannot be interpreted as the probability
+    density function of the random variable *x₀,* a natural follow up question is:
+    do we know the probability density function *q(x₀)* for *x₀*?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'No, we don’t. *q(x₀)* describes the probability of natural images. This means:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: given a natural image, say *X₀*, plugging *X₀* in *q(x₀=X₀)* should return a
+    probability number between 0 and 1 to indicate how likely this natural image occurs
+    in all natural images.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Summing up, or equivalently, integrating, the probability numbers from *q(x₀)*
+    for all natural images gives us *1.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Obviously, as usual, we don’t know the analytical formula for *q(x₀)*. But this
+    does not prevent us from writing its notation down, and from drawing samples for
+    the random variable *x₀*— we just randomly pick an image from our training set
+    of natural images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The forward process consists of *T+1* random variables *x₀, x₁* to *x_T.* They
+    form two groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*x₀*: there are observations to the random variable *x₀*. The observations
+    are the actual images from the training dataset. We call *x₀ observational random
+    variable*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*x₁* to *x_T:* there is no observation for them, hence they are *latent random
+    variables*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The definition of the forward process brings three important properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Property 1: Fully joint probability density function *q(x_0:T)***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/d4bbcb6e237b152b814b8c733a43738e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Joint probability density function represents trajectories. Visually, the fully
+    joint probability density function *q(x_0:T)* describes the set of possible trajectories
+    of images. Each trajectory consists of *T+1* images with *x₀* representing a noise-free
+    image, and *x_T* representing a pure noise image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following illustration shows some trajectories that start from two natural
+    images *X₀* and *X₁.* These trajectories end at different pure noise images, indicating
+    that the forward process is a probabilistic. It is an illustration because I hand-drew
+    the picture — it is not necessary that the trajectories starting from *X₀* do
+    not overlap with the trajectories starting from *X₁*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5941d0a9b39ae7ef2a6878aa4cea9df5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hand drawn illustration by me
+  prefs: []
+  type: TYPE_NORMAL
+- en: The illustration also shows that at a timestamp *t*, the random variable *xₜ*
+    is responsible to explain all possible images that could be generated by the forward
+    process at this timestamp.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Property 2: Marginal probability density function *q(xₜ|x₀)***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Using the reparameterization trick repeatedly (see derivation [here](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
+    again) give us the probability density functions for only a single latent random
+    variable without the dependence on another latent random variable, hence the resulting
+    probability density is called marginal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84b14f64658cf075986d5c8a18ce99f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Forward process marginal
+  prefs: []
+  type: TYPE_NORMAL
+- en: with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55be80b21f8b578f5010295f51106eb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This property reveals that given *x₀*, the latent random variable xₜ does not
+    depend on the latent random variable *xₜ₋₁* anymore. In other words, given *x₀,*
+    the latent random variables *x₁* to *x_T* are independent to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For independent random variables *a* and *b*, the product rule in probability
+    theory is *p(a, b) = p(a) p(b)*. Applying the product rule gives us the *second
+    factorization* of *q(x_1:T|x₀)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/590832e17597156a510b43aa81aa0e8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The two factorizations are equivalent, meaning they describe the same joint
+    probability distribution for the same set of random variables. Sometimes we will
+    choose one over the other to simplify formula derivations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Property 3: The reverse of the forward process q(***xₜ₋₁|*xₜ, *x₀)*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using the Bayes rule, it is possible to derive the probability density function
+    for the reverse of the forward process. In the paper, reverse of the forward process
+    is called forward process posterior. But I found the word “posterior” leads to
+    confusion in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start from the forward process *q(xₜ|xₜ₋₁)* which is a probability density
+    function for the random variable *xₜ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7fd9822768908ca6990133d059acd77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that we can add the redundant conditioned random variable *x₀* into *q(xₜ|xₜ₋₁)*
+    to turn it into *q(xₜ|xₜ₋₁, x₀)* because by definition, given *xₜ₋₁*, the random
+    variable *xₜ* doesn’t depend on any other random variable. So adding *x₀* as a
+    dependence doesn’t change the probability density for *xₜ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the random variable *xₜ* in *q(xₜ|x₀)* and the random variable *xₜ₋₁*
+    in *q(xₜ₋₁|x₀)* are truly depend on *x₀.* We know the formula *q(xₜ|x₀)* and *q(xₜ₋₁|x₀)*
+    from the above property 2 of the marginal probability density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By rearranging the terms, we can derive the probability density function for
+    the reverse of the forward process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a36c89f6a9104fef45832e49f40af3e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayes rule to derive conditional in the reverse of the forward process
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, please notice that when *t=1, q(xₜ₋₁|xₜ, x₀)* turns into *q(x₀|x₁, x₀)*,
+    with *x₀* appearing in both left and right of the bar *“|”.* The quantity *q(x₀|x₁,
+    x₀)* always evaluates to *1* because given *x₀*, the probability of *x₀* is *1*.
+    Why?Because *x₀* has already happened, there is no uncertainty about it anymore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bear this in mind, and you will smile when you see later that the first analytical
+    loss function starts with *t=2*. And you will smile again at the end, when we
+    expand the loss function to cover the case of *t=1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The left hand side of the equation *q(xₜ₋₁|xₜ, x₀)* tells us this is a process
+    that takes a noisier image *xₜ* and generates an less noisy image *xₜ₋₁ —* remember
+    large subscript, more noise, small subscript, less noise. So *q(xₜ₋₁|xₜ, x₀)*
+    describes the process that goes in the opposite direction as the forward process.
+    We call it the reverse of the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The right hand side of the equation tells us that *q(xₜ₋₁|xₜ, x₀)* is defined
+    by the forward process probability density *q(xₜ|xₜ₋₁)*, rescaled by *q(xₜ₋₁|x₀)/q(xₜ|x₀).*
+    We have defined all these three components. If you plug them into the right hand
+    side of the equation, and patiently simplifying the formula, you will see that
+    *q(xₜ₋₁|xₜ, x₀)* is a multivariate Gaussian distribution, which is fully specified
+    by its mean vector and covariance matrix. After an ignored amount of mathematical
+    derivations, we arrived at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reverse of the forward process conditional
+  prefs: []
+  type: TYPE_NORMAL
+- en: with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fixed mean vector and covariance matrix for the reverse of the forward process
+    conditional
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see the mean vector for *xₜ* is a weighted sum between *x₀* and *xₜ*.
+    And the weights in front of these two random variables depend on the timestamp
+    *t*. The covariance matrix is a quantity that also depends on the timestamp *t*.
+    Neither the mean vector or the covariance matrix mention trainable parameters
+    (we will introduce trainable parameters in a bit later).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reverse of the forward process is important because it describes the generation
+    process that we exactly want — a process that gradually turns noise into a natural
+    image, i.e. denoising. Of course, this is just the Bayes rule talking, we want
+    to see for ourselves that the reverse of the forward process can actually deliver
+    this denoising capability. We can find the answer by investigating the sampled
+    image from the start of the reverse of the forward process starts, and from the
+    end of the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But there is still quite some math ahead to understand the denoising model as
+    a whole, and I don’t want to exhaust you with every little details. So if you
+    are willing to take my word for it, the reverse of the forward process starts
+    with a noisy image which is **close to pure Gaussian noise**, and ends with an
+    image that is **close to *x₀***, the natural image that the reverse of the forward
+    process is conditioned on. In other words, the reverse of the forward process
+    denoises a noisy image into a natural image. If you still crave for more math,
+    the derivations about where the reverse of the forward process starts and ends
+    are in Appendix *“Where does the reverse of the forward process start and end”*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pay attention to the wording “the reverse of the forward process starts with
+    a noisy image **close to pure Gaussian noise**”. It is *close to* pure Gaussian
+    noise, instead of *equal to* pure Gaussian noise because the reverse of the forward
+    process *q(xₜ₋₁|xₜ, x₀)* is conditioned on the initial image *x₀* (details in
+    Appendix). It is this involvement of the initial image *x₀* makes it possible
+    for the reverse of the forward process to generate an image that is very close
+    to *x₀* at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On one hand, the conditioning on the initial image *x₀* in the definition of
+    the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is inevitable. This is because
+    *q(xₜ₋₁|xₜ, x₀)* is derived by applying the Bayes rule on the forward process
+    *q(xₜ|xₜ₋₁)*, which includes the random variable *x₀* when *t=1*. And the Bayes
+    rule application doesn’t remove any random variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, the conditioning on the initial image *x₀* in the reverse
+    of the forward process has a clear intuition. This intuition will be clear after
+    we introduce the reverse process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reverse process
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At the top of the Figure is the reverse process *p(xₜ₋₁|xₜ)*. The reverse process
+    takes a noisier image *xₜ* and generate a less noisy new image *xₜ₋₁*, same as
+    the reverse of the forward process *q(xₜ₋₁|xₜ, x₀).* Note the figure uses notation
+    *p_θ*, but I decided to use *p* because *p_θ* doesn’t look good in Medium.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reverse process must contain the same set of random variables *x₀, x₁* to
+    *x_T* as in the reverse of the forward process because we want to establish the
+    “gradual-ness” correspondence between variables between the reverse process and
+    the reverse of the forward process. In other words, since the reverse of the forward
+    process already tells us how to gradually remove noise from images step by step,
+    we want our neural network to mimic that at every step. The way we convey the
+    stepwise mimicking requirement is to require the random variable *xₜ* in the reverse
+    process to behave like the corresponding random variable in the reverse of the
+    forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the reverse of the forward process is defined using multivariate Gaussian
+    distributions, it makes sense to also define the reverse process using multivariate
+    Gaussian distributions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reverse process definition
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the inductive formula, *p(xₜ₋₁|xₜ),* the mean vector *μₚ(xₜ, t)* and the
+    covariance matrix *Σₚ(xₜ, t)* are actually two deep neural networks that predict
+    the *d*-dimensional mean and the *d×d* dimensional covariance matrix for the multivariate
+    Gaussian distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the base formula, *p(x_T)* is a standard multivariate Gaussian, which confirms
+    that the reverse process starts from pure noise. Note, the starting point of the
+    reverse process is not conditioned on any random variable, unlike the case of
+    the reverse of the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the joint probability case, the notation *p(x_0:T)* is a shorthand for *p(x₀,
+    x₁, …, x_T).* It represents a probability density function for *T+1* random variables.
+    And the formula for the joint probability is a product of all the terms from the
+    inductive case and the base case, following basic properties from the probability
+    theory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both neural networks *μₚ(xₜ, t)* and *Σₚ(xₜ, t)* takes two inputs, the first
+    is the noiser image *xₜ*, and the second is the timestamp *t*. The noiser image
+    *xₜ* makes sense. After all, we want to use the neural networks to denoise the
+    noiser image. But how to understand the timestamp *t* as an input to the neural
+    networks? The intention is the same as in the Transformer model for natural language
+    processing, which uses cosines to encode the position of a word in a sentence
+    and feeds the encoded position as additional input to the Transformer. Here we
+    also want to encode where we are in the reverse process as additional input to
+    the neural networks to give them a bit of positional context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does a neural network predict a *d*-dimensional mean vector and the *d×d*
+    covariance matrix? For the mean vector, the mean predicting neural network will
+    have *d* output units, each predicting an entry in the *d*-dimensional mean vector.
+    The covariance matrix predicting neural network has *d×d* output units. This is
+    a rough understanding. With a large *d*, the number of neural network outputs,
+    especially for the covariance predicting neural network, is huge. There are more
+    concise ways for the covariance matrix, see the mean-field parameterization from
+    [here](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*μₚ(xₜ, t) and Σₚ(xₜ, t) contain m*odel parameters'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The weights inside the mean vector predicting *μₚ(xₜ, t)* network and the covariance
+    matrix predicting network *Σₚ(xₜ, t)* are the model parameters in this machine
+    learning task. We want to use optimization to find proper values for those model
+    parameters so when starting from a noise sample from *p(x_T)*, and iteratively
+    sample *xₜ₋₁* from the distribution *p(xₜ₋₁|xₜ)*, and when we retrieve a sample
+    for *x₀* from the distribution *p(x₀|x₁)*, this sample of *x₀* is the scaled grayscale
+    of a realistic looking natural image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another question you may have is that should we use the same mean neural network
+    to predict the mean vector for all timestamp? Same question for the covariance
+    matrix prediction network. Well it is a design choice. At least one network is
+    needed, and the authors experimentally showed one network is enough. You can have
+    two or more, at the expense of more parameters to learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like the case in the forward process, the joint probability density function
+    *p(x_0:T)* also represents the set of image trajectories that the reverse process
+    can generate, by starting from some pure Gaussian noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why do we need the reverse process *p(xₜ₋₁|xₜ)*? Isn’t the reverse of the forward
+    process *q(xₜ₋₁|xₜ, x₀)* enough?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we already know the distribution *q(xₜ₋₁|xₜ, x₀)* for the reverse of the
+    forward process, which denoise images,you may wonder, why is the reverse process
+    *p(xₜ₋₁|xₜ)* even needed? Why can’t we directly sample natural images from *q(xₜ₋₁|xₜ,
+    x₀)*?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course we can. But please look at *q(xₜ₋₁|xₜ, x₀)* closely. *xₜ₋₁* not only
+    dependson *xₜ*, it also depends on the initial image *x₀.* This means we have
+    to know an initial image to start sampling and the reverse of the forward process
+    will give you an image that is very close to the already known *x₀* (See Appendix
+    *Where does the reverse of the forward process start and end?*)*.* This is not
+    what we want. We want to be able to sample natural images freely!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this point, you don’t want to stop. You may ask, can we work out the analytical
+    formula for *q(xₜ₋₁|xₜ)*, that is, the reverse of the forward process without
+    the dependence on *x₀?* Let’s do it by using the Bayes rule again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/933ea297747d1d086d22efbb512efa30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now we can spot the trouble: on the right hand side of the equation, *q(xₜ|xₜ₋₁)*
+    is defined, but *q(xₜ₋₁)* and *q(xₜ)* are not defined. So it is a dead end.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You still wouldn’t stop, and you ask, why can’t we define *q(xₜ)?* I hear you!
+    Let’s try to define *q(xₜ)*. Conceptually, *q(xₜ)* represents the possible set
+    of images the forward process can generate at timestamp *t*. Thinking about it
+    from the trajectory point of view, see again below, the images that the forward
+    process can generate at time *t* depends on where the trajectories start (natural
+    image *X₀, X₁*, etc.). So the probability density function of *q(xₜ)* will inevitably
+    reference the probability density function of the starting point, that is *q(x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5941d0a9b39ae7ef2a6878aa4cea9df5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hand drawn illustration by me
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is *q(x₀)?* It is the probability density of the training data. Unfortunately,
+    previously we have already made it clear that *q(x₀)* is unknown. The best we
+    can do is to sample from it by randomly picking natural images from our training
+    set. Consequently, we will not be able to write down the analytical formula for
+    *q(xₜ).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* smartly defines the probability
+    density function for the random variable *xₜ₋₁* to condition on *x₀.* Conditioning
+    on *x₀* allows us to plug in a sample for *x₀* to reason about properties of *xₜ₋₁.*
+    As long as we can sample from *x₀*, which we can, and reason about *xₜ₋₁* in an
+    expectation fashion with respect to the samples from *x₀,* we are good. For more
+    details about “reasoning a random variable in an expectation fashion”, see sampling-averaging
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Will mimicking the reverse of the forward process gives us a reverse process
+    that can start from any multivariate Gaussian noise?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve established that the starting point of the reverse of the forward process
+    are pure Gaussian noise already. By mimicking the the behavior of the reverse
+    of the forward process that denoises **mainly** Gaussian noises into natural images
+    from the training set, our unconditioned denoising model, which is the reverse
+    process *p(xₜ₋₁|xₜ)* should be capable to turn **pure** Gaussian noise into a
+    realistic looking natural images. Just like if a linearly regressed line path
+    through many data points, we would expect the line to interpolate to other unseen
+    data points along the same direction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why does the reverse process use neural networks to predict the mean vector
+    and the covariance matrix?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In probabilistic modelling, after you decided the distribution family to use,
+    the most difficult task then is to decide what values to use to fully specify
+    the distribution. In our case, we decided to use the multivariate Gaussian family.
+    Then we need to decide the two quantities to fully specify a multivariate Gaussian,
+    the mean vector and the covariance matrix. Let me show you the inductive case
+    of the reverse process again here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ded4ea309ab1f57290026d7642d902ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If you think about it, the mean vector predicting function *μₚ(xₜ, t)* and the
+    covariance matrix predicting function *Σₚ(xₜ, t)* needs to do a difficult task
+    — given an *arbitrary* noisier image *xₜ* and a timestamp *t* as inputs, they
+    need to output two quantities (mean and covariance matrix) that describe the spectrum
+    of images that are de-noised versions of *xₜ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously these function *μₚ(xₜ, t)* and *Σₚ(xₜ, t)* cannot be too simple. A
+    linear function with two parameters, a quadratic function with three parameters,
+    or even a cubic function with four parameters won’t be capable enough for this
+    task. The task is so difficult that only a function with millions of parameters
+    is capable enough (Appendix B of the paper describes architectures ranging from
+    35.7 to 256 million parameters). Neural network is a convenient way to define
+    functions with millions of parameters, and have a good tracking record of doing
+    amazing things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above inductive case also shows the most common way of incorporating deep
+    neural network into a statistical model — use neural networks to predict probability
+    distribution parameters which are otherwise difficult to specify. Together with
+    the variational inference (which I will cover later) that maximizes the likelihood
+    of our model for parameter learning, these three things (statistical model, neural
+    network and variational inference) are BFFs (best friends forever) in modern machine
+    learning. Sorry, I have young kids at home, some abbreviations are inevitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Intuition of why the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* has
+    to be conditioned on an initial image *x₀***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our goal is to train the model defined as the reverse process to denoise noisy
+    images into clear natural images in a gradual way. To train such a model, we need
+    to have many many denoising trajectories as training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note only a collection of natural images is not sufficient to train such a model.
+    Instead, we need full trajectories, with each trajectory consisting of images
+    gradually changing from near noise to a clear natural image. Only in this way,
+    the trained model, with a noiser image and the time step as its inputs, can denoise
+    images gradually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reverse of the forward process is the mechanism to give us those trajectories
+    with gradually changing images. If the reverse of the forward process isn’t conditioned
+    on an initial image *x₀*, how can we control which natural image it generates
+    at the end? We need to have some way to plug in our request that we need this
+    or that natural image to come out of the reverse of the forward process *q(xₜ₋₁|xₜ,
+    x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conditioning the reverse of the forward process the on a natural image *x₀*
+    is a way to achieve that, let alone this conditioning happens automatically when
+    we applied the Bayes rule to derive the probability density of the reverse of
+    the forward process *q(xₜ₋₁|xₜ, x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the way, the reverse of the forward process can perform de-noising resulting
+    in a single clear natural image without complicated neural network. This is because
+    it has a head start by being conditioned on the target image to work with. This
+    shows how important data is in statistical modelling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Processes recap ***q(xₜ|xₜ₋₁), q(xₜ₋₁|xₜ, x₀) and p(xₜ₋₁|xₜ)***
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As we will frequently reference the forward process, the reverse of the forward
+    process and the reverse process later, let’s do a recap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The forward process *q(xₜ|xₜ₋₁)*** turns a natural image into Gaussian noise
+    by gradually adding Gaussian noise to it. The forward process is a fixed process
+    without any model parameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The reverse of the forward process *q(xₜ₋₁|xₜ, x₀)***turns a noisier image
+    into a less-noisy image by removing noise from it. The reverse of the forward
+    process is also a fixed process without any model parameter. It is defined by
+    applying the Bayes rule on the forward process to switch the order of the random
+    variables. The Bayes rule adds the dependency to *x₀* into the reverse of the
+    forward process, so the final samples from it are images that are very similar
+    to *x₀.* In other words, we cannot use the reverse of the forward process to sample
+    arbitrary natural images.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The reverse process *p(xₜ₋₁|xₜ)*** turns arbitrary Gaussian noise into natural
+    images. This is the process we want to learn. The reverse process contains all
+    our model parameters, which are the weights of the two neural networks inside
+    the probability density *p(xₜ₋₁|xₜ)*. Being not dependent on *x₀*, the reverse
+    process allows us to sample arbitrary natural images. But we first need to find
+    good values for the model parameters via gradient descent, which requires a loss
+    function in analytical form, so the gradient descent algorithm can compute gradient
+    of the loss.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The objective function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With the structure of the reverse process defined and its necessity explained,
+    now it is time to think about the objective function we minimize to perform parameter
+    learning for the mean vector predicting network *μₚ(xₜ, t)* and the covariance
+    matrix predicting network *Σₚ(xₜ, t)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a probabilistic model, the likelihood of the data is always a good starting
+    point to think about the objective function. Let’s define what “ likelihood of
+    the data” means for our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The joint probability density function, with data plugged in
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The previously defined joint probability density function of the reverse process
+    *p(x₀, x₁⋯, x_T)*, or shorthanded as *p(x_0:T)* is a function has *T+1* random
+    variables as its arguments, namely *x₀, x₁* to *x_T*. Being a probability density
+    function, it evaluates to a probability number between [0, 1] when concrete values
+    are plugged into its arguments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of a probabilistic model is to explain training data well. “explaining
+    the training data well” means images in the training dataset evaluate to a high
+    probability number when they are plugged into the *x₀* argument, one image at
+    a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plugging an image *X₀* into the argument *x₀* of the joint probability density
+    function *p(x_0:T)*, which has *T+1* random variables*,* results in a new function
+    with *T* random variables: *p(x₀=X₀, x₁⋯, x_T).* This function cannot be evaluated
+    into a probability number yet, because it mentions random variables *x₁* to *x_T*,
+    which are not concrete values. *x₁* to *x_T* are latent random variables, there
+    is no observations for them, so we cannot find some meaningful concrete values
+    (like the case for the observational random variable *x₀*) to plug in for them.
+    They need to be removed, or more precisely, *integrated away*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The likelihood p(*x₀)*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By definition, a random variable, say, *x₁*, describes a spectrum of possible
+    values. The go-to way to remove a random variable from a probability density function
+    is to compute the expected value of the density function with respect to that
+    random variable. In other words, to remove the random variable *x₁* from *p(x₀,
+    x₁⋯, x_T)*, compute the average value, or alternatively, expectation, of this
+    function with respect to *x₁.* Essentially we are saying since we cannot observe
+    concrete values for latent random variables, we have to reason about their average
+    behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s pick *x₁* to integrate away first. Since *x₁* is a continuous random
+    variable, its expectation is defined by an integration, hence the name “integrating
+    a random variable away”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6b86de3ff9d9619190755ea078c1133.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The same “integrating away” approach, applied *T* times, can remove all latent
+    random variables from *p(x₀, x₁⋯, x_T)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6a1d666977b2dc757f828ad304539a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Likelihood of the data, with all latent random variables integrated out
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*p(x₀)* now only describes how likely actual images can be generated using
+    our model, we call *p(x₀)* the likelihood of the data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the above equation is merely a notation to indicate that *p(x₀)* is *what*
+    is left after all latent random variables are integrated away. It does not tell
+    us *how* to integrate them away. This is because the integration symbol *“∫”*
+    represents the result of the integration, without telling us how to do the integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why not integrate *x₀ away from the likelihood p(x₀) as well?*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The above *T-*dimensional integration only integrated away the latent random
+    variables *x₁* to *x_T*, and left the observational random variable *x₀* in *p(x₀)*.Why?
+    Because if *x₀* is integrated away as well, the whole joint probability density
+    function becomes 1 since all probability density function when integrated over
+    its full set of random variables, yields 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9980dadc725d78cfe582ab58e8a7205e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You see, there is no place to plug in actual images to this number 1 to evaluate
+    how well it explains the training data. This prevents us from performing parameter
+    learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s why we leave *x₀* unintegrated-away and work with *p(x₀)*, which is called
+    *likelihood of the data*, or *likelihood* for short.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The likelihood *p*(*x₀)* mentions all model parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Even though the likelihood *p*(*x₀)*, with an actual image plugged in, that
+    is, *p*(*x₀=X₀),* is a function that doesn’t mention any random variable, it still
+    mentions all model parameters, that is, weights in the two neural networks, via
+    the probability density function *p(xₜ₋₁|xₜ)*, shown again here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fbc0110583377ce1f8ee4f996984c37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The weights are in the mean predicting network *μₚ* and the covariance matrix
+    predicting network *Σₚ*. The latent random variables *x₁* to *x_T* are integrated
+    away, but their mean*,* and covariance matrix terms are left in the result of
+    the integrations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may ask, since we have not discussed how the latent random variables are
+    integrated away, how do we know *μₚ* (*xₜ, t*) and *Σₚ(xₜ, t)* will survive the
+    integrations? You will see for yourself later in the derivation for the analytical
+    loss section, but here you have to believe me: if after the integrations, those
+    Gaussian latent random variables are gone, and the two very things, namely, the
+    mean vector *μₚ* (*xₜ, t*), and the covariance matrix *Σₚ(xₜ, t),* that describe
+    them are also gone, then it seems that those random variables have never existed
+    in our model. This doesn’t make sense. So the two neural networks *μₚ* (*xₜ, t*)
+    and *Σₚ(xₜ, t)* will survive the integrations. In other words *p(x₀)* mentions
+    all model parameters in *μₚ* (*xₜ, t*) and *Σₚ(xₜ, t).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*p(x₀)* mentions all model parameters, which are the weights in the two neural
+    networks, but we don’t know the proper values for the model parameters yet. If
+    we pretend to know all parameter values, then we can evaluate *p(x₀)* into a probability
+    numbers between [0, 1] by plugging a training image from the training image set,
+    one image at a time. This results in many probability numbers. Averaging these
+    probability numbers gives us a measurement of how well our model explains the
+    training data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, we don’t know the values for the neural network weights. We can set
+    them to arbitrary values, but this will likely result in a poor model that doesn’t
+    explain the training data well. i.e., this model with random neural network weights
+    returns very low probability number for *p(x₀=X)* where *X* is a natural image
+    sampled from our training dataset. Note when you actually do this, you won’t know
+    if the returned probability number is small or large, you don’t have benchmark
+    values to compare against yet. What you will know for sure, is that when you ask
+    the model to de-noise a purely noisy image, it does not generate a realistic natural
+    image at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, it is not that our model structure is incapable of explaining
+    the data, it is the model has not been calibrated the model correctly. By “model
+    structure” I mean the reverse process with two deep neural networks predicting
+    the mean vector and the covariance matrix of a denoised image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization can find proper parameter values for those neural networks. And
+    it needs a loss function to minimize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The negative log likelihood of data as the loss function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A loss function must mention all model parameters. The likelihood *p(x₀)* satisfies
+    this requirement. A good model should let an actual image *X₀* evaluates to a
+    high likelihood probability number *p(x₀=X₀)*. We want to minimize the loss function,
+    hence the negative sign. A good model not only need to work well for a single
+    image from the training set, it needs to work well for all images in the training
+    set, hence the expectation with respect to images sampled from the training set
+    *x₀~q(x₀).* We can take the *log* of *p(x₀)* because *log* is a monotonic function
+    that does not affect the optimal value for the loss function; we want to introduce
+    the *log* function because it is the essential part in the KL-divergence that
+    we will use below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All the above thinking leads use to the famous negative expected log likelihood,
+    denoted by *L*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/056c6d8e14660a2752d2eef6c5d78824.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Definition of the negative log likelihood loss function
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the definition of the negative log likelihood of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) plugs in the definition of *p(x₀)*, which integrates all latent random
+    variables *x₁* to *x_T* out of the density function *p(x₀, ⋯, x_T)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The negative log likelihood loss function is not opitimizable
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The standard way to perform parameter learning via optimization is to use gradient
+    descent to minimize the loss function with respect to the model parameters. Gradient
+    descent needs to know the analytical formula for the loss function to take the
+    derivative of it. Unfortunately, the analytical formula for the negative log likelihood
+    loss function is very difficult to derive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To work out the analytical formula for the loss function *L*, let’s look at
+    its definition again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/056c6d8e14660a2752d2eef6c5d78824.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*p(x_0:T)* is previously defined (shown again here) as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is easy to see that our model parameters — the weights in the mean vector
+    predicting neural networks *μ*ₚ and the covariance matrix predicting neural network
+    Σₚ — are mentioned in the loss function. But they are mentioned in the integration
+    symbol *∫*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike things such as the exponential symbol *exp*, or the squared operator
+    “²”, which represent computation that we immediately know how to do, the integration
+    symbol represents the result of a computation, that is, it asks you to integrate
+    a function, without telling you how to do the integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From our Calculus course, we all know that taking derivative is work, but performing
+    integration is art — taking the derivative of a term is a mechanical procedure
+    as long as you have the derivative cheat sheet. But integration requires creativity,
+    and we have so many integrations that we just don’t know how to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, the integration of *p(x_0:T)* inside the loss function *L* falls
+    into the kind of integrations that are very hard to solve analytically. We call
+    it an intractable integration. Let’s use a short reverse process where *T* is
+    set to 1 to demonstrate this point. Our goal is to show that *L* is intractable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3180d6e2a66fc1d24d153f84b920799.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since we know how to sample *x₀* from our training set of natural images, the
+    outside expectation with respect to *x₀* can be dealt with using sample-averaging
+    (see the next section about sample-averaging). So the only difficult term is the
+    integration inside the log and we want to show that the integration is hard to
+    solve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/051ebfa7f19797f47a159cf42f9203a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After setting *T* to 1, the above term turns into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/928e6f20207531c25d730f4c7ac15896.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Derivation showing loss L is intractable
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) shows the the shortened joint probability density function for the
+    reverse process when *T=1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) factorizes the joint into product of probability density functions,
+    each for a single random variable, *x₁* and *x₀* respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) plugs in the names of those single probability density functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) plugs in the actual probability density functions, which are multivariate
+    Gaussians. The first *exp* is for the random variable *x₁* from the standard Gaussian,
+    and the second *exp* is for the random variable *x₀* conditioned on *x₁*. I used
+    the proportional symbol “∝” to ignore the normalization terms in front of each
+    multivariate Gaussian.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The integration at line (4) is hard to solve analytically. Note, in this case,
+    we know how to compute the integration analytically by using the product rule
+    of integration, it is just hard and messy, especially when *T=1000*. The variational
+    method (explained later) that the authors of the paper proposed is more elegant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This little exercise also reveals that we may be able to use a technique called
+    sample-averaging to approximate the integration analytically. This is because
+    in line (4) the probability density function of each random variable is mentioned
+    only once, and this single mention of the density function is computing the expected
+    value with respect to that random variable. Sample-average approximates such expectations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use sample-averaging to derive the analytical form for the loss?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The loss function *L* contains an intractable integration. There are multiple
+    ways to approximate an intractable integration, such as sample-averaging, importance
+    sampling and Gaussian quadrature. Let’s look at the simplest of them all, sample-averaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is sample-averaging?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample-averaging is simple —average function evaluations based on samples of
+    a random variable to approximate an expectation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally, let *x* be a continuous random variable from the distribution *h(x)*,
+    and we want to compute the expectation of a function *f(x)* with x coming from
+    the *h(x)* distribution. Sample-averaging approximates this expectation in the
+    following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: then sample-average approximate the to compute the expectation of a function
+    *f(x)* with the following integration on function *f(x)* with respect to *x* can
+    be approximated by the averaging the evaluation of *f(x)* with samples of *x*
+    from the distribution *h(x)* plugged in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c404e72fcd98614641cb5278139b2c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample-averaging definition
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the notation for the expectation of *f(x)* with respect to *x* coming
+    from the probability density function *h(x)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) since we assume *x* is a continuous random variable, the above expectation
+    is mathematically defined by the integration shown in this line. This is the formula
+    pattern to look out to identify if sample-averaging is applicable. Let’s call
+    it the *sample-averaging template*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) is the sample-averaging step. It approximates the integration by averaging
+    the evaluations of *f(x)* with samples *S₁, S₂, …, Sₙ* of *x* from the distribution
+    *h(x)* plugged into the function *f*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, as long as *f(x)* is evaluable when samples for *x* is plugged-in,
+    sample-averaging approximates the integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have a intractable integration
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Approximating an integration analytically using sampling-averaging**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see, sample-averaging approximates an integration with a sum of
+    the integral function. This sum of terms is analytically with respect to our model
+    parameters. A simple example shows this point: we want to write down the analytical
+    formula for the loss function of some model, written as the the following integration.
+    In this integration, let’s say *x* is a random variable that can be sampled from
+    *h(x)* and *μ* is our model parameter to optimize.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5d296f547f5f7836d7d92392d638297.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After drawing two samples *S₁* and *S₂* of *x* from *h(x)*, and applying sample-averaging
+    to approximate this integration results in an analytical expression for *μ* at
+    the right hand side of the following approximation equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c745c64436098f4f1f4ff2d71088ae7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The right hand side of the approximation is an expression that mentions the
+    model parameter *μ*. This expression is analytical — it does not mention symbols
+    that represents results of computation, such as the integration *∫*, it only mentions
+    symbols that represents computation, such as the exponential function *exp*, and
+    the squared operator “²”, for which we know how to compute gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use sample-averaging all the time. For example, to compute the expected height
+    from students in a school, we don’t know the distribution of student’s height,
+    but we have samples of measured students’ heights. Then compute the expectation
+    by doing the averaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Counter-example that makes sample-averaging inapplicable**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As long as *p(x)* does not appear in the function *f(x)* to be integrated over,
+    and *p(x)* is easy to sample, we can use sample-averaging. Here is a counterexample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22c216b7e8f1167163baaed9d03daa22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample-averaging counterexample
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, *q(xₒ)* is the data distribution, whose probability density formula
+    is unknown. Still we can sample from it by randomly picking images from the training
+    set. Sample-averaging can remove the right *q(xₒ)* But note *q(xₒ)* also appears
+    in the *g* function being integrated. This left *q(xₒ)* cannot be removed by sample-averaging.
+    *g(1+q(xₒ=Xₒ))* remains an un-evaluable function even with the sample *Xₒ* plugged-in.
+    So in this case, sample-averaging cannot solve the integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckly, our loss function *L* doesn’t fall into this category, so we can use
+    sample-averaging to approximate *L* analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Deriving L’s analytical formula via sample-averaging**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To derive the analytical formula for the loss function L, rewrite *L* as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b55137a4b0d93797c989c8add878ad6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Manipulation of L for sample-averaging
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Line (3) reveals that inside the *log*, the inner integration matches our sample-averaging
+    template, with the matched parts highlighted in different colours:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f711e16c75dc9fc8dee91c779323e058.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To apply sample-averaging to approximate this inner integration, sample latent
+    random variable *x₁* to *x_T* from the definition of the reverse process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Explicitly, the sampling process goes like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First a sample for *x_T* from the standard multivariate Gaussian distribution
+    using the base case to remove the integration with respect to *x_T.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With a sample *Sₜ* for the random variable *xₜ* at hand, plug *Sₜ* into *p(xₜ₋₁|xₜ=Sₜ)*,
+    then sample *xₜ₋₁*, using the inductive case.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As long as we don’t lose model parameters during this process, we will end up
+    with an analytical formula for the loss function *L*. Losing model parameters
+    during sample-averaging means that it is possible that sample-averaging results
+    in a formula that does not mention model parameters anymore. This is bad because
+    a loss function that does not mention model parameters is useless. Reparameterization
+    trick is used to prevent this from happening. But in our case, we don’t need to
+    worry about losing model parameters when applying sample-averaging. Appendix *“Why
+    we won’t loss model parameters when applying sample-averaging to derive the analytical
+    formula for the loss function L?”* explains why.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Once all samples for *x₁* to *x_T* are available, let’s call them a sample trajectory.
+    Plug this trajectory into the joint probability density *p(x_0:T)* to get the
+    analytical expression for *p(x₀)* under this trajectory.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Repeat steps 1~4 to get analytical expression for *p(x₀)* under different trajectories
+    and average them to approximate the inner integration. Say there are *m* sample
+    trajectories, each trajectory *i* gives an analytical formula *pᵢ(x₀)*, then the
+    analytical formula for the average is, which is the approximated inner integration:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/fa55e17175d129179620055d02a2aad1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now the approximated analytical formula for the loss *L* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5511c918c4278e7ab174f859dd8ba301.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Approximated loss L by sample-averaging
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the loss *L* with the inner expectation approximated. This leaves
+    us with an expectation that matches the sample-averaging template again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) applies sample-averaging to approximate the outer expectation, by averaging
+    the *logs* with sample images *Sⱼ* drawn from *q(x₀)*. This results in an analytical
+    expression from which we can take gradient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Analytical formula for *L* via sample-averaging is expensive to compute**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above sample-averaging requires a lot of computation, this is because each
+    trajectory requires *T* samples, one for each latent random variable. Common sense
+    tells us drawing a single sample for a random variable is not enough — for example,
+    you shouldn’t compute the average student heights in a school by just measuring
+    the height of a single student. Why that’s bad? Because small sample size gives
+    us an estimate, in this example, the expected height, with high variance. Every
+    time you draw a single sample, you get a different expectation — that’s variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We want to draw many samples for each random variable because more samples
+    means the average more closely approximates the original integration. In other
+    words, less variance. But drawing more samples requires a lot of computation:
+    drawing two samples for each latent random variable and set *T=1000*, results
+    in *m=2¹⁰⁰⁰* trajectories to average over. That’s very expensive.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Practically, we can only afford to draw a single sample for each latent random
+    variable. But this brings the high variance problem back.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Analytical formula for *L* via sample-averaging using small number of samples
+    has high variance**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem with drawing only a very small number of samples (for example, a
+    single sample per latent random variable) for each latent random variable is that
+    the probability number computed for an actual image *X₀*, that is, *p(x₀=X₀)*
+    has high variance. This is because the probability number *p(x₀=X₀)* depends on
+    the sampled concrete values for the latent random variable *x₁* to *x_T*. Every
+    time you compute *p(x₀=X₀)* for the same image *X₀*, this probability number is
+    different. Since there are *T* concrete sampled values in a sample trajectory,
+    the variance is likely to be quite high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make things worse, at the beginning of the parameter learning process, the
+    weights in the mean vector and variance matrix predicting neural networks are
+    randomly initialised. So the sampled images through those neural networks may
+    be of very bad quality — in the sense that they don’t look like a denoised version
+    of the previous image at all. Even though this doesn’t contribute to a higher
+    variance, but low quality samples makes the parameter learning harder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why a high variance to *p(x₀=X₀)* is bad? Because *p(x₀=X₀)* is our measurement
+    of how well our model explains the training data, in this case, how well it explains
+    the training image *X₀*. If for the same image, our measurement sometimes reports
+    a large *p(x₀=X₀)* probability number and sometimes reports a small probability
+    number, then the optimizer, for example the Adam optimizer, is uncertain whether
+    our current model can explain the training data well or not. This uncertainty
+    is usually reflected by a very slow and even diverging training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sample-averaging is not a good way to to derive the analytical formula
+    for the loss function *L*. Is there a better way? Once again, variational inference
+    comes to the rescue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To shorten the current article, I decided not to introduce variational inference
+    and use it as known knowledge. For its introduction and two applications, please
+    see: [Demystifying Tensorflow Time Series: Local Linear Trend](https://medium.com/towards-data-science/demystifying-tensorflow-time-series-local-linear-trend-9bec0802b24a)
+    and [Variational Gaussian Process (VGP) — What To Do When Things Are Not Gaussian](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variational inference to derive the analytical formula for the loss function
+    L
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The key idea is to use another distribution to ***compute*** an otherwise intractable
+    integration in an analytical way. I’ll use importance sampling inside the loss
+    function to introduce the new distribution. Note the word “compute”, not “approximate”.
+    So when I introduce the new distribution via importance sampling, it is an equal
+    sign “=”, not an approximated sign “≈”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Derivation by importance sampling**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Importance sampling introduces a distribution that is easy to sample from to
+    help solve an otherwise intractable integration.In our case, the intractable integration
+    is with respect to the random variables *x₁* to *x_T* from the joint reverse process
+    distribution *p(x₀, …, x_T)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that in our case, *p(x₀, …, x_T)* is sample-able. As we described previously,
+    sample-averaging is applicable to approximate the loss function analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The true motivation to introduce a new distribution, which is the joint forward
+    process *q(x_1:T|x₀)* in our case is that it helps derive the analytical formula
+    for *L.* And it encodes the “gradual-ness” requirements for in-between images
+    from the reverse process. You won’t know what I’m talking about here. Both points
+    will be clear later after we finished deriving the analytical formula of the loss
+    function using importance sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the loss *L*, the integration is with respect to the latent random variables
+    *x₁* to *x_T*, shown again in line (2) below, so the new distribution we introduce
+    must be over the same set of random variables. The distribution *q(x_1:T|x₀)*
+    that we defined for the forward process fits this requirement. Line (3) introduces
+    it into the formula of *L*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/05f6c0b953758246a524699322e54093.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Derivation of the variational loss L*ᵥ*
+  prefs: []
+  type: TYPE_NORMAL
+- en: I would like to point out the the above derivation is valid for any probabilistic
+    model with random variables *x₀* to *x_T* because it only uses properties from
+    the probability theory. This properties are true for any valid probability distributions.
+    Only starting from the next derivation over *Lᵥ*, when we start to factorize joint
+    probabilities using our definition of the forward process and the reverse process,
+    we start to rely on the specific model structures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) introduces the *q(x_1:T|x₀)/q(x_1:T|x₀)* quantify. This quantity evaluates
+    to 1, so its addition does not change the integration. Note the equal sign in
+    front of this line. The introduction of the *q(x_1:T|x₀)* distribution doesn’t
+    change the value of *L* in anyway.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) re-organizes the terms, turning the old integration into a new one
+    with respect to *q(x_1:T|x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (5) represents the integration using the equivalent expectation notation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (6) uses Jensen’s inequality to push the log function into the inner expectation
+    because expectation of logs is easier to compute than the log of expectations.
+    Jensen’s inequality also turns the result we will eventually minimize into a new
+    function that is larger than the original loss *L*. Importantly, this new function
+    has its minima at the same location as the original *L*. So we can minimize the
+    new loss instead of the old loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) replaces the expectation notations into their definitions, that is,
+    integrations. And line (8) re-arranges terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (9) applies the reverse chain rule in probability theory to derive the
+    joint probability *q(x_0:T)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (10) represents the integration using the equivalent expectation notation.
+    Note that we started with introducing the *q* distribution over the random variables
+    *x₁* to *x_T*, and arrived at an expectation with respect to the random variables
+    *x₀* to *x_T*. We give this new quantity the name *Lᵥ*, standing for *variational
+    loss*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: New loss *Lᵥ* to derive analytical formula for, and to minimize
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: From now on, *Lᵥ* is the quantity to minimize. Our goal is updated to derive
+    the analytical formula for the new loss *Lᵥ*. Looking at line (10) it is hard
+    to believe that it is analytical. But in math, amazing things do happen. Please
+    read on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rewriting L*ᵥ* to get the important *Lₜ₋₁ terms*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is an important derivation, please pay attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a38f78770800f30e91c9c5237ccb01b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Manipulation of the variational loss *Lᵥ to expose the* Lₜ₋₁ terms
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) shows the derivation of the new loss *Lᵥ*. *Lᵥ* mentions the joint
+    probability density of the reverse process *p(x_0:T)* and the forward process
+    *q(x_1:T|xₒ)* that we defined previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) factorizes these two joint probability densities. It factorizes *p(x_0:T)*
+    using the definition of the reverse process. And it factorizes *q(x_1:T|x₀)* using
+    the first factorization of *q*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Starting from this line, we are relying on the model structure that we defined,
+    that is, the structure in which random variable *xₜ₋₁* depends on *xₜ* in the
+    reverse process *p*, and *xₜ* depends on *xₜ₋₁* in the forward process. This is
+    not true for arbitrary probabilistic models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) again performs factorization. Note that the products start with *t=2*
+    instead of *t=1* because of the factorization at this line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) pushes the minus sign from outside of the expectation to inside of
+    the expectation, and it uses the property that *log(a×b) = log(a) + log(b)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (5) introduces name *F_T* to represent the first term and *Fₒ* for the
+    third term inside the expectation to shorten the derivations so they fit in one
+    line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Line (6) is the key line, it uses the Bayes rule to replace *q(xₜ₋₁|xₜ)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7fd9822768908ca6990133d059acd77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the addition of the dependency on *x₀* to turn *q(xₜ|xₜ₋₁)* into *q(xₜ|xₜ₋₁,
+    x₀)*. This addition is redundant, it does not change the conditional probability
+    because by definition, the random variable *xₜ* only depends on *xₜ₋₁.* See the
+    definition for *xₜ*, shown again below. It only mentions *xₜ₋₁* and not *x₀*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ffc4fef46dab23ae953929b911b71fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The addition makes it easier for us to apply the Bayes rule because the Bayes
+    rule mentions *q(xₜ|x₀)* and *q(xₜ₋₁|x₀)* which explicitly depends on *x₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the dependency on *x₀* in *q(xₜ₋₁|xₜ, x₀)* is not redundant. *x₀* appears
+    here because of the Bayes rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The reason for using the Bayes rule is to make the term *q(xₜ₋₁|xₜ, x₀)* popup.
+    *q(xₜ₋₁|xₜ, x₀)* is a term from the reverse of the forward process.We now have
+    a probability ratio between *p(xₜ₋₁|xₜ)* and *q(xₜ₋₁|xₜ, x₀)*, seen at line (6).
+    *p(xₜ₋₁|xₜ)* and *q(xₜ₋₁|xₜ, x₀)* are both:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: probability density function for the **same** random variable *xₜ₋₁* and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: they are **both multivariate Gaussian distributions** **with their analytical
+    probability density available** — previously we have defined the analytical form
+    for both *p(xₜ₋₁|xₜ)* in the reverse process, and *q(xₜ₋₁|xₜ, x₀)* in the reverse
+    of the forward process.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These two properties make it possible to derive the KL-divergence between *p(xₜ₋₁|xₜ)*
+    and *q(xₜ₋₁|xₜ, x₀)* analytically, detailed later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) uses the property of log to split terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (8) uses the property of log to term to turn sum of logs into log of products.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (9) realizes that in the log of products, the numerator and the denominator
+    shares many terms, which can cancel, leaving just one term in the numerator and
+    one term in the denominator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Line (10) introduces the name *F₀* to denote the last term inside the expectation.
+    And it introduces the name *Lₜ₋₁* for each of the negative log terms in the summation
+    to make the derivations shorter. That is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0c843d19c14557b5cb4c2b8a5091fc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Obviously the *Lₜ₋₁* for *t=[2, T]* terms are important. Note that for *Lₜ₋₁,
+    t* starts from 2 instead of 1 because of the split in line (3)*.* These *T-1*
+    terms constitute most part in the whole loss function, leaving only other three
+    terms behind. Let’s worry about those three terms later and focus on the *Lₜ₋₁*
+    terms, as it will be the core for the final loss function that we minimize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deriving the analytical formula for *Lₜ₋₁*
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s keep manipulating *Lₜ₋₁* for *t=[2, T]*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c12812e911c2ac86b39d54d6945bdb82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Manipulation of the *Lₜ₋₁ terms to expose their KL-divergence nature*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the definition of the *Lₜ₋₁* term. Line (2) pushed the minus sign
+    into the *log*. The expectation is with respect to the random variable *x₀* to
+    *x_T* from the *q* distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) replaces the expectation notation with its mathematical definition,
+    which is an integration over the random variables *x₀* to *x_T*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) factorizes the joint probability density *q* using the second factorization
+    of the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the second factorization is a product of many distributions, each mentions
+    a single latent random variable. This is correct because given the observational
+    random variable *x₀*, all latent random variable *x₁* to *x_T* are independent
+    to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Line (5) organizes all the factors from the *q* distribution into four parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*q(x₀)*, which is a distribution about *x₀*, and its formula is unknown*.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*q(xₜ₋₁|x₀)*, which is a distribution about *xₜ₋₁.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*q(xₜ|x₀)*, which is a distribution about *xₜ*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*q(xₒₜₕₑᵣ)*, which is a distribution about the latent random variables other
+    than *xₜ₋₁* and *xₜ.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The reason for line(5)’s factorization is that the log function only mentions
+    *x₀, xₜ₋₁* and *xₜ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (6) applies the chain rule to derive the joint probability *q(xₜ₋₁, xₜ|x₀)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) is a key line. Using the reverse chain rule (which is applicable for
+    any joint probability density), it replaces *q(xₜ₋₁, xₜ|x₀)* with two factors
+    multiplied together *q*(*xₜ₋₁|xₜ, x₀)q(xₜ|x₀)* because
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72af7983d7061dcb6b69cc2061f0f2d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Line (8) splits the integrating variables into 4 parts, corresponding to *x₀,
+    xₜ₋₁, xₜ* and *xₒₜₕₑᵣ*. And it re-orders the terms so the inner integration is
+    over the single random variable *xₜ₋₁*, and the outer integration is over the
+    rest of the random variables *x₀, xₜ* and *xₒₜₕₑᵣ.* This step is valid because
+    the original integration *dx_0:T* is just a shorthand for *dx₀ dx₁, … dx_T*. This
+    line also uses Property 2 of the forward process that we derived earlier and the
+    conditional rule in probability theory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c75b6f1da9a6acf42299c55174a80474.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Line (9) recognizes that the inner integration is the KL-divergence between
+    *q(xₜ₋₁|xₜ, x₀)* and *p*(*xₜ₋₁|xₜ)*. This KL-divergence is between two multivariate
+    Gaussian distributions, whose analytical probability density functions are known.
+    So we can write down the formula for this KL-divergence analytically. It is a
+    function that mentions the random variable *xₜ* and *x₀* (note, it does not mention
+    *xₜ₋₁*), as well as all model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (10) factorizes q(*xₜ, xₒₜₕₑᵣ, x₀)* into conditionals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have the analytical expression for the KL-divergence between *q(xₜ₋₁|xₜ,
+    x₀)* and *p*(*xₜ₋₁|xₜ)*, but this KL-divergence is inside an integration. How
+    do we solve the integration analytically?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That’s right, we can use sample-averaging to approximate the expectation with
+    respect to *x₀, xₜ* and *xₒₜₕₑᵣ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample *x₀* by randomly picking natural images from the training set.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sample *xₜ* from the marginal *q(xₜ|x₀)* after plugging the sample for *x₀.*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: No need to sample *xₒₜₕₑᵣ* as line(10) reveals that *xₒₜₕₑᵣ* is not mentioned
+    in the KL-divergence. The values for random variables inside *xₒₜₕₑᵣ* won’t change
+    the computed result of the KL-divergence.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Phew, after so many steps, we finally arrived at the analytical expression for
+    the *Lₜ₋₁* terms for *t* in *[2, T]* in our new loss function *Lᵥ* to minimize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample-averaging to solve the integration**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let me paste the analytical formula for *Lₜ₋₁* here, and add the steps that
+    use sample-averaging to approximate the integration analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a42c34d754c97e99401e238bd7b1ab2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Line (1) is the analytical formula we derived just now for *Lₜ₋₁*. It has a
+    multiple integration over the random variable *x₀,* x*ₜ* and x*ₒₜₕₑᵣ.* All three
+    kinds are easy to deal with because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, sample *x₀* from our training set. Let’s call *x₀’s* sample *S₀*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Plug *S₀* in *q(xₜ|x₀)* to get *q(xₜ|x₀=S₀)*, which is now a fully specified
+    multivariate Gaussian distribution ready to be sampled. Let’s call a x*ₜ*’s sample
+    *Sₜ.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ignore the integration over x*ₒₜₕₑᵣ* because x*ₒₜₕₑᵣ* does not appear in the
+    KL-divergence, their samples do not change the analytical form for the integration
+    result.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Line (2) uses the above sampling scheme to sample *n* pair of (*S₀, Sₜ)*; plugs
+    each pair into the KL-divergence formula to get a analytical term, and then averages
+    these analytical terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may ask, how many pair *n* we should sample? The more the better, but empirically,
+    a single pair already gives us good results, so *n=1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So line (3) uses the fact *n=1* to remove the summation from line (2) to arrive
+    at this simple formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74c9995b9ea731acd4807587e7899795.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Interpretation of the KL-divergence**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ)) establishes the regression target for the neural
+    network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After so much effort to derive the analytical formula for this KL-divergence,
+    it is wise to look at it closely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For each time step *t* in *[2, T]*, this KL-divergence quantifies the distance
+    between two distributions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*q(xₜ₋₁|xₜ, x₀)* — the reverse of the forward process that we derived from
+    the forward process by using the Bayes rule.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*p(xₜ₋₁|xₜ)* — the reverse process that we used deep neural network to implement.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are minimizing the KL-divergence between these two distributions. That is,
+    we require these two distributions to be similar at each time step from *t=[2,T]*.
+    Two distributions being similar makes sure that the images sampled from them are
+    similar at corresponding time stamps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please note:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is derived from the forward
+    process, which has no trainable parameter, via the Bayes rule (Property 3 above).
+    The Bayes rule does not introduce any trainable parameters, so the resulting reverse
+    of the forward process does not have trainable parameters either.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The reverse process *p(xₜ₋₁|xₜ)* is defined via neural networks, it contains
+    all the trainable parameters, which are the weights in the networks, in our model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is static. By minimizing
+    the KL-divergence, the stochastic gradient descent optimization algorithm adjusts
+    the parameter values in the neural networks to change the reverse process *p(xₜ₋₁|xₜ)*
+    to be as close as the *q(xₜ₋₁|xₜ, x₀)* as possible, so that the images the reverse
+    process *p(xₜ₋₁|xₜ)* generates are similar to the images from the static forward
+    process *q(xₜ₋₁|xₜ, x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, the static reverse of the forward process provides ground truth
+    images, or regression target, for the reverse process to regress its generated
+    images to, at time steps *t=[2, T]*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please appreciate a subtlety when interpreting the reverse of the forward process’s
+    role as ground truth image, or regression target, provider:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a traditional regression model, such as linear regression, we minimize the
+    distance between the model’s prediction and ground truth.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But here in the reverse process *p(xₜ₋₁|xₜ),* which is a probabilistic model,
+    we don’t directly minimize the distance between the images generated from our
+    model (the reverse process), and the images from the ground truth generator (the
+    reverse of the forward process). There is no part in the KL-divergence loss function
+    that mentions model’s prediction. Instead, we minimize the two mechanisms, namely,
+    the reverse process and the reverse of the forward process, so the images generated
+    from them are similar at each time step.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is this per-step similarity requirement between *p(xₜ₋₁|xₜ)* and *q(xₜ₋₁|xₜ,
+    x₀)* establishes the “gradual-ness” change of the images that are generated from
+    the reverse process *p(xₜ₋₁|xₜ).* This is because the static reverse of the forward
+    process gradually removes noise from images step-by-step, so by definition, the
+    images from the reverse of the forward process has the gradually denoising effect
+    — they become clearer and clearer. By regressing to these clearer and clearer
+    images, the learnt reverse process, with the time stamp *t* as its input, is forced
+    to generate gradually changing images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This per-step similarity requirement restricts the neural network based reverse
+    process to behave according to an already known and much simpler process — the
+    reverse of the forward process. The per-step KL-divergence prevents the learnt
+    neural network to do weird things, such as first generates an image of a cat at
+    an early step, and then morphs the cat into human face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pay attention to the timestamp range *t=[2, T]* here. This range means that
+    the *Lₜ₋₁* terms only covers the timestamps from 2 to *T*, leaving the first step
+    *t=1* unformulated. The timestamp *t=1*, being the step that finally generates
+    the natural image, is of course important. Remember we left three terms from *Lᵥ*
+    unanalyzed? Later we will see that the left terms covers the first timestamp.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trajectory viewpoint
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s use the illustration below to reveal what *KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ))*
+    is trying to do from the trajectory point of view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/966f80abf799b2c9cf0bca152239f4be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hand drawn illustration by me
+  prefs: []
+  type: TYPE_NORMAL
+- en: The left subplot shows two natural images *X****₀*** and *X₁*. Starting from
+    each natural image, if we apply the forward process multiple times, we get multiple
+    trajectories. The black curves starting from *X****₀*** or *X₁* represent these
+    trajectories. Timestamps go from left to right, so the images at the end of each
+    trajectory are pure Gaussian noise already.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this completely unconditioned setting, at timestamp *t-1*, the random variable
+    *xₜ₋₁* in our model can take values from any trajectory, no matter a trajectory
+    starts from *X₀* or *X₁*. In other words, at timestamp *t-1*, our model needs
+    to be able to explain all possible images that can be generated by the forward
+    process, starting from any natural image. Our model can do that by giving the
+    random variable x*ₜ₋₁* a mean that is in the middle of all the trajectories and
+    a large variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The middle subplot shows the situation when *x₀* is given, which sets the random
+    variable *x₀* to the natural image *X₀.* This setting restricts the model to only
+    explain the trajectories that start from the natural image *X₀.* They are the
+    red trajectories in the middle subplot. In other words, our model now only need
+    to explain the possible values from the red curves at timestamp *t-1*. The model
+    can do that by offering a more precise mean and a smaller variance, since it does
+    not need to cover the black trajectories starting from the natural images *X₁*
+    anymore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The right subplot shows the situation when *x₀* is still conditioned to *X₀*,
+    and additionally, *xₜ* is conditioned on a particular image *Sₜ*, which is sampled
+    from the distribution *q(xₜ|x₀=X₀).* This second conditioning further restricts
+    the model to only need to explain trajectories that go through *Sₜ* at timestamp
+    *t.* These are the blue trajectories, which are all start from *X₁* and pass through
+    *Sₜ.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under this condition, the possible values that the random variable *xₜ₋₁* can
+    take at timestamp *t-1* is further restricted. This means that our model needs
+    to predict a mean that is around middle of the blue trajectories, and predicts
+    an even smaller covariance for *xₜ₋₁.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But how “around the middle of the blue trajectories” should the predicted mean
+    be, and how “even smaller” should the predicted covariance be for the random variable
+    *xₜ₋₁*? These two target quantities are defined by the reverse of the forward
+    process *q(xₜ₋₁|xₜ, x₀)*, with its definition shown here again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By conditioning the model on *xₜ* and *x₀*, we are giving the model an easier
+    task to learn at each training step because at each step, the model only needs
+    to explain a single time step at a relatively small amount of trajectories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization forces p to change by fixing q
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is fixed, that
+    is, there is no trainable parameters in *q(xₜ₋₁|xₜ, x₀)*, the only way the optimization
+    can do to make *q(xₜ₋₁|xₜ, x₀)* and the reverse process *p(xₜ₋₁|xₜ)* similar to
+    each is to change the model parameters’ values to move *p* closer to *q*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing to note is that many other papers introduce a learnable *q* and move
+    *q* closer to *p*. Not in this paper. In this paper, the *q* distribution introduced
+    in importance sampling is fixed, and minimizing the KL-divergence between *q*
+    and *p* moves *p*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From *Lₜ₋₁* to the mean vector distance formula LMₜ₋₁
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Since the KL-divergence *Lₜ₋₁=KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ))* is analytical,
+    let’s write it down. Recap the probability density functions for the two mentioned
+    distributions in the KL-divergence are both multivariate Gausisans:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0482e68220202fe6a630ea9de1b1089.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The analytical formula for the KL-divergence between two multivariate Gaussians
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb444c7b909d27f2fd8ae2f7379d804c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analytical expression for the *Lₜ₋₁ term KL-divergence*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above formula has 4 terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first term at line (1) computes the log ratio between two covariance [matrix
+    determinant](https://en.wikipedia.org/wiki/Determinant), denoted by the name “det”.
+    This term mentions model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second term at line (2) reference *d*, the dimension of the random variable
+    *xₜ₋₁*, which is the number of pixels in the images that we are working with.
+    This term does not mention any model parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The third term at line (3) computes the [trace](https://en.wikipedia.org/wiki/Trace_(linear_algebra)),
+    denoted by the name “tr”, of two matrix product. This term mentions model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fourth term at line (4) is the square of the vector *μₚ(xₜ, t)-μₜ(xₜ, x₀)*,
+    scaled by the covariance matrix *Σₚ(xₜ, t)⁻¹*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I know, this formula is intimidating. It sucks to write it down as well. But
+    my suggestion is to try to lean into the suck because the formula for the KL-divergence
+    between two Gaussians will most certainly occur in variational machine learning,
+    such as in [Variational Gaussian Process](/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please remind ourselves that we need to minimize this term with respect to
+    the model parameters, which appears in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*μₚ(xₜ, t)*, the neural network that is responsible to predict the mean of
+    the mean vector for the *p(xₜ₋₁|xₜ)* multivariate Gaussian distribution*.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Σₚ(xₜ, t)*, a second neural network that is responsible to predict the covariance
+    matrix for the *p(xₜ₋₁|xₜ)* multivariate Gaussian distribution*.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Simplifying the model by setting the reverse process covariance matrix to constant
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: let’s simplify the model by removing the second neural network that predicts
+    the covariance matrix. Mathematically, we set *Σₚ(xₜ, t)=*σ*ₜ²***I**, where one
+    of the obvious choice for σ*ₜ² is:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e0e4683ee82d733c3399139b49535ea6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The above makes the covariance matrix from the reverse process *p(xₜ₋₁|xₜ)*
+    the same as the covariance matrix of the reverse of the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this simplification, the first three terms become constants, let’s name
+    their sum *C. C* does not mention model parameters anymore. They can be ignored
+    during optimization. This left us with only the fourth term, let’s call it *LMₜ₋₁.*
+    So we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5652e6c1d7d3334d08510c19f54af2cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with *LMₜ₋₁* being:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab80f4f21169972269c7bfa11ca44dd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Moment matching to derive *LMₜ₋₁ terms, showing the target for neural network’s
+    prediction*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the fourth term. Line(2) plugs in the simplified covariance matrix.
+    The ||…||² in line (3) is the vector square operation, that is, vector dot product
+    with itself. Line(4) swaps the two components in the square, which does not make
+    a difference in result, just to be more consistent with the order of terms in
+    the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that I dropped the expectation with respect to *x₀* and *xₜ* in *LMₜ₋₁*
+    to make the formula concise. But the computation is the same as before, we need
+    to sample *x₀* and *xₜ*, plug the samples in *LSₜ₋₁* to approximate the integration
+    analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting the meaning of *LMₜ₋₁*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*LMₜ₋₁* quantifies the distance between the two vector *μₜ(xₜ, x₀)* and *μₚ(xₜ,
+    t)*. This makes a lot of sense now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Originally we want to minimize the distance between *q(xₜ₋₁|xₜ, x₀)* the reverse
+    of the forward process and *p(xₜ₋₁|xₜ)*, which is our neural network implementation
+    of the reverse process, at every time step *t* from 2 to *T*. In other words,
+    we want to find a configuration (model parameter values) for the *p(xₜ₋₁|xₜ)*
+    distribution such that these two distributions are similar to each other.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These two distributions for the random variable *xₜ₋₁* are both multivariate
+    Gaussian. A multivariate distribution is fully specified by it mean vector and
+    covariance matrix. If *p(xₜ₋₁|xₜ)* needs to be similar to *q(xₜ₋₁|xₜ, x₀)*, their
+    mean vector and covariance matrix must be similar to each other. This is called
+    [moment matching](https://en.wikipedia.org/wiki/Method_of_moments_(statistics)),
+    with the mean being the first momentum, and the covariance being the second. The
+    letter “*M*” in *LMₜ₋₁* stands for moment matching.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After we simplified the covariance matrix from the *p(xₜ₋₁|xₜ)* distribution
+    to a quantity that is equal to the covariance matrix from the reverse of the forward
+    process, the only thing that we can still change to make these two distributions
+    similar or different is the mean vector. So we want to minimize the distance between
+    the mean vectors from the *p(xₜ₋₁|xₜ)* and the *q(xₜ₋₁|xₜ, x₀)* distribution*.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since the mean vector from the *p(xₜ₋₁|xₜ)* distribution is predicted by our
+    neural network, we can use optimization to move the values of the neural network
+    weights around by minimizing *LMₜ₋₁*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Simplifying LMₜ₋₁
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'It is possible to simplify *LMₜ₋₁*, a lot. In *LMₜ₋₁’s* formula, the *μₚ(xₜ,
+    t)* part is from the neural network, it’s like a black box, there is little we
+    can simplify. So let’s try to simplify the other term *μₜ(xₜ, x₀)*, which is the
+    mean vector of the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)*, whose analytical
+    probability density function is already derived:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cda1013775bf0f7f06f7c1de795869ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with the covariance matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0ee1dd80dc276c2815012bf46830be1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'and the mean vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bed207a2c2fdd4cd366d9101f8edc3c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We only need to look at the mean vector *μₜ(xₜ, x₀)* because previous derivation
+    of *LMₜ₋₁* reveals that we only need to use our neural network to predict a mean
+    vector that is close to, or alternatively, match, *μₜ(xₜ, x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also have the analytical probability density function for *q(xₜ|x₀)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35e662195db8c3e384a5da7bbf210edf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using the reparameterization trick, we can rewrite the above into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3adf2b518341df7b5402099a17c7f0e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Re-organize the terms in the above equation to get the expression for *x₀*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4848794c2afa9179141f8eb3860616e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now plug in this expression of *x₀* into the formula for *μₜ(xₜ, x₀)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74fd7a4be0fbfe1f6e8f658bc148e959.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Derivation for the mean vector target
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is a horrible formula, and line (2) introduces name *A* to represents
+    the coefficient in front of *xₜ,* and the name *B* for *ϵₜ.* We will simplify
+    *A* and *B* separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Simplifying A**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c21b238fe0e56f3302935170d05adeaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Simplifying B**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ecdf2b090b6181887e3e10a0ee3f05b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Wow, what an amazing simplification! It gives us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca3d8a2ccdf734a44cb48b31d8c0340b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified mean vector target for neural network to predict
+  prefs: []
+  type: TYPE_NORMAL
+- en: Repurposing neural network to predict noise for t≥2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Don’t panic, our goal has not changed — we still want our neural network to
+    predict the mean vector of the *p(xₜ₋₁|xₜ)* distribution and the predicted mean
+    vector should be as close to *μₜ(xₜ, x₀)* as possible. But upon seeing the simplified
+    formula for *μₜ(xₜ, x₀)*, we realize:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*xₜ* is known via sampling, there is no need to predict it.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Given timestamp *t*, *βₜ* is constant, and so all the other quantities derived
+    from *βₜ*, namely *αₜ* and *αₜ* bar*.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The only part that needs predicting is the noise *ϵₜ.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'We can drop the original neural network, and design a new one *ϵₚ(xₜ, t)* that
+    predicts the noise *ϵₜ.* Then we can construct the desirable mean vector *μₚ(xₜ,
+    t)* by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/472fca87a845bfa02b9af369d528a4d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reconstruct mean prediction from noise prediction
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plug this formulation into the definition of *LMₜ₋₁* give us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b539daa523fb57bc5f99b2cd5dfabc50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Manipulation of *LMₜ₋₁ after neural network repurposed to predict noise*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) is the simplified objective function to minimize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that this objective function mentions the noise *ϵₜ* twice. They are the
+    same random variable, not two different noises. This is because they both come
+    from the same source:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3adf2b518341df7b5402099a17c7f0e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first time we use the above to get *x₀* as an expression of *xₜ* and *ϵₜ.*
+    The second time we use get *xₜ* as an expression of *x₀* and *ϵₜ.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this objective function still analytical?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Remember previously we drop the expectation with respect to *xₜ* and *x₀* for
+    *LMₜ₋₁* to shorten our derivations*?* To answer the question if *LMₜ₋₁* is still
+    analytical, we have to add them back, because only with those expectations, we
+    are computing the correct *LMₜ₋₁*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the final formula for *LMₜ₋₁,* there is no mention of *xₜ* anymore, x*ₜ*
+    is expressed via *x₀* and the noise *ϵₜ.* So we don’t need to add the expectation
+    with respect to *xₜ*. Instead, we need to add the expectation with respect to
+    *ϵₜ*, which is a standard multivariate Gaussian, that is *ϵₜ~N(***0***,* **1***)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There is the mention of timestamp *t*, which represents an integer between *2*
+    and *T.* We need to add an expectation with respect to *t*, which comes from a
+    uniform distribution*.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There is the mention of *x₀*, which comes from the unknown data distribution
+    *q(x₀).*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'So, the complete formula for *LMₜ₋₁* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2664c8c597f951f702b71fc19e1fe7ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Complete loss *LMₜ₋₁ in expectation form, for t≥2*
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *Uni(2,T)* denotes the uniform distribution between 2 and *T*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This formula is analytical with sample-averaging. When we plug in the samples
+    for *x₀, ϵₜ* and *t* into the above formula, we have an analytical expression,
+    from which we can take gradient to perform stochastic gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors found by ignoring the constants in front of the vector distance
+    erm, the results is better:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/978439447861d772a8776f1e6bb08ab6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplfied *LMₜ₋₁ loss in expectation form, for t≥2*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following **Algorithm 0** minimizes the above loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a010e852fc69b6b35060b6260ac59dc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf),
+    page 4
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Algorithm 0** evaluates the expectation with respect to *x₀*, *xₜ* and *t*
+    by sample-averaging. Note at line (3), the timestamp *t* is sampled from the uniform
+    distribution *Uni(2, T)*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One notational difference between the paper and this article is that in the
+    paper, the authors use *ϵ_θ* to denote the neural network, and I use *ϵₚ*. The
+    authors used *ϵ_θ* to highlight that the neural network has parameter set *θ.*
+    This is also explicitly shown at line (5) of the above algorithm when the gradient
+    (notice the ▽ symbol that denotes derivative over vector) is computed on the loss
+    function with respect to *θ.* I use *ϵₚ*, because there is no subscript *θ* in
+    Unicode, and I don’t want to write two many *ϵ_θ* as they don’t look good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another notational difference is the paper uses *ϵ* to denote standard Gaussian
+    noise, and I used *ϵₜ.* I use *ϵₜ* because I derived my formulas this way. But
+    I think *ϵ* is better because the standard Gaussian noise does not depend on the
+    timestamp *t.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remaining terms in Lᵥ
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The derivation for *Lᵥ* shows that it is an expectation with respect to *q(x_0:T)*
+    and inside the expectation there are multiple terms, shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/def6bb0d21928ea47be6838e0246fdcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Variational loss *Lᵥ again*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Previously we only focused on the *Lₜ₋₁* terms for *t=[2, T]*. Now let’s talk
+    about the remaining terms, which I extracted into the first expectation at line
+    (2) using the linearity of expectation property: *E[a + b] = E[a] + E[b]*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/253a10912ecf6e20cd63ccc895a78225.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Manipulation of terms in *Lᵥ, excluding the Lₜ₋₁* terms
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) replaces the names *F_T* and *F₀* with their actual formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) and (4) re-writes the terms using the properties of *log*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (5) simplifies the second *log*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (6) splits the expectation into 2 using the linearity of expectation property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) gives the first expectation the name *L_T*, same as the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (8) gives the negative of the second expectation the name *L₀*, same as
+    the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The L_T term can be ignored in optimization, while the *L₀* needs special treatment.
+    We will see why.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ignoring the L_T term
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here is the formula for the L_T term again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f67eb4ef0bc161f62b0d31930c9d042e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It mentions *q(X_T|x₀)*, which is the marginal probability density for the random
+    variable *X_T*. The forward process doesn’t include any model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It also mentions *p(X_T)* which is the reverse process at timestamp *T*. We
+    defined *p(X_T) = N(***0***,* **1***).* So *p(X_T)* doesn’t mention model parameters
+    either.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means the whole *L_T* term doesn’t mention model parameters, thus it can
+    be ignored during parameter learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approximating the L₀ term
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *L₀* term is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43d0eef9fc3f11c17bfe8ac839029ecc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This term is for the timestamp *t=1.* Let’s understand what this term is saying.
+    We want to minimize this term, which translates to finding model parameters that
+    maximize the log likelihood *log(p(x₀|x₁))*. In other words, we want *p(x₀|x₁)*
+    to evaluate to a high probability number when a natural image is plugged into
+    *x₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatively, we can understand it by using the formula from *Lₜ₋₁*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2bc68c81b4671ff5e77c07b0bb2b97c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Line (1) is the definition of *Lₜ₋₁* that we derived previously. Note that when
+    we derived it, *t* starts from 2 because when t≥2, all *Lₜ₋₁* terms are KL-divergences
+    between two proper Gaussian distributions. This is not true for *t=1* as you will
+    see at line (4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) sets *t=1* to derive *L₀*. And line (3) expands the KL notation to
+    its mathematical definition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) uses the property that *q(x₀|xₜ, x₀) = 1.* This line also reveals that
+    when *t=1,* there is no KL anymore. The formula degrades to an integration of
+    a *log*. That’s why we cannot handle *t=1* in *Lₜ₋₁.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (5) uses the property of log to simplify the formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (6) replaces the integration using the expectation notation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) simplifies the two expectations over *x₀* into one expectation over
+    *x₀ s*ince one expectation already removes the random variable *x₀.* The second
+    expectation over *x₀* doesn’t change the result anymore. This line also reveals
+    that the resulting quantity is indeed the *L₀* term*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***L₀* needs to be minimized differently, it can’t fit into Algorithm 0**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we should understand that it is not that we cannot derive *L₀* from the
+    *Lₜ₋₁* point of view. We can, but the derivation of *L₀* is not a KL-divergence
+    between two proper multivariate Gaussian distributions, which means the analytical
+    formula of *L₀* is different from the analytical formula of *Lₜ₋₁* for *t≥2.*
+    This means we need a different way to minimize *L₀*. In other words, the minimization
+    of *L₀* doesn’t fit into Algorithm 0*.* Well, it doesn’t fit yet, later we will
+    introduce an approximation to make it fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***L₀* is optimizable**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we want to minimize*L₀***,** it is important that either:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*L₀* does not mention any model parameters so it can be ignored during the
+    optimization. Or'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*L₀* mentions model parameters and is analytical so its gradient can be taken
+    for gradient descent.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Since the previous loss function *LMₜ₋₁* only handles the case when *t≥2*,
+    we hope that *L₀* falls into the second category above so some part of our loss
+    function covers the case *t=1.* Indeed that’s the case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39f23273319efb5f17788ee0e6e74c3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Derivation showing *L₀ is analytical*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the definition of *L₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) plugs in the definition of *p(x₀|x₁)*, which is a multivariate Gaussian
+    distribution with the neural network *µₚ(x₁, 1)* predicting its mean vector, and
+    with its covariance matrix set to the constant 𝛼₁² **I**. I ignored the normalization
+    term in front of the exponential, and used the proportional symbol “∝”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) and line (4) simplifies the formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) reveals that *L₀* mentions all the model parameters in *µₚ(x₁, 1)*
+    and it is analytical after we sample *x₀* and *xₜ*. So *L₀* is optimizable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Minimizing an approximation of *L₀* inside Algorithm 0**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) from above also shows that to minimize *L₀*, the neural network *µₚ(x₁,
+    1)* needs to predict a mean vector that is close to a natural image, say *X₀,*
+    sampled for *x₀.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previously when we derive the analytical formula of *Lₜ₋₁* for *t≥2*, we arrived
+    at the realization that we want our neural network *µₚ(xₜ, t)* to predict mean
+    vectors that are close to the mean of the reverse of the forward process *µₜ(xₜ,
+    x*₀*).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we can:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: write down *µₜ(xₜ, x*₀*)* for *t=1*, that is *µ₁(x₁, x₀)* and,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if *µ₁(x₁, x₀)* is close to the natural image sample *X₀*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then we can turn the original task of “minimizing the distance between between
+    *µₚ(x₁, 1)* and *X₀*” to an approximation task of “minimizing the distance between
+    between *µₚ(x₁, 1)* and *µ₁(x₁, x₀)*”. The benefit of the latter is that we can
+    handle the case of *t=1* using Algorithm 0, the same way as for the cases of *t≥2*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We can write down *µ₁(x₁, x₀)***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/59adb39f6cefb7b8a443e9e48e962523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that we cannot set *t=1* into the first line above. This is because when
+    *t=1*, quantities such as 𝛼*ₜ₋₁* bar is not defined. But we can set *t=1* into
+    the second line. This is because the second line replaces *x₀* in the first line
+    with an expression that only mentions *x₁*. And all quantities involving 𝛼*₁ and
+    β₁* are defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Set *t=1* to derive:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/68db58f65ec8d51716fca74d16f41b66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After plugging sample for *x₁* and *ϵ₁*, the above is a constant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We know *µ₁(x₁, x₀)* must be close to the natural image *X₀***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is because *µ₁(x₁, x₀)* is the mean vector for the ending random variable
+    *x₀* from the reverse of the forward process. So if we draw a sample for *x₀*
+    from the reverse of the forward process, we should get an image that is close
+    to the natural image *X₀.* That’s by the definition of the reverse of the forward
+    process. In fact, if we draw many many images for *x₀* from the reverse of the
+    forward process and averages all those sampled images, the average should be exactly
+    equal to *X₀.* In other words, the reverse of the forward process can generate
+    the exact starting image *in expectation*. But if we only sample a single image
+    for *x₀* from the reverse of the forward process, that sample is not equal to
+    *X₀.* That’s why we are approximating the *L₀* term*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can use Algorithm 0 to handle all timestamps starting from *t=1*. Mathematically,
+    we expand *LMₜ₋₁* which only covers the cases for *t≥2,* see the *t~Uni(2,T)*
+    part under the expectation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d28699510c2428896f236f2489794134.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified loss function, for t≥2
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'to cover the case for *t=1* as well, see the *t~Uni(1,T)* part under the expectation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e5792b681092927433b69d91d83da940.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified loss function, for t≥1
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final loss and algorithm 1 from the paper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Lₛᵢₘₚₗₑ* is the final loss function, and it covers all timestamps from *1*
+    to *T.* Algorithm 1 from the paper, copied below, minimizes *Lₛᵢₘₚₗₑ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/36974a4c9c548c21cf9bfb45cf81f5cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf),
+    page 4
+  prefs: []
+  type: TYPE_NORMAL
+- en: We happily notice that at line (3), the timestamp *t* is sampled from the uniform
+    distribution *Uni(1, T)* covering all cases *t≥1* because of the approximation
+    for the *L*₀ term.
+  prefs: []
+  type: TYPE_NORMAL
+- en: No concern on high variance in sample-averaging Lₛᵢₘₚₗₑ?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Previously I said that we can use sample-averaging to compute the analytical
+    formula for expectation of the negative log likelihood *L* with respect to all
+    the latent random variable *x₁* to *x_T*. But this results in high variance in
+    the computed expectation if we can only afford to draw one sample per random variable
+    for practical computation reason.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why we have no problem to use sample-averaging to compute the analytical formula
+    *Lₛᵢₘₚₗₑ* and drawing a single sample per random variable?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main reason is that in the final loss function *Lₛᵢₘₚₗₑ*, there are only
+    3 random variables to sample, compared to the *T+1=1000+1* random variables to
+    sample in the case of expectation of the negative log likelihood. So the variance
+    in the final loss function’s case should be much smaller than the case of expected
+    negative log likelihood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make things even better, now the samples are not drawn through uncalibrated
+    neural networks any more, they all come from standard distributions whose behaviours
+    do not depend on how much we’ve trained our neural networks. This results in a
+    more predictable parameter learning experience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But just for fun, let’s consider the alternative to sample-averaging. That
+    is, to compute the expectation in the final loss function *Lₛᵢₘₚₗₑ* analytically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the random variable *x₀*, there is no way to compute the expectation with
+    respect to it analytically because the data distribution *q(x₀)* is unknown. So
+    sample-averaging is the only option.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For the random variable *t* that comes from an uniform distribution. It’s expectation
+    is just take all possible values of *t*, compute the formula inside the expectation
+    and average them. This is equivalent to sample-averaging in our context of stochastic
+    gradient descent. Even though in stochastic gradient descent, Algorithm 1 only
+    works with a single term, instead of adding all those terms together and dividing
+    the sum by *T*, the algorithm does it repeatedly until converging. This is equivalent
+    to computing the expectation over *t* asymptotically. For more details, please
+    see the proof in [Can We Use Stochastic Gradient Descent (SGD) on a Linear Regression
+    Model?](https://medium.com/towards-data-science/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For the standard multivariate Gaussian random variable *ϵₜ*, we can use Gaussian
+    quadrature to approximate the expectation analytically. For more details about
+    Gaussian quadrature, please see [Variational Gaussian Process (VGP) — What To
+    Do When Things Are Not Gaussian](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).
+    But Gaussian quadrature works better in low dimensional settings. In our case,
+    the *ϵₜ* is a *d* dimensional random variable with *d* being the number of pixels
+    in the images that we want to generation, so *d* is a large integer. And applying
+    Gaussian quadrature is not practical. For more details about why it is not practical,
+    please see the Appendix of the above link.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Given the above, using sample-averaging to approximate the expectation in *Lₛᵢₘₚₗₑ*
+    is a sensible choice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article established clear motivation why the denoising diffusion probabilistic
+    model is designed in that way by reasoning about the relationships among the forward
+    process *q(xₜ|xₜ₋₁)*, the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* and
+    the reverse process *p(xₜ₋₁|xₜ)*. It also provides detailed derivation of the
+    loss function used for model parameter learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you like my story, please consider becoming my referred member. I receive
+    a small fraction of your subscription fee, that supports me greatly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----445c1bdc5756--------------------------------)
+    [## Join Medium with my referral link - Wei Yi'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Wei Yi (and thousands of other writers on Medium). I have
+    fun spending thousands of hours writing…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----445c1bdc5756--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Where does the reverse of the forward process start and end?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Where does the reverse of the forward process start?** To ask the question
+    differently: if we sample an image a the beginning of the reverse of the forward
+    process *q(xₜ₋₁|xₜ, x₀)*, that is, when *t* is a large number, say *t=T*, where
+    *T=1000*, what does the image look like? Does it look like pure noise, or a natural
+    image?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To see how a sample looks like, we need the probability density function of
+    the reverse of the forward process. We’ve defined the analytical expression of
+    that probability density function shown here again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reverse of the forward process conditional
+  prefs: []
+  type: TYPE_NORMAL
+- en: with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fixed mean vector and covariance matrix for the reverse of the forward process
+    conditional
+  prefs: []
+  type: TYPE_NORMAL
+- en: To reason about how a sample *xₜ₋₁* at timestamp *t=T* looks like, it is sufficient
+    to work out what the mean vector and the covariance matrix of *q(xₜ₋₁|xₜ, x₀)*
+    looks like at timestamp *t=T*. This is because the mean vector and the covariance
+    matrix fully determines the shape of a multivariate Gaussian distribution, and
+    the shape of the distribution governs how a sample from it looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s work out the covariance matrix first because that’s easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f48a1e889ed1c2a2cbb4bbc8e08af991.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Covariance matrix of the reverse of the forward process at timestamp t=T
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the covariance matrix term in the definition of the reverse of the
+    forward process *q(xₜ₋₁|xₜ, x₀).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (2) sets the timestamp *t=T*, representing the starting point of the reverse
+    of the forward process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Line (3) plugs in approximate values in the fraction. To see why, we need to
+    remind ourselves with the following definitions and also note that the schedule
+    of *βₜ’s* confines its values from *β₁=10⁻⁴* to *β_T=10⁻²* :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55be80b21f8b578f5010295f51106eb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So when *t=T* and *T* is large, *α_T* bar is very small, close to 0 (well not
+    too close, *α_T* bar is 0.0060 and *α_T-1* bar is 0.0063).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) simplifies the fraction to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (5) plugs in the scheduled value for *β_T.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: From line (5) we see that the covariance matrix of the probability density function
+    for the reverse of the forward process at timestamp *t=T* is the diagonal matrix
+    *0.01****I*** , indicating that that variance of the sample is not big, but not
+    too small either.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s look at the mean vector of the probability density function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6b09747a9faa70236e1d0255b9681e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mean vector of the reverse of the forward process at timestamp t=T
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we ignore the very small contribution from *0.0008x₀*, the mean vector of
+    the reverse of the forward process’ Gaussian probability density function at timestamp
+    *t=T* is almost *x_T*. But what does *x_T* look like?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well, we can sample from the marginal probability density function *q(x_T|x₀),*
+    which is defined in Property 2 of the forward process. Looking at the definition
+    of *q(xₜ|x₀)*, shown here again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84b14f64658cf075986d5c8a18ce99f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And we can work out what this distribution is when *t=T*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ead8a0cb177e65394fcc0214d8ad4789.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Aha. The marginal distribution *q(x_T|x₀)* has mean *0.07x₀* and almost an identify
+    covariance matrix. Given that *x₀* is a concrete image with values between *0*
+    and *1, 0.07x₀* is close to the zero vector. In other words, a sample for *x_T*
+    from this marginal probability density function will look quite noisy because
+    its mean is close to the zero, and covariance is close to identify — that is pure
+    Gaussian noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the above, we can conclude that the reverse of the forward process starts
+    with a noisy image that is close to pure Gaussian noise. Note, the “close to pure
+    Gaussian noise” phrase. The starting image is not pure Gaussian noise, there is
+    still information about the conditioned image *x₀* in this 0.07*x₀* mean vector,
+    and the previously ignored 0.0008*x₀* term. It is this amount of information about
+    *x₀* that makes it possible for the reverse of the forward process to denoise
+    the starting image *x_T* into, well, hopefully an image that is very close to
+    *x₀*, which we will see this for ourselves now by answering the following question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Where does the reverse of the forward process end?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We know the drill now. We need to look at the mean vector and the covariance
+    matrix of the probability density function *q(xₜ₋₁|xₜ, x₀)* when *t=2,* so *t-1*
+    is 1*.* When *t=2*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c514d7582e7e51786253577ff82777c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s look at the covariance matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19d11e6d8d05cf42238fe0f348f3a63d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Covariance matrix of the reverse of the forward process at timestamp t=2
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we know that the covariance for probability density function *q(xₜ₋₁|xₜ,
+    x₀)* when *t=2* is a small*, 0.0001****I****.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s look at the mean vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/722cfbf96e67b5604f2a376372d8da98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mean vector of the reverse of the forward process at timestamp t=2
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we see the mean vector has half of the contribution coming from the concrete
+    image *x₀*, and half of the contribution coming from the denosied image *x₂*.
+    Note that the image *x₂*, being close to the end of the reverse of the forward
+    process, is already similar to *x₀.* So the above mean roughly results in a mean
+    vector that is very close to *x₀.* Together with the fact that the covariance
+    matrix is small *0.0001****I***, we can deduce that a sample for the random variable
+    *x₁*, which is at the end of the reverse of the forward process is coming from
+    the distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6609df0db8cd7d342131da432cc4672f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This suggests the sampled image is very close to the image *x₀* with very small
+    variation, because the covariance matrix is small.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we see for ourselves that when conditioned on a concrete image *x₀*,
+    the reverse of the forward process starts with a very noisy version of *x₀*, and
+    ends with an image that is very close to *x₀*, demonstrating the ability to denoise
+    an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why we won’t loss model parameters when applying sample-averaging to derive
+    the analytical formula for the loss function L
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A typical problem applying sample-averaging to approximate integrations in a
+    loss function is that the resulting formula does not mention model parameters
+    anymore. The reparameterization trick (see [here](https://medium.com/towards-data-science/demystifying-tensorflow-time-series-local-linear-trend-9bec0802b24a))
+    is the go-to recipe to prevent this from happening.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our case of using sample-averaging to derive the analytical approximation for
+    the loss function *L* does not have the losing model parameter problem, let’s
+    use an example with a short reverse process (*T=1*) to see why.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s show the loss function *L* together with some manipulations to demonstrate
+    sample-averaging:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d5bd6200f6164cc9248db80b9af6f01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Derivation showing sample-averaging approximation of loss L retains model parameters
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) is the loss L, and line(2) replaces the expectation notation with its
+    mathematical definition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) set *T=1* to demonstrate following derivations on a short reverse trajectory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (4) factorizes the joint probability inside the inner integration using
+    the definition of the reverse process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (5) replaces all probability density function notation with the actual
+    probability density distribution names. It also reveals that the random variable
+    *x₁* is sample-able from the standard multivariate Gaussian distribution *N(***0***,*
+    **1***)*. Let’s denote *S₁* as the sample for *x₁*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (6) plugs in the sample *S₁*, removing the inner integration by doing sample-averaging
+    using only one sample, for demonstration purpose. Sample-averaging is an approximation,
+    which is reflected by the approximation sign “≈” in front of the line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (7) draws the sample *S₀* for the random variable *x₀* from the unknown
+    distribution *q(x₀)*; practically just randomly pick an natural image from the
+    training set. It then uses sample-averaging again to remove the integration over
+    *x₀*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (8) plugs in the formula for the multivariate Gaussian probability density
+    function. The proportional symbol “∝” allows me to drop the normalization terms
+    in front of the exponential function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (9) simplifies the formula. It reveals after sample-averaging, the analytical
+    loss is still a function that mentions all model parameters. So no need for the
+    reparameterization trick.
+  prefs: []
+  type: TYPE_NORMAL

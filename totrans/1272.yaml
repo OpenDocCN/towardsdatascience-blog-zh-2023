@@ -1,0 +1,423 @@
+- en: How to Use the Synonyms Feature Correctly in Elasticsearch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb](https://towardsdatascience.com/how-to-use-the-synonyms-feature-correctly-in-elasticsearch-7bdf856a94cb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn the simple but powerful synonyms feature to improve your search quality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)[![Lynn
+    G. Kwong](../Images/b9a05b6587db5ca41c1d8264adda5b06.png)](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------)
+    [Lynn G. Kwong](https://lynn-kwong.medium.com/?source=post_page-----7bdf856a94cb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7bdf856a94cb--------------------------------)
+    ·9 min read·Jan 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13d37f90a8d511dae87864d18c83d3ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Tumisu on Pixabay
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synonyms are used to improve search quality and broaden the scope of what is
+    considered a matching. For example, a user searching for “England” might expect
+    to find documents that contain “British” or “UK” as well, although these three
+    words are totally different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The synonyms feature in Elasticsearch is very powerful and can make your search
+    engine more robust and powerful if implemented correctly. In this post, we will
+    introduce the essentials to implementing the synonyms feature in practice with
+    simple code snippets. Especially, we will introduce how to update synonyms for
+    existing indexes which is a relatively advanced topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will start an Elasticsearch server locally with Docker and use Kibana to
+    manage the indexes and run the commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `docker-compose.yaml` file we will use in this post has the following content,
+    to which we will add more features later:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Download this file or create a new one named `docker-compose.yaml` and paste
+    the content above into it. Then you can start Elasticsearch and Kibana with one
+    of the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Use the standard synonym token filter with a list of synonyms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s first create an index using the standard synonym token filter with a
+    list of synonyms. Run the following command in Kibana, and we will explain the
+    details shortly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Key points here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the nested levels of the keys for the `settings`. `settings` => `index`
+    => `analysis` => `analyzer`/`filter` are all built-in keywords. However, `index_analyzer`
+    and `synonym_filter` are custom names for the custom analyzer and filter, respectively.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We need to create a custom filter with the `type` being `synonym`. A list of
+    synonyms is provided explicitly with the `synonyms` option. This should normally
+    be used for testing only as it’s not convenient to update the synonym list as
+    we will see later.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Solr synonyms are used in this post. For this example, explicit mappings are
+    used which means the token on the lefthand side of `=>` is replaced with the one
+    on the right side. We will use equivalent synonyms later, which means the tokens
+    provided are treated equivalently.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The `synonym_filter` is added to the filter list of a new custom analyzer named
+    `index_analyzer`. Normally the sequence of the filters matters. However, for the
+    synonym filter, it’s a bit special and may be surprising to many of us. In this
+    example, even though the `synonym_filter` filter is put after the `lowercase`
+    filter, the tokens returned by this filter are also passed to the `lowercase`
+    filter and thus also get lowercased. Therefore, you don’t need to provide lowercase
+    tokens in the synonym list or in the synonym file.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, in the mappings for the document, the custom analyzer is specified
+    for the `name` field.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To test the analyzer created in the index, we can call the `_analyze` endpoint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see that the token for “PS” is replaced with the synonym specified,
+    and in lowercase:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s add some documents to the index and test if it works properly in searching:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can perform a simple search with the `match` keyword:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: If nothing goes wrong, all three documents should be returned with the same
+    score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Index-time vs search-time synonyms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As you see, in the above example, only one analyzer is created and it’s used
+    for both indexing and searching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Applying synonyms to all documents during the indexing step is discouraged
+    because it has some major disadvantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The synonym list cannot be updated without reindexing everything, which is very
+    inefficient in practice.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The search score would be impacted because synonym tokens are counted as well.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The indexing process becomes more time-consuming and the indexes will get bigger.
+    It is negligible for small data set but is very significant for big ones.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Therefore, it’s better to just apply synonyms in the search step which can overcome
+    all three disadvantages. To do this, we need to create a new analyzer for searching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use search_analyzer and apply search-time synonyms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Run the following command in Kibana to create a new index with search-time
+    synonyms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Key points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The type is now changed to `synonym_graph` which is a more sophisticated synonym
+    filter and is designed to be used as part of a search analyzer only. It can handle
+    multi-word synonyms more properly and is recommended to be used in the search
+    time. However, you can continue to use the original `synonym` type and it will
+    behave the same in this post.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The synonym filter is removed from the index-time analyzer and added to the
+    search-time one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `search_analyzer` is specified for the name field explicitly. If it’s not
+    specified, the same analyzer (`index_analyzer`) will be used for both indexing
+    and searching.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The analyzer should return the same tokens as before. However, after you have
+    indexed the three documents with [these commands](https://gist.github.com/lynnkwong/d47c77d7fabc48e2d7022ea5c7830caa)
+    and performed the same search again, the results will be different:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This time only “PlayStation 4" is returned. Even “PS 3” is not returned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason is that the synonym filter is only applied at search time. The search
+    query “ps” is replaced with the synonym token “playstation”. However, the documents
+    in the index were not filtered by the synonym filter and thus “PS” was just tokenized
+    as “ps” and not replaced with “playstation”. Similarly for “Play Station”. As
+    a result, only “PlayStation 4” can be matched.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make it work properly as in the previous example, we need to change the
+    synonym rule from explicit mappings to equivalent synonyms. Let’s update the synonym
+    filter as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: To change the synonyms of an existing index, we can recreate the index and reindex
+    all the documents, which is silly and inefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A better way is to update the settings of the index. However, we need to close
+    the index before the settings can be updated, and then re-open it so it can be
+    accessed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note the special syntax for updating the settings of an index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After the above commands are run, let’s test the `search_analyzer` with the
+    `_analyzer` endpoint and see the tokens generated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And this is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: It shows that the “PS” search query is replaced and expanded with the tokens
+    of the three synonyms (which is controlled by the `[expand](https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-synonym-graph-tokenfilter.html)`
+    option). It also proves that if equivalent synonyms are applied at index time,
+    the size of the resultant index can be increased quite significantly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then when we perform the same search again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: All three documents will be returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use a synonym file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Above we have been specifying the synonym list directly when the index is created.
+    However, when you have a large number of synonyms, it will be cumbersome to add
+    all of them to the index. A better way is to store them in a file and load them
+    to the index dynamically. There are many benefits of using a synonym file, which
+    include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convenient to maintain a large number of synonyms.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can be used by different indexes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can be reloaded dynamically without closing the index.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To get started, we need to first put the synonyms in a file. Each line is a
+    synonym rule which is the same as what’s demonstrated above. More [details](https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-synonym-graph-tokenfilter.html#_solr_synonyms_2)
+    can be found in the official document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The synonym file we will create is called `synonyms.txt`, but it can be called
+    anything. And it has the following content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we need to bind the synonym file to the Docker container. Update `[docker-compose.yaml](https://gist.github.com/lynnkwong/c84bbe872dad32e2222bd2c242e5d2ab)`
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that the synonym file is loaded to the `config` folder in the container.
+    You can get into the container and check it with one of these two commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we need to stop and restart the service to make the changes work. Note that
+    just restarting the service won’t work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then create a new index using the synonym file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Key points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For `synonyms_path`, it’s the path of the synonyms file relative to the `config`
+    folder in the Elasticsearch server.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A new `updateable` field is added which specifies if the corresponding filter
+    is updateable. We will see how to reload a search analyzer without closing and
+    opening an index soon.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The behavior of this new index `inventory_synonym_graph_file` should be the
+    same as that of the previous one `inventory_synonym_graph`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s add more synonyms to the synonym file, which will then has the content
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: When the synonyms have been added, we can close and open the index to make it
+    effective. However, since we mark the synonym filter as updateable, we can reload
+    the search analyzer to make the changes effective immediately without closing
+    the index and thus with no downtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To reload the search analyzers of an index, we need to call the `_reload_search_analyzers`
+    endpoint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now when we analyze the “JS” string, we will see the “javascript” token returned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Two important things should be noted here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If `updateable` is set to `true` for a synonym filter, then the corresponding
+    analyzer can only be used as a *search_analyzer*, and cannot be used for indexing,
+    even if the type is `synonym`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `updateable` option can only be used when a synonym file is used with the
+    `synonym_path` option, and not when the synonyms are provided directly with the
+    `synonyms` option.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Congratulations when you reach here! We have covered all the essentials for
+    using the synonyms features in Elasticsearch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have introduced how to use synonyms in the index-time and search-time analyzing
+    steps, respectively. Besides, it is also introduced how to provide synonym lists
+    directly and how to provide them through a file. Last but not least, different
+    ways are introduced regarding how to update the synonym lists of an existing index.
+    It’s recommended to reload the search analyzer of an index as it will bring no
+    downtime to the service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Related articles:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Learn Elasticsearch from practical examples](https://lynn-kwong.medium.com/learn-elasticsearch-from-practical-examples-495f2f8db83e)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How to Run Elasticsearch 8 on Docker for Local Development](https://levelup.gitconnected.com/how-to-run-elasticsearch-8-on-docker-for-local-development-401fd3fff829)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

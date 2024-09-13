@@ -1,0 +1,330 @@
+- en: No More OOM-Exceptions During Hyperparameter Searches in TensorFlow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/no-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9](https://towardsdatascience.com/no-more-oom-exceptions-during-hyperparameter-searches-in-tensorflow-26e6e3069bc9)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Use wrapper functions to avoid OOM-exceptions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)[![Pascal
+    Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------)
+    [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----26e6e3069bc9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26e6e3069bc9--------------------------------)
+    ·8 min read·Apr 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s the year 2023\. Machine learning is no longer hype but at the core of everyday
+    products. Ever faster hardware makes it possible to train ever larger machine
+    learning models — in shorter times, too. With around 100 papers submitted per
+    day on machine learning or related domains to [arXiv](https://arxiv.org/list/cs.LG/pastweek?skip=0&show=635),
+    chances are high that at least one-third of them have leveraged the hardware’s
+    capabilities to do hyperparameter searches to optimize their used model. And that’s
+    straightforward, is it not? Just pick a framework — [Optuna](https://optuna.org),
+    [wandb](https://wandb.ai/site), whatever — plug in your normal training loop,
+    and…
+  prefs: []
+  type: TYPE_NORMAL
+- en: OOM error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At least, that’s what frequently happens with TensorFlow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3e570b3e786fedc8cb8fa13c920d878.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [İsmail Enes Ayhan](https://unsplash.com/@ismailenesayhan?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current state
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The lack of a function to properly free GPU memory has spurred many discussions
+    and questions in Q&A forums like StackOverflow or GitHub ([1](https://stackoverflow.com/questions/39758094/clearing-tensorflow-gpu-memory-after-model-execution),
+    [2](https://github.com/tensorflow/tensorflow/issues/36465), [3](https://stackoverflow.com/questions/69296496/clear-the-graph-and-free-the-gpu-memory-in-tensorflow-2),
+    [4](https://discuss.tensorflow.org/t/clear-the-graph-and-free-the-gpu-memory-in-tensorflow-2/4731),
+    [5](https://github.com/keras-team/keras/issues/12625), [6](https://stackoverflow.com/questions/75644097/is-there-a-way-to-clear-gpu-memory-after-training-the-tf2-model)).
+    For each question, a similar set of workarounds is proposed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Limit GPU memory growth'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Use the numba library to clear the GPU'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Use native TF functions that *should* do that'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Switch to PyTorch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This blog post presents my solution to this longstanding, annoying OOM exception
+    problem. After having conducted a couple of hyperparameter optimization runs over
+    the last few years, I recently stumbled upon one of the most dreaded problems
+    in programming:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exceptions that are not (easily) reproducible but happen in one of a hundred
+    runs. In my case, it occasionally happened when a particularly challenging combination
+    of parameters was selected in my optimization runs. Examples are a large batch
+    size and a high number of convolution filters, which both place stress on the
+    GPU memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly but even more annoyingly, when I initialized such models locally
+    from a new system — i.e., no other TF code had been running before — I could run
+    the model successfully. After checking other influencing factors, such as the
+    GPU size, the CUDA version, and other requirements, I found no error on this part.
+    Thus, it had to be the repeated initialization of neural networks within the same
+    program that led to the OOM error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before going on, I want to clarify: the OOM error can have other sources that
+    so far hinted at. Especially it’s obviously not possible to fit a too-large model
+    as measured by its memory footprint onto a too-small GPU.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The solution in such cases when the model is physically too big is to modify
+    the model — search keywords here include [mixed precision training](https://arxiv.org/abs/1710.03740),
+    [layer-wise training](https://machinelearningmastery.com/greedy-layer-wise-pretraining-tutorial/),
+    [distillation](https://arxiv.org/abs/1802.05668), and [pruning](https://arxiv.org/abs/2101.09671)
+    — and to run the training on more than one accelerator — keywords: [distributed
+    training, model parallelism](https://www.beyondthelines.net/machine-learning/distributed-training-of-neural-networks/)
+    — or switching to a computing device with more memory available. But that is out
+    of this article’s scope.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Returning to the dreaded OOM exception encountered during hyperparameter optimization,
+    I consider it essential to first conceptually show what leads to such an error.
+    Thus, consider the following visualization, where I sketched a GPU together with
+    its memory blocks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c0d3b6cf168f81a5428f0d9c555196b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A sketch of a GPU together with its memory blogs. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though it’s a simplified take, another block of memory is consumed every time
+    a new model is initialized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84fd5220567abfa80759bb31c6c2b129.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each new model consumes memory on the GPU. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eventually, no more space will be left on the accelerator, causing the OOM error.
+    And the bigger the models, the faster that happens. Ideally, we’d call a clearing
+    function at the end of a hyperparameter trial and free the memory for the next
+    model. Even networks that might have fitted onto the clean GPU can fail when no
+    such garbage collection is conducted, and precious memory has been pre-occupied
+    through the fragments of earlier models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What I’d like to call the *scope of TensorFlow* on the GPU is not shown in
+    the previous sketches. By default, TensorFlow reserves the entire resources —
+    which is smart since later requests for increased quotas will bottleneck the execution.
+    In the graphic below, the TensorFlow process is outlined as “hovering” over the
+    entire GPU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/931c9fd4c7cb4c2631602fd73a79b7b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The TF-process occupying the GPU for fast data access. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During its lifetime, the hovering TF process is like a placeholder for upcoming
+    TF operations that work on the GPU and its memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, once the process terminates, TF releases the memory, making it available
+    for other programs. The problem is this: commonly, all network initializations
+    as part of a hyperparameter study were done within the same process (e.g., in
+    a for-loop) hovering over the GPU.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The solution, I hope, is clear to see: use a different process for each trial/model
+    configuration.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such an approach will work with all TensorFlow versions, especially older ones
+    (which naturally do not receive feature updates). A new release might add proper
+    memory-clearing functionality someday, but older versions will lack this possibility.
+    So, without further ado, here’s the workaround
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To run each hyperparameter trial in its own process, we need the native python
+    multiprocessing library. There’s surprisingly little effort involved in updating
+    one’s code to use this package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From a bird’s eye view, the process responsible for running the code — i.e.,
+    the primary driving function — needs to be modified to take an additional parameter,
+    the queue. We need not dive deeper here, but this queue object serves as a bridge
+    to the calling function (i.e., the function that has called main(), run(), train(),
+    or similar). Within the main function, we can essentially leave things as they
+    are*. As is common practice in parameter searches, improving the training/evaluation
+    code’s return value is the optimization practice’s target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where we previously returned this value via the *return* statement, we now place
+    this target value into the queue object. Then, we extract it from the queue in
+    the caller function and pass it on to the hyperparameter framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the perspective of the optimization framework, not much has changed. The
+    most significant change is that it no longer directly “communicates” with the
+    training function but only via an intermediary one. Conceptually, this updated
+    setup is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91f46eb8a73724043620a2921f6f5320.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A comparison of the old, default code (top) and the updated code (bottom). In
+    the new code, the optimization framework communicates via a wrapper function with
+    the machine learning code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But apart from this change, we can conduct a parameter search as usual. Conceptually,
+    with a python/pseudo-code mix, let me show you how the modified code looks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we must remove the logic of selecting the current trial’s parameter
+    combination from the main function (if it had been placed there). That part should
+    happen before we add the process management. Then, we use the multiprocessing
+    tool to spawn a process for the TF-related code, wrapping the commonly used main()/train()/run()/etc.
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The communication with TF and, especially, the collection of results happens
+    via the queue object, which is why we pass it to the function, too (detailed soon).
+    We then start the model training, wait until it has finished, and get from the
+    queue object the results, which we pass on to the calling function (usually the
+    hyperparameter framework). This value — or these values, in case of a multi-object
+    optimization — is what the hyperparameter framework gets to see in the end; it
+    has no idea of the process stuff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the training code, we need to include a way to pass the target of the parameter
+    optimization to the queue object. Here, I assume the typical setup of returning
+    the model’s performance on the validation set, as that metric (on that subset)
+    frequently is used as the optimization target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Adapt to your use case; the concept is the same).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look for the place where you exit the training/evaluation function and return
+    the results to the caller.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here, collect everything you need the optimization framework to know about into
+    a list or some other data collection.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the next step, pass this list to the queue.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'As described in the previous paragraphs, these values can be queried from the
+    queue and, from there, passed back to the optimization framework:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The critical point is that: at the moment we get the evaluation results, the
+    TF process has already finished — clearing the GPU memory. Thus, the training
+    and evaluation routines have access to a clean (memory-wise) GPU in the next call
+    and with a new set of hyperparameters. In particular, creating the model-to-be-evaluated
+    does not compete for the remaining GPU memory since previous models, and their
+    traces have already been removed. That way, we avoid the OOM problem.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point, you might be wondering how to bring this into code. I hear you,
+    and though everybody’s requirements are different, I have constructed the following
+    simple setup to give you an idea of how it works. We’ll use Optuna to optimize
+    the hyperparameters of a convolutional neural network. With the code, you can
+    load a dataset of your liking and optimize the CNN on it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the Optuna part of the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this code, note the function that Optuna calls. It is not the actual training
+    code but an intermediate one, a *wrapper function*. As described in the previous
+    section, the wrapper calls the underlying training code with the hyperparameter
+    set that will be evaluated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for the training code, this code largely follows standard setups: load the
+    data subsets, initialize the model, and train and evaluate it. The novelty is
+    the function’s last few lines. Here, the results on the validation subset are
+    passed to the queue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s the core code for the OOM-free hyperparameter optimization**. The complete
+    code can be found [here](https://gist.github.com/6a7e7031b5f548f602bc369e9fd98841).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*My experience has shown that the selection of hyperparameters via Optuna should
+    be made in the caller function; that is, before the process modifications come
+    into play.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The exception is when models that are simply too big to fit into the GPU
+    memory are initialized.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog post, I presented my solution to the longstanding OOM-exception
+    challenge in TensorFlow. While, naturally, we cannot fit models physically too
+    large for the GPU, the approach works for research-critical hyperparameter searches.
+    Conceptually, the solution is straightforward: start a new process for each trial
+    (combination of hyperparameters). Using native python libraries, that’s accomplished
+    with a handful of new lines of code and a few changes to the existing setup. Lastly,
+    point the optimization framework not directly to the training code but to an intermediate
+    wrapper function.'
+  prefs: []
+  type: TYPE_NORMAL

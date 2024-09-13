@@ -1,0 +1,359 @@
+- en: Serve Large Language Models from Your Computer with Text Generation Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/serve-large-language-models-from-your-computer-with-text-generation-inference-54f4dd8783a7](https://towardsdatascience.com/serve-large-language-models-from-your-computer-with-text-generation-inference-54f4dd8783a7)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Examples with the instruct version of Falcon-7B
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----54f4dd8783a7--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----54f4dd8783a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54f4dd8783a7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54f4dd8783a7--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----54f4dd8783a7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54f4dd8783a7--------------------------------)
+    ·6 min read·Jul 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41e6b63543c42e19cc0b1e4ee23f95bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Nana Dua](https://unsplash.com/@nanadua11?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running very large language models (LLM) locally, on consumer hardware, is now
+    possible thanks to quantization methods such as [QLoRa](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b)
+    and [GPTQ](https://github.com/IST-DASLab/gptq).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering how long it takes to load an LLM, we may also want to keep the LLM
+    in memory to query it and have the results instantly. If you use LLMs with a standard
+    inference pipeline, you must reload the model each time. If the model is very
+    large, you may have to wait several minutes for the model to generate an output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are various frameworks that can host LLMs on a server (locally or remotely).
+    On my blog, I have already presented the [Triton Inference Server which is a very
+    optimized framework](https://medium.com/towards-data-science/deploy-your-local-gpt-server-with-triton-a825d528aa5d),
+    developed by NVIDIA, to serve multiple LLMs and balance the load across GPUs.
+    But if you have only one GPU and if you want to host your model on your computer,
+    using a Triton inference may seem unsuitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I present an alternative called Text Generation Inference.
+    A more straightforward framework that implements all the minimum features to run
+    and serve LLMs on consumer hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After reading this article, you will have on your computer a chat model/LLM
+    deployed locally and waiting for queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text Generation Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Text Generation Inference](https://github.com/huggingface/text-generation-inference)
+    (TGI) is a framework written in Rust and Python for deploying and serving LLMs.
+    It is developed by Hugging Face and distributed with an [Apache 2.0 license](https://github.com/huggingface/text-generation-inference/blob/main/LICENSE).
+    Hugging Face uses it in production to power their inference widgets.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though TGI has been optimized for A100 GPUs, I found TGI very suitable
+    for self-hosted LLMs, on consumer hardware such as RTX GPUs, thanks to the support
+    for quantization and [paged attention](https://medium.com/towards-data-science/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83).
+    However, it requires a particular installation to support RTX GPUs, which I will
+    detail later in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, I also found out that Hugging Face is optimizing some LLM architectures
+    so that they run faster with TGI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is notably the case for the Falcon models which are relatively slow when
+    run with a standard inference pipeline but much faster when run with TGI. [One
+    of the authors behind the Falcon models told me on Twitter](https://twitter.com/slippylolo/status/1673721277025009664?s=20)
+    that this is because they rushed the implementation of multi-query attention while
+    Hugging Face optimized it to work with TGI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Several LLM architectures are optimized this way to run faster with TGI: BLOOM,
+    OPT, GPT-NeoX, etc. The full list is available and regularly updated on TGI’s
+    GitHub.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set up Text Generation Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hardware and Software Requirements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I tested with an RTX 3060 12 GB. It should work with all the RTX 30x and 40x
+    but note that TGI is specially optimized for A100 GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To run the commands, you will need a UNIX OS. I used Ubuntu 20.04 through Windows
+    WSL2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should also work without modifications on Mac OS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TGI requires Python ≥ 3.9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will first present how to install TGI from scratch which I think is not straightforward.
+    If you run into issues during the installation, you may need to run a Docker image
+    instead. I’ll address both scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'TGI is written in Rust. You need it installed. If you don’t have it, run the
+    following command in your terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It should take less than 2 minutes. I recommend restarting your shell, e.g.,
+    opening a new terminal, to make sure that all your environment variables are correctly
+    updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we create a dedicated conda environment. This step is optional but I prefer
+    to have a separate environment for each one of my projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have also to install Protoc. Hugging Face currently recommends version 21.12\.
+    You will need sudo privileges for this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have installed all the requirements. Now, we can install TGI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, clone the GitHub repository:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And then install TGI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: I set BUILD_EXTENSIONS to False to deactivate the custom CUDA kernels
+    since I don’t have A100 GPUs.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should install smoothly… On my computer, it didn’t. I had to run all the
+    commands in the file server/Makefile by hand. I suspect a problem with my environment
+    variables that were not loaded properly due to “make” switching to a different
+    shell for some reason. You may have to do the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: If you fail to install it, don’t worry! Hugging Face has created a Docker
+    image that you can launch to start the server, as we will see in the next section.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Launching a model with TGI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the following examples, I use the instruct version of the [Falcon-7B model](https://huggingface.co/tiiuae/falcon-7b-instruct)
+    which is distributed under an Apache 2.0 license. If you want to know more about
+    the Falcon models, I presented them in a previous article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226?source=post_page-----54f4dd8783a7--------------------------------)
+    [## Introduction to the Open LLM Falcon-40B: Performance, Training Data, and Architecture'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get started using Falcon-7B, Falcon-40B, and their instruct versions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-the-open-llm-falcon-40b-performance-training-data-and-architecture-98388fa40226?source=post_page-----54f4dd8783a7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without Docker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The installation created a new command “text-generation-launcher” that will
+    start the TGI server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'model-id: The model name on the [Hugging Face Hub](https://huggingface.co/models).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'num-shard: Set it to the number of GPUs you have and that you would like to
+    exploit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'port: The port on which you want the server to listen.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'quantize: If you are using a GPU with less than 24 GB of VRAM, you will need
+    to quantize the model to avoid running out of memory. Here I choose “bitsandbytes”
+    for on-the-fly quantization. GPTQ (“gptq”) is also available but I’m less familiar
+    with this algorithm.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With Docker (if the manual installation failed)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Note: if the Docker daemon is not running, and if you run Ubuntu through WSL,
+    start the daemon in another terminal with “sudo dockerd”.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The parameters are almost the same as with text-generation-launcher. You can
+    replace “all” with “0” if you have only one GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep this Docker image running as long as you want to use the server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Querying a model with TGI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To query the model served by TGI with a Python script, you will have to install
+    the following library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then in a Python script, write something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It should print:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which is a translation of poor quality. This is expected from a 7-billion-parameter
+    model. It is slightly better at coding tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It generates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]javascript'
+  prefs: []
+  type: TYPE_NORMAL
+- en: function removeSpaces(str) {
+  prefs: []
+  type: TYPE_NORMAL
+- en: return str.replace(/\s+/g, '');
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: console.log(removeSpaces('Hello World'));
+  prefs: []
+  type: TYPE_NORMAL
+- en: console.log(removeSpaces('Hello World'));
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can also query with curl instead of a Python script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: TGI is indeed fast. Generating an output with Falcon-7B and a maximum number
+    of tokens set to 500 takes only a few seconds with my RTX 3060 GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the standard inference pipeline, it takes nearly 40 seconds, without even
+    counting the time it takes to load the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Self-hosting a chat model (i.e., instruct LLM) has many advantages. The main
+    one is that you don’t send your data on the Internet. Another one is that you
+    completely control the operating cost, which is only reflected in your electricity
+    bill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if you use a consumer GPU, you won’t be able to run state-of-the-art
+    LLMs. Even for smaller LLMs, we have to quantize them to run only GPUs equipped
+    with less than 24 GB of VRAM. Quantization also reduces LLMs’ accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nonetheless, even small quantized LLMs can still be good for simple tasks:
+    simple coding problems, binary classification, …'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can now do all these tasks on your computer, just by querying your self-hosted
+    LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you like this article and would be interested to read the next ones, the
+    best way to support my work is to become a Medium member using this link:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie/membership?source=post_page-----54f4dd8783a7--------------------------------)
+    [## Join Medium with my referral link - Benjamin Marie'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@bnjmn_marie/membership?source=post_page-----54f4dd8783a7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you are already a member and want to support this work,* [*just follow
+    me on Medium*](https://medium.com/@bnjmn_marie)*.*'
+  prefs: []
+  type: TYPE_NORMAL

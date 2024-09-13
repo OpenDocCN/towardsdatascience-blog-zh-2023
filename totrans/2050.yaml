@@ -1,0 +1,747 @@
+- en: The power and simplicity of propagating errors with Monte Carlo simulations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d](https://towardsdatascience.com/the-power-and-simplicity-of-propagating-errors-with-monte-carlo-simulations-9c8dcca9d90d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Mastering uncertainty in data analysis and model fitting, with hands-on code
+    and examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d--------------------------------)[![LucianoSphere
+    (Luciano Abriata, PhD)](../Images/a8ae3085d094749bbdd1169cca672b86.png)](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d--------------------------------)
+    [LucianoSphere (Luciano Abriata, PhD)](https://lucianosphere.medium.com/?source=post_page-----9c8dcca9d90d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c8dcca9d90d--------------------------------)
+    ·15 min read·Jul 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9b4b497c8b238de0f45eba099ff0d5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [eskay lim](https://unsplash.com/es/@eskaylim?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There’s [quite a lot about Monte Carlo methods](https://medium.com/search?q=monte+carlo+towards+data+science)
+    in general at *Towards Data Science*, but not really much about their very important
+    and useful application to error propagation other than a great introduction by
+    [Shuai Guo](https://medium.com/u/7b08bf52bf9c?source=post_page-----9c8dcca9d90d--------------------------------)
+    and a few other articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-quantify-the-prediction-error-made-by-my-model-db4705910173?source=post_page-----9c8dcca9d90d--------------------------------)
+    [## Using Monte Carlo to quantify the model prediction error'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monte Carlo simulations demonstrated
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-quantify-the-prediction-error-made-by-my-model-db4705910173?source=post_page-----9c8dcca9d90d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, I want to put forward some concrete numerical applications with code for
+    you to actually try and feel first-hand how Monte Carlo methods can be extremely
+    helpful, yet easy-to-implement, for the propagation of errors throughout calculations
+    of almost any kind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will begin with a very simple application to propagating the errors during
+    a subtraction operation, to then exemplify how you can use essentially the same
+    idea to propagate errors in virtually any kind of numerical routine from a simple
+    linear regression to a very complex fitting procedure that would be very hard
+    to approach analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Error propagation through Monte Carlo simulations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Error propagation is a fundamental concept in data analysis and scientific
+    computing. When you have measurements with uncertainties, performing mathematical
+    operations on these values will result in propagated errors in the final calculated
+    result. For simple arithmetic operations, error propagation can be done analytically
+    using formulas. If you are interested in analytical error propagation, check out
+    this resource:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.geol.lsu.edu/jlorenzo/geophysics/uncertainties/Uncertaintiespart2.html?source=post_page-----9c8dcca9d90d--------------------------------)
+    [## Uncertainties and Error Propagation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Copyright July 1, 2000 1\. Systematic versus Random Errors 2\. Determining Random
+    Errors (a) Instrument Limit of Error…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.geol.lsu.edu](https://www.geol.lsu.edu/jlorenzo/geophysics/uncertainties/Uncertaintiespart2.html?source=post_page-----9c8dcca9d90d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, for more complex operations involving multiple variables and non-linear
+    functions, or for large calculation procedures such as those involved in data
+    fitting or neural network execution, analytical error propagation can quickly
+    become impractical or even impossible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monte Carlo simulation offers an alternative approach to error propagation,
+    especially in situations where analytical solutions are challenging or unknown.
+    The Monte Carlo method involves using random sampling to simulate a large number
+    of scenarios, calculating the desired quantity each time, and then analyzing the
+    distribution of results. This statistical approach provides an estimate of the
+    uncertainty in the final result, allowing us to propagate errors through complex
+    calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To demonstrate the application of Monte Carlo simulations for error propagation,
+    let’s consider a very simple subtraction operation **a - b** where both **a**
+    and **b** have some associated uncertainties **da** and **db**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(Note: This and all subsequent examples of this article are given in Matlab,
+    but are easily portable to any other scripting language.)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example, the uncertainty is propagated both analytically and with a
+    Monte Carlo procedure, to then compare their results. First, the uncertainty arising
+    on **c** is propagated analytically as the square root of the sum of the squared
+    uncertainties of **a** and **b**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, there’s the Monte Carlo simulation. We randomly sample **a** and **b**
+    from Gaussian distributions centered at their respective values and with standard
+    deviations equal to their uncertainties. The samples values go into temporal varaibles
+    **a_mc** and **b_mc**, whose subtraction is stored in the array **c_mc**. We repeat
+    this process many times, here 100,000 times, and then compute the average and
+    standard deviation on this array to estimate the central value adopted by **c**
+    and its associated uncertainty. This example program reports the average and standard
+    deviations after 10, 100, 1000, 10000 and 100000 iterations, from which we can
+    evaluate how the estimates converge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the results of an example run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expected
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4 +/- 2.2361
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 10 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3.2695 +/- 3.1021
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 100 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3.8985 +/- 2.5303
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 1000 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3.9573 +/- 2.2683
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 10000 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4.0182 +/- 2.2139
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 100000 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3.9984 +/- 2.2439
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As you see, both the result of the calculation and the error expected from analytical
+    propagation (2.2361) are reasonably converged through iterations of the Monte
+    Carlo procedure. Look especially at how the error, which is our main interest
+    here, goes down and converges very close to the analytically propagated value.
+    And check how even just 1000 iterations already produce a very reasonable estimate
+    of the error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that if you run the code yourself you will of course get different numbers,
+    but the trend should always be there: with more iterations, your error should
+    converge to values similar to those reported in the example (and to the analytically
+    derived value).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two more examples, now to estimate the uncertainty of parameters obtained by
+    fitting data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous section, we explored how Monte Carlo simulations can be used
+    to propagate errors in simple arithmetic operations. Now, let’s delve into more
+    practical examples where we apply Monte Carlo simulations to estimate the uncertainties
+    of parameters obtained by fitting data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we will consider a linear fitting procedure. Given a set of
+    data points (**x**, **y**), we want to find the best-fitting line of the form
+    **y = ax + b**. However, real-world data often contains measurement errors or
+    other uncertainties, which can impact the accuracy of the fitting parameters (**a**
+    and **b**). To account for these uncertainties and obtain more reliable estimates,
+    we can employ Monte Carlo simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example we generate some sample data and add Gaussian noise centered
+    around 0 with a width of +/- 1 to simulate measurement errors. This stands as
+    our experimental vector of **y** values for the rest of the procedure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First, we perform linear regression using Matlab’s **fitlm** function, which
+    calculates the best-fit line and provides us with the analytically-derived slope
+    and intercept along with their uncertainties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of this procedure looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, you see in this run and with the random numbers that the generator provided,
+    the analytical fit yields *slope* = 5.0534 +/- 0.15222 and *intercept* = 3.6469
+    +/- 0.94449
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s see what a Monte Carlo procedure finds. Just following the same idea
+    of how we propagated the uncertainty of a subtraction operation, we must take
+    the x and y vectors, add noise randomly (here only on **y** because we assume
+    **x** has no error, but we could perfectly add noise to it too!), and we run a
+    fitting procedure 10,000 times. This time we use **polyfit**, a Matlab function
+    to fit polynomials (here of degree 1) that does not return uncertainties of the
+    fitted parameters -which we’ll get through Monte Carlo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, just like in the previous example, we add noise, run the linear fit, and
+    store the parameters in vectors dedicated to the slopes (**a_mc**) and to the
+    intercepts (**b_mc**):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s a set of example results I got:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 10 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Intercept = 3.9435 +/- 0.97266
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Slope = 5.0174 +/- 0.16053
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 100 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Intercept = 3.581 +/- 0.69941
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Slope = 5.0716 +/- 0.11592
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 1000 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Intercept = 3.6461 +/- 0.69365
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Slope = 5.0551 +/- 0.11206
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Monte Carlo with 10000 iterations
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Intercept = 3.6482 +/- 0.68509
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Slope = 5.0533 +/- 0.10918
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We observe that as the number of iterations increases, the Monte Carlo estimates
+    for the intercept and slope converge towards the values obtained analytically
+    with **fitlm**. The uncertainties obtained from Monte Carlo simulations (standard
+    deviations) are consistent with the standard errors provided by **fitlm**, confirming
+    the accuracy of the Monte Carlo method for propagating errors in the fitting parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yet, one of the main advantages of using a Monte Carlo method is that we can
+    choose what the error in the inputs are, and we can not only consider uncertainties
+    on the observations **y** but also on the dependent variables. These and other
+    features of the method allow for a better, more controlled and knowledge-guided
+    quantification and propagation of uncertainties through a calculation or algorithm.
+    (See a dedicated section at the end that revolves around these and other advantages
+    of the procedure, along with its disadvantages.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: An even harder example, from an actual application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The same approach we just used for linear procedures, can actually be applied
+    to practically any kind of calculation, being particularly enticing for complex
+    types of fitting procedures, where it can provide valuable insights into the reliability
+    of model parameters and predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While the above examples were mainly demonstrative, let me now show you one
+    example coming from my own research where Monte Carlo simulations offer the only
+    practical way to propagate errors into fitting parameters. The story begins with
+    my need to fit a quite complex equation that looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9125099627b9f26f75b170734babcb5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The underlying data consists in an independent variable (our **x**) that is
+    here (*1/tcp*), assumed of no noise, and a dependent variable (**y**) called R₂.
+    My experimental dataset consists of multiple x, y values reported for different
+    related systems that must all be fit together to produce a single number for kₑₓ,
+    pA, pB, R₂A⁰, R₂B⁰ and d𝓌. It is all explained in this article, where I used Matlab’s
+    powerful **nlinfit** function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pub.towardsai.net/efficient-nonlinear-function-fitting-with-matlabs-nlinfit-3a2948c0fde6?source=post_page-----9c8dcca9d90d--------------------------------)
+    [## Efficient Nonlinear Function Fitting with Matlab’s nlinfit'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Powerful and versatile fitting of complex functions with Matlab's nlinfit function
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pub.towardsai.net](https://pub.towardsai.net/efficient-nonlinear-function-fitting-with-matlabs-nlinfit-3a2948c0fde6?source=post_page-----9c8dcca9d90d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In that article I didn’t explore error estimation too much, because Matlab’s
+    **nlinfit** function returns matrices that provide the errors directly… but right
+    from the data, and without any chance to tell the system exactly how much error
+    one should consider in the inputs. Namely, the uncertainties in the fitted parameters
+    can be computed in a single shot like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, with a Monte Carlo method we can do much more flexible and meaningful
+    error propagation. For example, we can tell the program that larger values of
+    **y** (R₂) have higher uncertainties (intrinsic to the nature of the experiment):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You see how the procedure is quite simple, and exactly the same as earlier:
+    just run the fit multiple times, each using some noise-affected inputs that reflect
+    their actual uncertainties. At the end, pull results together by calculating the
+    means and standard deviations, to estimate the final values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s an example output, comparing the output from Jacobian-based error estimation
+    (which doesn’t take into account the specific uncertainty in each measurement)
+    and from 10000 iterations of Monte Carlo simulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ================== MONTE CARLO SIMULATION (10,000 RUNS)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: R21 = 0.8034 +/- 0.11613
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: R22 = 32.5616 +/- 34.5635
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: kEX = 6983.9807 +/- 595.5142
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: dw = 519.5121 +/- 92.0618
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1_0 = 1.0092 +/- 0.0034707
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1_20 = 0.86244 +/- 0.026407
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1_40 = 0.69446 +/- 0.066818
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1_50 = 0.58735 +/- 0.096593
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ================== PLAIN FIT WITH ERRORS FROM JACOBIAN
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: R21 = 0.31138 +/- 0.25225
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: R22 = 33.0533 +/- 4.7355
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: kEX = 6965.3075 +/- 273.3825
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: dw = 513.7739 +/- 21.398
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1–0 = 1.0013 +/- 0.0049281
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1–20 = 0.86324 +/- 0.015702
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1–40 = 0.71381 +/- 0.03781
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: p1–50 = 0.62331 +/- 0.053877
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You see the converged values and errors are quite similar, but errors are systematically
+    smaller with the regular error propagation based on the Jacobian matrix. Knowing
+    the physics behind this problem, the errors propagated via Monte Carlo make more
+    sense, especially the lower relative error for R21 and the higher relative error
+    for R22.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (For a full explanation of the problem, physics, experiments and computations
+    behind this example, stay tuned to my Medium account as I will write a dedicated
+    article soon).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bonus: some practical pros and cons of using Monte Carlo methods to estimate
+    uncertainties in the outputs of numerical procedures'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The following advantages make Monte Carlo simulations a powerful and flexible
+    approach in various data analysis and modeling scenarios:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Accounting for complex error distributions:** One significant advantage of
+    Monte Carlo methods is their ability to handle complex error distributions. In
+    many real-world situations, the uncertainties in both the observed data (y-values)
+    and the input variables (x-values) may not follow simple Gaussian distributions,
+    as assumed in most derivations for analytical error propagation. By using Monte
+    Carlo simulations, we can easily customize the error distributions to better represent
+    the specific characteristics of our data. This flexibility allows us to model
+    uncertainties more accurately, leading to improved parameter estimates and more
+    reliable predictions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Flexibility in error modeling:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Unlike some direct analytical methods that assume specific error models, Monte
+    Carlo simulations allow us to incorporate a wide range of error structures. For
+    instance, we can include heteroscedastic errors, where the variability of errors
+    changes with different x-values. Additionally, we can account for correlated errors,
+    non-Gaussian distributions, and other complexities that might be challenging to
+    handle analytically. This adaptability enables Monte Carlo methods to address
+    a broader scope of real-world data scenarios.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Handling Nonlinear Models:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In many cases, numerical models may involve complex and nonlinear relationships
+    between variables. Analytical error propagation methods are often limited to linear
+    models, making them less suitable for nonlinear scenarios. In contrast, Monte
+    Carlo simulations are inherently suited for nonlinear models, as they rely on
+    numerical sampling rather than explicit analytical derivations. This capability
+    allows us to assess the uncertainties of parameters in more sophisticated and
+    realistic models.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Robustness to Assumptions:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Analytical error propagation relies on assumptions of Gaussian errors and linearity,
+    which may not always hold true in practice. When these assumptions are violated,
+    the accuracy of analytical results can be compromised. Monte Carlo simulations,
+    on the other hand, do not depend on such assumptions and can handle a broader
+    range of data distributions and model complexities. This robustness ensures that
+    uncertainties are adequately captured, even in cases where traditional methods
+    may falter.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Incorporating Prior Information:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In Bayesian Monte Carlo methods, we can integrate prior knowledge or beliefs
+    about the parameters before fitting the data. This feature is particularly useful
+    when there is prior information from previous studies or expert opinions. By incorporating
+    prior distributions into the simulations, we can effectively update our parameter
+    estimates and uncertainty assessments, resulting in more informative and accurate
+    modeling outcomes.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Quantifying Uncertainties Intuitively:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Monte Carlo simulations produce distributions of parameter estimates, allowing
+    us to intuitively understand the spread of possible values and associated uncertainties.
+    This approach is often more informative than single-point estimates obtained from
+    analytical methods, which may not convey the full picture of uncertainty. By visualizing
+    uncertainty distributions, decision-makers can make informed choices based on
+    the probabilities of different outcomes.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Monte Carlo methods are however not infallible, so it is essential to be aware
+    of these disadvantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Computational intensity:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Monte Carlo simulations often involve running a large number of iterations to
+    achieve accurate results. As the number of iterations increases, the computational
+    time and resources required also grow significantly. For complex models and a
+    large number of data points, Monte Carlo simulations can become computationally
+    expensive and time-consuming, which may hinder their practicality in certain situations.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Convergence issues:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In some cases, Monte Carlo simulations may suffer from convergence issues, especially
+    when dealing with high-dimensional parameter spaces or complex models. Ensuring
+    convergence and obtaining representative samples from the parameter space can
+    be challenging, and the quality of the results depends on the sampling strategy
+    used. Inadequate convergence can lead to biased or unreliable uncertainty estimates.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Sensitivity to sampling distribution:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The accuracy and reliability of Monte Carlo results depend heavily on the choice
+    of the sampling distribution used to generate random samples for the simulations.
+    If the selected distribution does not adequately represent the true uncertainties
+    in the data, it can lead to inaccurate or misleading uncertainty estimates. Properly
+    choosing the sampling distribution requires careful consideration and knowledge
+    of the data characteristics.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Model selection and validation:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Monte Carlo simulations do not provide guidance on model selection or validation.
+    While they can estimate uncertainties of fitted parameters, they do not address
+    issues related to model adequacy or goodness of fit. Validating the chosen model
+    and assessing its appropriateness for the given data remain separate tasks that
+    should be carefully considered alongside the Monte Carlo uncertainty analysis.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Subjectivity in prior distributions:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In Bayesian Monte Carlo methods, incorporating prior information involves specifying
+    prior distributions for the model parameters. The selection of these prior distributions
+    can introduce subjectivity, as different researchers or analysts may have different
+    prior beliefs. This subjectivity can impact the final parameter estimates and
+    uncertainty quantification, leading to potential disagreements in the results.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Interpretation complexity:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interpreting and communicating the results of Monte Carlo simulations can be
+    more challenging than traditional analytical methods. Uncertainty distributions
+    may not be as easily interpretable as point estimates, and the abundance of information
+    in the distributions might overwhelm non-experts, where simpler error propagation
+    might be enough.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Risk of overfitting:**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When using Monte Carlo simulations for uncertainty estimation, there is a risk
+    of overfitting the data. Running numerous iterations and fitting multiple models
+    can inadvertently lead to finding a model that performs well on the specific simulated
+    datasets but does not generalize well to new, unseen data. Careful validation
+    and cross-validation strategies are necessary to mitigate this risk. And of course,
+    judging the meaning of the results in the context of the problem being tackled.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Further reads
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To know more about Monte Carlo methods in general, check out these 3 articles
+    published here at [TDS Editors](https://medium.com/u/7e12c71dfa81?source=post_page-----9c8dcca9d90d--------------------------------)
+    featuring introductions and applications other than helping to propagate uncertainties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-zero-math-introduction-to-markov-chain-monte-carlo-methods-dcba889e0c50?source=post_page-----9c8dcca9d90d--------------------------------)
+    [## A Zero-Math Introduction to Markov Chain Monte Carlo Methods'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For many of us, Bayesian statistics is voodoo magic at best, or completely subjective
+    nonsense at worst. Among the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-zero-math-introduction-to-markov-chain-monte-carlo-methods-dcba889e0c50?source=post_page-----9c8dcca9d90d--------------------------------)
+    [](/an-overview-of-monte-carlo-methods-675384eb1694?source=post_page-----9c8dcca9d90d--------------------------------)
+    [## An Overview of Monte Carlo Methods
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monte Carlo (MC) methods are a subset of computational algorithms that use the
+    process of repeated random sampling to…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/an-overview-of-monte-carlo-methods-675384eb1694?source=post_page-----9c8dcca9d90d--------------------------------)
+    [](/the-house-always-wins-monte-carlo-simulation-eb82787da2a3?source=post_page-----9c8dcca9d90d--------------------------------)
+    [## The house always wins : Monte Carlo Simulation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do casinos earn money? The trick is simple- you play long enough, the probability
+    of losing money increases. Let us…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-house-always-wins-monte-carlo-simulation-eb82787da2a3?source=post_page-----9c8dcca9d90d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[***www.lucianoabriata.com***](https://www.lucianoabriata.com/) *I write and
+    photoshoot about everything that lies in my broad sphere of interests: nature,
+    science, technology, programming, etc.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[***Tip me here***](https://lucianoabriata.altervista.org/office/donations.html)
+    or [***become a Medium member***](https://lucianosphere.medium.com/membership)
+    *to access all its stories (I get a small revenue without cost to you).* [***Subscribe
+    to get my new stories***](https://lucianosphere.medium.com/subscribe) ***by email****.*
+    ***Consult about small jobs*** *on my* [***services page here***](https://lucianoabriata.altervista.org/services/index.html)*.
+    You can* [***contact me here***](https://lucianoabriata.altervista.org/office/contact.html)***.***'
+  prefs: []
+  type: TYPE_NORMAL

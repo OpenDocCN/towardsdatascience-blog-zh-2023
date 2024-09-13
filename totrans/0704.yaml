@@ -1,0 +1,467 @@
+- en: Delta Lake — Partitioning, Z-Order and Liquid Clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/delta-lake-partitioning-z-order-and-liquid-clustering-944030ff1828](https://towardsdatascience.com/delta-lake-partitioning-z-order-and-liquid-clustering-944030ff1828)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How are different partitioning/clustering methods implemented in Delta? How
+    do they work in practice?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)[![Vitor
+    Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)[](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)
+    [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)
+    ·10 min read·Nov 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19486b33b135625836f8ae64791213b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [frame harirak](https://unsplash.com/@framemily?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the issues that make Big Data difficult has always been in its name,
+    it is Big. Partitioning, especially when done well, has always been a way to improve
+    query execution times on vast amounts of data by reducing the data that needs
+    to be read to a subset. However, partitioning data is complex and requires careful
+    thought and some upfront planning, as what fits today’s requirements might not
+    fit future ones. For instance, in Hive-style partitioning, columns might need
+    to be changed or even increase their cardinality and make data over-partitioned
+    (small-files problem), requiring a complete restructuring of the data that is
+    not ideal at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z-Order clustering is another technique that is used for data-skipping, also
+    avoiding full data scans. However, this technique has some limitations. One is
+    that newly ingested data is not ordered by default and the users are required
+    to recluster it, which means that already clustered data will be reclustered and
+    rewritten, increasing the time spent on the operation. Z-Order users also need
+    to define the clustering columns each time they run the command as they are not
+    part of any table properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where Liquid Clustering enters the game. The premise is that it can
+    fit seamlessly into the current layout of the data and also be able to adapt to
+    future needs without needing to rewrite any already clustered data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will explain the details of different data pruning strategies
+    in Delta and how are they applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partition pruning — Hive-style partitioning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/b0a77d05e7bf03d305d32e080f7a0bf0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hive-style partitioning — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hive-style partitioning is a way of organizing a table into small chunks. These
+    chunks of data are organized into several subfolders that contain the data for
+    the partition value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This method is not native to Delta, that is, is not part of the Delta protocol.
+    However, since Delta is built upon Apache Spark, the old Hive-style partitioning
+    is also an option that can work well in some scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Several mechanisms deal with this type of partitioning in a way that makes it
+    entirely invisible to the end user. In Apache Spark, when a user reads the dataset,
+    the *gender* column is automatically added to the schema with the respective value
+    and can be queried just like a regular column. This technique is called *partition
+    discovery* and it is handled by [DataSource’s resolveRelation](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/DataSource.scala#L341C7-L341C22),
+    which infers the partition columns from the given base paths. On the other hand,
+    when a user saves a DataFrame while using [*partitionBy*](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/DataFrameWriter.scala#L194),
+    an [InsertIntoHadoopFsRelationCommand](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/InsertIntoHadoopFsRelationCommand.scala#L178C9-L178C25)
+    is executed as a part of the execution plan which calls [FileFormatWriter](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/FileFormatWriter.scala#L111)
+    that will spawn a write job (excluding the partition columns from its final schema
+    and creating buckets for them) for each partition of the underlying RDD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above example, since the query only selects data for which the gender
+    is *F*, it will only need to physically scan that folder, resulting in effective
+    data-skipping as it only reads half of the files of the dataset. This is called
+    *partition pruning*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are some downsides to this approach, especially when partition columns
+    with very high cardinality are chosen or multiple partition levels that will result
+    in many small files and consequently worse read performance. In addition to this,
+    once this partitioning strategy is defined, it cannot be changed without rewriting
+    all the data as it is defined at the physical level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I/O pruning — Z-Order
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another technique that is used for effective data-skipping is filtering on file-level
+    statistics. In this technique, each file has available statistics that can be
+    used as an indicator of whether or not the file is worth reading. By default,
+    Delta stores statistics on minimum, maximum, and null counts for the first 32
+    columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take for instance a single column, *id* of the [*people10m*](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)publicdataset.
+    If we use [*repartitionByRange*](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/Dataset.scala#L3713C24-L3713C24)to
+    order the data in 5 different files on that column, the min/max statistics distribution
+    might look similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14328ffa6c45225cca3e6f30bc100091.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files after range partitioning by column Id — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3766938e2950352d739854579abf2f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Select the first 20,000 employees of the company — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running the above query will result in a good plan given that our query only
+    filters that column and all the files contain disjoint sets of IDs. This way it
+    is easier for the engine to pick the correct files to scan without any false positives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What if we want to add another column to the query?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume that we also want to filter on the *salary* of the employees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6da12186e5133712dc6e4fcdd761ddfa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Select the first 20,000 employees of the company with a salary greater than
+    40,000 — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After we range partition our files on both columns we end up with something
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e33bcb7cf94902d70e11fcb7477f6a6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files after range partitioning by column Id and salary — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Salaries have no direct relation to IDs, organizing the files in a way that
+    makes data-skipping effective using the previous linear method will result in
+    data only being sorted by the first column. By simply filtering for salaries greater
+    than 40,000 we end up reading all five files instead of just one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How can we solve this? Is there any way we can group multiple statistics
+    in a single dimension while preserving locality so that our range partitioning
+    just works?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you guessed Z-Ordering, you guessed right. If you guessed space-filling curves
+    you were even more right!
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a space-filling curve, should I care about it? A space-filling curve
+    is a curve that traverses all the points in an embedding space. Some curves are
+    able to map these higher dimensional points into a single dimension while maintaining
+    proximity in the original space. Sounds complex? It isn’t. Below we’ll give a
+    bit more detail on how these curves work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Z-Order curve**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Z-Order curves were the first implementation of space-filling curves clustering
+    in Delta, hence the operation name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa275e1adb7012551482c131ee7edb6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Level 1 Z-Order curve — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z-Order values, the points that form the curve in the shape of a Z, are computed
+    using a technique called bit interleaving. Bit interleaving is a way of representing
+    an N-dimensional coordinate using bits. For instance, if we use a 4-bit representation
+    (0000 to 1111) we are able to encode a coordinate 4x4 grid by taking each bit
+    and assigning it to an axis at a time. Below we’ll go through a more visual example
+    of this technique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Delta, Z-Ordering is used to group data in a way that makes data-skipping
+    effective. All Z-Order columns are “marked” to be range-partitioned using [RangePartitionId](https://github.com/delta-io/delta/blob/master/spark/src/main/scala/org/apache/spark/sql/delta/expressions/RangePartitionId.scala)
+    expression. This expression is just a placeholder that will be handled by an [optimizer](https://github.com/delta-io/delta/blob/master/spark/src/main/scala/org/apache/spark/sql/delta/optimizer/RangePartitionIdRewrite.scala)
+    which will sample the RDD to find the range boundaries for the columns. (If you
+    ever tried to Z-Order a decent-sized dataset more than one time you probably noticed
+    that its file statistics are not deterministic. That is because Delta uses [reservoir
+    sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to avoid reading the
+    whole dataset when calculating range IDs). Then, all the computed ranges are converted
+    to bytes and interleaved, which results in the row Z-Order value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we’ll illustrate how Z-Order works in Delta, in a simplified way, for
+    a group of 6 records and 3 partitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/86c0579fc76b1c0e1309de6a3c372ded.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Z-Order optimization for 6 records to 3 different range IDs — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hilbert curve**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The better a curve is at preserving locality, the fewer files we’ll have to
+    read due to false positives. That is the reason why the Hilbert curve is more
+    commonly used in scenarios where locality preservation is essential.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the time of writing, [Hilbert curves](https://en.wikipedia.org/wiki/Hilbert_curve)
+    are not implemented in the open-source version of Delta. However, they are the
+    default curve used by Databricks Z-Order implementation since they provide better
+    data locality for higher dimensional data compared to Z-Order curves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9cfa094a98eaae6c55367e2a4b80e26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hilbert curve— Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Hilbert curve can appear in four different ways, each one derived from the
+    above with a rotation of 90º.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**But why is the Hilbert curve better at preserving locality than the default
+    Z-Order curve?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hilbert curve’s adjacent points always have a distance of 1\. Unlike Z-Order,
+    which means that these jumps might generate Z-Ordered files with a large min/max
+    difference, which will make it useless.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb1e1a96e06d0273fb050b44c844dc2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distance between two adjacent points on Z-Order curve — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are several implementations of the algorithm, but, in this post, I’ll
+    cover a neat iterative approach from John Skilling in “[Programming the Hilbert
+    curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)”.
+    This algorithm might be confusing as it contains some bit manipulations. Feel
+    free to skip to the next section if you don’t need to understand the details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Keep in mind that since the Databricks code is proprietary, the following
+    examples might not represent the current implementation.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The J. Skilling encoding method interleaves the bits and encodes them using
+    [Gray Code](https://en.wikipedia.org/wiki/Gray_code). This way, only one bit is
+    changed at a time so traversing the grid will be only in vertical or horizontal
+    directions. Then, it traverses the encoded bits and applies a series of bit exchanges
+    and inversions which will return the bit representation of the coordinates, which
+    can be retrieved by deinterleaving them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31ae9ad47977944b7913fe0f255c3c36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Skilling transform which transforms cartesian points to a Hilbert index — From
+    [Programming the Hilbert curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly to Z-Order, what we need is a way of encoding a group of coordinates
+    with an arbitrary dimension to a single point. In order to achieve that, we’ll
+    be running the previous algorithm, but backward, so that we can retrieve the point
+    in the Hilbert curve. Then there are two cycles, one that will iterate over the
+    encoded bits, from the most to the least significant until *p-2* where *p* is
+    the number of bits in each axis, and one inner cycle that will iterate from the
+    least significant bit until *n-1* where *n* is the number of dimensions. Depending
+    on our current bit we will have to either exchange bits or invert them. Finally,
+    we’ll have to Gray decode the bits and we’ll get our point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we’ll go through how to encode the coordinates (2, 0), which represent
+    the point number 14 in the Hilbert curve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38876c735cce829a8cde5369afcf7bee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Algorithm used to transform cartesian coordinates into Hilbert curve points
+    — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d80f071d67415f6d4e68a37c66bbc8a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 4x4 Hilbert curve — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: From here, we’ll assume the process is the same as the Z-Order implementation
+    where the data is range partitioned and close records are written in the same
+    file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Liquid clustering**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So, what is Liquid Clustering after all? It is not more than Hilbert Curves
+    with a new feature called ZCube that enables incremental clustering!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *OPTIMIZE ZORDER BY* command requires data to be fully rewritten, which
+    is very expensive for large tables. Also, when there is an issue in the middle
+    of an *OPTIMIZE ZORDER* command, everything needs to start from the beginning
+    making it very cumbersome sometimes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What are ZCubes?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ZCubes are groups of files that were produced by the same *OPTIMIZE* job. This
+    way, an *OPTIMIZE* job of a huge table can be split into several different jobs
+    that will generate a new ZCube, and a new entry in the delta log in order to enable
+    incremental clustering. Each newly optimized file will contain a *ZCUBE_ID* property
+    in the AddFile metadata that will make it possible to distinguish between optimized
+    and non-optimized files (ones that don’t have an associated ZCube).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two new configurable ZCube properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***MIN_ZCUBE_SIZE*** sets the minimum size of a ZCUBE. ZCubes under this size
+    will be considered as part of *OPTIMIZE* jobs and new files can be merged until
+    the size reaches this threshold (defaults 100GB). These cubes are called **partial
+    ZCubes**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***TARGET_CUBE_SIZE*** sets the target size for a finished cube, that contains
+    files that exceed the target size. These cubes are called **stable ZCubes**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Stable ZCubes can become partial ZCubes again if *Delete* commands end up invalidating
+    a number of files that make them less than *MIN_ZCUBE_SIZE*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How does it adapt to new partition columns seamlessly?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When users change clustering columns, only ZCubes that contain the same clustering
+    columns are considered for optimization. The other cubes stay untouched and new
+    ones are created.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How does it work in practice?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When an *OPTIMIZE table* command is issued, Delta picks the files that are valid
+    for ZCube generation, which are files that are part of a partial ZCube (that can
+    be further optimized), and the new files. Then, a planning step takes part, which
+    packs the files under several ZCubes that are *OPTIMIZE* jobs that will run independently
+    from each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d5446f72461d392e0bec909f5ab936b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: OPTIMIZE flow with Liquid Clustering enabled — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How can I enable/disable Liquid Clustering?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since clustering columns are defined at the table level, the *OPTIMIZE* command
+    doesn’t need to define any parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note: This is still under** [**proposal**](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)
+    **and might be subject to changes.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this blog post, we went through all the details of the different partitioning
+    and clustering alternatives available in Delta Lake. We went through Hive Style
+    partitioning, Z-Order, and their current issues to show how Liquid Clustering
+    is able to solve them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Liquid clustering is very promising as it is easier to use, has incremental
+    and better clustering performance, and supports changes in partition columns without
+    any overhead. There are several performance comparisons available out there if
+    you are curious about performance, and you can already try it if you are using
+    Databricks Runtime 13.3+. Databrick's recommendation is to change all the current
+    partition columns and ZOrder columns to clustering columns for better performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are using open-source Delta, while Liquid Clustering is not available,
+    make sure to check my previous post on how to keep your tables fast and clean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
+    [## Delta Lake— Keeping it fast and clean'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ever wondered how to improve your Delta tables’ performance? Hands-on on how
+    to keep Delta tables fast and clean.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://docs.databricks.com/en/delta/clustering.html](https://docs.databricks.com/en/delta/clustering.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Z-order_curve](https://en.wikipedia.org/wiki/Z-order_curve)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Hilbert_curve](https://en.wikipedia.org/wiki/Hilbert_curve)'
+  prefs: []
+  type: TYPE_NORMAL

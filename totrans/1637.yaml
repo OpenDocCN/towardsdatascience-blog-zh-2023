@@ -1,0 +1,318 @@
+- en: 'Particle Swarm Optimization: Search Procedure, Visualized'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/particle-swarm-optimization-search-procedure-visualized-4b0364fb3e5a](https://towardsdatascience.com/particle-swarm-optimization-search-procedure-visualized-4b0364fb3e5a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Intuition + math + code, for practitioners
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@byjameskoh?source=post_page-----4b0364fb3e5a--------------------------------)[![James
+    Koh, PhD](../Images/8e7af8b567cdcf24805754801683b426.png)](https://medium.com/@byjameskoh?source=post_page-----4b0364fb3e5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b0364fb3e5a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b0364fb3e5a--------------------------------)
+    [James Koh, PhD](https://medium.com/@byjameskoh?source=post_page-----4b0364fb3e5a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b0364fb3e5a--------------------------------)
+    ·9 min read·Dec 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/861b57cca91b8b669ecc1b8b6623e6df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by DALL·E 3 based on the prompt “Draw a science-fiction themed
+    image that depicts a swarm of drones searching for a target in an urban landscape”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Humans like to mimic many things in nature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We mimic frogs in swimming. We mimic birds by installing wings on planes to
+    provide lift. We mimic the crane/ snake/ mantis in martial arts. We mimic termites
+    to build structures with efficient temperature control (see Eastgate Centre).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This extends to math algorithms as well, where you would have heard of Artificial
+    **Bee** Colony, **Ant** Colony Optimization, **Cuckoo** Search, and **Firefly**
+    Algorithm. I’ve also previously talked about [Evolutionary Algorithm,](https://medium.com/towards-data-science/evolutionary-algorithm-selections-explained-2515fb8d4287)
+    which works following natural selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Today, I will talk about PSO — Particle Swarm Optimization. At the end of this
+    article, you will have the code which enables you to implement the solution as
+    well as generate a gif to visualize the search process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use-Case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Searching for an optimal solution in high-dimensional space is difficult. Students
+    picking up ML would probably have heard of the term ‘curse of dimensionality’
+    within their first week.
+  prefs: []
+  type: TYPE_NORMAL
+- en: High-dimensional space is not just an abstract mathematical concept. Consider
+    a supply chain problem. A company has to decide where to locate its production
+    factory, warehouse, distribution centers, and retail stores. For simplicity, let’s
+    just assume there is only one of each. This already makes the solution we are
+    searching for 8-dimensional — (*x*₁, *y*₁, *x*₂, *y*₂, *x*₃, *y*₃, *x*₄, *y*₄).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/20e004815855d640a298d71a6d971f4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by DALL·E 3 based on the prompt “Draw a panoramic view of a town
+    with the four key facilities — a production factory, warehouse, distribution center,
+    and retail store”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The absolute location (*x*₁, *y*₁, *x*₂, *y*₂, *x*₃, *y*₃, *x*₄, *y*₄) influences
+    the relative locations between each facility. Both the absolute as well as relative
+    locations would influence the operational costs as well as expected revenue, and
+    hence the profits. While not perfect, we can approximately say that the search
+    space and impact on the objective function is continuous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formulation of Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In reality, the underlying function which maps the inputs (candidate solutions)
+    to output (objective) is a black box and cannot be represented mathematically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we could, an analytical solution can be obtained directly. However, in dealing
+    with a black box, we will perform *sampling*. A naïve approach would then be to
+    perform a grid search. At the end of this article, you will have the tools to
+    do much better, and more importantly, understand why it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s translate the supply-chain problem and black box into the following mathematical
+    equation (to have something to work with). While at it, we will import all the
+    required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how everything is deliberately intertwined. This is because if a simple
+    function where components are added (for example, below) had been used, a grid
+    search can be performed with order O(n²) instead of O(n⁸). This would also not
+    be consistent with reality, because we cannot naively solve for an optimal warehouse
+    location independent of where the production facility and retail stores are located.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The objective of the problem will be to find (*x*₁, *y*₁, *x*₂, *y*₂, *x*₃,
+    *y*₃, *x*₄, *y*₄), such that the output given by `blackbox` is as high as possible,
+    without knowing the underlying equation. To make the problem realistic, we add
+    noise to the sampling process. Of course, we could simply repeat the measurements
+    at each point and take the average, but a robust search algorithm ought to perform
+    well even without doing so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Formulation of Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start with the basic building block of PSO — a particle. A particle is
+    a candidate solution vector, and carries its personal best and a set of vectors
+    which determines the extent of personal influence and social influence. On each
+    iteration, each particle *i* explores a new solution based on its velocity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11f18f9959704099b7deead0a4d22607.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All images by author unless otherwise stated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This velocity is governed by its inertial, along with an inclination towards
+    both its personal best and the population’s global best solution. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b47ceed15d26f36739fa5705abf07f03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Velocity of each particle determined by three components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*w* is the propensity for the particle to continue along its previous trajectory,
+    while *ϕ*₁ and *ϕ*₂ can be seen as the learning rate towards the personal and
+    global best. Having inertia is a good idea, because if we are already heading
+    in a supposedly good direction previously, it makes sense to keep up at it. In
+    fact, this concept of momentum is also present in Adam optimizer used in updating
+    the weights of neural networks during gradient descent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The personal best, and even global best, are based on what had been found thus
+    far. Chances are, some aspects (ie. dimensions) of those are good, at least relatively
+    speaking, but not all. However, we do not know which dimensions should be retained,
+    and therefore simply try various combinations. In the same spirit of Evolutionary
+    Algorithms, what matters is the *best* particle and not the average population,
+    hence there is only upside potential when it comes to exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To put this concept into mathematical equations, we have vectors *U*₁ and *U*₂
+    randomly drawn from a uniform distribution, multiplied by the respective learning
+    rates *ϕ*₁ and *ϕ*₂. Each particle has an affinity towards its personal best and
+    global best, to varying degrees along the different dimensions. Collectively,
+    we can write the following for a `Particle` class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that I had blended *ϕ*₁*U*₁ and *ϕ*₂*U*₂ into *r*₁ and *r*₂, respectively,
+    for (very slight) computational savings. Essentially, I had prescribed the learning
+    rate to be of order 1, to save time for this simple problem. You could also use
+    `random.uniform(0,0.1)` or some other range as you deem fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving on, a **swarm** comprises a large number of particles. Each particle
+    is created independently, and has its own unique affinity towards different dimensions
+    of the personal and global best. In each iteration, all particles search a nearby
+    solution as determined by its ‘velocity’, and keep track of its velocity as shown
+    at the beginning of this section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The implementation can be completed as follows. Here, the population comprises
+    2000 particles as an illustration. Each particle has a noisy measurement, but
+    noise is removed from the final solution to get an accurate measure of the algorithm’s
+    performance. Notice that `gbest` need not be updated in every iteration. This
+    is because there is no guarantee that the solution improves each time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A solution is found in just a couple of seconds. For fairness, I repeated the
+    experiment ten times, deleting `swarm` and reinitializing everything in each of
+    the loop. The results inevitably vary, given that each particle had been initialized
+    randomly with emphasis on different components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4afe9a84dbe88ceb41622ad3914db8b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 10 repetitions of PSO, each with 200 iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without knowledge of PSO or another decent search algorithm, your alternative
+    is to do a brute force grid search. Let’s see how this approach compares with
+    PSO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Even with an extremely coarse search of just 11 points per dimension (ie. splitting
+    into tenths), it requires 10⁸ computations of the black box function. On my computer,
+    it takes more than 20 minutes. Note that this is under ‘best performance’ mode,
+    and nothing else is running in the background; not even music (I went for a coffee
+    break while waiting). In real life, each computation could involve a simulation
+    which takes much longer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/866ab8d7748c77b3002214ca2f992708.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Time taken to complete the grid search across eight dimensions, and the corresponding
+    best solution and value of the objective function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using just a tiny fraction of the computational budget, PSO solved the problem
+    (median 10.61, max 10.63) just as well as the brute force grid search, which settled
+    on 10.61\. It is important to note that we are only dealing with 8 dimensions
+    here. If we are dealing with the likes of 1000 dimensions, grid search is simply
+    not feasible, and the benefits of PSO will be amplified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s take a look at how the particles are distributed through the iterations.
+    Although it is impossible to visualize things in 8 dimensions, we can focus on
+    two dimensions each time, while neglecting the other components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the plot below, the heatmap is the objective value as we vary only two dimensions
+    while keeping all 6 others fixed at the value of `swarm.gbest_particle` for that
+    particular iteration. Therefore, each snapshot truly applies to only one single
+    particle (and there is no practical way to present 2000 heatmaps concurrently).
+    It gives some idea nonetheless, and is better than an empty background.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the `imageio` library to create gif as [shared previously](https://medium.com/towards-data-science/a-cornerstone-of-rl-td-%CE%BB-and-3-big-names-2e547b37c05),
+    we can put all the figures together to form the following gif.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The white dot represents the position of `swarm.gbest_particle`, while the other
+    1999 particles are represented by the smaller blue dots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It might be tempting to jump to conclusions and claim that the PSO agent is
+    “stupid” and could simply have moved slightly towards a brighter region on the
+    map. Such an argument would be flawed. The heatmap which we see is only a slice
+    of the multi-dimensional solution space, and as seen in the gif, can vary substantially
+    when the other dimensions take different values. It is not a matter of just greedily
+    optimizing component dimensions piecewise. Had different combinations of the representation
+    been taken, say for example, *x*₁ with *y*₃, or *x*₄ with *y*₂, the story would
+    be different. There is no one-size-fits-all technique to make everyone happy simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ultimately, the results speak for itself, and the fact that PSO solved the problem
+    within seconds is evident of its usefulness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we saw how PSO can be implemented to search for an optimal
+    solution to an unknown black box in a efficient manner, along with an appreciation
+    of what goes on behind the scenes to make this possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I envision continuing with a series of these nature-inspired algorithms. After
+    all, nature is beautiful. Math is beautiful. Nature in Math? It has to be the
+    best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my next article, I will explain the implementation of [ABC (Artificial Bee
+    Colony)](/artificial-bee-colony-how-it-differs-from-pso-9c6831bfb552?sk=a7e8d75735fda2e6ed6c69898296210e),
+    as well as compare it against PSO to look at the types of problems in which ABC
+    fares better. Stay tuned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] A. E. Eiben and J. E. Smith, [Introduction to evolutionary computing](https://link.springer.com/book/10.1007/978-3-662-44874-8)
+    (2015), Springer-Verlag Berlin Heidelberg'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,682 @@
+- en: 'False Prophet: Feature Engineering for a Homemade Time Series Regression'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d](https://towardsdatascience.com/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Building on ideas from Meta’s Prophet package to create powerful features for
+    time series machine learning models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------)[![Bradley
+    Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52d9df3d930d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52d9df3d930d--------------------------------)
+    [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----52d9df3d930d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52d9df3d930d--------------------------------)
+    ·15 min read·Oct 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11454c39c829e4be351a11be4cce5a77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Scott Rodgerson](https://unsplash.com/@scottrodgerson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Meta’s Prophet package¹ is one of the most widely-used packages for time series.
+    At least anecdotally, according to me, after looking through a list of time series
+    articles that I’ve bookmarked for later reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sarcasm aside, I have used the package before and I love it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another great resource for time series modelling is Vincent Warmerdam’s talk
+    titled “Winning with Simple, even Linear, Models”² where he touches on modelling
+    time series with linear models (with a bit of preparation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, there are some elements of data science which blur the boundaries of art
+    and science — think hyperparameter tuning, or defining the structure of a neural
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’re going to lean into the art and do what a lot of the great artists have
+    done: borrow ideas from others. So, in this series of articles we’ll be borrowing
+    feature engineering ideas from Prophet, and linear modelling ideas from Vincent
+    to perform our very own time series regression with a real-world time series.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The big picture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s touch first on what the overall goal is, before we hone in on feature
+    engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The overarching goal is simple — to generate the most accurate forecast of future
+    events across a specified time horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start from scratch with a time series containing only a date variable
+    and the quantity of interest. From this, we’re going to derive additional bits
+    of information which will allow us to model future outcomes accurately. These
+    extra features will be heavily “inspired” by Prophet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll then feed our engineered data into a lightweight model, and let it learn
+    how to best forecast into the future. Later on, we’ll dive into the model’s internal
+    workings — after all, we’ll need to understand what’s driving our forecasts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we’ve seen the forest let’s get a close up of the trees, starting with
+    a look at our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’re going to be using real-world data from the UK — in this case, road traffic
+    accidents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the STATS19³ data set produced by the UK government. This data set is
+    quite large so to make things a bit more manageable, we’re going to aggregate
+    the daily accident count up to a monthly figure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualising our time series, we see a downward trend and a strong yearly pattern.
+    It could also be argued that these patterns change at some point between 2012
+    and 2014.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/341e08ba1d4b4fa2d786736ed7fea684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s already two kinds of features that we’ll need to create — something to
+    capture the overall direction of travel, and something that captures the repeated
+    annual pattern (or seasonality).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature engineering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ll touch on the general ideas that will drive our engineering before moving
+    on to its implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The beauty of Prophet
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Prophet uses a decomposable time series model with three main components combined
+    additively (with a little randomness on the side). Mathematically, this is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbec65f97390c18984bc7f151b967875.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here *g(t)* is the trend function which models non-periodic changes in the value
+    of the time series, *s(t)* represents periodic changes (e.g., weekly and yearly
+    seasonality), and *h(t)* represents the effects of holidays which occur on potentially
+    irregular schedules over one or more days.⁴
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'It’s this decomposable model form that makes Prophet so flexible, and it’s
+    this idea that a time series is separable that will guide our feature engineering:
+    that is, we’ll generate features that will help us model each one of these components.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our imitation won’t be a Prophet doppelganger — we’re only taking inspiration
+    from it. So we’ll make a couple of changes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*g(t)* will also represent step changes or change points in the time series.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We won’t focus too much on the error term (epsilon), other than to remember
+    that Prophet uses it to represent “idiosyncratic changes which are not accommodated
+    by the model”⁴.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Aside: if you’re unfamiliar with the components of a time series, this article
+    is a good summary:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6?source=post_page-----52d9df3d930d--------------------------------)
+    [## Let’s Do: Time Series Decomposition'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A guide to effectively breaking a time series into its constituent parts
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pub.towardsai.net](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6?source=post_page-----52d9df3d930d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start with basic features that we can get from the date field, before
+    deriving some more imaginative features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Base features: step zero'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As a warm up, let’s get out some basic date-related features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: All of these features are available directly. It’s probably clear — even to
+    the uninitiated — that these features are likely going to be predictive of the
+    monthly accident count.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time for some themed engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trend
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Trend, or long-term changes over time, can take various forms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If present at all, trends can often be quite simple — consistent upward or downward
+    changes are not uncommon. The airline passenger count data that’s used in many
+    time series demonstrations⁵ has a very clear and simple trend at play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, trends can get more complicated than that. They could for instance,
+    be non-linear, where there is an acceleration or deceleration in the rate of change.
+    There could be multiple instances of acceleration or deceleration. Or there could
+    be step changes where there is a sudden change in location of the trend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve seen above that there looks to be a downward linear trend in our data,
+    with a change point somewhere between 2012 and 2014\. I’m not entirely sure of
+    the exact form of the trend, so I’ll create a variety of them and let the model
+    figure out which is best:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Visually, this gives us a number of possible trends (with some scaling to get
+    everything to fit on the same chart):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28610a9f922d926b33c7c59226ab6c48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: it’s important to note that while all of these trends look to be increasing,
+    the model will be able to use these to capture the decreasing trend in the data,
+    by for example using negative weights or coefficients. This applies not only to
+    the trend components, but all features used in the model.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now for some change points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prophet detects change points by first specifying a large number of potential
+    change points, and then using as few of them as possible⁶. Prophet’s default approach
+    is to create 25 evenly spaced change points over the first 80% of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll do something similar by first creating many potential change points and
+    then letting the model choose which points to use. This is not too dissimilar
+    from Prophet, but there’s no constraints on spacing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we take a look at the first 12 rows, we see how the change point creation
+    has worked:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48ca78bf041e0b05889dae8a684e7ab5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not very complex at all as we have a column for each change point feature indicating
+    whether or not the observation happened before or after a given date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth mentioning that I’ve only allowed change points to happen at the
+    end of each quarter. Unless we’re absolutely certain of changes in the series,
+    the setting of these points can be a bit of an art where we balance flexibility
+    against overreaction; change points need to be frequent enough to capture real
+    changes in trend but not so frequent that they begin to capture noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case quarterly change points have a bit going for them. Firstly, they
+    effectively put a minimum time threshold on how long a change has to last before
+    it is considered “real” — potentially useful in reducing the model’s propensity
+    to confuse signal for noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the UK, quarterly changes roughly align with seasonal changes and significant
+    calendar changes (e.g. 1 January).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are external environment effects to consider too: new registration plates
+    are released around March and September of each year, which usually drive a spike
+    in new car sales. As new cars are generally safer than old cars, it’s not unreasonable
+    to imagine that the change in car parc mix would have an impact on the number
+    of road traffic accidents.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it’s probably not too bad a place to start from, we might have to circle
+    back later for some fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seasonality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We refer to regular or periodic effects present in a time series as seasonality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prophet uses Fourier series to represent seasonal effects in the additive model.
+    This generalises as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/764ac5dff3304ab7021489578f0efd4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Fourier representation essentially implies that all the repetitive effects
+    that we see in a time series can be represented by a series of sine and cosine
+    waves of varying period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we’re working with monthly data, we’d expect to see seasonal effects around
+    the same time every year; in other words, the *period* of our time series is one
+    year, or 12 months. So we’d need to set *P* = 12.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*N* = 10 and *N* = 3 have been noted to work well for series with yearly and
+    weekly seasonality respectively⁴, but we’ll extend *N* to 12 for good measure.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember that we’re not creating a separate seasonal model, but rather seasonal
+    features which our single model can assemble to represent periodic variations.
+    With that in mind we create our Prophet-inspired features as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This creates multiple sine and cosine waves of various periods, ready for the
+    model to assemble together in order to capture seasonality. So as input features,
+    these may look a little like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7da1e50fe657bde47f342d27b4699002.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Aside: note how higher values of n reduce the period — or time needed to complete
+    a full cycle — of the sine function.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our model will select and scale these functions in various ways so that the
+    periodic (or *seasonal*) element of the time series is appropriately accounted
+    for… that is, the model will determine the *a* and *b* coefficients in the formula
+    above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Holidays
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Holidays and events provide large, somewhat predictable shocks to many business
+    time series and often do not follow a periodic pattern, so their effects are not
+    well modeled by a smooth cycle.⁴
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An excellent example of this is the Easter weekend which in the UK has a very
+    definite impact on vehicular incidents. However, this holiday weekend doesn’t
+    occur during the same month each year — in some instances it falls in March, while
+    in other years we have to wait until April before we can start our search for
+    chocolate rabbits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While we will know fairly well in advance when Easter occurs (and will of course
+    know when it occurred in the past), it’s quite difficult to model with the seasonal
+    approach above. So we’ll take a different tack and instead count the number of
+    bank holidays and business days in a month, which should allow us to also capture
+    the effect of more regular holidays like Christmas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use `numpy` to get to business days:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '… but need the `holidays` package and a bit of help from StackOverflow⁹ to
+    get to monthly holiday count:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We’ll leave out the number of weekend days: as it can be derived from existing
+    features, using the count of weekend days could introduce unwanted feature correlation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that it’s — feature engineering complete, and we’re just about ready to
+    move on to the modelling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrap up and ramble
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve covered a lot of ground in this article. As is becoming tradition, we’ll
+    quickly recap and then have a bit of a ramble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After touching on our aspirations to build an awesome forecasting model we looked
+    at UK road traffic accident data. We saw strong trend and seasonality in our aggregated
+    monthly counts and knew that we’d need to create a variety of features to capture
+    these effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We started our feature engineering process with a light warm up — extracting
+    simple and directly available date features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We moved on to building features to capture the trend along with some allowance
+    for change points, which were treated fairly simply. There was some potential
+    merit to our logic but we acknowledged that it might need some fine tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used adapted Fourier transforms to model seasonality, creating 12 sets of
+    seasonal features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally we moved on to creating holiday features, choosing to focus on the number
+    of working and holiday days in a month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cyclical feature encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When building new features we need to keep with two things in mind — what *could*
+    be predictive of our target and how it would be interpreted by the machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A good example of this is month of the year which we usually represent using
+    an integer mapping (i.e. January = 1, …, December = 12). We can be fairly sure
+    that the month of the year would be a strong driver of accident count. But if
+    we were to pass to the model the integer encoding, the model would treat the December
+    of one year as something very different to the January of the following year,
+    even they are temporally adjacent!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We solve this issue with cyclical feature encoding, or more specifically by
+    conversion to polar co-ordinates. Since neither the sine nor cosine transformation
+    deliver a unique encoding on their own, we use the combination of both.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code above doesn’t show any examples of cyclical encoding but it is used
+    in my workflow and turns out to be an important feature in the model (see part
+    2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Prophet features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Following in a similar vein, our “Prophet features” relied heavily on sine and
+    cosine transformations. In reality, these are really Fourier transforms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eagle-eyed readers may have picked up on how the Prophet features have been
+    created. In the original paper, the time dimension has been re-based to a certain
+    point and every observation is reflected as being *t* time units after that. We’ve
+    not done that, instead opting to go another path. If I ever revisit this, it may
+    be something to consider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lagged features: the elephant in the room'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far, I’ve really just glossed over the use of lagged features. Or lack of
+    use to be precise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using previous values of the target quantity to predict the current or future
+    value of the target quantity — i.e. using values that are “lagged” in time — is
+    a staple in a lot of really great time series models. And for good reason, as
+    they are generally strong predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My reluctance to do so centres on the whole purpose of the model — to be good
+    at forecasting. When we forecast with lagged features, we usually have to “walk”
+    the lagged features forward and transition from using actual values of the target
+    to using predicted values of the target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make that more concrete, consider a model which uses one lagged feature —
+    that is, we use the value of the target at time *t — 1* to predict the value of
+    the target at time *t*. We’re interested in using the model to forecast 3 steps
+    into the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first forecast (at time *t + 1*) will use the value of the target today.
+    Since the target value is known there are no issues here and it’s business as
+    usual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider the forecast for time *t + 2*. We need the target value as at time
+    *t + 1* in order to use our model. Of course, the *true* target value is unknown
+    at this point and so we resort to using the *predicted*target for time *t + 1\.*
+    When it comes to forecasting time *t + 3,* we walk forward the prediction from
+    time *t + 2*, so on and so forth. From this it’s clear how prediction error can
+    get baked into the forecast; early errors get compounded as poor predictions get
+    walked forward and reused. I’m not a fan of this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is a secondary benefit from not using lagged features, and that is model
+    explainability: we are forced into modelling the target in a different way and
+    really have to think about (and model!) the drivers of outcome.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oftentimes this leads to a better conversation with stakeholders, as explaining
+    a forecast starts to sound like “long-term trend represents X% and seasonality
+    represents Y% of a forecast of Z” rather than “the forecast is B because the value
+    of the previous forecast was A”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A last note on lagged features before moving on. We aren’t constrained to using
+    lagged *target* features, so while we’ve discussed including previous values of
+    the target feature we could equally include lagged predictors with similar caveats
+    and requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This isn’t intended to be a blanket put down of the use of lagged features —
+    I’m sure there are use cases where it makes perfect sense to do so. The number
+    of lags used and length of forecasting window may even mean that this is a non-issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Change points
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s talk about change points, and the creation thereof.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve created change points in a really simplistic way, and I’m sure there are
+    many ways to improve my implementation. Prophet arguably does it better by creating
+    evenly spaced change points in the first 80% of the data, but then there are a
+    few things to consider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This reduces the impact of more recent spurious change points on future forecasts
+    — that’s a good thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how many true changes happen on evenly-spaced time intervals? And if changes
+    really did happen at that cadence, wouldn’t it be better thought of as some seasonal
+    impact? Yes, it’s splitting hairs. Yes, it is important. Fine, I’ll move on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While we can model historic change points, it’s a bit more difficult to model
+    future change points; there are instances where an upcoming change is known.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, the UK introduced the Civil Liability Act which made changes to
+    the personal injury compensation system in England and Wales. If you were to regularly
+    model the number and cost of compensation claims for whiplash injuries like I
+    do (for work, not pleasure), the implementation of this act in June 2021 resulted
+    in quite a serious step change. But since it was known about in advance, it was
+    possible to take steps to account for it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These kinds of changes need a case-by-case approach, with pragmatism and common
+    sense being front and centre.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interactions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Anyone keeping count of elephants in the room? Here’s another — we haven’t built
+    any features which capture the interaction between predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interactions are incredibly useful features which can capture the relationship
+    between various predictors. An interaction occurs when an independent variable
+    has a different effect on the outcome depending on the values of another independent
+    variable⁹.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case one of the more interesting motivations for using interactions would
+    be to allow the seasonality to change over time, as we currently assume — and
+    model — that the same seasonal effect holds true for more than twenty years. There’s
+    no obvious evidence to the contrary but we could potentially eke out more forecasting
+    power from the model by interacting time with some features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll have to add this to our list of things to do next time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Holidays
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Lastly, a quick word on holidays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We touched on some of the headaches that the Easter weekend can give us and
+    came up with a simple solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A real enhancement to the feature engineering would be the incorporation of
+    school holidays. These will likely have an impact on the number of road traffic
+    accidents, and so would be strong predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately it’s not so easy to do as schools in the UK go on holiday at slightly
+    different times for slightly different lengths of time. Perhaps we could get really
+    imaginative and create a distribution of school holidays, and allocate that to
+    each month — another one for next time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it from me. I hope you enjoyed reading this as much as I enjoyed writing
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, please let me know what you think — I’m really interested to hear
+    about your experiences with Prophet or with modelling time series in different
+    ways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As I mentioned, I’ll be tackling the modelling in a forthcoming article — keep
+    your eyes peeled for that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Until next time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References and resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[GitHub — facebook/prophet: Tool for producing high quality forecasts for time
+    series data that has multiple seasonality with linear or non-linear growth.](https://github.com/facebook/prophet)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Vincent Warmerdam: Winning with Simple, even Linear, Models | PyData London
+    2018 — YouTube](https://www.youtube.com/watch?v=68ABAU_V8qI&list=WL&index=32&t=2183s)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://roadtraffic.dft.gov.uk/downloads](https://roadtraffic.dft.gov.uk/downloads)
+    used under the [Open Government Licence (nationalarchives.gov.uk)](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Forecasting at scale (peerj.com)](https://peerj.com/preprints/3190.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A comprehensive guide to time series decomposition | Towards AI](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Trend Changepoints | Prophet (facebook.github.io)](https://facebook.github.io/prophet/docs/trend_changepoints.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Civil-liability-act-2018-Q-and-A.docx (live.com)](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F5c62d226ed915d04538f124f%2FCivil-liability-act-2018-Q-and-A.docx%23%3A%7E%3Atext%3DThe%2520Civil%2520Liability%2520Act%25202018%2520makes%2520important%2520changes%2520to%2520the%2Cinjury%2520discount%2520rate%2520is%2520set.&wdOrigin=BROWSELINK)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[interaction.pdf (mcgill.ca)](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://stackoverflow.com/a/59681727/11637704](https://stackoverflow.com/a/59681727/11637704)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

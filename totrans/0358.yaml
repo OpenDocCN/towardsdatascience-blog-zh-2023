@@ -1,0 +1,216 @@
+- en: Bash Processing Speed Matters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/bash-processing-speed-matters-d83e4c5adf32](https://towardsdatascience.com/bash-processing-speed-matters-d83e4c5adf32)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I sped up the execution of a bash command line >500x to make it a breeze to
+    use
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)[![Mattia
+    Di Gangi](../Images/ccd89021df6724797d45cc3c655a38a5.png)](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------)
+    [Mattia Di Gangi](https://medium.com/@mattiadigangi?source=post_page-----d83e4c5adf32--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d83e4c5adf32--------------------------------)
+    ·5 min read·Mar 30, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c5892a7dbb49c0b78ff636aafe30db5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you have to process data in textual or tabular forms, one of the long-time
+    favorites is surely [GNU Bash](https://www.gnu.org/software/bash/), the Linux
+    flagship shell with “batteries included”. If you have never used it, you are missing
+    out a lot and should definitely give it a try.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tools coming with Bash follow the Unix philosophy of “do only one thing
+    and do it well”, and are super-optimized for many different tasks. [Find](https://linux.die.net/man/1/find),
+    [grep](https://linux.die.net/man/1/grep), [sed](https://www.gnu.org/software/sed/manual/sed.html),
+    and [awk](https://www.gnu.org/software/gawk/manual/gawk.html) are only some among
+    the powerful tools that can interoperate thanks to the Bash’s [pipes and filters
+    architecture](https://dev.to/desi109/architectural-styles-by-examples-387b) for
+    text files processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, I had to perform simple text processing for which bash makes perfect
+    sense. I have an input file containing an absolute file path per line, and I have
+    to generate an output file where each line is the basename of the corresponding
+    path in the input file, with a different extension. In practice, the two files
+    are needed as an input to another program that will convert the files mentioned
+    in the input file (in wav format) into the files listed in the output file (in
+    mp4 format, by adding some video).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I could have done it in Python, but bash just look much more practical for
+    this task. However, at the end of this story I will show a Python implementation
+    for comparison. Then, I rushed to my keyboard and produced the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code is correct, but extremely slow. My file was 3 Millions lines long and
+    this command would have taken 1 hour to complete. Just to get an idea of the lines
+    per second, let me run it on a file with 10000 lines and measure its runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Some clear inefficiencies are the use of cat to start the command, and the
+    double use of echo (with nested command calls). They are both IO-heavy operations
+    and are then very slow. They can be easily replaced, and since we know that all
+    paths in the input file have the same extension, we can also remove `sed` and
+    remove the extension using `basename`itself. Then, we run the new command with
+    the same file of 10000 lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have some serious improvement here. Removing `cat`only, we get a real time
+    right below 13s (relative improvement ~2%), and the rest is done by replacing
+    sed and the second echo with simply basename. Unfortunately, it is still quite
+    slow. With approximately 1500 lines/s, it would take 2000 seconds, or about 30
+    minutes, to complete 3,000,000 lines. Fortunately, we can get a serious boost
+    by replacing read. [Read](https://linuxize.com/post/bash-read/) reads a line from
+    the standard input and assigns its content to one or multiple variables (it can
+    be used easily with tabular data), but it is not needed in our case, since working
+    line by line is what any bash command does anyway.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, we have to give up the handy basename to extract only the file
+    name, but we can replace it with [cut](https://linux.die.net/man/1/cut), which
+    can remove pieces of texts according to delimiters, and [rev](https://linux.die.net/man/1/cut),
+    which just reverses the character sequence — this is a common trick to extract
+    the last field with cut, which is not possible by default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The number of operations performed looks higher than before, but we finally
+    get a huge speed-up as we can see from our example toy file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this new speed of ~910 Klines/second we can process 3,000,000 lines in
+    3.3 SECONDS, and corresponds to a speed-up of 606x.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most importantly, while the actual numbers depend on the hardware where the
+    commands are executed, the relative improvement will be constant among different
+    pieces of hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Python Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here we can see an equivalent python implementation for comparison’s sake:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and now we can measure its time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the time is about double the best time we get with bash. It requires writing
+    more code but also this code is super fast and probably more easily modifiable
+    for many.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bash comes very in handy for a many data processing tasks when working with
+    textual files. It comes with many tools very optimized, but still some are faster
+    than others to achieve the same result. The difference may not matter when working
+    with short files, but in this article I show that it starts to matter with hundreds
+    of thousands, or millions of lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Knowing the performance implications of using our favorite programs can save
+    us hours of waiting for our jobs, with huge gains for our productivity. Also,
+    we saw that a Python implementation is also very fast for our use case despite
+    Python’s fame of being slow. It surely requires more coding but also more flexibility.
+    I would surely reach for python for the cases that are too complicated to solve
+    with bash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading so far, and happy scripting!
+  prefs: []
+  type: TYPE_NORMAL
+- en: More from me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/without-further-ado-automate-dev-environments-and-build-f2f9bcaaae1e?source=post_page-----d83e4c5adf32--------------------------------)
+    [## Without Further Ado: Automate Dev Environments and Build'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bring joy to your fellow developers by making your software easy to use through
+    environment and build automation. With…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/without-further-ado-automate-dev-environments-and-build-f2f9bcaaae1e?source=post_page-----d83e4c5adf32--------------------------------)
+    [](/data-processing-automation-with-inotifywait-663aba0c560a?source=post_page-----d83e4c5adf32--------------------------------)
+    [## Data Processing Automation with inotifywait
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to automate before having a production-ready MLOps platfotm
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/data-processing-automation-with-inotifywait-663aba0c560a?source=post_page-----d83e4c5adf32--------------------------------)
+    [](/dynamically-add-arguments-to-argparse-python-patterns-a439121abc39?source=post_page-----d83e4c5adf32--------------------------------)
+    [## Dynamically Add Arguments to Argparse | Python Patterns
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to specify different arguments according to the user input using argparse.ArgumentParser.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/dynamically-add-arguments-to-argparse-python-patterns-a439121abc39?source=post_page-----d83e4c5adf32--------------------------------)
+    [](/introduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74?source=post_page-----d83e4c5adf32--------------------------------)
+    [## Introduction to Speech Enhancement: Part 2 — Signal Representation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s dive deep into signal representation, Fourier transform, spectra and harmonics.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-speech-enhancement-part-2-signal-representation-ab1deca2fa74?source=post_page-----d83e4c5adf32--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Medium Membership
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Do you like my writing and are considering subscribing for a Medium Membership
+    for having unlimited access to the articles?
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you subscribe through this link you will support me through your subscription
+    with no additional cost for you [https://medium.com/@mattiadigangi/membership](https://medium.com/@mattiadigangi/membership)
+  prefs: []
+  type: TYPE_NORMAL

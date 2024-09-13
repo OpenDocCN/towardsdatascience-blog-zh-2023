@@ -1,0 +1,390 @@
+- en: A Beginner’s Guide to Understanding A/B Test Performance through Monte Carlo
+    Simulations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-beginners-guide-to-understanding-a-b-test-performance-through-monte-carlo-simulations-6b1155315376](https://towardsdatascience.com/a-beginners-guide-to-understanding-a-b-test-performance-through-monte-carlo-simulations-6b1155315376)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://idajohnsson.medium.com/?source=post_page-----6b1155315376--------------------------------)[![Ida
+    Johnsson, PhD](../Images/f0af7e8c4af98d7af4cd17a2e5d7ea70.png)](https://idajohnsson.medium.com/?source=post_page-----6b1155315376--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b1155315376--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b1155315376--------------------------------)
+    [Ida Johnsson, PhD](https://idajohnsson.medium.com/?source=post_page-----6b1155315376--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b1155315376--------------------------------)
+    ·16 min read·Aug 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: This tutorial explores how covariates influence A/B testing precision in a randomized
+    experiment. A properly randomized A/B test calculates the lift by comparing the
+    average outcome in the treatment and control groups. However, the influence of
+    features other than the treatment on the outcome determines the statistical properties
+    of the A/B test. For instance, omitting influential features in the test lift
+    calculation can lead to a highly imprecise estimate of the lift, even if it converges
+    to the true value as the sample size increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will learn what RMSE, bias, and size of a test are and understand the performance
+    of an A/B test through generating simulated data and running Monte Carlo experiments.
+    This kind of work is helpful to understand how the properties of the Data Generating
+    Process (DGP) influence A/B test performance and will help you take this understanding
+    to run A/B tests on real-world data. First, we discuss some basic statistical
+    properties of an estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Statistical properties of an estimator**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Root Mean Square Error (RMSE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'RMSE (Root Mean Square Error): RMSE is a frequently used measure of the differences
+    between values predicted by a model or an estimator and observed values. It''s
+    the square root of the average squared differences between prediction and actual
+    observation. The formula for RMSE is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RMSE = sqrt[(1/n) * Σ(actual - prediction)²]
+  prefs: []
+  type: TYPE_NORMAL
+- en: RMSE gives a relatively high weight to large errors because they are squared
+    before they are averaged, which means the RMSE should be more useful when large
+    errors are undesirable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bias
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In statistics, the bias of an estimator is the difference between this estimator's
+    expected value and the true value of the estimated parameter. An estimator or
+    decision rule with zero bias is called unbiased; otherwise, the estimator is said
+    to be biased. In other words, a bias occurs when an algorithm consistently learns
+    the same incorrect thing by failing to see the accurate underlying relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, if you are trying to predict house prices based on features of
+    the house, and your predictions are consistently $100,000 below the actual price,
+    your model is biased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In hypothesis testing in statistics, "test size" refers to the significance
+    level of the test, often denoted by the Greek letter α (alpha). The significance
+    level, or test size, is a threshold a test statistic must surpass to reject a
+    hypothesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It represents the probability of rejecting the null hypothesis when it is, in
+    fact, true, which is a type of error known as a Type I error or false positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if a test is set at a 5% significance level (α = 0.05), it means
+    that there's a 5% risk of rejecting the null hypothesis when it is true. This
+    level, 0.05, is a common choice for α, although other levels, such as 0.01 or
+    0.10, can also be used depending on the context and the field of study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The smaller the test size, the stronger the evidence required to reject the
+    null hypothesis, reducing the likelihood of a Type I error but potentially increasing
+    the chance of a Type II error (failing to reject the null hypothesis when it is
+    false). The balance between Type I and Type II errors is an important consideration
+    in the design of any statistical test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirical size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Empirical size in the context of hypothesis testing via Monte Carlo simulations
+    refers to the proportion of times that the null hypothesis is incorrectly rejected
+    across the simulations when the null hypothesis is true. This is essentially a
+    simulated version of a Type I error rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here''s a general process of how you would do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Set up your null hypothesis and choose a significance level for your test
+    (e.g., α = 0.05).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Generate a large number of samples under the assumption that the null hypothesis
+    is true. The number of samples is usually quite large, such as 10,000 or 100,000,
+    to ensure the stability of the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. For each sample, perform the hypothesis test and record whether the null
+    hypothesis is rejected (you can record this as 1 for rejection and 0 for fail
+    to reject).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Calculate the empirical size as the proportion of simulations where the
+    null hypothesis was rejected. This estimates the probability of rejecting the
+    null hypothesis when it's true under the given testing procedure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code below shows how to implement this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: For each of the 1000 simulations, a random sample of size 1000 is drawn from
+    a normal distribution with mean 0 and standard deviation 1\. A one-sample t-test
+    is conducted to test whether the sample mean significantly differs from the true
+    mean (0 in this case). If the p-value of the test is less than the significance
+    level (0.05), the null hypothesis is rejected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The empirical size is calculated as the number of times the null hypothesis
+    is rejected (the number of false positives) divided by the total number of simulations.
+    This value should be close to the nominal significance level in a well-calibrated
+    test. In this case, the function returns the empirical size, which gives an idea
+    of how often you might incorrectly reject the null hypothesis when it is actually
+    true in real-world applications, assuming the same conditions as in the simulation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to random variation, the empirical size might not exactly match the nominal
+    significance level, but they should be close if the sample size is large enough
+    and the test assumptions are met. This difference between the empirical and nominal
+    size is why simulation studies like this are conducted, to see how well the nominal
+    size matches reality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Statistical properties of an A/B test estimate**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, you will learn how the properties of the DGP and the inclusion
+    of covariates in the estimation of an A/B test result influence the performance
+    of your test. Using the code below, you will simulate A/B tests that follow a
+    DGP with or without covariates, and you will see how the performance of your test
+    varies depending on whether you include the covariates in your estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Experiments with no covariates in the DGP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Below we simulate data that follow a DGP in which the outcome is only influenced
+    by the treatment and a random error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`y_i = tau*T_i+e_i`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the outcome is only influenced by the treatment, the estimates of the treatment
+    effect parameter are precise even for relatively small sample sizes and quickly
+    converge to the true parameter value as the sample size increases. In the code
+    below, the value of the parameter `tau`is set to 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e87c206ff3c6c102e4a9041aa1474160.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For a selected sample size, verify that this is the same as running a regression
+    with an intercept.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can verify that you obtain the same results by running an OLS regression
+    of the outcome on an intercept and the treatment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Run R Monte Carlo iterations and compute bias, RMSE, and size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now you will run Monte Carlo simulations in which you increase the sample size
+    by looping over a list of values for the`N`parameter. You compute the test's RMSE,
+    bias, and empirical size for each iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This Python script conducts an experimental simulation to study how the sample
+    size (`N`) affects the bias, RMSE, and size of A/B test performance when no covariates
+    are considered. Let’s break it down step by step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. `estDict = {}` initializes an empty dictionary to store the experimental
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. `R=2000`sets the number of repetitions for the experiment to 2000.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. `for N in [10,50,100,500,1000]`loops over different sample sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Inside this loop, `tauhats=[], sehats=[]` are initialized as empty lists
+    to store the estimated treatment effects `tauhat`and their corresponding standard
+    errors `se_tauhat`for each experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. `for r in tqdm(range(R)):`loops over R experiments, with a progress bar
+    provided by `tqdm`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. `Yexp,T = fn_generate_data(tau,N,10,0,corr)`generates synthetic data for
+    each experiment with a predefined treatment effect `tau`, number of observations
+    `N`, 10 covariates, no covariates with nonzero coefficients, and a predefined
+    correlation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. `Yt=Yexp[np.where(T==1)[0],:]`and `Yc=Yexp[np.where(T==0)[0],;]`separates
+    the synthetic data into treated and control groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. `tauhat,se_tauhat=fn_tauhat_means(Yt,Yc)`calculates the treatment effect
+    estimate and its standard error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9\. `tauhats=tauhats+[tauhat]`and `sehats=sehats+[se_tauhat]` appends the treatment
+    effect estimate and its standard error to the corresponding lists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10\. `estDict[N]={‘tauhat':np.array(tauhats).reshape([len(tauahts),1]),’sehat':np.array(sehats).reshape([len(sehats),1])}`stores
+    the estimates in the dictionary with the sample size as the key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11\. `tau0 = tau*np.ones([R,1])` creates an array of size R with all elements
+    equal to the true treatment effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12\. For each sample size in `estDict` the script calculates and prints the
+    bias, RMSE, and size of the treatment effect estimate using the `fn_bias_rmse_size()`function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, bias and RMSE go down as the sample size increases, and the size
+    approaches the true size, 0.05.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Experiments with covariates in the DGP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, you will add covariates to the DGP. Now the outcome of interest depends
+    not only on the treatment but also on some other variables `X`. The code below
+    simulates data with 50 covariates included in the DGP. Using the same sample sizes
+    and treatment effect parameter as in the previous simulation without covariates,
+    you can see that this time the estimates are much more noisy, but they still converge
+    to the correct solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`y_i = tau*T_i + beta*x_i + e_i`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plot below compares the estimates from the two DGPs— you can see how much
+    more noisy the estimates are when covariates are introduced in the DGP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c3e8c8db826a40072b89f00cc0f43431.png)![](../Images/0566ad1835b5a2d1b2f91696c712a338.png)![](../Images/b8b79ff45b059a4a1df414e5ac6683ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Does repeating the experiment with a much larger sample size alleviate the problem?
+    Not necessarily. Despite the increase in sample size, the estimates still appear
+    quite noisy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5b973e4ea860b20fb10a9260c311c3db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DGP with X — adding covariates to the regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this part, you will use the same DGP as before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`y_i = tau*T_i + beta*x_i + e_i`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, you will include these covariates `X` in the regression model. You will
+    find that this significantly improves the precision of the estimates. However,
+    keep in mind that this is a bit of a “cheat” — in this case, you have included
+    the correct covariates from the beginning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a real-world scenario, you may not know which covariates are the “right”
+    ones to include, and it may be necessary to experiment with different models and
+    covariates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/13cf0c527b8c1ada4012caeb638e9172.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**What happens if you use some X’s that influence the outcome and some that
+    don’t?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This section examines the inclusion of some relevant and some irrelevant covariates
+    in a regression model. This mimics a real-world scenario where it might not be
+    clear which covariates influence the outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though some non-influential variables are included, it can be observed
+    that the overall estimate tends to improve compared to the case when no covariates
+    were included. However, including irrelevant variables may introduce some noise
+    and uncertainty into the estimates, and they may not be as precise as when only
+    the relevant covariates were included.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, understanding the influence of covariates in your data is essential
+    to improve the precision and reliability of A/B testing results. This tutorial
+    explores statistical properties of estimators like RMSE, bias, and size and demonstrates
+    how they can be estimated and understood through Monte Carlo simulations. It also
+    highlights the impact of including covariates in the DGP and regression models,
+    emphasizing the importance of careful model selection and hypothesis testing in
+    practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/eaed35b5ec109a058959aaf4284d682e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unless otherwise noted, all images are by the author.
+  prefs: []
+  type: TYPE_NORMAL

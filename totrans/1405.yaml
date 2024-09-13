@@ -1,0 +1,409 @@
+- en: Learning Network Games
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/learning-network-games-29970aee44bb](https://towardsdatascience.com/learning-network-games-29970aee44bb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Graph ML meets Game Theory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Network games are a powerful tool for modelling strategic interactions between
+    individuals or organisations played out on networks, where a player’s payoff depends
+    not only on their own actions but also on those of their neighbours. Such games
+    have numerous applications in economics and social sciences, including studying
+    the spread of influence in social networks, the dynamics of financial markets,
+    and the formation of alliances in international relations. The study of network
+    games typically assumes the underlying network structure to be known, which is
+    often wishful thinking. Recently, ML approaches have been proposed to tackle this
+    problem by leveraging the observed actions of players to learn the underlying
+    network structure. In this blog post, we outline a novel approach that uses a
+    Transformer-like architecture to infer the network structure of a game without
+    explicitly knowing the utility function associated with the game.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)
+    ·10 min read·Apr 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7eb99f9ccbe299de8373fdaf9c268f05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration based on Shutterstock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with* [*Emanuele Rossi*](https://emanuelerossi.co.uk/)
+    *and is based on the paper E. Rossi et al., “*[*Learning to infer the structure
+    of network games*](https://proceedings.mlr.press/v162/rossi22a/rossi22a.pdf)*”
+    (2022) ICML, a collaboration with Federico Monti, Yan Leng, and Xiaowen Dong.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: G[ame theory](https://en.wikipedia.org/wiki/Game_theory) is a mathematical framework
+    for modelling and analysing situations where multiple decision-makers interact
+    with each other, and where the outcome of each decision depends on the actions
+    of all players involved. In *network games* [1] the players are connected in a
+    network (graph), and the outcome of the game depends not only on the players’
+    strategies but also on the structure of the network. Each player tries to maximise
+    their *utility function*, which in the case of network games depends both on their
+    own actions and the actions of their neighbours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Equilibrium actions* refer to a set of strategies where no player has an incentive
+    to change their strategy, given the strategies of the other players. In other
+    words, at equilibrium, each player’s strategy is optimal, given the strategies
+    of the other players. In network games, the equilibrium actions depend on the
+    graph structure, along with other parameters dependent on the game.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider, for example, a scenario where individuals on a social network can
+    decide how much time to spend on the platform. In such a case, their behaviours
+    may be influenced by their friends on the network, which creates a strategic interdependence
+    between players. For instance, if Joe’s friends spend a lot of time on the platform,
+    Joe might perceive a greater benefit from using the platform himself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a different setting, Joe is a user of an e-commerce platform deciding whether
+    to buy a book. If his friend has already purchased the book, Joe might be less
+    likely to buy it, as he can borrow it from his friend. These examples illustrate
+    how actions in network games can be affected by the actions of neighbouring players,
+    leading to strategic interdependence and the emergence of equilibrium actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e43e639405e3420a88ded6b9fb10f50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Examples of network games. *Left:* a user Joe is likely to spend more time
+    on a social app if his friends are also spending time on the app. Right: Joe has
+    less incentive to buy a book if his friend has already bought it because Joe can
+    borrow it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inferring the Network from the Actions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the above examples, we assumed to know the friends of Joe, i.e., the network
+    structure of the game. However, in many situations, the underlying network structure
+    is not directly available to us. Instead, we may only observe the equilibrium
+    actions that result from the interactions between agents. In these cases, a crucial
+    question is whether we can reconstruct the network structure based solely on these
+    equilibrium actions. Knowing the network structure can be helpful in predicting
+    behaviour and planning network-based interventions, such as marketing campaigns
+    or information diffusion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It was previously shown that, under specific assumptions about the mathematical
+    form of the utility function and game types, it is possible to reconstruct the
+    graph governing the network game [2]. However, such assumptions can be unrealistic,
+    especially when little is known about the game being played. To address this,
+    in a recent paper [3] we developed an approach that does not require assumptions
+    about the form of the utility function and can be applied to a broad range of
+    network games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by studying three common types of network games, *Linear Quadratic*,
+    *Linear Influence*, and *Barik-Honorio* [4]. The three types of games differ by
+    the form of the utility function, leading to different levels of smoothness of
+    the actions in the graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*eᵤᵥ* = *bᵤ xᵤ* — ½ *xᵤ²* + *β* Σ*ᵥ aᵤᵥ xᵤ xᵥ,*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *xᵤ* is the continuous action taken by player *u*, *bᵤ* is the player’s
+    *marginal benefit*, *β* is a game parameter representing the strength of dependencies
+    between actions of neighbours in the network, and *aᵤᵥ* is the entry in the adjacency
+    matrix of the graph representing the strength of the connection between *u* and
+    *v*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking as an example the aforementioned scenario of time spent on a social platform,
+    the first term of the equation would capture the individual benefit from using
+    the platform (such as staying up-to-date with the news), the second term would
+    represent the cost of doing so (such as having less time to do other more important
+    things), and the third term would capture the interdependence with the friends'
+    actions. In particular, *β* would be positive if a user has an incentive to spend
+    more time on the app when his friends do so [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pure-strategy [Nash equilibrium](https://en.wikipedia.org/wiki/Nash_equilibrium)
+    of *Linear Quadratic* games is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**x*** = (**I** — β**A**)ᐨ¹ **b**,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where **x*** is a vector of dimension *n* (equal to the number of players, or
+    nodes of the graph), **A** is the unknown *n*×*n* adjacency matrix of the graph,
+    **b** is the *n*-dimensional vector of marginal benefits of the players.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similar formulas can be derived for *Linear Influence* and *Barik-Honorio* games.
+    A formula for the equilibrium actions **x*** that generalizes all three games
+    has the form [6]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**x*** = *f*(**A**) *h*(**b**),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the function *f*(**A**) accounts for the influence from the actions of
+    one’s neighbours in the network and encodes the specific utility function of the
+    game, and conversely, *h*(**b**) is only affected by one’s characteristics, such
+    as the marginal benefit of an individual player.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a80761caaa45a5c1108857fa5910f3f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Specific instances of three different types of games common in the game theory
+    literature. The colours represent the actions taken by the players, which in this
+    case are continuous values normalised between -1 and +1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our paper we further show [7] that the players’ actions contain information
+    about the spectrum of the graph, confirming that it is possible to reconstruct
+    the graph structure from only the actions and justifying our approach outlined
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Machine Learning approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We approach inferring the network structure of a game as a machine-learning
+    problem. We train a model to map the players’ actions to the network structure
+    of the game, without any prior knowledge of the underlying utility function. To
+    achieve this, we gather a dataset of actions and network pairs (**X**, **A**)
+    from games played with the same utility function (although this function is unknown
+    to us). This allows us to avoid making strong assumptions about the utility function
+    and instead train a model that is agnostic to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such an approach is particularly useful in scenarios where social network and
+    decision data exist for a small population, and we aim to learn the mapping from
+    decisions to the network structure of a larger population. For instance, governments,
+    public agencies, and researchers can collect social network data on a small population
+    by asking individuals to nominate their friends, and then use the proposed method
+    to learn the network interactions for a larger population in a cost-effective
+    manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our ML model has an encoder-decoder architecture that is invariant to the permutation
+    of both the players and the games, corresponding to the rows and columns of the
+    *n*×*K* matrix **X**, where *K* denotes the number of games. To achieve this,
+    we modify a Transformer model, which is naturally permutation-invariant over the
+    set of nodes but not over the set of games. Our encoder produces *K* vectors for
+    each player as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The scalar action *xᵤₖ* of player *u* for game *k* is first passed through a
+    non-linear transformation resulting in an *F*-dimensional vector
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**y***ᵤₖ*= ReLU(*xᵤₖ***w** + **b**).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then calculate the unnormalised attention scores
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*sᵤᵥ* = Σₖ **y***ᵤₖ*ᵀ **W** **W***ₖ* **y***ᵥₖ*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: between players *u* and *v* by first computing per-game scores using a ‘learned
+    dot-product’ with query and key weight matrices **W** and **W***ₖ* as in the original
+    Transformer [8], and then summing them over the games. The attention scores
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*αᵤᵥ* = softmax*ᵥ*(*uᵤᵥ*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: are obtained by taking the softmax over the unnormalised scores over the second
+    dimension. Finally, the *F*-dimension embedding
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**z***ᵤₖ* = *φ*(Σ*ᵥ* *αᵤᵥ***y***ᵥₖ*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: of node *u* for game *k* is obtained by aggregating the **y***ᵤₖ* vectors of
+    other nodes weighted by the attention scores, before passing the result through
+    a 2-layer MLP *φ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The decoder outputs probabilities for each entry of the adjacency matrix by
+    aggregating the *K* vectors for players *u* and *v*. This is done by taking the
+    dot product of the two vectors for each game and summing the results before feeding
+    them into a multilayer perceptron (MLP):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*âᵤᵥ* = *ψ*(Σ*ₖ* **z***ᵤₖ* ⊙**z**ᵥ*ₖ*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where ⊙ represents the dot product and *ψ* is a 2-layer MLP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The resulting encoder is also permutation-invariant over the set of games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f636828f3b7273868b2c6b9bfa47252b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram representing the encoder-decoder architecture of our model. The *n*x*K*
+    input matrix **X** containing the players’ actions is encoded into the *n*x*F*x*K*
+    tensor **Z**, where **z***ᵤₖ* is the embedding for node *u* in game *k*, obtained
+    by attending over the actions of the other players in the same game. **Z** is
+    then decoded into the *n*×*n* adjacency matrix **Â** where the entry âᵤᵥ contains
+    the probability of an edge between *u* and *v*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We conducted experiments to validate the effectiveness of our approach in learning
+    the network structure from players’ actions, using both synthetic and real-world
+    datasets. As baselines, we used DeepGraph [9] (the only machine learning approach
+    we are aware of), optimisation methods specific to the game type, and simple correlation
+    and anticorrelation of actions between nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On synthetic datasets, our model (called *NuGgeT*) consistently outperformed
+    previous methods across a range of different games and graph types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8bbe9d5459e558784acdcc49da9924c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We report the results on *Linear Influence* games (see the paper for *Linear
+    Quadratic* and *Barik-Honorio*) on three different types of synthetic graphs (Watts–Strogatz,
+    Erdős–Rényi and Barabási–Albert) and with varying smoothness of the marginal benefit
+    (a hyperparameter of this type of game). Our method, called NuGgeT, consistently
+    outperforms the baselines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/249557f74295d8a3f81c01e26660346c.png)![](../Images/da03d1a69ba2fdc550cbaeab6ee0221f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The performance of our model in learning the mapping depends on the number of
+    available games and training graphs, and we conducted ablations to evaluate both
+    factors. Generally, a higher number of games and graphs are beneficial for our
+    approach. However, we observe that the model performance tends to plateau at around
+    100 games and 500 graphs in most cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We further validated our approach on two real-world datasets: the *Indian Villages*
+    dataset [10] and the *Yelp Ratings* dataset [11]. The former contains data from
+    a survey of social networks in 75 villages in India. Each village constitutes
+    a social network graph, where nodes are households and edges are self-reported
+    friendships. We consider as actions the number of rooms, the number of beds, and
+    other decisions families have to make related to their household. The reasoning
+    is that if neighbours adopt a specific facility, villagers tend to gain a higher
+    payoff by doing the same, i.e., complying with social norms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *Yelp Ratings* dataset consists of user ratings of businesses and social
+    connections between users. We extracted 5000 sub-graphs representing communities
+    from the raw data, where the actions were the average rating of users for 22 categories
+    of businesses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On both real-world datasets, NuGgeT outperforms previous methods, showcasing
+    the efficacy of our approach in cases where the game utility is not explicitly
+    known. The gain is particularly large on the *Indian Villages* dataset, where
+    the competing DeepGraph method fails to learn altogether. We conjecture this is
+    due to NuGgeT being more data-efficient thanks to its built-in invariances, as
+    confirmed by the above ablation over the number of training graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6fa51b572bf42449fa6b6d24d6422725.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: NuGgeT outperforms previous methods on both the two real-world datasets we tested
+    on, confirming its efficacy in cases where the game utility function is not explicitly
+    known.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, our paper highlights the fruitful connection between game theory
+    and graph machine learning, particularly in the context of network games. By developing
+    a new machine learning approach to infer network structure from observed game
+    outcomes, we show the potential for utilising game theory ideas to enhance machine
+    learning and vice versa. Looking forward, there is ample opportunity to explore
+    further connections between network games and graph neural networks, paving the
+    way for more exciting developments in these fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] See e.g. M. O. Jackson and Y. Zenou, [Games on networks](https://web.stanford.edu/~jacksonm/GamesNetworks.pdf)
+    (2014), *Handbook of Game Theory* 4:95–163 for an overview.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Y. Leng et al., [Learning quadratic games on networks](http://proceedings.mlr.press/v119/leng20a/leng20a.pdf)
+    (2020), *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] E. Rossi et al., [Learning to infer the structure of network games](https://proceedings.mlr.press/v162/rossi22a/rossi22a.pdf)
+    (2022), *ICML*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] A. Barick and J. Honorio, [Provable computational and statistical guarantees
+    for efficient learning of continuous-action graphical games](https://arxiv.org/pdf/1911.04225.pdf)
+    (2019), *arXiv*:1911.04225.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] The first term represents the marginal benefit for taking a larger action,
+    the second term represents the cost for taking the action, while the third term
+    represents the relation with the neighbours actions. If *β* is positive, the incentive
+    of a player to take a higher action is increasing in the number of their neighbours
+    also taking a higher action, something referred to as a *strategic complement
+    relationship*. On the other hand, if *β* is negative the incentive of a player
+    to take a higher action is decreasing in the number of their neighbours taking
+    a higher action (*strategic substitute relationship*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] In this formula, the choice *f*(**A**)=(**I** — β**A**)ᐨ¹ and *h*(**b**)=**b**
+    yields a Linear Quadratic game, *f*(**A**)=**A**ᐨ¹ and *h*(**b**)=**b** a Linear
+    Influence game, and *f*(**A**)=**u**₁ (the largest eigenvector of **A**) and *h*(**b**)=**1**
+    a game of the Barik-Honorio type.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Section 3.3 in our paper [3].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] See “[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)”
+    blog post for an intuitive explanation of the Ttransformer and the role of the
+    query and weight matrices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] E. Belilovsky et al., [Learning to discover sparse graphical models](https://arxiv.org/abs/1605.06359)
+    (2017), ICML.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] The dataset accompanies the paper of A. Banerjee et al., [The diffusion
+    of microfinance](https://www.science.org/doi/10.1126/science.1236498) (2013),
+    Science 341(6144). Two authors of the paper (Abhijit Banerjee and Esther Duflo)
+    received the [2019 Economics Nobel Prize](https://www.nobelprize.org/prizes/economic-sciences/2019/press-release/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] [Yelp Open dataset](https://www.yelp.com/dataset).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*We are grateful to* [*Federico Barbero*](https://federicobarbero.com/)*,*
+    [*Fabrizio Frasca*](https://noired.github.io/)*, and* [*Francesco Di Giovanni*](https://francescodgv.github.io/)
+    *for proofreading this post. For additional articles about deep learning on graphs,
+    see Michael’s* [*other posts*](https://towardsdatascience.com/graph-deep-learning/home)
+    *in Towards Data Science,* [*subscribe*](https://michael-bronstein.medium.com/subscribe)
+    *to his posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
+    get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
+    or follow him on* [*Twitter*](https://twitter.com/mmbronstein)*.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,504 @@
+- en: How Reliable Is a Ratio?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d](https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to assess how reliable a ratio really is using Empirical Bayes Analysis
+    in Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[![Gustavo
+    Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)
+    [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)
+    ·9 min read·Dec 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/101cda4d83b516311142c34ced48fec5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [rupixen.com](https://unsplash.com/@rupixen?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/person-using-laptop-computer-holding-card-Q59HmzK38eQ?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of my references in the Data Science field is [Julia Silge](https://juliasilge.com/).
+    On her *Tidy Tuesday* videos she always makes a code-along type of video teaching/
+    showing a given technique, helping other analysts to upskill and incorporate that
+    to their repertoire.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last Tuesday, the topic was Empirical Bayes (her [blog post](https://juliasilge.com/blog/doctor-who-bayes/)),
+    which caught my attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, what is that?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirical Bayes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Empirical Bayes is a statistical method used when we work with ratios like *[success]/[total
+    tries]*. When we are working with such variables, many are the times when we face
+    a 1/2 success, which translates to a 50% success percentage, or 3/4 (75%), 0/1
+    (0%).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those extreme percentages do not represent the long term reality because there
+    were so little tries that it makes it very hard to tell if there is a trend there,
+    and most times these cases are just ignored or deleted. It takes more tries to
+    tell what the real success rate is, like 30/60, 500/100, or whatever makes sense
+    for a business.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Empirical Bayes, though, we are able to use the current data distribution
+    to calculate an estimate for its own data in earlier or later stages, as we will
+    see next in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the data distribution to estimate earlier and later stages of each observation’s
+    ratio.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s jumps to the analysis. The steps to follow are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define success and calculate the success ratio
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Determine the distribution’s parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate Bayes estimates
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the Credible Interval
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s move on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Imports**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The dataset to be used in this post is a log of customers and their quantities
+    of e-commerce orders and brick and mortar orders. It was generated based on real
+    numbers, but all the dataset was reduced, randomized and modified in proportions
+    to become anonymized to be used publicly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The variables are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*customer:* Customer ID'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*brick_mortar:* How many transactions have happened in physical store .'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*ecomm*: How many e-commerce transactions have happened online.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d5c3ec6ee85de8f53f51e4a23b0f2a98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Head of the data. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Success Ratio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Suppose our company is willing to increase their online penetration. Therefore,
+    for this analysis, our success is defined as ***when the customer purchases online.***
+    The customer bought online [success], bought brick and mortar [not success].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This way, our metric can be a simple ecommerce transactions over the total
+    *[ecomm]/[ecomm + brick_mortar]*. It will give us a ratio. Our question now becomes:
+    how different are these two customers: 808 *vs.* 672.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 808 has a ratio of 1/11 (9%) and 672 has a ratio of 1/2 (50%). Which one is
+    better? Where should I invest more time for growth? Well, customer 672 has 50%
+    of penetration, but it’s just 2 transactions total with us. Customer 808 has a
+    longer history with the company, but has just started buying online.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3419fa3425d2382ec0171c1231c2a3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 808 or 671? Where to invest? Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s calculate all the ratios. Here, we are going to discard the customers
+    that never bought online, simply because it is not possible to calculate an estimate
+    out of that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we have the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e3b2a8620d4b4dfd280062b5f892abe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ratio calculated. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s find out the distribution parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find Out the Distribution Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step here is to calculate the parameters of the distribution of our
+    ratios. But before we jump into that, let’s build our intuition on why we even
+    need to perform this step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, the Thomas Bayes theorem says that **probability is conditional**. So,the
+    likelihood of something occurring should be based on a previous outcome having
+    occurred in similar circumstances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If something happened 10 times, it is more likely to happen an 11th time than
+    something that failed to happen 10 times to happen on the 11th try.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will use the beta distribution to represent our *prior expectations*, or
+    what has been happening so far. It is like looking at our data and understanding
+    the pattern to be able to give a more precise estimate for any data point in any
+    stage, considering it would follow that same distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To know which α and β makes the beta distribution to fit our data, we will use
+    the module `distfit` in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the distribution, we can just plot a histogram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7414e4a085c8be2fa6ee3c438f6bcd41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ratio distribution. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s see which parameters make the beta distribution fit the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I marked this line `>>>arg: (0.850939343634336, 1.4553354599535102),<<<` ,
+    that are the α and β we need.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In case we want to see the fit, use this code, where we are just creating a
+    figure with 3 subplots and adding the Probability Density Function, the Cumulative
+    Density Function and the QQ Plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/658dfecb4f3f51ef6aeebd12a0170f94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plots from DistFit. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok. Time to calculate our estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayes Estimates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To calculate the estimates, we need to set the alpha (a) and beta(b) as just
+    discovered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the estimated parameters of the Beta Distribution, let’s model our ratio
+    of e-Commerce transactions with Empirical Bayes. We’ll start with our overall
+    prior, and update based on the individual evidence. *The calculation is simply
+    adding* ***a*** *to the number of successes (e-Comm orders) , and* ***a+b*** *to
+    the total number of orders.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Nice! Now we can already plot the simple ratio against the estimated ratio and
+    see how the model is working.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which results in the graphic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7c66acd534e37878dd884bb19e41cd5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The model estimates vs. simple ratio. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the more the dots get close to the red line, the more reliable that ratio
+    is. It means that the simple ratio [success]/[total] is very close to the Bayes
+    estimate, which already takes in account the prior probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look at some numbers in the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a55b074f206bf295feb33f61b936ab5e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimates. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the table, we notice that the higher the number of e-commerce transactions
+    and total transactions, the closer the Bayes estimate is from the real ratio.
+    This means that those 1/2 cases will be really off the mark, therefore, much less
+    reliable as a trend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also calculate the confidence interval for the estimates. That’s what
+    we will do next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confidence Interval
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The confidence interval is an extra step to make our analysis even more complete.
+    We can give the decision maker a range of trust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s calculate the alpha 1 and beta 1 for each observation, which are
+    the *posterior* shape parameters for the beta distribution, after the prior has
+    been updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, the next task can be performed with `scipy.stats.beta` module, using the
+    method `interval`. The output for a 95% confidence interval is a tuple with two
+    numbers, where the index `[0]` is the low boundary and the `[1]` is the high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: And, finally, plotting the interval by observation. We create a figure, then
+    a scatterplot for the middle point and two bar graphics, one for the low range,
+    which is white (so it disappears on white background) and the other one for the
+    high range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b052af61c8daca065a365f2ce9945b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confidence Intervals ordered by qty of ecomm orders. The more ecomm, the smaller
+    the interval.Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This graphic is ordered by decreasing quantity of e-comm orders. From more (left)
+    to less (right), we notice that the size of the confidence interval only gets
+    bigger, showing that when we have too little number of e-comm transactions, it
+    is really difficult to predict a reliable estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Coming back to one of our questions: should I invest more time in growing e-comm
+    for customer 672 or 808, here are the intervals.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4613b83f0cc414aba4a5fc1b5e0f312c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimates for customers 808 and 672\. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The customer 672 has a much larger CI, so it is less reliable. We should spend
+    more time developing customer 808, which aligns with the history of relationship
+    with the brand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d45844bb36d163cd8a2a95a546dc128b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Intervals for customers 808 and 672\. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before You Go
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Well, this tool shows itself as powerful. We see that it brought good results
+    for our comparison case here. Many times, we will just discard customers with
+    little transactions. But many other times, that may not be possible. Furthermore,
+    we may want to in fact analyze the tiny clients. Or yet, it will help us comparing
+    two clients that are ordering a lot too, looking at their potential, based on
+    the CI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40027cfab5f877a40d9149d7d5a0155a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The customer 2360 is could get to 78% vs 75% of the customer 361\. Image by
+    the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirical Bayes is a good idea for larger data, it is an extra variable for
+    other models, maybe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, I bet you are probably already thinking about the utility of this in your
+    job. So, we end here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you liked this content, follow my blog, subscribe to my page and get the
+    posts once they’re published.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
+    [## Gustavo Santos - Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read writing from Gustavo Santos on Medium. Data Scientist. I extract insights
+    from data to help people and companies…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: gustavorsantos.medium.com](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, find me on [LinkedIn](https://www.linkedin.com/in/gurezende/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the complete code, for reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/gurezende/Studying/blob/master/Python/statistics/Empirical_Bayes.ipynb?source=post_page-----1467f50e943d--------------------------------)
+    [## Studying/Python/statistics/Empirical_Bayes.ipynb at master · gurezende/Studying'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a repository with my tests and studies of new packages - Studying/Python/statistics/Empirical_Bayes.ipynb
+    at…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/gurezende/Studying/blob/master/Python/statistics/Empirical_Bayes.ipynb?source=post_page-----1467f50e943d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://juliasilge.com/blog/doctor-who-bayes/?source=post_page-----1467f50e943d--------------------------------)
+    [## Empirical Bayes for #TidyTuesday Doctor Who episodes | Julia Silge'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A data science blog
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: juliasilge.com](https://juliasilge.com/blog/doctor-who-bayes/?source=post_page-----1467f50e943d--------------------------------)
+    [](http://varianceexplained.org/r/empirical_bayes_baseball/?source=post_page-----1467f50e943d--------------------------------)
+    [## Understanding empirical Bayes estimation (using baseball statistics)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which of these two proportions is higher: 4 out of 10, or 300 out of 1000?
+    This sounds like a silly question. Obviously…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: varianceexplained.org](http://varianceexplained.org/r/empirical_bayes_baseball/?source=post_page-----1467f50e943d--------------------------------)
+    [](http://varianceexplained.org/r/credible_intervals_baseball/?source=post_page-----1467f50e943d--------------------------------)
+    [## Understanding credible intervals (using baseball statistics)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previously in this series
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: varianceexplained.org](http://varianceexplained.org/r/credible_intervals_baseball/?source=post_page-----1467f50e943d--------------------------------)
+    [](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution?source=post_page-----1467f50e943d--------------------------------)
+    [## What is the intuition behind beta distribution?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Disclaimer: I''m not a statistician but a software engineer. Most of my knowledge
+    in statistics comes from…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: stats.stackexchange.com](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution?source=post_page-----1467f50e943d--------------------------------)  [##
+    scipy.stats.beta - SciPy v1.11.4 Manual
+  prefs: []
+  type: TYPE_NORMAL
+- en: A beta continuous random variable. As an instance of the rv_continuous class,
+    beta object inherits from it a collection…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.beta.html?source=post_page-----1467f50e943d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,348 @@
+- en: A Guide to Building Performant Real-Time Data Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-guide-to-building-performant-real-time-data-models-d60b37bb07dc](https://towardsdatascience.com/a-guide-to-building-performant-real-time-data-models-d60b37bb07dc)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)[![Marie
+    Truong](../Images/2816e49beef958724dc0f38cfa49c4be.png)](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)
+    [Marie Truong](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)
+    ·7 min read·Aug 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3861b61d9bafd196194be9f60407c51b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Lukas Blazek](https://unsplash.com/@goumbik?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data has become a critical tool for decision-making. To be actionable, data
+    needs to be cleaned, transformed, and modeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This process is often part of an ELT pipeline that runs at a given frequency,
+    for example daily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, to adjust and make decisions fast, stakeholders sometimes
+    need access to the most recent data to be able to react fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if there is a huge drop in the number of users of a website, they
+    need to be aware of this issue quickly and be given the necessary information
+    to understand the problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first time I was asked to build a dashboard with real-time data, I connected
+    it directly to the raw table that was real-time and provided some simple KPIs
+    like the number of users and crashes. For monthly graphs and deeper analysis,
+    I created another dashboard connected to our data model, that was updated daily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This strategy was not optimal: I was duplicating logic between the data warehouse
+    and the BI tool, so it was harder to maintain. Moreover, the real-time dashboard
+    could only perform well with a few days of data, so stakeholders had to switch
+    to the historical one to check earlier dates.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I knew we had to do something about it. We needed real-time data models without
+    compromising performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ll explore different solutions to build real-time models,
+    and their pros and cons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Views
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An SQL view is a virtual table that contains the result of a query. Unlike tables,
+    views do not store data. They are defined by a query that is executed every time
+    someone queries the view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example of a view definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Even when new rows are added to the table, views stay up to date. However, if
+    the table is big, views might become very slow as no data is stored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They should be the first option to try out if you are working on a small project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the logic is complex, with joins and window functions, you’ll probably face
+    extremely long loading times for your dashboards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pros
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ✅ They are really easy to set up
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ They are always up-to-date
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ❌ They perform poorly with big amounts of data or complex calculations
+  prefs: []
+  type: TYPE_NORMAL
+- en: Often-Refreshed Tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If your data needs to be very recent but not exactly real-time, a good solution
+    is to refresh the table very often.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how we could define a query to refresh our table on a bihourly basis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: At Scopely, we have some models that are refreshed every half an hour. Those
+    models have great performance and provide information from the current day. The
+    topic is not critical enough to need data from the last 30 minutes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We added a little bit of complexity to our pipeline: it runs so often that
+    it sometimes fails. When our daily pipeline fails, we just rerun it manually.
+    But it would be a nightmare for a model that runs 48 times a day. Therefore we
+    added an extra piece of code to ensure that if a run fails, the next one integrates
+    data from the previous run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pros
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ✅ They achieve very good performance
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ❌ Data is not exactly real-time
+  prefs: []
+  type: TYPE_NORMAL
+- en: ❌ Pipeline runs often and needs to be watched closely
+  prefs: []
+  type: TYPE_NORMAL
+- en: Materialized Views
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Most modern cloud data warehouses have an object called a materialized view.
+    A materialized view is an object that stores the result of a query in a physical
+    table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some data warehouses, materialized views need to be refreshed with a trigger,
+    but in others, like BigQuery, they can be refreshed automatically when new rows
+    are added. This guarantees a good quality of data as the incremental logic is
+    handled by the warehouse itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The downside of using materialized views is that they come with many constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we try to use the same query as before to build a materialized view in BigQuery:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We get an error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Materialized views usually support a restricted syntax. Instead, we could use
+    the function APPROX_COUNT_DISTINCT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pros
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ✅ They combine the performance of a table with the simplicity of a view
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ There is no need to design the incremental logic
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ❌ The allowed syntax is extremely limited
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lambda View
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This idea came to us when we realized our logic was very simple: we used views
+    for real-time data and tables for historical data. So why couldn’t we use a view
+    that was just a **UNION ALL** of the two?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After a little bit of research, we found out that this concept already had
+    a name: lambda architecture.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lambda architecture is a system that combines batch processing (the incremental
+    table part) and streaming (the view part).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Very enthusiastic, I tried building a lambda view based on my **orders_aggregated**
+    table. I would simply use a where filter on a date and update that view every
+    day to change the value of the filter to the current date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But the execution time was very disappointing. Looking at the graph, I then
+    understood why: BigQuery’s planner was still recomputing the whole view, even
+    though it should only have looked at the table.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d87abc52231434405d4518080935e5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of knowing from the WHERE filter it doesn’t have to look at the view,
+    it looks at the value of the column **order_date** in the whole view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So I used a small workaround and hardcoded the date value for the view:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This time, the execution time was very fast and the planner only read data from
+    the table!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00e5a663a84d08a733c289ddedd995eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we though we might be missing part of the data if this query did not
+    run at exactly midnight, or if our daily pipeline failed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So we added one day of margin:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: If our pipeline fails and we don’t fix it immediately, we still have the data,
+    it’s just a little less performant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are working with **data build tool**, we were able to write that iteration
+    logic in Jinja2 syntax and avoid repeating ourselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pros
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ✅ Lambda views achieve great performance
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ Several days of margin can be defined to make sure they keep being up to date
+    when the pipeline fails
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ❌ The logic to make the query planner efficient is complex
+  prefs: []
+  type: TYPE_NORMAL
+- en: ❌ One lambda view relies on at least two database objects
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which one is the best solution?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There is no best solution per se; it all depends on your data and use case.
+    However, if you are still struggling to decide after reading about the four options,
+    here is a little decision tree to help you reach a decision:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4db526ffa4b8c98161313ef92c51b940.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[BigQuery documentation on materialized views](https://cloud.google.com/bigquery/docs/materialized-views-create#supported-mvs)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How to create near real-time models with just dbt + SQL](https://discourse.getdbt.com/t/how-to-create-near-real-time-models-with-just-dbt-sql/1457)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'I hope you enjoyed this article! If you did, please follow me for more content
+    on Python, SQL, and analytics, like this tutorial on ELT pipelines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-build-an-elt-with-python-8f5d9d75a12e?source=post_page-----d60b37bb07dc--------------------------------)
+    [## How to Build an ELT with Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting, Loading and Transforming Data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-build-an-elt-with-python-8f5d9d75a12e?source=post_page-----d60b37bb07dc--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

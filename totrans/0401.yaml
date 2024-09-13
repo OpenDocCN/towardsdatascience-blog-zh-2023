@@ -1,0 +1,541 @@
+- en: 'Boosting PyTorch Inference on CPU: From Post-Training Quantization to Multithreading'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/boosting-pytorch-inference-on-cpu-from-post-training-quantization-to-multithreading-6820ac7349bb](https://towardsdatascience.com/boosting-pytorch-inference-on-cpu-from-post-training-quantization-to-multithreading-6820ac7349bb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How to reduce inference time on CPU with clever model selection, post-training
+    quantization with ONNX Runtime or OpenVINO, and multithreading with ThreadPoolExecutor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie?source=post_page-----6820ac7349bb--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----6820ac7349bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6820ac7349bb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6820ac7349bb--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----6820ac7349bb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6820ac7349bb--------------------------------)
+    ·8 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc7894bf7fe58528c51d5ad9341c6009.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Welcome to another edition of “[The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd)”,
+    where we will analyze [Kaggle](https://www.kaggle.com/) competitions’ winning
+    solutions for lessons we can apply to our own data science projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This edition will review the techniques and approaches from the [“BirdCLEF 2023](https://www.kaggle.com/competitions/birdclef-2023/)”
+    competition, which ended in May 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem Statement: Deep Learning Inference under Limited Time and Computation
+    Constraints'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The BirdCLEF competitions are a series of annually recurring competitions on
+    Kaggle. The main objective of a BirdCLEF competition is usually to identify a
+    specific bird species by sound. The competitors are given short audio files of
+    single bird calls and then must predict whether a specific bird was present in
+    a longer recording.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In an earlier edition of [The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd),
+    we have already reviewed the winning approaches to audio classification with Deep
+    Learning from last year’s “[BirdCLEF 2022](https://www.kaggle.com/competitions/birdclef-2022/)”
+    competition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One aspect that was novel in the [“BirdCLEF 2023](https://www.kaggle.com/competitions/birdclef-2023/)”
+    competition was the limited time and computational constraints: **Competitors
+    were asked to predict roughly 200 10-minute-long recordings** [**on a CPU Notebook
+    within 2 hours**](https://www.kaggle.com/competitions/birdclef-2023/overview/code-requirements)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/competitions/birdclef-2023?source=post_page-----6820ac7349bb--------------------------------)
+    [## BirdCLEF 2023'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identify bird calls in soundscapes
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/competitions/birdclef-2023?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, you might be asking why anyone would want to infer a Deep Learning model
+    on a CPU instead of a GPU. This is a common practical problem statement [4] as
+    oftentimes staff (especially in conservation but also in other industries) have
+    budget constraints and thus only have access to limited computing resources. Additionally,
+    being able to make predictions quickly is helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because covering how to approach audio classification with Deep Learning would
+    be repetitive to the [previous The Kaggle Blueprints edition on the BirdCLEF 2022
+    competition](/audio-classification-with-deep-learning-in-python-cf752b22ba07),
+    we will **focus on the novel aspect of how to speed up inference for Deep Learning
+    models on CPU** in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are interested in winning approaches to audio classification with Deep
+    Learning, check out the previous edition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----6820ac7349bb--------------------------------)
+    [## Audio Classification with Deep Learning in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning image models to tackle domain shift and class imbalance with PyTorch
+    and torchaudio in audio data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approaching Deep Learning Inference on CPU
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main problem with having to infer on CPU within a limited time is that you
+    are not able to create large ensembles of powerful and diverse models to squeeze
+    out that last few percent of performance. Depending on the used model, some competitors
+    even struggled to meet the limited time requirements with a single model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it is common that an ensemble of weaker models will usually perform
+    better than a single powerful model. In the competition write-ups, successful
+    competitors shared some tricks of how they sped up the inference on CPU to be
+    able to ensemble multiple models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article covers the following tricks that were shared in the write-ups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Model Selection](#2de6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Post-Training Quantization](#984f)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multithreading](#2cc1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Selection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The model size heavily impacts the inference time. As a rule of thumb: the
+    bigger the model, the longer the inference time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a rule of thumb: the bigger the model, the longer the inference time.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Thus, when selecting the backbones for the models in their ensembles, competitors
+    had to evaluate which models resulted in the best trade-off between performance
+    and inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While NFNet (`eca_nfnet_l0`) [3, 5, 7, 9, 10, 11, 13, 14, 16] and EfficientNet
+    didn’t change as the popular backbones between the [last year’s](https://www.kaggle.com/competitions/birdclef-2022/)
+    and this year’s competition, we could see that in this year’s competition, competitors
+    preferred smaller versions of EfficientNet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While in the [BirdCLEF 2022](https://www.kaggle.com/competitions/birdclef-2022/)
+    competition `tf_efficientnet_b0_ns` [8, 11], `tf_efficientnet_b3_ns` [8], `tf_efficientnetv2_s_in21k`
+    [11, 16], and `tf_efficientnetv2_m_in21k` [13] were popular, this year the smaller
+    versions `tf_efficientnet_b0_ns` [1, 5, 6, 7, 10] and `tf_efficientnetv2_s_in21k`
+    [1, 6, 15] were preferably used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below you can see a comparison of the model sizes in terms of the number of
+    parameters for a selection of popular models in the BirdCLEF competition series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eaf0377d18a6da1792353c7000294d77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of parameters for different neural network architectures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, we could see that successful competitors leveraged a combination
+    of a larger model (`eca_nfnet_l0`) with smaller models (e.g., `tf_efficientnet_b0_ns`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Post-Training Quantization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Another trick to speed up inference on CPU is to apply quantization to the
+    model after training: Post-training quantization lowers the precision of the model’s
+    weights and activations from floating-point precision (32 bits) to a lower bit
+    width representation (e.g., 8 bits).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This technique transforms the model into a more hardware-friendly representation
+    and thus improves latency. However, due to the loss in precision of the weight
+    and activation representation, it can also lead to slight performance loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization goes hand in hand with hardware. For example, a Kaggle Notebook
+    has [4 CPUs (Intel(R) Xeon(R) CPU @ 2.20GHz with x86_64 architecture](https://www.kaggle.com/questions-and-answers/120979)).
+    These [Intel CPUs with x86 architecture prefer the quantized data types to be](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-pytorch-int8-inf-with-new-x86-backend.html)
+    `[INT8](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-pytorch-int8-inf-with-new-x86-backend.html)`[.](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-pytorch-int8-inf-with-new-x86-backend.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Hint: To display information about the CPU architecture, run the* `[*lscpu*](https://man7.org/linux/man-pages/man1/lscpu.1.html)`
+    *command and then check the manufacturer’s homepage to see which quantized input
+    data types that specific CPU prefers.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For an in-depth explanation of post-training quantization and a comparison
+    of ONNX Runtime and OpenVINO, I recommend this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://blog.ml6.eu/openvino-vs-onnx-for-transformers-in-production-3e10c01520c8?source=post_page-----6820ac7349bb--------------------------------)
+    [## OpenVINO vs ONNX for Transformers in production'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformers has revolutionized NLP, making it the first choice for applications
+    like machine translation, semantic…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: blog.ml6.eu](https://blog.ml6.eu/openvino-vs-onnx-for-transformers-in-production-3e10c01520c8?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This section will specifically look at two popular techniques of post-training
+    quantization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[ONNX Runtime](#c55e)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[OpenVINO](#b44e)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ONNX Runtime
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One popular approach to speed-up inference on CPU was to convert the final models
+    to [ONNX](https://onnx.ai/) (Open Neural Network Exchange) format [2, 7, 9, 10,
+    14, 15].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The relevant steps to quantize and accelerate inference on CPU with ONNX Runtime
+    are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Preparation:** Install ONNX Runtime'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 1:** Convert PyTorch Model to ONNX'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 2:** Make predictions with an ONNX Runtime session'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: OpenVINO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The equally popular approach to speed-up inference on CPU was to use OpenVINO
+    (Open Visual Inference and Neural network Optimization) [5, 6, 12] as shown in
+    [this Kaggle Notebook](https://www.kaggle.com/code/honglihang/openvino-is-all-you-need):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/code/honglihang/openvino-is-all-you-need?source=post_page-----6820ac7349bb--------------------------------)
+    [## openvino is all you need'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explore and run machine learning code with Kaggle Notebooks | Using data from
+    multiple data sources
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/code/honglihang/openvino-is-all-you-need?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The relevant steps to quantize and accelerate a Deep Learning model with OpenVINO
+    are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Preparation:** Install OpenVINO'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 1:** Convert PyTorch Model to ONNX (see Step 1 of [ONNX Runtime](#c55e))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2:** Convert ONNX Model to OpenVINO'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will output an XML file and a BIN file — of which we will we using the
+    XML file in the next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3:** Quantize to `INT8` using OpenVINO'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 4:** Make predictions with an OpenVINO inference request'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Comparison: ONNX vs. OpenVINO vs. Alternatives'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Both ONNX and OpenVINO are frameworks optimized for deploying models on CPUs.
+    [The inference times of a neural network quantized with ONNX and OpenVINO are
+    said to be comparable](https://blog.ml6.eu/openvino-vs-onnx-for-transformers-in-production-3e10c01520c8)
+    [12].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some competitors used PyTorch JIT [3] or TorchScript [1] as alternatives to
+    speed up inference on CPU. However, other competitors shared that ONNX was considerably
+    faster than TorchScript [10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multithreading with ThreadPoolExecutor
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Another popular approach to speed-up inference on CPU was to use multithreading
+    with [ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html)
+    [2, 3, 9, 15] in addition to post-training quantization, as shown in [this Kaggle
+    Notebook](https://www.kaggle.com/code/leonshangguan/faster-eb0-sed-model-inference):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/code/leonshangguan/faster-eb0-sed-model-inference?source=post_page-----6820ac7349bb--------------------------------)
+    [## Faster eb0_SED model inference'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explore and run machine learning code with Kaggle Notebooks | Using data from
+    multiple data sources
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/code/leonshangguan/faster-eb0-sed-model-inference?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This enabled competitors to run multiple inferences at the same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following example of [ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html)
+    from the competition, we have a list of audio files to infer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, you need to define an inference function that takes an audio file as input
+    and returns the predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the list of audios (e.g., `audios`) and the inference function (e.g., `predict()`),
+    you now can use [ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html)
+    to run multiple inferences at the same time (in parallel) as opposed to sequentially,
+    which will give you a nice boost in inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many more lessons to be learned from reviewing the learning resources
+    Kagglers have created during the course of the [“BirdCLEF 2023](https://www.kaggle.com/competitions/birdclef-2023/)”
+    competition. There are also many different solutions for this type of problem
+    statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we focused on the general approach that was popular among
+    many competitors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Model Selection](#2de6): Select the model size according to the best trade-off
+    between performance and inference time. Also, leverage bigger and smaller models
+    in your ensemble.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Post-Training Quantization](#984f): Post-training quantization can lead to
+    faster inference times due to datatypes of the model weights and activations being
+    optimized to the hardware. However, this can lead to a slight loss of model performance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multithreading](#2cc1): Run multiple inferences in parallel instead of sequentially.
+    This will give you a boost in inference time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If you are interested in how to approach audio classification with Deep Learning,
+    which was the main aspect of this competition, check out the write-up of the [BirdCLEF
+    2022](https://www.kaggle.com/competitions/birdclef-2022/) competition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----6820ac7349bb--------------------------------)
+    [## Audio Classification with Deep Learning in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning image models to tackle domain shift and class imbalance with PyTorch
+    and torchaudio in audio data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enjoyed This Story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
+    when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----6820ac7349bb--------------------------------)
+    [## Get an email whenever Leonie Monigatti publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
+    a Medium account if you don’t already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----6820ac7349bb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
+    and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Image References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If not otherwise stated, all images are created by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web & Literature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] adsr (2023). [3rd place solution: SED with attention on Mel frequency bands](https://www.kaggle.com/competitions/birdclef-2023/discussion/414102)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] anonamename (2023). [6th place solution: BirdNET embedding + CNN](https://www.kaggle.com/competitions/birdclef-2023/discussion/412708)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] atfujita (2023). [4th Place Solution: Knowledge Distillation Is All You
+    Need](https://www.kaggle.com/competitions/birdclef-2023/discussion/412753) in
+    Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [beluga](https://www.kaggle.com/gaborfodor) (2023). [Inference constraints
+    — CPU Notebook <= 120 minutes](https://www.kaggle.com/competitions/birdclef-2023/discussion/393059)
+    (accessed March 27th, 2023).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Harshit Sheoran (2023). [9th Place Solution: 7 CNN Models Ensemble](https://www.kaggle.com/competitions/birdclef-2023/discussion/412794)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] HONG LIHANG (2023). [2nd place solution: SED + CNN with 7 models ensemble](https://www.kaggle.com/competitions/birdclef-2023/discussion/412707)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] HyeongChan Kim (2023). [24th place solution — pre-training & single model
+    (5 folds ensemble with ONNX)](https://www.kaggle.com/competitions/birdclef-2023/discussion/412996)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] LeonShangguan (2022). [[Public #1 Private #2] + [Private #7/8 (potential)]
+    solutions. The host wins.](https://www.kaggle.com/competitions/birdclef-2022/discussion/326950)
+    in Kaggle Discussions (accessed March 13th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] LeonShangguan (2023). [10th place solution](https://www.kaggle.com/competitions/birdclef-2023/discussion/412713)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] moritake04 (2023). [20th place solution: SED + CNN ensemble using onnx](https://www.kaggle.com/competitions/birdclef-2023/discussion/412742)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] slime (2022). [3rd place solution](https://www.kaggle.com/competitions/birdclef-2022/discussion/327193)
+    in Kaggle Discussions (accessed March 13th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] storm (2023). [top 7th solution — `sumix` augmentation did all the work](https://www.kaggle.com/competitions/birdclef-2023/discussion/412922)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] Volodymyr (2022). [1st place solution models (it’s not all BirdNet)](https://www.kaggle.com/competitions/birdclef-2022/discussion/327047)
+    in Kaggle Discussions (accessed March 13th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] Volodymyr (2023). [1st place solution: Correct Data is All You Need](https://www.kaggle.com/competitions/birdclef-2023/discussion/412808)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] Yevhenii Maslov (2023). [5th place solution](https://www.kaggle.com/competitions/birdclef-2023/discussion/412903)
+    in Kaggle Discussions (accessed June 1st, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] yokuyama (2022). [5th place solution](https://www.kaggle.com/competitions/birdclef-2022/discussion/327044)
+    in Kaggle Discussions (accessed March 13th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,396 @@
+- en: A New Way to Predict Probability Distributions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-new-way-to-predict-probability-distributions-e7258349f464](https://towardsdatascience.com/a-new-way-to-predict-probability-distributions-e7258349f464)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Exploring multi-quantile regression with Catboost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://harrisonfhoffman.medium.com/?source=post_page-----e7258349f464--------------------------------)[![Harrison
+    Hoffman](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----e7258349f464--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e7258349f464--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e7258349f464--------------------------------)
+    [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----e7258349f464--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e7258349f464--------------------------------)
+    ·10 min read·Feb 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/908e3e8a3e927aa30c512a2bb15cd827.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dice. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How confident can we be in a machine learning model’s prediction? This question
+    has been a prominent area of research over the last decade, and it has major implications
+    in high-stakes machine learning applications such as finance and healthcare. While
+    many classification models, particularly [calibrated](/why-calibrators-part-1-of-the-series-on-probability-calibration-9110831c6bde)
+    models, come with uncertainty quantification by predicting a probability distribution
+    over target classes, quantifying uncertainty in regression tasks is much more
+    nuanced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amongst many proposed methods, quantile regression is one of the most popular
+    because no assumptions are made about the target distribution. Until recently,
+    the main disadvantage of quantile regression was that one model had to be trained
+    per predicted quantile. For instance, in order to predict the 10th, 50th, and
+    90th quantiles of a target distribution, three independent models would need to
+    be trained. Catboost has since addressed this issue with the [multi-quantile loss
+    function](https://catboost.ai/en/docs/concepts/loss-functions-regression#MultiQuantile:~:text=MultiQuantile,-%5Cdisplaystyle%5Cfrac%7B%5Csum)
+    — a loss function that enables a single model to predict an arbitrary number of
+    quantiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article will explore two examples using the multi-quantile loss function
+    on synthetic data. While these examples aren’t necessarily reflective of real-world
+    datasets, they will help us understand how well this loss function quantifies
+    uncertainty by predicting the quantiles of a target distribution. For a quick
+    refresher on noise and uncertainty in machine learning, see this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198?source=post_page-----e7258349f464--------------------------------)
+    [## Understanding Noisy Data and Uncertainty in Machine Learning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The actual reason your machine learning model isn’t working
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198?source=post_page-----e7258349f464--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A follow-up to this article is now available:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/another-conformal-way-to-predict-probability-distributions-fcc63e78680d?source=post_page-----e7258349f464--------------------------------)
+    [## Another (Conformal) Way to Predict Probability Distributions'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conformal multi-quantile regression with Catboost
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/another-conformal-way-to-predict-probability-distributions-fcc63e78680d?source=post_page-----e7258349f464--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Brief Overview of Quantile Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In supervised machine learning, the usual task is to train a model that predicts
+    the expected value of a target given a set of input features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c0a9c217cb0b9d60d0137967bc922f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Supervised Machine Learning. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notably, training a model this way produces a single prediction indicating what
+    the model believes is the most *likely* value of the target given the features.
+    In regression tasks, this is usually the mean of the target distribution conditioned
+    on the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, as illustrated in a [previous article](https://medium.com/towards-data-science/understanding-noisy-data-and-uncertainty-in-machine-learning-4a2995a84198),
+    most machine learning models are trained on noisy datasets, and simply predicting
+    the conditional expected value of the target does not sufficiently characterize
+    the target distribution. To see this, consider the following noisy regression
+    dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57dde15864f912447b122781e67dc0a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Noisy Linear Regression Data. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though the model prediction fits the data optimally, it doesn’t quantify
+    uncertainty. For instance, when x is around 0.4, the line of best fit predicts
+    that y is 3.8\. While it is true that 3.8 is the most likely value of y when x
+    is near 0.4, there are plenty of examples in the data where y is much higher or
+    lower than 3.8\. Said differently, the conditional distribution of the target
+    has high variability beyond its exception, and quantile regression helps us describe
+    this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In quantile regression, the loss function is modified to encourage a model to
+    learn the desired quantile of the conditional target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/688d0d5e47a7fd86dc565693bd59e373.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quantile Regression Loss Function. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To gain a better intuition about this loss function, suppose a model is being
+    trained to learn the 95th quantile of a target distribution. In the first case,
+    consider a single training example where the target was 45 and the model predicted
+    60 (i.e. the model overestimated the target by 15). Assume also that each training
+    example has a weight of 1\. The loss function evaluated at these values looks
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c438a0fad9131f3276801ff7f145f53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 95th Quantile Loss Function Overestimation. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, with the same target of 45, assume that the model predicted 30 (i.e. the
+    model underestimated the target by 15). The value of the loss function looks much
+    different:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c8c1c4a0e44e28e1d5f5b38193bdc24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 95th Quantile Loss Function Underestimation. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Despite the model prediction being off by 15 in both examples, the loss function
+    penalized the underestimation much higher than the overestimation. Because the
+    95th quantile is being learned, the loss function penalizes any prediction below
+    the target by a factor of 0.95, and any prediction above the target by a factor
+    of 0.05\. Hence, the model is “forced” to favor overprediction above underprediction
+    when learning the 95th quantile. This is the case when learning any quantiles
+    above the median — the opposite is true when learning quantiles below the median.
+    To see this better, we can visualize the loss function for each predicted quantile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21f46d6f89e042cf8a5cf91e2f4590f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 95th Quantile Loss Function. Underprediction (i.e. Target — Prediction > 0)
+    is Penalized Heavier. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b734176dae97f1e8f2fcf205c840ecc7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 50th Quantile Loss Function. Overprediction and Underprediction are Penalized
+    Equally. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/635f3ac4d1a4fc989377c33fb52c82f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 10th Quantile Loss Function. Overprediction (i.e. Target — Prediction < 0) is
+    Penalized Heavier. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Catboost now extends this idea by allowing the base decision trees to output
+    multiple quantiles per node. This allows a single model to predict multiple quantiles
+    by minimizing a new loss function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4bdc970cb9f26cf6e75704aee39d7ec4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Catboost Multi-Quantile Loss Function. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example 1 —Simple Linear Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To understand how the multi-quantile loss function works, let''s start with
+    a simple dataset. The following python code generates a synthetic linear dataset
+    with gaussian additive noise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting training data should look similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3d6ec859125989e546af3cca02b1eed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Noisy Linear Regression Data. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, the quantiles of the target distribution need to be specified for prediction.
+    To illustrate the power of the multi-quantile loss, this model will seek to predict
+    99 different quantile values for each observation. This can almost be thought
+    of as taking samples of size 99 from each predicted distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting predictions DataFrame looks something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bda08f4e5ee8be3cdad67bdc7ded837c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quantile Predictions. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each row corresponds to a testing example and each column gives a predicted
+    quantile. For instance, the 10th quantile prediction for the first test example
+    was 3.318624\. Since there is only one input feature, we can visualize a few predicted
+    quantiles overlayed on the testing data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a681046fe00ee611e24fa4392486ff68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing Data overlaid with Predicted Quantiles. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Visually, the 95th and 5th quantiles appear to do a good job accounting for
+    uncertainty in the data. Moreover, the 50th quantile (i.e the median) roughly
+    approximates the line of best fit. When working with predicted quantiles, one
+    metric we’re often interested in analyzing is coverage. Coverage is the percentage
+    of targets that fall between two desired quantiles. As an example, coverage can
+    be computed using the 5th and 95th quantiles as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the 5th and 95th quantiles, assuming perfect calibration, we would expect
+    to have a coverage of 95–5 = 90%. In this example, the predicted quantiles were
+    slightly off but still close, giving a coverage value of 91.4%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now analyze the entire predicted distribution that the model outputs.
+    Recall, the line of best fit is y = 2x + 3\. Therefore, for any input x, the mean
+    of the predicted distribution should be around 2x + 3\. Likewise, because random
+    gaussian noise was added to the data with a standard deviation of 0.3, the standard
+    deviation of the predicted distribution should be around 0.3\. Let’s test this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5deef62a1debe937cc7fd7dcf2fdc47b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Distribution of y when x = 4\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazingly, the predicted distribution seems to align with our expectations.
+    Next, let’s try a more difficult example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example 2— Non-Linear Regression with Variable Noise
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To see the true power of multi-quantile regression, let’s make the learning
+    task more difficult. The following code creates a non-linear dataset with heterogeneous
+    noise that depends on specific regions of the domain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting training data looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/066b53a5d56c4f784779618db2a7d5e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training Data for Example 2\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll fit the Catboost regressor in the same way as example 1 and visualize
+    the predictions on a test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/92768f191a1b5d1ed75aea353a2b60af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing Data overlaid with Predicted Quantiles. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Upon visual inspection, the model has characterized this non-linear, heteroscedastic
+    relationship well. Notice how, near x = 0, the three predicted quantiles converge
+    towards a single value. This is because the region near x = 0 has almost no noise
+    — any model that correctly predicts the conditional probability distribution in
+    this region should predict a small variance. Conversely, when x is between 7.5
+    and 10.0, the predicted quantiles are much further apart because of the inherent
+    noise in the region. 90% coverage can be computed as before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the 5th and 95th quantiles, assuming perfect calibration, the expected
+    coverage is 95–5 = 90%. In this example, the predicted quantiles were even better
+    than example 1, giving a coverage of 90.506%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, let’s look at a few inputs and their corresponding predicted distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98e49ab357176e4c5b5e5bedc4e7ad96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Target Distribution for x = -0.06\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The distribution above does a nice job of capturing the target value with a
+    relatively small variance. This is to be expected as the target values in the
+    training data when x = 0 have little noise. Contrast this with the predicted target
+    distribution when x = -8.56:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/086cf53bc3a59709447c3af27ee02b69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Target Distribution for x = -8.56\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This distribution is right skewed and has a much higher variance. This is expected
+    for this region of data because the noise was sampled from an exponential distribution
+    with high variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article demonstrated the power of multi-quantile regression for learning
+    arbitrary conditional target distributions. We only explored two one-dimensional
+    examples to visually inspect model performance, but I would encourage anyone interested
+    to try the multi-quantiles loss function on higher dimensional data. It’s important
+    to note that quantile regression makes no statistical or algorithmic guarantees
+    of convergence, and the performance of these models will vary depending on the
+    nature of the learning problem. Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Become a Member:* [*https://harrisonfhoffman.medium.com/membership*](https://harrisonfhoffman.medium.com/membership)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Buy me a coffee:* [*https://www.buymeacoffee.com/HarrisonfhU*](https://www.buymeacoffee.com/HarrisonfhU)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Catboost Loss Functions —* [https://catboost.ai/en/docs/concepts/loss-functions-regression#MultiQuantile](https://catboost.ai/en/docs/concepts/loss-functions-regression#MultiQuantile)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

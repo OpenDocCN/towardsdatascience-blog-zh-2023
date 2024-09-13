@@ -1,0 +1,348 @@
+- en: 'The Power of Linux Cgroups: How Containers Take Control of Their Resources'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-power-of-linux-cgroups-how-containers-take-control-of-their-resources-ba564fef13b0](https://towardsdatascience.com/the-power-of-linux-cgroups-how-containers-take-control-of-their-resources-ba564fef13b0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimizing Container Resource Allocation with Linux Control Groups
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dpoulopoulos.medium.com/?source=post_page-----ba564fef13b0--------------------------------)[![Dimitris
+    Poulopoulos](../Images/ce535a1679779f5a2ec8b024e6691e50.png)](https://dpoulopoulos.medium.com/?source=post_page-----ba564fef13b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba564fef13b0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba564fef13b0--------------------------------)
+    [Dimitris Poulopoulos](https://dpoulopoulos.medium.com/?source=post_page-----ba564fef13b0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba564fef13b0--------------------------------)
+    ·8 min read·Jan 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0e5159a60f501ca4b4aa41481bdd327.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Joshua Hoehne](https://unsplash.com/@mrthetrain?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last article examined how to use Linux Namespaces to create isolated environments
+    within a single Linux system. This article is part of our effort to deeply understand
+    how containers work by looking under the hood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/containers-how-they-work-under-the-hood-and-why-theyre-taking-over-the-data-science-world-6b94702609aa?source=post_page-----ba564fef13b0--------------------------------)
+    [## Containers: How They Work Under the Hood and Why They’re Taking Over the Data
+    Science World'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Beginner’s Guide to Understanding the Magic of Docker
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/containers-how-they-work-under-the-hood-and-why-theyre-taking-over-the-data-science-world-6b94702609aa?source=post_page-----ba564fef13b0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Namespaces are the first step of our journey. We saw how you can create a `PID`
+    namespace to create a world where the processes running within are under the assumption
+    that they are the only ones in existence, but how can you enforce a limit to the
+    number of resources they can consume? Enter Linux cgroups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linux control groups, or cgroups, are a powerful tool for managing and allocating
+    resources in a Linux system. They allow administrators to limit the resources
+    used by processes or groups of processes, ensuring that essential system services
+    always have access to the resources they need to function properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But cgroups are not just useful for system administrators — they also provide
+    a way for containers to take control of their own resources, enabling them to
+    run more efficiently and reliably within a shared host environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we explore the benefits of using cgroups in the context of
+    containers and show you how to get started with cgroups in your own environment.
+    First, we will create a control group to limit the memory consumption of a process
+    that runs in its context and then run a whole namespace under it. Let’s dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Learning Rate](https://www.dimpo.me/newsletter?utm_source=medium&utm_medium=article&utm_campaign=cgroups)
+    is a newsletter for those who are curious about the world of MLOps. MLOps is a
+    broad field that strives to bring ML models to production in an efficient and
+    rerpoducible way. Containers play a crucial role in the pipeline. If you want
+    to learn more about topics like this subscribe [here](https://www.dimpo.me/newsletter?utm_source=medium&utm_medium=article&utm_campaign=cgroups).
+    You’ll hear from me on the first Saturday of every month with updates and thoughts
+    on the latest MLOps news and articles!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What are Cgroups?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Linux control groups, or cgroups, is a kernel feature that allows an administrator
+    to allocate resources such as CPU, memory, and I/O bandwidth to groups of processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cgroups provide a way to control how much of the system’s resources a process
+    or a group of processes can use. For example, an administrator could create a
+    cgroup for a group of processes associated with a specific application (e.g.,
+    a web application running on a server) and then set limits on the amount of CPU
+    and memory that those processes are allowed to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cgroups are helpful for various purposes, including improving system performance,
+    isolating processes for security purposes, and simplifying managing multiple applications
+    on a single system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of containers, cgroups allow us to limit the resources each container
+    can consume so that our application cannot take over the whole server or ensure
+    it has the resources it needs to function properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, setting the resources section of a pod in Kubernetes is always
+    a good idea because it helps the Kubernetes scheduler decide on which node to
+    schedule the pod. This ensures that our application will have everything it needs
+    to run correctly. If not, our application won’t even start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How can we use cgroups in practice? Let’s see this by creating two simple examples:
+    first, we will create a simple application and run it under a specific cgroup,
+    then run a whole namespace in a similar context.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Simple Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our journey in the world of cgroups starts here. First, we will create a simple
+    application and run it in the context of a memory-limiting cgroup. Then, we will
+    create a Linux namespace in the same context and run the same application inside
+    this namespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Memhog
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To make this example work, we need to control the amount of memory the application
+    uses. To this end, we will use a Debian package called `memhog`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`memhog` is a simple package that allocates the memory we tell it to for testing
+    purposes (see the manpage [here](https://man7.org/linux/man-pages/man8/memhog.8.html)
+    for more details).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first step is to install `memhog`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Test that you have installed `memhog` properly by asking it to allocate 100
+    megabytes of memory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output should be something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you get this output, then you’re good to go! Let’s create a bash script
+    that will run this every 2 seconds. So, our application is a service that asks
+    for 100 megabytes every two seconds. Create a new file, call it `memhog.sh` and
+    put the following content inside:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, make the file executable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create a Cgroup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To create, manage, and monitor cgroups, we need another package called `cgroup-tools`.
+    So, first, you need to install this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have this in our toolbox, the process goes as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new cgroup using the package we just installed
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set a limit for the resource we want to control for this specific cgroup
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the application or namespace under this cgroup
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Thus, let us first create the cgroup. To achieve this, use the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This command creates a new cgroup (`cgcreate`) of type memory and sets its
+    name to `memhog-limiter`. What this command actually did was create a new directory
+    under `/sys/fs/cgroup/memory`, and you can view its contents by running `ls`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: (Depending on your system, the location or structure of this directory may vary)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have created the cgroup let’s set our limits. We’ll set a limit
+    of 50 megabytes, which means that any process that runs in this context cannot
+    exceed it. Similarly, when talking about groups of processes, the sum of their
+    needs cannot exceed this limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To set the memory limit, run the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This command sets a memory limit of 50 megabytes for the cgroup `momhog-limiter`.
+    If you cat the corresponding file from the directory structure we saw earlier,
+    you’ll see precisely this (in bytes):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’re ready to run our application and namespace in this context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set Your Limits!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Our state now is the following: we have created a service that allocates 100
+    megabytes of memory every two seconds. We have also created a cgroup that limits
+    the memory a process or a group of processes can consume to 50 megabytes. What
+    do you expect to happen if we try to run our service in this context?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Without further ado, to execute a service in this context, run the command
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is what we expected it to be: the Linux kernel kills the service
+    every time it tries to run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s great; this is precisely what we’d like to see. But now, how can we create
+    a namespace in this context? This is similar to what containers do, so if we achieve
+    this, we’ll be on our way to creating a container-like environment without Docker,
+    which is the goal of this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Creating a namespace in this context is pretty simple. The following command
+    may look familiar to you:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Sure, we used the first part before to run a service in the context of our
+    `memhog-limiter` cgroup (`sudo cgexec -g memory:memhog-limiter`). Furthermore,
+    we’ve seen the second part of the command in the article; we talked about namespaces
+    (`unshare -fp — mount-proc`): it is the command we used to create a new `PID`
+    namespace.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, if we bring everything together, this command creates a new `PID` namespace
+    in the context of our cgroup. To verify that you are in a new namespace, run the
+    following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, in your new namespace only `bash` is running as `PID` 1\. So,
+    every service you’ll start now will start in the context of our cgroup. Let’s
+    verify this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is great! We got the same output as before. If you want to play around,
+    you could reduce the memory that `memhog` tries to allocate and make it work.
+    In any case, congratulations! You’re one step closer to creating your own Linux
+    containers without Docker!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In summary, Linux cgroups is a powerful tool for managing and allocating resources
+    in a Linux system. They allow administrators to limit the amount of resources
+    that can be used by processes or groups of processes, ensuring that essential
+    system services always have access to the resources they need to function properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of containers, cgroups provide a way for containers to take control
+    of their own resources, enabling them to run more efficiently and reliably within
+    a shared host environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This story examined how you can use cgroups in practice and brought us one
+    step closer to our final goal: create a container-like environment in Linux without
+    Docker. Next stop? Overlay filesystems!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My name is [Dimitris Poulopoulos](https://www.dimpo.me/?utm_source=medium&utm_medium=article&utm_campaign=cgroups),
+    and I’m a machine learning engineer working for [Arrikto](https://www.arrikto.com/).
+    I have designed and implemented AI and software solutions for major clients such
+    as the European Commission, Eurostat, IMF, the European Central Bank, OECD, and
+    IKEA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in reading more posts about Machine Learning, Deep Learning,
+    Data Science, and DataOps, follow me on [Medium](https://towardsdatascience.com/medium.com/@dpoulopoulos/follow),
+    [LinkedIn](https://www.linkedin.com/in/dpoulopoulos/), or [@james2pl](https://twitter.com/james2pl)
+    on Twitter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Opinions expressed are solely my own and do not express the views or opinions
+    of my employer.
+  prefs: []
+  type: TYPE_NORMAL

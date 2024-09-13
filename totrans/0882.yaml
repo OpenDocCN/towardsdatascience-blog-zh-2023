@@ -1,0 +1,695 @@
+- en: Feature Importance Analysis with SHAP I Learned at Spotify (with the Help of
+    the Avengers)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/feature-importance-analysis-with-shap-i-learned-at-spotify-aacd769831b4](https://towardsdatascience.com/feature-importance-analysis-with-shap-i-learned-at-spotify-aacd769831b4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Identifying top features and understanding how they affect prediction outcomes
+    of machine learning models with SHAP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@elalamik?source=post_page-----aacd769831b4--------------------------------)[![Khouloud
+    El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----aacd769831b4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aacd769831b4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aacd769831b4--------------------------------)
+    [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----aacd769831b4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aacd769831b4--------------------------------)
+    ·13 min read·Aug 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article is one of a two-part piece documenting my learnings from my Machine
+    Learning Thesis at Spotify. Be sure to also check out the second article on how
+    I succeeded in significantly optimizing my model for this research.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/boosting-model-accuracy-techniques-i-learned-during-my-machine-learning-thesis-at-spotify-code-8027f9c11e57?source=post_page-----aacd769831b4--------------------------------)
+    [## Boosting Model Accuracy: Techniques I Learned During My Machine Learning Thesis
+    at Spotify (+Code…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A tech data scientist’s stack to improve stubborn ML models
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/boosting-model-accuracy-techniques-i-learned-during-my-machine-learning-thesis-at-spotify-code-8027f9c11e57?source=post_page-----aacd769831b4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two years ago, I conducted a fascinating research project at Spotify as part
+    of my Master’s Thesis. I learned several useful ML techniques, which I believe
+    any Data Scientist should have in their toolkit. And today, I’m here to walk you
+    through one of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During that time, I spent 6 months trying to build a prediction model and then
+    deciphering its inner workings. *My goal was to understand what made users satisfied
+    with their music experience.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: It wasn’t so much about predicting whether a user was happy (or not), but rather
+    understanding the *underlying* factors that contributed to their happiness (or
+    lack thereof).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sounds exciting, right? It was! I loved every bit of it because I learned so
+    much about how ML can be applied in the context of music and user behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(If you’re interested in the applications of ML in the music industry, then
+    I highly recommend checking out this interesting* [*research*](https://research.atspotify.com/2018/07/understanding-and-evaluating-user-satisfaction-with-music-discovery/)
+    *led by Spotify’s top experts. It’s a must-read!)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine Learning & Behavioral Psychology in Tech
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/3cabf23560f84b106fbe91baa1e6a217.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author (Midjourney)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In tech, research projects like mine are very common because a lot of the work
+    revolves around delivering the best personalized experience for users/customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This often means delving into the human psyche, and ML can be a powerful tool
+    for achieving the impossible — *understanding humans*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we combine ML with Psychology and Behavioral Sciences, we get closer to
+    having a complete picture of how humans behave.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We build models that try to predict how people will react.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And sometimes we try to understand *why* the model predicted that reaction in
+    the first place. It’s like asking the model — *“Hey, what reasons did you think
+    explain why users behave this way?”*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer lies in finding what variables of the model **had the most weight**
+    in predicting the outcome. And thenunderstanding **their individual impact** on
+    the prediction result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my research, I did what we call a **feature importance** analysis and used
+    a powerful tool called **SHAP** to do that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post, I will explain to you:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*What* are Shapley values aka SHAP'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Why* you need to know how to use SHAP'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*How* to use SHAP'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Welcome to interpreting ML models!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dilemma Data Scientists Can’t Escape
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When you’re dealing with models such as LightGBM, which is the one I was using
+    in my research, know that you’re tackling a specific type of model — a ‘black
+    box’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like a villain straight out of a DC Comic, a black box model is something you
+    should be scared of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why? Because deciphering those is like beating up the Joker while he’s giggling
+    at your face. Be sure he won’t spill the beans easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many industries, regulations, and processes require that you explain how
+    you reached your results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*While in Tech, knowing how to explain your prediction results is important
+    for* gaining trust *or* understanding the inner working of your model*. The latter
+    was the case in my research.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Interpretability vs Complexity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When picking the right model for your project, you will have to think about
+    many factors, including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpretability** — *Can you explain how your model did the magic? How it
+    made its decisions?* Linear regression models for example are the definition of
+    transparency. You can easily trace back the impact of each feature on the model’s
+    output. Interpretability is also often called Explainability.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Complexity** — *How sophisticated is the architecture or representation of
+    your model?* Neural Networks can predict wonders but understanding how they captured
+    the relationships between the features will have you pulling your hair out. Complexity
+    is also often associated with high predictive capability.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: White or Black Box?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As you can see these two do not align at all. A complex model will most likely
+    come at the cost of its interpretability. So you’ll have to be careful in deciding
+    which type of model you want to build based on your goals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e6eb9b68311db3c8256d4af04e3c936.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author (Midjourney)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**White Box —** Models that are easily interpretable/explainable because they
+    give you a clear image of the relationships between features.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can go behind the scenes and understand how the model made its prediction.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Black Box** — Models that can yield accurate results but that are also highly
+    complex. They are difficult to interpret. Like a black hole, we absolutely have
+    no freaking idea what’s going on inside. So let’s just call them BBs, makes them
+    sound less scary.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Black box models are often the ones we use in Tech to achieve powerful and
+    accurate results. That’s why knowing how to interpret them is important for your
+    career as a Data Scientist.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Step 1 — Good Prediction Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To evaluate what factors were driving satisfaction, I had to:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Choose a metric that could be used as a proxy for describing user satisfaction.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Pick the right ML model — in my case LightGBM*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find and create as many relevant features as possible for my model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Pick an accuracy metric to evaluate the performance of my model — in my case
+    ROC AUC score.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Optimize the performance of my model to make sure it was predicting this metric
+    relatively accurately.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**LightGBM is a decision tree-based framework that combines gradient boosting
+    and ensemble methods to tackle complex problems. Ensemble methods improve accuracy
+    as each tree has a different knowledge of the data and applies a different decision-making
+    approach. While gradient boosting works by building weak decision trees sequentially,
+    each learning from where the previous model had difficulty and correcting the
+    difference between the predicted value and the true value called ‘residuals’.
+    These trees propagate the gradients of errors.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14fc52c23c0a8c263af1952a4adf77e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here’s what my ML pipeline looked like
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Due to the confidentiality of this research, I cannot share specific information,
+    but I’ll do my very best for it not to sound like something else you need to decipher.
+    Let’s leave that to SHAP.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my research, I built a LightGBM classifier aka a BB model, that output a
+    binary outcome:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: y = 1 → the user is seemingly satisfied
+  prefs: []
+  type: TYPE_NORMAL
+- en: y = 0 → not so much
+  prefs: []
+  type: TYPE_NORMAL
+- en: My goal was to understand **why** listeners were feeling how they were feeling,
+    rather than simply figuring out **how** they were feeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At first, my ROC AUC score was around 0.5, which is the worst possible score
+    you can get on a classifier. It means the algorithm has a 50% chance of predicting
+    yes or no. This is as random as what humans can do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So after spending 2 months trying to improve the prediction of my model, I was
+    finally able to reach a satisfying result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Again, be sure to check out how I did that in the article below!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/boosting-model-accuracy-techniques-i-learned-during-my-machine-learning-thesis-at-spotify-code-8027f9c11e57?source=post_page-----aacd769831b4--------------------------------)
+    [## Boosting Model Accuracy: Techniques I Learned During My Machine Learning Thesis
+    at Spotify (+Code…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A tech data scientist’s stack to improve stubborn ML models
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/boosting-model-accuracy-techniques-i-learned-during-my-machine-learning-thesis-at-spotify-code-8027f9c11e57?source=post_page-----aacd769831b4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Only then, I could finally start digging into how my model made its predictions
+    using feature importance. So let’s dive right in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2 — Feature Importance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The SH-Avengers to the Rescue
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*So let’s rewind.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In my research, I wanted to evaluate what were the key factors driving user
+    satisfaction. Since my model was a BB, the only way I could do that was by doing
+    a feature importance analysis.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Picture this — the Avengers fighting together to save the world. How would you
+    actually know which one was the most powerful in the rescue?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(We all know it’s Iron Man, but let’s just pretend we don’t!)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is what SHapley Additive exPlanations, or SHAP values, do in the imaginary
+    world of machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac6002efb06dca11a53799e72d8ca8a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Mateusz Wacławek](https://unsplash.com/@wacalke?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are SHAP values?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SHAP or Shapley values are based on cooperative game theory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They measure how each feature — the Avengers — contributed to the model’s final
+    decision — saving the world or destroying it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the context of feature importance, the *Avengers* are the individual *features*,
+    and the *rescue of the world* is the *prediction* made by the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does it work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The idea is to consider all possible combinations of features and **measure
+    the change in the model’s prediction when a specific feature is included or excluded.**
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By comparing these different combinations, Shapley values assign a value to
+    each feature that represents its contribution to the prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key mathematical concept at play is *permutation*. We consider different
+    permutations of features and calculate their marginal contributions. By considering
+    all possible permutations and averaging the contributions, we arrive at the Shapley
+    value for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By doing so, we get to understand how our model is ‘saving the day’ — or making
+    its predictions!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To be more specific, SHAP values help us understand:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*What were the top features that influenced the prediction results?*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In our case **how powerful each Avenger was in saving the world**. Imagine the
+    fist of Hulk into your face, that thing will send you flying all the way into
+    the multiverse.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '*How did these different features affect the prediction results?* Aka t**he
+    impact of the power of each Avenger in saving the world.** I mean, see how Wanda,
+    the Scarlet Witch, was so strong, but so strong in: destroying half the world!!!
+    Sometimes the hero is a villain (or just a bad hero), so it’s important that you
+    find out on which side they are.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Double Interpretability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Shapley values are particularly powerful because they provide a double picture
+    of the interpretability of BB models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Globally.** By giving a general overview of the predictive power of each
+    feature, aggregated across all users.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Locally.** SHAP values can be calculated for each user to explore how features
+    influenced the prediction result for this specific user.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How about Joining the Avengers? Let’s!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/447c1b770210502d10a09225a0d96846.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep in mind all the data used below are pure examples to preserve the confidentiality
+    of this research.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. Encode your variables**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Make sure your variables are encoded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Ordinal features,* so that the model preserves the ordinal information'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Categorical features,* so that the model can interpret nominal data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'So first, let’s store our variables somewhere. Again, because the research
+    is confidential, I cannot disclose the data I used, so let’s use these instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, make sure to build the function that encodes the variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then apply that function to your list of variables. This means you need to create
+    lists with strings of the name of your variables, i.e. a list for your *ordinal*
+    variables, one for the *categorical* ones, and one for the *numerical* ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Prepare your data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Split your dataframe to get your *train*, *validation*, and *test* sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train Set** — to train the model on the algorithm you pick eg. LightGBM'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Validation Set** — to hyper-tune your parameters and optimize your prediction
+    results'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Test Set** — to make your final predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In my research, I used `GroupShuffleSplit`. It creates a user-defined number
+    of independent training-validation splits. It works by randomly assigning entire
+    groups to either the training or validation sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then apply the function to your dataframe to get your train, validation, and
+    test sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Train your *model*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here, I’m assuming you’ve already:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cleaned and preprocessed your data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hyperturned your parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Optimized your model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. Feature Importance using SHAP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: And here’s the moment you’ve been long waiting for!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SHAP package has many different types of visualizations, depending on whether
+    you want to have a global interpretation (all users aggregated) or a local one
+    (per user). In my research, I focused on the global interpretation of my results
+    as I did not care about a specific user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I used one specific type of chart, which I find to be pretty sufficient to
+    visualize the impact of your features — **Summary Plots**. You will get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ranking** of your features based on their predictive weights.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/73723d38af47d0b3fc70e4942883f688.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**S1** — Image by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Directional impac**t of each feature i.e. is a feature impacting the prediction
+    results towards happiness or the opposite.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b63c53769d9c8bdfcdaaf90c55d36940.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**S2** — Image by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NB:** Features colored in grey are nominal features that couldn’t be encoded
+    so if you care about these, then encode them too!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🚨**Remember**🚨
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Make sure to create a list with the features whose impact you want to evaluate
+    in predicting the results: you will insert them in the ‘my_features’ code line
+    below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This function will yield both summary plots (see S1, S2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then run the function to get your SHAP visualization et voilà!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: You just made the Joker spill the beans; even Batman can’t do that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You also know which Avenger saved the day! And if you didn’t get the joke, then
+    shame on you for not taking the time to properly read my article 😡
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(Now I just realized I mixed the Marvel universe with the DC one, that’s a
+    first)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Most Important Part — Interpreting SHAP values
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Interpreting these graphs is not straightforward. It took me some time before
+    I got to know how to properly do it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When interpreting those graphs, you’ll need to take into consideration 2 elements,
+    which are represented in the graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Is the SHAP value positive or negative?* Does it fall on the left or right-hand
+    side of the summary plot?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Is the feature value high or low?* Look at that colored bar on the right of
+    the plot that goes from low to high based on the summary plot.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s take an example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s assume we’re analyzing the relation between how much a user streams on
+    Spotify `streaming_time`and their satisfaction (`y = 1` from Step 1). Using SHAP
+    values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Positive** SHAP Value (right-hand side of the plot) + **High** `streaming_time`
+    (Red Color) → More streaming corresponds to higher satisfaction.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Negative** SHAP Value (left-hand side of the plot) + **High** `streaming_time`
+    (Red Color) → More streaming indicates lesser satisfaction with the experience.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Recap
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**What are Shapley values?** A feature importance method to measure how each
+    feature contributed to your model’s final decision.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**When do you need to use SHAP?** When you need to explain how your model made
+    its predictions or you want to understand what key features impacted your model
+    output when you’re dealing with models that are hard to interpret like black box
+    models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**How to use SHAP?** Check the step-by-step process. No way I can summarize
+    this part.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I have GIFTS for you 🎁!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sign up to my [**newsletter**](https://levelupwithk.substack.com/) **K’s DataLadder**
+    and you’ll automatically get my **ultimate SQL cheat sheet** with all the queries
+    I use every day in my job in big tech + another secret gift!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I share each week what it’s like to be a Data Scientist in Tech, alongside practical
+    tips, skills, and stories all meant to help you level up — because no one really
+    knows until they’re in it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you haven’t done that already
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Subscribe to my[**YouTube**](https://rebrand.ly/tdf62uv)channel. New video coming
+    up very soon!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Follow meon[**Instagram**](https://www.instagram.com/elalamikhouloud/), [**LinkedIn**](https://www.linkedin.com/in/elalamik/),
+    [**X**](https://twitter.com/elalamik), whatever works for you
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See you soon!
+  prefs: []
+  type: TYPE_NORMAL

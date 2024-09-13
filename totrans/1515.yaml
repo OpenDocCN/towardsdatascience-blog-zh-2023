@@ -1,0 +1,457 @@
+- en: Metrics Store in Action
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/metrics-store-in-action-76b16a928b97](https://towardsdatascience.com/metrics-store-in-action-76b16a928b97)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: With a tutorial using MetricFlow, Python, DuckDB, dbt, and Streamlit
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)[![Paul
+    Kinsvater](../Images/a117d2ba4ede758108ed76492e48a56a.png)](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)
+    [Paul Kinsvater](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)
+    ·11 min read·Feb 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ff87bf639bf82a3288b42575ba6a7c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The metrics layer defines all critical business metrics and dimensions centrally.
+    It translates metric requests into SQL, abstracting away implementation details.
+    Image created by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a lot of literature on Modern Data Stacks (MDS)—most discussions are
+    around storage, ingestion, transformation, and presentation. Today we focus on
+    metrics, one of the many other [MDS categories](https://www.moderndatastack.xyz/categories).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some say that metrics are one component of the semantic layer — see [this Airbyte
+    blog post](https://airbyte.com/blog/the-rise-of-the-semantic-layer-metrics-on-the-fly).
+    Others, as we do, use the terms “metrics store,” “metrics layer,” and “semantic
+    layer” interchangeably.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a metrics store, aka metric layer, aka semantic layer?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: “Last month’s revenue, as reported in the analyst’s notebook, is different from
+    that in our dashboard. Which figure should we report to audit?”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: “Do you know how we define the Churn Rate KPI in our retention app?”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: “How do we segment our revenues from customer orders into geographic regions?”
+    By customer billing location? By delivery location? Else?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Such questions frequently pop up in the companies I have worked for. We all
+    know why: different teams work in silos, implementing metrics with their preferred
+    technology stack. Details are hidden in SQL procedures locked inside an access-restricted
+    database, on some local Power BI files, or elsewhere we don’t know. A metrics
+    store is here to help:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Single point of truth — a central code repository and knowledge database for
+    metrics and dimensions.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Proxy to the data warehouse — all presentation tools (BI, reports, notebooks)
+    request KPIs through one of the metrics store’s APIs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A metrics store also helps you with governance and caching. But this is out
+    of the scope here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformation layer vs. metric layer — where to draw the line?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The transformation layer is the “T” in ELT, and logic-wise, it comes 2nd right
+    after ingesting raw data (the “EL”) into our storage. Like the metrics layer,
+    the “T” step transforms the data before downstream applications consume it. You
+    may ask, how are those two layers different then? Where does the responsibility
+    of “T” end, and where that of the metrics store start? [Simon Späti brings it
+    to the point](https://airbyte.com/blog/the-rise-of-the-semantic-layer-metrics-on-the-fly):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A semantic layer transforms/joins data at query time, whereas the transformation
+    layer does during the transform (T) step of ETL/ELT, meaning it’s pre-calculated.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Steps that the transformation layer should cover without doubt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reorganize and rename tables and columns by following a consistent style guide
+    like [this one using dbt](https://github.com/dbt-labs/corp/blob/main/dbt_style_guide.md).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clean up column data types, like timestamps.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Add relevant columns, like margin = revenue minus cost.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fix known data quality issues.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Whereas aggregations, like total monthly revenues, naturally fall under the
+    responsibility of the metrics store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving more transformation steps into the metrics store comes at the cost of
+    added compute costs — far more than what we save in storage. So, you may want
+    to keep some expensive or frequently requested calculations in the “T” step. This
+    is also where a metrics store’s [materialization](https://docs.transform.co/docs/metricflow/reference/materializations/)
+    and [caching](https://docs.transformdata.io/docs/metricflow/reference/concepts/caching)
+    capabilities can help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why MetricFlow by Transform Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We chose [MetricFlow](https://docs.transform.co/docs/metricflow/guides/introduction)
+    for three reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is open-source and comes with a friendly license.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is a Python package and fits nicely into the data stack we use below for
+    the tutorial. And it is easy to configure.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[dbt Labs will acquire the company behind MetricFlow](https://www.getdbt.com/blog/dbt-acquisition-transform/)
+    — a strong indication that MetricFlow will thrive in the coming years.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Do you want to check what other tools compete in the semantic space? See [this
+    overview](https://www.moderndatastack.xyz/companies/metrics-store) and read [this
+    article](https://medium.com/@vfisa/an-overview-of-metric-layer-offerings-a9ddcffb446e).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tutorial part 1 — set up a local environment.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use [DuckDB](https://duckdb.org/) for storage, [dbt](https://www.getdbt.com/)
+    for the transformation layer, MetricFlow as our metrics store, and a [Streamlit](https://streamlit.io/)
+    app for presentation. All four tools are Python packages and can be comfortably
+    installed in a [Conda virtual environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But first, we need to install Postgres and MySQL, both dependencies of the
+    MetricFlow package — even though we use DuckDB. On my Mac, I had to do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, clone [this](https://github.com/kinsvater/local-mds) GitHub repository,
+    `cd` to the root, execute
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: and activate with `conda activate local-mds`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tutorial part 2 — generate and explore raw data.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following Python script generates synthetic data and ingests it into a
+    local DuckDB database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The “raw” data consists of four tables: accounts, sites, orders, and fx rates.
+    A fictitious business with orders'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: booked in different currencies with exchange rates
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: and delivered to sites
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: owned by customers with accounts
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tutorial part 3 — transform data with dbt.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our git repository already comes with a dbt project called *data_mart.* Transforming
+    data with dbt is as simple as writing SQL templates and placing them into the
+    “models” directory `data_mart/models/`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We follow [dbt’s style guide](https://github.com/dbt-labs/corp/blob/main/dbt_style_guide.md).
+    First, we create a “staging” schema in `models/staging/`. Every staging model
+    mirrors raw data with simple renaming, casting, and nothing else. We transform
+    the exchange rates by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The three other staging tables follow a very similar logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The staging layer is not supposed to be consumed by downstream applications
+    directly. For this, we create our 2nd and final transformation layer, "marts.”
+    We parse currency names into codes so that they match those from our orders:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And we use those rates to convert all order amounts to USD:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note how we reference our final exchange rates table — this is where dbt shines!
+    And also, note that we have to add a year column temporarily to join exchange
+    rates on year and currency code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The two other final tables are just 1-to-1 copies of staging, bringing our
+    dbt modeling to the end. We finish our dbt exercise with three steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We materialize staging as views and the final layer as tables, as recommended
+    in the dbt style guide. We can do this most comfortably through a change in the
+    dbt project configuration file:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '2\. We configure the connection to our database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '3\. Finally, we materialize all models as tables in our database on the command
+    line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can verify this final step by querying any of the new tables. E.g.,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tutorial part 4 — metrics and dimensions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall that the metrics store defines metrics and across which dimensions we
+    can compute them. The dedicated place for this is in the directory `metrics/`
+    in the root of our git repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two main objects in MetricFlow are data sources and metrics. And unlike
+    with dbt, we configure those objects in YAML. It is then the responsibility of
+    the metrics store to translate requests into SQL and execute them against our
+    database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with the specification of metrics first. We have defined two in
+    the same YAML file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'MetricFlow gives us a couple of different ways to define a metric by choosing
+    one of several [types](https://docs.transform.co/docs/metricflow/reference/metrics/).
+    Type **measure_proxy** takes any defined measure and applies its default aggregation
+    strategy. Type **expr** allows us to use SQL syntax. We define measures and aggregation
+    strategies in data sources. Here is our specification for source **orders**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can aggregate measures across every dimension specified in the corresponding
+    section. And by using the specified foreign key identifiers, we can even do so
+    using dimensions from other data sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the “identifiers” points to a foreign data source, which is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this, we can compute order measures across site regions. And since sites
+    are linked to accounts through another foreign key specification, we can even
+    compute order measures across site customer dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The point about using YAML is its simplicity. You don’t need in-depth engineering
+    experience to understand the specifications. Next time the business asks you how
+    exactly a given metric is defined, point them to the corresponding specification
+    in the YAML.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we need to [connect MetricFlow to our database](https://docs.transform.co/docs/deployment/install-deploy):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can verify the connection by executing on your command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tutorial part 5 — MetricFlow APIs in action
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Traditionally, metrics were defined in multiple places: hidden inside BI apps,
+    report implementations, Jupyter notebooks, etc. We overcame this problem by moving
+    metrics and dimensions into a single place — the metrics store. But this move
+    works only if our metrics store integrates well with our data stack. Does our
+    BI app engine know how to communicate with MetricFlow? This will be true for some
+    and wrong for many others.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like with many other MDS categories, *integration* with your current stack will
+    drive your decision for a metrics store solution against others. Below we use
+    MetricFlow’s CLI and Python interfaces. And the latter works for any BI tool which
+    talks Python, like Streamlit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start with our first example on the command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: We used one of the two configured metrics and added time as the only dimension.
+    Note how MetricFlow allows us to switch to annual granularity by a simple append
+    of **__year**. [See the docs for other options](https://docs.transform.co/docs/metricflow/reference/data-sources/dimensions#time-dimensions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The 2nd example adds complexity by using a 2nd metric and a 2nd dimension from
+    the foreign key relation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we start our Streamlit app with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/37c5103d5fa1981f276688acce2d70a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the implementation details of the app, you will find how the backend extracts
+    the data before it is displayed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s again MetricFlow which does the heavy lifting under the hood. And it will
+    be the same data, no matter which MetricFlow API we choose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Are you also tired of discussing why the “same” KPIs across the “same” dimensions
+    show up as different numbers on different apps? On the other hand, it is annoying
+    if there is no consensus about something fundamental like the last quarter''s
+    total revenue. So, what went wrong? Here are some examples from my personal experience:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sales department assigns a revenue record to a quarter by “date closed,”
+    whereas the financial department does it by “date booked.”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Some revenue records need to be removed before the aggregation because, e.g.,
+    they are linked to cancellations. Such rules can be more complex than filtering
+    by a single boolean “IsValid” column. Sometimes there is no consensus between
+    different business units. Different rules are applied below the radar.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have transactions in different currencies. And there is no consensus on which
+    exchange rate to apply for every point in time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There is only one way we can avoid these pitfalls: stop implementing transformation
+    pipelines in silos. Instead, use a single data model and a single place to define
+    metrics and dimensions. Do sales and finance both need their own revenue KPI?
+    Create both, and put them into the metrics store so everyone can explain the difference.'
+  prefs: []
+  type: TYPE_NORMAL

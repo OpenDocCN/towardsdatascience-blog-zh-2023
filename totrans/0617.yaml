@@ -1,0 +1,313 @@
+- en: Custom Kafka metrics using Apache Spark PrometheusServlet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/custom-kafka-streaming-metrics-using-apache-spark-prometheus-sink-9c04cf2ddaf1](https://towardsdatascience.com/custom-kafka-streaming-metrics-using-apache-spark-prometheus-sink-9c04cf2ddaf1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Creating and exposing custom Kafka Consumer Streaming metrics in Apache Spark
+    using PrometheusServlet
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)[![Vitor
+    Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)
+    [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)
+    ·6 min read·Feb 2, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bd8f187e7f1a8a29cca8e8787e9ce8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Christin Hume](https://unsplash.com/@christinhumephoto?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I will describe how to create and enhance current Spark Structured
+    Streaming metrics with Kafka consumer metrics and expose them using the Spark
+    3 PrometheusServlet that can be directly targeted by Prometheus. In previous Spark
+    versions, one must set up either a JmxSink/JmxExporter, GraphiteSink/GraphiteExporter,
+    or a custom sink deploying metrics to a PushGateway server. With that said, we
+    couldn’t really avoid the increase in the complexity of our solutions as we must
+    set up external components that interact with our applications so that they can
+    be scraped by Prometheus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: More than ever, observability is a must when it comes to software. It allows
+    us to get insights into what is happening inside the software without having to
+    directly interact with the system. One way of building upon this observability
+    pillar is by exposing application metrics. When built upon an observability stack,
+    they allow us to detect problems either by alerts or simply looking at a dashboard
+    and finding their root cause by analyzing metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Spark applications are no different. It is true that one can access the
+    [Spark Web UI](https://spark.apache.org/docs/latest/web-ui.html) and gather insights
+    into how our application is running, but when the number of applications increases
+    by ten or hundredfold it becomes hard to troubleshoot them. That is when an observability
+    tool like [Grafana](https://grafana.com/) comes in handy. Grafana is able to connect
+    to Prometheus databases, and Prometheus integrates seamlessly with our applications
+    by targeting the PrometheusServlet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When configurated, Apache Spark exposes several metrics natively, which are
+    detailed [here](https://spark.apache.org/docs/latest/monitoring.html#list-of-available-metrics-providers).
+    In Structured Streaming, no metrics are exposed by default unless we set `"spark.sql.streaming.metricsEnabled"
+    -> "true"`. Below is an example of the metrics that are exposed on a Kafka Streaming
+    job:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c6e2a17b134c1fc4bcfee302c98f8781.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Default Spark Structured Streaming metrics
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, these metrics are very generic and do not provide any detailed
+    information about our source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal is to be able to expose Kafka Consumer metrics that help us monitor
+    how our event consumption is going.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining custom metrics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Metrics should be quantifiable values that provide real-time insights about
+    the status or performance of the application. In the scope of this article, we’ll
+    be covering the following metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Start offsets:** The offsets where the streaming query first started.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**End offsets:** The last processed offsets by the streaming query. Tracks
+    the consumer progress of the query.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Lead offsets:** The latest offsets of the topic the streaming query is consuming.
+    Tracks the evolution of the consumed topic.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Lag offsets:** The difference between the last processed offsets and the
+    lead offsets from the topic. Tracks how far a streaming query is in comparison
+    with real-time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Consumed rate:** The consumed rate of the streaming query topics. It is the
+    sum of all the topics subscribed on a streaming query.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Last record timestamp:** The last message timestamp consumed from each TopicPartition.
+    It tracks the latency between the producer and the consumer.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating the metric source
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next step, after defining the metrics, is to create the metric source that
+    will be responsible for exposing the metrics to Spark’s MetricsSystem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to expose the metrics we need to create a class that extends `Source`.
+    What this does is create an executor connection to the driver to pass the metrics
+    as part of the heartbeat process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KafkaMetricsSource implementation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Make sure to define the gauges as `SettableGauge` in order to be able to update
+    them during the execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After having the source defined all we need to do is instantiate the source
+    and register it in Spark’s MetricsSystem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simplified version of source registration
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the full code of the source implementation, you can check:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
+    [## spark-prometheus-kafka-metrics/KafkaMetricsSource.scala at master ·…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark Streaming application with enhanced Kafka Streaming consumer metrics exposed
+    using Spark 3 PrometheusServlet …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the Streaming Query Progress as an information source
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have our source in place all we need is to make use of it. For that,
+    we’ll need the metrics to populate our recently created gauges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you ran a Structured Streaming job before you might have noticed an output
+    similar to the following when a Streaming Query progresses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By analyzing the output we can see that we already have most of the metrics
+    available just by parsing the JSON. Start offsets metric using `startOffsets`,
+    end offsets using `endOffset`, lead offsets using `latestOffset`, `source.inputRowsPerSecond`as
+    the consumed rate for the source, and lag offsets, that won’t be using the `metrics`
+    values as we can instead calculate the lag for each TopicPartition by using the
+    `endOffset` and `latestOffset` values, ending up with a more granular metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to make use of this information we can leverage the [StreamingQueryListener](https://spark.apache.org/docs/latest/api/java/org/apache/spark/sql/streaming/StreamingQueryListener.html)
+    `onProgress` event.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is creating a class that extends `StreamingQueryListener` so
+    that we’re able to receive and act upon the progress events. It receives the `KafkaMetricsSource`
+    we previously created that will be responsible for emitting the metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KafkaOffsetsQueryListener snippet
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last step is just registering the listener in the desired streams on which
+    we would want to receive the updates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wish to check the full listener code you can do so here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/listeners/KafkaOffsetsQueryListener.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
+    [## spark-prometheus-kafka-metrics/KafkaOffsetsQueryListener.scala at master ·…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark Streaming application with enhanced Kafka Streaming consumer metrics exposed
+    using Spark 3 PrometheusServlet …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/listeners/KafkaOffsetsQueryListener.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Executor metrics — Record Timestamp
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The last metric is the last processed record timestamp for each `TopicPartition`.
+    This metric is trickier than the previous ones because the information resides
+    in Spark Executors in computing time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only way we can access that information is by creating a dummy Spark expression
+    that acts as a side effect. We’ll use `value` column from [Spark’s Kafka Schema](https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html#creating-a-kafka-source-for-streaming-queries)
+    as a way to trick Spark into running this transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KafkaTimestampMetrics expression
+  prefs: []
+  type: TYPE_NORMAL
+- en: This expression receives the whole Kafka Row, extracts the necessary values,
+    and emits the metric. It will return the `value` column which, as we said above,
+    will be used to trick Spark into running this expression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expression usage
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we, for instance, used `timestamp` column and ended up selecting the `value`
+    column further in our query, Spark would truncate this expression out of the final
+    plan and our metric would be ignored. If you don’t plan to use the `value` column
+    (which is rather uncommon), make sure to use an appropriate column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Configuring PrometheusServlet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After we have everything set up all we need is to enable the Prometheus on the
+    UI by setting `spark.ui.prometheus.enabled=true` (it creates a single endpoint
+    containing all driver and executor metrics) and configuring `spark.metrics.conf`
+    with the required configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running the application and accessing [http://localhost:4040/metrics/prometheus](http://localhost:4040/metrics/prometheus)
+    will show you all the metrics we’ve previously created alongside the native ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d701a801bb6a8f14be5d254d90ea717a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Metrics exposed on /metrics/prometheus/ endpoint
+  prefs: []
+  type: TYPE_NORMAL
+- en: Native Prometheus integration limitations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are a few limitations to this new feature. One of them is that this endpoint
+    only exposes metrics that start with `metrics_` or `spark_info`. In addition to
+    this, Prometheus naming conventions are not followed by Spark, and labels aren’t
+    currently supported (not that I know, if you know a way hit me up!). This means
+    that we’ll have A LOT of different metrics in Prometheus, which might be a bit
+    overwhelming. This issue can be solved by relabeling the metrics but it can be
+    troublesome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: That’s it! You are now able to create and expose Kafka custom metrics using
+    Spark’s Prometheus native integration. Now, all it's left is to have Prometheus
+    scrape all the endpoints and use the metrics to create both pretty dashboards
+    and alarms that will help you have more visibility on what’s happening inside
+    your applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite Prometheus metrics sink early limitations, which is understandable as
+    it is an *experimental* feature, I believe that it will be soon enhanced with
+    more and more customizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wish to see the full project used in this article please check:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics?source=post_page-----9c04cf2ddaf1--------------------------------)
+    [## GitHub - Orpheuz/spark-prometheus-kafka-metrics: Spark Streaming application
+    with enhanced Kafka…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics?source=post_page-----9c04cf2ddaf1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,395 @@
+- en: Movie Recommendations with Neo4j
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/movie-recommendations-with-neo4j-adaad7c9bf2b](https://towardsdatascience.com/movie-recommendations-with-neo4j-adaad7c9bf2b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Building a simple movie recommender with Python and Neo4j
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dpanagop-53386.medium.com/?source=post_page-----adaad7c9bf2b--------------------------------)[![Dimitris
+    Panagopoulos](../Images/437f218b1a27ed01a98270817c76729f.png)](https://dpanagop-53386.medium.com/?source=post_page-----adaad7c9bf2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----adaad7c9bf2b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----adaad7c9bf2b--------------------------------)
+    [Dimitris Panagopoulos](https://dpanagop-53386.medium.com/?source=post_page-----adaad7c9bf2b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----adaad7c9bf2b--------------------------------)
+    ·7 min read·Feb 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/924eb1da869fd77b718b1eaa3ffc9e78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by author using stable diffusion and code described in [https://bytexd.com/get-started-with-stable-diffusion-google-colab-for-ai-generated-art/](https://bytexd.com/get-started-with-stable-diffusion-google-colab-for-ai-generated-art/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Creating recommendations is a common use case of machine learning. In this post,
+    we will demonstrate how to use a graph database to create a simple movie recommendation
+    system. The proposed methods are not state-of-the-art. But using graph databases
+    is easy to implement and easy to explain. They could form the starting point for
+    a simple recommender that could be used to serve results fast and/or be used as
+    a baseline for evaluating more complex systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a reader would like to experiment, then he/she can use [Neo4j’s sandbox](https://neo4j.com/sandbox/)
+    and [Google’s colab](https://colab.research.google.com/) to get a system ready
+    in just one or two minutes. For this article, we will be using data from [GroupLens.org](https://grouplens.org/datasets/movielens/)
+    (i.e., the “[1M Dataset](https://files.grouplens.org/datasets/movielens/ml-1m.zip)”).
+    We will also use a small data set to create a minimal graph with only a few nodes
+    so that can easily check calculations. All code and data for the minimal graph
+    can be found in the author’s [GitHub](https://github.com/dpanagop/data_analytics_examples/tree/master/neo4j_recommender).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please note that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neo4j Graph Data Science plug-in should be installed in Neo4j (it is already
+    installed in Neo4j’s sandbox)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In Python, “neo4j-driver” and “graphdatascience” libraries should be installed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To install Python libraries in (2) you can use pip
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Connect to Neo4j
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After loading the necessary libraries, the first step is to connect to Neo4j.
+    This is done with the following snippet
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In case we are using Neo4j’s sandbox, we can find the URL and password in the
+    “Connect via drivers” tab.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24a039724a193e603591d74709701514.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Connection details to Neo4j’s sandbox (screen shoot of Neo4j sandbox by the
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading data to Neo4j
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As mentioned in the introduction, we are going to use data on movie ratings.
+    In especial, we are going to use MovieLens 1M dataset. This dataset contains 1
+    million ratings from 6000 movies on 4000 movies. It consists of three separate
+    text files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**movies.dat**: data on movies in the form of MovieID::Title::Genres'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**users.dat**: data on users in the form of UserID::Gender::Age::Occupation::Zip-code'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**ratings.dat**: data on ratings in the form of UserID::MovieID::Rating::Timestamp'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/04e1341dad428e4aba856bc2f9243ecf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First five rows of movies, user and ratings text files (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will create two kinds of nodes. One that represents users and another one
+    representing movies. We will also create a relationship between user nodes and
+    movie nodes to represent the fact that a user has rated a movie. As an attribute
+    of this relationship, we will use the rating score. The graph database schema
+    is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/167dec0bd968fd456259cdccafca303d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schema of graph database (screen shot by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the graph data science library is pretty straightforward to load pandas
+    dataframes to Neo4j. For example, the code below loads users.dat
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Ratings.dat file is quite big and it cannot be loaded all at once. Hence, we
+    need to split the dataframe and load it into chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Minimal example graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To help the reader understand the methods we are going to use, we will use
+    the following minimal graph as an example. It has:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: three user nodes numbered 1, 2 and 3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: four movie nodes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seven rating relationships, in parenthesis one can see the actual rating
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/be307ce30f04134e868798f1431a07ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Minimal example graph (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding similar movies using cypher
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using cypher, it is easy to find movies that are similar to a given one. Given
+    a movie m1, one can find all users that have rated it with a top score (5) and
+    then return all other movies those users have also rated as excellent. Using the
+    number of paths that connect m1 to each of the other movies, we can calculate
+    a similarity score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the cypher query for finding similar movies to “Toy Story (1995)”
+    is the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our minimal graph example, this will return “Jumanji (1995)” which is connected
+    to “Toy Story (1995)” with two paths. One passing through user 1 and the other
+    passing through user 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we use our regular graph with one million ratings, the five most similar
+    movies to “Toy Story (1995)” are
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Star Wars: Episode IV — A New Hope (1977)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Toy Story 2 (1999)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Raiders of the Lost Ark (1981)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Star Wars: Episode V — The Empire Strikes Back…'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shawshank Redemption, The (1994)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While for “Matrix, The (1999)” the top 5 is
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Star Wars: Episode IV — A New Hope (1977)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Star Wars: Episode V — The Empire Strikes Back…'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Raiders of the Lost Ark (1981)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: American Beauty (1999)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sixth Sense, The (1999)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Some readers might have mixed feelings about those results. Which is understandable.
+    Popular movies, with high ratings, tend to dominate when we use this method. And
+    the truth is that one million ratings are not enough to build a recommender. Experience
+    with using MovieLens with various recommendation methods has shown that increasing
+    the number of ratings, improves recommendations. Still, one should note that we
+    are able to find similar movies by leveraging graphs just by using a simple query.
+    A more sophisticated method would be to use a similar method as described in the
+    next section for finding similar users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suggesting movies to users
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Using Neo4j we can apply [collaborative filtering](https://en.wikipedia.org/wiki/Collaborative_filtering)
+    to recommend movies to a user. A high-level description of the collaborative filtering
+    method is that the process of recommending new movies to a user is done in two
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: we find similar users to our user,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: we use ratings of users found in step (1) to suggest new movies.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculating user similarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are going to use Jaccard similarity to detect similar users. In our graph-theoretic
+    setting, Jaccard similarity between two nodes is the ratio of the number of nodes
+    both of them are connected to divided by the number of nodes that are connected
+    to at least one of them (excluding the two nodes we are calculating the similarity
+    of).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our minimal graph example, user nodes 1 and 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: are both connected to “Toy Story (1995)” and “Jumanji (1995)”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: are connected to “Toy Story (1995)”, “Jumanji (1995)” and “Waiting to Exhale
+    (1995)”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hence Jaccard similarity of users 1 and 2 is 2/3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, users 1 and 3:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: are both connected to “Toy Story (1995)”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: are connected to “Toy Story (1995)”, “Jumanji (1995)”, “Waiting to Exhale (1995)”
+    and “GoldenEye (1995)”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hence Jaccard similarity of users 1 and 3 is 1/4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neo4j’s Graph Data Science library can calculate Jaccard’s similarity. First,
+    we need to create a subgraph (or projection as Neo4j calls it) of the nodes and
+    relationships we want to take under consideration when calculating Jaccard similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we calculate Jaccard similarity and store the results in a pandas dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/563525a5be903bab42040e5cec1d3a0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First five rows of pandas contain user similarities for our minimal example
+    graph (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we create a new relationship between user nodes that have as an attribute
+    the calculated similarity between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: To recommend movies for a user (user1) we calculate a rank for movies the user
+    has not rated using a weighted average rating of movies other users have seen
+    where the weight is Jaccard similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/937375bcd92e5f7e261e5a4057986ae8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The formula for calculating the weighted average rating (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also add the logarithm of the number of paths that connect the user (user1)
+    to a movie. This is because we want to boost movies that are connected to (user1)
+    with more than one user. The corresponding cypher query is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For our minimal graph example, the result for user 3 is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jumanji (1995) with a score of 5.69
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Waiting to Exhale (1995) with a score of 3.00
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fe6bd4582a809ea07e3316c2625267dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 10 movie recommendations (left) for a user and top 10 rated movies (right)
+    for a user (image by thae author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hopefully, this article has demonstrated the benefits of using a graph database
+    to quickly create a recommendation engine. While this is not state-of-the-art,
+    it is easily implemented and maintained. As a side bonus, I hope the article has
+    also provide some useful tricks for combining Python with Neo4j.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Citation of dataset used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'F. Maxwell Harper and Joseph A. Konstan. 2015\. The MovieLens Datasets: History
+    and Context. ACM Transactions on Interactive Intelligent Systems (TiiS) 5, 4,
+    Article 19 (December 2015), 19 pages. DOI=[http://dx.doi.org/10.1145/2827872](http://dx.doi.org/10.1145/2827872)'
+  prefs: []
+  type: TYPE_NORMAL

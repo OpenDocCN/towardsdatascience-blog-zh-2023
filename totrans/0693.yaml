@@ -1,0 +1,537 @@
+- en: Deep Dive into ESA’s Sentinel API
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deep-dive-into-esas-sentinel-api-e6ff4f9d0730](https://towardsdatascience.com/deep-dive-into-esas-sentinel-api-e6ff4f9d0730)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/11263c751d93403401ed501eb089fe4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A segment of the RGB satellite map of Budapest based on the 10 m resolution
+    Sentinel data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to acquire, analyze, and visualize satellite images using Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)[![Milan
+    Janosov](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------)
+    [Milan Janosov](https://medium.com/@janosovm?source=post_page-----e6ff4f9d0730--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e6ff4f9d0730--------------------------------)
+    ·13 min read·Oct 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images in this article were created by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The European Space Agency has been running its [Sentinel missions](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/The_Sentinel_missions#:~:text=These%20missions%20carry%20a%20range,for%20land%20and%20ocean%20services.)
+    supporting Copernicus, the Earth Observation component of the European Union’s
+    space program, with various types of remote sensing data, such as radar and multi-spectral
+    imaging instruments for land, ocean and atmospheric monitoring.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are six ongoing Sentinel missions, three of which can be easily accessed
+    via their [Python API](https://sentinelsat.readthedocs.io/en/latest/api_overview.html).
+    These are, quoting the [official source](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/The_Sentinel_missions#:~:text=These%20missions%20carry%20a%20range,for%20land%20and%20ocean%20services.):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sentinel-1** is a polar-orbiting, all-weather, day-and-night radar imaging
+    mission for land and ocean services. Sentinel-1A was launched on 3 April 2014,
+    and Sentinel-1B on 25 April 2016\. Both were taken into orbit on a Soyuz rocket
+    from Europe’s Spaceport in French Guiana. The mission ended for Sentinel-1B in
+    2022 and plans are in force to launch Sentinel-1C as soon as possible.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Sentinel-2** is a polar-orbiting, multispectral high-resolution imaging mission
+    for land monitoring to provide, for example, imagery of vegetation, soil and water
+    cover, inland waterways and coastal areas. Sentinel-2 can also deliver information
+    for emergency services. Sentinel-2A was launched on 23 June 2015 and Sentinel-2B
+    followed on 7 March 2017.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Sentinel-3** is a multi-instrument mission to measure sea-surface topography,
+    sea- and land-surface temperature, ocean colour and land colour with high-end
+    accuracy and reliability. The mission supports ocean forecasting systems, as well
+    as environmental and climate monitoring. Sentinel-3A was launched on 16 February
+    2016 and Sentinel-3B joined its twin in orbit on 25 April 2018.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: After some additional digging, we can learn that [Sentinel-1](https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-1-sar/resolutions/level-1-single-look-complex)
+    data goes down to a few meters when it comes to spatial resolution. Then, the
+    highest resolution for visual data for [Sentinel-2](https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/resolutions/spatial)
+    is 10 meters, while [Sentinel-3](https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/resolutions/spatial)
+    operates at a much larger scale, depending on the sensor type, at the scale of
+    100km.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alright, so we know where to get the satellite data, and it also looks like
+    there is a huge selection of the source (sensor) and spatial resolution. One may
+    point out that this is still the tip of the iceberg, as this [list of satellite
+    data sources](https://gisgeography.com/satellite-maps/) also outlines. And then,
+    what do we use these different types of satellite data for? Well, for starters,
+    [here is a selection of 50+ use cases](https://www.linkedin.com/feed/update/urn:li:activity:7115972452437884929/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a general rule of thumb, I would say that the use case, the specifics of
+    the problem and the geospatial characteristics and terrain of the target area
+    are all important factors in determining the right data source for you. However,
+    in daily practice, in my experience, these are the main driving factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: price (preferably to explore, free, which applies to Sentinel)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: has a spatial resolution of a few meters, and even smaller urban structures
+    can be captured
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: with at least a few bands, such as visible and near-infrared.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: temporal frequency
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These aspects make Sentinel-2 probably the most widely used satellite data source
+    in the geospatial data community. Building on these components, in this article,
+    I will show you how to get Sentinel data and what you should expect when downloading
+    it. I will also thoroughly explore the different possibilities and the temporal
+    evolution of the image records and the information stored within.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[*In this article, Copernicus Sentinel data 2023 for Sentinel data was used,
+    as EU law grants free access to Copernicus Sentinel Data and Service Information.*](https://sentinels.copernicus.eu/documents/247904/690755/Sentinel_Data_Legal_Notice)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. **Data acquisition**
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, I will set up the [API](https://sentinelsat.readthedocs.io/en/latest/api_overview.html)
+    connection following the official documentation and sample code. Additionally,
+    I will need a target area from which I download images. For easy debugging, I
+    picked my hometown, Budapest. I will use [OSMNx](https://osmnx.readthedocs.io/en/stable/)
+    to download its admin boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8bca06487a161385bb4a8dade05123b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The admin boundaries of Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now tap on the Sentinel API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To do a query, it’s better to have a smooth polygon that specifies the location.
+    For this purpose, I created the convex hull of the admin area of Budapest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9deb3d3c27dd3d2f05a939e67211ec8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The convex hull of Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Search for satellite images at our specific location, within a given time-frame
+    and a platform of our choosing. The latter shall be Sentinel-A. Besids, we can
+    also filter based on cloud coverage — maning that if an image is too cloudy then
+    we just discard it right away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: As the output of these cells shows, following the Sentinel docs, it turns out
+    that between 2015–06–23 (beginning of the mission) and 2023–10–06 (when I was
+    writing this article), there were altogether 3876 sat images recorded that overlap
+    with the admin boundaries of Budapest. I set the cloud cover percentage to 100,
+    meaning no filter was applied based on cloud coverage. Therefore, we should have
+    all the image identifiers from the past eight years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I also note here that the resulting list of products contains the identifier
+    and metadata of all the satellite images however, not the images themselves. Additionally,
+    if I would repeat the same with Sentinel-3, I would get nearly 20k image records
+    as a result — although at a much lower resolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Explore the meta data**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s transform the list of products into a Pandas DataFrame and start analyzing
+    it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Result of this block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7fec41f34ebdf4cc29465b02d77e1db2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview on a query result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After counting the number of keys in the table, indexed by the satellite image
+    identifiers, one may already get a sense of how rich this data is with the 41
+    feature columns in it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While there is a lot of technical information in these fields, I would like
+    to take a closer look at just a few features. On the one hand, the space and time
+    dimensions are encoded in generation date and begin position (as date-time information)
+    and geometry (as a polygon, GIS, data type). On the other hand, there are a couple
+    of interesting metrics characterizing land-cover type based on the images: *cloudcoverpercentage*
+    that we have already seen at the queries, *vegetationpercentage*, *waterpercentage**,
+    and snowicepercentage*. These environmental indices are derived from the different
+    spectral properties of different materials. Note: these values are all aggregated
+    scores capturing the grand average of the entire tile. More on this topic [here](http://www.eo4geo.eu/training/sentinel-2-data-and-vegetation-indices/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. The spatial dimension
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we have a geometry dimension, let’s take a look at how this looks on a map!
+    I will do so by visualizing a set of random tiles, which, after a few runs, are
+    totally representative. For the visualization, I used Folium with the CartoDB
+    Dark_Matter base map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48921ddc88b7a6b164333c17a49ed86a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A random sample of satellite tiles overlapping or intersecting with the admin
+    area of Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As one may look at this visual, it becomes clear that a few sections of tiles
+    keep getting repeated. It is also apparent that, for some reason, a few of these
+    tiles split the city’s admin boundaries in two. This can lead to an unforgeable
+    situation where you would like to analyze data entirely covering your desired
+    target area, just to realize it got split in half. One possible workaround is
+    to filter out the tiles that do not fully overlap with the desired admin area:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/081fa1a93dbcb84dcc38169a1c2abd84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview of the filtered Satellite image product dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By applying this filter, I dropped about half of the tiles. Let’s take a look
+    at the map now and see how well they all overlap with the city’s boundaries without
+    any tiles splitting the city in half:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/687fb1f32efb0b117069771e6621e40a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A random sample of satellite tiles completely overlapping with the admin area
+    of Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. The temporal dimension of the data set**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, let’s see the number of images we have per day, week, and month, covering
+    Budapest. To measure time, I will rely on the field *beginposition*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8b98f139f988d494f31ece18d00c097d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of satellite images captured in the Budapest target area per day,
+    week, and month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These figures show the first 250 days, first 250 weeks, and first 250 months
+    (the entire span) of the Sentinel-2 probe. The first figure shows that every other
+    day, one snapshot is taken. The second graph shows, taking the weekly average
+    of the previous one, shows that during the first two years, the satellites captured
+    Budapest once or twice per week, and then, from 2017 to 2018, it increased to
+    5–6 images per week. The last graph, showing the entire time span, shows the same
+    trends and how, after 3 years at work, these 25 images per month became the standard
+    level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. The temporal dimension of the land-cover variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now, a look at the temporal evolution of *vegetationpercentage*, *waterpercentage*,
+    *snowicepercentage*, and *cloudcoverpercentage. As the previous image shows, the
+    early years may show different, probably noise results, so let’s stay cautious.
+    Here, I wouldn’t drop those years of data, as we have eight years altogether,
+    and cutting 3 out of that would potentially be too much-lost information. First,
+    just see the raw values over time with a weekly aggregation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dfbdd930f4080e90e051f1d246da0c4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The temporal evolution of vegetation, water, snow, and cloud-cover percentages
+    over time, with weekly aggregation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And the same with monthly aggregation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c9d0c088fc934dbae6e1fba028c8ad0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The temporal evolution of vegetation, water, snow, and cloud-cover percentages
+    over time, with monthly aggregation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These time series are telling us a couple of interesting things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The vegetation percentage clearly shows how seasonality changes, how each spring
+    everything turns green and then this greenery fades away during fall, dropping
+    from 50–60% to near-zero.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compared to that, the water percentage fluctuates around 0.8% the whole year
+    and the whole observation period. This is because the amount of surface water
+    is pretty tiny in the studied area. Still, drops seem to come more often during
+    wintertime, implying that some of the freshwater entities freeze.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Regarding snow, the most prominent peaks — about 4–8% omes during the winters.
+    Still, as I have been around for most of these winters, from personal experience,
+    I can tell we didn’t have much snow. To that end, values measuring just 1–2%,
+    especially not during winter, may cause some noise or even misclassification of
+    clouds.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When it comes to clouds, we see that they mostly go hand-in-hand with the vegetation,
+    following seasonal patterns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Some of these observations are also visible in the correlation of these measures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/49fbe3e6f9bd919e2d5eb228bb3e1e4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The correlation of the environmental variables over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Download satellite images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, do a query for both Sentinel-2 and Sentinel 3, going for the same week
+    in August this year and limiting cloud coverage as much as possible. See the number
+    of snapshots available:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5bc1507f518457fa3d0d33ee5540a768.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The queried tiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now download the image data based on the
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note — here you may get this notifiation, in this case ust wait a few hours
+    and then run the downloader again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 7\. Open and visualize the downloaded image
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Here](https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/data-formats)
+    you will find a detailed description of the data format with really nice visuals
+    on the folder structure. Once opening the image directory, one may find the different
+    bands. The meaning of each band as well as its spatial resolution is well-summarized
+    in [this](https://gisgeography.com/sentinel-2-bands-combinations/) article, as
+    the spatial resolution of the 13 bands range from 10 to 60 meters. A few highlights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The blue (B2), green (B3), red (B4), and near-infrared or NIR (B8) channels
+    have a 10-meter resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then, Next, its vegetation red edge (B5), near-infrared NIR (B6, B7, and B8A),
+    and short-wave infrared SWIR (B11 and B12) have a 10-meter resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, its coastal aerosol (B1) and SWIR cirrus band (B10) have a 60-meter
+    pixel size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is how it
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9f4e59595183948807b2c75cfd3d9c48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The list of satellite image bands stored in .jp2 format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is how an entire tile looks like when visualizing B4, the red band, using
+    [rasterio](https://rasterio.readthedocs.io):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0ffb84f367f788b50ce50c03dc24022.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The red band of the tile containig
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now focus on Budapest and mask the full raster tile by the admin boundaries
+    of the city, the R, G, and B bands separately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/acd861688e72121c5348f16087f4bdae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Three visualized satellite bands of Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, let’s assemble these to obtain an RGB image of Budapest. First, I assemble
+    the full tile into an RGB image, then read it, conduct a histogram equalization
+    following official [instructions](https://fire.trainhub.eumetsat.int/docs/figure5678_Sentinel-2.html),
+    and then arrive at the final plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2fd60a59edd1dd8698c31c25389767e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The RGB satellite map of Budapest based on the 10 m resolution Sentinel data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concluding remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To quickly wrap up, see what happened in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quick overview of the Sentinel satellite platforms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An example of how to query many image identifiers, including their metadata
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to conduct temporal analytics simply based on the aggregated information
+    of the tiles, stored and directed in the metadata
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to download, store, and visualize single images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All these steps aim to point towards adding satellite image processing and analytics
+    to your daily stack of geospatial data science tools, which could cover a great
+    many use-cases from urban planning to environmental monitoring and agriculture.
+  prefs: []
+  type: TYPE_NORMAL

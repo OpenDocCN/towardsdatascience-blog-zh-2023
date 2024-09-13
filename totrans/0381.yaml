@@ -1,0 +1,659 @@
+- en: Beyond NeRFs (Part One)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/beyond-nerfs-part-one-7e84eae816d8](https://towardsdatascience.com/beyond-nerfs-part-one-7e84eae816d8)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Increasing NeRF training speed by 100x or more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wolfecameron.medium.com/?source=post_page-----7e84eae816d8--------------------------------)[![Cameron
+    R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----7e84eae816d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7e84eae816d8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7e84eae816d8--------------------------------)
+    [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----7e84eae816d8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7e84eae816d8--------------------------------)
+    ·15 min read·Jun 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3185851e9a8756d697031a415a23b913.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Photo by [Mathew Schwartz](https://unsplash.com/@cadop?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/speed?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we have seen in previous overviews, the proposal of [Neural Radiance Fields
+    (NeRFs)](https://cameronrwolfe.substack.com/p/understanding-nerfs) [4] was a breakthrough
+    in the domain of neural scene representations. Given some images of an underlying
+    scene, we can train a NeRF to generate arbitrary viewpoints of this scene at high
+    resolution. Put simply, NeRFs leverage deep learning to provide photorealistic
+    renderings of 3D scenes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But, they have a few notable problems. Within this overview, we will focus
+    on two limitations of NeRFs in particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a NeRF that can accurately render new viewpoints requires many images
+    of the underlying scene.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Performing training (and rendering) with NeRFs is slow.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'As a solution to these problems, we will overview two notable extensions of
+    the NeRF methodology: PixelNeRF [1] and InstantNGP [2]. In learning about these
+    methods, we will see that most problems faced by NeRF can be solved by crafting
+    higher-quality input data and leveraging the ability of deep neural networks to
+    generalize learned patterns to new scenarios.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea4ac87de7567d65a45b1908a380b387.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1, 2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have recently learned about many different methods for modeling 3D shapes
+    and scenes with deep learning. These overviews have contained several background
+    concepts that will also be useful for understanding the concepts within this overview:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feed-forward neural networks [[link](https://cameronrwolfe.substack.com/i/94634004/feed-forward-neural-networks)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Positional embeddings [[link](https://cameronrwolfe.substack.com/i/97915766/position-encodings)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Signed distance functions [[link](https://cameronrwolfe.substack.com/i/94634004/signed-distance-functions)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How 3D data is represented [[link](https://cameronrwolfe.substack.com/i/94634004/representing-d-shapes)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Beyond these concepts, it will also be very useful within this overview to have
+    a working understanding of NeRFs [4]. To build this understanding, I recommend
+    reading my overview on NeRFs [here](https://cameronrwolfe.substack.com/p/understanding-nerfs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Pyramids
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Within this post, we will see several instances in which we use deep neural
+    networks to convert an image into a corresponding (pyramid) feature representation.
+    But, some of us might be unfamiliar with this concept. As such, we need to quickly
+    learn about features representations and overview some different variants of this
+    idea we might encounter within deep learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What are features?** Before learning about feature pyramids, we need to understand
+    what is meant by the word “features”. Typically, the output of a neural network
+    will be a classification, a set of bounding boxes, a segmentation mask, or something
+    else along these lines. In image classification, for example, we take an image
+    as input, pass it through our neural network, and the final layer of this network
+    is a classification module that converts the hidden state into a vector of class
+    probabilities. Simple enough!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c77c5951bc7bbada893433c2a3f1e26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Extracting features from a deep neural network (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, however, we don’t want to perform this last step. Instead, we can
+    just take the final hidden state of the network (before the classification module)
+    and use this vector as a representation of our data; see above. This vector, also
+    referred to as features (or a feature representation), is a compressed representation
+    of the semantic information in our data, and we can use it to perform a variety
+    of tasks (e.g., similarity search).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is a feature pyramid?** Multi-scale (or “pyramid”) strategies are an
+    important, fundamental concept within computer vision. The basic idea is simple.
+    Throughout the layers of a neural network, we occasionally *(i)* downsample the
+    spatial resolution of our features and *(ii)* increase the channel dimension.
+    See, for example, the schema of a [ResNet-18](https://pytorch.org/vision/0.8/_modules/torchvision/models/resnet.html)
+    [6]. This CNN contains four “sections”, each of which has a progressively higher
+    channel dimension and lower spatial dimension; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67ed7ce4de99f80edc9a8d338e8e35f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Basic illustration of “sections” in a ResNet architecture (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to extract features from this network is to just use the final hidden
+    representation. But, this representation does not contain much spatial information
+    (i.e., the spatial dimension gets progressively lower in each layer!) compared
+    to earlier layers in the network. This is a problem for dense prediction tasks
+    (e.g., object detection) that are heavily dependent upon spatial info in an image!
+    To fix this, we need to construct a *feature pyramid* [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Put simply, a feature pyramid extracts features from several different layers
+    within a network instead of just using the features from the network’s final layer;
+    see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba386f48c7c39c7f786be698e3fc52a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [3])
+  prefs: []
+  type: TYPE_NORMAL
+- en: The resulting set of features contains information with varying amounts of spatial
+    and semantic information, as each layer has a varying spatial and channel dimension.
+    Thus, feature pyramids tend to produce image features that are useful for a variety
+    of different tasks. In this overview, we will see feature pyramids used to provide
+    extra input information for a variant of NeRF!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input Encodings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes, we have data that we don’t want to input directly into a machine
+    learning model, so we pass an encoded version of this data as input instead. This
+    is a fundamental concept in machine learning. Think about, for example, [one-hot
+    encodings](https://www.educative.io/blog/one-hot-encoding) of categorical variables.
+    A more sophisticated example would be [kernel functions](https://www.geeksforgeeks.org/major-kernel-functions-in-support-vector-machine-svm/#:~:text=Kernel%20Function%20is%20a%20method,window%20to%20manipulate%20the%20data.),
+    or functions that we pass our data through (i.e., possibly to make it [linearly
+    separable](https://en.wikipedia.org/wiki/Linear_separability)) before giving it
+    to our model. In each of these cases, we are encoding/transforming our input so
+    that it is in a more model-friendly format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/272dae94587286f4b5e18369396a06aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Positional encoding in the NeRF architecture (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Positional encodings.** Similarly, when we pass 3D coordinates as input to
+    a NeRF’s feed-forward network, we don’t want to directly use these coordinates
+    as input. Instead, we convert them into a higher-dimensional vector using a positional
+    encoding scheme; see above. This positional encoding scheme is the same exact
+    technique used to add positional information to tokenized inputs within transformers
+    [6]. In NeRFs, positional encodings have been shown to yield significantly improved
+    scene renderings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Learnable embedding layers.** There’s one problem with positional encoding
+    schemes — *they are fixed*. What if we want to learn these encodings instead?
+    One way to do this would be to construct an *embedding matrix*. Given a function
+    that maps each spatial location to an index in this matrix, we could retrieve
+    the corresponding embedding for each spatial location and use it as input. Then,
+    these embeddings could be trained like normal model parameters!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Publications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now, we will overview some publications that extend and improve upon NeRFs.
+    In particular, these publications *(i)* produce high-quality scene representation
+    with fewer images of the scene and *(ii)* make the training and rendering process
+    of NeRF much faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PixelNeRF: Neural Radiance Fields from One or Few Images](https://arxiv.org/abs/2012.02190)
+    [1]'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/9dec6ef785de3edadc878b37506e1e2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the main drawbacks of the original NeRF formulation is that it must be
+    trained and used per-scene. Obtaining a representation for each scene via NeRFs
+    is computationally expensive and requires many posed images of the scene. PixelNeRF
+    [1] aims to mitigate this problem by conditioning a NeRF’s output upon image features
+    — created by a pre-trained deep neural network — from the underlying scene. By
+    using image features as input, *PixelNeRF can leverage prior information to generate
+    high-quality scene renderings given only a few images of a scene*. Thus, it drastically
+    improves the quality of scene representations given limited data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**method.** PixelNeRF is quite similar to the original NeRF formulation. It
+    uses a feed-forward neural network to model a radiance field by predicting color
+    and opaqueness values given a spatial location and viewing direction (that have
+    been converted into [positional embeddings](https://cameronrwolfe.substack.com/i/97915766/position-encodings))
+    as input. The volume rendering and training procedures are not changed. The main
+    difference between these methods is that pixelNeRF has an additional input component:
+    *image features derived from a view of the underlying scene*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/beb0ac1511966f3b6880d17347bc7f13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: PixelNeRF has the ability to consider one or multiple images of the underlying
+    scene as part of its input. Images are first passed through a pre-trained encoder
+    — a feature pyramid R esNet variant[6] — to produce a feature pyramid. From here,
+    we can extract the region of these features corresponding to a specific spatial
+    location (this can be done pretty easily using camera pose information; see Section
+    4.1 of [1]). Then, we concatenate these extracted features with the corresponding
+    spatial location and viewing direction as input to PixelNeRF’s feed-forward network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s think about a single forward pass of the feed-forward neural network
+    of PixelNeRF. We consider a single spatial location and viewing direction in this
+    forward pass. If we have access to a single image of the scene, we can include
+    this information by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Passing the image through the encoder to produce a feature grid.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Obtaining features by extracting the region of this feature pyramid that corresponds
+    to the current spatial location.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Concatenating the spatial, directional, and feature input.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then, the remaining components of PixelNeRF match the original NeRF formulation;
+    see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3d9cdf82abf657888eb905f4d15289d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: If multiple images of the underlying scene are available, we just divide PixelNeRF’s
+    feed-forward network into two components. The first component separately processes
+    each image using the procedure described above. Namely, the network performs a
+    separate forward pass by concatenating the features of each image with the same
+    spatial and directional input information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/133dac84694b854f15956b047e23fbf1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PixelNeRF architecture with multiple input views (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these forward passes produces an output vector. We can aggregate these
+    vectors by taking their average, then pass this average vector through a few more
+    feed-forward layers to produce the final RGB and opaqueness output; see above.
+    Despite this modified architecture, the training process for PixelNeRF is similar
+    to NeRF and only requires a dataset of scene images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**results.** PixelNeRF is evaluated on tasks like object and scene view synthesis
+    on [ShapeNet](https://shapenet.org/), as well as on its ability to represent real-world
+    scenes. First, PixelNeRF is trained to represent objects from a specific ShapeNet
+    class (e.g., chair or car) given one or two images as input (i.e., one or two-shot
+    scenario). In this case, we see that PixelNeRF is better than baselines at reconstructing
+    objects from a few input images; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/64e6be681dea36cdf7a5254befba17ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plus, PixelNeRF does not perform any test-time optimization, which is not true
+    of baselines like [SRNs](https://cameronrwolfe.substack.com/p/scene-representation-networks)
+    [5]. Thus, PixelNeRF performs more favorably despite being faster and solving
+    a more difficult problem compared to baselines. When we train PixelNeRF in a category-agnostic
+    fashion (i.e., over 13 object classes in ShapeNet), we see that its performance
+    gains are even more significant! PixelNeRF outperforms baselines across the board
+    on representing this wider set of objects; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/695f19b191e20c87d07770d7e569cf98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: When PixelNeRF is evaluated in more complex settings (e.g., unseen categories,
+    multi-object scenes, real images, etc.), we continue to see improved performance.
+    Most notably, PixelNeRF drastically improves upon baselines’ ability to capture
+    multi-object scenes and infer unseen objects at test time; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/198773df4fc7a96b24930b348358e02d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking this to the extreme, PixelNeRF can reconstruct scenes with pretty high
+    fidelity given only three input images of a real-world scene; see below. Such
+    results emphasize the ability of PixelNeRF to model scenes given a limited and
+    noisy input data. NeRF is unable to accurately reconstruct scenes in this regime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/097f0d1408321d400285d687f1e0e513.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Instant Neural Graphics Primitives with a Multiresolution Hash Encoding](https://arxiv.org/abs/2201.05989)
+    [2]'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/cb5fbc37dc1e89ba445c76e73755bdf6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'PixelNeRF [1] allows us to recover scene representations from few images of
+    the underlying scene. But, recall that the training process for NeRFs is also
+    slow (i.e., [2 days](https://cameronrwolfe.substack.com/i/97915766/takeaways)
+    on a single GPU)! With this in mind, we might ask ourselves: *how much faster
+    can we train a NeRF?* The proposal of Instant Neural Graphics Primitives (InstantNGP)
+    in [2] shows us that we can train NeRFs *a lot* faster.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b71c2a3ae37298e253e3a394d8a00fcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Indexing a simple feature embedding matrix with a hash function (created by
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach of InstantNGP is similar to NeRF [4] — the only difference lies
+    in how we construct the feed-forward network’s input. Instead of using a positional
+    encoding scheme, we construct a multi-resolution hash table that maps each input
+    coordinate to a trainable feature vector; see above. This approach *(i)* adds
+    more learnable parameters to the NeRF and *(ii)* produces rich input representations
+    for each input coordinate, allowing the feed-forward network to be made much smaller.
+    Overall, this approach allows the NeRF training process to be significantly accelerated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**method.** The actual approach for constructing and querying the hash table
+    of input features is (unfortunately) more complicated than the simple figure depicted
+    above. Let explore a bit more how exactly input features are handled by InstantNGP
+    [2].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'InstantNGP follows a parametric approach to encoding inputs. Unlike NeRFs that
+    use positional embedding functions to map coordinates to fixed, higher-dimensional
+    inputs, InstantNGP *learns* input features during training. At a high level, this
+    is done by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing input features in an embedding matrix.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Indexing the embedding matrix based on input coordinates.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Updating the features normally via [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s address these components one-by-one. First, we need to create our table
+    of learnable input features that we can index. In [2], input features are stored
+    in a multi-resolution table that contains `L` levels of features (i.e., just `L`
+    different embedding matrices). Each level of the table has `T` features vectors
+    of dimension `F` (i.e., a matrix of size `T x F`). Typically, these parameters
+    follow the settings shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8616752a4ef99a20f3dbd88a74a4e1d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of the levels is meant to represent 3D space at a different resolution,
+    from `N-min` (lowest resolution) to `N-max` (highest resolution). We can think
+    of this as dividing 3D space into [voxel grids](https://cameronrwolfe.substack.com/i/94634004/representing-d-shapes)
+    at different levels of granularity (e.g., `N-min` will use very large/coarse voxels).
+    By partitioning 3D space in this way, we can determine the voxel in which an input
+    coordinate resides—this will be different for every resolution level. The voxel
+    in which a coordinate resides is then used to map this coordinate to an entry
+    in each level’s embedding matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dfa2b985f730a98b41b2ac9152d9fddd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: More specifically, authors in [2] use the hash function shown above to map voxel
+    locations (i.e., given by the coordinates of a voxel’s edge) to indices for entries
+    in the embedding matrix at each resolution level. Notably, levels with coarser
+    resolution (i.e., larger voxels) will have fewer hash collisions, meaning that
+    it is less likely for input coordinates at completely different locations to be
+    mapped to the same feature vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0397cb039d736fdfdeb775bacbf70c12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: After we retrieve the corresponding feature vector at each level of resolution,
+    we have multiple feature vectors corresponding to a single input coordinate. To
+    combine these vectors, we linearly interpolate them, where the weights of this
+    interpolation are derived using the relative position of the input coordinate
+    within each level’s voxel. From here, we concatenate these vectors with other
+    input information (e.g., the positionally encoded viewing direction) to form the
+    final input! The full multi-resolution approach in InstantNGP is illustrated within
+    the figure above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10ef757aa97375f97112aa07e141e0ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to using higher-quality, learnable input features, InstantNGP is able to
+    use much smaller feed-forward networks relative to NeRF while achieving similar
+    results in terms of quality; see above. When these modifications are combined
+    with a more efficient implementation (i.e., fully-fused cuda kernels that minimize
+    bandwidth and wasted operations), the training time for NeRFs can be drastically
+    reduced. In fact, *we can use InstantNGP to obtain high-quality scene representations
+    in a matter of seconds*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**results.** InstantNGP trains a NeRF using a nearly identical setup as proposed
+    in [4], aside from the modified input encoding scheme and smaller feed-forward
+    neural network. Coordinate inputs are encoded using a multi-resolution hash table,
+    while the viewing direction is encoded using normal, positional embeddings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5908e130cb652443b322e0a97dadb114.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the proposed approach and a faster rendering procedure, authors in [2]
+    find that InstantNGP can train scene representations in seconds and even render
+    scenes at 60 FPS! This is a massive improvement in efficiency relative to NeRF;
+    see above. Notably, InstantNGP becomes competitive with NeRF (which takes hours
+    to train) *after only 15 seconds of training*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: To determine if this speedup comes from the more efficient cuda implementation
+    or the multi-resolution hash table, the authors do some analysis. They find that
+    the efficient implementation does provide a large speedup, but using the hash
+    table and smaller feed-forward network alone yields a 20X-60X speedup in training
+    NeRFs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“We replace the hash encoding by the frequency encoding and enlarge the MLP
+    to approximately match the architecture of [NeRF]… This version of our algorithm
+    approaches NeRF’s quality after training for just ∼5 min, yet is outperformed
+    by our full method after training for a much shorter duration (5s–15s), amounting
+    to a 20–60X improvement caused by the hash encoding and smaller MLP.”* — from
+    [2]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In certain cases, we do see that baseline methods outperform InstantNGP in scenes
+    that contain complex, view-dependent reflections and [non-Lambertian](https://en.wikipedia.org/wiki/Lambertian_reflectance)
+    effects. The authors claim this is due to the use of a smaller feed-forward network
+    in [2]; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f03238dd843e73b9297cf1cb9963deb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [2])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**what else can we use this for?** Although we are focusing upon improvements
+    to NeRF, the approach of InstantNGP is quite generic — it can improve the efficiency
+    of a variety of computer graphics primitives (i.e., functions that characterize
+    appearance). For example, InstantNGP is shown in [2] to be effective at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating [super-resolution](http://www.infognition.com/articles/what_is_super_resolution.html)
+    images
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Modeling [signed distance functions](https://cameronrwolfe.substack.com/i/94634004/signed-distance-functions)
+    (SDFs)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Performing [neural radiance caching](https://research.nvidia.com/publication/2021-06_real-time-neural-radiance-caching-path-tracing)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although NeRFs revolutionized the quality of neural scene representations, we
+    have seen within this overview that there is a lot of room for improvement! NeRFs
+    still take a long time to train and require a lot of training data to work well.
+    Some of the basic takeaways of how we can mitigate these problems are outlined
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Improving sample complexity.** In their original form, NeRFs require many
+    input observations of an underlying scene to perform view synthesis. This is mainly
+    because NeRFs are trained separately per-scene, preventing any prior information
+    from being used in generating novel views. PixelNeRF [1] mitigates this problem
+    by adding pre-trained image features as input to NeRF’s feed-forward network.
+    Such an approach allows learned, prior information from other training data to
+    be leveraged. As a result, this method can produce scene representations given
+    only a few images as input!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Higher-quality input goes a long way!** As shown by InstantNGP [2], the input
+    encoding scheme used by NeRF is incredibly important. Using a richer, learnable
+    encoding scheme for our input allows us to reduce the size of the feed-forward
+    network, which yields significant gains in training and rendering efficiency.
+    In my opinion, such a finding can inspire a lot of future work. *Can we find an
+    encoding scheme that’s even better? Are there other types of deep learning models
+    to which this concept can be applied?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Limitations.** The approaches we have seen in this overview do a lot to solve
+    known limitations of NeRF, but they are not perfect. InstantNGP provides incredible
+    speedups in NeRF training time, but the quality of the resulting scene representations
+    aren’t always the best. InstantNGP struggles to capture complex effects like reflections
+    compared to baselines, revealing that we sacrifice representation quality for
+    faster training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“On one hand, our method performs best on scenes with high geometric detail…
+    On the other hand, mip-NeRF and NSVF outperform our method on scenes with complex,
+    view-dependent reflections… we attribute this to the much smaller MLP that we
+    necessarily employ to obtain our speedup of several orders of magnitude over these
+    competing implementations.”* — from [2]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Additionally, PixelNeRF [1] — due to processing each input image separately
+    in its initial feed-forward component — has a runtime that increases linearly
+    with the number of views used as input. Such a linear dependence can cause both
+    training and rendering to be quite slow. Thus, we can solve some major problems
+    with NeRFs, but it might come at a slight cost!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing Thoughts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thanks so much for reading this article. I am [Cameron R. Wolfe](https://cameronrwolfe.me/),
+    Director of AI at [Rebuy](https://www.rebuyengine.com/). I study the empirical
+    and theoretical foundations of deep learning. You can also check out my [other
+    writings](https://medium.com/@wolfecameron) on medium! If you liked it, please
+    follow me on [twitter](https://twitter.com/cwolferesearch) or subscribe to my
+    [Deep (Learning) Focus newsletter](https://cameronrwolfe.substack.com/), where
+    I help readers build a deeper understanding of topics in deep learning research
+    via understandable overviews of popular papers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bibliography
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Yu, Alex, et al. “pixelnerf: Neural radiance fields from one or few images.”
+    *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition*.
+    2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Müller, Thomas, et al. “Instant neural graphics primitives with a multiresolution
+    hash encoding.” *ACM Transactions on Graphics (ToG)* 41.4 (2022): 1–15.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Lin, Tsung-Yi, et al. “Feature pyramid networks for object detection.”
+    *Proceedings of the IEEE conference on computer vision and pattern recognition*.
+    2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Mildenhall, Ben, et al. “Nerf: Representing scenes as neural radiance fields
+    for view synthesis.” *Communications of the ACM* 65.1 (2021): 99–106.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Sitzmann, Vincent, Michael Zollhöfer, and Gordon Wetzstein. “Scene representation
+    networks: Continuous 3d-structure-aware neural scene representations.” *Advances
+    in Neural Information Processing Systems* 32 (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Vaswani, Ashish, et al. “Attention is all you need.” *Advances in neural
+    information processing systems* 30 (2017).'
+  prefs: []
+  type: TYPE_NORMAL

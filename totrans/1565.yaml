@@ -1,0 +1,375 @@
+- en: How can XGBoost support natively categories?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/native-support-of-categories-in-xgboost-how-does-it-work-d359096bd003](https://towardsdatascience.com/native-support-of-categories-in-xgboost-how-does-it-work-d359096bd003)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)[![Saupin
+    Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)
+    [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)
+    ·6 min read·Mar 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58e881d68aca5ae4452f0262d11dbeb4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jon Tyson](https://unsplash.com/fr/@jontyson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost and others decision tree-based methods trained using gradient Boosting
+    use comparison for decision. It’s not trivial to mathematically define a comparison
+    operator for categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we are going to explain what are the options available, detail
+    what are their pros and cons, and focus on the native support for categorical
+    features that have been recently introduced in XGBoost (and LightGBM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’re interested in Gradient Boosting and its application to Decision Tree
+    training, please consider my book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+    [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This book on Gradient Boosting methods is intended for students, academics,
+    engineers, and data scientists who wish …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: amzn.to](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As shown in the figure below, decision trees base their decision on comparison:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84da55d5e84bba3b2cd7d8818c6eb606.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simple decision tree. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, in this simple example, if the input is a row of data, with two
+    columns `A=21` and `B=111`, then the output value will be the weight `4`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The limitation of this kind of decision tree is that it can only handle numbers
+    as features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standard ways of handling categorical features
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: However, it is ubiquitous in data science to be confronted with features that
+    are categorical. Let’s see what are the options at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One hot encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One commonly encountered way to handle categorical values is to use ***one hot
+    encoding***. The idea here is to convert the non-numerical categorical values
+    into numerical values by creating a column for each possible category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the category applies to the current line of the dataset, the corresponding
+    columns are set to 1 and 0 otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The snippet of code below shows the standard way to make one hot encoding with
+    pandas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One hot encoding with Pandas. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the main limitations of one hot encoding is that you will add as many
+    columns in your dataset as they are distinct categorical values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s also important to note that you must have the same distinct values when
+    training and predicting, otherwise some columns will be missing during prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GLMM encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another option is to use encoding, and more specifically GLMM encoding. The
+    idea here is to convert non-numerical categories to numbers, using a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The conversion is done using GLMM, aka ***Generalized Linear Mixed Models***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here *generalized* states that GLMMs are simply a generalization of linear models
+    where the target variable can be transformed using a function like a logarithm.
+    Hence, using the same mathematical framework, standard linear regression as well
+    as logistic regression can be modeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And *mixed* indicates that the models can integrate fixed and random effects,
+    i.e. that the mean of the variable to predict is rather fixed or random for a
+    set of observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Applied to the case of categorical encoding, GLMMs will capture the random
+    effect of each category fitting this kind of model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b592943e1597960daf8abbac1d04c64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mixed Model predicting Y for the category I. Formula by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where `Y_i` is the value predicted by the Mixel Model for the target `Y` and
+    the category `i` . μ is the global mean of `Y` and is the fixed effect, while
+    `RE_ci` is the random effect due to the category `i.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence `RE_ci` captures the effect of the category, and this is the encoded value
+    of the category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using `pandas` and the library `caregorical_encoders` , all this theory subsumes
+    to these few lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GLMM encoding with Pandas. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And if you’re curious, the important line in the `categorical_encoders` library
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code by the auhor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This exactly trains a model has described by the formula above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost Native support
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As seen above, it’s possible to alter the property of categorical values by
+    either converting them to real values (glmm encoding) or by changing the dataset's
+    structure and introducing a column for each possible category (one hot encoding).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But this does not seem to be the best way to integrate the support for categories
+    in the standard structure of Gradient Boosting: decision tree.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inclusion instead of comparison
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Indeed, it would seem natural to replace comparison with inclusion as the decision
+    operation. I.e. instead of checking whether a value is greater or lesser than
+    a given threshold, we could check for the inclusion of the value in a given set
+    of categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that we can replace the comparison with a threshold
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b5fa8ac89baf4463893a7410c69fef3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formula by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a8f7681f96bd4e7fd18bc2b02b521ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formula by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on the code of my previous article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----d359096bd003--------------------------------)
+    [## DIY XGBoost library in less than 200 lines of python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost explained as well as gradient boosting method and HP tuning by building
+    your own gradient boosting library for…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----d359096bd003--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This can be done by updating the method creating the node condition function
+    to support inclusion instead of comparison:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create an inclusion condition when using categories. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exhaustive generation possible lists of categories
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the standard method, which uses value as the splitting condition, the candidates
+    splits are generated by ordering the values in the column being considered and
+    keeping unique values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on this splitting value, the gain is evaluated for the left and right
+    nodes resulting from this splitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When using categories, ordering is no longer relevant, and candidate conditions
+    for splitting are no longer a single value, but a list of categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we have no previous knowledge on the best way to regroup categories in sets
+    that would optimize gain, one option is to generate all the possible combinations
+    of categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hence again, based on the code of my previous article, we extract the code
+    that creates threshold-based splitting for numerical values in `_numerical_split`
+    and we introduce a new method `_categorical_split` to generate possible combinations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generate candidate splits for numerical and categorical types. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that pandas masks are a very convenient way to handle both cases similarly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Putting it all together
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The complete code, that implements from scratch Gradient Boosting for decision
+    trees, and support categorical as well as numerical data can be found below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complete code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Except for the two main changes presented above, it's mainly the same code as
+    in my previous article, but slightly more generic so that numerical as well as
+    categorical data can be supported.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the basic example provided, using categorical or numerical splitting give
+    the same results. The code is simply slower when using categorical support, has
+    the number of combinations explored is important:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combinations explored. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that we are using the internal pandas code `category` to distinguish between
+    numerical and categorical data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance issues
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The implementation presented above works as expected and do support categorical
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, as we are exhaustively exploring all the possible combinations of categories,
+    using python `itertools.combinations` , the code will become very slow when there
+    are more than a few unique categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Indeed the number of `k`possible combinations for a set of `n` categorical
+    values is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f382f0e0eb55001c7a1b85c1164d69ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of possible combinations. Formula by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is why XGBoost and LightGBM use a heuristic to reduce this number drastically.
+    More details can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html?source=post_page-----d359096bd003--------------------------------#optimal-partitioning)
+    [## Categorical Data - xgboost 1.7.4 documentation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note As of XGBoost 1.6, the feature is experimental and has limited features
+    Starting from version 1.5, XGBoost has…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: xgboost.readthedocs.io](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html?source=post_page-----d359096bd003--------------------------------#optimal-partitioning)
+    [![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I strongly advise using internal support for categorical data when using XGBoost
+    or LightGBM. It’s not only a more memory and computation-efficient method, but
+    it also provides good precisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It also simplifies the data preparation pipeline, and natively supports missing
+    values when training and prediction sets are disjoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’re interested in Gradient Boosting and its application to Decision Trees,
+    please consider my book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+    [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This book on Gradient Boosting methods is intended for students, academics,
+    engineers, and data scientists who wish to…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: amzn.to](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+    [](https://www.buymeacoffee.com/guillaumes0?source=post_page-----d359096bd003--------------------------------)
+    [## Guillaume Saupin
+  prefs: []
+  type: TYPE_NORMAL
+- en: Guillaume Saupin, a PhD holder and an expert in applied mathematics, stands
+    out in the mathematical community for his…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.buymeacoffee.com](https://www.buymeacoffee.com/guillaumes0?source=post_page-----d359096bd003--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

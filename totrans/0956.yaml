@@ -1,0 +1,225 @@
+- en: Generalized Advantage Estimation in Reinforcement Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/generalized-advantage-estimation-in-reinforcement-learning-bf4a957f7975](https://towardsdatascience.com/generalized-advantage-estimation-in-reinforcement-learning-bf4a957f7975)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Bias and Variance tradeoff in Policy Gradient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://siwei-causevic.medium.com/?source=post_page-----bf4a957f7975--------------------------------)[![Siwei
+    Causevic](../Images/bb8e4ec911272a8e381e94129eabe166.png)](https://siwei-causevic.medium.com/?source=post_page-----bf4a957f7975--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bf4a957f7975--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bf4a957f7975--------------------------------)
+    [Siwei Causevic](https://siwei-causevic.medium.com/?source=post_page-----bf4a957f7975--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bf4a957f7975--------------------------------)
+    ·6 min read·Mar 27, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6ba99d09255dd7c15926e13695c4125.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: photo by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Policy gradient methods are one of the most widely used learning algorithms
+    in reinforcement learning. They aim to optimize a parameterized policy and use
+    value functions to help estimate how the policy should be improved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the major issues in reinforcement learning though, especially for policy
+    gradient methods, is the long time delay between actions and their positive or
+    negative effect on rewards, which makes reward estimation extremely difficult.
+    That being said, RL researchers usually estimate the long term rewards(return)
+    with either the bootstrapped rewards from episodes or the value function, and
+    sometimes both. However, both methods have their drawbacks. The issue with the
+    former is the high variance from the samples, and the latter is the high bias
+    in the estimated value function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will go over Generalized Advantage Estimation(GAE), a family
+    of policy gradient estimators that significantly reduce variance while maintaining
+    a tolerable level of bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The content below assumes a basic understanding of the policy gradient methods.
+    If you are new to reinforcement learning, check out my previous article on [RL
+    basics and algorithm overview](/an-overview-of-classic-reinforcement-learning-algorithms-part-1-f79c8b87e5af),
+    and a [deep dive into vanilla policy gradient](https://medium.com/towards-data-science/policy-gradient-reinforce-algorithm-with-baseline-e95ace11c1c4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bias and Variance Tradeoff
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Recall the generic form of policy gradient that we discussed in the [vanilla
+    policy gradient](https://medium.com/towards-data-science/policy-gradient-reinforce-algorithm-with-baseline-e95ace11c1c4):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79d444a751fc692dff9a1b470a12455e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The goal is to find the parameters *θ* for a policy that maximizes *V(θ)*. To
+    do so, we search for the maxima in *V(θ)* by ascending the gradient of the policy,
+    w.r.t parameters θ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9021ed8605d1743d9651e3c97f3be6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The above function is the vanilla policy gradient that solely rely on the return
+    R(τ), which is the sum of rewards for a trajectory τ:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbe90f8b7eddc6cd83e56781f6ef7a0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Because R(τ) is estimated from many sampled trajectories, the vanilla policy
+    gradient method is prune to high variance, and to address this, researchers have
+    found several different ways to estimate the rewards in a more stable way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s expand the above value function into the stepwise form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/115e5db734c525465df60a1e3ffc3c28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Ψt is the generic representation of the rewards, which may be one of the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a235de60f591aa182c7f49b912b6ae2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Option 1 and 2 solely rely on sampled rewards, and option 3 subtracts a baseline
+    from the rewards. However, they still suffer from high variance during learning.
+    In fact, the choice Ψt = Aπ (st , at ) was proved to yield the lowest possible
+    variance. Here the advantage function is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/994002b6fb52321a308b1d72bdaa3b3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It measures whether or not the action is better or worse than the policy’s default
+    behavior. Note choice 5 and 6 are equivalent if the learning is on-policy. In
+    practice, the advantage function is not known and must be estimated, which makes
+    the estimator biased. GAE takes one step further by discounting the advantage
+    function with an additional parameter γ. We will go into more details in the next
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Generalized Advantage Estimation(GAE)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Building on top of the advantage estimator, GAE introduces a parameter γ that
+    allows us to reduce variance by downweighting rewards corresponding to delayed
+    effects. of course this comes at the cost of introducing bias. This is similar
+    idea to the discount factor in the Bellman equation that de-prioritizes rewards
+    in the far future. With the discount, the advantage function is represented as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb79b7b22b2a25ec223aa77da8f61cad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In practice, we need to estimate the value function and this is usually modeled
+    with a neutral net that predicts the value for a particular state (and action
+    if we want to estimate Q value). Let’s define the TD residual δt with discount
+    γ. Note that δt can be considered as an estimate of the advantage Ψt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cef11a0258c45f1bea391bbfe0d6ce1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Recall Temporal Difference (TD) methods we discussed previously [here](/an-overview-of-classic-reinforcement-learning-algorithms-part-1-f79c8b87e5af).
+    Here we replace Q value with the value function(for more details please refer
+    to the Bellman equation). The discounted advantage can be written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3c4edd7155307faf9b5be89f8ab1570.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In TD, we trade off bias and variance by deciding on the number of steps to
+    sample. The more steps we sample, the less we rely on the biased value function
+    estimator at the cost of variance. One tricky thing is to find the sweet spot
+    in TD which brings the ideal bias-variance tradeoff. This is where GAE shines
+    — instead of empirically testing different step sizes, let’s just use the exponentially-weighted
+    average of these k-step estimators. The equations below show the discounted advantage
+    function at different step size(k).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c224f5dd68334e41deb577ce056a1a4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Applying the exponentially-weighted average, we get the **final form of GAE**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4630df2a6027da15cd7128ddbaebc75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note here we introduced another parameter λ. When λ = 0, GAE is essentially
+    the same as TD(0) but applied in the context of policy optimization. It has high
+    bias as it heavily relies on the estimated value function. When λ = 1, this is
+    the case of vanilla policy gradient with a baseline that has high variance due
+    to the sum of terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2637df51d54142760925bc8ca4e1f651.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In practice we set 0 < λ < 1 to control the compromise between bias and variance
+    just like the lambda parameter in TD lambda.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reward Shaping — Yet Another Interpretation of GAE
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Another way to interpret GAE is to treat the environment as a reward-reshaped
+    MDP. Assume we have a transformed reward function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e678fe9daf4876e7824d39f90120e588.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The discounted sum of the transformed reward(i.e. the return) is exactly the
+    TD residual we discussed above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5eccb8b1084d6d0c1bfd1d34536f0672.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Essentially the policy gradient and optimal policy are unchanged but our objective
+    is to maximize the discounted sum of rewards instead. We can further add a “steeper”
+    discount λ, where 0 ≤ λ ≤ 1, and we can get the final GAE form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0fddf47a1b65500ebf0a3da8221837fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To summarize, we can treat GAE as the same policy gradient in a reward-reshaped
+    MDP, with a steep discount γλ to cut off the noise arising from long delays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article we discussed the bias and variance tradeoff in RL, especially
+    in the policy gradient methods. Then we introduced GAE, a technique that allows
+    us to reduce variance by downweighting rewards at a much smaller cost of bias.
+    GAE is a very important estimator and enjoys widespread use in many advanced algorithms
+    including VPG, TRPO, and PPO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that I wanted to thank you for reading through this article and I appreciate
+    any feedback.
+  prefs: []
+  type: TYPE_NORMAL

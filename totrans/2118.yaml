@@ -1,0 +1,526 @@
+- en: 'To 1 or to 0: Pixel Attacks in Image Classification'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/to-1-or-to-0-pixel-attacks-in-image-classification-ec323555a11a](https://towardsdatascience.com/to-1-or-to-0-pixel-attacks-in-image-classification-ec323555a11a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Navigating the Realm of Adversarial Machine Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@MahamsMultiverse?source=post_page-----ec323555a11a--------------------------------)[![Maham
+    Haroon](../Images/5a9ac82369ecbf7719b765ec160a70ef.png)](https://medium.com/@MahamsMultiverse?source=post_page-----ec323555a11a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec323555a11a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec323555a11a--------------------------------)
+    [Maham Haroon](https://medium.com/@MahamsMultiverse?source=post_page-----ec323555a11a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec323555a11a--------------------------------)
+    ·13 min read·Nov 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5969ea7ddc81cf61597e791f7e4a79c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Pietro Jeng](https://unsplash.com/@pietrozj?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/green-and-red-light-wallpaper-n6B49lTx7NM?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hi there!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This year, I took part in my first [Capture The Flag (CTF) competition](https://www.kaggle.com/competitions/ai-village-capture-the-flag-defcon31/overview)
+    by AI Village @ DEFCON 31, and the experience was intriguing, to say the least.
+    The challenges, particularly those involving pixel attacks, caught my attention
+    and are the main focus of this post. While I initially intended to share a simple
+    version of a pixel attack I performed during the competition, the goal of this
+    post is to also delve into strategies for strengthening ML models to better withstand
+    pixel attacks like the ones encountered in the competition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we dive into the theory, let’s set the scene with a scenario that’ll
+    grab your attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Picture this: our company, MM Vigilant, is on a mission to develop a cutting-edge
+    object detection product. The concept is simple yet revolutionary — customers
+    snap a picture of the desired item, and it is delivered at their doorstep a few
+    days later. As the brilliant data scientist behind the scenes, you’ve crafted
+    the ultimate image-based object classification model. The classification results
+    are impeccable, the model evaluation metrics are top-notch, and stakeholders couldn’t
+    be happier. The model hits production, and customers are delighted — until a wave
+    of complaints rolls in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upon investigation, it turns out someone is meddling with the images before
+    they reach the classifier. Specifically, every image of a clock is being mischievously
+    classified as a mirror. The consequence? Anyone hoping for a clock is receiving
+    an unexpected mirror at their door. Quite the unexpected twist, isn’t it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our stakeholders at MM Vigilant are both concerned and intrigued by how this
+    mishap occurred and, more importantly, what measures can be taken to prevent it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The scenario we just explored is a hypothetical situation —though image tempering
+    is a very likely scenario, especially if there are vulnerabilities in the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So let’s take a closer look on one such manipulation of images…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pixel Attacks in Image Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pixel attacks, specifically in the context of image classification, aim to deceive
+    a machine learning (ML) classifier into categorizing an image as something other
+    than its actual class. While one can sarcastically argue that a subpar model already
+    exhibits such behavior, the goal here is to outsmart state-of-the-art models.
+    Needless to say that, there are numerous methods and motivations for these attacks,
+    but this post, limited in scope, will narrow its focus to black box, targetted,
+    pixel attacks and the precautions involved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s begin by approaching this concept intuitively. Essentially, any input
+    to a neural network undergoes a series of mathematical operations per pixel to
+    classify an image as X. Altering a pixel, therefore, leads to a change in the
+    result of these mathematical operations altering the prediction score. This can
+    be extrapolated to such an extent that if a dominant/”central to classification”
+    pixel is manipulated, it’ll exert significant enough influence on the prediction
+    score of the class, such that, the outcome is a misclassification, as illustrated
+    in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4c97ae5ef8137c6c38478aa35920c65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the realm of image classification attacks, there are two well-known approaches,
+    depending on the desired outcome of misclassification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Targeted attacks
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Untargeted attacks
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Targeted attacks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Targeted pixel attacks involve a purposeful transformation with the goal of
+    having the image classified as a specific class. For instance, imagine a deliberate
+    attempt to classify a bear as a boat or an apple as a koala. These attacks have
+    dual objectives: minimizing the score for the original class while maximizing
+    the score for the target class.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Untargeted attacks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Conversely, untargeted pixel attacks operate on the premise of avoiding the
+    classification of the image as its original class. The task simplifies to minimizing
+    the prediction score for the specified class. In other words, the aim is to ensure
+    that a bear, for example, is classified as **anything** other than a bear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth noting that every targeted attack can be considered an untargeted
+    attack, but the reverse is not necessarily true.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In addition to attack types, there are two distinct methodologies for achieving
+    these attacks, depending on the availability of the attacked model (A traditional/white
+    box approach) or only the resulting scores (A black box methodology).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditional Attacks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In traditional or white box attacks, the model is usually available. Gradient
+    information can be obtained and employed in attacks like the [Fast Gradient Sign
+    Method (FGSM)](https://pytorch.org/tutorials/beginner/fgsm_tutorial.html). This
+    method involves perturbing the input data by a small amount in the direction of
+    the gradient, causing misclassification without significant alteration of the
+    image’s visual appearance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple github implementation of the approach can be found in the following
+    repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/ymerkli/fgsm-attack/tree/master?source=post_page-----ec323555a11a--------------------------------)
+    [## GitHub - ymerkli/fgsm-attack: Implementation of targeted and untargeted Fast
+    Gradient Sign Method'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implementation of targeted and untargeted Fast Gradient Sign Method - GitHub
+    - ymerkli/fgsm-attack: Implementation of…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/ymerkli/fgsm-attack/tree/master?source=post_page-----ec323555a11a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Black box Attacks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Black box attacks, conversely, rely solely on the model predictions. Techniques
+    such as [differential evolution](https://machinelearningmastery.com/differential-evolution-from-scratch-in-python/)
+    can be employed for executing this type of attack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differential Evolution is an optimization algorithm that mimics natural selection.
+    It works by creating and combining potential solutions in iterations, choosing
+    the best-performing ones from a population based on a set criterion. This approach
+    is effective for exploring solution spaces and is commonly employed in adversarial
+    attacks on machine learning models.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Given that our challenge focused on a black box targeted pixel attack, let’s
+    jump right into the implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The CTF challenge
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the CTF challenge, the objective was to misclassify an unmistakable image
+    of a wolf as a Granny Smith apple — nodding to the Red Riding Hood narrative.
+    With a dataset featuring around 1000 classes and a high-resolution image at 768x768
+    pixels, surpassing the resolutions of MNIST, CIFAR, and even ImageNet, the difficulty
+    lay in deceiving the model by identifying the minimum number of pixels that would
+    lead to the target misclassification. It’s worth noting that despite the intricacies
+    of high-resolution images, the essence of machine learning classification, as
+    mentioned above, lies in the non-intuitive nature of the task, reducing images
+    to mere sets of values and a set of mathematical operations that are very dependent
+    on these individual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we dive into the code, let’s look at the original image of our wolf.
+    Doesn’t it seem like it has the potential to pull off an apple disguise? Those
+    green eyes, round face, and the green background — all the makings of a fruity
+    impostor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/124371fd270a9fb4da747983c8be8b4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By [AI Village](https://www.kaggle.com/competitions/ai-village-capture-the-flag-defcon31/data)
+    under license [Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embarking on the journey, where the initial score by the black box model for
+    class “timber wolf” was about 0.29 and for class “granny smith” it was 0.0005,
+    I initially considered the application of [scipy’s differential evolution](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html)
+    approach. This method has demonstrated success in pixel attacks involving CIFAR
+    and ImageNet datasets. The differential evolution technique involves starting
+    with n random samples, representing the population size. At each next step, the
+    best offspring are chosen, determined by the model scores, eventually leading
+    to our desired outcome. However, given my time constraints and the task involving
+    changing the score for only a single image, I opted for a more straightforward
+    strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I started by dividing the original image into progressively smaller blocks,
+    starting from 2x2 and reaching up to 16x16\. Focusing on the targeted granny smith
+    apples (green), I in turn changed the values in the box to a shade of apple green
+    and observed the impact on scores for both, the timber wolf class and the granny
+    smith class. I then handpicked 2–3 16x16 blocks applied a version of differential
+    evolution within this block. This meant changing one pixel, for a about 50–75
+    iterations of randomly selected pixels in the region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While I couldn’t pinpoint the notorious single pixel within the given two days,
+    I achieved a highly pixelated attack that altered the classification of the wolf
+    to that of a granny smith apple thus getting the flags for two sub problems of
+    a 3 part task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have context, let’s jump into a little bit code so you get something
+    away from this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I treated it as a black box problem and the query when given the image gave
+    a list of predictions for all classes. The predictions were sorted by value, so
+    the predicted class was the first value in the list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The get_scores function fed the image to the query in the correct format and
+    got the requisite results in a dictionary for the most part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The relevant code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The core idea was to pick pixels within the RGB range of an apple’s color and
+    test about 50–75 pixels to find the one that maximized the “granny smith” class
+    score and minimized the “timber wolf” class score. I gradually increased the size
+    of the selected section and modified the optimization process as needed. For instance.
+    when I crossed the score for granny smith class crossed the score for timber wolf
+    class, I considered all pixels that increased the granny smith class score as
+    long as it was greater than the timber wolf score, instead of focussing on alos
+    decreasing the score for the Timberwolf class, this obviously sped things up a
+    little.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite not finding the elusive single pixel, I successfully executed a highly
+    pixelated attack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The resulting outcome looks something like this, it was classified as granny
+    smith.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/054fe7aeb01f7f2c049f2d3c3b4a3ccb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Original Image By [AI Village](https://www.kaggle.com/competitions/ai-village-capture-the-flag-defcon31/data)
+    under license [Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
+    (Edited by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Magnified results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My wolf is pretty obviously tempered with but this was a high resolution image
+    and the attack was a success. I’m sure given a little more time, there’s a possibility
+    for a lot less pixels achieving better deception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f8484e47b07afe9010118614313cde2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The pixelated Wolf classifying as a granny smith apple. By [AI Village](https://www.kaggle.com/competitions/ai-village-capture-the-flag-defcon31/data)
+    under license [Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
+    (Edited by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A word to the wise…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Having witnessed a potential version of a pixel attack that resulted in the
+    misclassification of the model based solely on prediction scores and trial and
+    error, let’s delve a bit further into how to avoid this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Certainly, the objective here isn’t to encourage performing pixel attacks, unless,
+    of course, it’s on your own model as a resilience check. The essence of exploring
+    the intricacies of adversarial ML practices is to cultivate awareness of how to
+    safeguard your model from succumbing to such approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So let’s delve into potential fortifications to avoid these scenarios…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Possible weakness of Pixel Attacks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pixel attacks, especially in a black box setting, already involve a significant
+    amount of trial and error but various strategies can further enhance the robustness
+    of models against these attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Using higher Resolution images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Higher resolution images are harder to attack given they require more resources
+    and a higher number of changed features/pixels, thus can be more challenging to
+    tamper with subtly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9227cf4ea3af5d97f1482ea705e9c58b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clarification: For example, consider a 32x32 image from CIFAR, which has fewer
+    pixels, making it more susceptible to tampering. In contrast, higher-resolution
+    images, are less prone to pixel attacks due to their increased pixel count. On
+    the other hand, these images, while more challenging to tamper with subtly, may
+    incur higher computational costs during training. Necessitating a need for striking
+    a balance between security and computational efficiency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasing prediction score threshold for accepted result
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that the attacked images have lower prediction score, a score threshold
+    can be utilized to detect potential adversarial attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d283e1c5f815ebd64c79b3fe41b5ad98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clarification: For instance, setting a threshold below which predictions are
+    considered inconclusive provides an added layer of security against adversarial
+    attacks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again it’s worthwhile to pinpoint that this is a trade-off, higher threshold
+    enhances confidence but may limit the classifier’s sensitivity. Finding the right
+    balance is crucial to avoid rejecting valid predictions while thwarting adversarial
+    attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering CNN’s Robustness Against Attacks for Critical Application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Turns out while not immune Convolutional Neural Networks (CNNs) are less susceptible
+    to such adversarial attacks, given they utilize spacial hierarchies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/939bb56d8794531c410adeed1260733a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clarification: In simple terms, while an average model treats pixels as individual
+    inputs, CNNs consider predefined associations through kernel windows, enhancing
+    robustness against adversarial manipulations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preprocessing Images before prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It maybe worth applying a robust preprocessing technique to images before feeding
+    them into neural networks for prediction thus limiting black box attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18415ca635300fc3186c5e9b8bc41a4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clarification: Image compression, for instance, aids in reducing the effects
+    of tampering, while computer vision algorithms can identify distortions or anomalies
+    in images. Additionally, interpolation techniques can be applied since manipulated
+    pixels may not closely match the colors or patterns of the original image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Secure ML Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The above approaches while effective are not one size fits all. Eventually securing
+    a certain ML model against adversarial attacks includes rigorous testing and validation
+    of models under various conditions, including exposure to potential adversarial
+    inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deciding on how much security to add and how often to update the model depends
+    on how important it is and the types of threats it might face. But, being aware
+    of ethical considerations and understanding possible threats can help reduce the
+    risks from attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping Up…
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While it’s true that pixel attacks or any manipulation of images can be a big
+    problem for image-based AI systems, there’s also a lot we can do to protect against
+    them. Attackers can mess with individual pixels to trick models into making mistakes,
+    jeopardizing the reliability of crucial applications like image recognition and
+    security systems. This not only leads to security breaches but also undermines
+    trust from customers and stakeholders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the flip side, ML practitioners have tools at their disposal to make sure
+    models aren’t vulnerable to such attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post I attempted exploring pixel attacks, inspired by a CTF challenge,
+    and delved into some of the intricacies of deceiving image classification models.
+    While the wolf did morph into a Granny Smith apple, it took a lot of computation
+    and trial and error and had the model employed some precautions, the attack would’ve
+    been unsuccessful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I leave a few resources below of similar approaches, and hope you find the topic
+    useful in keeping the models safe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://github.com/Hyperparticle/one-pixel-attack-keras?source=post_page-----ec323555a11a--------------------------------)
+    [## GitHub - Hyperparticle/one-pixel-attack-keras: Keras implementation of "One
+    pixel attack for…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keras implementation of "One pixel attack for fooling deep neural networks"
+    using differential evolution on Cifar10 and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'github.com](https://github.com/Hyperparticle/one-pixel-attack-keras?source=post_page-----ec323555a11a--------------------------------)  [##
+    GitHub - max-andr/square-attack: Square Attack: a query-efficient black-box adversarial
+    attack via…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Square Attack: a query-efficient black-box adversarial attack via random search
+    [ECCV 2020] - GitHub …'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'github.com](https://github.com/max-andr/square-attack?source=post_page-----ec323555a11a--------------------------------)
+    [](https://github.com/kenny-co/procedural-advml?source=post_page-----ec323555a11a--------------------------------)
+    [## GitHub - kenny-co/procedural-advml: Task-agnostic universal black-box attacks
+    on computer vision…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Task-agnostic universal black-box attacks on computer vision neural network
+    via procedural noise (CCS'19) - GitHub …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/kenny-co/procedural-advml?source=post_page-----ec323555a11a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

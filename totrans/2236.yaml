@@ -1,0 +1,479 @@
+- en: 'Unsupervised data pruning: less data to learn better'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855](https://towardsdatascience.com/unsupervised-data-pruning-less-data-to-learn-better-30cd2bfbd855)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Foundation models | Scaling law | Large models | Data pruning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Not always more data is meaning a more accurate model, but how to choose your
+    data?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)[![Salvatore
+    Raieli](../Images/6bb4520e2df40d20283e7283141b5e06.png)](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------)
+    [Salvatore Raieli](https://salvatore-raieli.medium.com/?source=post_page-----30cd2bfbd855--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30cd2bfbd855--------------------------------)
+    ·11 min read·Feb 27, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c41d0d7b79c96998daaf3dda4a30237.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by the author using [DALL-E](https://openai.com/dall-e-2/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling law has been observed in different contexts (pictures, text, language,
+    speech, and so on). Is increasing the number of parameters really the only recipe
+    for a better model? And if not what you can actually do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is scaling law and why is it problematic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In recent years we have seen the number of parameters in models increase by
+    leaps and bounds. All the biggest companies have been pushing to create more and
+    more capable models. This has led to a reduced error in benchmark datasets and
+    the emergence of unanticipated behavior. **But what is scaling law?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In short, the scaling law states that the “test error often falls off as
+    a power law with either the amount of training data, model size, or compute.”**
+    Put another way, to improve the performance of a model one must increase one of
+    these three factors: the number of examples during training, the number of parameters,
+    or the duration of training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previous technical studies suggested that test loss could decrease as a power
+    law of the training dataset. This was formally defined in 2017 when [Hestness
+    explored this idea](https://arxiv.org/pdf/1712.00409.pdf) in different machine-learning
+    domains (machine translation, language modeling, image processing, and speech
+    recognition).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The scaling law was then defined in an OpenAI article where they showed that
+    by increasing the size of the model or dataset or the amount of computing used
+    for training, performance improved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/248dec3b7b7d462be4e99ed3e97c4469.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'scaling law as shown by OpenAI (source: [here](https://arxiv.org/pdf/2001.08361.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally they wrote:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Model performance depends most strongly on scale, which consists of three factors:
+    the number of model parameters N (excluding embeddings), the size of the dataset
+    D, and the amount of compute C used for training. Within reasonable limits, performance
+    depends very weakly on other architectural hyperparameters such as depth vs. width.
+    — [source](https://arxiv.org/abs/2001.08361)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In summary, they assert that performance has a power-law relationship with each
+    of these three factors. In addition, if you increase the number of parameters
+    N you must also increase the number of examples D in tandem, or a penalty (overfitting)
+    emerges. There is a relationship between N and D whereby you have to increase
+    the amount of data by 5 times if you increase the number of parameters by 8 times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This concept was taken to extremes with [GPT-3](https://arxiv.org/abs/2005.14165)
+    and later models ([Google’s LaMDA](https://blog.google/technology/ai/lamda/) reached
+    more than 500 B parameters). These models have shown incredible capabilities,
+    and some have speculated that massively increasing the number of parameters will
+    give us general intelligence. **And will it?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: No. In a nutshell, [neural networks](https://en.wikipedia.org/wiki/Artificial_neural_network)
+    are pattern-matching machines (or universal approximators). What neural networks
+    do is find patterns that they saw in the training set. A neural network that is
+    larger and has been trained with more data may contain more patterns in its parameters
+    and may recognize more of them. **So infinite data? Well, the data is not infinite.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such power law scaling has motivated significant societal investments in data
+    collection, compute, and associated energy consumption. However, power law scaling
+    is extremely weak and unsustainable. — [source](https://arxiv.org/pdf/2206.14486.pdf)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It can be seen in the OpenAI article that it takes an order of magnitude of
+    data or parameters or compute to decrease the error by a mere 3–2 %. Also, to
+    scale vision transformers it took two billion data points to get a few more accuracy
+    points in [ImageNet](https://ieeexplore.ieee.org/abstract/document/5206848).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29b064230b826eb3b037211ce4e3da47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: source ([here](https://arxiv.org/pdf/2106.04560.pdf))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**To recap, so far we have witnessed a paradigm that states more is better.
+    But is it the only strategy?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “can we achieve exponential scaling instead, with a good strategy for selecting
+    training examples?”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Meanwhile, it can be said that many of the data are redundant. The model often
+    sees many similar examples. Datasets are often acquired by randomly downloading
+    thousands and thousands of examples from the Internet. Previous studies have shown
+    that one can, for example, sort the examples in the training set in order of increasing
+    difficulty (easy and redundant examples) down to the most difficult ones. One
+    can reduce the number of examples in the dataset while maintaining performance
+    (in other words, easy and redundant examples only consume training cycles without
+    adding anything to learning).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More about these concepts, how efficiently scale vision transformers and the
+    difference between model-centric and data-centric AI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/why-do-we-have-huge-language-models-and-small-vision-transformers-5d59ac36c1d6?source=post_page-----30cd2bfbd855--------------------------------)
+    [## Why Do We Have Huge Language Models and Small Vision Transformers?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google ViT-22 paves the way for new large transformers and to revolutionize
+    computer vision
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/why-do-we-have-huge-language-models-and-small-vision-transformers-5d59ac36c1d6?source=post_page-----30cd2bfbd855--------------------------------)
+    [](/a-critical-analysis-of-your-dataset-2b388e7ca01e?source=post_page-----30cd2bfbd855--------------------------------)
+    [## A critical analysis of your dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stop finetuning your model: your model is already good, but not your data'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-critical-analysis-of-your-dataset-2b388e7ca01e?source=post_page-----30cd2bfbd855--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Unsupervised data pruning: can you remove useless training data points without
+    knowing the labels?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Previous studies have left different questions open. Meanwhile, whether a power
+    law of error with respect to data can also be defined (exponentially reducing
+    the number of examples without sacrificing performance). Second, the strategies
+    described above require that the collected examples be labeled anyway (time-consuming
+    and expensive). Therefore, an optimal strategy should be unsupervised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A paper was recently published that tries to answer these questions. The study
+    was conducted by a collaboration between META, Stanford, and the University of
+    Tubingen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://arxiv.org/abs/2206.14486?source=post_page-----30cd2bfbd855--------------------------------)
+    [## Beyond neural scaling laws: beating power law scaling via data pruning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Widely observed neural scaling laws, in which error falls off as a power of
+    the training set size, model size, or both…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: arxiv.org](https://arxiv.org/abs/2206.14486?source=post_page-----30cd2bfbd855--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The authors started from the fact that the scaling law is inefficient**:
+    The exponents of the power law are close to zero (suggesting inefficient use of
+    resources). Moreover, an increase in the parameters or amount of data leads to
+    a minimal reduction in error. **What we would like is that one can prune a dataset
+    without altering the performance of the model, even if the dataset is unlabeled**
+    (after all, labeling a dataset is one of the most expensive and time-consuming
+    operations). **How?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors explored this possibility in the case of the teacher-student setting.
+    This is a training method in which you have a model that has been trained with
+    a large number of examples (not restricted to a CNN even though it is one of the
+    most widely used cases). You provide some data to the pre-trained, larger model
+    (teacher) and train the smaller model using instead of original labels the teacher’s
+    output (the teacher provides class probabilities as output, also called soft labels).
+  prefs: []
+  type: TYPE_NORMAL
+- en: in a nutshell, the authors used [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html)
+    as a dataset, obtained probabilities from a teacher model, and trained a student
+    model for a few epochs using the teacher’s output probabilities as labels. They
+    then calculated the margin between student and teacher outputs (which provide
+    a measure of the learning difficulty of an example for a model).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec01c84d699123032f1a2f3e10b1ac55.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'image source: [original article](https://arxiv.org/pdf/2206.14486.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The first interesting result is when the number of examples in the training
+    set is large it is better to keep the difficult examples while pruning** (and
+    thus reduce the easy examples). When you have few examples in the training set
+    it is better to prune the difficult examples. This may seem counterintuitive.
+    The authors note that the easy examples provide coarse-grained information about
+    the target function (basically the general patterns of the dataset). In contrast,
+    the more difficult examples provide fine-tuned information that might be missed
+    in a large dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Intuitively, in the limited data regime, it is challenging to model outliers
+    since the basics are not adequately captured; hence, it is more important to keep
+    easy examples so that the model can get to moderate error. However, with a larger
+    dataset, the easy examples can be learned without difficulty, making modeling
+    outliers the fundamental challenge. source: [here](https://arxiv.org/abs/2206.14486)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In other words, when there is little data it is better for the model to learn
+    general information about the patterns in the data, while when there is a lot
+    of data the hard examples help the model to better understand the decision boundary
+    between classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also from an [information-theoretic perspective](https://en.wikipedia.org/wiki/Information_theory),
+    the authors suggest that data pruning increases the information obtained from
+    each individual example as uninformative examples are filtered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data pruning improves transfer learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/5253d8baf8ea1c41067763087fd078d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'image from Pixabay (source: [here](https://pixabay.com/it/photos/potatura-di-rose-potatura-7470829/))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the reasons for our interest in scaling law is that we are interested
+    in having foundation models. A [**foundation model**](https://en.wikipedia.org/wiki/Foundation_models)
+    is a wide model (transformer, vision transformer, and so on) that has been trained
+    with a large amount of unlabeled data and then can be used for different downstream
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simply put, we train a very wide model on a large amount of data, and then through
+    transfer learning, we adopt it for another task. Examples are [BERT](https://arxiv.org/abs/1810.04805),
+    GPT3 for text tasks, and [ResNet](https://en.wikipedia.org/wiki/Residual_neural_network)
+    for computer vision tasks (actually DALL-E and [stable diffusion](https://arxiv.org/abs/2112.10752)
+    also have a pre-trained language model as a component).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training a foundation model is extremely expensive, and so far we have tried
+    to increase its parameters and the amount of data used for training.** However,
+    [DeepMind’s Chinchilla](https://www.deepmind.com/publications/an-empirical-analysis-of-compute-optimal-large-language-model-training)
+    and subsequent studies show that improving the data used for training would perhaps
+    be more useful. So the authors of this study wondered: **could data pruning help
+    with transfer learning?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors used a pre-trained [vision transformer (ViT)](https://en.wikipedia.org/wiki/Vision_transformer)
+    and then fine-tuned it on a pruned subset of 10 % of CIFAR-10\. This approach
+    worked better than fine-tuning the ViT on the entire CIFAR-10\. In addition, the
+    authors pre-trained ResNet50 on different pruned subsets of ImageNet (a reduced
+    version) and then conducted fine-tuning on CIFAR-10\. The result shows that training
+    a model on a pruned dataset has better performance than using the whole ImageNet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ffa1b299f1bc2fdd89dcb861b6596866.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'image source: [original article](https://arxiv.org/pdf/2206.14486.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus intriguingly pruning pre-training data on an upstream task can still maintain
+    high performance on a different downstream task. Overall these results demonstrate
+    the promise of data pruning in transfer learning for both the pre-training and
+    fine-tuning phases.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://levelup.gitconnected.com/sparsegpt-fewer-parameters-is-better-7b47ad60ac00?source=post_page-----30cd2bfbd855--------------------------------)
+    [## SparseGPT: fewer parameters is better?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to get rid of 100 billion parameters and happily infer on one GPU
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/sparsegpt-fewer-parameters-is-better-7b47ad60ac00?source=post_page-----30cd2bfbd855--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling the approach on a large dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Previous pruning studies have been done on small datasets but it is important
+    to know how these generalize to large datasets. For these reasons, the authors
+    benchmarked the various previous approaches on ImageNet and how they impact model
+    performance (they chose 8 different approaches).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result shows that these metrics retain only a fraction of the hard examples
+    and perform better than random pruning. **But while they perform well in a small
+    dataset, only a few of them match the performance obtained by training on the
+    full dataset**. Also, note the authors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We found that all pruning metrics amplify class imbalance, which results in
+    degraded performance. Fig. 5 shows many data pruning metrics do not scale well
+    to ImageNet, while the few that do require substantial amounts of compute. Furthermore,
+    all these metrics require labels, thereby limiting their ability to prune data
+    for large-scale foundation models trained on massive unlabeled datasets. Thus
+    there is a clear need for simple, scalable, self-supervised pruning metrics. source:
+    [here](https://arxiv.org/abs/2206.14486)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/eb55d35f2fb7ebbb2925282f944b7da7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'image source: [original article](https://arxiv.org/pdf/2206.14486.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors as a solution propose:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to use a pre-trained model called [SWaV](https://arxiv.org/abs/2006.09882)
+    to extract a low-dimensional representation of each example in the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using k-means clustering they group the representation of the examples.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After that, calculate the distance to the center of the cluster using cosine
+    distance. If an example is closer to the center of the cluster (thus closer as
+    a representation to the others as well) it is considered an easy example to rank,
+    but if it is farther from the center it is a difficult example.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lastly, one can decide to prune a percentage of easy or difficult examples according
+    to the case.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'we find our self-supervised prototype metric matches or exceeds the performance
+    of the best supervised metric, memorization, until only 70–80% of the data is
+    kept, despite the fact that our metric does not use labels and is much simpler
+    and cheaper to compute than many previously proposed supervised metrics. source:
+    [here](https://arxiv.org/abs/2206.14486)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The results matched the state-of-the-art technique memorization which requires
+    labels and it is much slower to compute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9ce6547fa3ac216f55471ea9afe86f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'image source: [original article](https://arxiv.org/pdf/2206.14486.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The authors show how data pruning can affect errors on par with the scaling
+    law. In addition, they show how through unsupervised learning one can obtain a
+    [coreset](https://arxiv.org/abs/1910.08707) (a subset of a dataset that allows
+    one to train a model as performing equal to the full dataset). **The approach
+    is inexpensive, scalable, and does not need labels.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking forward, the authors suggest that this approach can still be improved
+    and allow even more aggressive pruning. **Which would be extremely useful for
+    the training of large foundation models.** They also suggest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If highly pruned versions of these datasets can be used to train a large number
+    of different models, one can conceive of such carefully chosen data subsets as
+    foundation datasets in which the initial computational cost of data pruning can
+    be amortized across efficiency gains in training many downstream models, just
+    at the initial computational cost of training foundation models is amortized across
+    the efficiency gains of fine-tuning across many downstream tasks. source: [here](https://arxiv.org/abs/2206.14486)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In conclusion, reducing the dataset before training saves time and cost (less
+    labeling work). Not to mention that prospectively, if you reduce the overrepresented
+    populations this would help combat and/or identify bias during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What do you guys think? Have you tried pruning your dataset?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have found this interesting:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You can look for my other articles, you can also [**subscribe**](https://salvatore-raieli.medium.com/subscribe)
+    to get notified when I publish articles, and you can also connect or reach me
+    on[**LinkedIn**](https://www.linkedin.com/in/salvatore-raieli/)**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the link to my GitHub repository, where I am planning to collect code
+    and many resources related to machine learning, artificial intelligence, and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/SalvatoreRa/tutorial?source=post_page-----30cd2bfbd855--------------------------------)
+    [## GitHub - SalvatoreRa/tutorial: Tutorials on machine learning, artificial intelligence,
+    data science…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tutorials on machine learning, artificial intelligence, data science with math
+    explanation and reusable code (in python…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/SalvatoreRa/tutorial?source=post_page-----30cd2bfbd855--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'or you may be interested in one of my recent articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://levelup.gitconnected.com/microsoft-biogpt-towards-the-chatgpt-of-life-science-56e251536af6?source=post_page-----30cd2bfbd855--------------------------------)
+    [## Microsoft BioGPT: Towards the ChatGPT of life science?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BioGPT achieves the SOTA in different biomedical NLP tasks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/microsoft-biogpt-towards-the-chatgpt-of-life-science-56e251536af6?source=post_page-----30cd2bfbd855--------------------------------)
+    [](https://medium.com/data-driven-fiction/everything-but-everything-you-need-to-know-about-chatgpt-546af7153ee2?source=post_page-----30cd2bfbd855--------------------------------)
+    [## Everything but everything you need to know about ChatGPT
+  prefs: []
+  type: TYPE_NORMAL
+- en: what is known, the latest news, what it is impacting, and what is changing.
+    all in one article
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/data-driven-fiction/everything-but-everything-you-need-to-know-about-chatgpt-546af7153ee2?source=post_page-----30cd2bfbd855--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

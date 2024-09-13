@@ -1,0 +1,783 @@
+- en: Building a Comment Toxicity Ranker Using Hugging Face’s Transformer Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-comment-toxicity-ranker-using-hugging-faces-transformer-models-aa5b4201d7c6](https://towardsdatascience.com/building-a-comment-toxicity-ranker-using-hugging-faces-transformer-models-aa5b4201d7c6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Catching up on NLP and LLM (Part I)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jacky.kaub?source=post_page-----aa5b4201d7c6--------------------------------)[![Jacky
+    Kaub](../Images/e66c699ee5a9d5bbd58a1a72d688234a.png)](https://medium.com/@jacky.kaub?source=post_page-----aa5b4201d7c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aa5b4201d7c6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aa5b4201d7c6--------------------------------)
+    [Jacky Kaub](https://medium.com/@jacky.kaub?source=post_page-----aa5b4201d7c6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aa5b4201d7c6--------------------------------)
+    ·18 min read·Aug 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/138fd036a0427c78ad23c3b834c93d74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Brett Jordan](https://unsplash.com/@brett_jordan?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a Data Scientist, I have never had the opportunity to properly explore the
+    latest progress in Natural Language Processing. With the summer and the new boom
+    of Large Language Models since the beginning of the year, I decided it was time
+    to dive deep into the field and embark on some mini-projects. After all, there
+    is never a better way to learn than by practicing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As my journey started, I realized it was complicated to find content that takes
+    the reader by the hand and goes, one step at a time, towards a deep comprehension
+    of new NLP models with concrete projects. This is how I decided to start this
+    new series of articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a Comment Toxicity Ranker Using HuggingFace’s Transformer Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this first article, we are going to take a deep dive into building a comment
+    toxicity ranker. This project is inspired by the [“Jigsaw Rate Severity of Toxic
+    Comments” competition](https://www.kaggle.com/competitions/jigsaw-toxic-severity-rating)
+    which took place on Kaggle last year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The objective of the competition was to build a model with the capacity to determine
+    which comment (out of two comments given as input) is the most toxic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so, the model will attribute to every comment passed as input a score,
+    which determines its relative toxicity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What this article will cover
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we are going to train our first NLP Classifier using Pytorch
+    and Hugging Face transformers. I will not go into the details of how works transformers,
+    but more into practical details and implementations and initiate some concepts
+    that will be useful for the next articles of the series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In particular, we will see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to download a model from Hugging Face Hub
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to customize and use an Encoder
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build and train a Pytorch ranker from one of the Hugging Face models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This article is directly addressed to data scientists that would like to step
+    their game in NLP from a practical point of view. I will not do much theory around
+    transformers and even if I will write code in detail, I am expected that you already
+    played a bit with PyTorch in the past.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploration and Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Training Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will work on a dataset that pairs comments and classifies them as one being
+    “less toxic” and one being “more toxic”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of relative toxicity has been made by a group of labelers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The figure below shows a sample of data from the training set. The worker field
+    represents the id of the labeler that made the classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14c039579153181c775d353a0ce968ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training set sample, Author Illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: The dataset is available under an Open Source Licence, according to [the
+    Kaggle competition rules](https://www.kaggle.com/competitions/jigsaw-toxic-severity-rating/rules).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ranking system
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In any ML project, comprehending the task holds paramount significance as it
+    significantly impacts the selection of an appropriate model and strategy. This
+    understanding should be established right from the project’s kick-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this particular project, our objective is to construct a ranking system.
+    Instead of predicting a specific target, our focus is on determining an arbitrary
+    value that facilitates efficient comparison between pairs of samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s begin by sketching a basic diagram to represent the concept, knowing that
+    we will go deeper into the workings of the “Model” later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22b9222296a975270c41dc9347545820.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A very basic view of what we want to achieve
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing the task this way is crucial as it demonstrates that the project’s
+    objective goes beyond training a simple binary classifier based on the training
+    data. Instead of simply predicting a value of 0 or 1 to identify the most toxic
+    comment, the ranking system aims to assign arbitrary values that allow efficient
+    comparison between comments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Training & Margin Ranking Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Considering the “Model” remains a black box Neural Network, we need to establish
+    a way to utilize this system and leverage our training data to update the model’s
+    weights. To achieve this, we need a suitable loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that our goal is to build a ranking system, the [Margin Ranking Loss](https://pytorch.org/docs/stable/generated/torch.nn.MarginRankingLoss.html)
+    is a relevant choice. This loss function is inspired by the hinge loss, which
+    is commonly used to optimize maximum margins between samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Margin Ranking Loss operates on pairs of samples. For each pair, it compares
+    the scores produced by the “Model” for the two samples and enforces a margin between
+    them. The margin indicates the desired difference in scores between correctly
+    ranked samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea8968cc4c66377b1036e886f2383d8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Margin Ranking Loss Function formula, Author Illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the formula above, x1 and x2 are the ranking score of two samples, and y
+    is a coefficient equal to 1 if x1 should be ranked higher than x2, otherwise -1\.
+    “margin” is a hyperparameter of the formula which sets a minimum marges to reach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s have a look at how works this loss function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assuming y=1, which means the sample associated with x1 should be ranked higher
+    than the sample associated with x2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If (x1 — x2) > margin, the score of sample 1 is higher than the score of sample
+    2 by a sufficient marge, and the right term of the max() is negative. The loss
+    returned will then be equal to 0, and there is no penalty associated with those
+    two ranks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If (x1 — x2) < margin, it means that the margins between x1 and x2 are not sufficient,
+    or worst, that the score of x2 is higher than the score of x1\. In that case,
+    the loss will be higher as the score of sample 2 is higher compared to the score
+    of sample 1, which will penalize the model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'With this in mind, we can now revise our training methodology as followed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a sample (or a batch) in the Training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward-pass the more_toxic message(s) to the Model, get Rank_Score1 (x1)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Forward-pass the less_toxic message(s) to the Model, get Rank_Score2 (x2)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the MarginRankingLoss with y = 1
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Update the weight of the model based on the computed loss (backpropagation step)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/64ef5386783c2c1de22401c8f01997c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training step of the Model with the Margin Ranking Loss, Author Illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From Text to Features Representation: the Encoder block'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our training procedure is now set up. It’s time to go deeper into the ‘Model’
+    component himself. In the world of NLP, you’ll often come across three primary
+    types of models: encoders, decoders, and encoder-decoder combinations. In this
+    series of articles, we’ll examine these types of models more closely.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the purposes of this specific article, our requirement is a model that can
+    transform a message into a feature vector. This vector serves as the input to
+    generate the final ranking score. This feature vector will be directly derived
+    from the Encoder of a transformer architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I won’t dive into the theory here as others have explained it way better (I
+    recommend [the introduction class](https://huggingface.co/learn/nlp-course/chapter1/1)
+    from Hugging Face which is very well written). Just keep in mind that the key
+    part of this process is something called the attention mechanism. It helps transformers
+    make sense of the text by looking at other related words, even if they’re far
+    apart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this architecture in place, we will be able to adjust the weights that
+    produce the best vector representation of our texts to identify the most important
+    features for our task, and simply connect the final layer from the transformer
+    to a final node (called the “head”) that will produce the final rank score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s update our diagram accordingly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4c4db09f498c5f162c1b9e069d0a994f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An updated view of our training pipeline, Author illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Tokenizer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As you can see from the graph above, another component appeared inside of the
+    model which we did not mention yet: a preprocessing step.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This preprocessing step is here to convert the raw text into something that
+    can be passed through a Neural Network (numbers), and this is the role of the
+    Tokenizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The tokenizer does two main things: splitting (= cutting the text into pieces,
+    which can be words, part of words, or just letters) and indexing (= mapping each
+    piece of text to a unique value, referenced in a dictionary so the operation can
+    be reversed).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One really important thing to keep in mind is that there are multiple ways to
+    tokenize a text, but if you use a pre-trained model, you need to use the same
+    Tokenizer or the pre-trained weights will be meaningless (due to different splitting
+    and indexing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another important thing is to remember that the encoder is nothing more than
+    a Neural Network. As such, its input needs to be of a fixed size, which is not
+    necessarily the case for your input text. The Tokenizer allows you to control
+    the size of your token vector via two operations: padding and truncation. This
+    is also an important parameter to consider because some pre-trained models will
+    use a smaller, or larger, input space.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure below, we add the Tokenizer and we show how the message in transformed
+    from module to module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10ba9651d96992fd16ec09b76f2c6f4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Final training diagram, Author Illustration
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And that’s it, we have exposed here all the components we need to know in order
+    to efficiently tackle our “Comment Toxic Ranking” task. To summarize the graph
+    above: each pair of messages (the less toxic and the more toxic) will be passed
+    individually to the model pipeline. They will first pass through the Tokenizer,
+    the Encoder, and the ranking layer to produce a pair of scores. This pair of scores
+    will be then used to compute the Margin Ranking Loss, which will be used during
+    the backpropagation step to upload the weights to the encoder and the final ranking
+    layer and optimize them for the task.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next part, we are going to put our hands in the code and build the above
+    pipeline using the Hugging Face transformers module and Pytorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build, train, and evaluate the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have covered the theory in the previous part, it is now time to put our hands
+    in the dirt and work on our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While building and training a complex deep-learning model could have been complicated
+    in the past, the new modern frameworks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hugging Face is all you need
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hugging Face is an amazing company that is working on democratizing complex
+    deep-learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They build abstractions that help you build, load, fine-tune and share complex
+    transformers models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the coming section, we are going to use their **transformers** package, which
+    provides all the necessary tools to build pre-trained NLP models and use them
+    for your own tasks. In the coming weeks, we are going to explore more in detail
+    the different possibilities offered by the package
+  prefs: []
+  type: TYPE_NORMAL
+- en: The package is compatible with both TensorFlow and PyTorch libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To start, let’s install the transformers package
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The models available from Hugging Face are available from their [Model Hub](https://huggingface.co/models)
+    on their website. You can find all types of models as well as descriptions to
+    understand what the model does, how many parameters, what datasets it has been
+    trained on, etc…
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we are going to use the architecture [roberta-base](https://huggingface.co/roberta-base)
+    which is a relatively light encoder trained on several English corpus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model description tells us a lot of very important information that is
+    relevant to our task:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model has 125M parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The model has been trained on several English corpus, which is important as
+    our comment dataset is in English
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It has been trained on a Mask Language Modeling objective, which consists of
+    trying to predict words masked in a text and using both the text before and after
+    to make its prediction, which is not always the case (models like GPT only use
+    the context from before the word to predict for example as they don’t have to
+    the future of the sentence when they infer a new text).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The model is case sensitive, which means it will make a difference between “WORD”
+    and “word”. This is particularly important in the case of a toxicity detector
+    as letter capitalization is an important clue of toxicity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Hugging Face can provide for each model the tokenizer used as well as the base
+    NN in different configurations (you might not want all the weights: sometimes
+    you want to restrict yourself to the encoder part, and the decoder part, stop
+    at the hidden layer, etc..).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Models available from the Hugging Face hub can be cloned locally (which will
+    make them faster to run) or loaded directly in your code, by using its repo id
+    (for example roberta-base in our case)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading and testing the Tokenizer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To load the tokenizer, we can simply use the AutoTokenizer class from the transformers
+    package, and specify which tokenizer we want to use
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In order to tokenize a text, we can simply call the “encode” or “encode_plus”
+    methods. The “encode_plus” will not only provide you with the tokenized version
+    of your text but also an attention mask, which will be used to ignore the part
+    of the encoding which is purely padding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Will return a dictionary, where “input_ids” is the encoded sequence, and “attention_mask”
+    is used to allow the transformer to ignore the padded tokens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Among the parameters we use, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'max_length: states the maximum length of the encoded sequence'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'add_special_tokens: adds a <start> and <end> token to the text'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'truncation: slices the text if it does not fit the max_length'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'padding: add padding token up to the max_length'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Loading a pre-train model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To load a pre-train model, Hugging Face provides multiple classes depending
+    on your need (are you working with TensorFlow or Pytorch? What type of task are
+    you trying to achieve).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we will work with AutoModel, which allows you to load a model architecture
+    together with pre-trained weights directly. Note that if you work with TensorFlow,
+    you can achieve the same by using the TFAutoModel class instead of the AutoModel
+    class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The AutoModel class will directly load the model architecture from [RobertaModel](https://huggingface.co/docs/transformers/model_doc/roberta#robertamodel)
+    and load the pre-trained weights associated with the “roberta-base” repo in Hugging
+    Face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for the Tokenizer, we can directly load the model from the repo-id or from
+    the path of a local repository, by using the from_pretrained method from AutoModel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the encoder has not been trained on a particular task on its own,
+    and we cannot use simply the model as it is. Instead, we will have to fine-tune
+    it with our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can double-check that robertaBase is an instance of pytorch.nn.Module, and
+    can be integrated into a more complex PyTorch architecture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can also check its architecture by simply doing a print like you would
+    do with a standard PyTorch module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Build a custom Neural Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This last layer is actually a vector representation of the whole text we were
+    discussing in the first part of this article, and we just have to connect it to
+    a final node used as a ranker to complete our NN architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so, we will simply build our own custom module by encapsulating nn.Module,
+    as we would do with a classic NN with PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A few things to note here in the forward() method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We pass two main inputs to the robertBase model, input_ids and attention_mask.
+    They were both generated by the Tokenizer.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The AutoModel has parameters (like output_hidden_states). Depending on the parameters
+    you chose, you can make the model behave as an encoder, or a decoder and custom
+    the model for different NLP tasks
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Did you notice that we pass output[1] in the dropout? This is because the base
+    model provides two inputs:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: First, the last hidden state, which contains a contextual representation (or
+    contextual embedding) of each token that can be used for tasks like entity recognition
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second, the output from the Pooler, which contains a vector representation of
+    the whole text, is what we are looking for here.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build a custom Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With Pytorch, we need also to create our own Dataset class, which will be used
+    to store the raw data, and a DataLoader, which will be used to feed the neural
+    network by batches during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When building a custom dataset with Pytorch, you must implement two mandatory
+    methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: __len__, which gives the size of the training data (important information for
+    the data loader)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: __getitem__, which takes a raw input (from row “i”) and preprocess it so it
+    can be handled by the neural network (as tensor)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If you recall the diagram from the previous part, we are actually passing in
+    parallel two inputs two the models before computing the loss: the less_toxic and
+    the more_toxic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The __getitem__ method will handle the tokenization of the message and prepare
+    the input for the transformer, converting the tokenized inputs as tensors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now generate the DataLoader which will be used for the batch training
+    of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: batch_size specify the amount of sample to be loaded for the forward pass/backpropagation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: shuffle = True means the dataset is shuffled between two epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: drop_last means that if the last batch has not had the right amount of samples,
+    it will be dropped. This can be important as batch normalization does not work
+    well with incomplete batch.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training the model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are almost there, it's time to prepare the training routing for one epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Custom Loss**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To start with, let’s define a custom loss to be used. Pytorch already provides
+    the MarginRankingLoss, we are simply going to encapsulate it with y = 1 (as we
+    will always pass more_toxic as x1 and less_toxic as x2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Optimizer**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this experiment, we will go with a classic AdamW, which is currently state-of-the-art,
+    and fix some of the problems from the original Adam implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Scheduler**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The scheduler helps adapt the learning rate. During the start, we want a higher
+    learning rate to converge faster to an optimum solution, and toward the end of
+    the training, we want a much smaller learning rate to really fine-tune the weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Training Routine**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now ready to train our NLP model for toxic comment ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training of an epoch is quite straightforward with Pytorch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We iterate through our data loader, which shuffles and selects the pre-processed
+    data from the dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We retrieve the tokens and the masks from the data loader
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We calculate the rank of each message by making a forward pass to our model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When both ranks are calculated, we can compute the MarginRankingLoss (to use
+    for the backpropagation), as well as an accuracy score which tells the % of pairs
+    that are correctly classified (for reference only)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We update our system (backpropagation, optimizer, and scheduler)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We iterate until all the data in the data loader has been used.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: I trained the model on a GPU T4 from Kaggle, which brought me to an honorable
+    score of 70% of comments correctly classified. I can probably gain accuracy by
+    playing more with the different parameters and using more epochs, but it is good
+    enough for the purpose of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A final word on inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The framework we put in place works well for training from a set of comments
+    pre-formatted as in our training set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But it won’t work during a “production” scenario where you will receive a bunch
+    of messages for which you need to evaluate the toxicity score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c98f4de433da1d57aefea5cef4971130.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of a dataset in production mode, where we only get single messages,
+    not pairs of messages
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For inference, you will design another Dataset class and another DataLoader
+    which will be slightly different from what we did before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What has changed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are not loading pair of messages anymore, but single messages
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Loader is not shuffling the data (this is very important if you don’t want
+    bad surprises with random scores associated with your original vector)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As there is no batch norm calculation and as we want all the data to be inferred,
+    we set drop_last to False to get all batches, even incomplete ones
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'And finally, to produce the ranked score:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is the top 5 classified messages after inference. In order to stay politically
+    correct, I had to apply a bit of censorship here…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cad3789ed07b0b481df419785eeec209.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The most toxic messages identified
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not very constructive… :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we leveraged a Hugging Face pre-trained model and Pytorch to
+    produce a model able to rank the level of toxicity of messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so, we took a “Roberta” transformer (a small one) and connected a final
+    simple node at the end of its encoder with PyTorch. The rest was more classic
+    and probably similar to other projects you might have done if you are already
+    familiar with PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This project is an initiation around the possibilities that offer NLP and I
+    wanted to start simply to introduce some basic concepts that are required to go
+    further and play with more challenging tasks or much larger models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you enjoyed reading, if you want to play with the model you can download
+    a Notebook from [my GitHub](https://github.com/jkaub/toxicity-ranker).
+  prefs: []
+  type: TYPE_NORMAL

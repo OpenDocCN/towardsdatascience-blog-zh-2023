@@ -1,0 +1,577 @@
+- en: 'TSMixer: The Latest Forecasting Model by Google'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tsmixer-the-latest-forecasting-model-by-google-2fd1e29a8ccb](https://towardsdatascience.com/tsmixer-the-latest-forecasting-model-by-google-2fd1e29a8ccb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Explore the architecture of TSMixer and implement it in Python for a long-horizon
+    multivariate forecasting task
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)[![Marco
+    Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)
+    [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)
+    ·12 min read·Nov 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e73873566af0876cf840a6284a7f2f21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Zdeněk Macháček](https://unsplash.com/@zmachacek?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The field of time series forecasting continues to be in effervescence, with
+    many important recent contributions like N-HiTS, PatchTST, TimesNet and of course
+    TimeGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the meantime, the Transformer architecture unlocked unprecedented performance
+    in the field of natural language processing (NLP), but that is not true for time
+    series forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, many Transformer-based model were proposed like Autoformer, Informer,
+    FEDformer, and more. Those models are often very long to train and it turns out
+    that simple linear models outperform them on many benchmark datasets (see [Zheng
+    et al., 2022](https://arxiv.org/pdf/2205.13504.pdf)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To that point, in September 2023, researchers from Google Cloud AI Research
+    proposed **TSMixer**, a Multi-layer Perceptron (MLP) based model that focuses
+    on mixing time and feature dimensions to make better predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In their paper [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf),
+    the authors demonstrate that this model achieves state-of-the-art performance
+    on many benchmark datasets, while remaining simple to implement.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we first explore the architecture of TSMixer to understand
+    its inner workings. Then, we implement the model in Python and run our own experiment
+    to compare its performance to N-HiTS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more details on TSMixer, make sure to read the [original paper](https://arxiv.org/pdf/2303.06053.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Learn the latest time series analysis techniques with my** [**free time series
+    cheat sheet**](https://www.datasciencewithmarco.com/pl/2147608294) **in Python!
+    Get the implementation of statistical and deep learning techniques, all in Python
+    and TensorFlow!**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explore TSMixer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When it comes to forecasting, we intuitively know that using cross-variate information
+    can help make better predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, weather and precipitation are likely to have an impact on the number
+    of visitors to an amusement park. Likewise, the days of the week and holidays
+    will also have an impact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, it would make sense to have models that can leverage information
+    from covariates and other features to make predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is what motivated the creation of TSMixer. As simple univariate linear
+    models were shown to outperform more complex architectures (see [Zheng et al.,
+    2022](https://arxiv.org/pdf/2205.13504.pdf)), TSMixer now extends the capabilities
+    of linear models by adding cross-variate feed-forward layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, we now get a linear model capable of handling multivariate forecasting
+    that can leverage information from covariates and other static features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Architecture of TSMixer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The general architecture is shown in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d91af3dd374db62e24ad58bc3635b890.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Architecture of TSMixer. Image by S. Chen, C. Li, N. Yoder, S. Arik and T.
+    Pfister from [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since TSMixer is simply extending linear models, its architecture is fairly
+    straightforward, since it is entirely MLP-based.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the figure above, we can see that the model mainly consists of two steps:
+    a mixer layer and a temporal projection.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explore each step in more detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixer layer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is where time mixing and feature mixing occurs, hence the name TSMixer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b06f726222fad431f6ffb69063c8e599.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Focusing on the mixing layer. Image by S. Chen, C. Li, N. Yoder, S. Arik and
+    T. Pfister from [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure above, we see that for time mixing, the MLP consists of a fully
+    connected layer, followed by the ReLU activation function, and a dropout layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The input, where rows represent time and columns represent features, is transposed
+    so the MLP is applied on the time domain and shared across all features. This
+    unit is responsible for learning temporal patterns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before leaving the time mixing unit, the matrix is transposed again, and it
+    is sent to the feature mixing unit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The feature mixing unit, then consists of two MLPs. Since it is applied in the
+    feature domain, it is shared across all time steps. Here, there is no need to
+    transpose, since the features are already on the horizontal axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that in both mixers, we have normalization layers and residual connections.
+    The latter help the model learn deeper representations of the data while keeping
+    the computational cost reasonable, while normalization is a common technique to
+    improve the training of deep learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once that mixing is done, the output is sent to the temporal projection step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Temporal projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The temporal projection step is what generates the predictions in TSMixer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/001d4503e1f393a0b44601e994fe95ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Focusing on the temporal projection layer. Image by S. Chen, C. Li, N. Yoder,
+    S. Arik and T. Pfister from [TSMixer: An All-MLP Architecture for Time Series
+    Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the matrix is again transposed and sent through a fully connected layer
+    to generate predictions. The final step is then to transpose that matrix again
+    to have the features on the horizontal axis, and the time steps on the vertical
+    axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we understand how TSMixer works, let’s implement it in Python and test
+    it ourselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement TSMixer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To my knowledge, TSMixer is not implemented in common time series libraries
+    in Python, like Darts or Neuralforecast. Therefore, I will adapt the original
+    implementation to my experiment for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The original implementation is available in the [repository of Google Research](https://github.com/google-research/google-research/tree/master/tsmixer/tsmixer_basic).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complete code for this experiment is available on [GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/TSMixer.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read and format the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The hardest part in applying deep learning models for time series forecasting
+    is arguably formatting the dataset to be fed into the neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, the first step is create a `DataLoader` class that handles all the transformations
+    of the dataset. This class is initialized with the batch size, the input sequence
+    length, the output sequence length (the horizon) and a slice object for the targets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we add a method to read and scale the data. Here, we use the electricity
+    transformer dataset Etth1, publicly [available on GitHub](https://github.com/zhouhaoyi/ETDataset/blob/main/ETT-small/ETTh1.csv)
+    under the Creative Commons Attribute Licence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code block above, note that it is crucial to scale our data to improve
+    the model’s training time. Also note that we fit the scaler on the training set
+    only to avoid data leakage in the validation and test sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we create two methods for splitting the windows of data into inputs and
+    labels, and then create a dataset that can be fed to a Keras neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we complete the `DataLoader` class with methods to inverse transform
+    the predictions and to generate the training, validation and test sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The complete `DataLoader` class is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we can simply initialize an instance of the `DataLoader` class to read
+    our dataset and create the relevant sets of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we use a horizon of 96, an input sequence length of 512, and a batch size
+    of 32.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that the data is ready, we can build the TSMixer model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build TSMixer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Building TSMixer is fairly easy, as the model consists only of MLPs. Let’s bring
+    back its architecture so we can reference it as we build the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d91af3dd374db62e24ad58bc3635b890.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Architecture of TSMixer. Image by S. Chen, C. Li, N. Yoder, S. Arik and T.
+    Pfister from [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we must take care of the Mixer Layer, which consists of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: batch normalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: transpose the matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: feed to a fully connected layer with a ReLu activation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: transpose again
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dropout layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and add the residuals at the end
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This is translated to code like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we add the portion for feature mixing which has:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: batch normalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a dense layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a dropout layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: another dense layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: another dropout layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and add the residuals to make the residual connection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That’s it! The full function for the Mixer Layer is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we simply write a function to build the model. We include a for loop to
+    create as many Mixer Layers as we want, and we add the final temporal projection
+    step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the figure above, the temporal projection step is simply:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a transpose
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a pass through a dense layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a final transpose
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can run the function to build the model. In this case, we use eight
+    blocks in the Mixer Layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train TSMixer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are now ready to train the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the Adam optimizer with a learning rate of 1e-4\. We also implement checkpoints
+    to save the best model and early stopping to stop training if there is no improvements
+    for three consecutive epochs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that it took 15 minutes to train the model using the CPU only.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the model is trained, we can load the best model that was saved by the
+    checkpoint callback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, let’s access the predictions for the last window of 96 time steps. Note
+    that the predictions are scaled right now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we store both the scaled and inverse transformed predictions in DataFrames
+    to evaluate the performance and plot the predictions later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Predict with N-HiTS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To assess the performance of TSMixer, we perform the same training protocol
+    with N-HiTS, as they also support multivariate forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a reminder, you can access the full code of this experiment on [GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/TSMixer.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this section, we use the library NeuralForecast. So the natural first step
+    is to read the data and format it accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we can initialize N-HiTS and fit on the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we extract the predictions for the last 96 time steps only.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point, we have the predictions for each column over the last 96 time
+    steps, as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/993ea50dd61bab4b5aa76d2ec22b0747.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predictions of each series by N-HiTS over the last 96 time steps. Image by the
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we are ready to visualize and measure the performance of our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, let’s visualize the predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For simplicity, we plot only the forecast for the first four series in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c3cba66a8a601f65922c0bea1bc9ab92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predictions of N-HiTS and TSMixer for the first four series in the dataset.
+    We see that TSMixer had trouble generalizing for MULL and HULL, while N-HiTS seems
+    to be following the actual curve fairly well. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the figure above, we can see that TSMixer does a pretty good job at forecasting
+    HUFL and MUFL, but it struggles with MULL and HULL. However, N-HiTS seems to be
+    doing fairly good on all series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still, the best way to assess the performance is by measuring an error metric.
+    Here, we compute the MAE and MSE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/64fc5b5d4d677632dd5a2459780d4404.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MAE and MSE of N-HiTS and TSMixer for the task of multivariate forecasting on
+    a horizon of 96 time steps. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the figure above, we can see that TSMixer outperforms N-HiTS on the task
+    of multivariate forecasting on a horizon of 96 time steps, since it achieved the
+    lowest MAE and MSE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this is not the most extensive experiment, it is interesting to see that
+    kind of performance coming from a rather simple model architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: TSMixer is an an all-MLP model specifically designed for multivariate time series
+    forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It extends the capacity of linear models by adding cross-variate feed-forward
+    layers, enabling the model to achieve state-of-the-art performances on long horizon
+    multivariate forecasting tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While there is no out-of-the-box implementation yet, you now have the knowledge
+    and skills to implement it yourself, as its simple architecture makes it easy
+    for us to do so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, each forecasting problem requires a unique approach and a specific
+    model, so make sure to test TSMixer as well as other models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading! I hope that you enjoyed it and that you learned something
+    new!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking to master time series forecasting? The check out my course [Applied
+    Time Series Forecasting in Python](https://www.datasciencewithmarco.com/offers/zTAs2hi6/checkout?coupon_code=ATSFP10).
+    This is the only course that uses Python to implement statistical, deep learning
+    and state-of-the-art models in 16 guided hands-on projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cheers 🍻
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Enjoying my work? Show your support with [Buy me a coffee](http://buymeacoffee.com/dswm),
+    a simple way for you to encourage me, and I get to enjoy a cup of coffee! If you
+    feel like it, just click the button below 👇
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d8286ff73e873a825293e2ae8e2a7da3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Si-An Chen, Chun-Liang Li, Nate Yoder, Sercan O. Arik, Tomas Pfister — [TSMixer:
+    An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/abs/2303.06053)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Original implementation of TSMixer by the researchers at Google— [GitHub](https://github.com/google-research/google-research/tree/master/tsmixer/tsmixer_basic)
+  prefs: []
+  type: TYPE_NORMAL

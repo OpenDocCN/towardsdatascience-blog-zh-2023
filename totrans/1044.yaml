@@ -1,0 +1,391 @@
+- en: Hey GPU, What’s Up with My Matrix?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6](https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A gentle guide to understanding how GPUs perform matrix multiplication
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Thushan
+    Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
+    [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
+    ·8 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a911c1d35115175bbfe3894ea74e8d00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Thomas Foster](https://unsplash.com/@thomasfos?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/vWgoeEYdtIY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix multiplication; the holy grail of deep neural networks and modern language
+    understanding behemoths. As MLEs or data scientists, our fingers are too quick
+    to type `tf.matmul` or `torch.matmul` and we never look back. But don’t tell me
+    you’ve never had the millisecond infatuation to know what might be happening to
+    that matrix when it enters the GPU! If you did, you’re in the right place. Join
+    me in a journey through the fascinating intricacies within a GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll explain to you how these compute powerhouses crunch up the numbers. You’ll
+    learn three little-known impressive things GPUs do, when they come face-to-face
+    with matrices. By the end of this blog post, you’ll have a good understanding
+    of how matrix multiplication works inside GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GEMM: A true gem 💎 for a GPU'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: GEMM or generalized matrix multiplication is the kernel that’s executed when
+    GPUs perform matrix multiplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`C = a (A.B) + b C`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, `a` and `b` are scalars, `A` is an `MxK` matrix, `B` is an `KxN` matrix,
+    and thus `C` is an `MxN` matrix. It’s easy as that! You might wonder why that
+    trailing addition exists. Turns out this is a pretty common pattern for neural
+    networks (e.g. adding bias, applying ReLU, adding residual connections).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Trick #1: Outer product is out-er this world 👽'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’re asked to write a matrix multiplication algorithm from first principles,
+    here’s what you’ll do (unless you’re gifted with a GPU in lieu of a brain — wouldn’t
+    that save money for an MLE!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s an animated visual that shows you what this does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f0c3e4a00f1242d2e82a1d450984883.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Inner product based multiplication of two matrices (Recreated by author — source
+    of inspiration: [https://www.adityaagrawal.net/blog/architecture/matrix_multiplication](https://www.adityaagrawal.net/blog/architecture/matrix_multiplication))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But did you know GPUs despise this implementation 🤔? To understand why that’s
+    the case, you need to understand the GPU memory architecture,
+  prefs: []
+  type: TYPE_NORMAL
+- en: For all comparisons and specifications, I’ll be using the Nvidia A100 GPU specifications.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A GPU has three main memory levels,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Global memory or HBM (what you typically refer to as GPU memory and what you
+    see when you run `nvidia-smi` )
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shared memory (a local memory that is dedicated to a single streaming multiprocessor
+    [or SM] and shared between threads running in that SM)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Registers (individually allocated to threads to carry out their workload)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is what it looks like,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df76c1f0c3b54d513f3aaa48519ea1c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The typical memory hierarchy of a GPU (L0/L1/L2 caches ignored for simplicity)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first thing to note is that shared memory (referred to as SRAM from now
+    on) is way smaller than the HBM, let alone registers. So your matrix is not going
+    to fit in there (in most occasions). If we go back to our animation, for a single
+    row of `A` all columns of `B` needs to be retrieved, and repeat the process for
+    all rows in `A`. This means, the GPU needs to do many-many reads to compute the
+    output. The HBM (~1.5TB/s) is several magnitudes slower than SRAM (~19TB/s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To put that in numbers, say you want to multiply a `10x20` and `20x30` matrix,
+    you need to read columns of `B` `10x30=300` times. Is there a better way we can
+    do this?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Turns out a simple trick can go a long way here! Simply flip the order of the
+    loops, so that `k` becomes the outer most loop. And you’re done! 😮
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We did not touch the actual computation, just the order of the loops, so we
+    should get the same result as before. Here’s what the matrix multiplication looks
+    like now!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b847b863d6664b2bc0cf87042f7a6ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Outer product based multiplication of two matrices (Recreated by author — source
+    of inspiration: [https://www.adityaagrawal.net/blog/architecture/matrix_multiplication](https://www.adityaagrawal.net/blog/architecture/matrix_multiplication))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You see, we only bring one *column* of `A` and one *row* of `B` at a time and
+    never look back. This requires far less reads than the original implementation.
+    The only difference is we were computing the *inner product* between two vectors
+    before, now we’re computing the *outer product*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d844eb8589acdba180851c314b96e206.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The difference between inner product and outer product shown in green for two
+    vectors (blue and yellow).
+  prefs: []
+  type: TYPE_NORMAL
+- en: But still, we need entire `C` in SRAM, which might be too big to fit in SRAM.
+    What does CUDA do then? That brings us to the second trick.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Trick #2: Divide and conquer (and accumulate)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Not to worry! I’m not going to blast you with any complex mathematics or Leetcode
+    algorithms. The main thing to keep in mind is, a matrix is a 2D layout of individual
+    tiles. The following animation does justice to what I’m trying to explain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52fbea7b18ac1a73b3158ececd0f9c16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can iterate each block in A and B and still compute the exact answer for
+    C’s corresponding block
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result of the green block 💚 is the light blue strip of A 💙 and the light
+    yellow strip of B 💛. Taking this a step further, to compute the output, you can
+    bring one block of that strip of A and one block from B’s strip at a time, compute
+    the output and accumulate the result in the green box.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This gives us a flexible framework where we can load an arbitrary size block
+    (or tile) of A and B and still compute the final answer. We don’t have to stop
+    there, we can keep recursively dividing the problem to even smaller problems.
+    i.e. the matrix is broken into tiles, tiles are broken into fragments, and fragments
+    to individual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ebe0775cebde0334adaa9b57b088d8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the tiling approach, the problem can be broken down recursively
+  prefs: []
+  type: TYPE_NORMAL
+- en: And this lends itself nicely to the process execution architecture in a GPU.
+    There are three layers to a kernel execution in a GPU. For simplicity, we’ll say
+    a SM runs a single thread block (although in practice they execute them concurrently,
+    to reduce something known as the [tail effect](https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/index.html#gpu-execution)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Threads
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Warps (a collection of 32 threads)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thread blocks (a collection of several warps)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The exact number of threads in a thread block depends on a specific architecture.
+    For example, an [A100 has the following specifications](https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maximum of 2048 threads per SM
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maximum of 1024 threads per block
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maximum of 32 thread blocks per SM
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Sidebar #2: Magic of the power of 2'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Going back to the tiling, It has been found that (heuristically) a matrix tile
+    of size `256x128` per thread block gives reasonable efficiency for most problems.
+    Therefore it’s a common tile size used by CUDA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might have heard about a best practice of keeping batch size, hidden dimension
+    size as powers of two. This is where this comes from! When your matrix dimensions
+    are of powers of two, it will be fully divisible to a set of tiles with no remainder.
+    If not, it makes your code [less efficient](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#requirements-tc).
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPU computations are more efficient when your matrix dimensions are in the power
+    of 2
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What happens when it’s not a power of 2?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sidebar #2: Tile quantization'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What happens is an effect known as [*tile quantization*](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#tile-quant).
+    In other words, if you have a tile row dimension of 128 but your matrix has 257
+    elements in a row, you’ll need not two, but three tiles in a row (i.e. 256+1).
+    This is illustrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c0e19fcfcf9ef9bf3d1da19ff0313ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Just because we had on extra element in rows, we have to dedicate two entire
+    thread blocks
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem with this is that, the thread block does the same amount of computation
+    regardless of the useful data residing in it. So, you’re taking the opportunity
+    to do useful computation away from your GPU, leading to inefficiencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A similar effect is known as wave quantization, where the matrix is over-sized
+    and the SMs collectively cannot fit it at once. Then the GPU needs to do the computation
+    in 2 “waves”. However this is less of a concern for modern GPUs as they leverage
+    concurrency to reduce wave quantization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tile quantization happens when a thread block has to spill data partially, wave
+    quantization happens when SMs have to spill data.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Trick #3: One is better than two'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The final trick is kernel fusion. More often than not, it is faster to do all
+    the computations in one kernel than having two kernels called one after the other.
+    Why? Because one kernel needs to write the data to HBM and other needs to read
+    that back. We already talked about how slow this is. A better approach is just
+    combine the two operations into one. Some examples are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[matmul + bias + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/matmul_op_fused.cc)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[conv + bias + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/conv_ops_fused_impl.h)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[batchnorm + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/fused_batch_norm_op.h)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So as it is seen here (I’m sure Pytorch has a similar glossary), there are many
+    fused kernels offered through TensorFlow that combines commodious operations in
+    to a single kernel. In code, it means something like this,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In other words, we hold dearly to our `tmp` variable until after we’ve finished
+    all our computations. Then only we’ll write the result back to `C` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: That’s it folks. I hope this was an enjoyable excursion through the weeds of
+    a GPU. If you’re interested in the audio-visual version here’s the link to my
+    YouTube video.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To recap, we discussed three things that makes GPUs really fast at matrix multiplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPUs abandon the friendlier inner product implementation of matmul and embrace
+    the more read-efficient outer product implementation of matmul
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GPUs split the matrices into smaller blocks (and blocks into fragments) and
+    split the compute load across thread blocks, warps and threads.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GPUs employ kernel fusion to bring commonly co-occurring functionality togetter,
+    improving GPU efficiency.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [subscribe](https://thushv89.medium.com/membership)
+    to Medium, and you will get notifications to fresh content from me, as well as
+    unlock full access to thousands of quality stories from other authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------)
+    [## Join Medium with my referral link - Thushan Ganegedara'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: thushv89.medium.com](https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Unless otherwise noted all images are by the author*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/](https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

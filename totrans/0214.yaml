@@ -1,0 +1,199 @@
+- en: A pipeline for fast experimentation on Kubernetes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-pipeline-for-fast-experimentation-on-kubernetes-3258389120a1](https://towardsdatascience.com/a-pipeline-for-fast-experimentation-on-kubernetes-3258389120a1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using native Python packages only
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pascaljanetzky.medium.com/?source=post_page-----3258389120a1--------------------------------)[![Pascal
+    Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----3258389120a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3258389120a1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3258389120a1--------------------------------)
+    [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----3258389120a1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3258389120a1--------------------------------)
+    ·6 min read·Jan 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manually creating a novel configuration file for every new experiment is a tedious
+    process. Especially if you want to rapidly deploy a vast number of jobs on a Kubernetes
+    cluster, an automated setup is a must. With python, it’s straightforward to build
+    a simple scheduling script that reads an experiment’s configuration, such as the
+    batch size, writes it into the YAML file, and creates a new job. In this post,
+    we’ll discuss the how. The best is that we require no additional packages!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/042919420529caa70761f3408d3c6ec9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [JJ Ying](https://unsplash.com/@jjying?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The pipeline consists of four files: Two bash scripts (one for creating and
+    one for deleting Kubernetes jobs), one python script, and one .yaml-file template.
+    Let’s cover them in more detail, beginning with the python script. You can find
+    the complete code in [this GitHub repository](https://github.com/phrasenmaeher/kubernetes_yaml_pipeline).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The python script
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The python code is structured into two methods. The first method yields experiment
+    configurations; they are populated with exemplary values. The second method does
+    the actual scheduling, which includes parsing the .yaml-file and communicating
+    with Kubernetes. Let’s start with the first, more straightforward function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The *get_experiments* method holds an internal dictionary object, which, in
+    my example, contains 4 sample experiments. Each experiment is given a unique number,
+    and each experiment is again a dictionary. This dictionary holds the experiment’s
+    configuration and includes standard machine learning parameters such as the batch
+    size, the number of epochs, and the model. Further, we denote which dataset we
+    want our experiment to run on, e.g., the CIFAR10 dataset. The parameters listed
+    here are chosen for illustrative purposes, and you are not restricted to them.
+    For example, you could include further hyperparameters (e.g., the learning rate),
+    store file paths (e.g., a dataset’s directory), or include environment variables.
+    In short: adapt to your needs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we call the method without parameters, it is equal to calling it with the
+    default setting of “experiment_number=-1”. With this setting, all experiments’
+    configurations are returned. However, if you have worked with Kubernetes for a
+    longer time, you will often have some jobs that will fail for whatever reasons.
+    If that happens, it’s best to fix the code and restart that specific experiment.
+    Thus, in addition to getting all experiments’ settings, I have included the functionality
+    to pick specific experiments for re-running. This use case is supported when we
+    call the method with a particular experiment’s number. An example would be 4,
+    which would yield the configuration for the fourth experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The .yaml template
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The *get_experiments* method is called in the script’s primary function, *schedule*.
+    Before covering it in more detail, we need to look at our template file. The .yaml-file
+    I included is oriented on files I commonly write when running machine learning
+    experiments on a supercomputing cluster. However, it’s not a valid file in the
+    sense that you can use it as-is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead, it’s intended to show you your flexibility in filling out the template.
+    Talking about filling the template, here is it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice the distinctive places with two curly brackets: {}. Each of these places
+    is given a number, beginning with zero. We fill these gaps in the python script,
+    which we’ll shortly return to. Most suitable to our machine learning use case,
+    the “{}” can be placed anywhere in the template; they are not restricted to specific
+    places.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To showcase the variety, I have placed the markers across the .yaml-file: we
+    can use them to pass command line arguments, mount directories, fill environment
+    variables, or select our pod’s image. Also, we can re-use a placeholder: In the
+    template file, I have used the “{1}” placeholder twice; once to assign a job to
+    a job group (*group-model-{1}*, line11), and once to pass the name of a model
+    to the command line (lines 25 and 26).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The filling of the template file is done via the python script’s *schedule*
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside the function, we first parse the template as-is. Then, we gather all
+    experiments we want to run in line 10\. The following three variables, lines 11
+    to 13, are here to inspire you: you could automate more than just the things I
+    proposed. The interesting part begins in line 14, where we iterate over all experiments
+    we want to create. As I wrote, the experiment configuration is stored in a dictionary
+    object. That means we can query the dictionary when filling the template in lines
+    17 to 26.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make it easier to understand which slot is filled, I have left a comment
+    behind each line. For example, line 18 fills the place marked with “{0}”, line
+    19 that marked with “{1}”, and so on. To see what we have created after filling
+    out the template, we print the completed version in line 27.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, we have created (in the memory) a ready-to-use YAML file. The
+    next step is the creation of the corresponding Kubernetes jobs, beginning in line
+    30\. First, we check whether we only want to delete the old experiment (e.g.,
+    because it has failed for some reason, and we need to fix bugs first). If that
+    is not the case, we delete the old job — there cannot be two jobs with the same
+    name — before creating the job anew.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If no previous job exists, the script will not fail when trying to terminate
+    it but will print an empty line and go on to creating the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The shell scripts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Both the creation and deletion of jobs are forwarded to two small bash scripts.
+    The first one, shown below, uses the *kubectl* command to create a job based on
+    what has been passed (the *echo “$1”* part). Note that I have set *kubectl* to
+    use my namespace by default. If you did not do so, then either write *kubectl
+    -n your-namespace* or register your namespace as the default one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The script for the deletion of jobs is nearly identical; we only switch the
+    “create” flag with “delete”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to the python script
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After putting the various parts together, we require one driver to start the
+    code. This task is done with the “main” statement, as shown in the snippet beneath:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When starting the experiments, as mentioned before, we can choose to (re-) create
+    a specific experiment only. By default, we run **all** experiments; for running
+    individual ones, we can pass their id to the command line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we create a flag telling the scheduler only to delete a run or to start
+    the run anew. By default, this flag is set to false, meaning we first terminate
+    the existing run for an experiment and then restart it. Only if we explicitly
+    set the flag on the command line is it set to true, meaning that we only terminate
+    the existing job but don’t create it anew. Also, we need not set it at all; the
+    flag’s absence is equal to it being false. Lastly, we parse the arguments and
+    run the scheduling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this post, we went over rapidly deploying experiments to a Kubernetes cluster.
+    To achieve this, we used four files: a .yaml template file, two bash scripts,
+    and one python file. Within the python file, we used two methods to collect an
+    experiment’s configuration and then filled the template.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After completing the template, jobs are created and deleted with two one-line
+    bash scripts. Within them, we used native Kubernetes commands. Ultimately, we
+    can call the python script (passing optional command line args), and our experiments
+    are automatically scheduled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This automated process is beneficial when trying out parameter combinations:
+    manually creating a .yaml file for each experiment is lengthy and error-prone.
+    Thus, save yourself the hassle and build an automated pipeline, as detailed in
+    this post. The entire code for getting you started is available in [my repository](https://github.com/phrasenmaeher/kubernetes_yaml_pipeline).'
+  prefs: []
+  type: TYPE_NORMAL

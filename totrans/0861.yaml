@@ -1,0 +1,286 @@
+- en: Exploring the Power of Overlay File Systems in Linux Containers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/exploring-the-power-of-overlay-file-systems-in-linux-containers-d846724ec06d](https://towardsdatascience.com/exploring-the-power-of-overlay-file-systems-in-linux-containers-d846724ec06d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unlocking the Potential of Containerization with a unique yet simple idea of
+    layering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dpoulopoulos.medium.com/?source=post_page-----d846724ec06d--------------------------------)[![Dimitris
+    Poulopoulos](../Images/ce535a1679779f5a2ec8b024e6691e50.png)](https://dpoulopoulos.medium.com/?source=post_page-----d846724ec06d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d846724ec06d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d846724ec06d--------------------------------)
+    [Dimitris Poulopoulos](https://dpoulopoulos.medium.com/?source=post_page-----d846724ec06d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d846724ec06d--------------------------------)
+    ·7 min read·Feb 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4cc7cae29da36d8e2f7e3699d9915b37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Hoach Le Dinh](https://unsplash.com/@hoachld?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/PeRt3uMmjYM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This series of articles explores how Linux containers work under the hood and
+    the tools we need to build similar environments without Docker. Why do that? Well,
+    if you really want to know what happens when you execute `docker run` this is
+    the first step you need to take. The last two articles focused on the role of
+    Namespaces and Control Groups (groups) in containerization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/containers-how-they-work-under-the-hood-and-why-theyre-taking-over-the-data-science-world-6b94702609aa?source=post_page-----d846724ec06d--------------------------------)
+    [## Containers: How They Work Under the Hood and Why They’re Taking Over the Data
+    Science World'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Beginner’s Guide to Understanding the Magic of Docker
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/containers-how-they-work-under-the-hood-and-why-theyre-taking-over-the-data-science-world-6b94702609aa?source=post_page-----d846724ec06d--------------------------------)
+    [](/the-power-of-linux-cgroups-how-containers-take-control-of-their-resources-ba564fef13b0?source=post_page-----d846724ec06d--------------------------------)
+    [## The Power of Linux Cgroups: How Containers Take Control of Their Resources'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimizing Container Resource Allocation with Linux Control Groups
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-power-of-linux-cgroups-how-containers-take-control-of-their-resources-ba564fef13b0?source=post_page-----d846724ec06d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article closes the loop on the topic, introducing overlay file systems,
+    the last building block we need to create a container-like environment without
+    relying on Docker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linux containers have revolutionized the way applications are deployed and managed
+    in modern computing. At the heart of this technology lies the overlay file system,
+    a critical component that enables containers to share a common base image while
+    keeping each container isolated from one another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following paragraphs, we will delve into the concept of overlay file
+    systems and their role in making Linux containers lightweight, efficient, and
+    secure. Whether you are a seasoned sysadmin or just starting to explore containers,
+    this article provides a comprehensive overview of overlay file systems and their
+    impact on the world of containerization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Learning Rate](https://www.dimpo.me/newsletter?utm_source=medium&utm_medium=article&utm_campaign=overlayfs)
+    is a newsletter for those who are curious about the world of MLOps. MLOps is a
+    broad field that strives to bring ML models to production in an efficient and
+    rerpoducible way. Containers play a crucial role in the pipeline. If you want
+    to learn more about topics like this subscribe [here](https://www.dimpo.me/newsletter?utm_source=medium&utm_medium=article&utm_campaign=overlayfs).
+    You’ll hear from me on the last Saturday of every month with updates and thoughts
+    on the latest MLOps news and articles!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Setting the Scene
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Linux containers have become a staple in modern computing, offering an efficient
+    and flexible way to package and deploy applications. Unlike traditional virtual
+    machines, containers allow multiple isolated applications to run on a single host,
+    sharing the host’s operating system kernel. This architecture provides numerous
+    benefits, including increased efficiency, scalability, and portability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Containers have been around for over a decade, with the first containerization
+    technologies emerging in the early 2000s. However, it wasn’t until the advent
+    of Docker in 2013 that containers truly took off, becoming a cornerstone of modern
+    application deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yet, to fully understand what’s happening under the hood, we take a step back,
+    pretend like Docker does not exist, and try to create a container-like environment
+    ourselves. This effort won’t give us a production-ready solution, we will still
+    be missing quite a few things, but it will give us a better understanding of how
+    containers work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To this end, this article explores overlay file systems. An overlay file system
+    is a type of union file system that enables multiple lower layers to be stacked
+    on top of each other, creating a unified view of the data. In the context of Linux
+    containers, an overlay file system is used to layer the changes made by a container
+    on top of a base image while preserving the original image intact. This allows
+    containers to share a common base image and reduces the size of the images that
+    need to be transferred, stored, and deployed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If this explanation sounds confusing, let’s build an overlay file system ourselves.
+    It’s easier than you think.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Simple Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To build an overlay file system, we need two things: i) a lower layer and ii)
+    an upper layer. In simple words, we need two directories. To be clear about their
+    role, we will name the first one `lower` and the second one `upper`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, let’s go into the `lower` directory and create three files. We will name
+    the first file `delete-me.txt`, the second one `duplicate.txt`, and the last one
+    `lower.txt`. Put anything you want inside, but make sure that you clearly state
+    that this is a file that lives in the `lower` directory. For example, in `duplicate.txt`
+    we can write something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/acd6daad044049c155565f586776a8e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The lower dir — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the upper directory, we will also create a `duplicate.txt` file and an `upper.txt`
+    file. Again, you can populate their contents however you like, but make sure you
+    clearly state that these are files live in the `upper` directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f707a9ec21a8d9ba0950eee98dfa7f91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The upper dir — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we are ready to create an overlay file system, which will layer the two
+    directories on top of each other and present a unified view of the data. For this,
+    we need two more directories, one named `merged` and a last one named `workdir`.
+    These live at the same level as the `lower` and `upper` directories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1c3d7cd7573abc801f02cace7f4390fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our working environment — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The command to create the overlay file system is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s decipher this step by step. First, you say that you want to mount a new
+    file system that is of type `overlay`. You specify which are the `lower`, `upper`,
+    and `workdir` directories. You set `none` for the source, as there is no underlying
+    device that contains the data. Instead, the data come from the `lower` and `upper`
+    directories. Finally, you say that you want to mount this in the `merged` directory.
+    The `workdir` directory is a special place the system keeps the metadata it needs
+    to function. We don’t touch this directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you now list the files in the `merged` directory, you’ll see a unified view
+    of the `lower` and `upper` directories. The `lower.txt` and `delete-me.txt` files
+    from the `lower` directory are there, while the `upper.txt` and `duplicate.txt`
+    files come from the `upper` directory. As you can safely guess by now, any files
+    that have the same name in the `lower` and `upper` directories will come from
+    the `upper` directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fe86672e327e7aa9808856b37010ba9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The merged directory — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, the `lower` directory is read-only. Any changes you make in the `merged`
+    directory won’t affect it. Instead, everything will be recorded in the `upper`
+    directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, if you delete the `delete-me.txt` file, the system will place
+    a character device in the `upper` directory, with the same name and zeros for
+    the minor and major numbers. This indicates to the system that the file has been
+    deleted, and you won’t see it in the `merged` directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e82f5fd0218fa0b445b33e904a6f6118.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Deleting a file — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you navigate in the `lower` directory, you’ll find the `delete-me.txt` file
+    where you left it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18d33e7305c84e4c317269f56ae5ef2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The lower directory is read-only — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, if you change the contents of the `lower.txt` file, the system
+    will execute a copy-on-write operation. That means that the moment you save the
+    changes in the `lower.txt` file, it will copy it to the `upper` directory and
+    keep the changes there. You can check the contents of the `lower.txt` file in
+    each directory yourself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the essence of the overlay file system; you have a lower directory that
+    stays intact, while a directory that is layered on top records all the changes.
+    That’s how in containers, you can keep the file system of your base image unchanged
+    and have layers that record the changes you made to the container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In conclusion, overlay file systems play a critical role in the success of Linux
+    containers, enabling efficient, secure, and isolated deployment of applications.
+    The overlay file system allows containers to share a common base image while keeping
+    each container isolated from one another, reducing the size of images and improving
+    the overall performance of the container ecosystem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we have explored the basics of overlay file systems and their
+    impact on the containerization ecosystem. Now, we’re ready to move on and create
+    a container-like environment without using Docker. I’ll see you in the next article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My name is [Dimitris Poulopoulos](https://www.dimpo.me/?utm_source=medium&utm_medium=article&utm_campaign=overlayfs),
+    and I’m a machine learning engineer working for [Arrikto](https://www.arrikto.com/).
+    I have designed and implemented AI and software solutions for major clients such
+    as the European Commission, Eurostat, IMF, the European Central Bank, OECD, and
+    IKEA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in reading more posts about Machine Learning, Deep Learning,
+    Data Science, and DataOps, follow me on [Medium](https://towardsdatascience.com/medium.com/@dpoulopoulos/follow),
+    [LinkedIn](https://www.linkedin.com/in/dpoulopoulos/), or [@james2pl](https://twitter.com/james2pl)
+    on Twitter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Opinions expressed are solely my own and do not express the views or opinions
+    of my employer.
+  prefs: []
+  type: TYPE_NORMAL

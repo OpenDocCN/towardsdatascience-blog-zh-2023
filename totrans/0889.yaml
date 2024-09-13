@@ -1,0 +1,902 @@
+- en: Finding Improved Rephrasings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/finding-improved-rephrasings-b5fb002ac811](https://towardsdatascience.com/finding-improved-rephrasings-b5fb002ac811)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using a Trie with machine-learned elements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)
+    ·19 min read·Apr 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2d3d765f44d8d3e011a1660ef32353e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Nile](https://pixabay.com/users/nile-598962/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=623167)
+    on [Pixabay](https://pixabay.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expressing something well takes effort. Fortunately, chatbots that embody modern
+    NLP, such as ChatGPT, are very helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will model this problem using a Trie, suitably enhanced. This
+    Trie will automatically detect short word sequences that appear repeatedly in
+    the corpus in an unsupervised way. Subsequently, it will also learn common “awkward
+    phrasing” patterns from a labeled data set of (awkward phrasing, improved phrasing)
+    pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For small, albeit nuanced, versions of the rephrasing problem, we’ll show that
+    improved phrasings can be found directly, via suitable fuzzy searches on the learned
+    Trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more elaborate versions of the problem, we describe a variant that uses
+    Tries as feature extractors. These can be integrated into any state-of-the-art
+    neural language model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this use, the Trie needs to be set up with certain preprocessing and pretraining.
+    We describe both as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach — in itself — is…
+  prefs: []
+  type: TYPE_NORMAL
+- en: easy to understand, without needing any background in neural networks or NLP.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: easy to implement as a proof of concept.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: effective on its own to detect short awkward phrases and suggest rephrasings.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Perhaps more importantly, as discussed above, this approach allows one to add
+    Trie-based features to modern neural network models, features that model short
+    sequences of words that repeatedly occur in a corpus and are therefore likely
+    to carry distinct semantics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The word sequence examples used in this post, both the awkward phrasings and
+    the improved ones, were furnished by ChatGPT in response to a single prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Give me some examples of phrasings that are awkward and of lengths two to four
+    words
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I then picked a subset that exhibited all the scenarios that the approach in
+    this post addressed. I then distributed them into various sections in this post.
+    This distribution was done because different phrasings illustrated different mechanisms
+    in the approach of this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last section in this post lists all the awkward phrasings together with
+    their improved rephrasings. Including ones in ChatGPT’s response that were not
+    used in this post, because they were part of its response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initial Perspective: Problem Framed As Search**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider *She cook good* which we would like to express better. Say we have
+    a rich and massive corpus of well-written sentences to learn from. Imagine searching
+    for sentences in the corpus that start with *She cook.* By analyzing these, we
+    might conclude that *She cook* is better phrased as *She cooks* or *She cooked*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider the third word, *good*. There may not be any sentence in the corpus
+    with a match to the phrase *(cooks|cooked) good*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, we might find several sentences containing the phrase *cooks
+    well*. Armed with the additional knowledge that *well* and *good* are similar
+    enough, we would be inclined to suggest *She cooks well* as a better overall rephrase.
+    Where might we get such knowledge? Word embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (We entered *good* at [http://vectors.nlpl.eu/explore/embeddings/en/#](http://vectors.nlpl.eu/explore/embeddings/en/#)
+    and the strongest “semantic associate” came out to be *well* with a score of 0.829.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s express the above in a flow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Search our corpus of sentences for those that begin with *She cook.* Get top
+    hits *She cooks* and *She cooked*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Substitute the hits into the probe, i.e. get *She cooks/cooked good*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Next, search our corpus of sentences with *cooks/cooked good.* Get *cooks well*
+    as a good hit. In scoring this as a good hit, also leverage that *good* and *well*
+    are semantic associates, something that comparing their word embeddings can reveal.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Substitute the hit into the relevant portion of the transformed input. We get
+    *She cooks well*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The searches in steps 1 and 3 need to be somewhat fuzzy to find inexact matches.
+    These matches then need to be post-processed further so we can extract statistical
+    commonalities across them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, note the following. In step 1, the third word, *good*, does not play a
+    role. This needs to be somehow discovered, either during preprocessing, during
+    the search itself, or during the postprocessing of the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, in step 3, somehow the word *She* needs to be ignored. Why? Because
+    using *cooks/cooked good* as the probe instead of *She cooks/cooked good* will
+    tend to generalize better. The final rephrase may get suggested even if the corpus
+    does not have a sentence that begins with *She cooks well*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The points discussed in the above two paragraphs may be reframed in terms of
+    the mechanism of *attention*, so important in large language models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sequential Nature**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach sketched above is inherently sequential in nature. We start with
+    the probe, examine its portions, transform as appropriate, and repeat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Search On A Trie**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far we used the term “search on a corpus of sentences” a number of times.
+    We now dive a bit deeper into how such searches will be done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will ingest the corpus of sentences into a tree data structure called a Trie
+    and search it instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, what is a Trie? Instead of giving a definition, we’ll illustrate it with
+    an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dcb2e822725c43265176594d335affa9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: A Trie representing two sequences of words. (By Author.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Trie in the above example represents the word sequences in the following
+    two sentences: *The dog chased the cat* and *The new job is good*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine the phrase *New job good*. We can visually see that this phrase
+    maps to the path from the Trie’s root that is labeled *The new job is good*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This mapping is also known as an *alignment* and can be depicted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this approach, the problem of finding better rephrasings of a phrasing becomes
+    the problem of finding paths in the Trie that align well with the phrasing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s begin with the simpler case when there is some path starting from the
+    Trie’s root that represents the input exactly. In the Trie of Figure 1, *The new
+    job is good* is an example of such an input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's easy to see how we can find the path that represents the input by doing
+    a left-to-right scan based on the tokens in the input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now consider a not-so-clean probe: *New job good*. There is no path in the
+    Trie of Figure 1 that corresponds exactly to this probe.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to take into account that the first word *The* is missing is by adding
+    skip arcs into the Trie. Below is a version of our first figure with a few skip
+    arcs added.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e41b970eec85d11631b458fd91ab0710.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Trie With Some Skip Arcs Added. (By Author.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The skip arcs allow us to find paths, some of whose elements are missing in
+    the probe, at the expense of consuming more space and taking longer to search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine that we also knew a good rephrasing of *New job good*. We can think
+    of the pair of the original phrasing and the improved rephrasing as a labeled
+    instance. Furthermore, assume we had somehow aligned the rephrasing with the probe,
+    as depicted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: So now we have a labeled data set and we are in the world of supervised learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Labeling can incur a significant cost. So what do the labels actually buy us
+    in our setting? They tell us where to add skip arcs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this particular example, we’d add two skip arcs, at the locations shown in
+    Figure 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One might ask, why use skip arcs at all? Why not instead do look ahead searches?
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if we wanted to handle multiple contiguous missing tokens? This is quite
+    plausible — we will see an example soon. We’d need a look ahead of some positive
+    integer, *k*, greater than 1\. What should the value of *k* be? If *k* is only
+    slightly bigger than 1, we cannot handle many contiguous missing tokens, a scenario
+    that is realistically plausible. If instead we use a large *k*, the look-ahead
+    searches can run into a combinatorial explosion, i.e., not scale*.* This is because
+    we have to search all possible descendants of the present node that are within
+    a distance of *k.* The number of such descendants can grow superexponentially
+    with *k*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The use of skip arcs circumvents such a combinatorial explosion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An aligned version of a labeled instance reveals exactly what skip arcs we should
+    add. As illustrated in the example below, sometimes we want to learn to skip multiple
+    tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: From this, we can learn to add the skip arc from the Trie node [*I*, *will*,
+    *go]* to the node [*I*, *will*, *go*, *to*, *the*]. This skip arc would allow
+    us to account for *to the* missing in the original phrasing relative to the improved
+    phrasing in the above instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, so *I go store* will map to a particular path on the Trie emanating from
+    the root. From this path, we need to read off the sequence [*I*, ***will***, *go*,
+    ***to the***, *store*]. The question is, how do we get the portions in bold?
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing we could do is assign a label to a skip arc which represents the sequence
+    of tokens that is being skipped. We know what this sequence of tokens is when
+    we first create the skip arc, so we can set the label then. In contrast to a main
+    arc, a skip arc’s label is used only when building the improved phrasing, not
+    during the lookup. The lookup as we know is a skip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This Is Semi-Supervised Learning**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, we’ve seen that training on a labeled data set has value. We also realize
+    that it may be infeasible to build a labeled data set whose labels cover most
+    clean sentences we can find in a large readily-available corpus. Such as Wikipedia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we leverage the large corpus without having to derive labeled instances
+    that are rich enough from it? Easy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn the Trie minus the skip connections from the corpus. This is unsupervised
+    learning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn the skip connections from a possibly much smaller labeled data set. This
+    is supervised learning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The assumption underlying the latter is that the problem of learning skip connections
+    exhibits generalizability. We indeed saw such generalizability in an example we
+    covered earlier. We can learn to account for the word *The* missing in a corrupted
+    version of a sentence beginning with *The dog* even from one labeled instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Skip Arcs Closer To The Root Generalize More**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look at Figure 2\. The skip arc closest to the Trie’s root starts from the root
+    and skips over *The.* This allows it to account for the first word *The* missing
+    in any corrupted version of a clean sentence that begins with *The*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider the skip arc that skips the *is* in sentences beginning with *The
+    new job is*. This applies to a more limited set of sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Substitution Arcs And Their Learning**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To motivate this, we will find the first rephrasing example we covered in our
+    post helpful. This involved rephrasing *She cook good* as *She cooks well*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, so we start from the root and step over the arc labeled *She.* We are
+    now at the node [*She*] but it doesn’t have a child [*She*, *cook*]. The closest
+    child is [*She*, *cooks*]. We can find this child if we fuzzily match *cooks*
+    to *cook*. We should keep in mind that finding the best matching child could take
+    time if the node we are currently at has many children.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative to such fuzzy matching is to learn substitution arcs from a labeled
+    data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that the following labeled instance appears in the supervised training
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can imagine learning from this labeled instance to add what we will call
+    *substitution arcs*. These are depicted below for our example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d8b5a193694eaba8860486f231813b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: A Trie With Learned Substitution Arcs Added. (By Author.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While Figure 3 does not bring this out, substitution arcs need to be distinguished
+    from the main arcs as they are used a bit differently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Substitution arcs may be walked while processing an input. For example, on the
+    input *She cook good* we would walk the path labeled [*She*, *cook*, *good*] whose
+    second and third arcs are substitution arcs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output that is derived from the resulting path involves replacing the labels
+    on the substitution arcs that are in the path with the main arcs that correspond
+    to them. In our example, [*She*, *cook*, *good*] would be replaced by [*She*,
+    *cooks*, *well*].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Substitution Arcs Versus Fuzzy Matching Of Tokens**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we discussed in the previous section, tokens are matched fuzzily only when
+    we are in the correct left context. As an example, consider *She cooks good* and
+    say we are at the node *She cooks*. There is an arc emanating from this node with
+    the label *well*. We are matching *good* with *well* only in this left context
+    *She cooks.* This mitigates the risk of a false positive*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that using fuzzy token matching instead of substitution arcs does
+    not incur increased risk. Using substitution arcs helps primarily in speeding
+    up the matching when a node has many children. The fuzzy matching alternative
+    would require us to find the labels on all the arcs emanating from the parent
+    node and match each label one by one to the next token in the input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neither fuzzy matching nor substitution arcs necessarily assume that the tokens
+    being matched are lexically similar, only that they are aligned in a labeled instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, consider the alignment
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*lawyer* and *attorney* are aligned even though there is no lexical similarity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Self Arcs And Their Learning**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider the phrasing *You Like What* along with an improved rephrasing *What
+    Do You Like*. The rephrasing involves rearranging the words. We’d like to continue
+    leveraging Tries as opposed to designing a new mechanism to handle word order
+    rearrangements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that we have a labeled and aligned instance that represents this pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can model the *What do* in the improved rephrasing via a skip arc. To model
+    the *what* in the original phrasing we will use the concept of a self arc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is a segment of the Trie that models this situation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df9101caacff0e75687bc9d167eb3cba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: A Trie With A Self Arc (and a skip arc). (By Author.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s walk through how we will process the input [*you*, *like*, *what*]. We
+    will start at the root, take the skip arc, then take the arcs labeled *you* and
+    *like*, and finally the self arc labeled *what*. We will now concatenate the labels
+    of the first three arcs on the path. We will omit the fourth arc’s label, as we
+    know it is a self-arc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**On Reducing The Effort To Construct Labeled And Aligned Instances**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we’ve seen, labeled instances, ones in which original phrasings are aligned
+    with improved rephrasings, play an important role in learning accurate rephrasing
+    suggestion models. The richer our data set of labeled instances, the better the
+    quality of the learned model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In view of this. can we reduce the effort to construct labeled instances? The
+    answer is Yes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we present an approach that involves aligning sequences in one data set
+    (in which there may be many awkward phrasings) to a Trie trained on a corpus of
+    mostly clean sentences. Following this, we describe how to enhance this approach
+    using certain well-motivated linguistic features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Aligning Poor Sequences With A Clean Trie**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s assume we have two data sets, one of relatively clean sentences,
+    and the second of poorer-quality phrasings. Imagine that from the first data set,
+    we learn the Trie in the manner described earlier. (This Trie only has main arcs.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider an instance — a relatively poor one — from the second data set.
+    Imagine finding a path in the current Trie that starts from the root and is a
+    sufficiently good fuzzy match to the instance. From this path combined with the
+    instance, we can derive a labeled instance of the sort we seek.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does the fuzzy matcher need to work? It needs to use look-ahead operations
+    to allow for tokens on a path that are missing in the probe. It also needs to
+    use fuzzy token matching to allow for substitutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate this process. Consider the Trie below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7343d1e097505ad58f2829c9185019d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Trie On Which To Illustrate Fuzzy Matching. (By Author.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider the probe *Me go store*. Assume we know that *me* and *I* are semantic
+    associates. We’ll use this knowledge to align *me* with *I*, then do a look-ahead
+    of 1, align *go* with *go*, do another look-ahead of 1, and finally align *store*
+    with *store*. We have the desired alignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we are okay thinking of this as happening during an offline training phase,
+    the fuzzy matching need not even be optimized further for speed. The lookaheads
+    may take time but that’s okay.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One might ask, why not simply use this fuzzy matching process during inference
+    time and dispense with supervised training altogether? Two reasons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the fuzzy matcher may run slow since it may need to do lookaheads. A
+    slow fuzzy matcher is more tolerable during training than inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, allowing for learning from labeled instances permits a mix of human-curated
+    labeled instances combined with those automatically derived using the fuzzy matcher.
+    In fact, it even allows human curators to discard those automatically generated
+    instances that are deemed to be low quality. This may still reduce the overall
+    effort of obtaining a data set of labeled instances of the same richness, as it
+    automates the discovery process. So long as enough of the labeled instances found
+    via this automated process are good enough, the benefit may outweigh the cost
+    of detecting and tagging the false positives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Leveraging Linguistic Features**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is based on the observation that words in certain parts of speech are more
+    likely to be absent from poor phrasings than others. Such as articles or prepositions.
+    Below are some examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: exposure sunlight
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: He is lawyer
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We incorporate this into our approach of aligning poor sequences with a clean
+    Trie as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first step, we align our poor sequences with the clean Trie. During this
+    process, a poor sequence *x* gets aligned with a path *y* on the Trie. For the
+    sequence of words in y, we now get their part of speech. The alignment now reveals
+    not only the words that might be missing in *x* relative to *y* but also their
+    parts of speech. We can now discern if certain parts of speech are much more likely
+    to be missing than others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In step 2, we exhaustively enumerate all root-to-leaf paths on our Trie, which
+    can be done via a depth-first or breadth-first search for instance, and add skip
+    arcs to skip over words whose part of speech is in our list of most-skippable
+    ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate this with a simple example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say we align *He is lawyer* with *He is a lawyer*. We have found one instance
+    of an article, in this case *a*, that is missing from the former. Repeating this
+    process over lots of poor sequences should be able to discern that articles are
+    more predisposed to be missing than some other parts of speech.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Finer-Grained Variant**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far the word sequences we’ve considered for ingesting into the Trie are sentences
+    in a corpus. This choice was made for convenience, as it is relatively easy to
+    segment text into its sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we consider a finer-grained variant, one in which the word
+    sequences we ingest into the Trie are not necessarily full sentences, but rather
+    sequences of words that appear in a certain dominant order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This finer-grained Trie has the potential to suggest improved phrasings of shorter
+    word sequences embedded within a sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is an example. No one writes *skin cancer* as *cancer skin.* If we can
+    discover that the former is the dominant order for the set of these two words,
+    we can detect violations of this order and suggest a rephrasing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A more plausible case is when in a sentence the words *of the* have been erroneously
+    transposed, as in *The top* ***the of*** *mountain*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, and perhaps more importantly, this finer-grained Trie may be used
+    as a feature extractor in a modern neural language model for more elaborate versions
+    of the awkward phrasing problem. Indeed for any inference problems that large
+    language models are applicable to, including language generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless of whether the Trie is used directly or as a feature extractor, there
+    is a new problem that needs to be solved. Discovering the word sequences that
+    appear in a certain dominant order. This problem was absent from our first Trie
+    as the sentences were treated as the word sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the following terminology will help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Orderable Bag**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will say that a multiset of words is an orderable bag if it has a dominant
+    ordering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the term *multiset* rather than *set* to allow the same word to appear
+    multiple times in it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the multiset {*the*, *of*} has a dominant ordering [*of, the*].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that orderable bags are not the same as salient phrases. The former is
+    only concerned about dominant orderings; the latter also needs to consider saliency,
+    i.e. that the phrase conveys a meaning that is bigger than the sum of its parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Discovering Orderable Bags From A Corpus Of Sentences**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, now let’s discuss how to discover orderable bagsfrom a corpus of sentences.
+    We’ll suppose all the sentences in the corpus have been tokenized into words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this corpus, imagine deriving a data set *D*1of all sequences of tokens
+    of length at least two. Next, we’ll construct a new data set *D*2 from *D*1 as
+    follows. In fact, we will interpret *D*2 as a labeled data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For every sequence *y* in *D*1 there will be the sequence *x* in *D*2 where
+    *x* is obtained from *y* by sorting its words in lexicographic order. *x*’s label
+    in *D*2 will be *y*. That is, we are labeling, a representation of *y*’s multiset
+    of words, with a particular ordering *y* that was observed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is an example of an instance in *D*2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: x = [cancer, skin], y = [skin, cancer]
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will build a Trie from all the *x*’s in *D*2\. For any pair (*x*, *y*) in
+    *D*2, we will attach *y* as satellite data to the node in the Trie that *x* ends
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the Trie has been built we will compactify the satellite data on the various
+    nodes in the Trie into two attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of distinct orderingsthat serve as labels for the *x* ending at that
+    node.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A probability distribution over the universe of orderings for the *x* ending
+    at that node. For representing this distribution compactly, we will encode orderings
+    in the manner described below.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We will call the first attribute — the number of distinct orderings — *support*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sure, this Trie can be huge. That is not a concern to us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Using The Trie To Discover Awkwardly-ordered Subsequences**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a sequence of words in which some subsequence is ordered awkwardly.
+    Such as *The top* ***the of*** *mountain.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll discover awkward phrasings (if any) by enumerating all subsequences of
+    length at least 2, sorting each such sequence in lexicographic order, looking
+    up the Trie with that sequence, and checking whether the end node has satellite
+    data that reveals whether there is a dominant ordering or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, once the Trie has been built, say the rightmost node on the path
+    [*cancer*, *skin*] has satellite data (520, [*skin*, *cancer*] → 1). This just
+    means that the bag {*cancer*, *skin*} was observed 520 times in the data set,
+    in each case with the ordering [*skin*, *cancer*].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Using The Orderable Bags Trie As A Feature Extractor In A Neural Language
+    Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the orderable bags Trie has been built, we can leverage it as a feature
+    extractor as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s assign a unique identifier to every path in the Trie. This identifier
+    will serve as the value of the feature associated with this path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We take a sequence of words as input and segment it into a sequence of maximal
+    paths in the Trie each of which is a dominant ordering with a certain minimum
+    support. So that we cover all cases, we will define a word sequence composed of
+    a single word as being a dominant ordering with the aforementioned minimum support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now replace the paths in this sequence with their identifiers. So we have
+    a sequence of features. For those paths in this sequence which represent single
+    words, we can attach additional features. Such as word embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate this process in the example below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: exposure to sunlight causes skin cancer
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Imagine that using the orderable bags Trie we segment this into
+  prefs: []
+  type: TYPE_NORMAL
+- en: exposure → to → sunlight, causes, skin → cancer
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: which, after we replace paths with ids, becomes
+  prefs: []
+  type: TYPE_NORMAL
+- en: pid1, pid(causes), pid2
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From the perspective of adding value to our Trie-based approach, the benefit
+    is clear. Modern neural language models are capable of impressive feats.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of the particular use case that we address in this post, this
+    will allow them to detect phrasings needing improvement in longer portions of
+    text, such as paragraphs or even many pages. Ones that might need to factor in
+    long-range interactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about from the perspective of adding value to Modern neural language models?
+    We think Trie-based features will enrich these models further. The basic intuition
+    is that certain short word sequences do repeatedly occur frequently in text and
+    implicitly encode particular semantics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Trie-based approach discovers such sequences automatically from a corpus
+    and can therefore be used to analyze longer sequences that are composed of certain
+    arrangements of these sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s illustrate this with a simple example. Consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**exposure to sunlight** causes **skin cancer**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Here we deem the subsequences in bold to be dominant orderings and represented
+    in our Trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can imagine that a neural language model leveraging the Trie can easily predict
+    that *exposure to sunlight causes* should be followed by *skin cancer*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine that we have a labeled data set of semantically-equivalent phrasings.
+    As one instance in this data set, consider
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: From many instances of the form {*X causes Y*, *Y is caused by X*} and assuming
+    *X* and *Y* are represented as dominant-ordering paths in the Trie we can discern
+    the semantic equivalence of the two and use this learning in certain inferences
+    or generation. Such as if we were asked to reexpress *X causes Y* differently,
+    we could answer *Y is caused by X*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we covered the problem of discovering awkward phrasings — i.e.,
+    orderings of word sequences — and suggesting improved ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We modeled this problem using a Trie. This Trie automatically detects, in an
+    unsupervised way, short word sequences that appear repeatedly in the corpus. A
+    supervised mechanism in the Trie also learns certain common “awkward phrasing”
+    patterns from a labeled data set of (awkward phrasing, improved phrasing) pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For small, albeit nuanced, versions of the rephrasing problem, we showed that
+    improved phrasings can be found directly, via suitable fuzzy searches on the learned
+    Trie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more elaborate versions of the problem, we described a variant that uses
+    Tries to extract advanced re-occurring features, in particular repeating word
+    sequences that are short. We reasoned why using these features in a state-of-the-art
+    neural language model can improve its accuracy. And simplify its training. For
+    this use, the Trie needed to be set up with certain preprocessing and pretraining.
+    We described both as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Phrases From ChatGPT**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are the awkward phrasings and their improved versions that ChatGPT furnished
+    in response to the prompt
+  prefs: []
+  type: TYPE_NORMAL
+- en: Give me some examples of phrasings that are awkward and of lengths two to four
+    words
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In its response, ChatGPT had the improved rephrasings separated out from the
+    awkward ones. I have aligned these for the reader’s convenience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Me go store.” I will go to the store
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “You like what?” What do you like?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Dog chase cat.” The dog is chasing the cat.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “He no here.” He is not here.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “She cook good.” She is a good cook.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Big house him.” He has a big house
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Funny joke that.” That is a funny joke
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Rain make wet.” The rain is making everything wet.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “Car go fast.” The car is going fast.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “New job good.” The new job is good.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Further Reading**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Sequence_alignment](https://en.wikipedia.org/wiki/Sequence_alignment)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Trie](https://en.wikipedia.org/wiki/Trie)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

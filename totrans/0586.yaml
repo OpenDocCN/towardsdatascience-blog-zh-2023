@@ -1,0 +1,638 @@
+- en: Create and Deploy a REST API Extracting Predominant Colors from Images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/create-and-deploy-a-rest-api-extracting-predominant-colors-from-images-a44b94cc3d46](https://towardsdatascience.com/create-and-deploy-a-rest-api-extracting-predominant-colors-from-images-a44b94cc3d46)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using unsupervised machine learning, FastAPI and Docker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://nicolo-albanese.medium.com/?source=post_page-----a44b94cc3d46--------------------------------)[![Nicolo
+    Cosimo Albanese](../Images/9a2c26207146741b58c3742927d09450.png)](https://nicolo-albanese.medium.com/?source=post_page-----a44b94cc3d46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a44b94cc3d46--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a44b94cc3d46--------------------------------)
+    [Nicolo Cosimo Albanese](https://nicolo-albanese.medium.com/?source=post_page-----a44b94cc3d46--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a44b94cc3d46--------------------------------)
+    ·15 min read·Sep 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c1fc392c4d210706b63a714d397b644.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Problem statement](#c5a9)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Extract colors from images](#dfe8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Project structure](#dfe8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Code](#50f4)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Deploy the Docker container](#d547)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Let’s try it!](#aeea)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[API documentation](#1e07)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Conclusions](#17f9)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[License disclaimer](#01e6)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 1\. Problem statement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us imagine a control room of a **manufacturing facility**, where the fabricated
+    products need to be sorted automatically. For instance, based on their color,
+    goods may be redirected to different branches of a roller conveyor for further
+    processing or packaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Otherwise, we can also imagine an **online retailer** trying to enhance the
+    user experience by adding a *search-by-color* functionality. Customers may more
+    easily find a clothing item from a particular color, thus simplifying their access
+    to products of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Or, just like the author, you can picture yourself as an **IT consultant** implementing
+    a simple, fast and reusable tool to generate color palettes for presentations,
+    charts and apps from input images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are just few examples of how extracting the main colors from a picture
+    may either improve operational efficiency or boost customer experience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we use Python to implement the extraction of predominant
+    colors from a given picture. Then, we use FastAPI and Docker to package and deploy
+    the solution as a service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this post is to share an end-to-end illustration about the deployment
+    of a lightweight and self-consistent service leveraging Machine Learning techniques
+    to carry out a business purpose. Such a service may be easily integrated in a
+    [microservice architecture](https://microservices.io/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Extract colors from images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A digital image is essentially a 2-dimensional grid of individual components
+    known as pixels. [Pixels](https://en.wikipedia.org/wiki/Pixel) are the smallest
+    unit of display in the image, and carry information about its color. A popular
+    approach to color representation is the [RGB color model](https://en.wikipedia.org/wiki/RGB_color_model).
+    This additive model uses combination of the three primary colors — red, green
+    and blue (hence the name, RGB) to create a broad array of colors. The intensity
+    of each primary color is represented by an 8-bit value. Therefore, each pixel
+    has three intensity values, one for each of the primary colors, ranging from 0
+    to 255:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2c8f47bfe42b47c0b34d156753956d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The additive RGB color model. From [Wikipedia](https://it.wikipedia.org/wiki/RGB#/media/File:AdditiveColor.svg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can extract predominant colors from an image through clustering. In brief,
+    clustering techniques try to group similar objects together. Among clustering
+    methods, we are going to use the [K-Means](https://en.wikipedia.org/wiki/K-means_clustering)
+    algorithm. It aims at creating “compact” groups by minimizing the sum of squared
+    distances between the data points and their respective group centers, named centroids.
+    We can choose the number of groups/clusters `k` to create. In our case, the data
+    points are the RGB values of each pixel. After model training, we can consider
+    the centroids as representatives of the main colors inside the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us jump into practice and create a `ColorAnalyzer` class accepting an input
+    image and extracting its main colors. The class will have the following methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`load_image` loads the image into a 2D array from the local path or URL.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`is_url` checks if the input path is URL.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`preprocess_image` resizes the image to improve processing speed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`find_clusters` applies K-Means clustering to extract important colors as centroids.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`sort_clusters_by_size` sorts colors by cluster size in descending order.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`plot_image` displays the original input image (resized).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`plot_3d_clusters` shows a 3-D plot of the clusters. The observations display
+    their centroid’s (predominant) color.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`plot_predominant_colors` plots a bar chart of the main colors ordered by presence
+    in the image.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`get_predominant_colors` returns a list of the main colors as JSON objects.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can test our class using a Python notebook:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instantiate the class using an input URL pointing to an online image:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Plot the original image (resized):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f8293b34b0fc5aebbf5e674107db75a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plot a bar chart of the most predominant colors:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1f5ef6576add27124dbd825e02ffa182.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Display the obtained clusters:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/feeceaf27f30e61a9b885552456a345f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Return a list of extracted colors as JSON objects:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can repeat the process for any input image (URL or local path) and inspect
+    the outcome. For instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8ab7b9205cce01bc4730af5e13adf475.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we create a web service that provides this image analysis capability
+    on request? We need to turn our notebook into a Python project that exposes a
+    REST API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Project structure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let us introduce the main ingredients of our project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[REST API](https://www.redhat.com/en/topics/api/what-is-a-rest-api): [REST](https://en.wikipedia.org/wiki/REST)
+    (Representational State Transfer) API is an architectural style for designing
+    applications. It uses standard HTTP methods (GET, POST, …) to allow communication
+    between different systems. In our case, we want to enable a client to request
+    the extraction of predominant colors from an input image using HTTP requests.
+    We will use [FastAPI](https://fastapi.tiangolo.com/) to build the API service.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Docker](https://docs.docker.com/): a platform that allows to build, deploy,
+    and run applications in isolated containers. Using Docker will help us to package
+    together all the dependencies needed for the color extraction task, ensuring consistency,
+    portability and removing operational headaches (*What Python version am I using?
+    Did I install all packages? What version of OpenCV do I need?*).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/1d593e563f4b288d979a6371fdc9caaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: REST API. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can structure the project as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`README.md`: project documentation in Markdown.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`requirements.txt`: list of Python dependencies needed to run the project.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Dockerfile`: text document with all the commands to assemble a Docker image,
+    i.e. an isolated environment for the project.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`main.py`: the entry point of our application.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`api/`: sub-folder with the definition of the REST API endpoints. In our simple
+    example, we just have one endpoint to request color extraction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`dto/`: sub-folder with the data classes used in the requests and responses
+    for the API service. The name `dto` derives from [Data Transfer Object](https://en.wikipedia.org/wiki/Data_transfer_object),
+    as these classes represent the interface between the client and the service.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`service/`: sub-folder with the application logic. In our example, the `ColorAnalyzer`
+    class provides the image processing capability.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`notebooks/`: sub-folder with notebook experiments.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The separation between data (or *model*), endpoints definition (or *controller*)
+    and application logic (or *service*) in separate modules (`dto/`, `api/`, `service/`)
+    is one way to guarantee clarity, maintainability, and reusability. It also promotes
+    a cleaner architecture and simplify further developments. The reader may refer
+    to the [MVC design pattern](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
+    for more information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start looking into `main.py`. In our entry point, we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create a FastAPI application: `app = FastAPI()`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enable CORS to allow client-side calls to the web service through the `add_middleware`
+    method.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Define a `GET` request handler for the root endpoint (`"/"`) returning a simple
+    message.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Include a router to our api module with the `"api/"` prefix. The prefix will
+    become part of the final endpoint as follows: `"http://<host>:<port>/api/<endpoint>"`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The definition of the endpoints is the `api` module. Inside the`"api/endpoints.py"`
+    file, we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create the router for the FastAPI app: `router = APIRouter()`, which imported
+    in the `main.py`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Define a `POST` request for the `/colors` endpoint. The application expects
+    a request of class `ColorExtractionRequest`, and returns a response of class `ColorExtractionResponse`.
+    The two objects are defined in the `dto` module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Upon receiving a request, a `ColorAnalyzer` object is instantiated and the color
+    extraction results are returned as response to the user.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us explore the data model for the requests and responses. Its classes are
+    in the `dto` module, inside the `dto/image_data.py` file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This data model is straightforward. In brief, the service:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accepts an input URL or path, as well as a desired number of clusters/predominant
+    colors.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Returns a list of JSON objects made of RGB values and the percentage of pixels
+    in the image belonging to that cluster.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interestingly, defining `pydantic` classes not only increases readability and
+    maintenance, but also simplifies the generation of API documentation leveraging
+    the FastAPI framework (more on that in the following paragraphs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we only need to define a Docker image and deploy the Docker container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Deploy the Docker container
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let us observe the `Dockerfile` inside the project root. This text document
+    contains all the commands to create a Docker image for our project. In detail:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`FROM python:3.8-slim` sets the base image as starting point.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`WORKDIR /colors-extractor` sets the working directory inside the container
+    to `/colors-extractor`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`COPY requirements.txt requirements.txt` copies the dependencies from our local
+    machine into the container inside the `WORKDIR`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`RUN pip install -r requirements.txt` installs the Python dependencies listed
+    in requirements.txt on the Docker container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`COPY . .` copies the project files from our local machine into the container.
+    We do this later, after installing the dependencies, because Docker creates an
+    image by layering subsequent commands. If we just update our code base, given
+    the current order of commands the Docker engine will not reinstall all the dependencies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`EXPOSE 8000` exposes port 8000, on which our FastAPI app runs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`CMD [“uvicorn”, “main:app”, “--host”, “0.0.0.0”, “--port”, “8000”]` is the
+    command to run when the container starts. In this case, we instruct the container
+    to run the FastAPI app using Uvicorn. The mapping `main:app` sets the correct
+    entry point of our app, in our case `main.py`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To deploy the Docker container locally, from command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can show running containers through:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this command, we can get the container id associated to our application,
+    and use it to inspect the logs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The logs confirm that the application is running:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18ae641e0cb5b912b04ddec4644f313a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Let’s try it!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let us remember the endpoint structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`main.py` declares a router to the `api` module with an `/api` prefix.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `api` module defines a `POST` request handler for the `/colors` endpoint
+    inside the `endpoints.py` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The running port is `8000`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Therefore, we should perform a `POST` call to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`[http://localhost:8000/api/colors](http://localhost:8000/api/colors.)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To test the service, we may use tools such as [curl](https://curl.se/) or [Postman](https://www.postman.com/):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, using Postman:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f7022adc2c32f7e6b995f2e6ab7d6bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing the service using Postman. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can inspect the container again to verify the presence of our test calls
+    in the logs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43df7a68a2f05c6e99085f0656f1cc4c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Logs. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. API documentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'FastAPI automatically provides a documentation of the implemented APIs. By
+    default, it is available at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`[http://<host>:<port>/docs](http://localhost:8000/api/colors.)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'By reaching that URL, we can find a web user interface ([Swagger UI](https://github.com/swagger-api/swagger-ui))
+    fully documenting our endpoints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72e3c56bb3ab7f165cf89e93209a09ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: API documentation. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data model for the requests and responses is under the `Schemas` section
+    of the web interface, and it is populated with the `pydantic` models defined in
+    the `dto` module and associated to the router’s handlers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d8b9917ee6c7b99af2aeef87b3a85950.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data models. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog post, we shared a step-by-step implementation of a service leveraging:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsupervised Machine Learning techniques to reach a business goal, i.e. extracting
+    predominant colors from images.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: FastAPI to serve the solution as a REST API.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Docker for isolated and consistent deployment.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our goal is to showcase a comprehensive example that could be easily reused
+    and extended to deploy a Machine Learning model as a REST API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code for this blog is available on [GitHub](https://github.com/NicoloAlbanese/colors-extractor/tree/main).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**9\. License disclaimer**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To write this post, we used two images:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “[*Brown grass field background of mountain view*](https://unsplash.com/photos/xjXz8GKXcTI)”
+    by [Linh Nguyen](https://unsplash.com/@bylinhnguyen).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “[*White ceramic mug filled with coffee*](https://unsplash.com/photos/ZJsseAxEcqM)”
+    by [Justin Leibow](https://unsplash.com/@justinleibow).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both sources are free to use for personal and commercial use under the [Unplash
+    license](https://unsplash.com/license). We generated image URLs using [Picsum](https://picsum.photos/)
+    ([GitHub repo](https://github.com/DMarby/picsum-photos)) available under the [MIT
+    license](https://github.com/DMarby/picsum-photos/blob/main/LICENSE.md).
+  prefs: []
+  type: TYPE_NORMAL

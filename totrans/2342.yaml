@@ -1,0 +1,741 @@
+- en: 'What People Write about Climate: Twitter Data Clustering in Python'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906](https://towardsdatascience.com/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Clustering of Twitter data with K-Means, TF-IDF, Word2Vec, and Sentence-BERT
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----2fbbd2b95906--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fbbd2b95906--------------------------------)
+    ·21 min read·May 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b562105ac69264137465079315ba7c15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tweet clusters visualization, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What do people think and write about the climate, pandemics, war, or any other
+    burning issue? Questions like this are interesting from a sociological perspective;
+    knowing the current trends in people’s opinions can also be interesting for scientists,
+    journalists, or politicians. But how can we get answers? Collecting responses
+    from millions of people could have been an expensive process in the past, but
+    today we can get these answers from social network posts. Many social platforms
+    are available nowadays; I selected Twitter for the analysis based on several reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Twitter was originally designed for making short posts, which could be easier
+    to analyze. At least I hope that while having text size limitations, people try
+    to share their thoughts in a more laconic way.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Twitter is a large social network; it was founded almost 20 years ago. It has
+    about 450 million active users at the time of writing this article, so it is easy
+    to get plenty of data to work with.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Twitter has an official API, and its license allows us to use the data for research
+    purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The whole analysis may be pretty complex, and to make the process more clear,
+    let's first describe the steps we need to implement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our data processing pipeline will consist of several steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collecting tweets and saving them in a CSV file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cleaning the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Converting the text data into numerical form. I will use 3 methods (TF-IDF,
+    Word2Vec, and Sentence-BERT) to get text embeddings, and we will see which one
+    is better.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clustering the numerical data using the K-Means algorithm and analyzing the
+    results. For data visualization, I will use t-SNE (t-distributed Stochastic Neighbor
+    Embedding) methods, and we will also build a word cloud for the most interesting
+    clusters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Without further ado, let’s get right into it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Loading the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Collecting the data from Twitter is straightforward. Twitter has an official
+    API and a [developer portal](https://developer.twitter.com/en/portal/dashboard);
+    a free account is limited to one project, which is enough for this task. A free
+    account allows us to get recent tweets for only the last 7 days. I collected data
+    within a month, and it was not a problem to run the code once per week. It can
+    be done manually or it can be automated using Apache Airflow, Cron, GitHub Actions,
+    or any other tool. If *historical* data is really needed, Twitter also has a special
+    [academic research access](https://developer.twitter.com/en/products/twitter-api/academic-research)
+    program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After free registration in the [portal](https://developer.twitter.com/), we
+    can get an API “key” and “secret” for our project. For accessing the data, I was
+    using a “[tweepy”](https://docs.tweepy.org/en/stable/api.html) Python library.
+    This code allows us to get all tweets with a “#climate” hashtag and save them
+    in a CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we see, we can get a text body, hashtags, and a user id for each tweet, but
+    if the tweet was retweeted, we need to get the data from the original one. Other
+    fields, like the number of likes, retweets, geo coordinates, etc., are optional
+    but can also be interesting for future analysis. A “wait_on_rate_limit” parameter
+    is important; it allows the library to automatically make a pause if the free
+    limit of API calls is reached.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After running this code, I’ve got about 50,000 tweets with the hashtag “#climate”,
+    posted within the last 7 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Text Cleaning and Transformation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Cleaning the data is one of the challenges in natural language processing, especially
+    when parsing social network posts. Interestingly, there is no “only right” approach
+    to that. For example, hashtags can contain important information, but sometimes
+    users just copy-paste the same hashtags into all their messages, so the relevance
+    of the hashtags to the message body can vary. Unicode emoji symbols can also be
+    cleaned, but it may be better to convert them into text, and so on. After some
+    experiments, I developed a conversion pipeline, that may not be perfect, but it
+    works well enough for this task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: URLs and Mentioned user names
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Many users just post tweets with URLs, often without any comments. It is nice
+    to keep the fact that the URL was posted, so I converted all URLs to the virtual
+    “#url” tag:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Twitter users often mention other people in the text using the “@” tag. User
+    names are not relevant to the text context, and even more, names like “@AngryBeaver2021”
+    are only adding noise to the data, so I removed them all:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hashtags
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Converting hashtags is more challenging. First, I converted the sentence to
+    tokens using NLTK [TweetTokenizer](https://www.nltk.org/api/nltk.tokenize.casual.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It works, but it is not enough. People often use hashtags in the middle of
+    the sentence, something like “*important #news about the climate*”. In that case,
+    the word “*news*” is important to keep. At the same time, users often add a bunch
+    of hashtags at the end of each message, and in most cases, those hashtags are
+    just copied and pasted and not directly relevant to the text itself. So, I decided
+    to remove hashtags only at the end of the sentence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is better, but it is still not good enough. People often combine several
+    words in one hashtag, like “#ActOnClimate” from the last example. We can split
+    this one into three words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a final result of this step, the phrase “*This system combines #solar with
+    #wind turbines. #ActOnClimate now. #Capitalism #climate #economics*” will be converted
+    into “*This system combines #solar with #wind turbines. Act On Climate now.*”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing short tweets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Many users often post pictures or videos without providing any text at all.
+    In that case, the message body is almost empty. These posts are mostly useless
+    for analysis, so I keep in the dataframe only sentences longer than 32 characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lemmatization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Lemmatization is the process of converting words into their original, canonical
+    form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lemmatizing the text can reduce the number of words in the text, and the clustering
+    algorithm may work better. A [spaCy lemmatizer](https://spacy.io/api/lemmatizer)
+    is analyzing the whole sentence; for example, the phrases “I saw a mouse” and
+    “cut wood with a saw” will provide different results for the word “saw”. Thus,
+    the lemmatizer should be called *before* cleaning the stopwords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These steps are enough to clean up tweets. Of course, nothing is perfect, but
+    for our task, it looks good enough. For readers who would like to do experiments
+    on their own, the full code is presented below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a bonus, with clean text, we can easily draw a word cloud:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9de7799b276aae146ca5d60e8ca7e26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Word cloud made from the cleaned text, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's not a real analysis yet but this image can already give some insights into
+    what people write about the climate. For example, we can see that often people
+    post links (“URL” is the biggest word in the cloud), and words like “energy”,
+    “waste”, “fossil”, or “crisis” are also relevant and important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Vectorization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Text vectorization is the process of converting text data into a numerical representation.
+    Most of the algorithms, including K-Means clustering as well, require vectors
+    and not plain text. And the conversion itself is not straightforward. The challenge
+    is not just to *somehow* assign some random vectors to all words; ideally, the
+    words-to-vector conversion should keep the relationship between those words in
+    the original language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will test three different approaches, and we can see the advantages and disadvantages
+    of each one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TF-IDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) (Term Frequency-Inverse
+    Document Frequency) is a pretty old algorithm; a term-weighting function known
+    as IDF was already proposed in the 1970s. The TF-IDF result is based on a numerical
+    statistic, where the TF (term frequency) is the number of times the word appeared
+    in the document (in our case, in the tweet), and the IDF (inverse document frequency)
+    shows how often the same word appears in the text corpus (full set of documents).
+    The higher the score of the particular word, the more important this word is in
+    the specific tweet.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before processing the real dataset, let’s consider a toy example. Two tweets,
+    cleaned from stop words, the first one is about climate, and the second is about
+    cats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/beacff456ff0c0907e2055190bad1ccc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we can see, we got two vectors from two tweets. Each digit in the vector
+    is proportional to the “importance” of the word in the particular tweet. For example,
+    the word “climate” was repeated twice in the first tweet. It has a high value
+    there and a zero value in the second tweet (and obviously, the output for the
+    word “cat” is the opposite).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s try the same approach on a real dataset we collected before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: TfidfVectorizer did the job; it converted each tweet to a vector. The dimension
+    of vectors is equal to the *total number of words* in the corpus, which is pretty
+    large. In my case, 19,197 tweets have 22,735 unique tokens, and as an output,
+    I got a matrix of the 19,197x22,735 shape! Using such a matrix can be challenging,
+    even for modern computers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will cluster this data in the next step, but before that, let's test other
+    vectorization methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Word2Vec
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Word2Vec is another approach for word vectorization; the first paper about
+    this method was introduced by [Tomas Mikolov in 2013 at Google](https://arxiv.org/pdf/1310.4546.pdf).
+    There are different algorithms ([Skip-gram and CBOW models](https://radimrehurek.com/gensim/models/word2vec.html))
+    available in the implementation; the general idea is to train the model on a large
+    text corpus and get accurate word-to-vector representations. This model is able
+    to learn the relations between different words, as shown in the original paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b448f996de8225322ce93647bf174cf2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Country and Capital Vectors Projected by PCA, Source © [https://arxiv.org/pdf/1310.4546.pdf](https://arxiv.org/pdf/1310.4546.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probably the most famous example of using this model is the relationship between
+    the words “king”, “man” and “queen”. Those who are interested in details can read
+    [this nice article](/word-embeddings-in-2020-review-with-code-examples-11eb39a1ee6d).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our task, I will be using a [pre-trained vector](https://code.google.com/archive/p/word2vec/)
+    file. This model was trained using the Google News dataset; the file contains
+    vectors for 3 million words and phrases. Before using a real dataset, let’s again
+    consider a toy example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fd975b98107512becb6215834d08b9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we can see, the word “climate” was converted into a 300-digit length array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using Word2Vec, we can get embeddings for each word, but we need an embedding
+    for the whole tweet. As the easiest approach, we can use the word embedding arithmetic
+    and get the mean of all vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This works because words with similar meanings are converted into close vectors,
+    and vice versa. With this method, we can convert all our tweets into embedding
+    vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see, Word2Vec’s output is much more memory-efficient compared to the
+    TF-IDF approach. We have 300-dimensional vectors for each tweet, and the shape
+    of the output matrix is 19,197x300 instead of 19,197x22,735 — a 75x difference
+    in memory footprint!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Doc2Vec](https://radimrehurek.com/gensim/models/doc2vec.html) is another model
+    that can be more effective for making document embeddings compared to “naive”
+    averaging; it was specially designed for vector representations of the documents.
+    But at the time of writing this article, I was not able to find a pre-trained
+    Doc2Vec model. Readers are welcome to try this on their own.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sentence-BERT
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the previous step, we got word embeddings using Word2Vec. It works, but
+    this approach has an obvious disadvantage. Word2Vec does not respect the context
+    of the word; for example, the word “bank” in the sentence “the river bank” will
+    get the same embedding as “the bank of England”. To fix that and get more accurate
+    embeddings, we can try a different approach. The BERT (Bidirectional Encoder Representations
+    from Transformer) language model was [introduced in 2018](https://arxiv.org/abs/1810.04805).
+    It was trained on masked text sentences, in which the position and context of
+    each word really matter. BERT was not originally made for calculating embeddings,
+    but it turned out that extracting embeddings from BERT layers is an effective
+    approach (those TDS articles from 2019 and 2020 can provide more details: [1](https://medium.com/towards-data-science/nlp-extract-contextualized-word-embeddings-from-bert-keras-tf-67ef29f60a7b),
+    [2](https://medium.com/towards-data-science/text-classification-with-no-model-training-935fe0e42180)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nowadays, several years later, the situation has improved, and we don’t need
+    to extract raw embeddings from BERT manually; special projects like [Sentence
+    Transformers](https://github.com/UKPLab/sentence-transformers) were specially
+    designed for that. Before processing a real dataset, let’s consider a toy example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: As an output, we got two 384-dimensional vectors for our sentences. As we can
+    see, using the model is easy, and even removing the stop words is not required;
+    the library is doing all this automatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now get embeddings for our tweets. Since BERT word embeddings are sensitive
+    to word context and the library has its own cleaning and tokenization, I will
+    not use the “text_clean” column as before. Instead, I will only convert tweet
+    URLs and hashtags to text. The “partial_clean” method uses parts of the code from
+    the original “text_clean” function, used at the beginning of this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: As an output of the sentence transformer, we got an array of 19,197x384 dimensionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a side note, it is important to mention that the BERT model is much more
+    computationally “heavy” compared to Word2Vec. Calculating vectors for 19,197 tweets
+    took about 80 seconds on a 12-core CPU, compared to only 1,8 seconds required
+    by Word2Vec. It is not a problem for doing tests like this, but it can be more
+    expensive to use in a cloud environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Clustering and Visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, we’re approaching the last part of this article. During previous steps,
+    we got 3 versions of the “vectorized_docs” array, generated by using 3 methods:
+    TF-IDF, Word2Vec, and Sentence-BERT. Let’s cluster these embeddings into groups
+    and see what information we can extract.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this, let’s first make several helper functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: I am using [SciKit-learn KMeans](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
+    to make **K-Means clustering**. A “make_clustered_dataframe” method creates a
+    dataframe with original tweets and a new “cluster” column. When using K-Means,
+    we also have two metrics that help us evaluate the results. **Inertia** can be
+    used to measure clustering quality. It is calculated by measuring the distance
+    between all cluster points and cluster centroids, and the lower the value, the
+    better. Another useful metric is the **silhouette score**; this value has a range
+    of [-1, 1]. If the value is close to 1, the clusters are well separated; if the
+    value is about 0, the distance is not significant; and if the values are negative,
+    the clusters are overlapping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output of “make_clustered_dataframe” looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2bcc23cc40c33e609cd81d0207241a77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It works, but only using this information, it’s hard to see if the clusters
+    are good enough. Let’s add another helper method to display the **top clusters**,
+    sorted by silhouette score. I use the [SciKit-learn silhouette_samples](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_samples.html)
+    method to calculate this. I will also use a **word cloud** to visualize each cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The next important question before using the K-Means method is choosing the
+    “K”, optimal number of clusters. The [**Elbow method**](https://en.wikipedia.org/wiki/Elbow_method_(clustering))
+    is a popular technique; the idea is to build the inertia value graph for different
+    K-values. The “elbow” point on the graph is (at least in theory) the value of
+    optimum K. Practically, it rarely works as expected, especially for badly structured
+    datasets such as vectorized tweets, but the graph can give some insights. Let’s
+    make a helper method to draw the elbow graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As a bonus point, let’s add the last (I promise, it’s the last:) helper method
+    to draw all clusters on a 2D plane. I suppose most readers cannot visualize 300-dimensional
+    vectors in their heads yet ;) so I will use [**t-SNE**](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html)
+    (T-distributed Stochastic Neighbor Embedding) dimensionality reduction methods
+    to reduce the number of dimensions to 2, and [Bokeh](https://github.com/bokeh/bokeh)
+    to draw the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we are ready to see the results, let’s see what we can get.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I was using three different (TF-IDF, Word2Vec, and Sentence-BERT) algorithms
+    to convert text into embedding vectors, which are seriously different in architecture.
+    Will all of them be able to find interesting patterns in all tweets? Let’s examine
+    the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TF-IDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The major disadvantage of finding clusters in TF-IDF embeddings is a large amount
+    of data. In my case, the matrix size was 19,197x22,735, because the text corpus
+    contains 19,197 tweets and 22,735 unique tokens. Finding clusters in a matrix
+    of that size is not fast, even for a modern PC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, TF-IDF vectorization did not provide exceptional results, but K-Means
+    was still able to find some interesting clusters. For example, from all 19,197
+    tweets, a 200-tweet cluster was detected in which people were making posts about
+    the international online forum:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/266a97b343bca55b3db9973d04697057.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Text cluster word cloud, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'K-Means was also able to find some users who made a lot of similar posts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8281db3edb3aaa7a201b3c8a7d1760ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this case, a user with the nickname “**mickel” was probably trying to promote
+    his online book (by the way, showing the message ids is useful for debugging;
+    we can always open the original tweet in the browser), and he published a lot
+    of similar posts about that. Those posts were not absolutely similar, but the
+    algorithm was able to cluster them together. This approach can be useful, for
+    example, in detecting accounts used for posting spam.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some interesting clusters were found in TF-IDF vectors, but most other clusters
+    had silhouette values around zero. The t-SNE visualization shows the same result.
+    There are some local groups in the picture, but most of the points overlap each
+    other:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6e642264f5bc55f9624d44619e2d2d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: t-SNE visualization of TF-IDF generated vectors, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: I saw some articles where authors got good results with TF-IDF embeddings, mostly
+    in cases where texts belong to different domains. For example, posts about “politics”,
+    “sports,” and “religion” will likely form more isolated clusters with higher silhouette
+    values. But in our case, *all texts* are about climate, so the task is more challenging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Word2Vec
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first interesting result with Word2Vec — the Elbow method was able to produce
+    a somehow visible “elbow” point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c052dcd44bbf81039c4aca3869d7eddb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Elbow graph for Word2Vec embeddings, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With K=8, the t-SNE visualization gave this result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09e8fe35dc827e6cc226656e734fd893.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: t-SNE visualization of Word2Vec generated vectors, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of the clusters are still overlapping, and silhouette values are, in general,
+    low. But some interesting patterns can be found.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '“Climate change”. This cluster has the most popular words “climate”, “change”,
+    “action,” and “global”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42d34cb7c577fdffff743888fd06267a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Lots of people are obviously worried about climate change, so having this cluster
+    is obvious.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '“Fuels”. This cluster has popular words like “energy”, “carbon”, “emission”,
+    “fossil,” or “solar”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04f478f33187e7029d78baa2f8924982.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Environment”. Here we can see such words as “temperature”, “ocean”, “sea”,
+    “ice,” and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6de5482e2bac864c11443e2869943503.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sentence-BERT
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In theory, these embeddings should provide the most accurate results; let’s
+    see how it is going. A t-SNE cluster visualization looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2aa929309a6a4b97bdcd74fdf6b61ac8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: t-SNE visualization of Sentence-BERT generated vectors, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, many local clusters can be found, and I will show some of the
+    most interesting of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '“Ice melting”. A cluster with the most popular words “climate”, “ice”, “melt”,
+    “glacier”, and “arctic”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c823d89f4569700b3ba9ad04d659ce95.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“Earth day”. This day is celebrated in April when this data was collected,
+    and there is a cluster of messages with words like “earth”, “day”, “planet”, “happy”,
+    or “action”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aaeb33156448bfbe516669c75d6ffed5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '“Global international forum”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7c62d588ea5266104bade1a1dce5dfbd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This result is interesting for two reasons. Firstly, we saw this cluster before;
+    the K-Means algorithm found it in the TF-IDF embeddings. Secondly, the “Word2Vec”
+    model did not have the word “thereisa” in the dictionary, so it was just skipped.
+    BERT has a better tokenization scheme, in which the unknown words are split into
+    smaller tokens. We can easily see how it works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see that the words “online” and “forum” were converted into single tokens,
+    but the word “thereisa” was converted into two words “there” and “##isa”. This
+    not only allows BERT to deal with unknown words, but it is actually much closer
+    to what we, as humans, often do: when we see unknown words, we often try to “split”
+    them into pieces and guess the meaning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But let’s go further. Another distinct group is related to protests; we can
+    see here such words as “protest, “change”, “action”, “activism“, and so on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51c6bed573cf08e0a636ad784b0160a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And last but not least, another popular climate-related topic is electric transport.
+    Here we can see words like “new”, “electric”, “car”, or “emission”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aafbec2fc90927cd2b35d7131c9bbdc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using text clustering, we were able to process raw and unstructured text from
+    social networks (in our case, Twitter, but this approach should also work with
+    other platforms) and find interesting and distinctive patterns in the posts of
+    tens of thousands of users. This can be important not only for purely academic
+    reasons like cultural anthropology or sociology studies but also for “pragmatic”
+    cases like detecting bots or users posting spam.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From a natural language processing perspective, clustering social media data
+    is an interesting and challenging topic. It is challenging because there are many
+    ways of cleaning and transforming the data, and no way would be perfect. In our
+    case, BERT embeddings unsurprisingly provided the best results compared to earlier
+    TF-IDF and Word2Vec models. BERT is not only giving good results, but it is also
+    better for dealing with unknown words, which can be a problem with Word2Vec. TF-IDF
+    embeddings, in my opinion, did not show any exceptional results, but this approach
+    still has an advantage. TF-IDF is based on pure statistics, and it does not require
+    a pre-trained language model. So, in the case of rare languages for which pre-trained
+    models are not available, TF-IDF can be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article provides a sort of “low-level” approach, which is better for understanding
+    how things work, and I encourage readers to do some experiments on their own;
+    the source code in the article should be enough for that. At the same time, those
+    who just want to get results in 10 lines of code without thinking about what is
+    “under the hood”, are welcome to try ready-to-use libraries like [BERTopic](https://github.com/MaartenGr/BERTopic).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

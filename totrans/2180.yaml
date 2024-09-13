@@ -1,0 +1,336 @@
+- en: Understanding DeepMind Matrix Multiplication
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/understanding-deepmind-matrix-multiplication-c8dc49687ce7](https://towardsdatascience.com/understanding-deepmind-matrix-multiplication-c8dc49687ce7)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: DeepMind matrix multiplications on NVIDIA V100, Tesla T4, and a look at FBHHRBNRSSSHK
+    — which is not me typing random letters!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://stefanobosisio1.medium.com/?source=post_page-----c8dc49687ce7--------------------------------)[![Stefano
+    Bosisio](../Images/450d904024a4cbf1adf8a625886d852e.png)](https://stefanobosisio1.medium.com/?source=post_page-----c8dc49687ce7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c8dc49687ce7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c8dc49687ce7--------------------------------)
+    [Stefano Bosisio](https://stefanobosisio1.medium.com/?source=post_page-----c8dc49687ce7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8dc49687ce7--------------------------------)
+    ·7 min read·Feb 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8a82776e50742a320323c87c1b96767.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Ivan Diaz](https://unsplash.com/@ivvndiaz) on [Unsplash](https://unsplash.com/photos/Z-PU9Lv441Y)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the previous [post](/understanding-deepmind-and-strassen-algorithms-9bdb3d8b6ea6),
+    we learned the maths behind the Strassen algorithm and wrote a Python code to
+    run-test it against different matrices sizes. Moreover, we’ve learned that the
+    Holy Grail of linear algebra is an optimization algorithm for matrix multiplication.
+    Normally, we would think of a matrix multiplication code as three for-loops:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Thus the computational complexity is *O(n³).* Strassen has improved this calculation,
+    finding the following relationships:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/05de81f0850b2f05079d9623f5729882.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig.1: Strassen algorithm as proposed in his paper “Gaussian Elimination is
+    not Optimal”. [Image by the author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This algorithm is applied to block matrices and the total complexity is reduced
+    to *O(n²·⁸⁰⁸).* Although 2.808 may seem a very little improvement, we saw that
+    for square matrices of size 4096 the standard numpy `matmult` takes about 454.37
+    +/- 6.27 s, while Strassen takes 31.57 +/- 1.01, which is a difference of about
+    one order of magnitude.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We saw that the matrix multiplication problem can be reduced to a tensor product,
+    with the *tensoring* operation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12d14eff7c20296a202a8ca28f375be5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig.2: Definition of the matrix multiplication tensor as a triad, as defined
+    in Deep Mind paper. [Image by the author].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fig.2 reports exactly the matrix multiplication, expressed as *a triad*, namely
+    three elements. *The minimal number of triads defines the minimal number of operations
+    to compute the product matrix.* This minimal number is the tensor’s *rank* *R(t)*.
+    Working on the tensor rank is an efficient way to find new multiplication algorithms,
+    as explained in the DeepMind papers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DeepMind has shown in these years how mathematical problems, from theoretical
+    to application, can be tackled with a machine learning approach, using the reinforcement
+    learning (RL) approach. Also during this time they’ve adapted AlphaZero to find
+    the best strategy for multiplying matrices, and the result is AlphaTensor. I think
+    it’s worth defining right now what we can appreciate in this paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DeepMind proved again that RL can be a formidable ally for tackling complicated
+    mathematical problems;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: AlphaTensor has found an acceptable algorithm that can be even better than Strassen’s
+    one, to multiply 4 x 4 and 5 x 5 block matrices;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Moreover, AlphaTensor can find an optimal solution for specific hardware requirements.
+    As they show in the paper, there can be algorithms specifically tuned for TPUs
+    and GPUs (V100 in the paper case);
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Although these may not be the best results, mathematicians can now have a completely
+    new set of equations for the matrix multiplication problem that can be a new starting
+    point for finding new optimal solutions.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Testing AlphaTensor on a V100 GPU
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Luckily for us, DeepMind provides on its [GitHub the implementation for AlphaTensor,](https://github.com/deepmind/alphatensor)
+    ready to be tested and all written in JAX. The code is tailored for multiplying
+    4 x 4 block matrices, with a total of 47 multiplications, already reported in
+    the tensor notations, as you can see [here](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/factorizations.py#L21).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The benchmark is run on a TPU and V100 GPU and they’re testing matrices multiplications
+    for the following [sizes](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/run_gpu_benchmark.py#L67):
+    8192, 10240, 12288, 14336, 16384, 18432, 20480 for the [standard](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/utils.py#L155)
+    `[jax.numpy.dot](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/utils.py#L155)`[multiplication](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/utils.py#L155),
+    the Strassen algorithm and the AlphaTensor one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I forked the code and added two tiny modifications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am printing the timings for each approach
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since we are running the multiplication 10 times for each algorithm, *I modified
+    the* [*average number in the benchmark functions to 10*](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/utils.py#L227)*,
+    rather than keeping it as 20*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Having free access to the Google Cloud Console (still relying on $300 credits)
+    I have created a Virtual Machine in GCP Compute Engine to test AlphaTensor, with
+    the following specifics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running region `europe-west4`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Selected GPU machine with 1 NVIDIA V100 GPU
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Automatic selection for the CPU platform
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`n1-standard-4` machine type (4 vCPU and 15 GB RAM)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'I changed the OS image to: Operating System `Deep Learning on Linux` and Version
+    `Debian 10 based Deep Learning VM for TensorFlow Enterprise 1.15 with CUDA 11.0
+    M100` and disk size `50GB`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The total cost is $1.94 per hour — so be careful and do not let this machine
+    run indefinitely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the machine is created, you can directly access with SSH and download the
+    repo with `git clone https://github.com/Steboss/alphatensor.git` . You’ll have
+    to set up the Python environment and install `jax` with `pip3 install -r alphatensor/benchmarking/requirements.txt
+    -f [https://storage.googleapis.com/jax-releases/jax_cuda_releases.html](https://storage.googleapis.com/jax-releases/jax_cuda_releases.html)`
+    . Finally, you can run the test with `python alphatensor.benchmarking.run_gpu_benchmark`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d477e22f2c6e2f2a3f7f93cf70703b46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig.3: Comparison between Jax matrix multiplication, Strassen algorithm and
+    AlphaTensor on V100 GPU. [Image by the author].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fig.3 reports the performance time with respect to the matrix size for each
+    algorithm. We can see that for *small matrices* size, 8192 and 10240, the Strassen
+    achieves an *improvement of about 6.5%* with respect to standard JAX, comparable
+    with the AlphaTensor improvement of about 8.5%. Excellent results are achieved
+    for *bigger matrices* so that for 18432 square matrices Strassen improves the
+    calculation by *15%* (7.37 +/- 0.01) and AlphaTensor achieves an improvement of
+    the *16%* (7.31 +/- 0.01) compared to JAX (8.53 +/- 0.01).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if I don’t have free access to V100?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another test I’ve done was on Google Colab. In this case, we can rely on a Tesla
+    T4 GPU. Although the algorithm has been tested on V100, it’s worth investigating
+    its transferability and comparing the results. Similarly to the V100 test, I’ve
+    replicated these calculations on a Google Colab notebook, [removing these lines](https://github.com/deepmind/alphatensor/blob/1949163da3bef7e3eb268a3ac015fd1c2dbfc767/benchmarking/run_gpu_benchmark.py#L53:L55)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f1cd3d44638901ea2a35bd6389526e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig.4: Comparison between Jax matrix multiplication, Strassen algorithm and
+    AlphaTensor on Tesla T4\. [Image by the author].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see we have more variability in the results, especially for matrices
+    of size 16384 we can see that all the algorithms achieve the same performance
+    timings. This is not accurate, as it may be due to some downtime that we can’t
+    manage on Google Colab. Tab.1 summarises all the findings on Tesla T4:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tab.1: Comparison of performance timings on a Tesla T4 for JAX, Strassen and
+    AlphaTensor matrix multiplication algorithm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sizes 12288 and 16384 are tricky points, where we don’t have a real improvement
+    with respect to JAX standard multiplication. On the other side, we can see that
+    we have an improvement for very large matrices, at 18432 Strassen achieves a 20%
+    speedup and Alphatensor 22%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this the end of the story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Just a few days after [DeepMind’s paper](https://www.nature.com/articles/s41586-022-05172-4)
+    was published, Manuel Kauers and Jakob Moosbauer wrote a great paper reply, proposing
+    the [FBHHRBNRSSSHK-Algorithm](https://arxiv.org/abs/2210.04045). This algorithm
+    starts from DeepMind findings and improves the calculation over 4x4 matrices using
+    47 multiplications, rather than 49 as AlphaTensor found, and 5x5 matrices to 95
+    multiplications (rather than the 96 proposed by AlphaTensor). This is great news
+    and it shows how humans can collaborate productively with ML algorithms. After
+    this reply, Kauers and Moosbaur published a fantastic mathematical paper called
+    “[Flip Graphs for Matrix Multiplication](https://arxiv.org/abs/2212.01175)”. In
+    this paper the authors showed the technique they found to further improve matrix
+    multiplications. In particular, the core part of the technique is to start from
+    known schemes for matrix multiplications and group them in a graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We define a graph whose vertices are correct matrix multiplication schemes and
+    where there is an edge from one scheme to another if the second can be obtained
+    from the first by some kind of transformation. We consider two transformations.
+    One is called a flip and turns a given scheme to a different one with the same
+    number of multiplications, and the other is called a reduction and turns a given
+    scheme to one with a smaller number of multiplications
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The navigation across all the matrix multiplication schemes is done through
+    a random walk. Then, the flip can be done using the following idea:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is to subtract something from one rank-one tensor and add it to one
+    of the others.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/b8378ec40828afe2dbaa1bdc7dea14ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig.5: Example of flip graph, that shows how all the algorithms live as nodes
+    in the graph, flips are undirected edges and reductions transformations are directed
+    edges.[Image by Manuel Kauers and Jakob Moosbauer].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fig.5 reports the paper’s image, where the authors have depicted all the known
+    schemes and how they are interlinked with each other through flip and reduction
+    transformations. Thus, this is not the end of the story, but it’s another great
+    starting point, which will bring more and more efficient algorithms for matrix
+    multiplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Today we’ve concluded the review of the DeepMind paper “Discovering faster matrix
+    multiplication algorithms with reinforcement learning”. This paper has brought
+    a lot of interest in the matrix multiplication field and, obviously, lots of questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We defined 4 main points that we can draw from the paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RL is a formidable tool that can help us in tackling mathematical problems
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: AlphaTensor has found new formulations for multiplying 5x5 and 4x4 matrices
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: AlphaTensor can find optimal solutions for specific hardware (e.g. GPU or TPU)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This is a great starting point for new research on the matrix multiplication
+    problem
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then, we run AlphaTensor on an NVIDIA V100 GPU and Tesla T4\. Although some
+    ups and downs, we can see that overall AlphaTensor improves the calculation, with
+    an improvement of up to 16% on V100 and 22% on Tesla T4 — although the algorithm
+    is not optimized for such a GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we saw that this is not the end of the story, but a beautiful start
+    for a new store. An example is given by the [FBHHRBNRSSSHK-Algorithm](https://arxiv.org/abs/2210.04045)
+    which proves how the DeepMind solution can be further exploited with a pure mathematical
+    formalism to find new and more efficient matrix multiplication techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Support my writing:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://stefanobosisio1.medium.com/membership?source=post_page-----c8dc49687ce7--------------------------------)
+    [## Join Medium with my referral link - Stefano Bosisio'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Stefano Bosisio (and thousands of other writers on Medium).
+    Why supporting me? 1) Articles on AI…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: stefanobosisio1.medium.com](https://stefanobosisio1.medium.com/membership?source=post_page-----c8dc49687ce7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please, feel free to send me an email for questions or comments at: stefanobosisio1@gmail.com
+    or directly here in Medium.*'
+  prefs: []
+  type: TYPE_NORMAL

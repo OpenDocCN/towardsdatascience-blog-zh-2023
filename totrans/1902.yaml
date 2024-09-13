@@ -1,0 +1,263 @@
+- en: 'SQL users: Halve the length of (some of) your queries with this one trick'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/sql-users-halve-the-length-of-some-of-your-queries-with-this-one-trick-c3c2c226cb35](https://towardsdatascience.com/sql-users-halve-the-length-of-some-of-your-queries-with-this-one-trick-c3c2c226cb35)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The QUALIFY clause is pure syntactic sugar
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mattchapmanmsc?source=post_page-----c3c2c226cb35--------------------------------)[![Matt
+    Chapman](../Images/7511deb8d9ed408ece21031f6614c532.png)](https://medium.com/@mattchapmanmsc?source=post_page-----c3c2c226cb35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c3c2c226cb35--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c3c2c226cb35--------------------------------)
+    [Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----c3c2c226cb35--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c3c2c226cb35--------------------------------)
+    ·6 min read·Mar 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e7f9a7323462a08f37dd7ce8eb87c2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Joanna Kosinska](https://unsplash.com/@joannakosinska) on [Unsplash](https://unsplash.com/photos/-ayOfwsd9mY)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, I’m going to introduce you to the SQL `QUALIFY` clause: a
+    trick that will help you write shorter and more readable SQL queries.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you work in Data Science/Analytics or Machine Learning, this is a must-have
+    SQL tool for four reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, because it can help you write much ***shorter*** queries, simplifying
+    your data collection pipelines. In my experience, `QUALIFY` reduces the length
+    of many queries by up to 50%.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Second, because it will help you write much more ***succinct*** queries. This
+    matters because, as Paul Graham famously said, [succinctness is power](http://www.paulgraham.com/power.html)
+    in that it makes your code more readable and maintainable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Third, `QUALIFY` helps you write more ***efficient***queries which reduce costs
+    and speed up development time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fourth, it’s an easy way to show off. I’m not saying that you’re going to win
+    any innovation prizes for using `QUALIFY`, but because it’s a [relatively new
+    clause](https://modern-sql.com/caniuse/qualify), chances are that your boss might
+    not have heard of it. At any rate, it’ll be fun to show your team a new trick.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What does the QUALIFY clause do?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Simply put, the `QUALIFY` clause enables you to filter the results of window
+    functions *without* needing to use nested subqueries or the `WITH` clause. It
+    allows you to replace these bulky code blocks with a **single line of code**.
+    It’s sort of like how the `HAVING` clause enables you to filter the results of
+    `GROUP BY` aggregations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the `QUALIFY` clause enables you to filter the results of window functions
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If that sounds like gobbledygook, give me 2 minutes of your time and I’ll try
+    my best to explain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It all starts with window functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’re not familiar with window functions, you might want to check out [this
+    article](https://medium.com/learning-sql/sql-window-functions-explained-through-4-real-world-examples-91db9972b6bc),
+    which introduces SQL window functions through 4 real-world use cases. But, in
+    a nutshell, window functions can be used to perform calculations on a set of rows
+    in a table without aggregating or collapsing the rows, which is very useful when
+    you want to preserve the original structure of the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, let’s say we have a table named `orders` which lists all the product
+    orders a company receives. Each row represents an order and records the `date`
+    the order was placed, the `customer` who placed the order, and the `order_amount`
+    (in dollars).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/903e5b3382d9807a1541f9b7b8b3b3fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using a window function, we could add in a new column `total_order_amount`
+    which represents the total order amount per customer. We could simply write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which would return:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/36750f2ed4b142dc15f9c2384a8e5f4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the window function `SUM(order_amount) OVER(PARTITION BY customer)`
+    effectively partitioned our table into different “windows” (one for each customer)
+    and then calculated the `total_order_amount` for each of these windows. All of
+    this was achieved without using a `GROUP BY` aggregation, allowing us to retain
+    the same number of rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter the QUALIFY clause
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we’ve got our window function set up, let’s imagine that we want to
+    send a Thank You email to our highest-spending customers. Before we can do this,
+    we need to filter this table to see the orders of customers whose `total_order_amount`
+    exceeded $5,000\. In other words, we want to produce something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71900169bfde82bc93552023305bac6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A typical way of producing this would be to use a `WITH` clause:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '… or a nested subquery:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However, while both of these are perfectly acceptable solutions, the `QUALIFY`
+    clause enables us to simplify and shorten this code significantly. We could simply
+    write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: which would return **the exact same result**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The QUALIFY statement is pure syntactic sugar
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The great thing about the `QUALIFY` clause is that it is evaluated *after* window
+    functions are computed. This means that you can reference the window function
+    column using the alias you assigned to it. In the example above, I demonstrated
+    this by writing `QUALIFY total_order_amount..`, referencing the alias `total_order_amount`
+    which I assigned at the point of creating the original window function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c27fefe0006b11daf24aaf61aff7995.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s also not necessary to write the window function in the `SELECT` clause.
+    For example, if I didn’t want to actually show the total order amount as a separate
+    column, but still needed to filter on this window function, I could write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which would return the same result, but without the `total_order_amount` column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b691592d3a61e309d1e921cfe20051bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of all this, the `QUALIFY` clause can also be [slightly more efficient](https://stackoverflow.com/a/70149163)
+    than using subqueries or `WITH`. Not only will this speed up your development
+    time; it also helps a ton with cost optimisation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example: Select the top-N-per-group'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A common use case of the `QUALIFY` clause is to select the top-N-per-group.
+    For example, imagine that we had the following table `sales` which records every
+    sale that a shop makes on a given day. Each row represents a single transaction
+    and contains the timestamp of the sale, the product purchased, and the total amount
+    of money spent in that sale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd09bfcd7fc881ac0dadd15e09c1ce44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using the window function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'we could assign a row number to each sale, within each product category:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f48bd226d1190b4b9e4af46a3cd2547c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and then, using a `QUALIFY` statement, we could filter the result to only show
+    the first row in each category:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/696b61c2159ea89769a5dc7679daec69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And there you have it — the magic of `QUALIFY`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One final thing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The `QUALIFY` clause is not yet available in all dialects of SQL. At the time
+    of writing, it’s supported by many of the big platforms including BigQuery, Databricks,
+    Snowflake, and H2\. If your platform/dialect is not compatible, you’ll have to
+    rely on subqueries/`WITH` for now, but you can keep an eye on [Modern SQL](https://modern-sql.com/caniuse/qualify)
+    to see when it becomes available.
+  prefs: []
+  type: TYPE_NORMAL

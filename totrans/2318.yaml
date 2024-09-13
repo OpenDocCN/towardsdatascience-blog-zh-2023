@@ -1,0 +1,389 @@
+- en: What Are Gradients, and Why Do They Explode?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/what-are-gradients-and-why-do-they-explode-add23264d24b](https://towardsdatascience.com/what-are-gradients-and-why-do-they-explode-add23264d24b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By reading this post you will have a firm understanding of the most important
+    concept in deep learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----add23264d24b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----add23264d24b--------------------------------)
+    ·10 min read·Jun 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bad1bd95b279ce0cae1fa6328cb658d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Gradient Explosion”, made with MidJourney. All images by the author unless
+    otherwise specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradients are arguably the most important fundamental concept in machine learning.
+    In this post we will explore the concept of gradients, what makes them vanish
+    and explode, and how to rein them in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Beginning to Intermediate data scientists. I’ll
+    include some math references which may be useful for more advanced readers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What will you get from this post?** An in depth conceptual understanding
+    of gradients, how they relate to machine learning, the issues that come from gradients,
+    and approaches used to mitigate those issues.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table Of Contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Click the links to navigate to specific sections
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1)** [**What is a Gradient?**](#c1ad) **2)** [**Actual Gradients (mathematically)**](#8666)
+    **3)** [**Gradients in a Simple Model (an example)**](#e9e0) **4)** [**What Are
+    Exploding and Vanishing Gradients?**](#f436) **5)** [**Why Are Exploding and Vanishing
+    Gradients Bad?**](#1c5d) **6)** [**How Do We Fix Exploding and Vanishing Gradients?**](#f0ed)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a Gradient?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[table of contents](#073c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you have some surface with hills and valleys. This surface is defined
+    by some multidimensional function (a function with multiple inputs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/81cea1c0e4f705b8fb185dabb33e71e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some surface, with hills and vallys
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A gradient tells you,** **for any given point on the surface, both the direction
+    to get to a higher point on the surface, as well as how steep the surface is at
+    that point.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because this is a 3d surface (the inputs are x and y, and the output is z) we
+    can compute a simplified version of the gradient by computing the slope of a given
+    point along the X axis and the Y axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ab46b0411248f8365a950ab82cd80a52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Gradient, in blue, describes the direction of greatest increase in for the
+    point marked by ‘x’. The red line describes, if you were to follow the gradient
+    for some distance, where you would end up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, to summarize that conceptually, **the gradient computes the direction of
+    greatest increase, and how steep that increase is, by calculating the slope of
+    the output relative to all inputs of a function.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actual Gradients
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[table of contents](#073c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous example I computed what I referred to as a “simplified gradient”.
+    I calculated the slope of z relative to a small change in x and a small change
+    in y.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/70b72e33bf806e3110eb0780d0626bf4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The ratios used to compute the pseudo gradient. the SlopeZvsX and SlopeZvsY
+    were used to construct the blue line in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In reality, gradients are calculated using a **partial derivative**, meaning
+    it’s a **derivative of the function with respect to a single variable (x or y).**
+    If you’re unfamiliar with calculus you can watch a quick [video on derivatives](https://www.youtube.com/watch?v=rAof9Ld5sOg)
+    and another on [partial derivatives](https://www.khanacademy.org/math/multivariable-calculus/multivariable-derivatives/partial-derivatives/v/partial-derivatives-introduction)
+    to get up to speed on the math. However, regardless of the math, the concepts
+    of the simplified gradient and actual gradient are identical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/016c694498b40d881bc62b1a743ad4dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the mathematical notation of a gradient of a function with an x and
+    y dimension. The gradient is a vector made of the partial derivatives of the function
+    with respect to each input to the function, represented as a vector. True gradients
+    are both more accurate, and faster to compute than the “pseudo gradient” I calculated
+    in previous examples. Conceptually, though, you’re still calculating the slope
+    given a change in both x and y.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradients in a Simple Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[table of contents](#073c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When researching machine learning you’ll find differentiability everywhere;
+    differentiable loss functions, differentiable activation functions, etc. etc.
+    The reason for this is, if everything's differentiable, you can quickly calculate
+    the gradient (the direction in which you need to adjust inputs to functions to
+    get a better output).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, suppose we have a machine learning model with two parameters, x
+    and y. We also have a function that tells us how well those parameters fit the
+    model to a set of data. We can use gradients to try to find the best model parameters
+    by taking a series of steps in the direction the gradient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/97f7e11c596d5c00b2498ac5ca3db92b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Iterative gradient search from x=0 and y=0 to a local maxima. the “x” points
+    mark the location at each iteration. In this case, gradient optimization yielded
+    a result of x=-3.104, y=0.789
+  prefs: []
+  type: TYPE_NORMAL
+- en: When people talk about training they sometimes refer to a “loss landscape”.
+    **When you turn a problem into a machine learning problem, you are essentially
+    creating a landscape of parameters which perform better, or worse than others**.
+    You define what is good, and what is bad (the loss function) and a complex function
+    with a set of differentiable parameters which can be adjusted to solve the problem
+    (the machine learning model). These two, together, create a theoretical *loss
+    landscape*, which one traverses through gradient descent (model training). **But**
+    **What is Gradient Descent?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: A gradient, mathematically, is used to point towards a greater value in a function.
+    In machine learning we usually optimize to reduce the error rate, so we want our
+    loss function (how many errors we make) to be smaller, not bigger. The math is
+    virtually identical though; you just turn a few +’s into -’s
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/89dfa12702e96055431f07410b11b948.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient descent, which is what is typically used in machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What Are Exploding and Vanishing Gradients?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[table of contents](#073c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s look at a simplified neural network. We’re going to ignore the
+    activation functions and bias and just think of a neural network as a series of
+    weights. Under this set of simplifications, a neural network looks like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd72b05b4b8a48c2d6061be8917b0e75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: an example of a small neural network which uses only weights. The value of Hidden
+    1 is input1*w1 + input2*w2, which is equal to 0.5\. In general, a perceptron multiplies
+    each input by it’s respective weight, and sums the values together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The issue of exploding and vanishing gradients comes into play when we have
+    deeper neural networks. Imagine a network with several more layers multiplying
+    and adding, multiplying and adding, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b80038af883d5b2289f8a42098998e2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A snapshot of a deep portion of a neural network
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the values quickly become large when you consistently multiply
+    by numbers which are larger than 1\. With weights which are less than 1 the values
+    would quickly shrink as they are multiplied by smaller and smaller values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the values within the network can get large or small quickly
+    depending on the weights within the model, but we can also imagine the values
+    listed within each perceptron as a **change**, rather than a value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b80038af883d5b2289f8a42098998e2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Imagine the numbers within the perceptrons not as the value of the perceptron,
+    but a **change** in the value of a perceptron. As you can see, because of repeated
+    multiplication, the rate of change increases as one traverses deeper into the
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The punchline is this: **Repeated multiplication can cause the rate of change
+    (gradient) to get really big if the weights are larger than one, or really small
+    if the weights are less than 1\.** In other words, the gradients can **explode
+    or vanish.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Are Exploding and Vanishing Gradients Bad?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[table of contents](#073c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Big gradients, small gradients, so what?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Small gradients move slowly, and have a tendency to get stuck in shallow local
+    minima. As a result, having vanishing gradients can result in a lack of model
+    improvement. On the other hand, exploding gradients move too quickly and can bounce
+    around erratically, leading to an inability for the model to converge on a minima.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/05c3f76705175abc05dd7cde1276a6a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Three similarly shaped landscapes, one with vanishingly small gradients (left)
+    one with reasonably sized gradients (middle) and one with exploding gradients
+    (right). Vanishing gradients result in a lack of model improvement, and exploding
+    gradients result in instability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This problem becomes even more pervasive when you consider that **not only does
+    the larger model have a gradient, each individual perceptron has a gradient as
+    well**. this means that different perceptrons within a network can have very different
+    gradients. In theory, **a model can have vanishing and exploding gradients at
+    the same time** in different parts of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Do We Fix Exploding and Vanishing Gradients?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[table of contents](#073c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1) Adjust the Learning Rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The learning rate gets multiplied by the gradient to control how far of a step
+    gets taken along the gradient for each iteration. Smaller learning rates result
+    in small steps, while large learning rates result in larger steps (I did something
+    roughly equivalent in the previous example). This can be useful to a point, but
+    the issue with vanishing and exploding gradients is that the gradients change
+    throughout the model (some perceptrons have small changes, and others have large
+    changes). So, while learning rate is a critical hyperparameter, it’s not usually
+    considered as an approach for dealing with vanishing and exploding gradients specifically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2) Change Activation Functions**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For a variety of reasons, perceptrons don’t just multiply their inputs by some
+    weight, add the results together, and spit out an output. Virtually all networks
+    pass the result of this operation through a function called an activation function.
+    Activation functions are all differentiable, and thus have a variety of characteristics
+    in effecting the gradients throughout the depth of a network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4) Change Model Architectures**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Simply having a shorter network can help. However, if that’s not an option,
+    several network architectures were designed specifically to handle this problem.
+    LSTMs were designed to be more robust than classical RNNs at dealing with exploding
+    gradients, residual and skip connections are also designed to aid in solving this
+    phenomenon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5) Use Batch Normalization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Batch normalization is a mainstay regularization strategy in machine learning.
+    Instead of updating a model parameters by a single gradient, you update parameters
+    by using the average gradient from a batch of examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**6) Gradient Clipping**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can just set a maximum allowable threshold for a gradient. If the gradient
+    is larger than that, just set the magnitude of the gradient to be the threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7) Use Weight Regularizers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: L1 and L2 regularization are used to penalize models for having high weight
+    values. Adding this form of regularization can reduce exploding gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8) Truncate Context Windows
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Whether you’re using a recurrent network, or some other network which employs
+    a context window, reducing the size of that window can help minimize compounding
+    gradient issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And that’s it! In this post we learned a bit about gradients and the math behind
+    them. We learned you can use gradients to go up or down surfaces within some dimensional
+    space, and how that’s used to optimize machine learning models. We learned that,
+    as a model grows in size, the gradients can explode to large numbers, or vanish
+    to very tiny numbers, both of which can ruin the models ability to learn. We also
+    went through a list of approaches for correcting vanishing and exploding gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In a future post I’ll be describing several landmark papers in the ML space,
+    with an emphasis on practical and intuitive explanations. I also have posts on
+    not-so commonly discussed ML concepts.
+  prefs: []
+  type: TYPE_NORMAL

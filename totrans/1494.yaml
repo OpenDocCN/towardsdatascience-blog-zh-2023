@@ -1,0 +1,421 @@
+- en: 'Mastering Synchronization Primitives in Python Asyncio: A Comprehensive Guide'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de](https://towardsdatascience.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Best practices for asyncio.Lock, asyncio.Semaphore, asyncio.Event and asyncio.Condition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)
+    ·8 min read·May 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/251106288dbd9d21a2c3fc7e21ad3d1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is one of my articles under the Python Concurrency series, and if you find
+    it useful, you can read the rest from [here](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I will introduce why you need synchronization primitives in
+    Python’s asyncio and best practices for several synchronization primitives. And
+    in the last part of the article, I will walk you through an example of synchronization
+    primitives in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why do you need synchronization primitives in asyncio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Anyone who has used Python multithreading knows that multiple threads share
+    the same memory block. So when multiple threads perform non-atomic operations
+    on the same area simultaneously, a thread-safe problem occurs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since asyncio runs on a single thread, does it not have similar thread-safe
+    issues? The answer is no.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concurrent tasks in asyncio are executed asynchronously, which means that there
+    may be alternating execution of multiple tasks in time. A concurrency bug is triggered
+    when one task accesses a particular memory area and waits for an IO operation
+    to return, another task is also accessing this memory simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To avoid such bugs, Python asyncio introduces a synchronization primitive feature
+    similar to multithreading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, to avoid too many tasks accessing a resource concurrently, asyncio’s synchronization
+    primitives provide the ability to protect the resource by limiting the number
+    of tasks accessing it simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s take a look at what synchronization primitives are available in
+    asyncio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python asyncio’s synchronization primitives
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Lock
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we introduce this API, let’s look at a situation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose we have a concurrent task that needs a copy of the website data. It
+    will first check if it’s in the cache; if it is, it will fetch it from the cache,
+    and if not, it will read it from the website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since it takes some time to read the website data to return and update the
+    cache, when multiple concurrent tasks are executed at the same time, they all
+    assume that this data does not exist in the cache and launch remote requests at
+    the same time, as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cde3733f3dc4858fb66ff0d5981c8f61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Both tasks think there is no data in the cache, thus accessing the remote site.
+    Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which is not in line with our original design intent, so `asyncio.Lock` comes
+    in handy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can check if there is data in the cache when concurrent tasks need to get
+    a lock first, and other tasks that do not get a lock will wait. Until the task
+    that gets the lock finishes updating the cache and releases the lock, the other
+    tasks can continue to execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The entire flowchart is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51c0871bb81b3888604eb3119ffbd307.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see how to write the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd1a36768aa16511094586a5e7cde0f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Only the first task needs to update the cache. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem solved, isn’t it simple?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semaphore
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes, we need to access a resource with limited concurrent requests. For
+    example, a particular database only allows five connections to be opened simultaneously.
+    Or depending on the type of subscription you have, a web API only supports a certain
+    number of concurrent requests at the same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, you need to use `asyncio.Semaphore`. `asyncio.Semaphore` uses
+    an internal counter that decrements by one each time a Semaphore lock is acquired
+    until it reaches zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63854ad79766fe71fbaac455157de246.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Semaphore will limit the number of concurrent tasks. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the counter of `asyncio.Semaphore` is zero, other tasks that need the lock
+    will wait. When calling the release method after the execution of other tasks,
+    the counter will be increased by one. The waiting tasks can continue to execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code example is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this way, we can limit the number of connections that can be accessed concurrently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BoundedSemaphore
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes, due to code limitations, we can’t use `async with` to manage the
+    acquire and release of semaphore locks, so we might call `acquire` somewhere and
+    `release` somewhere else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What happens if we accidentally call the `asyncio.Semaphore` `release` method
+    multiple times?
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the code shows, we are limited to running two tasks simultaneously, but because
+    we called release more than once, we can run three tasks at the same time next
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem, we can use `asyncio.BoundedSemaphore` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we know from the source code, when calling the `release`, a `ValueError`
+    is thrown if the counter value is greater than the value set during initialization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fced96224eb387b31f241903ccbe361c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When we call the release method multiple times, a ValueError is thrown. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, the problem is being solved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Event
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`Event` maintains an internal boolean variable as a flag. `asyncio.Event` has
+    three common methods: `wait`, `set`, and `clear`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the task runs to `event.wait()`, the task is in wait. At this point, you
+    can call `event.set()` to set the internal marker to True, and all the waiting
+    tasks can continue to execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the task is finished, you need to call `event.clear()` method to reset
+    the value of the marker to False, to restore the event to its initial state, and
+    you can continue to use the event next time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of the sample code, I will show you how to use `Event` to implement
+    an event bus at the end of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Condition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`asyncio.Condition` is similar to `asyncio.Lock` and `asyncio.Event` combined.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we will use `async with` to ensure that the condition lock is acquired,
+    and then we call `condition.wait()` to release the condition lock and make the
+    task wait temporarily. When `condition.wait()` passes, we regain the condition
+    lock to ensure that only one task executes simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While a task temporarily releases the lock and goes into wait by `condition.wait()`,
+    another task can either `async with` to the condition lock and notify all waiting
+    tasks to continue execution by the `condition.notify_all()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The flowchart is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6caa99a220d9de39f31f674777e80e82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The workflow of asyncio.Condition. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can demonstrate the effect of `asyncio.Condition` with a piece of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, we need `asyncio.Condition` to wait for a specific event to occur
+    before proceeding to the next step. We can call the `condition.wait_for()` method
+    and pass a method as an argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each time `condition.notify_all` is called, `condition.wait_for` checks the
+    result of the execution of the parameter method and ends the wait if it is True,
+    or continues to wait if it is False.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can demonstrate the effect of `wait_for` with an example. In the following
+    code, we will simulate a database connection. Before executing the SQL statement,
+    the code will check if the database connection is initialized and execute the
+    query if the connection initialization is completed, or wait until the connection
+    is completed initializing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some tips for using synchronization primitives
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Remember to use timeout or cancelation when needed.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When using synchronization primitives, we are generally waiting for the completion
+    of a specific IO operation. However, due to network fluctuations or other unknown
+    reasons, the IO operation of a task may take longer than others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we should set a timeout for the operation, so that when the execution
+    time is too long, we can release the lock and allow other tasks to execute in
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In another case, we may loop through a task. It may keep some tasks waiting
+    in the background and prevent the program from ending properly. At this point,
+    remember to use cancel to terminate the cyclic execution of the task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Avoid using synchronization primitives or locking only the fewest resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We all know that the advantage of asyncio is that a task can switch to another
+    task to execute while waiting for IO to return.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But an asyncio task often contains both IO-bound operations and CPU-bound operations.
+    If we lock too much code on the task, it will not be able to switch to another
+    task in time, which will affect the performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, if not necessary, try not to use synchronization primitives or only
+    lock the least amount of resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To avoid some other competitive locking situations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is no RLock in asyncio, so don’t use locks in recursive code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As with multithreading, asyncio also has the possibility of deadlocks, so try
+    to avoid using multiple locks simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Advanced Techniques in Action: asyncio-based Event Bus'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After the introduction earlier in the article, I believe you have a clear understanding
+    of how to use asyncio’s synchronization primitives properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, I will teach you how to use the synchronization primitives in real projects
+    by taking you through the implementation of an event bus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, the first step as an architect is to design the EventBus API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since `EventBus` communicates using strings and internally, I intend to use
+    `asyncio.Event` to implement the events corresponding to each string, we’ll start
+    by implementing a `_get_event` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `on` method will bind a callback function to a specific event:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `trigger` method can manually trigger an event and pass in the corresponding
+    data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, let’s write a `main` method to test the effect of EventBus:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the end of the main method, remember to use timeout to prevent the program
+    from executing all the time, as I warned before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0b9ddc729f4589a233c171e72f65af9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The code is executed as expected. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the code is executed as expected. Isn’t it easy?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article first introduced why Python asyncio needs synchronization primitives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, I introduced the best practices for Lock, Semaphore, Event, and Condition,
+    and gave some tips on how to use them correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, I have completed a small project with hands-on training on asyncio
+    synchronization primitives, which I hope will help you better use synchronization
+    primitives in real projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to comment, share, or discuss topics about asyncio with me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can get more knowledge about Python Concurrency through my list of articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Peng Qian](../Images/fa6bd24b4781f623be8ea40c4e6bdb78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Peng Qian](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Concurrency
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[View list](https://qtalen.medium.com/list/python-concurrency-2c979347da3b?source=post_page-----ae1ae720d0de--------------------------------)10
+    stories![Supercharge Your Python Asyncio With Aiomultiprocess: A Comprehensive
+    Guide](../Images/9c366de04067cd0ec1b30d9ce223011b.png)![Unleashing the Power of
+    Python Asyncio’s Queue](../Images/aa5886c47ef891be14eb17f9a2ed3d0d.png)![](../Images/d5b38ed916e599eb0673eb311f95348d.png)[](https://qtalen.medium.com/membership?source=post_page-----ae1ae720d0de--------------------------------)
+    [## Join Medium with my referral link - Peng Qian'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Peng Qian (and thousands of other writers on Medium).
+    Your membership fee directly supports Peng…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: qtalen.medium.com](https://qtalen.medium.com/membership?source=post_page-----ae1ae720d0de--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide/](https://www.dataleadsfuture.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide/)'
+  prefs: []
+  type: TYPE_NORMAL

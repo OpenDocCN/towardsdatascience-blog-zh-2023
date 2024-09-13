@@ -1,0 +1,420 @@
+- en: Probabilistic View of Principal Component Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/probabilistic-view-of-principal-component-analysis-9c1bbb3f167](https://towardsdatascience.com/probabilistic-view-of-principal-component-analysis-9c1bbb3f167)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Latent Variables, Expectation-Maximization & Variational Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://saptashwa.medium.com/?source=post_page-----9c1bbb3f167--------------------------------)[![Saptashwa
+    Bhattacharyya](../Images/b01238113a1f6b91cb6fb0fbfa50303a.png)](https://saptashwa.medium.com/?source=post_page-----9c1bbb3f167--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c1bbb3f167--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c1bbb3f167--------------------------------)
+    [Saptashwa Bhattacharyya](https://saptashwa.medium.com/?source=post_page-----9c1bbb3f167--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c1bbb3f167--------------------------------)
+    ·9 min read·Jul 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea43c4d373d4f057fb224899a1bae3d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Looking for Hidden Variables (Pic Credit: [Author](https://flickr.com/photos/suvob/52911155451/))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the primarily used dimension reduction techniques in data science and
+    machine learning is Principal Component Analysis (PCA). Previously, We have already
+    discussed a few examples of applying PCA in a [pipeline](/a-simple-example-of-pipeline-in-machine-learning-with-scikit-learn-e726ffbb6976)
+    with [Support Vector Machine](/visualizing-support-vector-machine-decision-boundary-69e7591dacea)
+    and here we will see a probabilistic perspective of PCA to provide a more robust
+    and comprehensive understanding of the underlying data structure. *One of the
+    biggest advantages of Probabilistic PCA (PPCA) is that it can handle missing values
+    in a dataset, which is not possible with classical PCA.* Since we will discuss
+    Latent Variable Model and Expectation-Maximization algorithm, you can also check
+    [this detailed post](/latent-variables-expectation-maximization-algorithm-fb15c4e0f32c).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What you can expect to learn from this post?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Short Intro to PCA.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Mathematical building blocks for PPCA.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Expectation Maximization (EM) algorithm or Variational Inference? What to use
+    for parameter estimation?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Implementing PPCA with TensorFlow Probability for a toy dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s dive into this!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Singular Value Decomposition (SVD) and PCA:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the major important concepts in Linear Algebra is SVD and it’s a factorization
+    technique for real or complex matrices where for example a matrix (say *A*) can
+    be factorized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2bb0c0f2b17a3d863970065a4f1196a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 1: SVD of a matrix A.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *U*,*Vᵀ* are orthogonal matrices (transpose equals the inverse) and Σ
+    would be a diagonal matrix. *A* need not be a square matrix, say it’s a *N*×*D*
+    matrix so we can already think of this as our data matrix with *N* instances and
+    *D* features. *U*,*V* are square matrices (*N*×*N*) and (*D*×*D*) respectively,
+    and Σ will then be an *N*×*D* matrix where the *D*×*D* subset will be diagonal
+    and the remaining entries will be zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also know Eigenvalue decomposition. Given a square matrix (*B*) which is
+    diagonalizable can be factorized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2164eb84cd5f179e2b242fe518c7692.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2: Eigenvalue decomposition of a matrix'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *Q* is the square *N*×*N* matrix whose *i*th column is the eigenvector
+    *q_i* of *B*, and Λ is the diagonal matrix whose diagonal elements are the corresponding
+    eigenvalues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try to modify equation (1) by multiplying it by *Aᵀ.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d48d952214ffe5f93db37bce97446e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 3: Multiplying Eq. 1 by the transpose of A.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, *AᵀA* would be a Square matrix even though *A* initially didn’t need to
+    be (could be *m*×*n*). Σ Σ*ᵀ* is a diagonal matrix and *V* is an orthogonal matrix.
+    Now, this is basically the eigendecomposition of a matrix *AᵀA*. The eigenvalues
+    here are squares of the singular values for *A* in eq. (1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a positive semi-definite matrix SVD and eigendecomposition are equivalent.
+    PCA boils down to the eigendecomposition of the covariance matrix. Finding the
+    maximum eigenvalue(s) and corresponding eigenvector(s) are basically then can
+    be thought of as finding the direction of maximum variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given *D* dimensional data (features), a full eigendecomposition would be expensive
+    ∼O(*D³*), but now if we choose some latent space dimension *M*(<*D*) then the
+    calculation is cheaper ∼O(*MD²*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2\. Building Blocks for PPCA:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '2.1\. Assumptions:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'PPCA is a Latent Variable Model (LVM) and we’ve discussed LVM in [detail before](/latent-variables-expectation-maximization-algorithm-fb15c4e0f32c)
+    including the Expectation-Maximization (EM) algorithm. LVMs offer a low-dimensional
+    representation of the data. Let’s say our data (*x*) is (*N*×*D*) dimensional,
+    with *D* features; then LVM for PCA seeks an *M* dimensional latent vector of
+    unobserved variables *z* which can be used to generate the observed variables
+    *(x)* and they are related via a linear relationship:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de939fbaf97bec238aab132f1e06506e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2.1: Generative process for PPCA; x conditioned on latent variables z.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The noise *ϵ* in the equation above is a *D* dimensional vector with a zero
+    mean Gaussian and covariance with *σ²I*;
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9d5035c2dee33ecd708c6f909edf147.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2\. 2: The noise is modeled as a normal distribution with zero mean & co-variance
+    *σ².*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we know that our latent space is *M* dimensional, this leaves our *W*
+    vector to be *D*×*M* dimensional. The latent variable *z* is assumed to have a
+    zero-mean, unit-covariance Gaussian distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/162c7ed1a0229edf2bef0391526e5661.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2\. 3: The prior for the latent variable is a zero mean and unit covariance
+    normal distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above two equations lead to a conditional distribution of *x* conditioned
+    on *z* as below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08b4b0e706ff28bd2bddc9ddca2382fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2.4: Following the two previous equations, we obtain the conditional distribution
+    of *x.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: which is another normal distribution with mean *Wz* (we can set *μ* = 0) and
+    covariance *σ²*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above equation should remind us of a fundamental property of a normal distribution:
+    i.e., if *x* follows multivariate normal distribution *x*∼N(*μ*, Σ), then any
+    linear transformation of *x* is also multivariate normal distribution *y* = *Ax*
+    + *b* ∼ N(*Aμ*+*b*, *A*Σ*Aᵀ*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given the joint distribution, the marginal distribution would also be Gaussian:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7decb22c5fabe1d1ff27972d8d405374.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2.5: The data distribution also follows a normal distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we would like to determine the parameters *W*, *μ*, *σ* we can approach this
+    problem via MLE or EM algorithm. Here we will focus on the EM approach and then
+    on Variational Inference. Both approaches are well described in Bishop’s book.
+    Bishop argues that as the data dimensionality increases, we may gain computational
+    advantages over MLE via iterative EM steps. This has to do with mainly the computational
+    cost of the covariance matrix, where the evaluation of the *D* dimensional data
+    covariance matrix takes O(*ND²*), *N* being the number of data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2.2\. EM Steps for PPCA:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we discussed the [EM algorithm](https://medium.com/towards-data-science/latent-variables-expectation-maximization-algorithm-fb15c4e0f32c)
+    in reference to Gaussian Mixture Models here I will describe it in reference to
+    PPCA. The steps for the EM algorithm are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the expectation step, we calculate the expectation of the complete data log-likelihood
+    w.r.t its posterior distribution of the latent variables (*p(z|x)*) evaluated
+    using the ‘old’ parameters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maximizing this data log-likelihood yields ‘new’ parameters which will be plugged
+    into step 1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As the data points are independent the complete data likelihood would be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5adc4fe25f647b0ff7325894aa3079a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2.6: The complete data likelihood including observed and latent variables.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main target for the E-step is to calculate the expectation of the expression
+    above. Here we have to use *p*(*x*|*z*), *p*(*z*) from equations 3 and 4 respectively
+    in section 3\. The derivation is given in Bishop’s book but the important part
+    is that the derivation requires the calculation of E[*z_n*], E[*z_n zᵀ_n*], and,
+    this can be derived using the posterior distribution *p*(*z*|*x*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the E-step is done, the M-step then involves maximizing this expected log-likelihood
+    w.r.t the parameters *W*,*σ²*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Variational Inference, EM & ELBO:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The EM steps described above depend on a certain crucial assumption that the
+    posterior distribution *p(z|x)* is tractable (necessary for the E step in eq.
+    2.6.). *What if that’s not the case?* What if there’s not any analytic expression
+    for the posterior? This is the base of Variational Inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now take help from variational methods. The main idea is that we try to
+    find a distribution *q(z)* that can be as close as the posterior distribution
+    *p(z|x)*. This approximation distribution can have its own variational parameters:
+    *q(z|θ)*, and we try to find the setting of the parameters that make *q* close
+    to the posterior of interest. *q(z)* should be relatively easy and more tractable
+    for inference. To measure the closeness of the two distributions *q*(*z*) and
+    *p*(*z*|*x*), a common metric is the Kullback-Leibler (KL) divergence. The KL
+    divergence for Variational Inference naturally introduces Evidence Lower Bound
+    (ELBO) as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9e0a98f77e8220fe44231172eee5bde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2.7: Closeness of q(z) and posterior p(z|x) and ELBO adds together to give
+    us the data likelihood.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where ELBO *(q)* is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46c8b760f180164dd234714d696f6ecd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2.8: Definition of ELBO'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the derivation, you can check my notebook in the reference or any other
+    available lecture notes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since KL divergence is non-negative, log *p*(*x*) ≥ ELBO(*q*). So what we do
+    in Variational Inference (VI) is that we maximize the ELBO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also easily see the connection between VI and the traditional EM algorithm;
+    when *q*(*x*)==*p*(*z*|*x*) as the KL divergence term vanishes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we have now completed the overview of the PPCA, we will now implement
+    this using TensorFlow Probability and we will use the definition of ELBO and try
+    to maximize it which in turn is equivalent to maximizing the data likelihood log
+    *p(x)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implement PPCA Using TensorFlow Probability:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For implementing a simple example of PPCA via Variational Inference, I’ll follow
+    the [original example](https://www.tensorflow.org/probability/examples/Probabilistic_PCA)
+    from the TensorFlow Probability applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For implementing this we will assume that we know the standard deviation of
+    the noise (*σ*, I chose 3.0) as defined in equation (2.2) and we place a prior
+    over *w* and try to estimate via Variational Inference. Let’s define the joint
+    distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we’ve used `JointDistributionCoroutineAutoBatched` , which is an “auto-batched”
+    version of `JointDistributionCoroutine`. It automatically applies batch semantics
+    to the joint distribution based on the shape of the input arguments. It allows
+    for more flexible handling of batch dimensions. We can pass batched or unbatched
+    arguments to the joint distribution, and it will handle the batch semantics automatically.
+    After we sample from this joint distribution, using `tf_model.sample()` in line
+    51, we plot the observed data (*x*) distribution (2D):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/764209f6ec9e21a31a5bcc15117316f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 1: Observed distribution of the data, given the joint distribution as
+    defined in the code above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a side note, as these data points are randomly sampled when you run the codes,
+    you may not get exactly similar points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We try to think that the posterior *p(W, Z|X)* can be approximated by a simpler
+    distribution *q(W, Z)* parameterized by *θ*. In VI our aim is to minimize the
+    KL divergence between *q(W, Z)* and *p(W, Z|X)*, which on the other hand from
+    equation (2.8) would be to maximize the Evidence Lower Bound (ELBO).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ELBO in this case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9779dcd89a1328fc44b5b29ac1119b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ELBO that we are trying to minimize via VI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To minimize the ELBO we will first define the surrogate distribution similar
+    to the way we defined the joint distribution, and use the `tfp.vi` method to fit
+    a surrogate posterior to a target (unnormalized) log density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After we obtain the surrogate distribution, we can then use it to sample new
+    data points resulting in the plot below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e0343be459e7e4720978489e49e3c77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 2: The sampled distribution resembles the original distribution quite
+    well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusions:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have gone through the mathematics behind the PPCA and used TensorFlow to
+    test our understanding with a simple toy data-set. The possibility of generating
+    new samples using the surrogate posterior gives us the power to impute missing
+    values in data, generate new samples etc., which is impossible with standard PCA.
+    Many real-world datasets exhibit intricate relationships, noise corruption, and
+    incomplete observations, rendering classical PCA less effective. By accounting
+    for uncertainty, handling missing data, and offering a probabilistic modeling
+    framework, PPCA opens up new avenues for data analysis, pattern recognition, and
+    machine learning. Next time if you’re planning to use PCA for your dataset, but
+    you are aware that observations could be noisy and there are missing data, why
+    not try PPCA?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probabilistic PCA is also closely related to Factor Analysis (FA) which is a
+    linear-Gaussian latent variable model. The main difference between FA and PPCA
+    is that in Eq. 2.2 when we describe the noise distribution, the covariance is
+    assumed to be isotropic in PPCA, whereas in FA it’s a diagonal matrix. I’ll leave
+    some references below for more explorations that you can do inspired by this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] ‘Probabilistic Principal Component Analysis’; M. Tipping, C. Bishop; J.R.
+    Statist. Soc. B (1999).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] ‘Pattern Recognition and Machine Learning’; C. Bishop; Chapter 12: Continuous
+    Latent Variables.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] ‘Continuous Latent Variable Models’; University of Toronto; [Lecture Notes](https://www.cs.toronto.edu/~hinton/csc2515/notes/lec7middle.pdf).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [Probabilistic PCA: TensorFlow Probability Example](https://www.tensorflow.org/probability/examples/Probabilistic_PCA);'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Link to my notebook. [GitHub](https://github.com/suvoooo/Learn-TensorFlow/blob/master/TF-Proba/PCA_ProbabilisticApproach.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL

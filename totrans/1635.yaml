@@ -1,0 +1,389 @@
+- en: 'Parquet Best Practices: Discover your Data without loading it'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/parquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6](https://towardsdatascience.com/parquet-best-practices-discover-your-data-without-loading-them-f854c57a45b6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Metadata, Statistics on Row Groups, Partitions discovery, and Repartitioning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)[![Arli](../Images/7027413407fa83ce2f9b3d7e9cb008e8.png)](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------)
+    [Arli](https://medium.com/@arli94?source=post_page-----f854c57a45b6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f854c57a45b6--------------------------------)
+    ·8 min read·Jan 3, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you like to experience Medium yourself, consider supporting me and thousands
+    of other writers by* [***signing up for a membership***](https://medium.com/@arli94/membership)*.
+    It only costs $5 per month, it supports us, writers, greatly, and you get to access
+    all the amazing stories on Medium.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c510a1ca6e02384122e5f50eb2674840.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jakarta Parquet](https://unsplash.com/@lantai_kayu?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article is the next article from a series of articles on Parquet. You
+    should check the previous* [*Parquet article*](https://medium.com/towards-data-science/easy-parquet-tutorial-best-practices-237955e46cb7)
+    *before reading this one if you don’t have any Parquet knowledge, but it is also
+    a great reminder for people more advanced. If you want to reproduce the input
+    data for this article, the code is at the end.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Apache Parquet* is a columnar storage format for big data frameworks, such
+    as *Apache Hadoop* and *Apache Spark*. It is designed to improve the performance
+    of big data processing by using a *columnar storage format*, which stores data
+    in a *compressed* and *efficient* way.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Parquet* adoption continues to increase as more and more organizations turn
+    to big data technologies to process and analyze large datasets. With this continuous
+    development, it is important that everyone learns some best practices and how
+    to navigate through *Parquet* files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, we will show you how to gain maximum insight into your *Parquet*
+    data as a *Parquet* user without resorting to the common brute force of loading
+    it for understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The case study
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To do this, we provide you with a case study in which a *Data Engineer* has
+    provided you with *loan applicants'* data and you need to create predictive models
+    with that data. But first, you need to *“technically”* discover the data. And
+    it is huge data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, the *Data Engineer* that prepared the data, tells you that the Parquet
+    folder is *1TB* large *(for educational purposes only, this is not the case in
+    our example)*, so if you try to load everything, you will run through Memory Error
+    on your machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t worry, we will provide you with the most efficient way to understand the
+    big *Parquet* data without even loading the *Parquet* data in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That means answering the questions below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do the *Parquet* files in this folder look like?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What *variables* are inside? With what *types*? Some *statistics*?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: how is the data partitioned?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will also teach you how to reformat *partitions* if you notice that something
+    is wrong with the way the data has been partitioned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading the first Parquet file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The import that you will need for this tutorial:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: First of all, we want to get an idea of what the folder *‘APPLICATIONS_PARTITIONED’*
+    contains, this is where the data is stored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since you don’t know how the data is *partitioned*, you cannot just load the
+    whole folder blindly because you’ll be loading all the *Parquet* files and that’s
+    not what you want to do (remember 1TB size), but rather you want to get an overview
+    of your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, I give you a function `get_first_parquet_from_path()` that will return
+    the first *Parquet* file that is in a directory. The function will scan through
+    each directory and subdirectory until it finds a *Parquet* file and will return
+    the complete path of this single file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looks like a cool function, let’s put it into practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We notice from the path that this is partitioned by *NAME_INCOME_TYPE* and *CODE_GENDER*,
+    good to know.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To read this path now to get the number of rows and columns and also the precious
+    *Schema* here is what you can do:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/28fe5e017ccb8531099e2f2908ff3087.png)![](../Images/574909a9cf4377be5dd29afccbf17a8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It took less than 1 second to run, the reason is that the `read_table()` function
+    reads a *Parquet* file and returns a *PyArrow Table* object, which represents
+    your data as an optimized data structure developed by *Apache Arrow*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we know that there are 637800 rows and 17 columns (+2 coming from the path),
+    and have an overview of the variables and their types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wait, I told you before that we won’t need to load anything in memory to discover
+    the data. So here is a method to do it without reading any table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Metadata**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I am partially tricking you because we won’t be loading any data but we will
+    be loading something called **metadata**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of the *Parquet* file format, **metadata** refers to data that
+    describes the *structure* and *characteristics* of the data stored in the file.
+    This includes information such as the data types of each column, the names of
+    the columns, the number of rows in the table, and the schema.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s use both `read_metadata()` and `read_schema()` function from *pyarrow.parquet*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5036cc5bf641ce4f28e2b9e1c462cdfe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is giving you the same output as with `read_table()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we notice that in the execution times there is a big difference because
+    here it is close to instantaneous. And this is not a surprise because reading
+    the **metadata** is like reading a very small part of the *Parquet* file that
+    contains everything you need to have an overview of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Statistics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now let’s say I want to know a little more about the columns what can I do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: You could read the statistics from the first *Row Group* of a file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A *Row Group* in the *Parquet* file format is a collection of rows that are
+    stored together as a unit and divided into smaller chunks for efficient querying
+    and processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code above will give you an ugly output, here is some code to format it
+    into a beautiful DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bc143c03768b4a4c06daabdcd3fc1434.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On the DataFrame you have the type of the columns, the minimum, the maximum,
+    and the compressed size. Few learnings from this file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Strings columns were converted to *BYTE_ARRAY*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Min and Max for String columns are sorted alphabetically.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The compression size of Boolean is not so much better than the *BYTE_ARRAY*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The youngest applicant is 21 years old, and the oldest is 68 years old.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Becare to not generalize the statistics, it is just from the first *parquet*
+    file!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great, now we have a good understanding of the data such as info on columns,
+    types, schemas, and even statistics, but don’t we miss something?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partitions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Yes, we don’t know the *partitions* of the data! As said before, we could guess
+    at least the partitioning columns from the file path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6c24006151705c154c2edf0a52a3fc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: the data is partitioned on *NAME_INCOME_TYPE* and *CODE_GENDER*. But we don’t
+    know the other partition values. Suppose that we want to look at other *NAME_INCOME_TYPE*?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But I’ll provide you a code so you can get the *partitions* in a more systemic
+    way but also all the values possible for the *partitions*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s run this function that returns a dictionary with the keys corresponding
+    to the *partitions columns,* and values are the associated *partitions values*
+    to each partition column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We know now that the Data Engineer partitioned the data first by *Income_Type*
+    and then by *Gender*. And all the values for the partition columns are listed
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/20b37f7d962052bb684ae8055d32f3c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now that we have the partition columns and values knowledge, we can read another
+    partition of our interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that we want to read all the data of *‘Pensioner’* regardless of *Gender*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the last tutorial, we know that we can do that by reading the Parquet folder
+    *‘APPLICATIONS_PARTITIONED/NAME_INCOME_TYPE=Pensioner’*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Reformat the partitions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Actually, we have no interest in splitting the data by gender and the size of
+    the data allows us to read data from both genders without an excessive runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is important to not over-partition your data because, in general, the execution
+    time is increased by the number of partitions within the folder. So you have to
+    keep in mind that there is a potential downside to partitions, even if it makes
+    the data more functionally readable. (From the [official documentation](https://parquet.apache.org/docs/file-format/configurations/)
+    512MB — 1GB is the optimal size for a partition).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, let’s say we assume that the subfolders of the genders are small enough
+    after checking the data, and we find that the functional division of the genders
+    is not useful. We decide to reformat the dataset to be partitioned only by *NAME_INCOME_TYPE*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We just read the data in *PyArrow Table* object then we wrote a *Parquet* filepartitioned
+    only on *NAME_INCOME_TYPE* and no more per *Gender*. If we run now the function
+    `get_all_partitions()` with the values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b2f89baa600c8886b3f42982505e126c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We notice that we don’t have the partitioning by *Gender* anymore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In conclusion, you have just seen how to navigate through Parquet files to
+    know everything about the data before loading it: like column names, size, schema,
+    statistics and how to get partition names and values. You also found out how to
+    reformat the partitions to be more technically and functionally correct.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading and see you in the next story!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full code to generate the input data we used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Continue your learning with my other Parquet articles:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/easy-parquet-tutorial-best-practices-237955e46cb7?source=post_page-----f854c57a45b6--------------------------------)
+    [## Simple Parquet Tutorial and Best Practices'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hands-on tutorial for starting your Parquet learning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/easy-parquet-tutorial-best-practices-237955e46cb7?source=post_page-----f854c57a45b6--------------------------------)
+    [](https://pub.towardsai.net/parquet-best-practices-the-art-of-filtering-d729357e441d?source=post_page-----f854c57a45b6--------------------------------)
+    [## Parquet Best Practices: The Art of Filtering'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding how to filter Parquet files
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pub.towardsai.net](https://pub.towardsai.net/parquet-best-practices-the-art-of-filtering-d729357e441d?source=post_page-----f854c57a45b6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*With no extra costs, you can subscribe to Medium via my referral link.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@arli94/membership?source=post_page-----f854c57a45b6--------------------------------)
+    [## Join Medium with my referral link — Arli'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Arli and thousands of other writers on Medium. Your membership
+    fee directly supports Arli and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@arli94/membership?source=post_page-----f854c57a45b6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,572 @@
+- en: A Step-by-Step Guide To Accurately Detect Peaks and Valleys.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-step-by-step-guide-to-accurately-detect-peaks-and-valleys-9abc49a2eac3](https://towardsdatascience.com/a-step-by-step-guide-to-accurately-detect-peaks-and-valleys-9abc49a2eac3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Peak Detection is a challenging step in many applications. Read and learn how
+    to accurately detect peaks and valleys in 1D vectors and 2D arrays (images).
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://erdogant.medium.com/?source=post_page-----9abc49a2eac3--------------------------------)[![Erdogan
+    Taskesen](../Images/8e62cdae0502687710d8ae4bbcd8966e.png)](https://erdogant.medium.com/?source=post_page-----9abc49a2eac3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9abc49a2eac3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9abc49a2eac3--------------------------------)
+    [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----9abc49a2eac3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9abc49a2eac3--------------------------------)
+    ·13 min read·Sep 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d5dafe822d8d4c83b379bcd509324bea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Willian Justen de Vasconcellos](https://unsplash.com/@willianjusten?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/GZLY-0kPG3M?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our human brain is excellent in peak detection in relation to its context. What
+    seems an easy task by eye can be a challenging task to automate by machines. In
+    general, peaks and valleys indicate (significant) events such as sudden increases
+    or decreases in price/volume, or sharp rises in demand. One of the challenges
+    is the definition of a peak/valley which can differ across applications and domains.
+    Other challenges can be more technical, such as a noisy signal that can result
+    in many false positives or a single threshold that may not accurately detect local
+    events. *In this blog, I will describe how to accurately detect peaks and valleys
+    in a 1-dimensional vector or a 2-dimensional array (image) without making assumptions
+    about the peak shape. In addition, I will demonstrate how to handle noise in the
+    signal.* Analyses are performed using the ***findpeaks library***, and hands-on
+    examples are provided for experimenting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Brief Introduction About Peaks and Valleys.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The detection of (sudden) changes in a signal is an important task in many applications
+    that needs to be reported or monitored. There are roughly two types of “sudden
+    changes”, the so called *outliers* and *peaks of interest* which are conceptually
+    different. *Outliers are data points that significantly deviate from what is normal
+    in the data set whereas peaks of interest are specific data points or regions
+    within a signal that have significance or relevance for the analysis or domain
+    in question.* In case you need a deep dive with hands-on examples in outlier detection,
+    try these blogs [1, 2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/outlier-detection-using-principal-component-analysis-and-hotellings-t2-and-spe-dmodx-methods-625b3c90897?source=post_page-----9abc49a2eac3--------------------------------)
+    [## Outlier Detection Using Principal Component Analysis and Hotelling’s T2 and
+    SPE/DmodX Methods'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to PCA’s sensitivity, it can be used to detect outliers in multivariate
+    datasets
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/outlier-detection-using-principal-component-analysis-and-hotellings-t2-and-spe-dmodx-methods-625b3c90897?source=post_page-----9abc49a2eac3--------------------------------)
+    [](/outlier-detection-using-distribution-fitting-in-univariate-data-sets-ac8b7a14d40e?source=post_page-----9abc49a2eac3--------------------------------)
+    [## Outlier Detection Using Distribution Fitting in Univariate Datasets
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to detect outliers using Probability Density Functions for fast and
+    lightweight models and explainable…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/outlier-detection-using-distribution-fitting-in-univariate-data-sets-ac8b7a14d40e?source=post_page-----9abc49a2eac3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***But what is a peak of interest?***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A peak is a point or a region that is larger than their surroundings point(s).
+    This can either be a local maximum or global maximum. It can also be repetitive
+    data points that do not necessarily need to deviate from what is normal or expected.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The elasticity of such a definition makes peak detection a challenging task.
+    In other words, “*How much higher should the peak be than its surrounding points?*”
+    and “*How to define a local maximum?*” This is even more complicated by the fact
+    that signals are usually not free of noise. There are a variety of techniques
+    for peak detection, including simple thresholding, but also the use of derivatives,
+    wavelet analysis, and/or convolutions. Attractive properties of peak detection
+    methods are the ability of noise handling, and not making (too strong) assumptions
+    of the signal-peak. Reasoning is that you need to detect the local maxima which
+    can change between applications and the context. As an example, ECG signals are
+    different in shape and amplitude compared to server load measurements. A well-known
+    Python library with a peak detection function is *find_peaks* in *S*ciPy *[3]*.
+    However, this function can not rank or prioritize the detected peaks and there
+    are no built-in noise handling functions. *In the next sections, I will demonstrate
+    how to detect peaks and valleys, handle signal noise, measure peak strength, and
+    rank the results. I will demonstrate this for 1D vectors and 2D arrays using the
+    findpeaks library.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Findpeaks Library Contains Four Specialized Methods For Peak Detection.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The Findpeaks library aims to detect peaks and valleys in 1-dimensional vectors
+    and 2-dimensional arrays (images) without making assumptions about the peak shape
+    or baseline noise. There are four distinct methods implemented for the detection
+    and ranking of peaks and valleys. Each method has its own advantages which makes
+    it applicable for specific applications. In the next section, I will go through
+    each of the methods with hands-on Python examples. If you want to experiment with
+    the examples yourself, first pip install the [*Findpeaks package*](https://erdogant.github.io/findpeaks):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Topology Method (1).
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The Topology method is an efficient solution based on the idea of persistent
+    homology *[4]*. The method runs in linear time — in fact, it is a single loop
+    — after the function values are internally sorted. The idea of persistent homology
+    is intuitive. In the next code section we will import the Findpeaks library and
+    load an example data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ecfb496319a1f638a3bd07601b2952b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Example signal with some local peaks and valleys. (image from the
+    author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can clearly see the strongest (or highest) peak in Figure 1 is point 1, and
+    then point 2, etc. To detect the peaks we can consider a water level that continuously
+    descends to lower levels. At the top (the local maxima) there is the *birth* of
+    an island. When lowering the water levels, two islands can merge. When the lower
+    islands are merged to the higher islands again it is called *death*. In this manner,
+    each candidate peak can be annotated with a *birth vs. death* point. The candidate
+    peaks can be plotted in a so-called ***persistence diagram*** as shown in Figure
+    2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5926ba30aeb1f8c7a6fa28599480258a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 2: Example of a persistence diagram* with Birth vs. Death levels. (image
+    from the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The diagonal in the right panel (left bottom to right top) represents points
+    where birth and death levels are the same. In other words, points that are on
+    the diagonal are flat signals or horizontal lines without peaks or other changes.***A
+    peak of interest should be at the right side of the diagonal.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's stepwise go through Figure 2\. For the first point (right bottom corner),
+    we see the birth at `score=1.5` and the death at `score=0`. For the second peak,
+    we see `score=1.2` and the death level at `score=0.8` (blue arrows). This approach
+    quantifies each peak relative to another and can therefore exclude peaks with
+    low persistence, i.e. close to the diagonal. The peaks of interest can be ranked/prioritized
+    and selected. The advantage of this method is that it can be applied to both 1D
+    vectors and 2D arrays (images). Another advantage is that it returns explainable
+    results, and false positive hits can be removed by clipping the results on the
+    persistence score. The disadvantage is that noisy signals can result in thousands
+    of hits and can become computationally intensive. However, we can easily select
+    the top hits by their ranking. *I will demonstrate this in one of the following
+    sections in this blog.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Mask Method (2).
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The Mask method takes a 2D array (image) and detects the peaks using the local
+    maximum filter using a sliding `8x8 window`. It is slightly more advanced than
+    simple thresholding because the thresholding is within the sliding window with
+    the local maximum filter. Although it is a straightforward approach, it works
+    very well in cases with a steady background. The advantages are that it is intuitive,
+    explainable, and computationally fast. The disadvantage is that it can require
+    intensive pre-processing steps. However, many of the pre-processing steps are
+    taken care of in the *Findpeaks library.* In the next code section, we will load
+    an example image, perform the preprocessing, and detect the peaks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/09851d35d520e7b8e70f10317d3e5828.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. The Mask method is applied to an image with automatic pre-processing.
+    From left to right is shown the input image to scaling, color conversion, and
+    denoising. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output contains `Xraw`, `Xprocessed` and `Xdetect` which are the same `NxM`
+    size as the input image. The final detected peaks are stored in `Xdetect` and
+    can be plotted with the `plot` functionality:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/56a9d8bbbfc6b357cbb2a84f676e3718.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. The detected peaks using the Mask method in the Findpeaks library.
+    The numbers indicate the strength of the peak (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *Findpeaks library* also contains the functionality to transform a 2D image
+    into a 3D mesh plot with the `plot_mesh` function. Such visuals help to get better
+    intuition about the strength of the peaks. As an example, when we look at Figure
+    4, it can be hard to see which peaks are strongest whereas the mesh plot in Figure
+    5 provides better insights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b6e282aa953046eb1fdca626ad8065f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Mesh plot generated by Findpeaks. (image from the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Peakdetect Method (3).
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The third method in the *Findpeaks* library is the `peakdetect` method. This
+    method is based on *Billauer's work* [2, 3], and has the advantage of finding
+    the local maxima and minima in noisy signals. Noise is very common for which the
+    typical solution is to smooth the curve with some low-pass filter. However, the
+    smoothing of signals comes with the trade-off that peaks in the original signal
+    can be lost or suppressed. This method requires setting the `lookahead` parameter,
+    which is the distance to look ahead from a peak candidate to determine (if it
+    is the actual peak). The default value is set to 200 but is adjustable for smaller
+    datasets (i.e., with <50 data points). In the next code section, we will create
+    a 1D vector with 10,000 data points and detect the peaks and valleys. We can plot
+    the detected peak and valleys with the plotting functionality as depicted in Figure
+    6\. First of all, the exact peaks and valleys are highlighted with crosses and
+    dots, whereas entire regions are also extracted and colored differently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4d4dfc7cd4709fe081b20a0e6163083b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Detection of peaks and valleys using the peakdetect method in Findpeaks.
+    (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Caerus Method (4).
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Caerus method is designed to detect peaks and valleys in 1D signals. It
+    determines the local minima with the corresponding local maxima independent of
+    the timeframe, scale, or trend. The method is based on a forward rolling window
+    to iteratively score thousands of windows. For each window, the percentages are
+    computed from the start-to-stop position. The resulting matrix is a `windowxlength
+    dataframe` for which the highest scoring percentages, those above a minimum percentage,
+    are used. The best scoring percentages are then aggregated. The final regions
+    are determined based on the *distance* and *percentage* change of the start locations*.*
+    This method has a strong advantage in finding peaks and valleys in turbulent data,
+    such as stock-market data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To see this method in action, we need to set the minimum percentage `minperc`
+    parameter and the window size. The `minperc` declares a starting position and
+    the window is used to determine whether there is an increase in signal in terms
+    of percentage change from the starting point. The use of smaller window sizes
+    (e.g., 50) can detect local minima, whereas Larger window sizes (e.g., 1000) will
+    stress the global minima. In the following code section, we will initialize with
+    the `caerus` method and detect peaks with a minimum of 5% change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2febad6810b48f98d00520f616d9146b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. The results of the Cearus method. The bottom panel is the stock data
+    for which the red vertical lines depict the peaks and the green vertical lines
+    the valleys. The middle panel is the processed data and depicts the cumulative
+    successes over the windows. The top panel is the percentage difference in the
+    windows. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Besides detection of the exact peak and valley locations, we can also mark an
+    entire region as depicted below. The marked regions are also intuitively sound
+    as they correctly label the *regions of growth over time*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf162e5205a8e2be995f9e3a32c5c2ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. The results of the Cearus method. Besides peaks and valleys (red
+    and green vertical lines), regions can also be extracted and marked. (image from
+    the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preprocessing is an important task.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Each of the previously described peak detection methods has its own (dis)advantages.
+    An important task is the preprocessing of the input signal to prevent the detection
+    of false positive hits. Real-world data is often incomplete, noisy, and requires
+    normalization or scaling. *The Findpeaks library contains various pre-processing
+    functionalities to help in these steps, such as denoising, interpolation, resizing,
+    normalization, and scaling. In the next section, we will go through the available
+    preprocessing functionalities, especially for 2D arrays.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image Preprocessing Steps.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The findpeaks library pipelines 4 *preprocessing* steps which are executed in
+    a specific order as depicted below. Each of these steps can be controlled by setting
+    the input parameters. After the last step, the peak detection method is applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Resizing the image*** can help to improve peak detection and will dramatically
+    reduce computation time.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Scaling pixel values*** between [0–255] is an important step to make images
+    comparable and peak detection more robust.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Conversion to grayscale*** lowers the computational burden and makes images
+    comparable. When having RGB colors, it will be converted into a 2D array.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Noise filtering*** is a crucial step. See the next section for more details.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Removal of Noise Before Peak Detection.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Noise is an unwelcome addition to the input signal that is usually a disturbance
+    of the measured signal. Noise follows a specific distribution and is often application-dependent
+    (Figure 9). In other words, different techniques can be required to effectively
+    remove/filter the noise from the signal for certain applications. The figure below
+    depicts different types of noise with their distributions. As an example, the
+    removal of salt and pepper noise would require a different approach than for example
+    Gaussian noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30033d7585065934ff253de3d3cd7826.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. Three different types of noise with their distributions. (image from
+    the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A clear example is when working with SAR images such as from the Sentinel-1
+    satellite. These images are known to be affected by speckle noise that degrades
+    the image quality. It is caused by the back-scatter waves from multiple distributed
+    targets. It is locally strong and it increases the mean grey level of the local
+    area. *The Findpeaks library contains various noise removal filters:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***fastnl***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***bilateral***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***lee***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***lee enhanced***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***lee sigma***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***kuan***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***frost***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***median***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***mean filter***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All filters can remove or filter noise under certain conditions with the aim
+    of leaving the original signal intact. As an example, the `bilateral filter` uses
+    a Gaussian filter to preserve edges. The `Lee Sigma` and `fastnl`filter is ideal
+    for removing speckle noise from SAR images. Let's load an example image with speckle
+    noise and visually inspect the performance of noise filtering and the detection
+    of peaks. For demonstration purposes, we will first perform peak detection without
+    preprocessing of noise filtering step as depicted in the next code section and
+    Figure 10 and Figure 11.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ff718bd14d01ca584d541e1cd2b60e9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. The left panel depicts the raw input image. The middle panel depicts
+    the image after gray scaling. The right panel depicts the detected peaks. Tens
+    of thousands of false positive hits are detected. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c39f5c729fb2b5a66c697f650b02c73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11\. The mesh plot can help to visually see the noise levels compared
+    to the signal of interest. We can see the peak (left middle) but it is hard to
+    distinguish it from the noise. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this point on, we will *preprocess* the image by `scaling` the pixel values,
+    perform a`grayscale` conversion, and `fastnl` noise filtering. Below are depicted
+    the steps of preprocessing. The final step is the *topology* method for peak detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c8db09206910042691c8b2db12db135d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12\. From Raw input image (left panel) towards preprocessed and denoise
+    image (right panel). (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As depicted in Figure 12, the final denoised image shows a clear removal of
+    the speckle noise. But is it good enough to detect the correct peaks? In the next
+    step, we can examine the detected peaks (see below). We can now plot the image
+    and overlay it with the detected peaks as shown in Figure 13\. We can clearly
+    see that the correct region is detected. With the mesh plot, we get an even better
+    intuition of the peak of interest (Figure 14).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c4a6f8de251621d9c7e2c4f58467fcc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13\. The top 5 peaks are highlighted and correctly detected as the peak
+    of interest. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6f50d10f5cddba168b626d4992d6d12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 14\. The preprocessing step together with the denoising results in clear
+    noise reduction and keeping the signal of interest intact. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final words.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I touched on the concepts of peak detection for 1D vectors, and 2D arrays (images).
+    With the ***Findpeaks library***, it becomes easy to detect peaks and valleys
+    using the four different methods. It pipelines the process of interpolation, normalization,
+    scaling, noise filtering, and then the detection of peaks and valleys. The output
+    is a data frame that contains the candidate peaks and valleys with their locations
+    and the class labels. The results can be explored with various plot functionalities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Be Safe, Stay Frosty.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cheers E.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you find this article helpful, you are welcome to* [*follow me*](http://erdogant.medium.com/)*.
+    If you are thinking of taking a Medium membership, you can support my work a bit
+    by using my* [*referral link*](https://medium.com/@erdogant/membership)*. It is
+    the same price as a coffee but allows you to read unlimited articles monthly.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Software
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Findpeaks Github/Documentation](https://erdogant.github.io/findpeaks/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s connect!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Let’s connect on LinkedIn](https://www.linkedin.com/in/erdogant/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Follow me on Github](https://github.com/erdogant)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Follow me on Medium](https://erdogant.medium.com/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: E. Taskesen, [*Outlier Detection Using Principal Component Analysis and Hotelling’s
+    T2 and SPE/DmodX Methods*](/outlier-detection-using-principal-component-analysis-and-hotellings-t2-and-spe-dmodx-methods-625b3c90897),
+    Medium
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: E. Taskesen, [*Outlier Detection Using Distribution Fitting in Univariate Datasets*](/outlier-detection-using-distribution-fitting-in-univariate-data-sets-ac8b7a14d40e)*,*
+    Medium
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[*Find peaks inside a signal based on peak properties*](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html),
+    Scipy.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*H. Edelsbrunner and J. Harer, Computational Topology. An Introduction, 2010,
+    ISBN 0–8218–4925–5.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

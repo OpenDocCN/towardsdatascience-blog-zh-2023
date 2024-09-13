@@ -1,0 +1,499 @@
+- en: A Deep Dive into the Code of the Visual Transformer (ViT) Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-deep-dive-into-the-code-of-the-visual-transformer-vit-model-1ce4cc05ca8d](https://towardsdatascience.com/a-deep-dive-into-the-code-of-the-visual-transformer-vit-model-1ce4cc05ca8d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Breaking down the HuggingFace ViT Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alexml0123?source=post_page-----1ce4cc05ca8d--------------------------------)[![Alexey
+    Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----1ce4cc05ca8d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ce4cc05ca8d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ce4cc05ca8d--------------------------------)
+    [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----1ce4cc05ca8d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ce4cc05ca8d--------------------------------)
+    ·14 min read·Aug 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vision Transformer (ViT) stands as a remarkable milestone in the evolution of
+    computer vision. ViT challenges the conventional wisdom that images are best processed
+    through convolutional layers, proving that sequence-based attention mechanisms
+    can effectively capture the intricate patterns, context, and semantics present
+    in images. By breaking down images into manageable patches and leveraging self-attention,
+    ViT captures both local and global relationships, enabling it to excel in diverse
+    vision tasks, from image classification to object detection and beyond. In this
+    article, we are going to break down how ViT for classification works under the
+    hood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac2ea1bf46319ca84c69d7fe2d300fa5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://unsplash.com/photos/aVvZJC0ynBQ](https://unsplash.com/photos/aVvZJC0ynBQ)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The core idea of ViT is to treat an image as a sequence of fixed-size patches,
+    which are then flattened and converted into 1D vectors. These patches are subsequently
+    processed by a transformer encoder, which enables the model to capture global
+    context and dependencies across the entire image. By dividing the image into patches,
+    ViT effectively reduces the computational complexity of handling large images
+    while retaining the ability to model complex spatial interactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First of all, we import the ViT model for classification from hugging face
+    transformers library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*patch16–224* indicates that the model accepts images of size 224x224 and each
+    patch has width and hight of 16 pixels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is what the model architecture looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Embeddings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Patch Embedding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Transformation of the image into patches is performed using a Conv2D layer.
+    As we know, Conv2D layer does a 2-dimensional convolutional operations on input
+    data to learn features and patterns from images. In this case though Conv2D layer
+    is used to divide the image into NxN number of patches by using the `stride` parameter.
+    Stride determines the step size at which the filter slides over the input data.
+    In this case, because our images are 224x224 and the patch is of size 16, meaning
+    that there are 224/16 = 14 patches in each dimension, if we choose `stride=16`
+    we effectively separate our image in 14 **non-overlapping** patches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To be visual and assuming an image of shape 4x4 with and stride of 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3e1405160e6912bda1d6449d47e99be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Patches creation, Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So for example, the first & the second patches are going to be :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The pattern is clear — to compute each patch we skip 16 pixels to get non-overlapping
+    patches. If we do this operation for the entire image we end up with 1 x 14 x
+    14 tensor where each patch is represented by one number computed using the first
+    filter of Conv2D. However, there are **768 filters** which means that at the end
+    we get a 768 x 14 x 14 dimensional tensor. So now we effectively have for each
+    patch a 768 dimensional representation, that is our patch embedding. We also flatten
+    and transpose the tensor, thus the embedding shape becomes *[batch_size, 196,
+    768]* where the second dimension is flattened 14 x 14 = 196 and we effectively
+    have a sequence of 196 patches with embedding size of 768.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we want to reproduce the layer entirely from scratch, this is the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, if you are familiar with the Language Transformer (check it out [here](/deep-dive-into-the-code-of-bert-model-9f618472353e)
+    if needed) you should recall the [CLS] token, whose representation serves as a
+    condensed and informative summary of the entire text, enabling the model to make
+    accurate predictions based on the extracted features from the transformer encoder.
+    Also in ViT we have the [CLS] token that has the same function as for text, and
+    it’s appended to the representation computed above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[CLS] token is a parameter that we are going to learn using back-propagation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Positional Embedding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just like in Language Transformer, to **preserve the positional information
+    of the patches**, ViT includes positional embeddings. Positional embeddings help
+    the model understand the spatial relationships between different patches, enabling
+    it to capture the image’s structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Positional embedding is a Tensor of the same shape of the embeddings with [CLS]
+    token compute before, i.e., *[batch_size, 197, 768]*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dropout
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Patch embedding is followed by a [Dropout](https://arxiv.org/abs/1706.06859)
+    layer. In dropout we replace with zero some of the values with certain dropout
+    probability. Dropout helps to reduce overfitting as we randomly block signals
+    from certain neurons so the network needs to find other paths to reduce the loss
+    function, and thus it learns how to generalize better instead of relying on certain
+    paths. We can also see dropout as a kind of models ensemble technique as during
+    training at each step we randomly deactivate certain neurons ending up with “different”
+    networks which we eventually ensemble during the evaluation time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At the end of the Embeddings layer we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Encoder
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ViT employs a stack of transformer encoder blocks, similar to those used in
+    language models such as BERT. Each encoder block consists of multi-head self-attention
+    and feed-forward neural networks. The self-attention mechanism enables the model
+    to capture relationships between different patches, while the feed-forward neural
+    networks perform non-linear transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, each layer is composed of Self-Attention, Intermediate and Output
+    modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Self-Attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Self-attention is a pivotal mechanism within the Vision Transformer (ViT) model
+    that enables it to capture relationships and dependencies between different patches
+    in an image. It plays a crucial role in extracting contextual information and
+    understanding long and short-range interactions among the patches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each patch is associated with three vectors: Key, Query, and Value. These vectors
+    are learned through linear transformations of the original patch embeddings. The
+    **Key vector represents information from the current patches**, the **Query vector
+    is used to ask questions about other patches**, and the **Value vector holds the
+    information that is relevant to other patches**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we have already computed the embeddings in the previous section, we compute
+    the Key, Query and Value projecting the embeddings with the Key, Query and Value
+    matrices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we skipped the LayerNorm operation, that we will cover later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each Query vector, attention scores are computed by measuring the compatibility
+    or similarity between the Query and Key vectors of all other patches. This is
+    done through a dot product operation and then applying the Softmax function to
+    get normalized attention scores with the shape *[b_size, 197, 197].* The attention
+    matrix is square because all patches attend to each other, and this is why it’s
+    called self-attention. These scores indicate how much focus or attention should
+    be placed on each patch when processing the query patch. Because new embedding
+    for the next layer of each patch is derived based on the attention scores and
+    the values of all other patches, we get a **contextual embedding** for each patch
+    as its derived based on all other patches in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To clarify this further, recall that at the beginning we split the image into
+    patches using the Conv2D layer to get a 768-dimensional embedding vector for each
+    patch - these embedding are independent as there was no interaction (no overlap)
+    between the patches. However, in the transformer layers the patches embeddings
+    get mixed becoming a function of the embeddings of other patches. For example,
+    the embedding in the first layer is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we zoom in and look at the first patch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: the new embeddings for it (token indexed at 0 is [CLS] token) is a combination
+    of embeddings of different patches with most attention on the first patch itself
+    (0.73), [CLS] token (0.24) and the remaining on all other patches. But this is
+    not always the case. Indeed, in next layers the first patch might pay more attention
+    to patches around it instead of the patch itself and [CLS] token or even to patches
+    very far away — this depends on what the model thinks is useful to solve a certain
+    task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you might have noticed that I selected only the first 64 columns from
+    the weight matrices of query, key and value. These first 64 columns represent
+    the **first attention head**, but actually there are 12 of them (in this model
+    size). Each of these attention heads creates different representation of patches.
+    Indeed, if we look at the third attention head for the first patch we can see
+    that the first patch pays most attention (0.26) at the second patch rather than
+    to itself like in the first attention head.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thus, different attention heads will capture different types of relations among
+    patches helping the model to see things from different prospective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To compute all these heads in parallel we do as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: After applying self-attention we apply another projection layer and Dropout
+    — and here we go, we got through the self-attention layer!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Ops, wait a second, I promised I would explain the *LayerNorm* operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Layer Normalization is a normalization technique used to enhance the training
+    and performance of deep learning models. It addresses the problem of internal
+    covariate shifts — during training, as the weights of the neural network change,
+    the distribution of inputs to each layer can change significantly, making it difficult
+    for the model to converge. Layer Normalization addresses this by ensuring that
+    the inputs to each layer have a consistent mean and variance, stabilizing the
+    learning process. It’s implemented by standardizing each patch embedding by its
+    mean and standard deviation so that it has zero mean and unit variance. We then
+    apply a trained weights and bias so it can be shifted to have a different mean
+    and variance for the model to adapt automatically during training. Because we
+    compute mean and standard deviation across different examples independently from
+    the others, it is different from [Batch Normalization](https://en.wikipedia.org/wiki/Batch_normalization#:~:text=Batch%20normalization%20(also%20known%20as,and%20Christian%20Szegedy%20in%202015.)
+    where the normalization is across the batch dimension and thus depends on other
+    examples in the batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take the first patch embedding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Intermediate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before the Intermediate class we perform another layer normalization and a **residual
+    connection**. By now it should be clear why we want to apply another layer normalization
+    — we need to normalize the contextual embeddings coming from the self-attention
+    to improve convergence, but what is that other residual thing I mentioned you
+    are probably wondering?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Residual Connection is a critical component in deep neural networks that mitigates
+    the challenges of training very deep architectures. As we increase the depth of
+    a neural network by stacking more layers we bump into the problem of vanishing/exploding
+    gradients, where in case of vanishing gradients the model is not able to learn
+    anymore as the propagated gradients are close to zero and initial layers stop
+    changing weights and improve (Check [this article](https://medium.com/towards-artificial-intelligence/backpropagation-and-vanishing-gradient-problem-in-rnn-clearly-explained-efce8824971b)
+    and [this](https://medium.com/towards-artificial-intelligence/backpropagation-and-vanishing-gradient-problem-in-rnn-part-2-4fa4c0e27b54)
+    if you want to learn more about the vanishing gradient). Opposite problem with
+    exploding gradients when the weights cannot stabilize because of extreme updates
+    which eventually explode (go to infinity). Now, proper initialisation of weights
+    and normalization helps to address this problem but what has been observed is
+    even if the network becomes more stable, the performance decreases as the optimization
+    is harder. Adding these residual connections helps to improve performance and
+    the network becomes easier to optimize even if we keep increasing depth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How is it implemented? Simple — we just add the original input to the transformed
+    output after some transformations of the original input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Another key insight is that if the *transformations* of a residual connection
+    learn to approximate the identity function, the addition of the input with the
+    learned features will not have any effect. In fact, the network can learn to modify
+    or refine the features if needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case the residual connection is the sum between the initial *embeddings*
+    and the *attention_output* which are *embeddings* after all the transformations
+    in the *self-attention* layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the Intermediate class we perform a linear projection and apply a **non-linearity**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The non-linearity used in ViT is GeLU activation function. It is defined as
+    the cumulative distribution function of the standard normal distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d62753c56370e863409c8afbfc51a50e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://arxiv.org/pdf/1606.08415v3.pdf](https://arxiv.org/pdf/1606.08415v3.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is normally approximated with the following formula for faster calculations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6601dd9a9024fb6c7c9dbe7220f1f659.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://arxiv.org/pdf/1606.08415v3.pdf](https://arxiv.org/pdf/1606.08415v3.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the graph below we can see that if *ReLU,* that is given by the formula
+    *max(input, 0),* is monotonic, convex and linear in the positive domain, *GeLU*
+    is non-monotonic, non-convex and non-linear in the positive domain and thus can
+    approximate more easily complicated functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, *GeLU* function is smooth — unlike the *ReLU* function, which
+    is piecewise linear with a sharp transition at zero, *GeLU* provides a smooth
+    transition across all values, making it more amenable to gradient-based optimization
+    during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ceb845234321b15629db8d2ddc35170.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://arxiv.org/pdf/1606.08415v3.pdf](https://arxiv.org/pdf/1606.08415v3.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Output
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The final bit remaining of the Encoder is the Output class. To compute it we
+    already have all the elements we need — it is linear projection, Dropout and a
+    residual connection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Well, we went through the first layer ViT Layer, there are other 11 to go through
+    and this is where the hard part comes …
+  prefs: []
+  type: TYPE_NORMAL
+- en: Joking! We are actually done — all the other layers are exactly the same as
+    the first, the only difference is that instead of starting from the embeddings
+    like in the first layer the embeddings for the next layer are *output_res* we
+    computed previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So the output after 12 layer of the encoder is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pooler
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Generally, in a Transformer model Pooler is a component used to aggregate information
+    from the sequence of tokens embeddings after the transformer encoder blocks. Its
+    role is to generate a fixed-size representation that captures the global context
+    and summarizes the information extracted from the image patches, in case of ViT.
+    The Pooler is essential for obtaining a compact and context-aware representation
+    of the image, which can then be used for various downstream tasks such as image
+    classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case Pooler is very simple — we take [CLS] token and use it as the compact
+    and context-aware representation of the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Classifier
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, we are ready to use the the *pooled_output* to classify the image.
+    The classifier is a simple linear layer with output dimension equal to the number
+    of classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ViT fully revolutionized computer vision replacing Convolutional Neural Networks
+    almost in every application, this is why it’s so important to understand how it
+    works. Let’s not forget that the transformer architecture, which is the main component
+    of ViT, originated in NLP, thus you should check out my previous article on BERT
+    Transformer [here](https://medium.com/p/9f618472353e). Hope you enjoyed this read,
+    see you next time!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alexml0123/membership?source=post_page-----1ce4cc05ca8d--------------------------------)
+    [## Join Medium with my referral link - Alexey Kravets'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@alexml0123/membership?source=post_page-----1ce4cc05ca8d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [https://github.com/huggingface/transformers](https://github.com/huggingface/transformers)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [[2010.11929] An Image is Worth 16x16 Words: Transformers for Image Recognition
+    at Scale (arxiv.org)](https://arxiv.org/abs/2010.11929)'
+  prefs: []
+  type: TYPE_NORMAL

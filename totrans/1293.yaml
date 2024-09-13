@@ -1,0 +1,335 @@
+- en: Identifying Topical Hot Spots in Urban Areas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/identifying-topical-hot-spots-in-urban-areas-3c47cde5ae10](https://towardsdatascience.com/identifying-topical-hot-spots-in-urban-areas-3c47cde5ae10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/76d9a53bc4caa856f34174d3080e2287.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hipster Hot-Spots in Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A generic framework using OpenStreetMap and DBSCAN Spatial Clustering to Capture
+    the most hyped urban areas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@janosovm?source=post_page-----3c47cde5ae10--------------------------------)[![Milan
+    Janosov](../Images/77b62460041f66ec4585a81baef81a03.png)](https://medium.com/@janosovm?source=post_page-----3c47cde5ae10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c47cde5ae10--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c47cde5ae10--------------------------------)
+    [Milan Janosov](https://medium.com/@janosovm?source=post_page-----3c47cde5ae10--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c47cde5ae10--------------------------------)
+    ·9 min read·Oct 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I show a quick and easy-to-use methodology that is capable
+    of identifying hot spots for a given interest based on Point of interest (POI)
+    collected from [OpenStreeetMap](https://help.openstreetmap.org/questions/64731/place-type-categories)
+    ([OSM](https://help.openstreetmap.org/questions/64731/place-type-categories))
+    using the [DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html)
+    algorithm of sklearn. First, I will collect the raw data of POIs belonging to
+    a couple of categories that I found on ChatGPT, and I assumed they are characteristic
+    of the sometimes-called hyp-lifestyle (e.g., cafes, bars, marketplaces, yoga studios);
+    after converting that data into a handy GeoDataFrame, I do the geospatial clustering,
+    and finally, evaluate the results based on how well the different urban functionalities
+    mix in each cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the choice of the topic I call ‘hipster’ and the POI categories linked
+    to it is somewhat arbitrary, they can be easily replaced by other topics and categories
+    — the automatic hot-spot detecting method remains the same. The advantages of
+    such an easy-to-adopt method range from identifying local [innovation hubs](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5_ep83MAAAAJ&citation_for_view=5_ep83MAAAAJ%3AWF5omc3nYNoC)
+    supporting innovation planning to detecting urban subcenters supporting urban
+    planning initiatives, assessing different market opportunities for businesses,
+    analyzing real-estate investment opportunities, or capturing tourist hotspots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images were created by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Acquire data from OSM
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, I get the admin polygon of the target city. As Budapest is my hometown,
+    for easy (on-field) validation purposes, I use that. However, as I am only using
+    the global database of [OSM](https://www.openstreetmap.org/copyright), these steps
+    can easily be reproduced for any other part of the world that OSM covers. In particular,
+    I use the OSMNx package to get the admin boundaries in a super easy way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ea27afb37eba9ffa020c9dbac1156d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The admin boundaries of Budapest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, use the OverPass API to download the POIs that fall within the bounding
+    box of Budapest’s admin boundaries. In the amenity_mapping list, I compiled a
+    list of POI categories that I associate with the hipster lifestyle. I also have
+    to note here that this is a vague and not-expert-based categorization, and with
+    the methods presented here, anyone may update the list of categories accordingly.
+    Additionally, one may incorporate other POI data sources that contain more fine-grained
+    multi-level categorization for a more accurate characterization of the given topic.
+    In other words, this list can be changed in any way you see fit — from covering
+    the hipsterish things better to readjusting this exercise to any other topic-categorization
+    (e.g., food courts, shopping areas, tourist hotspots, etc).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: as the [OverPass](https://wiki.openstreetmap.org/wiki/Overpass_API) downloader
+    returns all results within a bounding box, at the end of this code block, I filter
+    out those POIs outside of the admin boundaries by using GeoPandas’ overlay function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code block is the frequency distribution of each downloaded
+    POI category:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/279062c78c8eb9d46c53c79953bacf3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The frequency distribution of each downloaded POI category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Visualize the POI data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now, visualize all the 2101 POIs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08cfed1dd592d8f4779b7db5efdad9e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Budapest with all the downloaded POIs labeled by their categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This plot is pretty difficult to interpret — except that the city center is
+    super crowded, so let’s go for an interactive visualization tool, [Folium](https://python-visualization.github.io/folium/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The default view of this map (which you can easily change by adjusting the
+    zoom_start=12 parameter):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb0d32088a2e35d86d2ca9d99ba0daf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Budapest with all the downloaded POIs labeled by their categories — interactive
+    version, first zoom setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, it is possible to change the zoom parameter and replot the map, or simply
+    zoom in using the mouse:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1caf04520f02ba12216267a719bc9f52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Budapest with all the downloaded POIs labeled by their categories — interactive
+    version, second zoom setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Or completely zoom out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e24905932348dca4c56bd7ce3782f963.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Budapest with all the downloaded POIs labeled by their categories — interactive
+    version, third zoom setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Spatial clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that I have all the necessary POIs at hand, I go for the DBSCAN algorithm,
+    first writing a function that takes the POIs and does the clustering. I will only
+    finetune the *eps* parameter of [DBSDCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html),
+    which, essentially, quantifies the characteristic size of a cluster, the distance
+    between POIs to be grouped together. Additionally, I transform the geometries
+    to a local CRS (EPSG:23700) to work in SI units. More on CRS conversions [here](https://medium.com/@janosovm/the-world-map-with-many-faces-map-projections-f58a210ff2f7).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/867884af64d3c5e2ddea54a14c885c2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preview on the POI GeoDataFrame where each POI is labeled by its cluster id.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are 1237 clusters — that seems to be a bit too much if we are just looking
+    at cozy, hipsterish hotspots. Let’s take a look at their size distribution and
+    then pick a size threshold — calling a cluster with two POIs hotspots is probably
+    not really sound anyways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9078ece6822d23013faeb74208bbcab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cluster size distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the gap in the histogram, let’s keep clusters with at least 10 POIs!
+    For now, this is a simple enough working hypothesis. However, this could be worked
+    in more sophisticated ways as well, for instance, by incorporating the number
+    of different POI types or the geographical area covered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This snippet shows that there are 15 clusters satisfying the filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we have the 15 true hipster clusters, put them on a map:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c9a26ba3cd2d7d99d33672ef83d4986f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hipster POI clusters — first zoom level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02603dd889752b75678b56839b385bb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hipster POI clusters — second zoom level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f541367574cdae487ea894a71008656f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hipster POI clusters — third zoom level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Comparing the clusters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Each cluster counts as a fancy, hipster cluster — however, they all must be
+    unique in some way or another, right? Let’s see how unique they are by comparing
+    the portfolio of POI categories they have to offer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, shoot for diversity and measure the variety/diversity of POI categories
+    in each cluster by computing their entropy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f814840d74c75523797b50804f148ecc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The diversity (entropy) of each cluster based on its POI profile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And a quick correlation analysis on this table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bb152c9e9b3dfa05a35ba1d3b7380ddc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The correlation between cluster features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After computing the correlation between cluster-ID, cluster size and cluster
+    entropy, there is a significant correlation between size and entropy; however,
+    it's far from explaining all the diversity. Apparently, indeed, some hotspots
+    are more diverse than others - while others are somewhat more specialized. What
+    are they specialized in? I will answer this question by comparing the POI profiles
+    of each cluster to the overall distribution of each POI type within clusters and
+    pick the top three POI categories most typical to a cluster compared to the average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code-block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a606acd8d683c239559f4383ece1a29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The unique amenity fingerprint of each cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The top category descriptions already show some trends. Such as cluster 17 is
+    clearly for drinking, while 19 also mixes music, possibly partying with it. Cluster
+    91, with bookstores, galleries, and cafes, is certainly a place for daytime relaxation,
+    while cluster 120, with music and a gallery can be a great warm-up for any pub
+    crawl. From the distribution, we can also see that hopping in a bar is always
+    appropriate (or, depending on the use case, we should think of further normalizations
+    based on category frequencies)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concluding remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a local resident, I can confirm that these clusters make perfect sense and
+    represent the desired urban functionality mix quite well despite the simple methodology.
+    Of course, this is a quick pilot that can be enriched and touched up in several
+    ways, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relying on more detailed POI categorization and selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Considering the POI categories when doing the clustering (semantic clustering)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enriching the POI information with e.g., social media reviews and ratings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

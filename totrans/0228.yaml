@@ -1,0 +1,461 @@
+- en: A Simple Approach to Hierarchical Time Series Forecasting with Machine Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-simple-approach-to-hierarchical-time-series-forecasting-with-machine-learning-2e180d83966c](https://towardsdatascience.com/a-simple-approach-to-hierarchical-time-series-forecasting-with-machine-learning-2e180d83966c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How to “boost” your cyclical sales data forecast with LightGBM and Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie?source=post_page-----2e180d83966c--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----2e180d83966c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e180d83966c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e180d83966c--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----2e180d83966c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e180d83966c--------------------------------)
+    ·8 min read·Mar 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a12cc1074687ea692350259d6b5e4ec7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hierarchical time series forecasting (Image drawn by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to another edition of “[The Kaggle Blueprints](/the-kaggle-blueprints-unlocking-winning-approaches-to-data-science-competitions-24d7416ef5fd),”
+    where we will analyze [Kaggle](https://www.kaggle.com/) competitions’ winning
+    solutions for lessons we can apply to our own data science projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This edition will review the techniques and approaches from the [“M5 Forecasting
+    — Accuracy”](https://www.kaggle.com/competitions/m5-forecasting-accuracy/) competition,
+    which ended at the end of June 2020.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem Statement: Hierarchical Time Series Forecasting'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The objective of the [“M5 Forecasting — Accuracy”](https://www.kaggle.com/competitions/m5-forecasting-accuracy/)
+    competition was to forecast the next 28 days of 42,840 hierarchical time series
+    of sales data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/competitions/m5-forecasting-accuracy/?source=post_page-----2e180d83966c--------------------------------)
+    [## M5 Forecasting — Accuracy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimate the unit sales of Walmart retail goods
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/competitions/m5-forecasting-accuracy/?source=post_page-----2e180d83966c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hierarchical time series** — Unlike common multivariate time series problems,
+    hierarchical time series can be aggregated on different levels: e.g., item level,
+    store level, and state level. In this competition, the competitors were given
+    over 40,000 time series of 3,000 individual products from 3 different categories,
+    sold in 10 stores across 3 states.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ff0a5265198003db4a830ab1cda33da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hierarchical time series (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cyclical** — Sales data is typically cyclical, which means that the sales
+    data is time-dependent. E.g., you will see repeating patterns, like increasing
+    sales around the end of the week (weekly cycle), at the beginning of a month (monthly
+    cycle), or during the holidays (annual cycle).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multistep** — The task is to forecast the sales data 28 days into the future
+    (28 steps).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/time-series-problems-simply-explained-as-fast-food-combo-meals-70c6eb9bdef?source=post_page-----2e180d83966c--------------------------------)
+    [## Time Series Problems Simply Explained as Fast Food Combo Meals'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference between univariate vs. multivariate, single-step vs. multistep,
+    and sliding vs. expanding window time…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/time-series-problems-simply-explained-as-fast-food-combo-meals-70c6eb9bdef?source=post_page-----2e180d83966c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To follow along in this article, your dataset should look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6cbc3e55d730d6421f2d05edd02bfb5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Insert your data here: How your hierarchical time series data should be formatted
+    (Image by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approaching Time Series Forecasting as a Regression Problem with ML
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A popular approach among competitors was formulating the time series forecasting
+    problem as a regression problem and modeling using Machine Learning (ML) [6].
+  prefs: []
+  type: TYPE_NORMAL
+- en: A time series forecasting problem can be formulated as a regression problem
+    by splitting the predictions into single steps — keeping the gap between the historical
+    data and the prediction constant among data points.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Instead of feeding the sequence of past values to the ML model, you can aggregate
+    the historical data points to historical features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/30514baeb3eb6ac8cd4345450c593ccf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Time Series Forecasting as a regression problem (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, the main steps to approach a hierarchical time series forecasting problem
+    with ML are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Building a Simple Baseline](#e2c2)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Feature Engineering from Historical Data](#8f8b)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Modeling and Validating a Time Series Forecasting Problem with Machine Learning](#c11e)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Step 1: Building a Simple Baseline'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As with any good ol’ ML problem, we will start by building a simple baseline.
+    With time series forecasting problems, a good starting point is to **take the
+    value from the last timestamp as the prediction — the naive approach**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can improve the naive approach by referencing the last cycle if you have
+    a cyclical time series. For example, if your time series depends on the weekday,
+    you can [take the last month, group by the weekday, and take the average](https://www.kaggle.com/code/chrisrichardmiles/simple-model-avg-last-28-days-grouped-by-weekday/notebook)
+    [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32af8bda8e51a8db2a165a1f216967bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Baseline for time series forecasting: naive approach (Image by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Feature Engineering from Historical Data'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In contrast to using a classical statistical approach, feature engineering is
+    an essential step when developing an ML model. Thus, instead of feeding the historical
+    data directly to the ML model, you will [aggregate the historical data into historical
+    features](https://www.kaggle.com/code/kyakovlev/m5-simple-fe/notebook) [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Timestamp features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A time series has at least two features: A timestamp and a value. Alone the
+    timestamp can be used to create multiple new features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, you can extract features from the timestamp by simply dissembling it
+    into its components, e.g., day, week, month, year, etc. [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Second, you can create new features based on the date [1, 3]: Is it a weekday
+    or weekend? Is it a holiday? Is a special event happening (e.g., a sports event)?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Aggregation features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, you can create new features by aggregating the historical data and creating
+    statistical features like the maximum, minimum, standard deviation, and mean [1,
+    3, 4, 8, 10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because we are working with a hierarchical time series, we will group the time
+    series by different `LEVEL` (e.g., `store_id`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lag features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A popular feature engineering technique for time series data is to create lagged
+    features [4, 5, 10]. To be able to use this feature on the testing data, the lag
+    should be larger than the time gap between training and testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4a4d3c9dfa0e9cf2af72974beae3e7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Lag of 7 days (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Rolling features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another popular feature engineering technique for time series data is to create
+    features based on a rolling window (e.g., mean or standard deviation) [1, 3, 10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can apply this feature engineering technique to the `FEATURE` directly or
+    even to the lagged version of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/371542343bfcce2bb26d0aebee276204.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mean of a rolling window of 28 days (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hierarchy as categorical features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When working with hierarchical time series, you can also include the node identifiers
+    of the different levels of the hierarchy (e.g., `store_id`, `item_id`) as categorical
+    variables [1, 3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Your resulting dataframe should look something like this before we feed it
+    to the ML model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87ac520980e0715964c481d023a38bee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training data structure for training an ML (GBDT) model for time series forecasting
+    (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Modeling and Validating a Time Series Forecasting Problem with Machine
+    Learning'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A few differences exist between modeling and validating a regular ML problem
+    (e.g., regression or classification) and a hierarchical time series forecasting
+    problem with ML.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modeling multivariate and hierarchical time series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Modeling a hierarchical time series problem is similar to modeling a multivariate
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Modeling multivariate time series** — Autoregressive and sequence-to-sequence
+    models can usually only model one time series (univariate time series problem)
+    at once. Thus, when encountering a multivariate time series problem (like hierarchical
+    time series), you would have to build multiple forecasting models — one model
+    for each time series.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many competitors used LightGBM, an ML model and gradient-boosting framework,
+    for modeling [1, 3, 5, 7, 8, 10]. When using LightGBM, you can model multiple
+    time series with a single LightGBM model instead of building multiple forecasting
+    models
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43e34cd23be278123f291a527eab628a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Modeling strategies for multivariate time series (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the time series data is hierarchical, many competitors **grouped similar
+    time series by hierarchy level** (e.g., by store) and modeled them together [3,
+    8, 10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9459bdd9f263b8bb7197de836832b5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Modeling strategy for hierarchical time series forecasting with Machine Learning
+    (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validating forecasting models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When validating a time series forecasting model, it is crucial to keep the timely
+    order of the time series in mind [6]. If you used the popular KFold cross-validation
+    strategy, you would use future data to predict past events. When forecasting,
+    you must avoid leaking future information to make predictions about the past.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/223bb5fe6a1dd066cdd9d617e8e5dfcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Avoid leaking future information to make predictions about the past in time
+    series forecasting validation (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, you should define a few cross-validation periods and then train a model
+    with all the data before that period [3, 8, 10]. E.g., for each week (`VALIDATION_PERIOD
+    = 7`) of the last month (`N_FOLDS = 4`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ff52fae7d447934bdef256c000e8138.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cross Validation for Time Series Forecasting (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To put everything together, you can use the following code snippet for reference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: When evaluating a hierarchical time series forecasting model, it might make
+    sense to [create a simple dashboard](https://www.kaggle.com/code/tnmasui/m5-wrmsse-evaluation-dashboard/)
+    [9] to analyze the model’s performance on each level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many more lessons to be learned from reviewing the learning resources
+    Kagglers have created during the course of the [“M5 Forecasting — Accuracy”](https://www.kaggle.com/competitions/m5-forecasting-accuracy/)
+    competition. There are also many different solutions for this type of problem
+    statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we focused on the general approach that was popular among
+    many competitors: Formulating the time series forecasting problem as a regression
+    problem, engineering features from historical data, and then applying an ML model
+    to it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article uses synthetical data since the original competition dataset is
+    only available for non-commercial use. The time series used in this article are
+    generated from the sum of a sine wave, a linear function, and a white noise signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enjoyed This Story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
+    when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----2e180d83966c--------------------------------)
+    [## Get an email whenever Leonie Monigatti publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
+    a Medium account if you don’t already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----2e180d83966c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
+    and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Alan Lahoud (2020). [5th place solution](https://www.kaggle.com/competitions/m5-forecasting-accuracy/discussion/163916)
+    in Kaggle Discussions (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Chris Miles (2020). [Simple model: avg last 28 days grouped by weekday](https://www.kaggle.com/code/chrisrichardmiles/simple-model-avg-last-28-days-grouped-by-weekday/notebook)
+    in Kaggle Notebooks (accessed March 6th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Eugene Tang (2020). [7th place solution](https://www.kaggle.com/competitions/m5-forecasting-accuracy/discussion/164826)
+    in Kaggle Discussions (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Konstantin Yakovlev (2020). [M5 — Simple FE](https://www.kaggle.com/code/kyakovlev/m5-simple-fe/notebook)
+    in Kaggle Notebooks (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Konstantin Yakovlev (2020). [M5 — Three shades of Dark: Darker magic](https://www.kaggle.com/code/kyakovlev/m5-three-shades-of-dark-darker-magic)
+    in Kaggle Notebooks (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] LogicAI (2023). [Kaggle Days Paris 2022_Jean Francois Puget_Sales forecasting
+    and fraud detection](https://www.youtube.com/watch?v=y61MkqCw8_Q) on YouTube.
+    (accessed 21\. February 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Matthias (2020). [2nd place solution](https://www.kaggle.com/competitions/m5-forecasting-accuracy/discussion/164599)
+    in Kaggle Discussions (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8 ] monsaraida (2020). [4th place solution](https://www.kaggle.com/competitions/m5-forecasting-accuracy/discussion/163216)
+    in Kaggle Discussions (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Tomonori Masui (2020). [M5 — WRMSSE Evaluation Dashboard](https://www.kaggle.com/code/tnmasui/m5-wrmsse-evaluation-dashboard)
+    in Kaggle Notebooks (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Yeonjun In (2020). [1st place solution](https://www.kaggle.com/competitions/m5-forecasting-accuracy/discussion/163684)
+    in Kaggle Discussions (accessed March 7th, 2023)'
+  prefs: []
+  type: TYPE_NORMAL

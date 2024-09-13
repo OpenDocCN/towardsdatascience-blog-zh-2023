@@ -1,0 +1,410 @@
+- en: 'Applied Reinforcement Learning VI: Deep Deterministic Policy Gradients (DDPG)
+    for Continuous Control'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/applied-reinforcement-learning-vi-deep-deterministic-policy-gradients-ddpg-for-continuous-dad372f6cb1d](https://towardsdatascience.com/applied-reinforcement-learning-vi-deep-deterministic-policy-gradients-ddpg-for-continuous-dad372f6cb1d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introduction and theoretical explanation of the DDPG algorithm, which has many
+    applications in the field of continuous control
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@JavierMtz5?source=post_page-----dad372f6cb1d--------------------------------)[![Javier
+    Martínez Ojeda](../Images/5b5df4220fa64c13232c29de9b4177af.png)](https://medium.com/@JavierMtz5?source=post_page-----dad372f6cb1d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dad372f6cb1d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dad372f6cb1d--------------------------------)
+    [Javier Martínez Ojeda](https://medium.com/@JavierMtz5?source=post_page-----dad372f6cb1d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dad372f6cb1d--------------------------------)
+    ·8 min read·Mar 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b37d51029a59d2af9831889b91939bda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Eyosias G](https://unsplash.com/pt-br/@yozz_t?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to read this article without a Premium Medium account, you can do
+    it from this friend link :)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[https://www.learnml.wiki/applied-reinforcement-learning-vi-deep-deterministic-policy-gradients-ddpg-for-continuous-control/](https://www.learnml.wiki/applied-reinforcement-learning-vi-deep-deterministic-policy-gradients-ddpg-for-continuous-control/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The **DDPG algorithm**, first presented at ICLR 2016 by Lillicarp et al. **[1]**,
+    was a significant breakthrough in terms of Deep Reinforcement Learning algorithms
+    for continuous control, because of its improvement over DQN **[2]** (which only
+    works with discrete actions), and its very good results and ease of implementation
+    (see **[1]**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for the **NAF algorithm** **[3]** presented in the [previous article](https://medium.com/towards-data-science/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095),
+    DDPG works with continuous action spaces and continuous state spaces, making it
+    an equally valid choice for continuous control tasks applicable to fields such
+    as Robotics or Autonomous Driving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095?source=post_page-----dad372f6cb1d--------------------------------)
+    [## Applied Reinforcement Learning V: Normalized Advantage Function (NAF) for
+    Continuous Control'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction and explanation of the NAF algorithm, widely used in continuous
+    control tasks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095?source=post_page-----dad372f6cb1d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logic of the DDPG algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The DDPG algorithm is an Actor-Critic algorithm, which, as its name suggests,
+    is composed of two neural networks: the **Actor** and the **Critic**. The Actor
+    is in charge of choosing the best action, and the Critic must evaluate how good
+    the chosen action was, and inform the actor how to improve it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Actor is trained by applying policy gradient, while the Critic is trained
+    by calculating the Q-Function. For this reason, the DDPG algorithm tries to learn
+    an approximator to the optimal Q-function (Critic) and an approximator to the
+    optimal policy (Actor) at the same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21274c16474ed2ceea16e312ef11fa9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Actor-Critic schema. Image extracted from **[4]**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The optimal Q-Function **Q*(s, a)** gives the expected return for being in state
+    **s**, taking action **a**, and then acting following the optimal policy. On the
+    other hand, the optimal policy **𝜇*(s)** returns the action which maximizes the
+    expected return starting from state **s**. According to these two definitons,
+    the optimal action on a given state (i.e. the return of the optimal policy on
+    a given state) can be obtained by getting the argmax of Q*(s, a) for a given state,
+    as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc7660bca9ebc13b1e78fe71ea874636.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Q-Function — Policy relation. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem is that, for continuous action spaces, obtaining the action **a**
+    which maximizes Q is not easy, because it would be impossible to calculate Q for
+    every possible value of **a** to check which result is the highest (which is the
+    solution for discrete action spaces), since it would have infinite possible values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a solution to this, and assuming that the action space is continuous and
+    that the Q-Function is differentiable with respect to the action, the DDPG algorithm
+    approximates the calculation of ***maxQ(s, a)*** to ***Q(s, 𝜇(s))***, where ***𝜇(s)***(a
+    deterministic policy) can be optimized performing gradient ascent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In simple terms, DDPG learns an approximator to the optimal Q-Function in order
+    to obtain the action that maximises it. Since, as the action space is continuous,
+    the result of the Q-Function cannot be obtained for every possible value of the
+    action, DDPG also learns an approximator to the optimal policy, in order to directly
+    obtain the action that maximises the Q-Function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following sections explain how the algorithm learns both the approximator
+    to the optimal Q-Function and the approximator to the optimal policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning of the Q-Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Mean-Squared Bellman Error Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The learning of the Q-Function is carried out using as base the Bellman equation,
+    previously introduced in [the first article of this series](https://medium.com/towards-data-science/applied-reinforcement-learning-i-q-learning-d6086c1f437).
+    As in the DDPG algorithm the Q-Function is not calculated directly, but a neural
+    network denoted ***Qϕ(s, a)*** is used as an approximator of the Q-Function, instead
+    of the Bellman equation a loss function called **Mean Squared Bellman Error (MSBE)**
+    is used. This function, shown in *Figure 1*, indicates how well the approximator
+    *Qϕ(s, a)*satisfies the Bellman equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4485e93d6884d97d4ec06e4543ff9ed7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1.** Mean-Squared Bellman Error (MSBE). Image extracted from **[5]**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of DDPG is to minimize this error function, which will cause the approximator
+    to the Q-Function to satisfy Bellman’s equation, which implies that the approximator
+    is optimal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replay Buffer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The data required to minimize the MSBE function (i.e. to train the neural network
+    to approximate Q*(s, a)), is extracted from a **Replay Buffer** where the experiences
+    lived during the training are stored. This Replay Buffer is represented in *Figure
+    1* as ***D***, from which the data required for calculating the loss is obtained:
+    state **s**, action **a**, reward **r**, next state **s’** and done **d**. If
+    you are not familiar with the Replay Buffer, it was explained in the articles
+    about the [DQN algorithm](https://medium.com/towards-data-science/applied-reinforcement-learning-iii-deep-q-networks-dqn-8f0e38196ba9)
+    and [NAF algorithm](https://medium.com/towards-data-science/applied-reinforcement-learning-v-normalized-advantage-function-naf-for-continuous-control-62ad143d3095),
+    and implemented and applied in the article about the [implementation of DQN](https://medium.com/towards-data-science/applied-reinforcement-learning-iv-implementation-of-dqn-7a9cb2c12f97).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Target Neural Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The minimization of the MSBE function consists of making the approximator to
+    the Q-Function, *Qϕ(s, a)*, as close as possible to the other term of the function,
+    **the target**, which originally has the following form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d58029862efbecaec31321f03282b10c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2.** Target. Extracted from Figure 1 **[5]**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen, the target depends on the same parameters to be optimized, **ϕ**,
+    which makes the minimization unstable. Therefore, as a solution another neural
+    network is used, containing the parameters of the main neural network but with
+    a certain delay. This second neural network is called **target network, *Qϕtarg(s,
+    a)***(see *Figure 3*)**,** and its parameters are denoted ***ϕtarg***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in *Figure 2* it can be seen how, when substituting *Qϕ(s, a)* for
+    *Qϕtarg(s, a)*, it is necessary to obtain the action that maximizes the output
+    of this target network, which, as explained above, is complicated for continuous
+    action space environments. This is solved by making use of a **target policy network,
+    *𝜇ϕtarg(s)*** (see *Figure 3*), which approximates the action that maximizes the
+    output of the target network. In other words, a target policy network *𝜇ϕtarg(s)*has
+    been created to solve the problem of continuous actions for *Qϕtarg(s, a)*, just
+    as was done with *𝜇ϕ(s)* and *Qϕ(s, a)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minimize the modified MSBE Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With all this, the learning of the optimal Q-Function by the DDPG algorithm
+    is carried out minimizing the modified MSBE function in *Figure 3*, by applying
+    gradient descent on it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc9ef5c014b0479ce017276e9bd2589c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3\.** Modified Mean-Squared Bellman Error. Extracted from **[5]**
+    and edited by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning of the Policy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Given that the action space is continuous, and that the Q-Function is differentiable
+    with respect to the action, DDPG learns the deterministic policy ***𝜇ϕ(s)*** that
+    maximizes *Qϕ(s, a)* by applying gradient ascent on the function below with respect
+    to the deterministic policy’s parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a363a03aeb9fe79da15bf022dff83a3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4.** Function to optimize for the deterministic policy learning. Extracted
+    from **[5]**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DDPG Algorithm Flow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The flow of the DDPG algorithm will be presented following the pseudocode below,
+    extracted from **[1]**. The DDPG algorithm follows the same steps as other Q-Learning
+    algorithms for function approximators, such as the DQN or NAF algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75b55a12daffd419a15512867063bdfc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDPG Algorithm Pseudocode. Extracted from **[1]**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Initialize Critic, Critic Target, Actor and Actor Target networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Initialize the Actor and Critic neural networks to be used during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Critic network, *Qϕ(s, a)*, acts as an approximator to the Q-Function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Actor network, *𝜇ϕ(s),* acts as an approximator to the deterministic policy
+    and is used to obtain the action that maximizes the output of the Critic network.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once initialized, the target networks are initialized with the same architecture
+    as their corresponding main networks, and the weights of the main networks are
+    copied into the target networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Critic Target network, *Qϕtarg(s, a),* acts as a delayed Critic network,
+    so that the target does not depend on the same parameters to be optimized, as
+    explained before.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Actor Target network, *𝜇ϕtarg(s),* acts as a delayed Actor network, and
+    it used to obtain the action that maximizes the output of the Critic Target network.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Initialize Replay Buffer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Replay Buffer to be used for the training is initialized empty.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*For each timestep in an episode, the agent performs the following steps:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Select action and apply noise
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The best action for the current state is obtained from the output of the Actor
+    neural network, which approximates the deterministic policy *𝜇ϕ(s).* The noise
+    extracted from a **Ornstein Uhlenbeck Noise** process **[6]**, or from an **uncorrelated,
+    mean-zero Gaussian distribution** **[7]** is then applied to the selected action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Perform the action and store observations in Replay Buffer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The noisy action is performed in the environment. After that, the environment
+    returns a **reward** indicating how good the action taken was, the **new state**
+    reached after performing the action, and a boolean indicating whether a **terminal
+    state** has been reached.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This information, together with the **current state** and the **action taken**,
+    is stored in the Replay Buffer, to be used later to optimize the Critic and Actor
+    neural networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Sample batch of experiences and train Actor and Critic networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This step is only performed when the Replay Buffer has enough experiences to
+    fill a batch. Once this requirement is met, a batch of experiences is extracted
+    from the Replay Buffer for use in training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this batch of experiences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The target is calculated and the output of the Critic network (the approximator
+    of the Q-Function) is obtained, in order to then apply gradient descent on the
+    MSBE error function, as shown in *Figure 3*. This step trains/optimizes the approximator
+    to the Q-Function, *Qϕ(s, a).*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gradient ascent is performed on the function shown in *Figure 4*, thus optimizing/training
+    the approximator to the deterministic policy, *𝜇ϕ(s)*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 6\. Softly update the Target networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Both the Actor Target and the Critic Target networks are updated every time
+    the Actor and Critic networks are updated, by **polyak averaging**, as shown in
+    the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a004bfe6f1fb9758bf9750fa17bf710.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5.** Polyak Averaging. Extracted from **[1]**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tau *τ***, the parameter that sets the weights of each element in the polyak
+    averaging, is a hyperparameter to be set for the algorithm, which usually takes
+    values close to 1.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The DDPG algorithm proposed by Lillicrap et al. achieves very good results in
+    most continuous environments available in Gym as shown in the paper that presented
+    it **[1]**, demonstrating its ability to learn different tasks, regardless of
+    their complexity, in a continuous context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, this algorithm is still used today to enable an agent to learn an
+    optimal policy for a complex task in a continuous environment, such as control
+    tasks for manipulator robots, or obstacle avoidance for autonomous vehicles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: REFERENCES
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**[1]** LILLICRAP, Timothy P., et al. Continuous control with deep reinforcement
+    learning. *arXiv preprint arXiv:1509.02971*, 2015.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[2]** MNIH, Volodymyr, et al. Playing atari with deep reinforcement learning.
+    *arXiv preprint arXiv:1312.5602*, 2013.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[3]** GU, Shixiang, et al. Continuous deep q-learning with model-based acceleration.
+    En *International conference on machine learning*. PMLR, 2016\. p. 2829–2838.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[4]** SUTTON, Richard S.; BARTO, Andrew G. *Reinforcement learning: An introduction*.
+    MIT press, 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[5]** *OpenAI Spinning Up — Deep Deterministic Policy Gradient*[https://spinningup.openai.com/en/latest/algorithms/ddpg.html](https://spinningup.openai.com/en/latest/algorithms/ddpg.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[6]** Uhlenbeck-Ornstein process[https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process](https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[7]** Normal / Gaussian Distribution'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Normal_distribution](https://en.wikipedia.org/wiki/Normal_distribution)'
+  prefs: []
+  type: TYPE_NORMAL

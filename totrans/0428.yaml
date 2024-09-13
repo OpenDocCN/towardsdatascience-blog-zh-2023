@@ -1,0 +1,318 @@
+- en: Build low-latency and scalable ML model prediction pipelines using Spark Structured
+    Streaming and MLflow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/build-low-latency-and-scalable-ml-model-prediction-pipelines-using-spark-structured-streaming-and-535ae5244877](https://towardsdatascience.com/build-low-latency-and-scalable-ml-model-prediction-pipelines-using-spark-structured-streaming-and-535ae5244877)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: MLOps in practice series — sharing design and implementation patterns of critical
+    MLOps component. The focus of today’s article is on building model prediction
+    pipelines.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)[![YUNNA
+    WEI](../Images/ffd0dd5c697dd2b4640ade49274d2bf9.png)](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)[](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)
+    [YUNNA WEI](https://medium.com/@weiyunna91?source=post_page-----535ae5244877--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----535ae5244877--------------------------------)
+    ·8 min read·Jan 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make ML models work in a real production environment, one of the most critical
+    steps is to deploy the trained models for predictions. Model deployment (release)
+    is a process that enables you to integrate trained ML models into production to
+    make decisions on real-world data. When it comes to model deployment, there are
+    generally two types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One is batch prediction where the trained models are called and fed with a batch
+    of data at a certain interval (such as once per day or once per week depending
+    on how the models are used in certain business contexts), to periodically generate
+    predictions for use.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The other is online prediction where a trained model is packaged as a REST API
+    or a containerized microservice, and the model returns prediction results (generally
+    in JSON format) by responding to an API request. With online prediction, the model
+    makes predictions in real-time, meaning, as soon as the API is called, a model
+    prediction result will be returned. Additionally the model REST API is generally
+    integrated as part of a web application for end users or downstream applications
+    to interact with.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: However, between batch prediction and online prediction, we have seen an increasing
+    number of scenarios where the model is not required to be packaged as a REST API,
+    but the required latency for model prediction is quite low. Therefore, in order
+    to solve the needs of these scenarios, I would like to share a solution — building
+    low-latency and scalable ML model prediction pipeline using Spark Structured Streaming
+    and MLflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The content of today’s article is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quick introduction to Spark Structured Streaming and mlflow;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Key architecture components of a low-latency and scalable ML prediction pipelines;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementation details of using Spark Structured Streaming and mlflow to build
+    a low-latency and scalable ML prediction pipelines;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/627bbfa124c649b39f435fbbc541f1ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jen Theodore](https://unsplash.com/@jentheodore?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to Spark Structured Streaming and mlflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark Structured Streaming — [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide)
+    is a scalable and fault-tolerant stream processing engine built on the Spark SQL
+    engine. Internally, by default, Structured Streaming queries are processed using
+    a micro-batch processing engine, which processes data streams as a series of small
+    batch jobs thereby achieving end-to-end latencies as low as 100 milliseconds and
+    exactly-once fault-tolerance guarantees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLflow — [MLflow](https://mlflow.org/) is an open source platform for managing
+    the end-to-end machine learning lifecycle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tracking** — The MLflow tracking component is an API and UI for logging parameters,
+    code versions, metrics, and output files, when running your machine learning code
+    and for later visualizing the results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Models** — An MLflow model is a standard format for packaging machine learning
+    models that can be used in a variety of downstream tools. The format defines a
+    convention that lets you save a model in different “flavors” that can be understood
+    by different downstream tools. The built-in model flavors can be found [here](https://mlflow.org/docs/latest/models.html#built-in-model-flavors.).
+    It is worth mentioning that the [python_function](https://mlflow.org/docs/latest/models.html#python-function-python-function)
+    model flavor serves as a default model interface for MLflow Python models. Any
+    MLflow Python model is expected to be loadable as a python_function model. In
+    today’s demonstrated solution, we loaded the trained model as a python function.
+    Additionally we also leveraged the model API calls of [*log_model()*](https://mlflow.org/docs/latest/python_api/mlflow.models.html#mlflow.models.Model.log)
+    and [*load_model()*](https://mlflow.org/docs/latest/python_api/mlflow.models.html#mlflow.models.Model.load)*.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Model Registry** — The MLflow model registry component is a centralized model
+    store, set of APIs, and UI, to collaboratively manage the full lifecycle of an
+    MLflow model. It provides model lineage (providing visibility and traceability
+    of the trained ML model coming from the combination of the specific MLflow experiment,
+    and run), model versioning, stage transitions (for example from staging to production),
+    and annotations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Projects** — An MLflow project is a format for packaging data science code
+    in a reusable and reproducible way, based primarily on conventions. Each project
+    is simply a directory of files, or a Git repository, containing your code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you are interested in understanding more about Spark Structured Streaming,
+    you can check out my other [article](https://medium.com/@weiyunna91/continuously-ingest-and-load-csv-files-into-delta-using-spark-structure-streaming-ce5faaadd1e7?sk=6cc4f4d31488f2d2420ec40592ea8bd0)
+    specifically talking about how to build streaming data pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s deep dive into the key architecture components of building such a
+    a low-latency and scalable ML prediction pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key architecture components of a low-latency and scalable ML prediction pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/5526915298854113a00cae9c672dd58b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Low-latency and scalable ML prediction pipeline | Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As shown in the above chart, there are 3 key architecture components in order
+    to build a low-latency and scalable ML prediction pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to build a streaming data pipeline to ingest the raw data,
+    convert the raw data into ML features and feed the ML features to the ML models
+    in low latency;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The second step is to load the trained and registered ML model as a Spark User
+    Defined Function (UDF) so that the model can make predictions in parallel, to
+    leverage Spark’s distributed computing power. This is particularly useful when
+    the data that is needed to make predictions is large in volume.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The third step is to save the model predictions results into a Delta table stored
+    in a AWS S3 bucket. Then, the model prediction results can be used for downstream
+    data consumers and applications. For example, you can build a Business Intelligence
+    (BI) dashboard on top of the model prediction results to support business decision
+    making. You can also build real-time monitoring mechanism to generate notifications
+    and alerts based on model predictions to improve operation efficiencies.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Before we demonstrate the implementation of how to build a low-latency and scalable
+    ML prediction pipeline, we need first to set some pre-requisites.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First and foremost is the schema of the trained model, as shown in the file
+    below:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Second is the schema of the training and test data. Making sure the schema
+    of data fed to the model matches with the model input schema is critical to avoid
+    any errors caused by a schema mismatch during model prediction. The data schema
+    is shown as below:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The data used in this article is from [here](http://archive.ics.uci.edu/ml/datasets/Wine+Quality).
+    Feel free to find out more details about the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have a good understanding of what the model schema and data schema looks
+    like, we can start implementing the ML prediction pipeline using Spark Structured
+    Streaming and MLflow. The complete solution is explained in detail in the next
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complete solution — building a low-latency and scalable ML prediction pipeline
+    using Spark Structured Streaming and MLflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Step 1 — Build a streaming data ingestion pipeline to load the data for prediction
+    in low-latency. Structured streaming allows you to define how fast the data needs
+    to be processed by setting a micro-batch interval. In today’s demo, we will set
+    the micro-batch interval as 5 minutes, meaning, every 5 minutes, the streaming
+    pipeline will pull raw data and call the deployed ML model for predictions. Below
+    is a sample streaming data ingestion pipeline to load the raw data (in CSV format)
+    into a Spark streaming data frame.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step 2 — Load the registered model as a Spark User Defined Function (UDF) function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step 3 — Make predictions on the streaming data frame and save the ML model
+    predictions results into a Delta table for downstream consumers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Complete Solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thanks for reading today’s article. Hopefully you can leverage this model deployment
+    pattern in your ML-driven applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my previous article, [MLOps in Practice — De-constructing an ML Solution
+    Architecture into 10 components](/mlops-in-practice-de-constructing-an-ml-solution-architecture-into-10-components-c55c88d8fc7a?sk=a14ce7ead68a2f90868d7a063eea84e3),
+    I break down an end to end ML solution architecture into 10 components. Today’s
+    article focuses on explaining one of the popular patterns for the component of
+    building ML serving pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will continue to share articles on MLOps in practice series to explain the
+    design and implementation patterns of critical MLOps components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please feel free to follow me on Medium if you want to be notified when these
+    articles are published. I generally publish 1 or 2 articles on data and AI every
+    week.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to see more guides, deep dives, and insights around modern and efficient
+    data+AI stack, please subscribe to my free newsletter — [***Efficient Data+AI
+    Stack***](https://yunnawei.substack.com/), thanks!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[https://mlflow.org/](https://mlflow.org/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://mlflow.org/docs/latest/index.html#mlflow-documentation](https://mlflow.org/docs/latest/index.html#mlflow-documentation)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#structured-streaming-programming-guide)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[http://archive.ics.uci.edu/ml/datasets/Wine+Quality](http://archive.ics.uci.edu/ml/datasets/Wine+Quality)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: Just in case you haven’t become a Medium member yet, and you really should,
+    as you’ll get unlimited access to Medium, you can sign up using my [referral link](https://medium.com/@weiyunna91/membership)!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks so much for your support!
+  prefs: []
+  type: TYPE_NORMAL

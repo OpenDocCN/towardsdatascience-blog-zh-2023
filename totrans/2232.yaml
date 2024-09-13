@@ -1,0 +1,540 @@
+- en: 'Unraveling the Design Pattern of Physics-Informed Neural Networks: Part 06'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2](https://towardsdatascience.com/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-06-bcb3557199e2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Bring causality to PINN training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----bcb3557199e2--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----bcb3557199e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bcb3557199e2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bcb3557199e2--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----bcb3557199e2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bcb3557199e2--------------------------------)
+    ·9 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c5a39882aa4755f7434a2421e21550e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Delano Ramdas](https://unsplash.com/@delanodzr?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to the 6th blog of this series, where we continue our exciting journey
+    of exploring ***design patterns*** of physics-informed neural networks (PINN)🙌
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this episode, we will talk about bringing **causality** to the training
+    of physics-informed neural nets. As suggested by the paper we will look at today:
+    respecting causality is all you need!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, let’s begin by talking about the current matters in question, then
+    move on to the suggested remedies, the evaluation procedure, and the advantages
+    and disadvantages of the proposed method. Finally, we will conclude the blog by
+    exploring potential opportunities that lie ahead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As this series continues to expand, the collection of PINN design patterns
+    grows even richer*🙌* Here’s a sneak peek at what awaits you:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 02: Dynamic solution interval expansion](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: Training PINN with gradient boosting](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 04: Gradient-enhanced PINN learning](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: Automated hyperparameter tuning](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 07: Active learning with PINN](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Paper at a glance 🔍
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Title**: Respecting causality is all you need for training physics-informed
+    neural networks'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Authors**: S. Wang, S. Sankaran, P. Perdikaris'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Institutes**: University of Pennsylvania'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Link**: [arXiv](https://arxiv.org/abs/2203.07404), [GitHub](https://github.com/PredictiveIntelligenceLab/CausalPINNs)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Design pattern 🎨
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2.1 Problem 🎯
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Physics-informed neural networks (PINNs) are a major leap in combining observational
+    data and physical laws across various fields. In practice, however, they are often
+    observed to be unable to tackle high nonlinearity, multi-scale dynamics, or chaotic
+    problems, and tend to converge to erroneous solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why this is the case?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, the fundamental issue lies in the **violation of causality** in the PINN
+    formulations, as revealed by the current paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Causality, in the physical sense, implies that the state at a future time point
+    depends on the state at the current or past time points. In PINN training, however,
+    this principle may not hold true; these networks might be implicitly biased towards
+    first approximating PDE solutions at future states before even resolving initial
+    conditions, essentially “jumping ahead” in time and thereby violating causality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, traditional numerical methods inherently preserve causality via
+    a time-marching strategy. For instance, when discretizing PDE in time, these methods
+    ensure the solution at time *t* is resolved before approximating the solution
+    at time *t* + ∆*t*. Hence, each future state is sequentially built upon the resolved
+    past states, thus preserving the principle of causality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This understanding of the problem brings us to an intriguing question: how
+    do we rectify this violation of causality in PINNs, bringing them in line with
+    fundamental physical laws?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bb498e14a463d651a5fcfaa8d26ffba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN workflow. Naive PINN does not have “causality” baked in. One simple yet
+    effective strategy is to dynamically weight the PDE residual losses at different
+    time instances. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Solution 💡
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The key idea here is to **re-formulate the PINN loss function**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, we can introduce a dynamic weighting scheme to account for different
+    contributions of PDE residual loss evaluated at different temporal locations.
+    Let’s break it down using illustrations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For simplicity, let’s assume the collocation points are uniformly sampled in
+    the spatial-temporal domain of our simulation, as illustrated in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1ca3613665e64381681b8090b2bf771.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Total PDE residual loss is calculated over all collocation points, and its gradient
+    values are used to drive network parameter optimization. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To proceed with one step of gradient descent, we must first calculate the cumulative
+    PDE residual loss across all collocation points. One specific way to do that is
+    by first calculating the losses related to the collocation points sampled at individual
+    time instances, and then performing a “simple sum” to get the total loss. The
+    following gradient descent step can then be conducted based on the calculated
+    total loss to optimize the PINN weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, the exact order of summation over collocation points doesn’t influence
+    the total loss computation; all methods yield the same result. However, the decision
+    to group loss calculations by temporal order is purposeful, designed to emphasize
+    the element of ‘temporality’. This concept is crucial for understanding the proposed
+    causal training strategy.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this process, the PDE residual losses evaluated at different temporal locations
+    are treated equally. meaning that all temporal residual losses are simultaneously
+    minimized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach, however, risks the PINN violating temporal causality, as it doesn’t
+    enforce a chronological regularization for minimizing the temporal residual loss
+    at successive time intervals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how can we coax PINN to adhere to the temporal precedence during training?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The secret is in **selectively weighting individual temporal residual losses**.
+    For instance, suppose that at the current iteration, we want the PINN to focus
+    on approximating the solutions at time instance *t*₁. Then, we could simply put
+    a higher weight on Lᵣ(*t*₁), which is the temporal residual lossat *t*₁. This
+    way, Lᵣ(*t*₁) will become a dominant component in the final total loss, and as
+    a result, the optimization algorithm will prioritize minimizing Lᵣ(*t*₁), which
+    aligns with our goal of approximating solutions at time instance *t*₁ first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e565859efb6486eea4297bd96b2a18d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By assigning weights to temporal residual loss at different time instances,
+    we can steer the optimizer to focus on minimizing loss at our desired time instances.
+    (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the subsequent iteration, we shift our focus to the solutions at time instance
+    t₂. By increasing the weight on Lᵣ(t₂), it now becomes the main factor in the
+    total loss calculation. The optimization algorithm is thus directed towards minimizing
+    Lᵣ(t₂), improving the prediction accuracy of the solutions at t₂.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/838ffec64f1ec82607de97a20824cbe4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen from our previous walk-through, varying the weights assigned
+    to temporal residual losses at different time instances enables us to direct the
+    PINN to approximate solutions at our chosen time instances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how does this assist in incorporating a causal structure into PINN training?
+    It turns out, we can design a causal training algorithm (as proposed in the paper),
+    such that **the weight for the temporal residual loss at time *t*, *i.e.*,Lᵣ(*t*),is
+    significant only when the losses before *t* (Lᵣ(*t-1*), Lᵣ(*t-2*), etc.) are sufficiently
+    small**. This effectively means that the neural network begins minimizing Lᵣ(t)
+    only when it has achieved satisfactory approximation accuracy for prior steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To determine the weight, the paper proposed a simple formula: the weight ωᵢ
+    is set to be inversely exponentially proportional to the magnitude of the cumulative
+    temporal residual loss from all the previous time instances. This ensures that
+    the weight ωᵢ will only be active (i.e., with a sufficiently large value) when
+    the cumulative loss from all previous time instances is small, i.e., PINN can
+    already accurately approximate solutions at previous time steps. This is how *temporal
+    causality* is reflected in the PINN training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/757433ba91f9576b3faf5815e50f1312.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With all components explained, we can piece together the full causal training
+    algorithm as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f46749a291db166ce65e1224516938d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the proposed causal training algorithm in the paper. (Image
+    by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we conclude this section, there are two remarks worth mentioning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper suggested using the magnitude of ωᵢ as the stopping criterion for
+    PINN training. Specifically, when all ωᵢ’s are larger than a pre-defined threshold
+    δ, the training may be deemed completed. The recommended value for δ is 0.99.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Selecting a proper value for ε is important. Although this value can be tuned
+    via conventional hyperparameter tuning, the paper recommended an annealing strategy
+    for adjusting ε. Details can be found in the [original paper](https://arxiv.org/abs/2203.07404)
+    (section 3).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 2.3 Why the solution might work 🛠️
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By dynamically weighting temporal residual losses evaluated at different time
+    instances, the proposed algorithm is able to steer the PINN training to first
+    approximate PDE solutions at earlier times before even trying to resolve the solution
+    at later times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This property facilitates the explicit incorporation of temporal causality into
+    the PINN training and constitutes the key factor in potentially more accurate
+    simulations of physical systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Benchmark ⏱️
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The paper considered a total of 3 different benchmark equations. All problems
+    are forward problems where PINN is used to solve the PDEs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lorenz system: these equations arise in studies of convection and instability
+    in planetary atmospheric convection. Lorenz system exhibits strong sensitivity
+    to its initial conditions, and it is known to be challenging for vanilla PINN.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/24033d97a935bef0fb3fd3f9d1aa3c90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Kuramoto–Sivashinsky equation: this equation describes the dynamics of various
+    wave-like patterns, such as flames, chemical reactions, and surface waves. It
+    is known to exhibit a wealth of spatiotemporal chaotic behaviors.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/780bc2f9867af18779e1983004bc910d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Navier-Stokes equation: this set of partial differential equations describes
+    the motion of fluid substances and constitutes the fundamental equations in fluid
+    mechanics. The current paper considered a classical two-dimensional decaying turbulence
+    example in a square domain with periodic boundary conditions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2587329316d8589be36ab58853699baa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The benchmark studies yielded that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The proposed causal training algorithm was able to achieve 10–100x improvements
+    in accuracy compared to the vanilla PINN training scheme.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Demonstrated that PINNs equipped with causal training algorithm can successfully
+    simulate highly nonlinear, multi-scale, and chaotic systems.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.5 Strengths and Weaknesses ⚡
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Strengths** 💪'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Respects the causality principle and makes PINN training more transparent.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduces significant accuracy improvements, allowing it to tackle problems
+    that have remained elusive to PINNs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provides a practical quantitative criterion for assessing the training convergence
+    of PINNs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Negligible added computational cost compared to the vanilla PINN training strategy.
+    The only added cost is to compute the ωᵢ’s, which is negligible compared to auto-diff
+    operations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Weaknesses** 📉'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduced a new hyperparameter ε, which controls the scheduling of the weights
+    for temporal residual losses. Although the authors proposed an annealing strategy
+    as an alternative to avoid the tedious hyper-parameter tuning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Complicated the PINN training workflow. Special attention should be given to
+    the temporal weights ωᵢ’s, as they are now functions of the network trainable
+    parameters (e.g., layer weights and bias), and the gradient associated with the
+    computation of ωᵢ should not be back-propagated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2.6 Alternatives 🔀
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are a couple of alternative methods that are trying to address the same
+    issue as the current “causal training algorithm”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Adaptive time sampling strategy ([Wight et al.](https://arxiv.org/abs/2007.04542)):
+    instead of weighting the collocation points at different time instances, this
+    strategy modifies the sampling density of collocation points. This has a similar
+    effect of shifting the focus of the optimizer on minimizing temporal losses at
+    different time instances.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '“Time-marching”/“Curriculum training” strategy (e.g., [Krishnapriyan et al.](https://arxiv.org/abs/2109.01050)):
+    the temporal causality is respected via learning the solution sequentially within
+    separate time windows.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: However, compared to those alternative approaches, the “causal training algorithm”
+    put temporal causality front and center, is more adaptable to a variety of problems,
+    and enjoys low added computational cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 Potential Future Improvements 🌟
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are several possibilities to further improve the proposed strategy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incorporating more sophisticated data sampling strategies, such as adaptive-
+    and residual-based sampling methods, to further improve the training efficiency
+    and accuracy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To learn more about how to optimize the residual points distribution, check
+    out [this blog](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)
+    in the PINN design pattern series.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Extend to inverse problem settings. How to ensure casualty when point sources
+    of information (i.e., observational data) are available would require an extension
+    of the currently proposed training strategy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 Takeaways 📝
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog, we looked at how to bring causality to PINN training with a reformulation
+    of the training objectives. Here are the highlights of the design pattern proposed
+    in the paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Problem]: How to make PINNs respect the causality principle underpinning the
+    physical systems?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Solution]: **Re-formulating the PINN training objective**, where a dynamic
+    weighting scheme is introduced to gradually shift the training focus from earlier
+    time steps to later time steps.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Potential benefits]: 1\. Significantly improved PINNs’ accuracy. 2\. Expanded
+    the applicability of PINNs to complex problems.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the PINN design card to summarize the takeaways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f44122165c8b0f741c7006072f4a7695.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PINN design pattern proposed in the paper. (Image by this blog author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope you found this blog useful! To learn more about PINN design patterns,
+    feel free to check out other posts in this series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 01: Optimizing the residual point distribution](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 02: Dynamic solution interval expansion](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-02-2156516f2791)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 03: PINN training with gradient boost](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-03-fe365ef480d9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 04: Gradient-enhanced PINN learning](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-04-c778f4829dde)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 05: Hyperparameter tuning for PINN](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-05-67a35a984b23)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PINN design pattern 07: Active learning with PINN](/unraveling-the-design-pattern-of-physics-informed-neural-networks-part-07-4ecb543b616a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Looking forward to sharing more insights with you in the upcoming blogs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference 📑
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Wang et al., Respecting causality is all you need for training physics-informed
+    neural networks, [arXiv](https://arxiv.org/abs/2203.07404), 2022.'
+  prefs: []
+  type: TYPE_NORMAL

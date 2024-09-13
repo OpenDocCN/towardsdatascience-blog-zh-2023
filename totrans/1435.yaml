@@ -1,0 +1,383 @@
+- en: 'LLMs for Everyone: Running LangChain and a MistralAI 7B Model in Google Colab'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/llms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d](https://towardsdatascience.com/llms-for-everyone-running-langchain-and-a-mistralai-7b-model-in-google-colab-246ca94d7c4d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Experimenting with Large Language Models for free
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----246ca94d7c4d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246ca94d7c4d--------------------------------)
+    ·10 min read·Dec 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/260367e3c69b2a0784e0677fcb3983bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Artistic representation of the LangChain, Photo by Ruan Richard Rodrigues, [Unsplash](https://unsplash.com/@heeybooy)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Everybody knows that large language models are, by definition, large. And even
+    not so long ago, they were available only for high-end hardware owners, or at
+    least for people who paid for cloud access or even every API call. Nowadays, the
+    time is changing. In this article, I will show how to run a LangChain Python library,
+    a FAISS vector database, and a Mistral-7B model in Google Colab completely for
+    free, and we will do some fun experiments with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many articles here on TDS about using large language models in Python,
+    but often it is not so easy to reproduce them. For example, many examples of using
+    a LangChain library use an [OpenAI](https://python.langchain.com/docs/integrations/llms/openai)
+    class, the first parameter of which (guess what?) is OPENAI_API_KEY. Some other
+    examples of RAG (Retrieval Augmented Generation) and vector databases use Weaviate;
+    the first thing we see after opening their website is “Pricing.” Here, I will
+    use a set of open-source libraries that can be used completely for free:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[LangChain](https://github.com/langchain-ai/langchain). It is a Python framework
+    for developing applications powered by language models. It is also model-agnostic,
+    and the same code can be reused with different models.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[FAISS](https://github.com/facebookresearch/faiss) (Facebook AI Similarity
+    Search). It’s a library designed for efficient similarity search and storage of
+    dense vectors, which I will use for Retrieval Augmented Generation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Mistral 7B](https://mistral.ai/news/announcing-mistral-7b/) is a 7.3B parameter
+    large language model (released under the Apache 2.0 license), which, according
+    to the authors, is outperforming 13B Llama2 on all benchmarks. It is also available
+    on [HuggingFace](https://huggingface.co/mistralai/Mistral-7B-v0.1), so its use
+    is pretty simple.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Last but not least, [Google Colab](https://colab.research.google.com/) is also
+    an important part of this test. It provides free access to Python notebooks powered
+    by CPU, 16 GB NVIDIA Tesla T4, or even 80 GB NVIDIA A100 (though I never saw the
+    last one available for a free instance).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Right now, let’s get into it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As a first step, we need to open Google Colab and create a new notebook. The
+    needed libraries can be installed by using `pip` in the first cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Before running the code, we need to **select the runtime** type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/befe23bd5b3d3bb9ed2a9a7c2edb01d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Google Colab, Screenshot by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let’s import the libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If everything was done correctly, the output should show the “cuda” device and
+    a “Tesla T4” as the selected graphics card.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next step is the most important and resource-intensive: let’s **load the
+    language model**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, I selected a 4-bit quantization mode, which allows the model to fit into
+    GPU RAM. There is also another tricky part. Loading the original “mistralai/Mistral-7B-Instruct-v0.1”
+    model causes the Colab instance to crash. Surprisingly, the GPU RAM is enough
+    for 4-bit quantization, but the model files are about 16 GB in size, and there
+    is just not enough “normal” RAM on a free Colab instance to quantize the model
+    before loading it into the GPU! As a workaround, I was using a “sharded” version,
+    which was split into 2GB chunks (if your PC or Colab instance has more than 16GB
+    of RAM, this is not required).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an aside note, those readers who wish to know more about how 4-bit quantization
+    works are welcome to read another article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/16-8-and-4-bit-floating-point-formats-how-does-it-work-d157a31ef2ef?source=post_page-----246ca94d7c4d--------------------------------)
+    [## 16, 8, and 4-bit Floating Point Formats — How Does it Work?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s go into bits and bytes
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/16-8-and-4-bit-floating-point-formats-how-does-it-work-d157a31ef2ef?source=post_page-----246ca94d7c4d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If everything was done correctly, the Colab output should look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99178efab22a0b8427cc6b16db98f545.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loading the Mistral 7B model, Screenshot by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see from the picture, the files that are required to be downloaded
+    are huge, so if you run this code locally (not in Colab), ensure that your web
+    traffic is not limited.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let’s **create the LLM pipeline**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Congratulations! Our installation is ready, and we successfully loaded a 7B
+    language model. For a short test, let’s see if the LLM works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If everything is okay, we’re ready to have fun and do further tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[LangChain](https://github.com/langchain-ai/langchain) is a Python framework
+    specially designed to work with language models. As a warm-up, let’s test a **prompt
+    template**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interestingly, LangChain is “cross-platform,” and we can use different language
+    models without code change. This example was taken from the official [library
+    documentation](https://python.langchain.com/docs/modules/model_io/prompts/prompt_templates/),
+    where OpenAI is used for prompts, but I used the same template for Mistral.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How does it work? It is possible to add the `ConsoleCallbackHandler` to the
+    config, so we can see all intermediate steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, the output will look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As another example, let’s try a **ChatPromptTemplate** class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: In my opinion, the answer “Yes, I am Mistral” is acceptable but linguistically
+    not the best for a “What is your name?” question. Obviously, with large neural
+    networks, interpretability can be an issue, and it’s impossible to tell *why*
+    the model responded this or that way. It can be an artifact of the 4-bit quantization
+    (which slightly reduces the model quality) or just a fundamental limitation of
+    the abilities of the 7B model (obviously, other 33B or 70B models can perform
+    better but will require much more computational resources).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval-augmented generation (RAG)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Nowadays, RAG is a hot topic of research. It allows us to automatically add
+    external documents to the LLM prompt and to add more information without fine-tuning
+    the model. Let’s see how we can use it with LangChain and Mistral.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we need to create a separate **embedding model**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This small [sentence-transformer model](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+    is able to convert text strings into a vector representation; we will use it for
+    our vector database. As a toy example, I will add only one “document” to the array:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we need to create a vector database and a `VectorStoreRetriever` object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can create a [RetrievalQA](https://api.python.langchain.com/en/latest/chains/langchain.chains.retrieval_qa.base.RetrievalQA.html#)
+    object, which is specially designed for question-answering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I will ask the model questions about Airbus; they are highly likely unknown
+    to the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: I was positively surprised by the answers. First, the Mistral 7B model was already
+    aware of the Airbus A380 range (I checked with Google, and the result looks correct).
+    Second, as I expected, the model was not aware of the A380 tire diameter, but
+    it “honestly” answered “I don’t know” instead of providing the “hallucinated”
+    and incorrect response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let’s add an additional string to our “vector database”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we can try again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: This was amazing! The model not only found the information that the A380 tire
+    diameter is 56 inches, but it correctly converted it into centimeters (56*2,54
+    is indeed 142). We know that math tasks are usually hard for LLMs, so this accuracy
+    is surprising.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also ask a model to explain the answer in steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is great! Well, we are already used to the fact that large language models
+    like GPT3 or GPT4 run on supercomputers in the cloud and can produce amazing results.
+    But to see that on your local GPU (I tested this code in Google Colab and on my
+    home PC as well) is a completely different feeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Attentive readers may ask the question. How do the Mistral and Retriever models
+    work together? Indeed, I created a “Mistral-7B-Instruct-v0.1” model and an “all-MiniLM-l6-v2”
+    sentence-embedding model. Are their vector spaces compatible? The answer is “no.”
+    When we do a query, the `VectorStoreRetriever` does its own search first, finds
+    the best documents in the vector store, and returns these documents in plain text
+    format. We can see the final prompt if we change the `verbose` parameter to True:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After running the same code, we can see the actual prompt, which was sent by
+    LangChain to the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case, both documents were relevant to the “Airbus” question, and a `VectorStoreRetriever`
+    placed them in the `context` placeholder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we were able to run a 7.3B Mistral large language model on
+    a free Google Colab instance, using only free and open-source components. This
+    is a great achievement and also a generous step from Google, considering that
+    at the time of this writing, the cheapest 16GB video card on Amazon costs at least
+    $500 (I must admit, though, that the Google Colab service is not a pure charity,
+    and the free GPU backend may not be available 100% of the time; those who need
+    it often should consider buying a paid subscription). We were also able to use
+    retrieval-augmented generation to add extra information to the LLM prompt. If
+    models like this are ready for production, it is still an open question and also
+    an eternal “Buy vs. DIY” dilemma. The Mistral 7B model can still sometimes “hallucinate”
+    and produce incorrect answers; it can also be outperformed by larger models. Anyway,
+    the ability to test models like this for free is great for study, self-education,
+    and prototyping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next part, I will show how to run a LLaMA-13B model and a LangChain
+    framework in Google Colab:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/llms-for-everyone-running-the-llama-13b-model-and-langchain-in-google-colab-68d88021cf0b?source=post_page-----246ca94d7c4d--------------------------------)
+    [## LLMs for Everyone: Running the LLaMA-13B model and LangChain in Google Colab'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimenting with Large Language Models for free (Part 2)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/llms-for-everyone-running-the-llama-13b-model-and-langchain-in-google-colab-68d88021cf0b?source=post_page-----246ca94d7c4d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Those who are interested in using language models and natural language processing
+    are also welcome to read other articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Natural Language Processing For Absolute Beginners](/natural-language-processing-for-absolute-beginners-a195549a3164)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[16, 8, and 4-bit Floating Point Formats — How Does it Work?](/16-8-and-4-bit-floating-point-formats-how-does-it-work-d157a31ef2ef)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Python Data Analysis: What Do We Know About Pop Songs?](https://blog.devgenius.io/python-data-analysis-what-do-we-know-about-pop-songs-b6197d85d4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors. You are also
+    welcome to connect via [LinkedIn](https://www.linkedin.com/in/dmitrii-eliuseev/).
+    If you want to get the full source code for this and other posts, feel free to
+    visit my [Patreon page](https://www.patreon.com/deliuseev).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

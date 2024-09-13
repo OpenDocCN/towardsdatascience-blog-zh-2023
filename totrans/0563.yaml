@@ -1,0 +1,893 @@
+- en: Converting a Flat Table to a Good Data Model in Power Query
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/converting-a-flat-table-to-a-good-data-model-in-power-query-46208215f17a](https://towardsdatascience.com/converting-a-flat-table-to-a-good-data-model-in-power-query-46208215f17a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*When loading a wide Excel table into Power BI, we end up with a suboptimal
+    data model. What can we do to create a good data model? What even is a “good”
+    data model? Let’s dig into it.*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@salvatorecagliari?source=post_page-----46208215f17a--------------------------------)[![Salvatore
+    Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----46208215f17a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----46208215f17a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----46208215f17a--------------------------------)
+    [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----46208215f17a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----46208215f17a--------------------------------)
+    ·12 min read·Dec 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7991f273e6117d3d4ccf54cabef8548.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Kaleidico](https://unsplash.com/@kaleidico?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Just another day at the Office: A Client called me to fix something on his
+    Power BI report. I looked at the data and found one wide table with 30, 40, or
+    more columns.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I asked the natural question: “What is the source for this table?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Answer was “Excel; what else?”
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Of course”, I think.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'My next question: “Can we build a good Data model out of it?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'My client: “Why?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And here we are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, I would import the source file into a relational database and convert
+    the data into a nice Data model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, it is the exception that my clients want to pay for something
+    that, at first glance, doesn’t benefit them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But why do I want to have a good data model? A flat table works well, isn’t
+    it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, at first glance, yes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is no problem with a few thousand rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But as soon as the amount of data increases, problems can build up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the short version of an answer to the “Why?” question:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, why a good Data model?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are a lot of reasons why I want to have a “Good data model”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two short reasons are Efficiency and Usability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When separating the types of data into separate tables and connecting them with
+    Relationships, Power BI can work in a more efficient way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, it is possible to reduce the size of the Power BI file by removing
+    redundancies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I strongly recommend reading the SQLBI article on this topic. You can find the
+    link in the References section below to get a thorough answer to this question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, someone who wants to consume the data model can find all columns (a.k.a.
+    attributes) grouped in separate tables instead of searching them within a long,
+    alphabetically sorted list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, now that we know why, the next question is, what is a good Data model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The answer is: A Star Schema.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What the heck is a Star Schema?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You can jump to the next section if you already know what a Star Schema is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'My original Data model is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f36c5e3c746952786885fa044e383a92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1 — Original Data model with one table with 27 (!) columns (Figure by
+    the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The central table is the large one in the middle of the Diagram named “Azure_UsageDetails”.
+    Let’s call it the “original table”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other two tables are the Date table used for the reporting over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you look closely at the original table, you can find some interesting
+    columns, like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BillingProfile
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MeterName
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SubscriptionName
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The common thing with these columns is that while I have around 55’000 rows
+    in the table, these columns have only a small number of different values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that the Cardinality is low.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, these columns describe my data. They do not contain any value, like
+    “Quantity” or “UnitPrice”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The target is to move these columns into separate tables, called Dimensions,
+    to get shorter tables containing only the distinct values, or combination of values,
+    from these columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Look at the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7fb5572a2f6882c3c5ba05ff58b08f43.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 — Target Data model as a Start Schema (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, you can understand why it is called a Star Schema.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can call it a Squid Schema, but nobody will understand us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, each Dimension table has an ID column connected to the corresponding
+    ID column in the central table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ID columns should always be of Data type integer. **Never** Text columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The table at the center of the star schema is called a “Fact”-table. It only
+    contains values for each event, transaction, or data point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'OK, now we need to perform some preparation steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find columns with a low cardinality.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find columns that should be grouped.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define names for each Dimension table.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replace all empty cells.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Duplicate the table with the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: First, open Power Query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Second, we enable the profiling of the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd9e6d9cef5d7f4e370b3b8278fee58d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 — Enabling Data Profiling in Power Query (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Power Query shows the Profiling only for the first 1000 rows. It can be a good
+    idea to enable the profiling of the entire data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the bottom left corner, click on the text “Column profiling based on top
+    1000 rows” and switch to the option “Column profiling based on entire data set”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a67404f72cf0133623fc5f4e65b6b318.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 — Switch Profiling on the entire data set (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on the amount of data, it will need some time to load the whole data
+    set and calculate the profiling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When I look at my data, I find the first three candidates here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e191d4006f354c28a93c949d4887687d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5 — First three Candidates for Dimensions (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Out of these, I can create three Dimensions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BillingProfiles
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Subscriptions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Meters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As you can see, I give plural names to the Dimension tables, each containing
+    one or more instances of that entity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, look at the columns starting with “Meter”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/936033396b4debca4d6090af8eab2da7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6 — All four Meter columns (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I can notice two crucial details:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Cardinality of the four columns is different.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I have a lot of empty rows for the MeterRegion column (76 %).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Based on the Cardinality (Number of distinct values), I reckon I can build a
+    Hierarchy for the Meters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Top-Level: Meter Region'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Second-Level: Meter Category'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Third-Level: Meter Subcategory'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Leaf: Meter Name'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The data from the Fact table will have a Relationship to the Meter Name column.
+    To say it more correctly, the ID column will be created based on the Leaf Level
+    but from the Distinct combination of all four columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason for the combination is that there is a probability that a Meter Name
+    appears multiple times and is assigned to different Meter Subcategories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, we must replace the empty rows in the Meter Region column with something
+    meaningful to avoid having a hierarchy node at the top level called (Null).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To achieve this, I right-click on the column name and click on “Replace Value”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the dialog for this function, I enter *null* as the Value to find and “Empty”
+    as the value to replace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5457137a17e585dc4101c8f85ac05dea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7 — Replace empty rows with the Text “Empty” (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result is the following, with no empty rows for the MeterName column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/215bfa6bd2b675f5bfef02ea2a7c78b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8 — MeterRegion without Empty rows. But other columns still have blank
+    rows. (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, I have to go through all columns intended to be Dimension columns and
+    replace the blank values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I find these columns by examining the “Empty” line in the Profiling Area (See
+    the red marked lines).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might use another word instead of “Empty” as the replacement text for the
+    empty rows. For example, “None”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next step is needed to avoid duplicate column names when building the Dimension
+    tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I rename all columns ending with “Id” to “GUID” (Except the InvoiceID, as this
+    column will stay where it is).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, as my data is cleaned up, I can Duplicate my table and start building
+    my Dimension tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I right-click on the Azure_UsageDetail table and click on Duplicate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7708db1948da4cd0396b1b1398e9f277.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9 — Duplicate the table (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, I rename the table to Azure_UsageDetail_Copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But I don’t need this copy of the data in our Data model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, I turn off the loading of the table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c19877dc5833f92c0ce7580c66f4039e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10 — Disabling the load of the table into the Power BI data model (Figure
+    by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This option has the effect that I can use this table as the source for all subsequent
+    operations without having this table in Power BI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, I can use the Copy of the original table to build my Dimension tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple Dimension table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first Dimension will be for the Subscriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I need the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create the Table referencing the copied table.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove all other columns.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove all Duplicates.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add an ID column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'After these steps, I must add the column to the original table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Merge both tables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Expand the ID column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove the column for the Subscription from the original table.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Right-click on the copied table and click on Reference (See in the Reference
+    section below for the difference between “Duplicate” and “Reference” a table).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, I must rename the table to Subscriptions (Double-Click on the table).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can use either the “Choose columns” or the “Remove other Columns” feature
+    to remove all but the two Subscription columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I select both columns (with Shift-click) and right-click:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6fc09107d2abbe7559739a68781ba14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11 — Remove all other columns after selecting both “Subscription” columns
+    (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next step is to remove all duplicates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55a91bf976052847c488fe6eb8511e74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12 — Remove the Duplicates from the table (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, I have a small table with two columns and two rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To add an ID column, I use the Index feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/006629ac065e81a537a75f9ca9785643.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13 — Add an Index column (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, I renamed the newly created “Index” column to “SubscriptionId”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, the Subscriptions Dimension table is completed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91ddd7ec4ffc8466ec576be1e338d234.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 14 — The finished Subscription Dimension table (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After this, I must replace the existing “Subscription” columns in the original
+    table with the new ID column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I use the “Merge Queries“ feature to join the two tables together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27581f83939fe041629db133d65ceb64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 15 — Merge the new Dimension table with the original table (Figure by
+    the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is essential to select both columns to ensure that the correct rows are assigned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can check the proper assignment in the information line at the bottom:
+    When both numbers are identical, all is OK.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get the Id column, I must expand the merged table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a9e78c8a4c15766a854659431f78c33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 16 — Expand the merged table and include the Id column only without the
+    original column name a s prefix (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, I get an additional column with the matching SubscriptionId.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I repeat the same steps for all “simple” Dimension tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But sometimes, I need to add more steps when building a Dimension table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Something more complex
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'During the conversion of the Data model, I noticed that a bunch of columns
+    belong together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All “Billing” columns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ChargeType
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Frequency
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: PublisherType
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: PricingModel
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: InvoiceNo
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All these columns are tied to the invoicing topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, I decided to group them into one Dimension table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first steps are the same as above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Create a referenced table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Remove all unneeded columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Add the Index column for the ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Rename the columns to be more user-friendly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But then I noticed that I can use the Billing Period column to extract the Billing
+    Month and then remove this column. This will have benefits for my reporting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, I added a Custom column with the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3223cfb4e2f75a934564661a5e0188d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 17 — Result for Billing Month (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To ensure that this column can be sorted according to the month number, I added
+    one further Custom column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I can use the Sort by Column feature in Power BI to sort the Billing Month column
+    by this new BillingMonthNum column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to set the correct Data type (Text for the Billing Month and
+    “Whole Number” for BillingMonthNum column).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another way to add a sorting column is through Ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, look at the Invoice No column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d39f6987a63adebb0d4cad16972c7e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 18 — Extract from the “Invoice No” column (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that we want to add a sorting mechanism to this column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An Index column will not work, as we would get a continuous number regardless
+    of the content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, as you can see, we have several rows with null as Invoice No.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, using the Index to sort this column in Power BI is impossible, as
+    we would have the same content but with different numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can solve this by using the following expression for a new Custom column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '#”Changed Type” is the name of the previous step (Input table).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “InvoiceNoRank” is the Name of the new column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “Invoice No” is the column over which the Ranking will be calculated.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The last parameter [RankKind=RankKind.Dense] is the most important.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With [RankKind=RankKind.Dense] I tell the function that rows with the same invoice
+    Number must receive the same ranking and that the number range must be continuous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can get more details about this function here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://radacad.com/adding-pre-calculating-rank-in-power-bi-using-power-query?source=post_page-----46208215f17a--------------------------------)
+    [## Adding Pre-Calculated Rank in Power BI Using Power Query'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to add Rank in Power Query and Power BI There are multiple ways that you
+    can add a RANK column to your table, You…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: radacad.com](https://radacad.com/adding-pre-calculating-rank-in-power-bi-using-power-query?source=post_page-----46208215f17a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The resulting column looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73428f205b0dedae7758f69c7cc5198c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 19 — Result with Ranking column (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see that all rows with an empty Invoice No get the Ranking 1\. The subsequent
+    invoice numbers are 2, 3, 4, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When merging this table to the fact table, I select all columns that can be
+    used to identify each row uniquely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, using the columns BillingPeriods and Invoice No is enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last Steps — Complete the Data model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Finally, I can complete the Data model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But before I jump to Power BI, I remove all the obsolete columns from the Original
+    table in Power Query and rename the Table to “FactAzureUsageDetails”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After loading the data into Power BI, I must check the automatically created
+    Relationships to ensure all Relationships are between the ID columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, Power BI creates Relationships between the Name column, which is
+    suboptimal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As I already created a report based on the old data model, I must fix all the
+    visuals and measures, which used the columns now moved to the dimension tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Result
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is the final Data model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1d4e65e84ad4ec9ed6fb445dd25437b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 20 — Final Data model as a clean Star Schema (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is precisely what I wanted to achieve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly, the new pbix file is now larger than the original file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But I talk about 800 kB vs 750 kB before. The raw data is around 20 MB in size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I already made such a change, and the resulting pbix file was way smaller than
+    before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think I have such a small volume of data that the additional complexity causes
+    the pbix file to grow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The effort to modify my Data model was not small. But it was not nightmarishly
+    high. In any case, it is worth exploring this approach to have a better solution
+    in Power BI instead of having a table with dozens of columns, which are very hard
+    to navigate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you can group all columns for one topic into one Dimension table. Even
+    when these columns are sorted alphabetically, you can easily find them. Compare
+    this to when those columns are all in the original table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my opinion, this topic should deserve more attention. I even see solutions
+    in Power BI built by colleagues of mine using very wide tables. My first comment
+    is, “Why do you work with such a table? Why don’t you have a Star Schema in your
+    Data model?”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And the answer is always: “Because the data comes in this form and I don’t
+    have time to modify the structure”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But as soon as performance issues start to appear, my first step is to analyze
+    and optimize the Data model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I recommend using DAX Studio with VertiPaq Analyzer ([SQLBI Tools Page](https://www.sqlbi.com/tools/))
+    to get Statistics about the Data model and find potential issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can get a short introduction on how to use this combination here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.fourmoo.com/2020/11/11/how-to-use-vertipaq-analyzer-with-dax-studio-for-power-bi-model-analysis/?source=post_page-----46208215f17a--------------------------------)
+    [## How to use Vertipaq Analyzer with DAX Studio for Power BI Model analysis -
+    FourMoo | Power BI |…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I show how you can use Vertipaq Analyzer with your Power BI Model to understand
+    what is consuming memory and how to…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.fourmoo.com](https://www.fourmoo.com/2020/11/11/how-to-use-vertipaq-analyzer-with-dax-studio-for-power-bi-model-analysis/?source=post_page-----46208215f17a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Or search for “How to use VertiPaq Analyzer” in your favorite search engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m thinking about writing an article on this topic soon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please let me know in the comments if you are interested in such a piece.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/081054715dfe8f5820e00a80cd97dae6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Denys Nevozhai](https://unsplash.com/@dnevozhai?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Data is from my private Azure Subscription. I download the monthly consumption
+    from the Azure Portal and import the data into an Azure SQL database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An SQLBI article on why we should have a Star Schema as a Data model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.sqlbi.com/articles/power-bi-star-schema-or-single-table/?source=post_page-----46208215f17a--------------------------------)
+    [## Power BI - Star schema or single table - SQLBI'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article analyzes a classic modeling question: is it better to build a
+    model as a regular star schema or as a…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.sqlbi.com](https://www.sqlbi.com/articles/power-bi-star-schema-or-single-table/?source=post_page-----46208215f17a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'See here for the difference between the Duplicate and Reference feature in
+    Power Query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://radacad.com/reference-vs-duplicate-in-power-bi-power-query-back-to-basics?source=post_page-----46208215f17a--------------------------------)
+    [## Reference vs Duplicate in Power BI; Power Query Back to Basics'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you work with tables and queries in Power Query and Power BI, you get the
+    option to copy them through these…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: radacad.com](https://radacad.com/reference-vs-duplicate-in-power-bi-power-query-back-to-basics?source=post_page-----46208215f17a--------------------------------)
+    [](https://medium.com/@salvatorecagliari/subscribe?source=post_page-----46208215f17a--------------------------------)
+    [## Get an email whenever Salvatore Cagliari publishes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Salvatore Cagliari publishes. By signing up, you will
+    create a Medium account if you don't…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@salvatorecagliari/subscribe?source=post_page-----46208215f17a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

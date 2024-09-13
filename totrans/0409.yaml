@@ -1,0 +1,327 @@
+- en: Breaking Down YouTube’s Recommendation Algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/breaking-down-youtubes-recommendation-algorithm-94aa3aa066c6](https://towardsdatascience.com/breaking-down-youtubes-recommendation-algorithm-94aa3aa066c6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Opening the “bag of tricks” that makes a modern recommender system work
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@samuel.flender?source=post_page-----94aa3aa066c6--------------------------------)[![Samuel
+    Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----94aa3aa066c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94aa3aa066c6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----94aa3aa066c6--------------------------------)
+    [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----94aa3aa066c6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94aa3aa066c6--------------------------------)
+    ·7 min read·Apr 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc33a53302b6c34ec83db3c79b921ab2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Logo design [Eyestetix Studio](https://unsplash.com/photos/LskCjwwJBEQ), background
+    design by [Dan Cristian Pădureț](https://unsplash.com/photos/h3kuhYUCE9A))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Recommender systems](/learning-to-rank-a-primer-40d2ff9960af) have become
+    one of the most ubiquitous industrial Machine Learning applications of our times,
+    but little is being published about how they actually work in practice.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A notable exception is Paul Covington’s paper “[Deep Neural Networks for YouTube
+    Recommendations](https://research.google/pubs/pub45530/)”, which is packed with
+    numerous practical insights and learnings about YouTube’s deep-learning powered
+    recommendation algorithm, providing a rare window not just into the inner workings
+    of a modern industrial recommender system but also into the problems that today’s
+    ML engineers are trying to tackle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re looking to deepen your understanding of modern recommender systems,
+    preparing for ML design interviews, or simply curious about how YouTube gets people
+    hooked, read on. In this post, we’ll break down 8 key insights from the paper
+    that help explain YouTube’s (and any modern recommender system’s) success.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 — Recommendation = candidate generation + ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'YouTube’s recommender system is broken down into 2 stages: the candidate generation
+    stage, which filters the pool of Billions of videos down to a few hundred, and
+    the ranking stage, which further narrows down and sorts the candidates that end
+    up in front of the user.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Technically, both stages contain a two-tower neural network — a special architecture
+    with two arms for user ids and video ids, respectively — but their training objectives
+    differ:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'for the candidate generation model, the learning problem is formulated as an
+    extreme multi-class classification problem: out of all existing videos, predict
+    the ones that the user engaged with.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'for the ranking model, the learning problem is formulated as a (weighted) logistic
+    regression problem: given a user/video pair, predict whether the user engaged
+    with that video or not.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The motivation behind this design choice is to break down the problem of finding
+    the optimal content into recall optimization and precision optimization: candidate
+    generation optimizes for recall, i.e. making sure we’re capturing all relevant
+    content, while ranking optimizes for precision, i.e. making sure we show the best
+    content first. Breaking the problem down in this way is key to enable recommendation
+    at the scale of Billions of users and videos.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca19ae5ba69bc5b4581ec6818e5a220a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: YouTube’s 2-stage recommendation funnel. From Covington 2016, [Deep Neural Networks
+    for YouTube Recommendations](https://research.google/pubs/pub45530/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2 — Implicit labels work better than explicit labels
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Explicit user feedback, such as Like, Share, or Comment, is extremely scarce:
+    out of all users watching a particular video, only a small fraction will leave
+    explicit feedback. A model trained only on Likes, for example, would therefore
+    leave a lot of signal on the table.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implicit labels, such as user clicks and watch times, are a bit more noisy — users
+    may click accidentally — but orders of magnitude more abundant. At YouTube’s scale,
+    label quantity beats label quality, and therefore using implicit feedback as training
+    objective works better in their models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 — Watch sequence matters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The sequence formed by a particular user’s watch history isn’t random, but
+    contains particular patterns with asymmetric co-watch probabilities. For example,
+    after watching 2 videos from the same creator, a user is likely to watch another
+    video from that same creator. A model that simply learns to predict whether an
+    impressed video is going to be watched, irrespective of the user’s recent watch
+    history, doesn’t perform well: again, it’s leaving information on the table.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, YouTube’s model learns to predict the next watch, given the user’s
+    latest watch (and search) history. Technically, it does this by feeding the user’s
+    latest 50 watched videos and 50 search queries, at the time of the training example,
+    as features into the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4 — The ranking model is trained using weighted logistic regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Positive training examples (impressions with clicks) are weighted by their observed
+    watch time, while negative training examples (impressions without clicks) receive
+    unit weights. The purpose of this weighting scheme is to down-weigh click-bait
+    content, and up-weigh content that leads to more meaningful and longer engagement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mathematically, the odds learned by such a weighted logistic regression model
+    are approximately equal to expected watch time. At inference time, we can therefore
+    convert the predicted odds into watch time simply be applying the exponential
+    function. Being able to predict watch times enables this next critical insight:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5 — Ranking by predicted watch time works better than ranking by click-through
+    rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This is because ranking by click-through rate promotes click-bait content with
+    low watch times: users click but go back right away. Ranking by predicted watch
+    time down-ranks clickbait, leading to more engaging recommendations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6 — A diverse feature set is key to high model performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The advantage of deep learning over linear or tree-based models is that it
+    can handle a diverse set of input signals. YouTube’s model looks at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'watch history: which videos has the user watched recently?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'search history: which keywords has the user searched for recently?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: demographic features, such as user gender, age, geographic location, and device,
+    which provide priors for “cold-start” users, i.e. users with no history.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Indeed, feature diversity is the key to achieve high model performance: the
+    authors show that a model trained on all of these features improves holdout MAP
+    from 6% to 13%, relative to a model trained only on watch history.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c6af4c3ed8fad76253cc0101452d62dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: YouTube’s ranking neural network model takes in a diverse set of features. From
+    Covington 2016, [Deep Neural Networks for YouTube Recommendations](https://research.google/pubs/pub45530/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7 — Content stays fresh thanks to “Example Age” feature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ML systems are often biased towards the past, simply because they’re trained
+    on historic data. For YouTube, this is a problem because users usually prefer
+    recently uploaded, “fresh” content over content that has been uploaded long ago.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to fix this “past bias”, YouTube uses the age of the training example
+    as a feature in the model, and sets it to 0 at inference time to reflect that
+    the model is making predictions at the very end of the training window. For example,
+    if the training data contains a window of 30 days of data, this “example age”
+    feature would vary from 31 (for the first day in the training data) to 1 (for
+    the last day).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors show that introducing this feature makes the model much more biased
+    in favor of fresh content, which is exactly what YouTube wants.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8 — Sparse features are encoded as low-dimensional embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: YouTube’s ranking model uses a large number of high-cardinality (“sparse”) categorical
+    features, such as
+  prefs: []
+  type: TYPE_NORMAL
+- en: video id and user id,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tokenized search queries,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the last 50 videos watched by a user, or
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the “seed” video that started the current watch session.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These sparse features are one-hot encoded and mapped to 32-dimensional embeddings
+    that are learned during model training, and then stored as embedding tables for
+    inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to limit the memory footprint caused by embedding tables, id spaces
+    are truncated to include only the most common ids. For example, if a video that
+    has only been watched once in the training period, it’s not be worth having its
+    own place in the embedding table, and will therefore be treated the same as a
+    video that was never watched.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another notable trick is that sparse features within the same id space share
+    the same underlying embeddings. For example, there exists a single, global embedding
+    of video ids that many distinct features use, such as the video id of the impression,
+    the last video id watched by the user, or the video id that seeded the current
+    session. Sharing embeddings in this way has 3 benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: it saves memory, because there are fewer embedding tables that need to be stored,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: it speeds up model training, since fewer parameters need to be learned, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: it improves generalization, because it enables the model to have more context
+    about each id.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Coda: a bag of tricks'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To summarize, there isn’t really one particular thing that makes YouTube’s
+    recommender system special. It’s a “bag of tricks”, where each trick solves one
+    particular problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2-stage funnel design solves the scalability problem,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: using weighted logistic regression and ranking by expected watch-time solve
+    the clickbait problem,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: adding the “example age” feature solves the past-bias problem,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: adding demographic features solves the cold-start problem,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: predicting “next watch” (instead of random watch) solves the asymmetric co-watch
+    probability problem,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sharing embeddings between categorical features with the same ID solves the
+    finite-memory problem,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this bag of tricks really gives a great insight not just into the inner
+    workings of a modern recommender system, but also into the work of a modern ML
+    engineer: we solve problems to make our models better. The best ML engineers are
+    those that, over time, have accumulated the best bag of tricks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lastly, Covington’s paper is by now several years old, and certainly some of
+    the tricks will have been replaced by newer and better tricks. There are [new
+    tricks to encode sparse features](/hashing-in-modern-recommender-systems-a-primer-9c6b2cf4497a),
+    and there are [new tricks to de-bias ranking models](https://medium.com/towards-data-science/biases-in-recommender-systems-top-challenges-and-recent-breakthroughs-edcda59d30bf).
+    This is another aspect that’s intrinsic to industrial ML applications: our models
+    keep evolving as new breakthroughs emerge.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ML engineers are never “done”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Want to expand your personal ML “bag of tricks”? Want to deepen your knowledge
+    about what’s behind modern industrial ML applications? Check out my e-book,* [*Machine
+    Learning on the Ground: Design and Operations of Real-World ML Applications*](https://samflender.gumroad.com/l/mlontheground)*.*'
+  prefs: []
+  type: TYPE_NORMAL

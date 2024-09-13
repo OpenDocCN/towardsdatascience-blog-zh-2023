@@ -1,0 +1,648 @@
+- en: Introduction to Embedding-Based Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/introduction-to-embedding-based-recommender-systems-956faceb1919](https://towardsdatascience.com/introduction-to-embedding-based-recommender-systems-956faceb1919)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Recommendation System](https://medium.com/tag/recommendation-system)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Learn to build a simple matrix factorization recommender in TensorFlow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)[![Dr.
+    Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)[](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------)
+    [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----956faceb1919--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----956faceb1919--------------------------------)
+    ·13 min read·Jan 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff12d44a9188531303b168fa10bb28cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Johannes Plenio](https://unsplash.com/es/@jplenio?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'They are everywhere: these sometimes fantastic, sometimes poor, and sometimes
+    even funny **recommendations** on major websites like Amazon, Netflix, or Spotify,
+    telling you what to buy, watch or listen to next. While **recommender systems**
+    are convenient for us users — we get inspired to try new things — **the companies
+    especially benefit** from them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To understand to which extent, let us take a look at some numbers from the
+    paper [**Measuring the Business Value of Recommender Systems**](https://arxiv.org/abs/1908.08328)
+    by Dietmar Jannach and Michael Jugovac [1]. From their paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Netflix:** “75 % of what people watch is from some sort of recommendation”
+    ([this one is even from Medium!](https://netflixtechblog.com/netflix-recommendations-beyond-the-5-stars-part-1-55838468f429))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Youtube:** “60 % of the clicks on the home screen are on the recommendations”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Amazon:** “about 35 % of their sales originate from cross-sales (i.e., recommendation)”,
+    where *their* means Amazon'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this paper [1] you can find more interesting statements about increased CTRs,
+    engagement, and sales that you can get from employing recommender systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, it seems like recommenders are the greatest thing since sliced bread, and
+    I also agree that recommenders are one of the best and most interesting things
+    that emerged from the field of machine learning. That’s why in this article, I
+    want to show you
+  prefs: []
+  type: TYPE_NORMAL
+- en: how to design an easy *collaborative* recommender (matrix factorization)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: how to implement it in TensorFlow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: what the advantages and disadvantages are.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can find the code on [my Github](https://github.com/Garve/Towards-Data-Science---Notebooks/blob/main/TDS%20-%20Introduction%20to%20Embedding-Based%20Recommender%20Systems.ipynb).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Before we start, let us grab some data we can play with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting the Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you don’t have it yet, get **tensorflow_datasets** via `pip install tensorflow-datasets`
+    . You can download any dataset they offer, but we will stick to a true classic:
+    movielens! We take the smallest version of the movielens data consisting of 1,000,000
+    rows, so training is faster later.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`data` is a dictionary containing TensorFlow DataSets, which are great. But
+    to keep it simpler, let’s cast it into a pandas dataframe, so everyone is on the
+    same page.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *Usually, you would keep it as a TensorFlow dataset, especially
+    if the data gets even larger since pandas is extremely hungry on your RAM. Do
+    not try do convert it to a pandas dataframe for the 25,000,000 version of the
+    movielens dataset!*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/42723a437fbc07c68cb766cdd8982721.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***⚠️ Warning:*** *Don’t print the entire dataframe since this is a styled
+    dataframe that’s configured to display all 1,000,000 rows by default!*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We can see an abundance of data. Each row consists of a
+  prefs: []
+  type: TYPE_NORMAL
+- en: user (**user_id**),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a movie (**movie_id**),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the rating that the user gave to the movie (**user_rating**), expressed as an
+    integer between 1 and 5 (stars), and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a lot more features about the user and movie.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*In this tutorial, let us only use the bare minimum:* ***user_id****,* ***movie_id,***
+    *and* ***user_rating*** *since very often this is the only data we have. Having
+    more features about users and movies is usually a luxary, so let us directly deal
+    with the harder, but broadly applicable case.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Recommender trained on this kind of interaction data are called* ***collaborative
+    —*** *a model is trained on the interactions of many users to make recommendations
+    for a single user.* One for all, all for one!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We will also keep the **timestamp** to conduct a temporal train-test split
+    since this resembles how we train in real life: we train now, but we want the
+    model to work well tomorrow. So we should evaluate the model quality like this
+    as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`filtered_data` contains'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1df5a8858010c3f9d946b01758b00d02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cold Start Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we split the data in any way, we may run into something called the **cold
+    start problem**, meaning that some users or movies are only present in the test
+    set, but not in the training set. In our case, funnily enough, user 1 is such
+    an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is a bit like a category of a categorical feature that only appears in the
+    test set. It makes learning harder, but still, the model has to deal with it somehow.
+    The recommender that we will build soon is quite prone to the cold start problem,
+    but there are other types of recommenders that can deal with new users or movies
+    in a better way. This is something for another article, though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s build train and test dataframes and move on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Embeddings Crash Course
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we know what the data looks like, let us define the model **signature**,
+    meaning what goes in and what comes out. In our case, it is quite simple: The
+    input should be a **user_id** and a **movie_id**, and the output should be the
+    **user_rating**, i.e. how the user rates the movie.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9763a829d99b952731e4bd03c81fba56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what could such a model look like? This is a tough one, especially for data
+    science beginners. The **users and movies are categories**, even if we encoded
+    them as integers. So, treating them like numbers and merely training a model with
+    them is not purposeful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Something Horrible!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For the curious readers, I will do it anyway. The following is an example of
+    how **not** to do it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *r*² is about 0.07, which is about as good as a regressor that only outputs
+    the mean of the ratings, independently of the user and movie inputs. The mean
+    absolute error is about 0.85, meaning that we miss the true rating by about 0.85
+    stars on average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of doing it like this, I will show you how to use embeddings to build
+    a more meaningful and better model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One-Hot Encoding as a Special Case of Embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One way to encode categorical variables such as our users or movies is with
+    vectors, i.e. a tuple of numbers — called **embeddings** in this context. This
+    is a useful technique to keep in mind, not only for recommender systems but **whenever
+    you deal with categorical data**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d44666d456372bc6d8e7a40848516e0e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A very simple example of turning categories into numbers is **one-hot/dummy
+    encoding.** However,the resulting embeddings are **high-dimensional** for high-cardinality
+    categorical features, leading us right into the [curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality)
+    trap when trying to work with them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another drawback is that each pair of two vectors have the same distance from
+    each other. As an example, if you take a feature with three categories that are
+    encoded as [1, 0, 0], [0, 1, 0], and [0, 0, 1], each category has the same distance
+    to each other category in common metrics such as Euclidean and other [Mikowski
+    distances](https://en.wikipedia.org/wiki/Minkowski_distance), or cosine similarity.
+    This might be fine for nominal features, but for **ordinal** features such as
+    *hot*, *mild,* or *cold* weather, it would be nicer if *hot* is closer to *mild*
+    than *cold*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly, this is bad, so we have to think of something different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Real Deal
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Embeddings allow us to create shorter vectors with more meaning than one-hot
+    encoded vectors.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'They are readily available within deep learning frameworks such as TensorFlow
+    and PyTorch. On a very high level, they work like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You specify an **embedding dimension**, i.e. how long the vector should be.
+    This is a hyperparameter that you could tune, among others.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The embeddings for each category get initialized randomly, just as any other
+    weight in your neural network.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Training pushes the embeddings to be more useful to the model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This is actually not a conceptionally new operation since you can **simulate**
+    it by **first one-hot encoding** the category and **then using a linear (dense)
+    layer** without activation function and bias. The embedding layer is just more
+    performant since it’s just doing a lookup instead of calculating a matrix product as done in the linear layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc22cb4729f899280b6534830b3460a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So, now that we have all of the ingredients, let’s build a model! First, we
+    will define the high-level architecture of the model, and then we will build it
+    in TensorFlow, although it is similarly easy in PyTorch if you prefer this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Alright, so two categorical variables (**user_id** and **movie_id**) enter the
+    model, then we embed them. We end up with two vectors, preferably of the same
+    length. In the end, we want to end up with a single number, the **user_rating**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *We will model it as a regression problem, but you can also see
+    it as a classification task.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So, how can we make a single number out of two vectors of the same length? There
+    are many ways, but one of the easiest and most efficient ones is by just taking
+    the **dot product**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7dbfbaf27676c2a35180020c0a20615.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *The approach that we will be taking in the following is also called*
+    ***matrix factorization*** *since we compute dot products all over the place,
+    just as if you multiply two matrices.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Nothing too crazy, I would argue. Now we are able to look at how the model
+    should work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/525d2726b9eb8d72477491bf01ae5c53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a formula, we created this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e107de2352c6aa5fc868c96529d954bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: which reads as **“the rating of movie *m* from user *u* equals embedding of
+    user *u* dot product embedding of movie *m*”**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation in TensorFlow, Version One
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The implementation is actually a piece of cake if you know basic TensorFlow.
+    The only thing to pay attention to is that the embedding layers want the categories
+    to be represented as integers from 1 to *number_of_categories*. Very often you
+    find people populating some dictionary like {“user_8323”: 1, “user_1122”: 2, …}
+    and an inverse dictionary like {1: “user_8323”, 2: “user_1122”, …} to achieve
+    this, but TensorFlow has some nice layers to take care of them as well. We will
+    use the `[IntegerLookup](https://www.tensorflow.org/api_docs/python/tf/keras/layers/IntegerLookup)`
+    here. A nice feature of this layer: unknown categories get mapped to 0 by default.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we start, we have to grab all the unique users and movies **from the
+    training set** first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the functional API of Keras, you can implement the above ideas like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Since we gave the user and movie input layers nice names, we can train the
+    model like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We could evaluate this model on the test set now, but we can already see here
+    that it’s probably quite bad because `val_mean_absolute_error` is about 3\. That
+    means that we are on average 3 stars off, which is horrible in a 5-star system.
+    This is even worse than our bad model from before, which is quite an achievement.
+    😅 But why is that? Let’s explore this in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation in TensorFlow, Version Two
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We have built a regression model that can potentially output any real number
+    so far. It is very hard for the model to learn that it should output numbers in
+    the special range between 1 to 5 but we can make it easier for the model with
+    a simple trick: just squash the output range as we do it for logistic regression.
+    Just instead of a [0, 1] interval, let’s scale and shift it to [1, 5].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2df904a2383d151cae118d356c93023.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *σ* is the sigmoid function. Training is as above and evaluating it on
+    the test set gives us
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is much better than the model before and also our bad baseline. In case
+    you want an *r*² score as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s do a small final adjustment to end up with an even better model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation in TensorFlow, Final Version
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Additionally to the embeddings, we can also associate a **bias term** to each
+    movie and user. This captures that some users tend to give only rather positive
+    (or negative) ratings, and also that some movies only tend to get positive (or
+    negative) reviews. This way, the **biases** can do the **rough work** while the
+    **embeddings** do the **fine-tuning**. For example, a user that mostly gives 4
+    stars for everything will have some fixed bias, a **single number, and no vector**.
+    The embeddings then only have to focus on explaining why this user sometimes gives
+    3 or 5 stars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The formula then becomes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75abd763d3245efbe4dc491f8eafc77b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where *bᵤ* and *bₘ* are the biases of user *u* and movie *m* respectively.
+    As code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you like the `plot_model` output of Keras:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b175aebb262f0e3808e06a4612b3af5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84b0b3e30c35ade68fc1704bc7f4560a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author, created with [https://netron.app/](https://netron.app/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As already indicated, the model performance improves again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MSE ≈ 0.89
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MAE ≈ 0.746
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*r*² ≈ 0.245'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Nice! We got the lowest MAE and MSE (and hence the highest *r*²) with this version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making Predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to answer questions like “What would user 1 rate movie 2 and movie
+    3?”, you can do a simple
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: In order to get all ratings of user 1, you could do
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have seen that recommenders have a large impact on businesses,
+    that’s why there are widely used. Building a good recommender is not as straightforward
+    as other models since you often have to deal with high-cardinality categorical
+    features, rendering simple tricks like one-hot encoding useless.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We learned how to circumvent this problem by using embeddings in our neural
+    network architecture. We added some more simple tricks to end up with a not-to-shabby
+    matrix factorization model, even without tuning any hyperparameters. We could
+    improve the model even further by
+  prefs: []
+  type: TYPE_NORMAL
+- en: optimizing the embedding dimension (that we just set to 32 so far)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: applying regularization to the embeddings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: building a proper time-split validation set, not a random one as we did
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: retraining it on the complete training dataset (including the validation set)
+    after we know the best hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One of the biggest advantages is that we can apply the model in most contexts
+    since we only need interaction (rating) data of users and movies. We do not need
+    to know any more things about the users and movies, such as age, gender, genre,
+    … so usually, we can get going immediately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The price that we pay for this is that we cannot output meaningful embeddings
+    for unknown users or movies — the **cold start problem**. The model will output
+    *something*, but the quality will be horrible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, if we happen to have user and movie data, we can do smarter things
+    and incorporate these features in a straightforward way as well. This mitigates
+    the cold start problem and might even improve the model on known users and movies.
+    You can read about it here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b?source=post_page-----956faceb1919--------------------------------)
+    [## A Performant Recommender System Without Cold Start Problem'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When collaboration and content-based recommenders merge
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b?source=post_page-----956faceb1919--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] D. Jannach and M. Jugovac, [Measuring the Business Value of Recommender
+    Systems](https://arxiv.org/abs/1908.08328) (2019), ACM Transactions on Management
+    Information Systems (TMIS) 10.4 (2019): 1–23'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope that you learned something new, interesting, and useful today. Thanks
+    for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**As the last point, if you**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**want to support me in writing more about machine learning and**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**plan to get a Medium subscription anyway,**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**why not do it** [**via this link**](https://dr-robert-kuebler.medium.com/membership)**?
+    This would help me a lot! 😊**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*To be transparent, the price for you does not change, but about half of the
+    subscription fees go directly to me.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Thanks a lot, if you consider supporting me!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you have any questions, write me on* [*LinkedIn*](https://www.linkedin.com/in/dr-robert-k%C3%BCbler-983859150/)*!*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

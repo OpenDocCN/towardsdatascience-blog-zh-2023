@@ -1,0 +1,254 @@
+- en: The Multi-Task Optimization Controversy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-multi-task-optimization-controversy-793cbb431d98](https://towardsdatascience.com/the-multi-task-optimization-controversy-793cbb431d98)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Do we need special algorithms to train models on multiple tasks at the same
+    time?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@samuel.flender?source=post_page-----793cbb431d98--------------------------------)[![Samuel
+    Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----793cbb431d98--------------------------------)[](https://towardsdatascience.com/?source=post_page-----793cbb431d98--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----793cbb431d98--------------------------------)
+    [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----793cbb431d98--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----793cbb431d98--------------------------------)
+    ·6 min read·Sep 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d49f4ff793f5ebba7bb708389b741416.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Javier Allegue Barros](https://unsplash.com/@soymeraki?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [multi-task learning paradigm](/multi-task-learning-in-recommender-systems-a-primer-508e661a2029#:~:text=Multi%2Dtask%20learning%20matters%20because,each%20other%20%E2%80%94%20creating%20negative%20transfer.)
+    — that is, the ability to train models on multiple tasks at the same time — has
+    been a blessing as much as a curse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A blessing because it allows us to build a single model where previously we
+    would have needed multiple. That makes live simpler: fewer models that need to
+    be maintained, re-trained, tuned, and monitored.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A curse because it opens up an entirely new pandora’s box of questions: which
+    tasks should be learned together? Which tasks do we really need? What happens
+    if tasks are competing with each other? How can we make make the model prioritize
+    certain tasks over others? How can we avoid ‘task rot’, that is, the accumulation
+    of task heads over time that eventually lead to degradation of model performance?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is questions like these that spawned a new subdomain of Machine Learning
+    known as *multi-task optimization*, that is, the science of how to optimize a
+    model on multiple, sometimes competing, tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalarization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Scalarization is Mathematic’s answer to the multi-task optimization problem.
+    In a multi-task model we are trying to learn K tasks, such as predicting “click”,
+    “add-to-cart”, and “purchase” in an e-commerce recommender system. (In fact, modern
+    recommender systems may include more than a dozen tasks!) In such a setting, we
+    can define the solution as the one that minimizes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12ec12c7f9f674d6244285cba72b20a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: …that is, the weighted sum of task-specific losses, where the weights are larger
+    than 0 and sum up to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This trick of reformulating a multi-task learning problem as single optimization
+    problem is known as *scalarization*, and it’s borrowed from the broader discipline
+    of mathematical optimization, which is covered in textbooks such as [Boyd & Vandenberghe](https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An important definition in such a problem is that of *pareto optimality*: a
+    solution θ is said to be pareto optimal if it achieves the lowest loss for all
+    tasks, that is, there is no θ with a lower loss for any of the tasks. Usually,
+    there is no single solution θ that’s pareto-optimal, but instead multiple, forming
+    a high-dimensional curve in the loss space — the *pareto frontier*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c668a8d2e5b137730c29002b982cd1c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '(The Pareto frontier in a multi-task problem with 2 tasks. Image credit: [Xin
+    et al 2022](https://arxiv.org/abs/2209.11379))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, here’s one of the most important results that can be derived within
+    the context of mathematical optimization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Mathematically, it can be shown that no matter which combinations of weights
+    we pick, we always end up with a solution θ that’s sitting right on the pareto
+    frontier. All we need to do in a practical application is to sweep over the possible
+    weight combinations and pick the one that’s best aligned with the business objectives.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learnable loss weights
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The story of multi-task optimization could have ended in with scalarization
+    and its guarantee of pareto-optimality. However, as so often in Machine Learning,
+    practitioners ended up developing certain tricks that empirically turned out to
+    work surprisingly well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One such trick is ‘learnable loss weights’ (LLW), introduced in 2018 in a paper
+    by researchers from the University of Cambridge ([Kendall et al 2018](https://arxiv.org/abs/1705.07115))
+    in the context of computer vision. The key idea is to automatically assign task-specific
+    loss weights that are inversely proportional to the model uncertainty for that
+    datapoint’s prediction. The intuition is that if the model is wrong but uncertain
+    we should assign a smaller loss compared to when the model is wrong and certain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mathematically, this means that we minimize
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f55e7c20bd2a66c7e874200a236f40f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where L_i is the loss for task i and σ_i is the uncertainty in the predictions
+    for task i. The last term in the loss, which is simply adding the log of the uncertainties
+    themselves, nudges the model to make predictions with high certainty instead of
+    simply predicting every possible outcome with a small degree of certainty. For
+    more than 2 tasks, we simply add more terms to this equation, one for each task’s
+    loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Practically, we can estimate the uncertainty σ by comparing the predictions
+    to the ground truth and fitting a Gaussian distribution N where the mean is the
+    prediction itself and the standard deviation is the model uncertainty:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0193bc1e913ce5ca888aabf7f83e126b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the Cambridge paper, the authors apply learnable loss weights to a multi-task
+    image segmentation problem, where the individual tasks are semantic segmentation,
+    instance segmentation, and depth prediction. Compared to uniform weights (1/3,
+    1/3, 1/3), with learnable loss weights (which turned out to be 0.89, 0.01, 0.1)
+    the resulting segmentation has a 13% better IoU, proving the effectiveness of
+    this approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient manipulation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/73698e0f8ba9bb8cb6896da4c466b7af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '(Gradient “surgery”. Image credit: [Yu et al 2020](https://arxiv.org/pdf/2001.06782.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One problem in multi-task learning is that different gradients from different
+    tasks may be conflicting with each other, causing the model to be pulled into
+    multiple different directions at the same time. In scalarization, we solve this
+    problem by simply tuning the loss weights (which directly impact the scale of
+    the gradients) according to which task we deem most important. In LLW, instead
+    of tuning these weights by hand, we try to learn them from the data. But why not
+    manipulate the gradients directly, instead of the losses?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This idea of direct gradient manipulation has spawned a number of research
+    papers that claim to improve multi-task learning by scaling or re-aligning gradients
+    in various ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: in [Gradient Surgery,](https://arxiv.org/pdf/2001.06782.pdf) we simply project
+    a conflicting gradient onto the normal plane of the “anchor” gradient (that is,
+    the gradient from the most important task we’re trying to predict),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in [GradNorm](https://arxiv.org/pdf/1711.02257.pdf), we normalize the scale
+    of all gradients to be identical to the average gradient scale (averaged over
+    all tasks) at that training iteration,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in [GradSimilarity](https://arxiv.org/abs/1812.02224), we only consider gradients
+    of other tasks i that have a positive cosine with respect to the anchor gradient,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in [MetaBalance](https://arxiv.org/abs/2203.06801), we normalize the scale of
+    all gradients to be identical to the scale of the anchor gradient (similar to
+    [MTAdam](https://aclanthology.org/2021.emnlp-main.837.pdf)), and more.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each of these papers claimed to solve the multi-task learning problem better
+    than its successors, and more papers on gradient manipulation are still being
+    published at the time of this writing in 2023\. Gradient manipulation is a rapidly
+    growing research domain!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The controversy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All that leads us to a weird conclusion. Mathematically it can be shown that
+    all we need to do in a multi-task problem is apply scalarization and sweep over
+    the loss weights in order to find a point that’s most aligned with business objectives
+    — this is (provably!) pareto-optimal. The authors of Learnable Loss Weights claim
+    that it’s better to learn the loss weights instead of hand-tuning them. That’s
+    ok, but they would have probably found the same results with a fine-grained parameter
+    sweep.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What’s controversial is the claim of researchers working on direct gradient
+    manipulation algorithms that it’s *not* enough to change the loss weights: we
+    need to adapt the gradients directly to resolve conflicts during training. This
+    claim contradicts scalarization theory!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39a1589a724889aa3d495db52ee1d5bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Gradient manipulation algorithms don’t beat scalarization (blue curve). Image
+    credit: [Xin et al 2022](https://arxiv.org/abs/2209.11379)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, who’s right? In their paper “Do Current Multi-Task Optimization Methods
+    in Deep Learning Even Help?”, Derrick Xin et al compare the predictive performance
+    of scalarization (combined with parameter sweeps over loss weights) against a
+    selection of modern gradient manipulation algorithms, including Gradient Surgery
+    and GradNorm. The result? None of them beat scalarization!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors explain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“Researchers can unknowingly create the illusion of significant performance
+    gains by simply under-tuning the competing baselines.”*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'And this “illusion” highlights a problem in modern Machine Learning research:
+    perhaps it is too easy to publish ML research papers. Perhaps it is too easy to
+    show that a new algorithm works on a fixed dataset, simply by tuning that algorithm
+    a little bit more and tuning the baselines a little bit less.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perhaps, then, one of the best thing we can do to advance ML research is to
+    [develop better theories](/why-does-deep-learning-work-so-well-6550f3aa22c6).
+  prefs: []
+  type: TYPE_NORMAL

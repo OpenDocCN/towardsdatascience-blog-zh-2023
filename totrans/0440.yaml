@@ -1,0 +1,382 @@
+- en: Building a Streaming Data Pipeline with Redshift Serverless and Kinesis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-streaming-data-pipeline-with-redshift-serverless-and-kinesis-04e09d7e85b2](https://towardsdatascience.com/building-a-streaming-data-pipeline-with-redshift-serverless-and-kinesis-04e09d7e85b2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An End-To-End Tutorial for Beginners
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mshakhomirov.medium.com/?source=post_page-----04e09d7e85b2--------------------------------)[![💡Mike
+    Shakhomirov](../Images/bc6895c7face3244d488feb97ba0f68e.png)](https://mshakhomirov.medium.com/?source=post_page-----04e09d7e85b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----04e09d7e85b2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----04e09d7e85b2--------------------------------)
+    [💡Mike Shakhomirov](https://mshakhomirov.medium.com/?source=post_page-----04e09d7e85b2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----04e09d7e85b2--------------------------------)
+    ·9 min read·Oct 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1700c0485714244a17aec09305461e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Sebastian Pandelache](https://unsplash.com/@pandelache?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will talk about one of the most popular data pipeline design
+    patterns — event streaming. Among other benefits, it enables lightning-fast data
+    analytics and we can create reporting dashboards that update results in real-time.
+    I will demonstrate how it can be achieved by building a streaming data pipeline
+    with AWS Kinesis and Redshift which can be deployed with just a few clicks using
+    infrastructure as code. We will use AWS CloudFormation to describe our data platform
+    architecture and simplify deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine that as a data engineer, you are tasked to create a data pipeline that
+    connects server event streams with a data warehouse solution (Redshift) to transform
+    the data and create an analytics dashboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19d9e86d0773049b03bcd3c4ea66b9ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pipeline Infrastructure. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a data pipeline?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It is a sequence of data processing steps. Due to ***logical data flow connections***
+    between these stages, each stage generates an **output** that serves as an **input**
+    for the following stage.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'I previously wrote about it in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----04e09d7e85b2--------------------------------)
+    [## Data pipeline design patterns'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the right architecture with examples
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/data-pipeline-design-patterns-100afa4b93e3?source=post_page-----04e09d7e85b2--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, event data can be created by a source at the back end, an event
+    stream built with Kinesis Firehose or Kafka stream. It can then feed a number
+    of various consumers or destinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming is a “must-have” solution for enterprise data due to its streaming
+    data processing capabilities. It enables real-time data analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our use-case scenario we can set up an **ELT streaming** data pipeline to
+    AWS Redshift. AWS Firehose stream can offer this type of seamless integration
+    when streaming data will be uploaded directly into the data warehouse table. Then
+    data can be transformed to create reports with AWS Quicksight as a BI tool for
+    example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90a8cb4b073924f3113fce5df13ab20c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Added BI component. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This tutorial assumes that learners are familiar with AWS CLI and have minimal
+    Python knowledge.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 1\. Firstly, we will create Kinesis data stream using AWS CloudFormation
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. We will send sample data events to this event stream using AWS Lambda.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Finally, we will provision AWS Redshift cluster and test our streaming pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create an AWS Kinesis Data Stream
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: AWS Kinesis Data Streams is an Amazon Kinesis real-time data streaming solution.
+    It offers great scalability and durability where data streams are available for
+    any consumer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can create it with CloudFormation template. The commandline script below
+    will trigger AWS CLI command to deploy it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the template kinesis-data-stream.yaml will look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Very simple. If everything goes well we will see our Kinesis stream being deployed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f33f2db4f4b45e501787735db96cb76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Stream created. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Create AWS Lambda function to simulate an event stream
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we would want to send some events to our Kinesis Data Stream. For this,
+    we can create a serverless application, such as AWS Lambda. We will use `boto3`
+    library (The AWS SDK for Python) to build a data connector with AWS Kinesis at
+    source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/611621ecd4f8ba97807a73dcbfff5e82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Running app locally to simulate event stream. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our application folder structure can look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our `app.py` must be able to send events to Kinesis Data Stream:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We would like to add a helper function to generate some random event data.
+    For instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can use `python-lambda-local` library to run and test AWS Lambda locally
+    like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`env.json` is just an event payload to run Lambda locally.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`config/staging.yaml` can contain any environment specific setting our application
+    might require in future. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you need to use `requirements.txt` it can look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run this in your command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This approach is useful because we might want to deploy our serverless application
+    in the cloud and schedule it. We can use CloudFormation template for this. I prevoiusly
+    wrote about it here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://levelup.gitconnected.com/infrastructure-as-code-for-beginners-a4e36c805316?source=post_page-----04e09d7e85b2--------------------------------)
+    [## Infrastructure as Code for Beginners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy Data Pipelines like a pro with these templates
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/infrastructure-as-code-for-beginners-a4e36c805316?source=post_page-----04e09d7e85b2--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we use a CloudFormation template the application can be deployed with
+    a shell script like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is a flexible setup allowing use to create robust CI/CD pipelines. I remember
+    I created one in this post below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1?source=post_page-----04e09d7e85b2--------------------------------)
+    [## Continuous Integration and Deployment for Data Platforms'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CI/CD for data engineers and ML Ops
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1?source=post_page-----04e09d7e85b2--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create Redshift Serverless resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we need to create Redshift Serverless cluster for our streaming data pipeline.
+    We can provision Redshift Workgroup, create a Namespace and other required resources
+    either manually or with CloudFormation template.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Redshift Serverless is just a data warehouse solution. It enables the execution
+    of analytics workloads of any size without the need for data warehouse infrastructure
+    management. Redshift is fast and generates insights from enormous volumes of data
+    in seconds. It scales automatically to provide quick performance for even the
+    most demanding applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e11cbe2d920bab18ad3e3c56a7a0a94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example view with events from our application. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case we can deploy the Redshift resources using CloudFormation template
+    definitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So if we run this in the command line it will deploy this stack:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Typically we would want to deploy databases in a private subnet. However, in
+    the early stages of a development, you might want to have a direct access to Redshift
+    from dev machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is not recommended for production environments, but in this development
+    case, you can start off by putting Redshift into our `default` VPC subnet.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Now when all required pipeline resources were successfully provisioned we can
+    connect our Kinesis stream and Redshift data warehouse.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Then we can use SQL statements to create `kinesis_data` schema in Redshift:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first part of this SQL will set AWS Kinesis as source. The second one will
+    create a view with event data from our application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Make sure to create AWS Redshift role with added `AmazonRedshiftAllCommandsFullAccess`
+    AWS managed policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That’s it. Everything is ready to run the application to simulate the event
+    data stream. These events will appear straight away in the Redshift view we have
+    just created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/611621ecd4f8ba97807a73dcbfff5e82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Application running locally. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e11cbe2d920bab18ad3e3c56a7a0a94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example view with events from our application. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We created a simple and reliable streaming data pipeline from a serverless application
+    created with AWS Lambda to AWS Redshift data warehouse where data is transformed
+    and ingested in real time. It enables capturing, processing, and storing data
+    streams of any size with ease. It is great for any Machine learning (ML) pipeline
+    where models are used to examine data and forecast inference endpoints as streams
+    flow to their destination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used infrastructure as code to deploy data pipeline resources. This is a
+    preferable approach to deploying resources in different data environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommended read
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1?source=post_page-----04e09d7e85b2--------------------------------)
+    [## Continuous Integration and Deployment for Data Platforms'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CI/CD for data engineers and ML Ops
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/continuous-integration-and-deployment-for-data-platforms-817bf1b6bed1?source=post_page-----04e09d7e85b2--------------------------------)
+    [](/data-platform-architecture-types-f255ac6e0b7?source=post_page-----04e09d7e85b2--------------------------------)
+    [## Data Platform Architecture Types
+  prefs: []
+  type: TYPE_NORMAL
+- en: How well does it answer your business needs? Dilemma of a choice.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/data-platform-architecture-types-f255ac6e0b7?source=post_page-----04e09d7e85b2--------------------------------)
+    [](https://levelup.gitconnected.com/infrastructure-as-code-for-beginners-a4e36c805316?source=post_page-----04e09d7e85b2--------------------------------)
+    [## Infrastructure as Code for Beginners
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy Data Pipelines like a pro with these templates
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: levelup.gitconnected.com](https://levelup.gitconnected.com/infrastructure-as-code-for-beginners-a4e36c805316?source=post_page-----04e09d7e85b2--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

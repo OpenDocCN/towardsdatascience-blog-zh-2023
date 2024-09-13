@@ -1,0 +1,378 @@
+- en: Your Own Personal ChatGPT
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/your-own-personal-chatgpt-cb0512091e3f](https://towardsdatascience.com/your-own-personal-chatgpt-cb0512091e3f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How you can fine-tune OpenAI’s GPT-3.5 Turbo model to perform new tasks using
+    your custom data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)[![Robert
+    A. Gonsalves](../Images/96b4da0f602a1cd9d1e1d2917868cbee.png)](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------)
+    [Robert A. Gonsalves](https://robgon.medium.com/?source=post_page-----cb0512091e3f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb0512091e3f--------------------------------)
+    ·15 min read·Sep 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7464d9a6182286a2f69d41a6779a233c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**“a minimalist painting of a cute robot in an art class,”** Image created
+    using an AI image creation program, Midjourney, and edited by the author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I was excited when I got an email from OpenAI announcing the ability to fine-tune
+    ChatGPT. The update came in response to the requests from developers and businesses
+    looking to customize the model to better cater to their specific requirements.
+    By leveraging this fine-tuning, it’s now possible to improve steerability, achieve
+    more consistent output formatting, and establish a desired custom tone. Another
+    noteworthy aspect is that users can send shorter prompts without any notable dip
+    in performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s what OpenAI says on their development blog [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: This update gives developers the ability to customize models that perform better
+    for their use cases and run these custom models at scale. Early tests have shown
+    a fine-tuned version of GPT-3.5 Turbo can match, or even outperform, base GPT-4-level
+    capabilities on certain narrow tasks. As with all our APIs, data sent in and out
+    of the fine-tuning API is owned by the customer and is not used by OpenAI, or
+    any other organization, to train other models. — Andrew Peng, et al., OpenAI
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this article, I’ll demonstrate how I used text from my Medium articles as
+    training and test data to convert plain text into Markdown format automatically.
+    Before I describe the experiment, I’ll give you a little background on ChatGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The AI model known as ChatGPT was introduced in November of 2022 [2]. It was
+    the first public chatbot that OpenAI released, and I have written about it several
+    times [here on Medium](https://robgon.medium.com/list/chatgpt-d71f5c6d0f10). The
+    model works as well as a general chatbot but has a few limitations. For example,
+    its training cutoff was September 2021, so it doesn’t directly know about any
+    new information since then. Using browser plug-ins to fetch and augment the model’s
+    data is possible, but this is currently slow and cumbersome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A better way to infuse new information and skills into ChatGPT is using OpenAI’s
+    [fine-tuning API](https://platform.openai.com/docs/guides/fine-tuning). Fine-tuning
+    ChatGPT through the API offers improved results compared to regular prompting.
+    It enables training on more examples than a prompt can handle, leads to shorter
+    prompts that save tokens, and results in quicker response times. There is a cost
+    to using this, however.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pricing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here are prices for using the various models from [OpenAI’s pricing page](https://openai.com/pricing),
+    in US dollars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc027f2b5e606c07a0492b7bd8aa6511.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Prices for Using OpenAI’s Models,** Source [OpenAI](https://openai.com/pricing)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The term “token” refers to the number of word parts used for prompts and results,
+    where 750 words can be represented with about 1,000 tokens. The term “context”
+    refers to the total number of tokens used for an interaction’s inputs and results.
+    The chart shows that the tokens for the input words (i.e., the prompt) cost less
+    than those for the output words (i.e., the results.) Using GPT-4 costs more than
+    using GPT-3.5 Turbo. A fine-tuned version of GPT-3.5 Turbo is somewhere between
+    the two other models. However, it would be worth the cost if a fine-tuned GPT-3.5
+    Turbo can outperform GPT-4\. We’ll see if it’s true in my experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that these prices are subject to change over time and may be different
+    across locales and currencies. Any changes will impact the limitations and trade-offs
+    discussed above, so please check your local prices before making any decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Automatically Formatting Documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To kick things off, I ran an experiment to see if the GPT models could be trained
+    to render text files to Markdown format automatically. This lightweight markup
+    language specifies text formats like headings, blockquotes, code blocks, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b0fb12ad254ed50ffa9bb899466c0f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Components for Formatting Text Files**, Diagram by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test the models, I downloaded 36 of my articles on Medium and converted the
+    HTML files to Markdown and plain text format using the Beautiful Soup [library](https://code.launchpad.net/beautifulsoup/).
+    The text files are used as inputs, and the Markdown files are used as outputs
+    for the training and testing. I used 32 articles for training and three for testing.
+    I tested three variants of OpenAI’s language models, GPT-4, GPT-3.5 Turbo, and
+    the fine-tuned GPT-3.5 Turbo, and collected the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s what one of the articles looks like in Markdown format, before and after
+    rendering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markdown Format
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/e31c8f15b46097924611c4fd6ce32f72.png)![](../Images/dfe4012bf674baa9c741555aea5ccb60.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Example Article Showing Markdown Format** (left), **and Rendered** (right),
+    Images by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can see the Markdown format characters on the left in dark red, like #
+    for Heading 1 and ## for Heading 2\. On the right, you can see how the file is
+    rendered, showing formatting like the block quote at the end.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning GPT-3.5 Turbo
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Fine-tuning the model was easy. I followed the instructions from OpenAI [here](https://platform.openai.com/docs/guides/fine-tuning).
+    The first step was to gather my training and validation data into JSON files.
+    I divided my articles into four sections to keep within the 4K token limit for
+    GPT-3.5 Turbo. Each entry in the file had a message with an optional system prompt,
+    a user message, and an expected response from the assistant. Here is an example
+    entry from my training file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The system prompt is the same for every entry. The user message is plain text
+    from one of my articles, and the assistant’s response is the same text in Markdown
+    format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned, OpenAI does not use any data submitted to and generated by their
+    API to train models or improve their service. However, this is different for the
+    interactive version of their service. More info is available [here](https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Checking the Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, I ran the check_file() function from OpenAI on the training and testing
+    files. Here are the results from the check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b43683a9ea97e76646ec7187603cadff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Output from check_file**, Image by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see that I used 132 examples for training, which is 32 articles with
+    4 sections each. The script showed me if there were any errors and calculated
+    the total number of tokens, which I used to estimate the cost of training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run the Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once I had my training and testing files set up and checked, I uploaded the
+    files to my account.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I then got the names of the files and ran this command to start the training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The suffix is a way to provide some metadata so I can identify the fine-tuned
+    model later. By default, the system ran for three epochs, which took about a half
+    hour to finish. When the training was done, OpenAI sent me an email notification.
+    Here’s what the training and validation loss looked like throughout 384 training
+    steps (32 articles * 4 sections * 3 epochs.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3817fb0dd5ee3b8a413ed8865523ec5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Train and Validation Loss for Fine-tuning GPT-3.5 Turbo**, Chart by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It did a good job reducing the loss throughout the training. The validation
+    also seemed to follow a downward trend, so it didn’t overfit the training data.
+    Let’s see the new model in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing the Fine-tuned Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I logged into my OpenAI account and navigated to the Playground to test the
+    system. I chose my fine-tuned model, entered the system prompt, added a few lines
+    from the head of this article, and hit the submit button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/826a9d405fc1b93b107ea57e0e8de8d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**OpenAI Playground Test of the Fine-tuned Model**, Screenshot by Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It worked well! With a minimal prompt, it matched the formatting that I expected
+    from the training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparative Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To compare the accuracy of the fine-tuned model with the standard models, I
+    created a [longish prompt](https://gist.github.com/robgon-art/95ec5a7932d8276db9162737f363dcfc#file-prompt-py)
+    to test GPT-4 and GPT-3.5 Turbo with one-shot inferencing. I gave one example
+    of before and after text in the system prompt and the text to be formatted in
+    the user prompt for these two models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I then ran the 12 examples (3 articles with 4 sections) through the three models
+    to get the results. To get a quantitative measure of accuracy, I calculated the
+    Character Error Rate (CER) between the predicted formatted text and the original
+    formatted text as a reference. In addition to the CER results, I report the duration
+    of running the inferences and the costs for comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e69f512f46fd1a00db45589c68311b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Results of Formatting Text Documents with Various GPT Models**, Table by
+    Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see that the GPT-4 model had fewer errors than the stock GPT-3.5 Turbo
+    model. However, formatting the three articles took a lot longer and had a much
+    higher cost. The fine-tuned GPT-3.5 Turbo model had far fewer errors and ran much
+    faster. However, the inferencing cost was in the middle and was burdened with
+    the fine-tuning cost. I would have to run seven experiments (e.g., 21 formatted
+    articles) to break even with the GPT-4 costs. But it may be worth it because of
+    the low CER.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although the fine-tuned model did a great job of automatically formatting text,
+    I was curious to see if it “learned” anything about the source material it saw
+    while fine-tuning. So I asked it this question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'USER - Do you know about an article in Towards Data Science called Writing
+    Songs with GPT-4: Part 1, Lyrics?'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'ASSISTANT - Yes, I am familiar with the article you mentioned. It is titled
+    “Writing Songs with GPT-4: Part 1, Lyrics” and it was published on Towards Data
+    Science. This article explores the use of GPT-4, a language model developed by
+    OpenAI, for generating song lyrics. It covers how to fine-tune the model and generate
+    creative lyrics.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: USER - Who wrote the article?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'ASSISTANT - The article “Writing Songs with GPT-4: Part 1, Lyrics” was written
+    by Ellie Chen.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: OK, it is hallucinating here. First, I didn’t fine-tune GPT-4 for this article.
+    Second, the model thinks it was written by someone named Ellie Chen. So, the training
+    data didn’t sink in. As a next step, I could explore ways to inject new data into
+    the GPT models during fine-tuning for later recall and use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: OpenAI’s introduction of fine-tuning capabilities for ChatGPT presents a new
+    avenue for developers to adapt the model to specific tasks. This article explored
+    the process and outcomes of using this feature, particularly in automatically
+    converting plain text into Markdown format. Although the model worked well with
+    this straightforward task, it didn’t seem to comprehend and remember the new text
+    it saw, so it can’t reliably be used for generative queries about the new material.
+    As AI technology progresses, the exploration of creating specialized models becomes
+    a topic of interest, highlighting the importance of continued research and assessment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Source Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The source code for this project is available on GitHub.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71d27e760510e5537d17fec893c347ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Creative Commons Attribution Sharealike**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Acknowledgments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I thank Jennifer Lim for reviewing the article and providing feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] A. Peng et al., [GPT-3.5 Turbo fine-tuning and API updates](https://openai.com/blog/gpt-3-5-turbo-fine-tuning-and-api-updates),
+    2023'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] OpenAI, [Introducing ChatGPT](https://openai.com/blog/chatgpt), 2022'
+  prefs: []
+  type: TYPE_NORMAL

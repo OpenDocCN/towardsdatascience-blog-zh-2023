@@ -1,0 +1,645 @@
+- en: How To Deploy and Test Your Models Using FastAPI and Google Cloud Run
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-deploy-and-test-your-models-using-fastapi-and-google-cloud-run-82981a44c4fe](https://towardsdatascience.com/how-to-deploy-and-test-your-models-using-fastapi-and-google-cloud-run-82981a44c4fe)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to turn your model into a service that runs in the cloud in this end-to-end
+    tutorial
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@antonsruberts?source=post_page-----82981a44c4fe--------------------------------)[![Antons
+    Tocilins-Ruberts](../Images/363a4f32aa793cca7a67dea68e76e3cf.png)](https://medium.com/@antonsruberts?source=post_page-----82981a44c4fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----82981a44c4fe--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----82981a44c4fe--------------------------------)
+    [Antons Tocilins-Ruberts](https://medium.com/@antonsruberts?source=post_page-----82981a44c4fe--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----82981a44c4fe--------------------------------)
+    ·12 min read·Mar 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/109864dbe39d0cc00200a8a32e4dab4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Taylor Vick](https://unsplash.com/ko/@tvick?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MLOps (Machine Learning Operations) is an increasingly popular function and
+    skill among data professionals. More and more, full stack data scientists who
+    are capable of taking machine learning (ML) projects from training to production
+    are in demand, so if you feel a bit uncomfortable in this area, or you want a
+    quick refresher, this post is for you! If you’ve never deployed a model before,
+    I highly encourage you to checkout my previous post that gives you more of an
+    introduction into ML deployment and explains many concepts that will be used in
+    this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-ml-deployment-flask-docker-locust-b87b5bd78a17?source=post_page-----82981a44c4fe--------------------------------)
+    [## Introduction to ML Deployment: Flask, Docker & Locust'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to deploy your models in Python and measure the performance using
+    Locust
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-ml-deployment-flask-docker-locust-b87b5bd78a17?source=post_page-----82981a44c4fe--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This post is going to cover quite a few topics, so feel free to skip to the
+    chapters you’re the most interested in. The structure of this post is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use FastAPI to specify API for inference endpoint**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Containerise the endpoint using Docker**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Upload the Docker image to Artifact Registry in GCP**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Deploy the image to Google Cloud Run**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Monitor the inference speed and load-test the deployment**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/7b310e2855a73fa27a1ecbf856928cea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Project steps overview. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First things first, you’ll need to install `fastapi` , `uvicorn`and `Docker`
+    on your local machine to complete the first two steps. The third and fourth steps
+    require you to have an active `Google Cloud Platform` account with enabled `Articat
+    Registry` and `Cloud Run` APIs. Luckily, GCP offers a free trial period with free
+    credits which you can activate using your Gmail account. In addition, you’ll want
+    to install `gcloud` CLI tool which will allow you to interact with your GCP account
+    through the CLI. Finally, you’ll want to install Locust for load testing. Exact
+    installation steps will depend on your system but below you can find all the links
+    to the installation instructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Install FastAPI and Uvicorn](https://fastapi.tiangolo.com/tutorial/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Download and install Docker](https://docs.docker.com/get-docker/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Get free GCP account](https://cloud.google.com/free)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Install gcloud CLI](https://cloud.google.com/sdk/docs/install-sdk)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Install Locust](https://docs.locust.io/en/stable/installation.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code is available in [this GitHub repo](https://github.com/aruberts/tutorials/tree/main/deployment/fastapi).
+    Make sure to pull it and follow along, since it’s the best way to learn (in my
+    opinion).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Project Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To make the learning more practical, this post will show you how to deploy a
+    model for loan default prediction. Model training process is out of scope for
+    this post, but you can find an already trained model in the [Github repo](https://github.com/aruberts/tutorials/tree/main/deployment/fastapi).
+    The model was trained on the pre-processed [U.S. Small Business Administration
+    dataset](https://www.kaggle.com/datasets/mirbektoktogaraev/should-this-loan-be-approved-or-denied)
+    (CC BY-SA 4.0 license). Feel free to explore the data dictionary to understand
+    what each of the columns mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main goal of this project is to create a working endpoint (called `/predict`)
+    which will receive POST requests with information about loan applications (i.e.
+    model features) and will output a response with default probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41e332a243b1327c9c909717142cc832.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified ML prediction system. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all of this out of the way, let’s finally get started! First, let’s see
+    how we can create an inference API using FastAPI library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create Inference API
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What even is API?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'An API (Application Programming Interface) is a set of established protocols
+    for external programs to interact with your application. To explain it a bit more
+    intuitively, here’s a quote from a really [good answer](https://stackoverflow.com/questions/6220618/what-does-it-mean-to-create-an-api-on-the-web)
+    on Stack Overflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web APIs are entry points on an application running on a web server that permit
+    other tools to interact with that web service in some way. Think of it as a “user
+    interface” for software. A list of URLs and how to interact with them is all *any*
+    web API is, in the end.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In other words, our API will take care of specifying how to interact with the
+    application that hosts the ML model. To be more precise, it will specify:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s the URL of the prediction service
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What information the service expects as input
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What information the service will provide as outputs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: FastAPI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: FastAPI is a Python framework for developing web APIs. It’s quite similar to
+    Flask (covered in my [previous post](/introduction-to-ml-deployment-flask-docker-locust-b87b5bd78a17))
+    but there are a few notable advantages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In-built data validation using Pydantic
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Automatic documentation with SwaggerUI
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Asynchronous task support using ASGI
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Overall simpler syntaxis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The creator of this framework has basically explored every other solution for
+    building APIs, decided what he likes about them, and combined all the nice functionalities
+    into FastAPI (for which we’re very grateful, so don’t forget to star the [github
+    repo](https://github.com/tiangolo/fastapi)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input and Output Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before creating an endpoint, it’s important to define the type of information
+    that is expected as input and output. FastAPI accepts JSON requests and responses,
+    but it’s crucial to specify the fields that are required and their respective
+    data types. To accomplish this, FastAPI utilizes [Pydantic](https://docs.pydantic.dev/),
+    which validates type hints during runtime and offers clear and user-friendly error
+    messages whenever invalid data is submitted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way that Pydantic enforces these data types is through data models. Data
+    models are simply Python classes that inherit from `pydantic.BaseModel` and list
+    expected fields and their types as class variables. Above you can see how I’ve
+    specified the expected input in `LoanApplication` class and the expected output
+    in `PredictioutOut` class. This type of strict validation can help you catch errors
+    early in the development process and prevent them from causing issues in production.
+    We can also specify the acceptable ranges for each of these parameters, but I’ll
+    skip this step for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Application and Endpoint Creation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: FastAPI is used to both create an application and define different endpoints
+    that will server as APIs. Here’s a very simple example of a FastAPI application
+    that has a prediction endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s digest the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It imports the necessary libraries and loads a pre-trained CatBoost model that
+    has been saved in a file
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It creates a FastAPI app instance by assigning `FastAPI` class to the `app`
+    variable
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It defines an API endpoint for making predictions that expects POST requests
+    by decorating a function with the `@app.post("/predict", response_model=PredictionOut)`
+    decorator. The `response_model` parameter specifies the expected output format
+    of the API endpoint
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The `predict` function takes a payload, which is expected to be an instance
+    of a Pydantic model called `LoanApplication`. This payload is used to create a
+    pandas DataFrame, which is then used to generate a prediction using the pre-trained
+    `catboost` model. The predicted probability of default is returned as a JSON object
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Notice how the previously defined input and output data classes came into play.
+    We specify the expected response format using `response_model` parameter in the
+    decorator and the request format as the input type hint in the `predict` function.
+    Very easy and clean, yet highly effective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There you have it! In a few lines of code, we’ve created an application with
+    a prediction endpoint (API) and full fledged data validation capabilities. To
+    start up this application locally you can run this command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If everything goes well, you’ll see that the application is running at the specified
+    address.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de344917331f9ea5a547173527fd9f6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Documentation with Swagger UI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s a cool thing about FastAPI — we get the documentation for free! Head
+    over to the [**http://0.0.0.0:80/docs**](http://0.0.0.0:80/docs)and you should
+    see a Swagger UI screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2593915d4bab07b8326db21283924d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Swagger UI. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the same screen you can test out your API by clicking on our POST endpoint
+    (in green) and editing the default request body. Then, click execute and you’ll
+    see what the API responds with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d292bf9bf95fcf1c29033bac55a0de06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Request body in the UI. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’ve specified everything correctly, you should get a response code 200
+    which means that the request has been successful. The body of this response should
+    contain JSON with `default_probability` which we’ve previously specified as output
+    of our `/predict` endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa00fe6f08323137cb94e6495cdf7c1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Response body in the UI. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, you can test the API programmatically as well using a `request` library
+    but the UI gives you a nice and intuitive alternative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Containerise the Application Using Docker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As I’ve mentioned in my previous [post](https://medium.com/towards-data-science/introduction-to-ml-deployment-flask-docker-locust-b87b5bd78a17),
+    containerisation is the process of encapsulating your application and all of its
+    dependencies (including Python) into a self-contained, isolated package that can
+    run consistently across different environments (e.g. locally, in the cloud, on
+    your friend’s laptop, etc.). FastAPI has a great documentation of how to run FastAPI
+    in Docker, so check it out [here](https://fastapi.tiangolo.com/deployment/docker/)
+    if you’re interested in more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below, you can see a Dockerfile (set of instructions for Docker) for our API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s identical to the one we’ve used with Flask with exception of the last
+    command that gets run. Here’s a brief description of what this Dockerfile achieves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`FROM python:3.9-slim`: Specifies the container’s base image as Python version
+    3.9 with the slim variant, which is a smaller image compared to the regular Python
+    image'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`WORKDIR /app`: This instruction sets the working directory inside the container
+    to `/app`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`COPY requirements.txt requirements.txt`: This instruction copies the `requirements.txt`
+    file from the host machine to the container''s `/app` directory'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`RUN pip install --upgrade pip & RUN pip install -r requirements.txt`: This
+    instruction upgrades `pip` and installs the required packages specified in the
+    `requirements.txt` file using `pip`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`COPY ["loan_catboost_model.cbm", "app.py", "./"] .`: This instruction copies
+    the trained CatBoost model, and the `app.py` file, which contains the Python code
+    for the application, from the host machine to the container''s `/app` directory'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]`: This instruction
+    specifies the command that should be run when the container starts. It runs the
+    `uvicorn` server with the `app` module as the main application at URL `0.0.0.0:80`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Build the Docker Image
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once the Dockerfile is defined, we need to build a Docker image based on it.
+    It’s quite simple to build the image locally, all you need to do is to run the
+    following command in the folder where your Dockerfile and the application code
+    is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will create an image called `default-service-fastapi` and will save it
+    locally. You can run `docker images` in your CLI to see it listed among the other
+    Docker images you have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Push the Image to Google Artifact Registry
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The process of pushing this image to Google Artifact Registry is a bit more
+    involved but it is very nicely [documented by Google](https://cloud.google.com/artifact-registry/docs/docker/pushing-and-pulling).
+    There are five steps to this process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Configure Docker permissions to access your Artifact Registry
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Enable Artifact Registry in your GCP
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a repo in the Registry
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Tag your image using specific naming convention
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Push the image
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To begin with, you’ll need to determine in which location you want to have
+    your container stored. You can find a full list [here](https://cloud.google.com/artifact-registry/docs/repositories/repo-locations).
+    I’ll be choosing `europe-west2` , so a command for me to authenticate my Docker
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The next two steps can be done in you GCP UI. Go to the Artifact Registry in
+    the navigation menu and click the button to enable the API. Then, go to the repositories
+    and click **Create Repository** button. In the pop-up menu, specify that this
+    is a Docker repository and set its location equal to the previously selected one
+    (for me it’s `europe-west2` )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/396363d0e8cef31425f00c210fa61110.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Google Artifact Registry. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the setup is done, so let’s begin the main part. To tag an image with appropriate
+    name and to push it we need to run two specific commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Since the image name is `default-servise-fastapi` , repository name is `ml-images`
+    and my project ID is `rosy-flames376113` , the commands for me look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The command will take some time to execute but once it’s done, you’ll be able
+    see your Docker image in your Artifact Registry UI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the way, you can find your Project ID or create a new project in the GCP
+    UI by clicking the dropdown button next to your Project name (My First Project
+    in the example below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49da8f89293c5d16e97fa33f3c50e6e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GCP UI. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy Container on Google Cloud Run
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The actual deployment step is relatively easy with GCP. The only thing you need
+    to take care of is to enable the Cloud Run API in your GCP project by going to
+    the **Cloud Run** section in navigation menu and clicking on the button to enable
+    the API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are two ways to create a service in Cloud Run — through the CLI or in
+    the UI. I’m going to show you how to do it using CLI, and you can explore the
+    UI option on your own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This command will create a `default-service` (a.k.a our API) from the previously
+    uploaded image in the Artifact Registry. In addition, it also specifies the region
+    (the same as our Docker image), the port to expose, and the RAM available to the
+    service. Other parameters that you can specify, you can check out in the [official
+    documentation](https://cloud.google.com/sdk/gcloud/reference/run/deploy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/937a02cab0e345f245d353fc3303a175.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If you see a url in your command line — congrats! Your model is officially deployed!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Test the Deployment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Similar to the previous post, I’ll be using Locust to test the deployment. Here’s
+    the test scenario that will be tested — the user sends a request with loan information
+    and receives a response with default probability (very unrealistic but works for
+    our purposes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: With local Flask deployment, my laptop could take up to ~180 requests per second
+    before it started failing. In addition, the response time was gradually increasing
+    with the number of requests per second. Let’s run the test for our cloud deployment
+    and see if it performs any better. To launch the test, run `locust -f app_test.py`
+    (`app_test.py` contains the test scenario from above) and input the URL of your
+    server in the UI located be default at **http://0.0.0.0:8089.**I’ve put the limit
+    of users as 300 with the spawn rate of 5 but you can change it to whatever you
+    like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Keep in mind that Cloud Run bills per request**, so be mindful with these
+    parameters!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/822f938fd0d4a7b8d8d2a9deeff7b56f.png)![](../Images/0026493fd63420c28ae190a4c0d1515e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Local Deployment (Left) vs Cloud Deployment (Right) Load Tests. Charts by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the traffic reaches its peak, here’re the charts that I see for my server.
+    First things first, the server didn’t fail even with 300 requests per second which
+    is great news. This means that cloud deployment is more robust than running a
+    model on your local machine. Secondly, the median response time is way lower and
+    stays almost constant with the increased traffic which means that this deployment
+    is also more performant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are however two notable peaks in the 95th percentiles — in the beginning
+    of the test and closer to the end. The first spike can be explained by the fact
+    that Cloud Run servers stand idle until they start receiving traffic. This means
+    that the service needs to warm-up, so low speeds and even some failures are to
+    be expected in the beginning. The second bump is probably due to the server starting
+    to reach its capacity. However, you might notice that by the end of the test,
+    95th percentile speed started to decrease. This is due to our service starting
+    to automatically scale-up (thanks Google!) as you can see in the dashboard below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe4dc24a9bbe5b91d2066c6a598c12d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Metrics Dashboard in Cloud Run. Screenshot by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At its peak, the service actually had 12 instances running, instead of 1\. I’d
+    say that this is the main advantage of managed services like Cloud Run — you don’t
+    need to worry about scalability of your deployment. Google will take care of adding
+    new resources (as long as you can pay of course) and will ensure smooth running
+    of your application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This has been quite a ride, so let’s summarise everything we’ve done in this
+    post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Created a basic APIs with an inference endpoint using FastAPI
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Containerised the API using Docker
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Built the Docker image and pushed it to the Artifact Registry in GCP
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Turned this image into a service using Google Cloud Run
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tested the deployment’s robustness and inference speed using Locust
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Really well done for following through these chapters! I hope that now you feel
+    more confident about the deployment step of ML process and can put your own models
+    into production. Let me know if you have any questions remaining, and I’ll try
+    to cover them in the next posts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not A Member Yet?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@antonsruberts/membership?source=post_page-----82981a44c4fe--------------------------------)
+    [## Join Medium with my referral link - Antons Tocilins-Ruberts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Antons Tocilins-Ruberts (and thousands of other writers
+    on Medium). Your membership fee directly…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@antonsruberts/membership?source=post_page-----82981a44c4fe--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

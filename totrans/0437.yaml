@@ -1,0 +1,1556 @@
+- en: 'Help Start-Up Founders Find the Best Incubators: an end-to-end project.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-matching-tool-to-help-start-up-founders-find-the-best-incubators-an-end-to-end-bd65c41175bd](https://towardsdatascience.com/building-a-matching-tool-to-help-start-up-founders-find-the-best-incubators-an-end-to-end-bd65c41175bd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A freelance project walkthrough to propose the best incubators for start-up
+    founders, using Python, Pinecone, FastAPI, Pydantic, and Docker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeremyarancio?source=post_page-----bd65c41175bd--------------------------------)[![Jeremy
+    Arancio](../Images/37c4c41e71eb91cfffc7e4ff2bb4394a.png)](https://medium.com/@jeremyarancio?source=post_page-----bd65c41175bd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd65c41175bd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bd65c41175bd--------------------------------)
+    [Jeremy Arancio](https://medium.com/@jeremyarancio?source=post_page-----bd65c41175bd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd65c41175bd--------------------------------)
+    ·15 min read·Nov 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Harness](https://www.joinharness.com/), a startup dedicated to assisting founders
+    in their entrepreneurial journey, approached me to develop a tool that aids their
+    community in finding the most suitable incubators: **the Matching Tool.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we walk through the different stages of this project, from
+    the solution design to the delivery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2488d4d84449aeb3c7adad531d8346bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Rames Quinerie](https://unsplash.com/@ramesquinerie?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The company and its cofounders would like to create a tool that enables their
+    community of start-up founders to find the best incubators & accelerators around
+    the globe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so, they manually collected data from incubator websites, including details
+    such as location, various requirements, funding opportunities, and more. Additionally,
+    they leveraged an engaged community of founders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the data from incubators and their community, they needed to find a way
+    to retrieve the **top-k incubators** based on start-up information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Challenge accepted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At first glance, the project looked like a Recommender system like Netflix or
+    Amazon used to suggest the best series or products to their users. From user behavior
+    such as clicks, reviews, or upvotes, a company can anticipate and recommend the
+    most suitable product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yet, in this particular scenario, we lacked any prior data on a founder’s preferences.
+    Thus, building a Recommender System was unfeasible in this case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative approach could have involved **embedding** incubator and startup
+    data into a vector space for a *similarity search*. Put simply, this method entails
+    measuring the distance between vectors to identify the closest incubators in proximity
+    to a given startup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this approach had many defaults in this case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incubators have what I call *hard criteria*, factors that could result in immediate
+    rejection for any startup that doesn’t meet the requirements. This might include
+    not being located in the same city if the incubator requires a hybrid or in-person
+    attendance or the absence of funding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those *hard criteria* would have made the usage of *embeddings*, the vectorial
+    representation of the data, not a good approach in this case. For example, an
+    incubator could match entirely a start-up, but if applications are not open, this
+    incubator shouldn’t be recommended to the founder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The presence of these *hard criteria* makes the use of embeddings on the entire
+    dataset unsuitable in this case. For instance, even if an incubator perfectly
+    aligns with a startup, recommending it to the founder would not be appropriate
+    if applications are not currently open.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, even if the majority of features could be transformed into numerical
+    values (*funding amount, previous funding amount accepted, start-up revenue expectation*)
+    or into categories (*countries, attendance requirement, MVP ready*), some features
+    were just impossible to categorize due to their diversity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***funding vehicle:*** *grant, 140k$, equity (SAFE), …*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***industry focus:*** *medtech, AI, fintech, …*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additionally, these features had to be taken into account in the matching tool
+    but might not have been deemed as *hard criteria*. For instance, a founder might
+    choose an incubator specializing in *health tech* and still be open to accepting
+    a *biotech* startup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A hybrid approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To solve these problems, let’s consider the best of both worlds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If some incubator’s *hard* *criteria* would result in a mismatch, a possibility
+    would be to *filter* those incubators based on the start-up information. After
+    narrowing down the list of potential matches, we can perform a *similarity search*
+    using the remaining *soft criteria* transformed into a unified text and embedding
+    it into a vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And good news: **Pinecone** provides this feature to its vector database!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.pinecone.io/learn/vector-search-filtering/?source=post_page-----bd65c41175bd--------------------------------)
+    [## The Missing WHERE Clause in Vector Search | Pinecone'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vector similarity search makes massive datasets searchable in fractions of a
+    second. Yet despite the brilliance and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.pinecone.io](https://www.pinecone.io/learn/vector-search-filtering/?source=post_page-----bd65c41175bd--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The project path is now clear:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incubators’ data need to be **preprocessed** to enable **filtering** with the
+    *hard criteria* and **similarity search** with the *soft criteria.* The data is
+    then stored on a Pinecone vector database.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The *filter object* has to be built with respect to the Pinecone Python library.
+    Also, it needs to stay **flexible** enough to let the client modify easily the
+    criteria without modifying the algorithm.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The *soft criteria* need to be unified and transform an embedding format, using
+    an appropriate *embedding model.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Data being key here, we need to implement a Data validation step for the start-up
+    information but also for *upserting* new incubator data to the vector database.
+    We’ll use [**Pydantic**](https://docs.pydantic.dev/latest/).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The algorithm will be served as an **API** in a **docker container**. We’ll
+    use FastAPI and create a Dockerfile to ensure the code works no matter the environment.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Bonus*: **Unitests** and **Integration tests** will be set up to enable anyone
+    to modify the code in a CI/CD manner.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All these points were discussed with the stakeholders and were accepted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’re ready to go!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Preprocessing the data**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I received the incubators'' parsed information in a spreadsheet. At first sight,
+    the data is quite chaotic: *manual extraction without a clear process, string
+    instead of boolean, lack of consistency within the same feature, …*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a lot of work to make the data usable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d5f5a7fd0af5d42c3e37054d0823421.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Different dates “format” for the same feature
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regarding *null* values in the dataset, each feature was treated independently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, *attendance requirements* could be *in-person, hybrid,* or *remote.*
+    In this case, incubators for which this feature was missing were considered as
+    requiring *in-person* attendance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example was the *incorporation* of the start-up: *incorporated* or
+    *unincorporated.* Instead of picking those 2 categories, it would be more logical
+    to add a third category as a default value: *regardless*. This will be useful
+    during the filtering stage to not only pick one of the main categories but also
+    pick all the incubators that don’t precise it. We’ll talk about it in the **Filtering**
+    section.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we transform the *soft criteria* into a single prompt to be embedded.
+    For this, we simply used a prompt template. If later in the project new features
+    need to be added, this prompt just needs to be updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the incubator data was preprocessed, it was then exported to the **Pinecone
+    vector database**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build the vector database with incubator data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pinecone provides an easy-to-use Python SDK to insert, modify, and query data
+    from the vector database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we need to *upsert* (insert or update) a vector representing the
+    *soft criteria* in addition to the *hard criteria*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'According to Pinecone, the data should respect the following format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Embedding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many models, open-source or not, to embed texts into a vectorial
+    representation. In this case, we’ll use [**sentence-bert**](https://www.sbert.net/),
+    a Python library designed to exploit open-source embedding models. You can check
+    one of my previous articles where I describe how it works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeremyarancio/semantic-search-using-sequence-bert-2116dabecfa3?source=post_page-----bd65c41175bd--------------------------------)
+    [## Semantic search using Sentence-BERT'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the latest trends in AI pushed by Large Language Models and the success
+    of ChatGPT (OpenAI), businesses have been…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@jeremyarancio/semantic-search-using-sequence-bert-2116dabecfa3?source=post_page-----bd65c41175bd--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simplicity of this library makes it a good choice for building the first
+    version of the matching tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Prepare and export the incubator data.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To upsert new incubators into the vector database, we prepare the data as introduced
+    in the Pinecone documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see in the code, we created an `Incubators` object with Pydantic
+    `BaseModel` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This `BaseModel` class has two main benefits. Not only does it ensure the data
+    is in the correct format for our algorithm and queries, but it also defines a
+    default schema for the incubator data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The incubator data was then exported to the vector database using the Pinecone
+    Python library. To allow other developers to implement this code within the overall
+    architecture of the application, we used FastAPI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the data was exported, we were able to start querying the vector database
+    using the start-up information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build the matching algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The algorithm executes the top-k incubators retrieving in two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filter the irrelevant incubator,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform the similarity search with the embedding vectors.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We also need to ensure that the algorithm stays flexible enough to add or change
+    any data later in the project without touching the core of the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how to do it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the solution I came up with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pinecone uses the same language as MongoDB to filter the database [[source](https://docs.pinecone.io/docs/metadata-filtering#inserting-metadata-into-an-index)].
+    It looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The filter map can also be more elaborate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By implementing the start-up information in the query, we were able to retrieve
+    the incubator whose requirements match: `$gte` — *greater than,* `$eq` — *equal,*
+    etc *…*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But some cases were more complex.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the *location* and *attendance requirements* work in pairs. If
+    an incubator accepts only *hybrid* or *in-person,* the start-up should logically
+    be located in the same city/country as the incubator. But the matching tool should
+    also present all incubators that accept *remote*, no matter where the start-up
+    is located.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example: let’s say the start-up is led by *women founders*, or the
+    start-up has built an *MVP*. Thus, start-ups with this statement True should be
+    proposed incubators that accept women founders only, or that require an MVP, in
+    addition to including all other incubators.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see from these examples, criteria can be categorized into different
+    “*templates”* called `Criterion`. These criteria templates will serve the building
+    of the `filter_object` , which is the filter mapping used by Pinecone/MongoDB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using Python classes, it looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'criterion.name = {criterion.condition_type: payload[criterion.startup_correspondance]}'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE10]python'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'max_funding_amount = {$gte: 10000}'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The parent class object `Criterion` is used to build several sub-classes, representing
+    each case. If we take the *woman founders/MVP* case introduced above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'if woman_founders_startup (False) != condition (True):'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '{"woman_founders_incubator": {"$eq": woman_founders_startup_value (false)}}'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Args:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'condition_type (str): comparison element like "$eq" (equal), "$lte" (lower
+    than or equal), "$gt" (greater than)'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: The complete list is available on the pinecone documentaton (https://docs.pinecone.io/docs/metadata-filtering#metadata-query-language).
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'startup_correspondance (str): start-up correspondance from the payload (see
+    matching_tool/app/models.py)'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'condition (bool): if condition validated, consider the criterion'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: def __init__(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'name: str,'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'condition_type: str,'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'startup_correspondance: str,'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'condition: bool'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ') -> None:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.condition_type = condition_type
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.startup_correspondance = startup_correspondance
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.condition = condition
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: super().__init__(name)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: def normal_case(
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'payload: Mapping,'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criterion: NormalCriterion,'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'filter_object: Dict'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ') -> Dict:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"""Simplest case: take the start-up value (funding amount, previous funding,
+    etc...) and filter the vectordatabase in respect of'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: the condition_type ($eq, $lte, $gte, $gt, ...)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Args:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'payload (Mapping): start-up information'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criterion (NormalCriterion): normal criterion'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'filter_object (Dict): the metadata filter during the vectordatabase query'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Returns:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Dict:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '"""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object[criterion.name] = {
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criterion.condition_type: payload[criterion.startup_correspondance]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: return filter_object
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: def inclusive_case(
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'payload: Mapping,'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criterion: InclusiveCriterion,'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'filter_object: Dict'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ') -> Dict:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"""Inclusive case: prepare filter for inclusive case: women founder, student
+    founders, MVP, other costs...'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: If condition respected (women founders in startup == 1), therefore don't consider
+    the criterion for filter => Take everything (incubators acccepting women only
+    and all the others)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Else: consider only incubators with not women founders => {women_founders:
+    {"$eq: 0}}'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Args:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'payload (Mapping): start-up information'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criterion (NormalCriterion): normal criterion'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'filter_object (Dict): the metadata filter during the vectordatabase query'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if payload[criterion.startup_correspondance] != criterion.condition:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'filter_object[criterion.name] = {criterion.condition_type: payload[criterion.startup_correspondance]}'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: return filter_object
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'class Criteria:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"""Filter using Criterion templates.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Add or remove any criterion you want with the adequate Criterion template.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: country = DependendantCriterion(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: name="country",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition_type="$eq",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: startup_correspondance="country"
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: city = DependendantCriterion(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: name="city",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition_type="$eq",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: startup_correspondance="city"
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: attendance_requirement = ConditionalCriterion(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: name="attendance_requirement",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition=["remote"],
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: true_criteria=[],
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: else_criteria=[country, city]
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: minimum_cofounders = NormalCriterion(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: name="minimum_cofounders",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition_type="$lte",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: startup_correspondance="n_cofounders"
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: working_product_requirement = InclusiveCriterion(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: name="working_product_requirement",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition_type="$eq",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: startup_correspondance="working_product",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition=True
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: woman_founders = InclusiveCriterion(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: name="woman_founders",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition_type="$eq",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: startup_correspondance="woman_founders",
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: condition=True
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '...'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'class Matcher:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"Retrieve incubators that match a start-up information from the vector database."'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: def __init__(
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'index: Index,'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criteria: Criteria = Criteria(),'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'embedder: Embedding = SentenceTransformersEmbedding(),'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ') -> None:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"""'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Args:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'index (Index): vector database index / table'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'criteria (Criteria, optional): Incubators metadata to perform the search. Defaults
+    to Criteria().'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'embedder (Embedding, optional): Embedding method to transform text in a vectorial
+    representation for'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: semantic search. Defaults to SentenceTransformersEmbedding().
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"""'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.index = index
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.criteria = criteria
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: self.embedder = embedder
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: def _get_filter(
+  prefs: []
+  type: TYPE_NORMAL
+- en: self,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'payload: Dict[str, Any],'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ') -> Mapping[str, Any]:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"""Build the dictionnary for filtering metadata on Pinecone.'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'The filter objecy should respect the following format. Check the official Pinecone
+    documentation to know more about it:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: https://docs.pinecone.io/docs/metadata-filtering
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Args:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'payload (Dict[str, Any]): start-up information'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Returns:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Mapping[str, Any]: filter object'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '"""'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '# Initial filter'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'filter_object = {"application_open": 1}'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: criteria = self.criteria.get_criteria()
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'for criterion in criteria:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if isinstance(criterion, NormalCriterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if check_correspondance_in_payload(payload, criterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object = normal_case(
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: payload=payload,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: criterion=criterion,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object=filter_object,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if isinstance(criterion, InclusiveCriterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if check_correspondance_in_payload(payload, criterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object = inclusive_case(
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: payload=payload,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: criterion=criterion,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object=filter_object,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if isinstance(criterion, ConditionalCriterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if check_dependencies(payload, conditional_criterion=criterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object = conditional_case(
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: payload=payload,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: criterion=criterion,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object=filter_object,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if isinstance(criterion, DefaultCriterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'if check_correspondance_in_payload(payload, criterion):'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object = default_case(
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: payload=payload,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: criterion=criterion,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter_object=filter_object,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: return filter_object
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: matches = self.index.query(
+  prefs: []
+  type: TYPE_NORMAL
+- en: vector=embedding,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: filter=filter_object,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: include_metadata=True,
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: top_k=top_k
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '@app.post("/match")'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'def search(payload: StartUp, top_k: int = 5) -> Mapping:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LOGGER.info("Start matching.")
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'try:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: payload = preprocess_payload(dict(payload))
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: pinecone.init(api_key=PINECONE_API_KEY, environment=ENVIRONMENT)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: index = pinecone.Index(index_name=VectorDatabaseConfig.index_name)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: matching_tool = Matcher(index=index)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: matches = matching_tool.match(payload=payload, top_k=top_k)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: return matches
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'except Exception as e:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: LOGGER.error(f"{str(e)}")
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: raise HTTPException(status_code=500, detail=str(e))
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'class StartUp(BaseModel):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'country: Optional[str] = None'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'city: Optional[str] = None'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'funding_amount: Optional[int] = None'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'n_cofounders: Optional[int] = None'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'n_employees: Optional[int] = None'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'woman_founders: Optional[bool] = None'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'industry_focus: str = ""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'funding_vehicle: str = ""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '...'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: integration_test.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: pip install httpx
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: from fastapi.testclient import TestClient
+  prefs: []
+  type: TYPE_NORMAL
+- en: URL = "/match"
+  prefs: []
+  type: TYPE_NORMAL
+- en: client = TestClient(app)
+  prefs: []
+  type: TYPE_NORMAL
+- en: DATA_PATH = Path(os.path.realpath(__file__)).parent / "data/integration_test_data.json"
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'with open(DATA_PATH, ''r'') as data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DATA = json.load(data)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'def test_match():'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'for test in DATA["match_tests"]:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: response = client.post(URL, json=test["payload"])
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: assert response.status_code == 200
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'payload: Dict = json.loads(response.content)'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: match_ids = [match["incubator_id"] for match in payload.values()]
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'for expected_id in test["expected"]:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: assert expected_id in match_ids
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: FROM python:3.9
+  prefs: []
+  type: TYPE_NORMAL
+- en: WORKDIR /src
+  prefs: []
+  type: TYPE_NORMAL
+- en: ENV PYTHONPATH=/src
+  prefs: []
+  type: TYPE_NORMAL
+- en: COPY requirements.txt requirements.txt
+  prefs: []
+  type: TYPE_NORMAL
+- en: COPY matching_tool/ .
+  prefs: []
+  type: TYPE_NORMAL
+- en: RUN pip install -r requirements.txt
+  prefs: []
+  type: TYPE_NORMAL
+- en: EXPOSE 8001
+  prefs: []
+  type: TYPE_NORMAL
+- en: CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8001"]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: docker build -t matching-tool:latest -f Dockerfile .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: docker run -p 8001:8001 --name matching-tool matching-tool
+  prefs: []
+  type: TYPE_NORMAL
+- en: '```'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the container is running, anyone can call the API through the port 8001\.
+    It is also possible to deploy the Docker container to any cloud provider, **making
+    the Matching Tool instantly functional.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The project was ready to be delivered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I shared a real project I carried out for an American start-up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the data I was provided with, in addition to several iterations with the
+    stakeholders, I developed a tool for start-up founders to find the best incubators
+    regarding their needs. I explained step by step the process I followed and the
+    different strategies I used to solve this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step will be to embed this algorithm into the overall application and
+    start collecting the user’s data. This will initiate the **flywheel** necessary
+    in any machine learning feature. Indeed, from this data representing their users’
+    preferences, it will be possible to build a Recommender System that will learn
+    over time, and propose the best output for each present and future founders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It was a pleasure to work with [Harness](https://www.joinharness.com/) on this
+    project. I wish them the best. They know they can call me for future collaborations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you like this article, [**feel free to join my newsletter**](https://medium.com/@jeremyarancio/subscribe)**.
+    I share my content about NLP, MLOps, and entrepreneurship.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can reach out to me on [Linkedin](https://www.linkedin.com/in/jeremy-arancio/),
+    or check my [Github](https://github.com/JeremyArancio).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re a business and want to implement Machine Learning into your product,
+    you can also [**book a call**](https://topmate.io/jeremyarancio/555697).
+  prefs: []
+  type: TYPE_NORMAL
+- en: See you around and happy coding!
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,269 @@
+- en: Apache Spark Optimization Techniques
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/apache-spark-optimization-techniques-fa7f20a9a2cf](https://towardsdatascience.com/apache-spark-optimization-techniques-fa7f20a9a2cf)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A review of some of the most common Spark performance problems and how to address
+    them
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pierpaoloippolito28.medium.com/?source=post_page-----fa7f20a9a2cf--------------------------------)[![Pier
+    Paolo Ippolito](../Images/981abb84149adab275473b76bdbde66f.png)](https://pierpaoloippolito28.medium.com/?source=post_page-----fa7f20a9a2cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fa7f20a9a2cf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fa7f20a9a2cf--------------------------------)
+    [Pier Paolo Ippolito](https://pierpaoloippolito28.medium.com/?source=post_page-----fa7f20a9a2cf--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fa7f20a9a2cf--------------------------------)
+    ·5 min read·Jan 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26df9dea1fbdfec07dfe0a6878c48e93.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Manuel Nägeli](https://unsplash.com/@gwundrig?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Apache Spark is currently one of the most popular big data technologies used
+    in the industry, supported by companies such as Databricks and Palantir.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the key responsibilities of Data Engineers when using Spark, is to write
+    highly optimized code in order to fully take advantage of Spark's distributed
+    computation capabilities (Figure 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5aeb1c52bb6752bdcec1ead3e338ef96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Apache Spark Architecture (Image by Author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As part of this article, you are going to be introduced some of the most common
+    performance problems when using Spark (e.g. the 5 Ss) and how to address them.
+    If you are completely new to Apache Spark, you can find additional information
+    about it in [my previous article](/getting-started-with-apache-spark-cb703e1b3ee9).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 5 Ss
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The 5 Ss (Spill, Skew, Shuffle, Storage, Serialization) are the 5 most common
+    performance problems in Spark. Two key general approaches which can be used to
+    increase Spark performance under any circumstances are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing the amount of data ingested.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reducing the time Spark spends reading data (e.g. using Predicate Pushdown with
+    Disk Partitioning/Z Order Clustering).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will now dive into each of the problems associated with the 5 Ss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spill is caused by writing temporary files to disk when running out of memory
+    (a partition is too big to fit in RAM). In this case, an RDD is first moved from
+    RAM to disk and then back to RAM just to avoid Out Of Memory (OOM) errors. Disk
+    reads and writes can although be quite expensive to compute and should therefore
+    be avoided as much as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spill can be better understood when running Spark Jobs by examining the Spark
+    UI for the **Spill (Memory)** and **Spill (Disk)** values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Spill (Memory): the size of data in memory for spilled partition.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Spill (Disk): the size of data on the disk for the spilled partition.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Two possible approaches which can be used in order to mitigate spill are instantiating
+    a cluster with more memory per worker or increasing the number of partitions (therefore
+    making the existing partitions smaller).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Skew
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When using Spark, data is commonly read in evenly distributed partitions of
+    128 MB. Applying different transformations to the data can then result in some
+    partitions becoming much bigger or smaller than their average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Skew is the result of the imbalance in size between the different partitions.
+    Small amounts of Skew can be perfectly acceptable but in some circumstances, Skew
+    can result in Spill and OOM errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Two possible approaches to reduce Skew are (Figure 2):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Salting the skewed column with random numbers to redistribute partition sizes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Adaptive Query Execution (Spark 3).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5edc2b3878a127c518c20edb49c082ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Partition Size Distribution Before and After Skew (Image by Author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shuffle
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Shuffle results from moving data between executors when performing wide transformations
+    (e.g. joins, groupBy, etc…) or some actions such as count (Figure 3). Mishandling
+    of shuffle problems can result in Skew.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f34a9526e0c58489f4cece8de613e3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Shuffling Process (Image by Author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some approaches which can be used in order to reduce the amount of shuffling
+    are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instantiating fewer and larger workers (therefore reducing network IO overheads).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Prefilter data to reduce its size before shuffling.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Denormalize the datasets involved.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Prefer using Solid State Drives over Hard Disk Drives for faster execution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When working with small tables, Broadcast Hash Join the smaller table. For big
+    tables use instead SortMergeJoin (Broadcast Hash Join can lead to Out Of Memory
+    issues with big tables).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Storage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Storage issues arise when data is stored on disk in a non-optimal way. Issues
+    related with storage can potentially cause excessive Shuffle. Three of the main
+    problems associated with Storage are: Tiny Files, Scanning and Schemas.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tiny Files:** handling partition files less than 128 MB.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Scanning:** when scanning directories we could either have a long list of
+    files in a single directory or in the case of highly partitioned datasets multiple
+    levels folders. In order to reduce the amount of scanning, we can register it
+    as a table.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Schema:** depending on the file format used there can be different schema
+    issues. For example, using JSON and CSV the whole data needs to be read to infer
+    data types. For Parquet instead just a single file read is needed, but the whole
+    list of Parquet files needs to be read if we need to handle possible schema changes
+    over time. In order to improve performances, it could then help to provide schema
+    definitions in advance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Serialization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Serialization encompasses all the problems associated with the distribution
+    of code across clusters (the code is serialized, sent to the executors, and then
+    deserialized).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of Python, this process can even be more complicated since the code
+    has to be pickled and an instance of the Python interpreter has to be allocated
+    to each executor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Serialization issues can arise when integrating codebases with legacy systems
+    (e.g. Hadoop), 3rd party libraries, and custom frameworks. One key approach we
+    can take to reduce serialization issues is avoiding using UDFs or Vectorized UDFs
+    (which act like a black box for the Catalyst Optimizer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Even with the latest release of Apache Spark 3, Spark Optimization remains one
+    of the core areas in which practitioners' expertise and domain knowledge are fundamental
+    in order to successfully make the best use of Spark capabilities. As part of this
+    article, have been covered some of the key problems which can be encountered in
+    a Spark project, although these problems can in some circumstances be highly connected
+    to each other therefore making it difficult to trace down the main root cause.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contacts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you want to keep updated with my latest articles and projects [follow me
+    on Medium](https://pierpaoloippolito28.medium.com/subscribe) and subscribe to
+    my [mailing list](http://eepurl.com/gwO-Dr). These are some of my contacts details:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Linkedin](https://uk.linkedin.com/in/pier-paolo-ippolito-202917146)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Personal Website](https://pierpaolo28.github.io/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Medium Profile](https://towardsdatascience.com/@pierpaoloippolito28)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[GitHub](https://github.com/pierpaolo28)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Kaggle](https://www.kaggle.com/pierpaolo28)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

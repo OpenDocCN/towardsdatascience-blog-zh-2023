@@ -1,0 +1,313 @@
+- en: Jazz Chords Parsing with Transformers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/jazz-chords-parsing-with-transformers-d75031a976f2](https://towardsdatascience.com/jazz-chords-parsing-with-transformers-d75031a976f2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Data-Driven Approach to Tree-Based Music Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@foscarin.francesco?source=post_page-----d75031a976f2--------------------------------)[![Francesco
+    Foscarin](../Images/f4d238b54771adc6d03c9a62f28d3152.png)](https://medium.com/@foscarin.francesco?source=post_page-----d75031a976f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d75031a976f2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d75031a976f2--------------------------------)
+    [Francesco Foscarin](https://medium.com/@foscarin.francesco?source=post_page-----d75031a976f2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d75031a976f2--------------------------------)
+    ·11 min read·Aug 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12225dc1bc607140dfc63b87d3353462.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this article, I summarize part of my research paper [“Predicting Music Hierarchies
+    with a Graph-Based Neural Decoder”](https://arxiv.org/abs/2306.16955) which presents
+    a data-driven system able to parse jazz chord sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This research is **motivated by my frustration with Grammar-based parsing**
+    systems (which were the only option available for music data):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The grammar-building phase requires a lot of domain knowledge
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The parser will fail in case of some unseen configurations or noisy data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is challenging to account for multiple musical dimensions in a single grammar
+    rule
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is no well-supported active Python framework to help with the development
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**My approach** (inspired by similar works in Natural Language Processing)**,**
+    instead, **doesn’t rely on any grammar**, **produces partial results for noisy
+    inputs**, t**rivially handles multiple musical dimensions, and is implemented
+    in PyTorch**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are not familiar with parsing and grammars, or simply need to refresh
+    your knowledge, I’ll now take a step back.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*What is “parsing”?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The term *parsing* refers to predicting/inferring a tree (the mathematical structure)
+    whose leaves are the elements of the sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec15d890b913a95826badedfa7d9c999.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Ok then, but why would we need a tree?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the following sequence of jazz chords (section A of “Take the
+    A Train”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec20411eb5d32ae7ca6e775f9a00cc66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In Jazz music chords are connected by a complex system of perceptual relations.
+    For example, the Dm7 is a preparation for the dominant chord G7\. This means that
+    the Dm7 is less important than the G7 and it could, for example, be omitted in
+    a different reharmonization. Similarly, the D7 is a secondary dominant (a dominant
+    of a dominant) also referring to G7.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This kind of harmonic relation **can be expressed with a tree** and **can be
+    useful for music analysis or while performing tasks like reharmonization**. However,
+    since chords in music pieces are available mostly as a sequence, we want a **system
+    which is able to automatically build such a tree structure**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Constituent vs Dependency Trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before continuing we need to differentiate between two kinds of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Musicologist tends to use what is called *constituent trees*, which you can
+    see in the picture below. Constituent trees contain leaves (chords in blue — elements
+    of the input sequence), and internal nodes (chords in orange — reductions of the
+    children’s leaves).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/003a5e6db70993604e1955e2f26622f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this work instead, we consider another kind of tree, called *dependency tree*.
+    This kind of tree does not have internal nodes, but only directed arcs connecting
+    the elements of the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e9e922b40dbb3dd581e9eb468a47f12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can produce the dependency tree from the constituent tree, with some algorithms
+    that will be discussed later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since this is a data-driven approach, we need a dataset of chord sequences (the
+    input data) associated with a dataset of trees (the ground truth) for training
+    and testing. We use the Jazz Treebank¹ which is publicly available in [this](https://github.com/DCMLab/JazzHarmonyTreebank)
+    GitHub repository (it can be freely used for non-commercial applications, and
+    I obtained the author’s permission to use it in this article). In particular,
+    they provide a JSON file with all chords and annotations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We model each chord in input to our system, with three features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The root, an integer in [0..11], where C -> 0, C# ->1, etc…
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The basic form, an integer in [0..5], which select among major, minor, augmented,
+    half-diminished, diminished, and suspended (sus).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The extension, an integer in [0,1,2] which selects among 6, minor 7, or major
+    7.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To produce the **chord features** from a chord label (a string), we can use
+    a regular expression as follows (note that this code work for this dataset, as
+    the format may vary in other chord datasets).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we need to produce the dependency tree. The JHT dataset only contains
+    constituent trees, encoded as a nested dictionary. We import them and transform
+    them into dependency trees with a recursive function. The mechanism of our function
+    can be described as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start from a fully formed constituent tree and a dependency tree without
+    any dependency arcs, consisting only of the nodes labelled with sequence elements.
+    The algorithm groups all internal tree nodes with their primary child (which all
+    have the same label) and uses all secondary child relations originating from each
+    group to create dependency arcs between the group label and the secondary child
+    label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dependency Parsing Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Our parsing model functioning mechanism is pretty simple: we consider all possible
+    arcs and use an *arc predictor* (a simple binary classifier) to predict whether
+    this arc should be part of the tree or not.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it is pretty hard to make this choice only based on the two chords
+    we are trying to connect. We need some *context*. We build such context with a
+    transformer encoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To resume, our parsing model act in two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the input sequence is passed through a transformer encoder to enrich it with
+    contextual information;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: a binary classifier evaluates the graph of all possible dependency arcs to filter
+    out the unwanted arcs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/796be2efed7a8dacf7ca36559f18f340.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Transformer Encoder follows the standard architecture. We use a learnable
+    embedding layer to map each categorical input feature to points in a continuous
+    multidimensional space. All embeddings are then summed together, so it is up to
+    the network to “decide” the dimension to use for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The arc predictor is just a linear layer taking as input the concatenation of
+    the hidden features of the two chords. The classification step for all the arcs
+    is done in parallel thanks to the power of matrix multiplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can put the transformer encoder and the arc predictor in a single torch module
+    to simplify its usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loss Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a loss function, we use the sum of two losses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The binary cross entropy loss: the idea is to see our problem as a binary classification
+    problem, where each arc can be predicted or not.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The cross-entropy loss: the idea is to see our problem as a multiclass classification
+    problem, where for each head in a head → dep arc, we need to predict which one
+    is the correct dependent among all other chords'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Postprocessing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There is one problem that we still have to solve. The fact that the predicted
+    arcs should form a tree structure is not enforced at any point during our training.
+    Therefore we could have an invalid configuration such as an arc loop. Fortunately,
+    there is an algorithm that we can use to ensure that this does not happen: the
+    Eisner algorithm.²'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of just assuming that an arc exists if its predicted probability is
+    bigger than 0.5, we save all predictions in a square matrix (the *adjacency matrix*)
+    of size (number of chords, number of chords) and we run the Eisner algorithm on
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I presented a system for the dependency parsing of chord sequences which uses
+    a transformer to build contextual chord hidden representations, and a classifier
+    to select whether two chords should be linked by an arc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main advantage with respect to competing systems is that this approach **does
+    not rely on any particular symbolic grammar**, therefore it can consider multiple
+    musical features simultaneously, make use of sequential context information, and
+    produce partial results for noisy inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep this article of a reasonable size, both the explanation and the code
+    focus on the most interesting part of the system. You can find a more complete
+    explanation in [this scientific article](https://arxiv.org/abs/2306.16955) and
+    all the code on [this GitHub repository](https://github.com/fosfrancesco/musicparser).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(All images are by the author.)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: D. Harasim, C. Finkensiep, P. Ericson, T. J. O’Donnell, and M. Rohrmeier, “The
+    jazz harmony treebank,” in Proceedings of the International Society for Music
+    Information Retrieval Conference (ISMIR), 2020, pp. 207–215.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'J. M. Eisner, “Three new probabilistic models for dependency parsing: An exploration,”
+    in Proceedings of the International Conference on Computational Linguistics (COLING),
+    1996.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

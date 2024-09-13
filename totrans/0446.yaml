@@ -1,0 +1,360 @@
+- en: 'Building Better Data Warehouses with Dimensional Modeling: A Guide for Data
+    Engineers'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-better-data-warehouses-with-dimensional-modeling-a-guide-for-data-engineers-422b3cd52df4](https://towardsdatascience.com/building-better-data-warehouses-with-dimensional-modeling-a-guide-for-data-engineers-422b3cd52df4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data Warehouse Dimensional Modeling Design 101
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chengzhizhao.medium.com/?source=post_page-----422b3cd52df4--------------------------------)[![Chengzhi
+    Zhao](../Images/186bba91822dbcc0f926426e56faf543.png)](https://chengzhizhao.medium.com/?source=post_page-----422b3cd52df4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----422b3cd52df4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----422b3cd52df4--------------------------------)
+    [Chengzhi Zhao](https://chengzhizhao.medium.com/?source=post_page-----422b3cd52df4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----422b3cd52df4--------------------------------)
+    ·9 min read·May 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2aaba6fe12b34ed39479fd86886ac73a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Erin Doering](https://unsplash.com/@edoering?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/wSWWyNJSL40?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Regarding system design for a data-intensive application, it usually comes
+    with two options: write or read optimized.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There isn’t a database design that fits and optimizes both writing and reading.
+    Like all system design perspectives, no solution is right or wrong, while only
+    pros and cons. As data professionals who work on data model design, a critical
+    part of the role is to identify the use case and further identify which design
+    principle should be applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data warehouse has historically acted as the layer serving data to the
+    end users, and it’s the last mile to convert data to insights. Ralph Kimball developed
+    one of the famous modeling design techniques called [dimensional modeling](https://en.wikipedia.org/wiki/Dimensional_modeling).
+    His [The Data Warehouse Toolkit: The Definitive Guide to Dimensional Modeling,
+    3rd Edition](https://www.amazon.com/Data-Warehouse-Toolkit-Definitive-Dimensional/dp/1118530802/ref=asc_df_1118530802/?tag=hyprod-20&linkCode=df0&hvadid=312128454859&hvpos=&hvnetw=g&hvrand=12986151952939713448&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9032171&hvtargid=pla-396828635481&psc=1),
+    is the most critical book for dimensional modeling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although big data and cloud computing technologies unblock us from using more
+    computing power and cheaper storage, new or even experienced data engineers have
+    overseen the data warehouse modeling design. Fewer people pay attention to types
+    of slow change dimension (SCD), surrogated key, table granularity, etc. concepts
+    anymore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data model design is crucial for setting the foundation for any data warehouse
+    system. I want to bring the community’s attention to the essential- Building Better
+    Data Warehouses with Dimensional Modeling: A Guide for Data Engineers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Should You Care About OLTP vs. OLAP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you are familiar with the databases, two acronyms should not be strange:
+    OLTP and OLAP.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OLTP stands for Online Transaction Processing, known for its design philosophy
+    of normalization. In the early days, storage is expensive. **The core idea of
+    normalization is to reduce duplication and improve write efficiency.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, we could have a two-dimensional spreadsheet table. We have the
+    product and the sub-type of its product. Both Alice and John have purchased the
+    Honeycrisp apple at $1.99\. The same attribute for the exact apple repeats twice
+    for different customers — we have duplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It becomes even worse when we’d need to perform an update/insert/delete operation.
+    For example, we’d need to add which farm the apples come from, so we have to return
+    to this table and repeat the entries thousands of times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d28fefbde9fba84bc8b82e9b11d84fac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: OLTP Normalization to Remove Duplicates | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To resolve such duplication and improve efficiency, we can accomplish this by
+    normalization — making a separate product table and moving all its related fields
+    to that table. In the original table, only keep an identifier to reference the
+    row in the newly created table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This saves the storage spaces and reduces the number of rows to touch if an
+    update/insert/delete operation needs to be performed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what’s the catch on the OLTP side? *It’s not for analytics pattern queries.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The analytics pattern queries focus on query efficiency in reading data using
+    Select/Filter/Aggregation.** The lack of such support for such query patterns
+    leads to OLAP.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OLAP stands for Online Analytical Processing, known for its design philosophy
+    of denormalization. **The core idea of denormalization is to reduce complex business
+    logic and big table joins (later, we call it fact to fact table) at run time.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing and writing data often happens beforehand within an ETL process, which
+    usually takes longer to execute and precompute the business logic into the final
+    table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Returning to our data example of Apples, the spreadsheet we shared before normalization
+    is an excellent example of analytics design. We have avoided joins between spreadsheets
+    and can perform select/filter directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of the time, data engineering aims to serve an OLAP data warehouse for
+    end users. Unlike OLTP, which avoids duplication as much as poss, The design principle
+    of OLAP is — **redundant (denormalization) isn’t bad. We sacrifice the storage
+    cost but get faster query time at run time.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4 Steps For Successful Dimensional Model Design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[The Data Warehouse Toolkit: The Definitive Guide to Dimensional Modeling,
+    3rd Edition](https://www.amazon.com/Data-Warehouse-Toolkit-Definitive-Dimensional/dp/1118530802/ref=asc_df_1118530802/?tag=hyprod-20&linkCode=df0&hvadid=312128454859&hvpos=&hvnetw=g&hvrand=12986151952939713448&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9032171&hvtargid=pla-396828635481&psc=1),
+    is the most critical book for dimensional modeling. The book covers four essential
+    steps for a successful data warehouse:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Choose the Business Process
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Through my data engineering career path, I learned to find and stick to the
+    business use case is the most important thing. You can have all the fancy tools,
+    milliseconds latency real-time processing, and a powerful distributed compute
+    query engine. No use case is a castle in the air.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless of how thoughtful your design is, consulting with the end users is
+    always a wise first move if you are also the end user (usually unlikely for data
+    engineering). We can interview end users on how they parse and comprehend the
+    data with their domain knowledge, how their current reports are generated, and
+    understand the pain point in their process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kimball’s [Enterprise Data Warehouse Bus Architecture](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/kimball-data-warehouse-bus-architecture/)
+    is also an excellent technique to bridge the business use processes and the standard
+    dimensions. The goal is to evaluate what sizes are shared across the fact table.
+    Leveraging the bus matrix technique streamlines the design decision on designing
+    dimensions at a later stage and helps you visualize the overall structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3493a709ca2cfa113945b2b2b59b6827.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Warehouse Bus Matrix | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Declare the grain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is the gain? It refers to the lowest level of information kept in a table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we know which grain is needed? We’d need to consult with our users to
+    make such a decision. Usually, the more detailed information is provided, the
+    more flexible it is within the table. Only having aggregated data is impossible
+    to get the detail line level. For example, we can get the weekly sales data from
+    a daily aggregation, but we can’t break down the weekly sales into daily easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The aggregate view is faster for queries but needs more detail. On the other
+    hand, the lower grain can be aggregated later to provide the same insights, but
+    it can take additional time at run time. It’s critical to confer with end users
+    and help them understand the pros and cons and potential future needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I recommend starting the grain as low as possible because more granular data
+    can be aggregated later, but not the other way around. You can make a higher-grain
+    fact table using the existing one if a higher grain is needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Identify the Dimensions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once the grain is identified, dimensions should be the next to locate. Dimensions
+    are the cornerstone of the fact table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimensions are to keep the fact table with more sense for the business. Typically
+    dimensions are nouns like date, category, products, etc. They serve the purpose
+    of the slice & dice. End users can use dimensions to focus on a specific data
+    area or aggregate multiple fields to observe potential patterns. For example,
+    what are the top 3 types of apples in our previous example?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimensions often contain much less than the fact tables. Suppose you are familiar
+    with distributed computing or have worked on Spark physical plan. In that case,
+    dimension tables are usually suitable for broadcast join, which means this dataset
+    is small enough to send to every node for joining efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The slow change dimension (SCD) is a core dimension designing concept. Although
+    there are over six types of SCD, the **most critical ones are SCD Type 2**, given
+    its wide adoption in the industry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a row in the dimension value has been modified, how to track such change
+    in your dimension table design?
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s the beauty of SCD Type 2\. We’d add another row with the same business
+    key. The newly added row includes the unchanged fields and the modified fields.
+    To know which row is present and which is the past, we’d add the start and end
+    date time for the valid period of a specific row. For example, if the supplier
+    moved from CA to IL, we can still track it in the slow-changing dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f678099620f9b322f1384523a244cb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Slowly Changing Dimension (SCD) Type 2 | Image By Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Suppier_Code — ABC is usually the business key supplied from an OLTP system.
+    To keep a primary to join with the fact table later, we’d need to create a [surrogate
+    key](https://en.wikipedia.org/wiki/Surrogate_key) — Suppkier_Key- unique from
+    this dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Identify the Fact
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The fact table is the “soul” of dimensional modeling. The fact table keeps the
+    core business in the fact table. Most fact table rows are numeric only, such as
+    total sales quantity, transaction fee, and profit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are multiple types of fact tables. You can build a transactional-based
+    fact table or a snapshot fact table like monthly sales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The core idea of the fact table is to track the data change for a given period.
+    For example, assume Alice has bought the Honeycrisp apple. Then the next day,
+    she returns it because she found a worm inside the apple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we take the transaction base view, we will log two rows. The first row is
+    the profit for the $2.99, and the second is -$2.99 (assuming no extra operation
+    cost) since she returns the apple.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we take a snapshot of the monthly base view, Alice’s purchase won’t impact
+    the business since the net profit from Alice is 0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fact table is the tip of the pyramid. It requires all the foundation work
+    to be ready. So having a solid foundation is critical before jumping into the
+    fact table design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Should I Choose Star Schema and SnowFlake Schema?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The choice of [Star schema](https://en.wikipedia.org/wiki/Star_schema) and [Snowflake
+    schema](https://en.wikipedia.org/wiki/Snowflake_schema) for the data warehouse
+    could be more straightforward for people familiar with the OLTP design and trying
+    to put some level of normalization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Start schema should be preferable in the majority of cases. There are a few
+    reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’d want to avoid extra join, which slows down your query performance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The more relationship among dimensions, the more complicated to make manage
+    and maintain data integrity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: End users usually don’t have the same familiarity with data schema, and designing
+    the data warehouse should be simple and user-friendly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The extra cost to store additional data is minimal.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An exception we shall consider Snowflake schema is to save some cost or if the
+    dimensional itself updates frequently, and you need to add normalization to reduce
+    the number of fields to be touched. However, the first goal is to reduce the join
+    to reduce the query time for the end users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Not Keep Everything on a Single Table?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is also an option that stores all the fields in a single table instead of
+    separating fact and dimension tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could go with a spreadsheet-like single table, and the query could become
+    even faster with columnar storage like [Parquet](https://parquet.apache.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The critical criteria to consider is — a dimension table is also shared across
+    multiple fact tables. It would make things easier to manage as the dimension has
+    been referenced in various places.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How about joining? Is dimension to fact table join slow? We have mentioned earlier
+    that “Dimensions often contain much less than the fact tables.”. For distributed
+    computing, the most efficient way is to send the smaller dataset to every single
+    node to avoid a large volume of data getting shuffled. In this case, the join
+    of the fact table is usually minimal, and it’s the engineer to evaluate the trade-off
+    between query performance or data management effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thought
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dimensional modeling and its principle have been in the industry for over 40
+    years. It has been proven to be a typical design pattern for OLAP use cases. Although
+    the big data era has brought us much more powerful distributed computing engines
+    than ever, the fundamental design principle for OLAP shouldn’t fade away. Getting
+    the design of a data project right is always crucial rather than throwing extravagant
+    resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article can bring awareness to more data engineers who overlook
+    the data warehouse design to rethink design first than chasing new tools.
+  prefs: []
+  type: TYPE_NORMAL

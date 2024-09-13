@@ -1,0 +1,421 @@
+- en: Using Symbolic Regression to Add Uncertainty to Elo’s Famous Ratings System
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-symbolic-regression-to-add-uncertainty-to-elos-famous-ratings-system-796d54f2b478](https://towardsdatascience.com/using-symbolic-regression-to-add-uncertainty-to-elos-famous-ratings-system-796d54f2b478)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: And creating an unexpectedly useful ratings algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@BlakeAtkinson?source=post_page-----796d54f2b478--------------------------------)[![Blake
+    Atkinson](../Images/9f40ad0458f4b881d5a767f1206c8608.png)](https://medium.com/@BlakeAtkinson?source=post_page-----796d54f2b478--------------------------------)[](https://towardsdatascience.com/?source=post_page-----796d54f2b478--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----796d54f2b478--------------------------------)
+    [Blake Atkinson](https://medium.com/@BlakeAtkinson?source=post_page-----796d54f2b478--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----796d54f2b478--------------------------------)
+    ·12 min read·Jul 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2873d9a5d01ad773ef96a85f7f528359.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [JESHOOTS.COM](https://unsplash.com/@jeshoots?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/video-games?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Universal Ratings System
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Elo ratings system has become famous in a few contexts. Perhaps most famously,
+    it has been been the basis of Chess ratings since the 1960’s. Additionally, the
+    website 538 has successfully used modifications of it for most of their well-known
+    sports ratings. Less publicly, many video game developers use variations of the
+    Elo system behind the scenes in their matchmaking systems. If you’re reading this
+    article, I’ll assume you have some familiarity with the system. Why is it so used
+    in so many contexts? I would argue because of its computational scaling, versatility,
+    and simplicity. There are however some drawbacks. In this article, we will address
+    a very key one, while maintaining the advantages listed above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Symbolic Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While Large Language Models are currently getting all of the attention (pun
+    intended), there are other exciting models that are being developed separately
+    with very different use cases. Symbolic regression is typically well suited to
+    discover closed-form analytical rules rather than attack a deep learning task
+    like classifying an image or translating an audio recording. If you wanted to
+    rediscover Newton’s law of cooling, for example, you *could* build a resource
+    intensive dense neural network. This would do well with enough data, but would
+    not be able to generalize to situations it hadn’t seen. However, symbolic regression
+    would be the right tool for the task. It can find the exact formula with limited
+    data, and therefore not only generalize, but save quite a bit on computation.
+    [One of my favorite papers of all time by Cranmer et al.](https://arxiv.org/abs/2006.11287)
+    goes into this further and even develops a previously undiscovered equation for
+    dark matter overdensity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Classic Elo ratings treat every rating as equally certain. This is usually
+    a poor assumption for a large-scale ratings system. Simply put, newcomers to a
+    ratings system should almost always be modeled with greater variance than those
+    who have been around for awhile. Likewise, players that the ratings system hasn’t
+    seen for a long period of time might’ve gotten better or worse by a significant
+    amount. Imagine you and your group of four close friends often play Mario Kart
+    against one another. For now, we can use the simplifying assumption that you only
+    play head to head matches. No games have been played yet, but let’s say you have
+    the following fundamentally true Elo ratings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alice: 1900'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Bob: 1700'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Chelsea: 1500'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Dimitri: 1300'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Evelyn: 1100'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'With the classic Elo system, the expected win probability is totally determined
+    by the ratings difference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d64973ed89d15de72b2fc50cae0a564.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where WP_A is win probability for Player A and R_B and R_A are the ratings for
+    each player
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because this is a sim, and we don’t have to worry about current form, a good
+    nights sleep, or BAC. Instead, our true Elo ratings correspond to true win probabilities
+    via the equation above. This would mean the following true win % chances when
+    each player plays one another in our simulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/93452a8141ca1fce7c40d0ba9f375a6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You decide to use the Elo system to figure out how good everyone is, since
+    as of right now, you don’t know the true ratings. The one parameter you need for
+    the Elo system is the K value. K value is the amount of rating points “wagered”
+    between players for each match, and which are ultimately awarded to the winner
+    based on the pre-match win probability. Higher K values are used when you want
+    to be more reactive to recent results, and lower K values are used when you want
+    to trust your existing ratings. In most use cases, you’ll see K values between
+    about 10 and 40\. Any higher than 40, and ratings become very noisy. Lower than
+    10, and the ratings barely move at all. The following are 5,000 simulations of
+    how long it would take for you, on average, to figure out how good everyone is
+    with a k of 12, 24, and 36 over about 100 games:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/70148f098b1b5c3b7198d46649b39b19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, even with fairly high k-values (36), our system still takes
+    100 games to converge. As the k-values increase, the consistency gets worse. For
+    example, when k=12, our rating approximation for the green player Chelsea stays
+    right around her true rating of 1500\. However, with higher k-values, our approximation
+    of Chelsea’s rating drifts anywhere from 1400–1600.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One option would be to start with a high k-value, in order to increase convergence
+    speed, and then reduce the k-value as ratings get more accurate. That is a hacky
+    way to reduce uncertainty as more data comes in, and it turns out not to perform
+    as well as more principled methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There have been plenty of attempts to solve this problem in the past, notably
+    the [Glicko system](http://www.glicko.net/glicko/glicko.pdf) in 1995 and the [TrueSkill
+    system](https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/)
+    in 2005\. Glicko relies on a closed form update equation, while TrueSkill uses
+    Bayesian factor graphs to update ratings. TrueSkill has the enormous advantage
+    of being able to handle multiplayer race scenarios, or team scenarios, and tends
+    to converge quicker. TrueSkill does usually require extra computation, especially
+    if the number of players per game/race/tournament is large. It is also more sensitive
+    to parameter changes than Glicko. The decision on which to use of course depends
+    on the application (but usually ends up being TrueSkill). Let’s see how Glicko,
+    TrueSkill, Elo, and Elo with decaying K all stack up trying to converge to Alice’s
+    rating:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82258cbcb7cd97e6c6c8ba2683658578.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, Glicko and TrueSkill converge *much* faster on average than
+    Elo and Elo with k-value decay. Fundamentally, the faster convergence is because
+    they are incorporating a measure of uncertainty. TrueSkill with scaled default
+    parameters actually overshoots the true rating in my simulations, which demonstrates
+    the sensitivity to parameter choices for that system. If I tuned the parameters,
+    it would outperform Glicko, and not overshoot the true rating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Symbolic Regression and My Own System
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before I realized how others had solved the problem, I set out to solve the
+    problem myself. I’m glad I didn’t see their solutions, as it might’ve discouraged
+    me from creating my own. In doing so, I found a great use case for the often underutilized
+    symbolic regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introductory Math
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As with any classic model, we have to start with assumptions. For the purposes
+    of this article it is safe to assume that player and team skills are, for the
+    most part, normally distributed. In my experience, this is close to true for about
+    any competition. Chess ratings have been found to be slightly better approximated
+    by the [logistic distribution](https://en.wikipedia.org/wiki/Logistic_distribution),
+    but I want to avoid getting bogged down for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say we have a normally distributed selection of 10,000 Mario Kart players.
+    Let’s zoom in on two of those players. One will be “blue player” and the other
+    will be “red player”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb723290c125258307564db1afce6175.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I would say that I’m pretty well modeled by the red player in this scenario
+    (somewhere from bad to worse).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, I drew two random players from this distribution. In the classic
+    Elo formulation, the matchup can completely be described by the ratings difference
+    between these two players. Classic Elo makes no attempt to account for the fact
+    that we might have less data on the blue player than the red player. Just to be
+    clear, we’re not using these distributions to predict the outcome of an *individual*
+    match yet. The distributions simply represent overall skill level. Even if they
+    did not overlap at all, there would still be a small probability of the red player
+    beating the blue player.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say, for instance, we’ve only seen the blue player play once, and he or
+    she did pretty well. It might have been luck from picking up the right item boxes
+    at the right time, it’s hard to say. On the other hand, we’re pretty sure the
+    red player is bad, although there’s some uncertainty about exactly how bad. In
+    this new form of Elo, we acknowledge that it might be true that the blue player
+    is actually worse than the red player (because the distributions somewhat meaningfully
+    overlap).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s call the red distribution R, the blue distribution B, and the distribution
+    of the differences Z:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1683cc711af52b6f52f1a6fb73ec7933.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I promise, not a lot of equations, and only simple ones
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since these are independent distributions, the covariance of B and R is zero.
+    Our equations become very simple at this point. In other words, classic Elo only
+    cares about the mean Z, which is about 1.85\. In this case, we are also tracking
+    the standard deviation of Z, which is about 0.84\. That way, when we record an
+    observation, we can update the distribution in a Bayesian manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8c1d31bfa5c480f231246d35f4b6de3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice the x axes above have the same scale. I’m just translating skill difference
+    to win probability via the sigmoid function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Above, I visualized what it looks like when we run Elo drawing 10,000 times
+    from the skill difference distribution. Classic Elo would give blue player a win
+    probability of 86.4%, denoted by the yellow star. Our new Elo model will give
+    a lot of different probabilities depending on the draw from the distribution.
+    Interestingly, because one tail scenario drops the win probability precipitously,
+    and the other one hits an upper bound, the average win probability is actually
+    significantly lower for our distribution than just a point estimate— 83.7%. I’m
+    just speculating, but perhaps this contributes to the reason the FIDE found that
+    underdogs consistently won slightly more than predicted by Elo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also worth quickly mentioning that some games involve more luck than others.
+    For example, you can get good at Uno, Catan, Euchre, or Five Crowns, but those
+    games have enough luck involved that a bad player could still upset a much higher
+    ranked player. On the other hand, if I play Magnus Carlson in Chess, I’m losing
+    100/100 times, and so there is less luck involved. In order to model irreducible
+    luck, additional complexity is needed (that I’m avoiding for now).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Symbolic Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now, how can we use a win/loss result to update the parameters of these distributions?
+    We need it to be a binary outcome variable to preserve the versatility of Elo
+    — we want to be able to use this system for about any game (a good exercise would
+    be to create a system that updates based on continuous outcomes). However, as
+    far as I know, there isn’t a simple closed form solution to update the parameters
+    of a Normal distribution with a binary outcome, and so imperfections arise. On
+    one hand, I could spend a couple of years going through university courses and
+    hone my mathematical skills to the point where I would know how to sit down and
+    attack this problem. On the other hand, I could cheat and throw it into a symbolic
+    regression model and additionally have a Medium article out of it. I chose the
+    latter, although I have a lot of respect for someone who does the former.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Beta distribution is perfect for modeling the probabilities of binary outcomes,
+    and we already have the mean of such a distribution given by our sigmoid transform
+    of the mean of the Normal distribution (the purple graphs/yellow star above).
+    The question is whether or not there is a decent formula for transforming Normal
+    distribution variance into the equivalent of Beta distribution variance. In order
+    to answer that question, I simply randomly generated a few thousand Normal skill
+    difference distributions with known mean and variance, and then transformed every
+    individual point from those randomly generated distributions into their equivalent
+    probability between 0 and 1 with the sigmoid function. Here are some samples where
+    I adjust the variance of the purple distribution above, keeping the same mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b73f09d08e7faaa622f7f9cb1faead9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As variance goes up, less information is known, and the less confident we can
+    be that the blue player is better than the red player. Yellow is the highest variance
+    distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I put a question mark next to Beta, because there is no guarantee that I’m generating
+    a Beta distribution by doing this. In fact, I certainly am not. However, simply
+    by eyeballing the distributions, I guessed that I could find corresponding Beta
+    parameters to describe these distributions well. Let’s empirically find the parameters
+    of the distributions above using maximum likelihood estimation to fit the best
+    Beta parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Minimizing negative log likelihood, I came up with the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b693c17feebadf953b843f22dad72bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The Beta param fits are far from perfect, but seemingly do very well in cases
+    where variance is fairly low, or the probability isn’t extreme. After generating
+    thousands of these, I simply fit a symbolic regression model using the [PySR package](https://github.com/MilesCranmer/PySR).
+    I give it the Beta mean and Normal variance and see if it can predict the Beta
+    sample size (which corresponds to variance). Then I will have all the parameters
+    of the Beta distribution model. After fitting the model, PySR gives by far the
+    highest score (which is based on simplicity and performance) to the equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16860c21d92bacf1aa5c22adf1bd4cc3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where mu_b is the Beta mean and sigma squared is the Normal variance
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I was amazed at how simple that equation was, and for such a simple equation,
+    how good the results were. Although it’s even farther from perfect than above,
+    you can see it fits the data pretty well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd1ef7f2756f37d1362c147aa8fd4f89.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the beauty of Symbolic Regression. Instead of taking minutes or hours
+    to run an optimization on thousands of thousands of data points, we write a one
+    line function that can give similar results instantly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Making this key equation into an actual ratings system takes a few more steps
+    which are not the focus of the article. If you’re interested, it involves using
+    a Bayesian update of the Beta distribution, and then using algebra to get back
+    to the Normal distribution. I also found through experimenting that since a match
+    is a pairwise comparison (we are getting information from two players), we have
+    way more effective sample size in practice than updating a typical Beta distribution
+    (like a textbook coin flip example). Adjusting for the higher sample just involves
+    adding a square term. The following is all the code I used to implement it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course at this point, I still wasn’t sure how good my implementation was.
+    Would it be incredibly inferior to TrueSkill and Glicko? It seemed very possible
+    that I had just wasted a lot of time. So, I tried the same convergence test as
+    before for Alice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/070c4af33ff07f7a6af253300bffae60.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (This time I spent the time fitting TrueSkill)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To my surprise, it performed extremely well. Since it requires only a handful
+    of basic operations, it can compute thousands of ratings per second, and so it
+    is extremely scalable. The system also has the advantage of not requiring much
+    parameter tweaking, while keeping the versatility and simplicity of Elo’s system.
+    Of course, I wanted to push it a little further, and see where it broke down:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd62c31a99ee1fc500e9c46ec5cc5b86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The prediction did not match the maximum likelihood estimate when probabilities
+    got close to 0 or 1\. So, ultimately there are some disadvantages because fundamentally
+    a Beta distribution isn’t a perfect fit. I’m sure there’s a more complicated equation
+    that could help take care of this, or some sort of modification. Maybe a statistician
+    will inform me that a better distribution than the Beta distribution for modeling
+    these outcomes exists. However, I was happily surprised with the system I created.
+    No system will every be perfect, and there are always drawbacks to consider. Of
+    course, there are a few ways to interweave these ideas into practical applications
+    — you can follow me if you’re interested and I will continue to write about them.
+    I hope that a success like this motivates readers to try symbolic regression for
+    their own use cases. [Here is a link](https://github.com/btatkinson/oddsmaker/blob/main/medium/How%20to%20Add%20Uncertainty%20to%20Arpad%20Elo's%20Famous%20Ratings%C2%A0System.ipynb)
+    to the notebook where I created all of these visualizations. It’s part of a library
+    where I hope to implement vectorized versions of all these ratings systems (although
+    that might still be a few months away).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Miles Cranmer, [Interpretable Machine Learning for Science with PySR and
+    SymbolicRegression.jl](https://arxiv.org/abs/2305.01582) (2023)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Mark Glickman, [A Comprehensive Guide to Chess Ratings](http://www.glicko.net/research/acjpaper.pdf)
+    (1995)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Ralf Herbrich, Tom Minka, Thore Graepel, [TrueSkill(TM): A Bayesian Skill
+    Rating System](https://www.microsoft.com/en-us/research/publication/trueskilltm-a-bayesian-skill-rating-system/)
+    (2007), Advances in Neural Information Processing Systems 20'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author.
+  prefs: []
+  type: TYPE_NORMAL

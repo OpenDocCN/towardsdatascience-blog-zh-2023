@@ -1,0 +1,482 @@
+- en: Fixing Prophet’s Forecasting Issue
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fixing-prophets-forecasting-issue-b473afe2cc70](https://towardsdatascience.com/fixing-prophets-forecasting-issue-b473afe2cc70)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Step 1: Constrain the Insane Trend'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)[![Tyler
+    Blume](../Images/65885dd1d8c07a786764c6f898bafb35.png)](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------)
+    [Tyler Blume](https://medium.com/@tylerblume?source=post_page-----b473afe2cc70--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b473afe2cc70--------------------------------)
+    ·10 min read·Jan 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d63f95cc7d070338a256c75364f8771.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Hunter Haley](https://unsplash.com/@hnhmarketing?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/nails-in-wood?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point it is no secret that Prophet suffers from a forecast accuracy
+    issue. Time and time again it has delivered horrible results across multiple benchmarks
+    and forecasting competitions. Still, it is one of the most used forecasting algorithms
+    out there…
+  prefs: []
+  type: TYPE_NORMAL
+- en: So…it is time to address the issues that plague it using some minor adjustments
+    and (hopefully) improve it’s forecast accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[TSUtilities Project](https://github.com/tblume1992/TSUtilities)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prophet’s Trend Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Oddly enough, one of the main draws of Prophet is also one of it’s core weaknesses.
+    It does deliver a compelling looking trend, complete with changepoints and linear
+    segments that are very digestible to analyze. **But**, at times, the approach
+    for fitting this trend piece is simultaneously overfitting and underfitting -
+    a simple level shift near the end of your series could send the trend to infinity
+    over your forecast horizon while also leaving a **ton** of useful signal in the
+    residuals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article aims to address that first issue: **an unconstrained-insane trend**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate this issue we will be using the M4 datasets. The datasets are
+    all open source and live on the M-competitions [github](https://github.com/Mcompetitions/M4-methods/tree/master/Dataset).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our first example let’s take a look at the Weekly dataset, specifically
+    the 52nd time series in this dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9f2ce4df4b9434d5ca6c30d5a1bae75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69a721150d02aee8d64ae6703906464a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: These graphs should look familiar if you have worked with Prophet before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we are forecasting for a horizon of 100 — far more than what was done
+    for this series in the M4 competition. But, this exhibits how off-the-rails Prophet
+    can be by plummeting in the trend from 7000 to about 5500\. This implies a complete
+    collapse of the time series over the course of several years. Visually, I see
+    what the model is picking up on and in the near-term of the forecast horizon it
+    is probably ***ok*** to follow that. In long term, however, that trend can lead
+    to disastrous results. This idea is important so I’ll re-write it in bold text:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Follow the trend in the short term, control the trend in the long term.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we get to the nitty-gritty, let’s clear up some terminology. I have
+    seen the words: dampen, dampened, dampening and damped all used interchangeably
+    throughout various sources and eras. I know there is a ‘correct’ one that I googled
+    once, but I will use them however I feel. Just know they will mean the same in
+    this article, and if you have a preference definitely let me know!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now on to the fix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fixing the Trend
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Typically, in the time-series context a ‘damped’ trend comes up when discussing
+    double exponential smoothing. For us, we will go with something much simpler,
+    more in-line with a ‘rule of thumb’ rather than a strict statistical method. Something
+    like — exponential decay.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With exponential decay we will start very close to the original trend but drift
+    further away from it the further into the horizon we get. All the while we get
+    closer to a ‘destination’ which will be provided as a coherent parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at a simple example, first with a nice line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2b9bbf2fedb5df094ca972de2b7dbc34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quite the nice line!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s split this up into the different pieces we would expect to have
+    when working with a time-series. Here we are having the trend be equal to the
+    actual signal with no noise or seasonality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we will use the ‘future_trend’ and dampen this signal. To do so we will
+    install a package ‘TSUtilities’ which is a combination of various utilities I
+    use in my other packages [ThymeBoost](https://github.com/tblume1992/ThymeBoost),
+    [LazyProphet](https://github.com/tblume1992/LazyProphet), and [TimeMurmur](https://github.com/tblume1992/TimeMurmur)
+    that I wanted to centralize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Still working on the orgnaization and structure of it all, but TrendDampen
+    lives here and can be imported like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The two arguments passed when creating the class are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**damp_factor**: A float between 0 and 1 where a 0 would indicate ‘Full Dampening’
+    and a 1 indicates ‘No dampening’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**damp_style**: How to ‘dampen’ the trend, passing smooth dampens the trend
+    ‘smoothly’ using exponential decay.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b7ee05865104b24c8459af1c81cc5dd6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we use a damp_factor of .7 meaning the new trend achieves roughly 70% of
+    what the old trend achieved. The only thing we need to pass to the `dampen` method
+    here is the predicted trend component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned earlier, we start out close to the original trend but drift further
+    and further away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now this doesn’t actually help us too much since we pass in a hardcoded value
+    for the `damp_factor` , but we can take advantage of some further logic built
+    into this method. If we pass in the fitted components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**training actuals**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**fitted trend component**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**fitted seasonal component**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '(Note: All of this is provided by Prophet)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: and change the `damp_factor` to ‘auto’ — the method will choose an appropriate
+    parameter for you. It does this by assessing the strength of the fitted trend
+    -the stronger this trend, the more we want to trust it in the long run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note: Strength here is determined via the measure of trend strength as defined
+    by Wang, Smith, & Hyndman¹.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This ‘rule of thumb’ we use will break down depending on the algorithm. If we
+    apply the logic to something like an ETS method then that trend will be unreasonably
+    strong by these definitions and we will trust it too much. But for a method like
+    Prophet, or any other method that has some semblance of a deterministic trend,
+    it works well in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So let’s see how this method works with our simple line. First, we need some
+    measure of the fitted trend and seasonality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then we will pass these values to the `dampen` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b94ff07b610314488ef8d9476b3e88c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the ‘auto’ decided not to dampen the trend at all!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quite a good sanity check — although I am sure you can break this logic quite
+    easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what the various damp_factors look like for this series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/12cf47d91aff2a613878aa28247bfcc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cool!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, we have a nice and digestible parameter with some ‘auto’ logic that
+    seems to do ok.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Now on to the main attraction: Fixing Prophet’s Trend.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this example I am using the 52nd time series in the Weekly Dataset from
+    M4 and will forecast for a horizon of 100 periods. This forecast horizon is long
+    but it will showcase the issue well. Also, I will be using a function that takes
+    in the outputs from Prophet and dampens the trend to return these corrected forecasts.
+    This functions looks something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But this function also lives in TSUtilities and we can import it directly using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now let’s take a look at what the normal Prophet output does vs the damped
+    output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/97e593b65e997f434e5c3a9d95075100.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that Prophet takes a recent trend changepoint far below any previous
+    values in the forecast horizon, but the damped trend is far more reserved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking a look at what this looks like from a trend perspective we can see what
+    exactly is happening and what was changed by the method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/06deba63f1971897915056ed096f9c36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice how our method is not changing the fitted values at all. We are solely
+    aiming to reign in the future trend component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we see the SMAPE of both approaches — a pretty significant increase
+    in accuracy using the Damped Trend:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e31d1068d628faea8735b90fe1154bcb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmarking with M4
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far we have looked at one single example, but now let’s take a look at 2
+    datasets from M4 -the **Weekly** and **Daily** datasets. Just a reminder that
+    these datasets are all open source and serve as *ok* benchmarks for tinkering
+    in the time series world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go ahead and import the weekly dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, let’s define the SMAPE function we will use to evaluate the forecasts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have the data and our metric defined let’s iterate through the dataset
+    and generate a forecast with Prophet — one standard forecast and one with the
+    damped trend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the results?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d8a8a76d123d7f0e3b888a7294040bb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The damped method worked! But by only about a 2.5% reduction in SMAPE. Nothing
+    to write home about but it is still a nice bump. Also worth remembering is that
+    we didn’t really lose anything from Prophet, just altered its trend. If Prophet
+    is an integral part of your forecasting process then this could just be thought
+    of as the cherry on top.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results do get better for the Daily dataset though. Re-running the process
+    yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f5c01664f134472bf328cad5a1fa45a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Voila*, a decrease in the SMAPE by 7.8%!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When comparing these results with other models benchmarked on M4 we find that
+    ***even with*** these improvements Prophet yields bad results no matter what.
+    I guess one argument is that we didn’t tune hyperparameters. Either way — I wouldn’t
+    use Prophet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wouldn’t use Prophet in an ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wouldn’t use Prophet for multivariate forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I simply would never type: *import Prophet*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But the point of the series is to try and *enhance* Prophet. Next time -if there
+    is a next time- we have another trick up our sleeve to achieve this goal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We showed that a rule-of-thumb based trend damping procedure can be effective
+    at increasing the forecast accuracy of Prophet. The procedure is pretty flexible
+    and can be used with any outputs (although the dampen_prophet function itself
+    is not flexible). We showed a decrease in the SMAPE by ~2.4% and ~7.8% on two
+    datasets in the M4 series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you liked this article you may enjoy some of my others!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/lazyprophet-time-series-forecasting-with-lightgbm-3745bafe5ce5?source=post_page-----b473afe2cc70--------------------------------)
+    [## LazyProphet: Time Series Forecasting with LightGBM'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s all about the features
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/lazyprophet-time-series-forecasting-with-lightgbm-3745bafe5ce5?source=post_page-----b473afe2cc70--------------------------------)
+    [](/thymeboost-a0529353bf34?source=post_page-----b473afe2cc70--------------------------------)
+    [## Time Series Forecasting with ThymeBoost
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Gradient Boosted Time-Series Decomposition Method
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/thymeboost-a0529353bf34?source=post_page-----b473afe2cc70--------------------------------)
+    [](/gradient-boosted-arima-for-time-series-forecasting-e093f80772f6?source=post_page-----b473afe2cc70--------------------------------)
+    [## Gradient Boosted ARIMA for Time Series Forecasting
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boosting PmdArima’s Auto-Arima performance
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/gradient-boosted-arima-for-time-series-forecasting-e093f80772f6?source=post_page-----b473afe2cc70--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '****Spoiler Warning****'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The end point of this series will get rid of Prophet entirely — similar in idea
+    to what Nixtla does with their [StatForecast Package](https://github.com/Nixtla/statsforecast/tree/main/experiments/arima_prophet_adapter).
+    Unlike Nixtla though, we will retain the same decomposition of your time series
+    and digestible linear-changepoint trend. This will all be achieved via [ThymeBoost](https://github.com/tblume1992/ThymeBoost).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And of course you can sign-up to Medium through my referral link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tylerblume/membership?source=post_page-----b473afe2cc70--------------------------------)
+    [## Join Medium with my referral link - Tyler Blume'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Tyler Blume (and thousands of other writers on Medium).
+    Your membership fee directly supports…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@tylerblume/membership?source=post_page-----b473afe2cc70--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wang, X., Smith, K. A., & Hyndman, R. J. (2006). Characteristic-based clustering
+    for time series data. *Data Mining and Knowledge Discovery*, *13*(3), 335–364.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

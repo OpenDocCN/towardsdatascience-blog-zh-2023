@@ -1,0 +1,482 @@
+- en: Generating Medical Images with MONAI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/generating-medical-images-with-monai-e03310aa35e6](https://towardsdatascience.com/generating-medical-images-with-monai-e03310aa35e6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*An end-to-end open-source project using the latest MONAI Generative Models
+    to produce chest X-ray images from radiological reports text*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@walhugolp?source=post_page-----e03310aa35e6--------------------------------)[![Walter
+    Hugo Lopez Pinaya](../Images/0c132d0d1321790b0cea880800d231e0.png)](https://medium.com/@walhugolp?source=post_page-----e03310aa35e6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e03310aa35e6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e03310aa35e6--------------------------------)
+    [Walter Hugo Lopez Pinaya](https://medium.com/@walhugolp?source=post_page-----e03310aa35e6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e03310aa35e6--------------------------------)
+    ·14 min read·Apr 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hi everybody! In this post, we will create a Latent Diffusion Model to generate
+    Chest X-Ray images using the new open-source extension for MONAI, [**MONAI Generative
+    Models**](https://github.com/Project-MONAI/GenerativeModels)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51dca716335eeca38fff769dc85c3648.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Generative AI has a huge potential for healthcare since it allows us to create
+    models that learn the underlying patterns and structure of the training dataset.
+    This way, we can use these generative models to create an unlimited amount of
+    synthetic data with the same details and characteristics of real data but without
+    their restrictions. Given its importance, we created ***MONAI Generative Models*,
+    an open-source extension to the** [**MONAI platform**](https://monai.io/) containing
+    the latest models (like Diffusion Models, Autoregressive Transformers, and Generative
+    Adversarial Networks) and components that help with the training and evaluate
+    generative models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5d4f6f58dff9be2230f424112fd52a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this post, we will go through a complete project to create a Latent Diffusion
+    Model (the same type of model as [Stable Diffusion](https://stability.ai/blog/stable-diffusion-public-release))
+    capable of **generating Chest X-Rays (CXR) images from radiological reports**.
+    Here, we tried to make the code easy to understand and to be adapted to different
+    environments, so, although it is not the most efficient one, I hope you enjoy
+    it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the **complete open-source project at this** [**GitHub repository**](https://github.com/Warvito/generative_chestxray),
+    where in this post we are referencing to the release v0.2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, we start with the dataset. In this project, we are using the [**MIMIC
+    Dataset**](https://www.nature.com/articles/s41597-019-0322-0). To access this
+    dataset, it is necessary to create an account at the [Physionet portal](https://physionet.org/).
+    We will use [**MIMIC-CXR-JPG**](https://physionet.org/content/mimic-cxr-jpg/2.0.0/)
+    (which contains the JPG files) and [**MIMIC-C**XR](https://physionet.org/content/mimic-cxr/2.0.0/)
+    (that includes the radiological reports). Both datasets are under the [*PhysioNet
+    Credentialed Health Data License 1.5.0*](https://physionet.org/content/mimic-cxr/view-license/2.0.0/)*.*
+    After completing the free training course, you can freely download the dataset
+    using the instruction at the bottom of the dataset page. Originally, the CXR images
+    have about +1000x1000 pixels. So, this step can take a while.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chest X-ray images are a crucial tool to provide valuable information about
+    the structures and organs within the chest cavity, including the lungs, heart,
+    and blood vessels, and after download, we should have more than 350k of them!
+    These images are one of the three different projections: **Posterior-Anterior
+    (PA), Anterior-Posterior (AP), and Lateral (LAT)**. For this project, we are interested
+    only in the **PA projection**, the most common one where we can visualise most
+    of the features mentioned in the radiological reports (ending with 96,162 images).
+    Regarding the **reports**, we have 85,882 files, each containing several text
+    sections. Here we will use the **Findings** (mainly explaining the contents in
+    the image) and **Impressions** (summarising the report’s contents, like a conclusion).
+    To make our models and training process more manageable, we will resize the images
+    to have 512 pixels on the smallest axis. The list of scripts to automatically
+    perform these initial steps can be found in [here](https://github.com/Warvito/generative_chestxray#preprocessing).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Models**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/07b771040df2f8e61db7e586c3eef069.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Latent Diffusion Model: The autoencoder compresses the inputted image x to
+    a latent representation z, and then the diffusion model estimates the probability
+    distribution of z'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Latent Diffusion Models are composed of several parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An **Autoencoder** that performs the compression of the inputted images into
+    a smaller latent representation;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A **Diffusion Model** that will learn the probability data distribution of the
+    latent representations of the CXR;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A **Text Encoder** which creates an embedding vector that will condition the
+    sampling process. In this example, we are using a pretrained one.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using MONAI Generative Models, we can easily create and train these models,
+    so let’s start with the Autoencoder!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Models — Autoencoder with KL regularization**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main goal of the Autoencoder with KL regularization (**AE-kl** or, in some
+    projects, simply called as a VAE) is to be able to create a small latent representation,
+    and also to reconstruct a image with high-fidelity (preserving as most as possible
+    details). In this project, we are creating an autoencoder with four levels, with
+    64, 128, 128, 128 channels, where we apply a downsampling block between each level,
+    making the feature maps smaller as we go to the deepest layers. Although our Autoencoder
+    can have blocks with self-attention, in this example, we are adopting a structure
+    similar to our previous study on brain images and using no attention to save memory
+    usage. Finally, our latent representation has three channels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note: In our [script](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/train_aekl.py#L77),
+    we are using the [**OmegaConf packag**e](https://omegaconf.readthedocs.io/en/2.3_branch/)
+    to store the hyperparameters of our model. You can see the previous configuration
+    in this [file](https://github.com/Warvito/generative_chestxray/blob/main/configs/stage1/aekl_v0.yaml).
+    In summary, OmegaConf is a powerful tool for managing configurations in Python
+    projects, particularly those that involve deep learning or other complex software
+    systems. OmegaConf allows us to conveniently organise the hyperparameters in the
+    .yaml files and read them in the script.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training AE-KL**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we define a few components of our training process. First, we have the
+    [**KL regularisation**](https://github.com/Warvito/generative_chestxray/blob/731ee63c5fe28353ddeae548fba9286ee4232bd0/src/python/training/training_functions.py#L161).
+    This part is responsible for evaluating the distance between the distribution
+    of the latent space of the diffusion models and a Gaussian distribution. As proposed
+    by [Rombach et al.](https://arxiv.org/abs/2112.10752), this will be used to restrict
+    the variance of the latent space, which is useful when we train the diffusion
+    model on it (more about it later). The forward method of our model returns the
+    reconstruction, as well as the μ and σ vectors of our latent representation, which
+    we use to compute the KL divergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Second, we have our[**Pixel-level loss**](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/training_functions.py#L158),
+    where in this project, we are adopting an L1 distance to evaluate how much our
+    AE-kl reconstruction differs from the original image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we have our [**Perceptual-level loss**](https://github.com/Warvito/generative_chestxray/blob/731ee63c5fe28353ddeae548fba9286ee4232bd0/src/python/training/train_aekl.py#L79).
+    The idea of perceptual loss is that instead of evaluating the difference between
+    the inputted image and the reconstruction at the pixel level, we pass both images
+    through a pre-trained model. Then, we measure the distance of the internal activations
+    and feature maps. In MONAI Generative models, we made it easy to use perceptual
+    networks based on networks pre-trained on medical images (available [here](https://github.com/Project-MONAI/GenerativeModels/blob/main/generative/losses/perceptual.py)).
+    We have access to the **2D networks** from the **RadImageNet** study (from [Mei
+    et al.](https://pubs.rsna.org/doi/10.1148/ryai.210315)), which were trained on
+    more than **1.3 million medical images!** We implemented the **2.5D approach**,
+    using 2D pre-trained networks to evaluate 3D images by evaluating slices. And
+    finally, we have access to [**MedicalNet**](https://github.com/Tencent/MedicalNet)
+    to evaluate our **3D images** in a 3D pure method. In this project, we are using
+    a similar approach to [Pinaya et al.](https://arxiv.org/abs/2209.07162) and use
+    the Learned Perceptual Image Patch Similarity (**LPIPS**) metric (also available
+    at MONAI Generative Models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we use [**Adversarial loss**](https://github.com/Warvito/generative_chestxray/blob/731ee63c5fe28353ddeae548fba9286ee4232bd0/src/python/training/training_functions.py#L148)
+    to deal with the fine details of the reconstructions. The Adversarial Network
+    was a [**Patch-Discriminator**](https://github.com/Warvito/generative_chestxray/blob/731ee63c5fe28353ddeae548fba9286ee4232bd0/src/python/training/train_aekl.py#L78)
+    (initially proposed by the Pix2Pix study), where instead of having only one prediction
+    about if the whole image was real or fake, we have predictions for several patches
+    from the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike the original Latent Diffusion Model and Stable Diffusion, we used discriminator
+    losses from the least square GANs. Although it is not the more advanced adversarial
+    loss, it has shown efficacy and stability when training on 3D medical images as
+    well (but still room for improvement 😁). Although adversarial losses can be quite
+    unstable, their combination with perceptual losses also helps to stabilise the
+    loss of the discriminator and generator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our training loops and evaluation steps can be found at [here](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/training_functions.py#L129)
+    and [here](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/training_functions.py#L236).
+    After train for 75 epoch, we save our model with the MLflow package. We use the
+    [MLflow package](https://mlflow.org/) to better monitoring of our experiments
+    since it organises information like git hash and parameters, as well as makes
+    it possible to store different runs with a unique ID in groups (called experiments)
+    and making easier to compare different results (similar to others tools, like
+    weights and biases). The logs files for the AE-KL can be found [here](https://drive.google.com/drive/folders/1Ots9ujg4dSaTABKkyaUnFLpCKQ7kCgdK?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Models — Diffusion Model**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we need to train our diffusion model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af13eea9c3b6fc26b7df7368c9e7082e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The diffusion model is a U-Net like network where traditionally, it receives
+    a noisy image (or latent representation) as input and will predict its noise component.
+    These models use an iterative denoising mechanism to generate images from noise
+    across a Markov Chain with several steps. For this reason, the model is also conditioned
+    on the timestep defining in which stage of the sampling process the model is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2332b550309afa5ed1003f9927d86934.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the [**DiffusionModelUNet class**](https://github.com/Project-MONAI/GenerativeModels/blob/02de27c1937f3d9ca3483ab2f4661270c9137641/generative/networks/nets/diffusion_model_unet.py#L1624),
+    we can create the U-Net like network for our diffusion mdel. Our project uses
+    the configuration defined in this [config file](https://github.com/Warvito/generative_chestxray/blob/main/configs/ldm/ldm_v0.yaml)
+    where it defines input and output with 3 channels (as our AE-kl have a latent
+    space with 3 channels), and 3 different levels with 256, 512, 768 channels. Each
+    level has 2 residual blocks. As mentioned, it is important to pass the timestep
+    for the model where it is used to condition the behaviour of these residual blocks.
+    Finally, we define the attention mechanisms inside the network. In our case, we
+    have attention blocks in the second and third levels (indicated by the attention_levels
+    argument), each with 512 and 768 channels per attention head (in other words,
+    we have a single attention head in each level). These attention mechanisms are
+    important because they allow us to apply our **external conditioning** (the radiological
+    reports) to the network via the **cross-attention method**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a8019f23029a2286aba03afefb10013.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: External conditioning (or “context”) is applied to the U-Net’s attention blocks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our project, we are using an already **trained textual encoder**. For simplicity,
+    we are using the same one from the Stable Diffusion v2.1 model (“stabilityai/stable-diffusion-2–1-base”)
+    to convert our text tokens into a text embedding that will be used as Key and
+    Value vectors in the DiffusionModel UNet cross attention layers. Each token of
+    our textual embedding have 1024 dimensions and we define it in the *“with_conditioning”*
+    and “*cross_attention_dim*” arguments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Besides our model definition, it is important to define how the noise of the
+    diffusion model will be added to the inputted images during training and removed
+    during the sampling. For that, we implemented the Schedulers classes to our MONAI
+    Generative Models to define the noise schedulers. In this example, we will use
+    a [DDPMScheduler](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/train_ldm.py#L103),
+    with 1000 time steps and the following hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e27af83fafc808464975a59d74972a63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we opted for a “**v-prediction” approach**, where our U-Net will try to
+    predict the velocity component (a combination of the original image and the added
+    noise) instead of just the added noise. This approach has been shown to have more
+    stable training and faster convergence (also used in [https://arxiv.org/abs/2210.02303](https://arxiv.org/abs/2210.02303)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training Diffusion Model**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before training the Diffusion Model, we need to find an appropriate scaling
+    factor. As mentioned in Rombach et al., the signal-to-noise ratio can affect the
+    results obtained with the LDM, if the standard deviation of the latent space distribution
+    is too high. If the values of the latent representation are too high, the maximum
+    amount of Gaussian noise we add to it might not be enough to destroy all information.
+    This way, during training, information of the original latent representation might
+    be present when it was not supposed to be, making it not possible later sample
+    an image from pure noise. The KL regularisation can help a little bit with this,
+    but it is best practice to use a scaling factor to adapt the latent representation
+    values. In this [script](https://github.com/Warvito/generative_chestxray/blob/main/src/python/training/eda_ldm_scaling_factor.py),
+    we verify the size of the standard deviation of the components of the latent space
+    in one of the batches of the training set. We found that our scaling factor should
+    be at least **0.8221**. In our case, we used a more conservative value of 0.3
+    (similar to values from Stable Diffusion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the scaling factor defined, we can train our model. In [here](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/training_functions.py#L424),
+    we can check the training loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we first obtain the images and reports from our data loaders.
+    To process our images, we used the [transforms from MONAI](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/training/util.py#L111)
+    and added a few [custom transforms](https://github.com/Warvito/generative_chestxray/blob/main/src/python/training/custom_transforms.py)
+    to extract random sentences from the radiological reports and tokenize the inputted
+    text. In about 10% of the cases, we use an empty string (“” — which is a vector
+    with the Begin-of-Sentence token (*value = 49406*) followed by padding tokens
+    (*value = 49407*)) to be able to use classifier free guidance during the sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we obtain the latent representation and the prompt embeddings. We create
+    the noise to be added, the random timesteps to be used in this iteration, and
+    the desired target (velocity component). Finally, we compute our loss using the
+    mean squared error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This training goes for 500 epochs, where the logs can be found [here](https://drive.google.com/drive/folders/1Ots9ujg4dSaTABKkyaUnFLpCKQ7kCgdK?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sampling images**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After we have both models trained, we can sample synthetic images. We use [this
+    script](https://github.com/Warvito/generative_chestxray/blob/main/src/python/testing/sample_images.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b16bd7d88dfcf2b4792f89bd9fafaca3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This script uses the classifier-free guidance, which is a method proposed by
+    [Ho et al.](https://arxiv.org/abs/2207.12598), to be able to enforce the text
+    prompts used in image generation. In this method, we have a guidance scale that
+    we can use to sacrifice the diversity of the generated data to obtain a sample
+    with higher fidelity to the textual prompt. 7.0 is the default value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following image, we can see how the trained model was able to learn about
+    the clinical features, as well as the position and severity of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9eb959fffed9d76882c0505540cb2a3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Evaluation**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will show how to use metrics from MONAI to evaluate the
+    performance of our generative models in several aspects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Quality of the Autoencoder reconstructions with MS-SSIM**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we verify how well our Autoencoder-kl reconstructs the input images.
+    This is an important point when developing our models, because the quality of
+    the compression and reconstructed data will define a ceiling for the quality of
+    our sample. If the model does not learn how to decode the images from the latent
+    representation well, or if it does not model our latent space well, it is not
+    possible to decode the synthetic representations in a realistic way. In [this
+    script](https://github.com/Warvito/generative_chestxray/blob/main/src/python/testing/compute_msssim_reconstruction.py),
+    we use the 5000 images from the test set to evaluate our model. We can verify
+    how well our reconstructions look using the **Multiscale Structural Similarity
+    Index Measure (MS-SSIM)**. The MS-SSIM is a widely used image quality assessment
+    method that measures the similarity between two images. Unlike traditional image
+    quality assessment methods such as PSNR and SSIM, MS-SSIM is capable of capturing
+    the structural information of an image at different scales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, the higher the value, the better the model. For our current release
+    (version 0.2), we observed that our model had mean **MS-SSIM reconstructions of
+    0.9789.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Diversity of the samples with MS-SSIM**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will first evaluate the diversity of the samples generated by our model.
+    For that, we compute the **Multiscale Structural Similarity Index Measure** between
+    different generated images. In this project, we assume that, if our generative
+    model is capable of generating diverse images, it will present a low average MS-SSIM
+    value when comparing pairs of synthetic images. For example, if we had a problem
+    like a mode collapse, our generated images would look similar, and the MS-SSIM
+    values would be much lower than what we observe in a real dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our project, we are using unconditioned samples (samples generated with the
+    “” (empty string) as a textual prompt) to maintain the natural proportion of the
+    original dataset. As shown in [this script](https://github.com/Warvito/generative_chestxray/blob/main/src/python/testing/compute_msssim_sample.py),
+    we select 1000 synthetic samples of our model and use the data loaders from MONAI
+    to help to load all possible pairs of images. We use a nested loop to go through
+    all possible pairs and ignore the cases where it is the same image selected in
+    both [data loader](https://github.com/Warvito/generative_chestxray/blob/83f6c0892c63a1cdbf308ff654d40afc0af51bab/src/python/testing/compute_msssim_sample.py#L89).
+    Here we can observe an **MS-SSIM of 0.4083**. We can perform the same evaluation
+    in real images from the test set as a reference value. Using [this script](https://github.com/Warvito/generative_chestxray/blob/main/src/python/testing/compute_msssim_test_set.py),
+    we obtain **MS-SSIM=0.4046 for the test set**, indicating that our model is generating
+    images with a diversity similar to the one observed at the real data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, diversity does not mean the images look good or realistic. So we will
+    check the image quality in the next step!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Synthetic Image Quality with FID**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, we measure the **Fréchet inception distance (FID)** metric of the generated
+    samples ([link](https://github.com/Warvito/generative_chestxray/blob/main/src/python/testing/compute_fid.py)).
+    The FID is a metric that evaluates the distribution between two groups, showing
+    how similar they are. For this, we need a pre-trained neural network from which
+    we can extract features that we will use to compute the distance (similar to the
+    perceptual loss). In this example, we opted to use neural networks available in
+    the[**torchxrayvision package**](https://github.com/mlmed/torchxrayvision). We
+    used a Dense121 network (*“densenet121-res224-all”*), and we chose this network
+    to be close to what is used in the literature for CXR synthetic images. From this
+    network, we obtain a feature vector with 1024 dimensions. As recommended in the
+    original FID paper, it is important to use a similar amount of examples compared
+    to the number of features. For this reason, we use 1000 unconditioned images and
+    compare them to 1000 images from the test set. For FIDs, the lower the best, and
+    here we obtained a reasonable **FID=9.0237**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we present a way to develop a project with **MONAI Generative
+    Models**, from downloading the data to evaluating the generative models and synthetic
+    data. Although this project version could be more efficient and have better hyperparameters,
+    we hope that it illustrates well the different features our extension offers.
+    If you have any idea on how to improve our CXR model or if you would like to contribute
+    to our package, please, just add comments on our **issue sections** at [here](https://github.com/Warvito/generative_chestxray/issues)
+    or [here](https://github.com/Project-MONAI/GenerativeModels/issues).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our trained model can be found at the [**MONAI Model Zoo**](https://github.com/Project-MONAI/GenerativeModels/tree/main/model-zoo/models)together
+    with our 3D Brain Generator and other models. Our Model Zoo makes it easier downloading
+    the model weights and the code to perform inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a16c3aa279b9c4e9eaaef950449cd46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For more tutorials and to learn more about our features, check out our Tutorial
+    page at this [link](https://github.com/Project-MONAI/GenerativeModels/tree/main/tutorials),
+    and follow me for the latest updates and more guides like this one! 😁
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: All images unless otherwise noted are by the author*'
+  prefs: []
+  type: TYPE_NORMAL

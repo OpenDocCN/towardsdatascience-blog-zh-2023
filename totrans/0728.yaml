@@ -1,0 +1,476 @@
+- en: Detection of Credit Card Fraud with an Autoencoder
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/detection-of-credit-card-fraud-with-an-autoencoder-9275854efd48](https://towardsdatascience.com/detection-of-credit-card-fraud-with-an-autoencoder-9275854efd48)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A guide for the implementation of an anomaly detector
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)[![Janik
+    and Patrick Tinz](../Images/a08aa54f553f606ef5df86f9411c36ac.png)](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)
+    [Janik and Patrick Tinz](https://tinztwinspro.medium.com/?source=post_page-----9275854efd48--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9275854efd48--------------------------------)
+    ·10 min read·Jun 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ead0f960668e0c078768fd7ab039672b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Christiann Koepke](https://unsplash.com/@christiannkoepke?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do you want to know how to create an **anomaly detector** using Python and TensorFlow?
+    Then this article is for you. Credit card companies use anomaly detectors to detect
+    fraudulent transactions. It is important to identify fraudulent transactions so
+    that customers do not have to pay for something they did not buy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many credit card transactions take place every day, but very few transactions
+    are fraudulent. The fraudulent transactions are anomalies. The article presents
+    an implementation of an autoencoder model to detect these fraudulent transactions.
+    First, we define an anomaly and introduce different types of anomalies. Then we
+    describe the implementation of the anomaly detector for credit card fraud detection.
+    Let’s begin!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly detection in general
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An anomaly detection algorithm identifies novel and unexpected structures in
+    acquired datasets. There are many definitions of an anomaly in the literature.
+    We derive a definition for our use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly definition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Chandola et al [1] describe anomalies as patterns in data that do not conform
+    to a well-deﬁned notion of normal behaviour. Another widely used definition comes
+    from Hawkins. Hawkins [2] describes an outlier as an observation that deviates
+    from other observations to such an extent that it is suspected to have been generated
+    by some other mechanism. Concerning the definitions presented, two essential aspects
+    should be noted (cf. [3]):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The distribution of the anomalies deviates strongly from the general distribution
+    of the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The majority of the data are normal observations, and the anomalies are only
+    a small part.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**We define an anomaly as follows:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An anomaly is an observation or a sequence of observations that differ significantly
+    from the majority of the data in distribution.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Types of anomalies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can basically distinguish three types of anomalies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **punctual anomaly** or **point anomaly** is when an observation deviates
+    significantly from the rest of the data [3] and only lasts for a short time [4].
+    Fraudulent transactions can lead to point anomalies.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A **collective anomaly** is a collection of observations that are abnormal compared
+    to the rest of the data. Individual observations can appear as abnormal or as
+    normal, only the occurrence in a group makes them appear abnormal [4]. You can
+    only detect collective anomalies in data where the individual observations are
+    related.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A **contextual anomaly** describes an observation or several observations that
+    appear abnormal in a specific context [3]. These anomalies, when considered globally,
+    lie within the range of values valid for this variable [4].
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this article, we develop an autoencoder model that can only detect point
+    anomalies. There are also more advanced Autoencoder models, such as GRU or LSTM
+    Autoencoders, which include the temporal component in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomaly detection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are two options for the output of anomaly detection methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Anomaly Score:** Deviation of an observation from the expected value.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Binary Label:** Normal or abnormal observation (Label: 0 or 1).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Some algorithms directly have a binary label as output, and others calculate
+    the label based on the anomaly score over a certain threshold. Thus, you can derive
+    the label from the anomaly score. [4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following, you see the function for the anomaly score (cf. [3]):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/748d372e3eac65db292330f274016c08.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Function: Anomaly Score (Formula by authors)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the equation, *γ* denotes the anomaly score, ***x_t*** an observation at
+    time *t*. *n* is the number of observations, and *p* is the number of variables/features.
+    You can convert the anomaly score into a binary label (normal or abnormal) by
+    defining a threshold value *δ ∈ R*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e960fe6234deb833549ed2909e747967.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Formula: Binary Label (Formula by authors)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The equation shows that you can adjust the binary label according to the threshold
+    value *δ*. The implementation in this article uses a binary label (0: no fraud
+    and 1: fraud).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoencoder concept
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we look at the theory behind an autoencoder. Autoencoders are
+    artificial neural networks. They are very often used in anomaly detection. They
+    belong to the semi-supervised methods because you train them only with the normal
+    state of the data. An autoencoder model tries to efficiently compress an input
+    (encoding) and finally reconstruct this compression (decoding) so that the reconstruction
+    matches the input data as closely as possible. The compressed layer is called
+    the latent representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The network, therefore, consists of two sections (cf. [5], p. 499):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: an encoder function ***z*** *= g(****x****)* and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a decoder function ***x′*** *= f (****z****)*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The following figure shows the general structure of an autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c4d22a8e0ea0fb884a9b5c277e977c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How an autoencoder works (Image by authors)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Furthermore, learning an exact reconstruction is not useful because we mainly
+    want to approximate relevant structures in the data. Compression in encoding forces
+    the autoencoder to learn useful features in the data. The autoencoder uses the
+    difference between the input and the output as a reconstruction error. During
+    training, we aim to minimise this error. You can use different error metrics as
+    error functions, such as the mean squared error (MSE):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5de70035144db6990d4a7dadf64a1c2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Formula: Mean Squared Error (MSE) (Formula by authors)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The equation shows the calculation of the reconstruction error (MSE) for an
+    observation ***x_t*** . The choice of the error function and the architecture
+    of the autoencoder depends on the particular application. For example, the encoder
+    and decoder can consist of simple feedforward layers, LSTM/GRU layers or convolutional
+    neural network (CNN) layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Credit Card Fraud Detection Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We use the [Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud?resource=download)
+    dataset (Licensed under [Database Contents License (DbCL) v1.0](https://opendatacommons.org/licenses/dbcl/1-0/))
+    from Kaggle to create our anomaly detector. The dataset contains anonymised credit
+    card transactions of European credit card customers from September 2013\. The
+    data was anonymised using PCA. Let’s start with the data preparation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we read the data and output the first five data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We see that there are 28 anonymised columns and two columns are not anonymised.
+    The Time and Amount columns are not anonymised. There is also a Class column (0:
+    normal transactions or 1: fraudulent transactions). In total, the dataset has
+    31 columns.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we check if the dataset contains missing values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The dataset does not contain any missing values. That’s great.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we are interested in the distribution of the two classes (No Fraud and
+    Fraud). For this, we calculate the percentage share of the respective class in
+    the total data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We see that the proportion of fraudulent transactions is small. In supervised
+    learning methods, unbalanced data is dangerous because these methods learn based
+    on labels. In our use case, however, we use a semi-supervised approach. The training
+    only takes place with data from normal transactions. For this reason, no balancing
+    of the data is necessary for the autoencoder approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we convert the feature Amount into a normally distributed log equivalent
+    by logarithmising the feature. This conversion improves the training of the autoencoder.
+    We also remove the Time feature. We split our data into training, validation and
+    test data. Then we remove the fraudulent transactions from the training data because
+    we train our autoencoder only with the normal transactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we scale our data with the `MinMaxScaler` from the [sklearn library](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html).
+    We train the scaler on the training data and then transform the training, validation
+    and test data with this scaler. It is important to adjust the scaler only on the
+    training data, otherwise information from the validation or test data would flow
+    into the training. Now our data are ready for modelling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modelling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this section, we implement the autoencoder model with TensorFlow. The following
+    listing shows the implementation of the autoencoder:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code shows the implementation for the encoder and the decoder. The encoder
+    compresses the data into two features. Then the autoencoder performs decoding
+    based on these two features. In this context, the autoencoder tries to reconstruct
+    the input. The autoencoder aims to reconstruct the input as well as possible.
+    We use ELU as an activation function because it performed best in our tests. Now
+    we can train our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, we initialise our model with the number of features. Then we define our
+    optimiser and set the learning rate. In our case, we use the optimiser Adam. Finally,
+    we compile our model with the optimiser and the loss function. In our case we
+    use the MSE as loss function. We also define an early stopping by stopping the
+    training if the validation loss does not change in five consecutive epochs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the autoencoder is trained and validated, we can try out the model on the
+    test data. The autoencoder tries to reconstruct the input of the test data as
+    well as possible. The autoencoder reconstructs a normal transaction well. On the
+    other hand, it has to reconstruct fraudulent transactions poorly. We can calculate
+    the error between the input and the reconstruction using the MSE. Fraudulent transactions
+    produce a large MSE, and normal transactions produce a small MSE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous section, we trained our model. Now it’s time to evaluate the
+    model. First, we look at the distribution of the MSE (reconstruction error).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e87e0d2ac2f888d0999d18b8fc5e3fd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of the reconstruction loss (Image by authors)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plot shows that the MSE (on the x axis) is higher for fraudulent transactions
+    than for normal transactions. However, some fraudulent transactions also have
+    a similar MSE to normal transactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following, you can see some metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/310b3dfd36e95722991f82b53e3f635e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evaluation metrics autoencoder model (Image by authors)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In anomaly detection, recall is an important metric. Our model achieves a recall
+    of 87%. That is a good value for an anomaly detection model. In addition, the
+    model has a precision of 72%, which is also well for such a model. The true positive
+    rate (TPR) is 75.2%, that means our model detects fraudulent transactions at 75%.
+    On the other hand, our model fails to detect 25% of fraudulent transactions (false
+    negative rate (FNR)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The aim of further optimisation must be to minimise the false negative rate.
+    However, we must not forget that we trained our model without ever seeing fraud!
+    In this respect, its performance is decent. Nevertheless, we can still try to
+    improve the model a little.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using our FNR, we could already see that the network was not able to generalise
+    perfectly. To improve the performance of the model, we can use a different autoencoder
+    model, e.g. a different number of neurons per layer, or a latent representation
+    of three or four neurons. We did some tests and varied the number of neurons.
+    As a result, the following model gave better results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have increased the neurons in the latent layer to four. The first layer of
+    the encoder has 32 neurons, and the last layer of the decoder has 32 neurons.
+    The output layer uses the ReLU activation function. These changes lead to better
+    results on the test data. You can see the results below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42c99abff219b5f6ee56a0f177c0142c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evaluation metrics improved autoencoder (Image by authors)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We improved the recall and precision by two per cent with the adjustments. In
+    addition, we have a TPR of 78.5% compared to 75.2% before. The new model has an
+    FNR of 21.5%. That means that more fraudulent transactions are detected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results show that it is essential to try different model configurations
+    to get the best possible model. In our use case, a larger autoencoder lead to
+    better results. However, this does not always have to be the case. It is important
+    to implement a model that works well for the use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing an autoencoder model is especially useful when you have few labels
+    to test. An autoencoder only needs normal data and not anomalies for training.
+    The presented approach is particularly suitable for use cases in which anomalies
+    occur rarely, and only very few labels are available for these anomalies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we showed the implementation of an anomaly detector for credit
+    card fraud. First, we presented the basics of anomaly detection, followed by the
+    intuition of autoencoders. An autoencoder compresses an input and tries to reconstruct
+    it as well as possible. Moreover, an autoencoder only needs normal transactions
+    for training. We then implemented an autoencoder with Tensorflow. The evaluation
+    showed that the autoencoder performs well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉🏽 [**Join our free weekly Magic AI newsletter for the latest AI updates!**](https://magicai.tinztwins.de)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉🏽 [**You can find all our Freebies on our digital products page!**](https://shop.tinztwins.de/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Subscribe for free**](https://tinztwinspro.medium.com/subscribe) **to get
+    notified when we publish a new story:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://tinztwinspro.medium.com/subscribe?source=post_page-----9275854efd48--------------------------------)
+    [## Get an email whenever Janik and Patrick Tinz publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Janik and Patrick Tinz publishes. By signing up, you will
+    create a Medium account if you don’t…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: tinztwinspro.medium.com](https://tinztwinspro.medium.com/subscribe?source=post_page-----9275854efd48--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn more about us on our [About page](https://medium.com/@tinztwinspro/about).
+    Don’t forget to follow us on [X](https://twitter.com/tinztwins). Thanks so much
+    for reading. If you liked this article, feel free to share it. **Have a great
+    day!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sign up for a Medium membership using [our link](https://tinztwinspro.medium.com/membership)
+    to read unlimited Medium stories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Varun Chandola, Arindam Banerjee and Vipin Kumar. “Anomaly detection: A
+    survey”. In: ACM computing surveys (CSUR) 41.3 (2009), p. 1–58.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[2] Douglas M Hawkins. Identification of outliers. Bd. 11\. Springer, 1980.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[3] Mohammad Braei and Sebastian Wagner. “Anomaly detection in univariate time-series:
+    A survey on the state-of-the-art”. In: arXiv preprint arXiv:2004.00433 (2020).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[4] Andrew A Cook, Göksel Mısırlı and Zhong Fan. “Anomaly detection for IoT
+    time-series data: A survey”. In: IEEE Internet of Things Journal 7.7 (2019), S.
+    6481–6494.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[5] Ian Goodfellow, Yoshua Bengio and Aaron Courville. Deep Learning. MIT Press,
+    2016.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

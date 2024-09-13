@@ -1,0 +1,457 @@
+- en: Self-Supervised Learning Using Projection Heads
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/self-supervised-learning-using-projection-heads-b77af3911d33](https://towardsdatascience.com/self-supervised-learning-using-projection-heads-b77af3911d33)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Boost performance with unlabeled data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----b77af3911d33--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b77af3911d33--------------------------------)
+    ·13 min read·Jun 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/289279afe6fc5596e60b7f246b366c9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Self-supervised” by Daniel Warfield using p5.js
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post you’ll learn about self-supervised learning, how it can be used
+    to boost model performance, and the role projection heads play in the self-supervised
+    learning process. We will cover the intuition, some literature, and a computer
+    vision example in PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Anyone who has unlabeled and augmentable data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** The beginning of this post is conceptually accessible
+    to beginners, but the example is more focused on intermediate and advanced data
+    scientists.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-requisites:** A high level understanding of convolutional and dense networks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Code:** Full code can be found [here](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/sslDemo.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-Supervision vs Other Approaches
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Generally, when one thinks of models, they consider two camps: supervised and
+    unsupervised models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised Learning** is the process of training a model based on **labeled**
+    information. When training a model to predict if images contain cats or dogs,
+    for instance, one curates a set of images which are labeled as having a cat or
+    a dog, then trains the model (using [gradient descent](https://medium.com/@danielwarfield1/what-are-gradients-and-why-do-they-explode-add23264d24b))
+    to understand the difference between images with cats and dogs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Unsupervised Learning** is the process of giving some sort of model **unlabeled**
+    information, and extracting useful inferences through some sort of transformation
+    of the data. A classic example of unsupervised learning is clustering; where groups
+    of information are extracted from un-grouped data based on local position.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Self-supervised learning is somewhere in between. **Self-supervision uses**
+    **labels** **that are generated programmatically, not by humans.** In some ways
+    it’s supervised because the model learns from labeled data, but in other ways
+    it’s unsupervised because no labels are provided to the training algorithm. Hence
+    self-supervised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-supervised learning (SSL) aims to produce useful feature representations
+    without access to any human-labeled data annotations. — K Gupta Et al.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Self-Supervision in a Nutshell
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Self supervision uses transformations to the data, along with a clever loss
+    function, to teach the model to **understand similar data**. We might not know
+    what an image contains (it’s unlabeled by a human), but we do know a **slightly
+    modified image of a something is still an image of a that thing**. As a result,
+    you can label an image, and a flipped picture of an image, as containing the same
+    thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/900de1dc92b14b2d2dc06002fbe435dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Even if we don’t know this image contains a cat, we know the image contains
+    the same thing regardless of how we manipulate the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is, by training a model to learn if the data contains similar things,
+    you are teaching the model to understand data regardless of how it is presented.
+    In other words, **You are training the model to understand the images, generally,
+    regardless of class**. Once self-supervision is done, the model can be refined
+    on a small amount of labeled data to understand the final task (is an image of
+    a dog or a cat).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b74711381dc53fcb6a28afb689461154.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The general idea of how self supervised learning fits into the general workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m using images in this example, but self-supervision can be applied to any
+    data that has augmentations that alter the data without modifying their essence
+    from the perspective of the final modeling problem. For example, augmentation
+    of audio data can be done using wave tables, which I describe in [this article](https://medium.com/roundtableml/use-frequency-more-frequently-14715714de38).
+  prefs: []
+  type: TYPE_NORMAL
+- en: p.s. Another common way to conceptualize this is **style invariance**. In other
+    words, you’re training a model to be good at ignoring stylistic differences in
+    images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Projection Heads
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As machine learning has progressed as a discipline, certain architectural choices
+    have proven to be generally useful. In convolutional networks, for instance, some
+    networks have backbones, some have necks, and some have heads. **The head, generally,
+    is a dense network at the end of a larger network which turns features into a
+    final output**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbfa3ad2d3f752baaba9d828f7d575e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The First YOLO paper is a classic convolutional architecture. It can be thought
+    of as 2 sections: A series of convolutions which convert raw images to key features
+    (the backbone), and a dense network which turns those features into a final result
+    (the head). [Source](https://arxiv.org/pdf/1506.02640.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the function of this head is often described as a **projection**. Throughout
+    math and many other disciplines, a projection is the idea of mapping something
+    in one space to another space, like how a light from a lamp can map your 3d form
+    into a 2d shadow on the wall. **A projection head is a dense network at the end
+    of a larger network tasked with transforming some information to other information.**
+    In our toy example of cats vs dogs, the projection head would project the general
+    understanding of images as features into a prediction of cat vs dog.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Projection Heads are So Important in Self-Supervision.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Imagine you’re playing monopoly. There’s a lot to learn; investing in real-estate
+    can pay dividends, it’s important to consider the future before making investments,
+    pass go and collect $200, there’s no fundamental difference between a shoe and
+    a thimble, etc. **Within the game of monopoly there are two types of information:
+    generally applicable and task specific information**. You should not get excited
+    every time you see the word “go” in your daily life: that’s task specific. You
+    should, however, consider your investments carefully: that’s generally useful.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We can think of self supervision as a “game”, where the model learns to recognize
+    similar or dissimilar images**. Through playing this game, it learns to generally
+    understand images, as well as specific rules in realizing if two images are the
+    same image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32b15cf6a0d786859d4b8b2ad54cacf7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In a classic convolutional network with a neck and a head, a common intuition
+    is that the convolution extracts features, styles, textures, and other general
+    pieces of information necessary for general image understanding. The dense head,
+    on the other hand, projects those found features into a task specific output (for
+    instance, recognizing that two images are of the same thing, like in self supervised
+    learning).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we have trained a self supervised model on similar data, and we now want
+    to refine this model based on labeled data, we don’t care about the task specific
+    logic to identify if two images are the same. We want to keep the general image
+    understanding, but replace the task specific knowledge with classification knowledge.
+    To do this, **we throw out the projection head, and replace it with a new one**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9d2960fdbfcac9f7aa4b12d965b4158.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The parts of a model which are discarded for self supervised learning (top)
+    to supervised learning (bottom). The convolutional backbone is preserved, while
+    the projection head, which is responsible task specific logic, is discarded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The use of projection heads during the self-supervised learning process is
+    a current point of research ([this](https://arxiv.org/pdf/2212.11491.pdf) is a
+    good paper on the subject), but the intuition is this: in self supervised learning
+    **You have to have the necessary logic to get good at the self supervised task
+    so that you can learn generally applicable feature representations**. Once you
+    learn those features, the projection head, which contains the logic specific to
+    optimizing self supervision, can be discarded.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating and using a projection head is a bit different than traditional modeling.
+    The objective of the projection head isn’t *necessarily*to make a model which
+    is good at the self-supervised task, but entice the creation of feature representations
+    which are more useful in later, downstream tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-Supervision in PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this example we will be using a modification of the MNIST dataset, which
+    is a classic dataset consisting of images of written numbers, paired with labels
+    denoting which number the image represents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'MNIST consists of 60,000 labeled training images, and 10,000 labeled test images.
+    In this example, however, **We will discard all but 200 of the training labels**.
+    That means we will have a set of 200 labeled images to train from, and 59,800
+    unlabeled images to train from. **This modification reflects the types of applications
+    in which self supervision is most useful: Datasets with a lot of data, but which
+    are expensive to label.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full code can be found [here](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/sslDemo.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MNIST dataset is licensed under [GNU General Public License v3.0](https://github.com/sharmaroshan/MNIST-Dataset/blob/master/LICENSE),
+    and the torchvision module used to load it is licensed under [BSD 3-Clause “New”
+    or “Revised” License](https://github.com/UiPath/torchvision/blob/master/LICENSE),
+    both permitting commercial use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1) Load the Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Loading the dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/32c05516ae399c125462b7e42f173a7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Downloaded dataset, with a few samples
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2) Separate into labeled and unlabeled data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this example we will artificially ignore most of the labels in the training
+    set to mimic a use case where it is easy to collect large amounts of data, but
+    difficult or resource intensive to label all of the data. This code block also
+    does some of the necessary data manipulation necessary to leverage PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e15fb72bff5c4ad8d3490b2aac4db739.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Printout from reformatting process
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3) Defining Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To speed up training, this problem uses a super simple conv net and minimal
+    hyperparameter exploration. This model has two general parts: the convolutional
+    backbone and the densely connected head.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/11f197e64b0ce894f8ab9efc46bc6f9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output dimension and Model Architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4) Train and test using only supervised learning as a baseline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To get an idea of how much self supervision improves performance, we’ll train
+    our baseline model on only the 200 labeled samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/10f42e98ac9c0667a3b6553482fbece4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test accuracy throughout training of the supervised-only model. I’m surprised
+    performance is this good, considering randomly guessing would result in a 10%
+    accuracy, and this model was only exposed to 200 labeled samples. Still, we can
+    do much better by incorporating self-supervised learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5) Defining Augmentations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Self supervised learning requires augmentations. This function augments a batch
+    of images twice, resulting in a pair of stochastically augmented images to be
+    used in contrastive learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/de2661ac8357443888f41fcc7afe9508.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two sample positive pairs within the same batch
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6) Defining Contrastive Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Contrastive loss is the loss function used to entice positive pairs to be positioned
+    closely in an embedding space, and negative pairs to be positioned further apart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4489cc808a2ab516b9c2b741ee589bd0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of loss function. Critically, a `grad_fn` exists, meaning the function
+    is differentiable and thus can update model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7) Self Supervised Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training the model to understand image similarity and difference via self supervision
+    and contrastive loss. Because this is an intermediary step, it’s difficult to
+    create clear and intuitive performance indicators. As a result, I opted to spend
+    some extra compute to intimately understand loss, which was useful in tuning parameters
+    to get consistent model improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/63f0f6030c2fc5f2681c95d24070ded8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First few epochs of training output, with several loss based performance indicators,
+    which are useful in tweaking parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8) Self Supervised Training Progress
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the loss improvement as a result of self supervised learning. You can
+    see the relationship between the exponentially decreasing learning rate and loss
+    value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/934c43d85e1a53725324e94672931522.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Learning rate is plotted per sample, while loss is plotted per epoch, but you
+    get the idea. Loss goes down and then converges, then learning stops when loss
+    reduction becomes negligible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9) Fine Tuning Self Supervised Model with Supervised Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using the supervised function from before to train the self supervised model
+    on supervised data. This is done twice; once with the original self supervised
+    learning head, and one with a new randomly-initialized head.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/309f10baa8128644b78045e2e07f313b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training results with the original head (left) and randomly initialized head
+    (right)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10) Discussion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As can be seen, pure supervised learning performed the worst, self supervised
+    learning with supervised learning performed second best, and self supervised learning
+    with supervised learning on a new head performed best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results are purely demonstrative; there was no significant hyperparameter
+    optimization which would be necessary in production. However, this notebook does
+    support the theoretical utility of self supervision, and the importance of careful
+    usage of the projection head.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Only supervised learning: 52.5% accuracy'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'SSL and supervised on SSL head: 59.7% accuracy'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'SSL and supervised on a new head: 63.6%'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**63.6% accuracy when only considering 200 labeled images is pretty impressive!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In future posts, I’ll also describing several landmark papers in the ML space,
+    with an emphasis on practical and intuitive explanations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the images in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any images in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  prefs: []
+  type: TYPE_NORMAL

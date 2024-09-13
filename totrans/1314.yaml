@@ -1,0 +1,144 @@
+- en: Multi-GPU Training on a single GPU System in 3 Minutes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/implement-multi-gpu-training-on-a-single-gpu-e9b6b775456a](https://towardsdatascience.com/implement-multi-gpu-training-on-a-single-gpu-e9b6b775456a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An Advanced Guide for TensorFlow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)[![Sascha
+    Kirch](../Images/a0d45da9dc9c602075b2810786c660c9.png)](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)
+    [Sascha Kirch](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)
+    ·3 min read·May 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbabbc57ed819e80bd93ba392243de25.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I want to share with you a neat little trick on how I test my multi GPU training
+    code on a single GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I guess the problem is obvious and you probably experienced it yourself. You
+    want to train a deep learning model and you want to take advantage of multiple
+    GPUs, a TPU or even multiple workers for some extra speed or larger batch size.
+    But of course you cannot (let’s say should not because I’ve seen it quite often
+    😅) block the usually shared hardware for debugging or even spend a ton of money
+    on a paid cloud instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let me tell you, it is not important how many physical GPUs your system has
+    but rather how many your software thinks it does have. The keyword is: ***(device)
+    virtualization***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s implement it
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First lets have a look on how you would usually **detect and connect to your
+    GPU**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Code 1: Detect all available GPUs, initialize the respective scope and initialize
+    your model, optimizer and checkpoints within the scope of the strategy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You would first list all devices available, then select a suitable strategy
+    and the initialize your model, optimizer and checkpoint within the scope of the
+    strategy. If you would use a standard training loop with ***model.fit()*** you
+    would be done. If you would use a custom training loop you would need to implement
+    some extra steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check out my tutorial on [Accelerated Distributed Training with TensorFlow on
+    Google’s TPU](/accelerated-distributed-training-with-tensorflow-on-googles-tpu-52f1fe21da33?sk=b713cd3cf705bae60c523b26cfe25b3f)
+    for more details an distributed training with custom training loops.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'There is one important detail in the code above. Did you noticed I used the
+    function ***list_logical_devices(“GPU”)*** rather then ***list_physical_devices(“GPU”)***?
+    Logical devices are all devices visible to the software but these are not always
+    associated with an actual physical device. If we run the code block right now
+    this could be an output you would see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d0a65689a23f310b1f78f3fce32ab08.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Screenshot of output after running Code 1\. and connecting to a single
+    logical GPU with one associated physical GPU. Taken by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use the logical device definition to our advantage and define some
+    logical devices, before we list all logical devices and connect to them. To be
+    precise, we will define 4 logical GPUs associated with a single physical GPU.
+    This is how it is done:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Code 2: Create multiple logical GPU devices associated with a single physical
+    GPU.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we would again print the number of logical vs. physical devices you’ll see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1724aa8e47fc229bf375fbce66810d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Screenshot of output after running Code 2\. before Code 1\. and connecting
+    to four logical GPU with one associated physical GPU. Taken by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And voilà, you can now test your code on a single GPU as if you would be performing
+    distributed training on 4 GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are several things to keep in mind:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You are not actually performing distributed training, hence there is now performance
+    gain through parallelization
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You need to assign the logical devices, before you connect to your hardware,
+    otherwise an exception is raised.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It only tests the correct implementation of your algorithm and you can check
+    if the output shapes and values are as expected. It will not guarantee that all
+    drivers and hardware in a multi-GPU setup is correct.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let me know in the comments if this trick is useful for you and if you already
+    knew about this feature! For me it was a game changer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Happy testing!💪
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL

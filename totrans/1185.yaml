@@ -1,0 +1,321 @@
+- en: How to Fix Missing Dates for Time Series Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-fix-missing-dates-for-time-series-analysis-26358360abcc](https://towardsdatascience.com/how-to-fix-missing-dates-for-time-series-analysis-26358360abcc)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to use TVFs in BigQuery to effortlessly generate date ranges for your
+    time series analysis.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@thomas.ellyatt?source=post_page-----26358360abcc--------------------------------)[![Tom
+    Ellyatt](../Images/8756acdd11fef8db9a868820251e7575.png)](https://medium.com/@thomas.ellyatt?source=post_page-----26358360abcc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26358360abcc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----26358360abcc--------------------------------)
+    [Tom Ellyatt](https://medium.com/@thomas.ellyatt?source=post_page-----26358360abcc--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26358360abcc--------------------------------)
+    ·7 min read·Jul 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50974d6ab642db33cc05beee117d3727.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My goal for this article is to help you understand TVFs and how to use them
+    by walking you through an example which addresses the missing date issue common
+    in time series analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In some situations, dates with zero data are important and must be shown/included
+    in your dataset. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Businesses can benefit from identifying days with no sales in retail. These
+    days are influenced by holidays or changes in customer behaviour.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finding missing dates in data helps improve data quality by revealing anomalies
+    or outliers caused by system failures or incomplete data capture. Showing missing
+    dates is a useful tool for achieving this goal.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These missing dates can cause issues for analysis and visualisation. Therefore,
+    you need a solution that ensures all dates are present in the output, even if
+    there is no corresponding data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the end of this article, you’ll have your very own TVF, which can generate
+    this…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/762c6ffcc7468c0ec8af7c7df722a9cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From a single line of code!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1951c31f988a78b375c4c0834625455.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We will cover:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: How to **generate dates** to plug missing gaps in your data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How you can **create a TVF** and the usage of parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to **call** **a TVF**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We’ll look at **expanding our date generator** for greater flexibility.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, I’ll share **how you can access my TVF** and introduce you to an open-source
+    project called **BigFunctions**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Consider this scenario: you’ve run a query which provides results of total
+    survey responses by date for the last four weeks. Then, you bring the results
+    into Google Sheets to quickly visualise the data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a3eb50c7b520e100ba07bb36799c82c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The chart above doesn’t highlight any missing data; it looks exactly as expected.
+    Even if you choose to display all dates in the x-axis, you can be forgiven for
+    not noticing the two missing days in July.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/529c22c8f7b9142adfe5bfb04b200452.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**How Can We Solve This Problem**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we get into the TVF topic, let’s talk about my method for solving such
+    a problem and why I bundled it into a TVF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem, I create what I like to call a **Date Axis.** This column
+    of dates/weeks/months, whatever period you need, is built separately from the
+    dataset you’re analysing. This ensures that the dates are independent and do not
+    rely on the data to exist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating the date axis is reasonably straightforward, although a chore if you
+    frequently need to create one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is a simple example which generates dates between the 19th of June and
+    the 16th of July in 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/44c35747f5f5de5f1aea9a923f60c220.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The generate_date_array function is the key part of this, but as the function
+    name implies, the output is returned as an array. Therefore, we must unnest (flatten)
+    this array for the next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The date axis exists in a CTE as we need to treat it like a separate table to
+    left join our actual data to the list of dates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7852f57252c3f5ddb2cdceda525d8608.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see above, we have *null* values for the 1st and 2nd of July in our
+    survey_responses table because those dates don’t exist. Using the date axis, we
+    can easily spot these and handle them appropriately, which in this scenario, *null*
+    values are replaced with 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Re-plotting our updated data, we now capture the lack of responses at the beginning
+    of July.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4151967423399465309fa627c0e1b166.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What even is a TVF?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: TVF is an abbreviation for Table-Valued Function. Much like UDFs (User-Defined
+    Functions), they allow you to specify a series of tasks which will be run whenever
+    your custom function is called.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference between the two is the UDF returns a result for each row in your
+    dataset, whereas the TVF returns an entire table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may wonder what’s the point if the CTE approach does the job perfectly.
+    Well, in a TVF, we can expand on the features and reusability of the date axis
+    function and streamline our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many creative and useful ways to use TVFs, and in this article, we’ll
+    be using one to generate a date axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a TVF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating the TVF is nice and easy; start with `create or replace table function`
+    followed by where in your project you want to save your TVF. Then, you can add
+    parameters, which we’ve added two in this example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`start_date DATE, end_date DATE`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown below, these two parameters replace the static values we added to the
+    generate_date_array function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`unnest(generate_date_array(start_date,end_date)) as dates`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When your TVF is created, you can call your new function as if it was a table.
+    Note that I’ve added parenthesis at the end of the FROM clause to specify what
+    values I want the TVF to use, with the 1st of July as the start date and the 7th
+    of July as the end date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3d73f022e7d383fd3819474423cdaf30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can now update our original query to use the new TVF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Expanding on the TVF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The function so far is quite limiting because it only provides dates. What if
+    we wanted week start dates where the week started on Sundays, or do we want quarterly
+    start and end dates for the last few years?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although we could add that logic into our CTE which calls the TVF, let’s handle
+    that in the TVF instead so it’s there whenever we need it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My final version adds a few other possibilities depending on whether you need
+    weekly, monthly, or quarterly date ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gets us the output we saw at the beginning of the article, where a single
+    query line can generate years worth of dates, along with their week, month, and
+    quarterly parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/762c6ffcc7468c0ec8af7c7df722a9cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As a bonus, this function we created doesn’t query any actual data. Meaning
+    it's completely free to run and also lightning-fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even generating dates from 1820 to current took just 1 second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c7d80a639a0da513b9572e15c5424439.png)![](../Images/4c37eeecc4001fb33124b51b18b25ff0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Benjamin Davies](https://unsplash.com/it/@bendavisual?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accessing my TVF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To save yourself some time, you don’t have to create this TVF in your project;
+    you can use the public version, which exists in the BigFunctions open-source project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To add BigFunctions to your project, you can use the explorer add feature and
+    then ‘*star a project by name*’ as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a1503b64ee92d1afdc931b6968cd42d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These functions are available in every region, and inside each dataset, you
+    will find **generate_dates** under **Routines**. Give the code below a try!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: More details about BigFunctions can be found [here](https://unytics.io/bigfunctions/),
+    which is chocked full of great custom functions, some of which even use Python
+    to run all kinds of neat stuff. Check it out if you use BigQuery in your day-to-day
+    role.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That brings this article to an end. If you have any questions, please feel free
+    to comment, and I’ll answer as soon as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I frequently write articles for BigQuery and Looker Studio. If you’re interested,
+    consider following me here on Medium for more!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the author.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Stay classy folks!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tom***
+  prefs: []
+  type: TYPE_NORMAL

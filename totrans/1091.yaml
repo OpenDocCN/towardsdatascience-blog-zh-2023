@@ -1,0 +1,355 @@
+- en: How Python Enumerations Make Data Configuration Elegant
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-python-enumerations-make-data-configuration-elegant-a7d8356657bd](https://towardsdatascience.com/how-python-enumerations-make-data-configuration-elegant-a7d8356657bd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An introduction to using Enums in Python for ML projects
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)[![Eirik
+    Berge, PhD](../Images/7507374e75980fd0c1056af3cd299eaa.png)](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------)
+    [Eirik Berge, PhD](https://medium.com/@ebbeberge?source=post_page-----a7d8356657bd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a7d8356657bd--------------------------------)
+    ·7 min read·May 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f50c10b5f705134f0d6b76ef93de6254.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Joshua Woroniecki](https://unsplash.com/@joshua_j_woroniecki?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview of Your Journey
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Introduction](#a6cb)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A Naive Approach](#8f4f)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Enums to the Rescue!](#7cf7)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Wrapping Up](#c801)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 1 — Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When writing Python code in machine learning projects, there is almost always
+    a need for **configuration code**. This is code that keeps track of information
+    that is used to configure other components of your code. While this definition
+    probably helps no one that does not already know what this means, a few examples
+    really help:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hyperparameters:** In machine learning, hyperparameters are used to train
+    multiple models with slight variations. The hyperparameter might be the number
+    of trees in a random forest. Another example is the relaxation parameter for Ridge
+    or Lasso regression.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Access information:** When connecting to a database or a cloud-hosted storage
+    account, there is a need for access information. This includes the name, password,
+    and other additional properties of the storage system. Similarly, say you are
+    subscribing to a pub/sub-system like Kafka or an MQTT broker. Then the name of
+    the topic, a password, and port numbers are necessary configuration code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Pipeline information:** When building a data engineering pipeline, there
+    is a need for configuration code. This can be ratios for splitting testing and
+    training sets, or a CRON expression for when to run the pipeline.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In summary, configuration code can in some cases help to access outside systems
+    like databases and pub/sub-systems. In other cases, it can help to configure internal
+    systems like machine learning models and data engineering pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It often makes sense to store configuration code in separate files (in formats
+    like `.env`, `.yaml`, or `.json`). Nevertheless, this configuration code still
+    needs to be accessed within the Python code. There are many ways to organize the
+    configuration code in your Python scripts 😕
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this blog post, I will show you why **Python enumerations** are a better
+    choice than some of the more obvious ways of doing this. I’ve previously made
+    a YouTube video on enumerations in Python. You can check that one out if you prefer
+    a video version of more or less the same content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2 — A Naive Approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before we dive into how Python Enums can make configuration code more readable,
+    let’s first take a look at a naive approach that is often used. One common way
+    to store configuration information is to use global variables. Let’s say you have
+    a machine-learning model that uses `[RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)`
+    from `[scikit-learn](https://scikit-learn.org/stable/index.html)`. You want to
+    store the number of trees in a global variable called `N_ESTIMATORS`. This is
+    in conjunction with the parameter name that `RandomForestClassifier` takes. You
+    could define this variable at the top of our script like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With only a single configuration parameter, this is no problem. However, let‘s
+    introduce a few more:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first minor problem is that there is *no way for Python to understand that
+    these global variables are related*. They are simply distinct global variables.
+    Hence you can not iterate over them or collectively perform safety checks on them
+    without introducing more code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A more serious problem arises when you try to work with another model in the
+    script as well. Let’s say that you want to try to use the `[AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)`
+    as well. Then you might write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Do you see what has happened? *You’ve accidentally overwritten the* `*N_ESTIMATORS*`
+    *global variable!* While this is simple to spot here, imagine that the Python
+    script was 500 lines long and written by someone else. Maybe this would have slipped
+    you by. Python would probably give no indication that something was wrong. It’s
+    not like setting `N_ESTIMATORS = 50` for the `RandomForestClassifier` gives a
+    syntax error 😧
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How would you solve this? You could introduce a prolonged name indicating which
+    model the `N_ESTIMATORS` global variable belongs to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now it looks like the `LEARNING_RATE` global variable is not related to `AdaBoostClassifier`
+    anymore. Might as well add the suffix to all the variables then to avoid confusion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In addition to overly long variable names, you can start to see what kind of
+    subtle issues you run into with configuration code. These issues quickly create
+    hard-to-understand bugs at worst, and poor variable names at best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For database calls, it's also very common to make calls to multiple databases
+    within a single script. *Do you really want to end up with variable names like*
+    `*PRODUCTION_DATABASE_INGESTION_ACCESS_KEY*`*?*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is there not a better way to deal with configuration code in Python?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 — Enums to the Rescue!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/b9774578a46a637bbf2e28120ddbd426.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Zac Durant](https://unsplash.com/ja/@zacdurant?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Python Enums](https://docs.python.org/3/library/enum.html) provide a more
+    elegant solution for storing configuration information. Enums (short for enumerations)
+    are essentially a way to define a set of named constants. The best way to understand
+    Enums quickly is to adapt the machine learning configuration code from the previous
+    section. The previous code you had was:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It can now be written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Some Advantages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let‘s quickly see what advantages Python Enums give us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each parameter (e.g., `MAX_DEPTH`) is now stored hierarchically within the model
+    they are used for. This makes sure that nothing is overwritten when more configuration
+    code is introduced. Hence there is also no need for overly long variable names.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The different parameters used in `RandomForestClassifier` are now grouped in
+    the `RandomForest` Enum. Thus they can be iterated over and collectively analyzed
+    for type safety.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since Enums are classes, they can have **docstrings** as I have illustrated
+    above. While this might not be strictly needed for this example, in other examples
+    this might clarify what the enumeration is referring to. Having this as a docstring
+    that is coupled with the class rather than a free-flowing comment is a lot better.
+    For one thing, automatic documentation software will now pick up that the docstring
+    belongs to the enumeration. For the free-flowing comment, this would probably
+    just be lost.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If you now want to access the configuration code further down in the script,
+    you can simply write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This looks clean and is easy to read 😍
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some Python features of Enums
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s illustrate some simple features of Python enumerations by looking at
+    the toy example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Clearly, the information contained within the enumeration is related; they
+    are all about HTTP(s) status codes. Given this, you can now use the following
+    simple code to extract the names and values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Python Enums also allow you to go backward: Given that a status code value
+    is `404`, you can find the status code name by simply writing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can collectively work with the names/values pairs in an Enum by e.g., using
+    the list constructor `list()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, you can pickle and unpickle enumerations in Python. To do this, simply
+    use the `pickle` model as you would with other familiar objects in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is especially important for configuration code for machine learning models.
+    In that case, there are also well-known libraries like [MLflow](https://mlflow.org/)
+    that saves configuration code elegantly for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sensitive Configuration Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When using sensitive configuration code (like passwords or access keys), *you
+    should NEVER write them explicitly in the code*. They should be in a separate
+    file that is ignored by the version control system you are using, and imported
+    into the script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That does not mean that they can not be stored in Enums within the code. Enums
+    are about the organization, and even censored information can be organized. As
+    an example, here is an enumeration representing the connection to a [storage account
+    in Microsoft Azure](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here the `StorageAccount` enumeration is fetching the `ACCESS_KEY` from an environment
+    variable. This can be set in e.g., a `.env` file. Notice that within the Python
+    script, no sensitive information is revealed. Nevertheless, all the information
+    about the storage account is neatly organized into an enumeration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4— Wrapping Up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/4a06c775ef80f575c5d7cdfe36d7a151.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Spencer Bergen](https://unsplash.com/@spencerbergen?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we’ve seen how Python Enums can make configuration code readable,
+    self-documenting, and less error-prone. If you want to learn more about enumerations,
+    then I recommend the official [Enum HOWTO guide](https://docs.python.org/3/howto/enum.html#pickling)
+    and the blog post [Build Enumerations of Constants With Python’s Enum](https://realpython.com/python-enum/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in data science, programming, or anything in between,
+    then feel free to add me on [LinkedIn](https://www.linkedin.com/in/eirik-berge/)
+    and say hi ✋
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Like my writing?** Check out some of my other posts for more Python content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Modernize Your Sinful Python Code with Beautiful Type Hints](/modernize-your-sinful-python-code-with-beautiful-type-hints-4e72e98f6bf1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Visualizing Missing Values in Python is Shockingly Easy](/visualizing-missing-values-in-python-is-shockingly-easy-56ed5bc2e7ea)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Introducing Anomaly/Outlier Detection in Python with PyOD 🔥](/introducing-anomaly-outlier-detection-in-python-with-pyod-40afcccee9ff)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[5 Awesome NumPy Functions That Can Save You in a Pinch](/5-awesome-numpy-functions-that-can-save-you-in-a-pinch-ba349af5ac47)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[5 Expert Tips to Skyrocket Your Dictionary Skills in Python 🚀](/5-expert-tips-to-skyrocket-your-dictionary-skills-in-python-1cf54b7d920d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

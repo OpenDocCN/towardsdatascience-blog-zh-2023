@@ -1,0 +1,642 @@
+- en: Beyond Churn Prediction and Churn Uplift
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/beyond-churn-prediction-and-churn-uplift-45225e5a7541](https://towardsdatascience.com/beyond-churn-prediction-and-churn-uplift-45225e5a7541)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[CAUSAL DATA SCIENCE](https://towardsdatascience.com/tagged/causal-data-science)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How to best target policies in the presence of churn
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)[![Matteo
+    Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------)
+    [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----45225e5a7541--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45225e5a7541--------------------------------)
+    ·12 min read·Jul 25, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af36704bf3fd645df857033ca3b5e3a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cover, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A very common task in data science is *churn prediction*. However, predicting
+    churn is often just an intermediate step and rarely the final objective. Usually,
+    what we actually care about is **reducing churn**, which is a separate objective,
+    not necessarily related. In fact, for example, knowing that long-term customers
+    are less likely to churn than new customers is not an actionable insight since
+    we cannot increase customers’ tenure. What we would like to know instead is how
+    one (or more) treatment impacts churn. This is often referred to as **churn uplift**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we will be going **beyond** both churn prediction and churn
+    uplift and consider instead the ultimate goal of churn-prevention campaigns: **increasing
+    revenue**. First of all, a policy that reduces churn might also have an impact
+    on revenue, which should be taken into account. However, and more importantly,
+    increasing revenue is relevant only if the customer does not churn. Vice-versa,
+    decreasing churn is more relevant for high-revenue customers. This **interaction**
+    between churn and revenue is critical in understanding the profitability of any
+    treatment campaign and should not be overlooked.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gifts and Subscriptions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the rest of the article, we are going to use a **toy example** to illustrate
+    the main idea. Suppose we were a company interested in reducing our customer’s
+    churn and ultimately increasing our revenue. Suppose we have decided to test a
+    new idea: sending a **gift** of *1$* to our users. In order to test whether the
+    treatment works, we have randomly sent it only to a subsample of our customer
+    base.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s have a look at the data we have at our disposal. I import the data-generating
+    process `dgp_gift()` from `src.dgp`. I also import some plotting functions and
+    libraries from `src.utils`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/60c257533f7eaad8407d6061856721b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data snapshot, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have information on `100_000` customers for which we observe the number
+    of `months` they have been active customers, the revenue they generated in the
+    last month (`rev_old`), the change in revenue between the last month and the previous
+    one (`rev_change`), whether they were randomly sent a `gift` and the two outcomes
+    of interest: `churn`, i.e. whether they are not active customers anymore and the
+    `revenue` they have generated in the current month. We denote the outcomes with
+    the letter *Y*, the treatment with the letter *W* and the other variables with
+    the letter *X*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Note** that, for simplicity, we consider a single-period snapshot of the
+    data, and we summarize the panel structure of the data in just a couple of variables.
+    Usually, we would have a longer time series but also a longer time horizon for
+    what concerns the outcome (e.g. [customer lifetime value](https://en.wikipedia.org/wiki/Customer_lifetime_value)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can represent the underlying data-generating process with the following
+    **Directed Acyclic Graph (DAG)**. Nodes represent variables, and arrows represent
+    potential causal relationships. I have highlighted in green the two relationships
+    of interest: the effect of the `gift` on `churn` and `revenue`. Note that `churn`
+    is related to revenue since churned customers, by definition, generate zero revenue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b590f0d1f8557ac05319968b4a22c5cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DAG of the data generating process, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importantly, past revenue and revenue change are predictors of `churn` and `revenue`
+    but are not related to our intervention. On the contrary, the intervention affects
+    `churn` and `revenue` differentially depending on the customer's total active
+    `months`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While simplistic, this data-generating process aims at capturing an important
+    **insight**: variables that are good predictors of `churn` or `revenue`, are not
+    necessarily variables that predict `churn` or `revenue` **lift**. We will see
+    later how this impacts our analysis.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start first by exploring the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploratory Data Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with `churn`. How many customers did the company lose last month?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The company lost almost *20%* of its customers last month! Did the `gift` help
+    in preventing churn?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to compare the churn frequency of customers that received the gift with
+    the churn frequency of customers that did not receive the gift. Since the gift
+    was randomized, the difference-in-means estimator is an unbiased estimator for
+    the [average treatment effect (ATE)](https://en.wikipedia.org/wiki/Average_treatment_effect)
+    of the `gift` on `churn`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7cb2d5b9e5312b682fcea01b4346383.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Average Treatment Effect, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We compute the difference-in-means estimate by linear regression. We also include
+    other covariates to improve the efficiency of the estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b6cb632b38aeb03ba248537b61fe1497.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Churn regression table, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It looks like the `gift` decreased churn by around *11* percentage points, i.e.
+    almost one-third of the baseline level of *32%*! Did it also have an impact on
+    `revenue`?
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for churn, we regress `revenue` on `gift`, our treatment variable, to estimate
+    the average treatment effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c6b3d83f32af833c18ccf477978cb6e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Revenue regression table, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It looks like the `gift` on average increased revenue by *0.63$*, which means
+    that it was **not profitable**. Does it mean that we should stop sending gifts
+    to our customers? It depends. In fact, the gift might be effective for certain
+    customer segments. We just need to identify them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Targeting Policies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will try to understand if there is a data-informed profitable
+    way to send the `gift`, by targeting specific customers. In particular, we will
+    **compare** different targeting **policies** with the objective of increasing
+    revenue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout this section, we will need some algorithms to either predict `revenue`
+    or `churn`, or the probability of receiving the `gift`. We use gradient-boosted
+    tree models from the `[lightgbm](https://lightgbm.readthedocs.io/en/latest/index.html)`
+    library. We use the same models for all policies so that we cannot attribute differences
+    in performance to prediction accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: To **evaluate** each policy, we would like to compare the implied profits with
+    the policy *Π⁽¹⁾*, with the implied profits without the policy *Π⁽⁰⁾*, for each
+    single individual, in a separate validation dataset. We call these two quantities
+    **potential outcomes**, and their difference the **profit uplift**, as we denoted
+    with *τ.* Note that uplift is never observable since, for each customer, we only
+    observe one of the two **potential outcomes**, with or without the `gift`. However,
+    since we are working with synthetic data, we can do oracle evaluation. If you
+    want to know more about how to evaluate uplift models with real data, I recommend
+    my introductory article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/8a078996a113?source=post_page-----45225e5a7541--------------------------------)
+    [## Evaluating Uplift Models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most widespread applications of causal inference in the industry
+    is uplift modeling, a.k.a. the estimation…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/8a078996a113?source=post_page-----45225e5a7541--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, let’s define profits *Π* as the net revenue *R* when the customer
+    does not churn *C*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d61704184736c560d209e823c3cba24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Profit formula, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, the overall effect on profits for treated individuals is given by
+    the difference between two hypothetical quantities: the profits when treated *Π⁽¹⁾*
+    minus the profits when not treated *Π⁽⁰⁾*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db1fbbbaabcafb973a46e9fd51dbe5ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Profit lift formula, image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The effect for untreated individuals is zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1\. Target Churning Customers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A first policy could be to just target **churning customers**. Let’s say we
+    send the `gift` only to customers with above-average predicted churn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The policy is not profitable and would lead to an aggregate **loss** of more
+    than *5000$*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might think that the problem is the **arbitrary threshold**, but this is
+    not the case. Below I plot the aggregate effect for all possible policy thresholds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8068de4f2278ce28dbea3051e2afcadd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Aggregate effect by churn threshold, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, no matter the threshold, it is basically impossible to make any
+    profit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem is that the fact that a customer is likely to churn does not imply
+    that the `gift` will have any impact on their churn probability. The two measures
+    are not completely unrelated (e.g. we cannot decrease the churning probability
+    of customers that have a 0% probability of churning), but they are not the same
+    thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Target revenue customers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s now try a different policy: we send the gift only to **high-revenue customers**.
+    For example, we might send the gift only to the top 10% of customers by revenue.
+    The idea is that if the policy indeed decreases churn, these are the customers
+    for whom decreasing churn is more profitable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The policy is again unprofitable, leading to substantial **losses**. As before,
+    this is not a problem of selecting the threshold, as we can see in the plot below.
+    The best we can do is set a threshold so high that we do not treat anyone, and
+    we make zero profits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/de2a1e6a19f72c4c37f19ce64772cc3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Aggregate effect by revenue threshold, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem is that, in our setting, the churn probability of high-revenue customers
+    does not decrease enough to make the `gift` profitable. This is also partially
+    due to the fact, often observed in reality, that high-revenue customers are also
+    the least likely to churn, to begin with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now consider a more relevant set of policies: policies based on **uplift**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Target churn uplift customers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A more sensible approach would be to target customers whose `churn` probability
+    decreases the most when receiving the *1$* `gift`. We estimate churn uplift using
+    the [double-robust estimator](https://arxiv.org/abs/2004.14497), one of the best-performing
+    uplift models. If you are unfamiliar with meta-learners, I recommend starting
+    from my introductory article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/8a9c1e340832?source=post_page-----45225e5a7541--------------------------------)
+    [## Understanding Meta Learners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many settings, we are not just interested in estimating a causal effect,
+    but also in whether this effect is…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/8a9c1e340832?source=post_page-----45225e5a7541--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We import the doubly-robust learner from [econml](https://econml.azurewebsites.net/),
+    a Microsoft library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have estimated churn uplift, we might be tempted to just target
+    customers with a high negative uplift (negative, since we want to *decrease* churn).
+    For example, we might send the `gift` to all customers with an estimated uplift
+    larger than the average churn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The policy is still unprofitable, leading to almost *4000$* in losses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem is that we haven’t considered the cost of the policy. In fact,
+    decreasing the churn probability is **only profitable for high-revenue customers**.
+    Take the extreme case: avoiding churn of a customer that does not generate any
+    revenue is not worth any intervention.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, let’s only send the `gift` to customers whose churn probability weighted
+    by revenue decreases more than the cost of the gift.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: This policy is finally profitable!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, we still have not considered one channel: the intervention might also
+    affect the revenue of existing customers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Target revenue uplift customers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A symmetric approach to the previous one would be to consider only the impact
+    on `revenue`, ignoring the impact on churn. We could estimate the `revenue` uplift
+    for non-churning customers and treat only customers whose incremental effect on
+    revenue, net of churn, is greater than the cost of the `gift`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: This policy is profitable as well but ignores the effect on churn. How do we
+    combine this policy with the previous one?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Target revenue uplift customers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The best way to efficiently **combine** both the effect on churn and the effect
+    on net revenue is simply to estimate **total revenue uplift**. The implied optimal
+    policy is to treat customers whose total revenue uplift is greater than the cost
+    of the `gift`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: This policy is by far the best-performing one, generating an aggregate profit
+    of more than *2000$*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/df577aa7e5ec99f0697bbecb61e040a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparing policies, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuition and Decomposition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we compare the different policies, it is clear that targeting high-revenue
+    or high-churn probability customers were the **worst choices**. This is not necessarily
+    always the case, but it happened in our simulated data because of two facts that
+    are also common in many real scenarios:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Revenue and churn probability are negatively correlated
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The effect of the `gift` on `churn` (or `revenue`) was not strongly negatively
+    (or positively for `revenue`) correlated with the baseline values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Either one of these two facts can be enough to make targeting revenue or churn
+    a bad strategy. What one should target instead is customers with a high **incremental**
+    effect. And it’s best to directly use as outcome the variable of interest, `revenue`
+    in this case, whenever available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To better understand the mechanism, we can **decompose** the aggregate effect
+    of a policy on profits into three parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ae2e768dfbeed0989162376ccf47118.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Profit lift decomposition, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This implies that there are **three channels** that make treating a customer
+    profitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If it’s a *high-revenue* customer and the treatment *decreases* its churn probability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If it’s a *non-churning* customer and the treatment *increases* its revenue
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It the treatment has a strong impact on *both* its revenue and churn probability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Targeting by churn uplift exploits only the first channel, targeting by net
+    revenue uplift exploits only the second channel, and targeting by total revenue
+    uplift exploits all three channels, making it the **most effective** method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bonus: weighting'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As highlighted by [Lemmens, Gupta (2020)](https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf),
+    sometimes it might be worth **weighting** observations when estimating uplift.
+    In particular, it might be worth giving more weight to observations close to the
+    treatment policy threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **idea** is that weighting generally decreases the efficiency of the estimator.
+    However, we are not interested in having correct estimates for all the observations,
+    but rather we are interested in estimating the **policy threshold** correctly.
+    In fact, whether you estimate a net profit of *1$* or *1000$* it does not matter:
+    the implied policy is the same: send the `gift`. However, estimating a net profit
+    of *1$* rather than *-1$* reverses the policy implications. Therefore, a large
+    loss in accuracy away from the threshold sometimes is worth a small gain in accuracy
+    at the threshold.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try using negative exponential weights, decreasing in distance from the
+    threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In our case, weighting is not worth it: the implied policy is still profitable
+    but less than the one obtained with the unweighted model, *2028$*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have explored why and how one should go **beyond** churn
+    prediction and churn uplift modeling. In particular, one should concentrate on
+    the final business objective of increasing profitability. This implies shifting
+    the focus from *prediction* to *uplift* but also combining churn and revenue into
+    a single outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An important caveat concerns the dimension of the data available. We have used
+    a toy dataset that highly simplifies the problem in at least **two dimensions**.
+    First of all, backward, we normally have longer time series that can (and should)
+    be used for both prediction and modeling purposes. Second, forward, one should
+    combine churn with a longer-run estimate of customer profitability, usually referred
+    to as *customer lifetime value*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Kennedy (2022), [“Towards Optimal Doubly Robust Estimation of Heterogeneous
+    Causal Effects”](https://arxiv.org/abs/2004.14497)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bonvini, Kennedy, Keele (2021), [“Minimax Optimal Subgroup Identification”](https://arxiv.org/abs/2306.17464)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lemmens, Gupta (2020), [“Managing Churn to Maximize Profits”](https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Related Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Evaluating Uplift Models](/8a078996a113)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Understanding Meta Learners](/8a9c1e340832)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Understanding AIPW, the Doubly-Robust Estimator](/ed4097dab27a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can find the original Jupyter Notebook here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/beyond_churn.ipynb?source=post_page-----45225e5a7541--------------------------------)
+    [## Blog-Posts/notebooks/beyond_churn.ipynb at main · matteocourthoud/Blog-Posts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code and notebooks for my Medium blog posts. Contribute to matteocourthoud/Blog-Posts
+    development by creating an…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/beyond_churn.ipynb?source=post_page-----45225e5a7541--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*I really appreciate it!* 🤗 *If you liked the post and want to see more, consider*
+    [***following me***](https://medium.com/@matteo.courthoud)*. I post once a week
+    on topics related to causal inference and data analysis. I try to keep my posts
+    simple but precise, always providing code, examples, and simulations.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Also, a small* ***disclaimer****: I write to learn, so mistakes are the norm,
+    even though I try my best. Please, when you spot them, let me know. I also appreciate
+    suggestions on new topics!*'
+  prefs: []
+  type: TYPE_NORMAL

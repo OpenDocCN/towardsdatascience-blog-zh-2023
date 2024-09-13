@@ -1,0 +1,976 @@
+- en: Organizing a Machine Learning Monorepo with Pants
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/organizing-a-machine-learning-monorepo-with-pants-8e0570de0c4c](https://towardsdatascience.com/organizing-a-machine-learning-monorepo-with-pants-8e0570de0c4c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: MLOps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Streamline your ML workflow management
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michaloleszak.medium.com/?source=post_page-----8e0570de0c4c--------------------------------)[![Michał
+    Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----8e0570de0c4c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8e0570de0c4c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8e0570de0c4c--------------------------------)
+    [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----8e0570de0c4c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8e0570de0c4c--------------------------------)
+    ·20 min read·Aug 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a6317d603483978f49944578ae5d4f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Have you ever copy-pasted chunks of utility code between projects, resulting
+    in multiple versions of the same code living in different repositories? Or, perhaps,
+    you had to make pull requests to tens of projects after the name of the GCP bucket
+    in which you store your data was updated?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Situations described above arise way too often in ML teams, and their consequences
+    vary from a single developer’s annoyance to the team’s inability to ship their
+    code as needed. Luckily, there’s a remedy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s dive into the world of monorepos, an architecture widely adopted in major
+    tech companies like Google, and how they can enhance your ML workflows. A monorepo
+    offers a plethora of advantages which, despite some drawbacks, make it a compelling
+    choice for managing complex machine learning ecosystems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will briefly debate monorepos’ merits and demerits, examine why it’s an excellent
+    architecture choice for machine learning teams, and peek into how Big Tech is
+    using it. Finally, we’ll see how to harness the power of the Pants build system
+    to organize your machine learning monorepo into a robust CI/CD build system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Strap in as we embark on this journey to streamline your ML project management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article was first published on the* [*neptune.ai blog*](https://neptune.ai/blog/organizing-ml-monorepo-with-pants)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6fb7ffce5da7442155bbf5238b9548e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What is a monorepo?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/586c839a5c9dda9f07343a12f9b94634.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Machine Learning Monorepo. Image by the author, via neptune.ai.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A monorepo (short for monolithic repository) is a software development strategy
+    where code for many projects is stored in the same repository. The idea can be
+    as broad as *all* of the company code written in a variety of programming languages
+    stored together (did somebody say Google?) or as narrow as a couple of Python
+    projects developed by a small team thrown into a single repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we focus on repositories storing machine learning code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/abba89053139f8144e87c408977bbddb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Monorepos vs. polyrepos
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Monorepos are in stark contrast to the polyrepos approach, where each individual
+    project or component sits in its own repository. A lot has been said about the
+    advantages and disadvantages of both approaches, and we won’t go down this rabbit
+    hole too deep. Let’s just put the basics on the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a41b74e9bdd87ab9ce5afd2d96e97cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Monorepo architecture. Image by the author, via neptune.ai.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The monorepo architecture offers the following advantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single CI/CD pipeline**, meaning no hidden deployment knowledge spread across
+    individual contributors to different repositories;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Atomic commits**, given that all projects reside in the same repository,
+    developers can make cross-project changes that span across multiple projects but
+    are merged as a single commit;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Easy sharing** of utilities and templates across projects;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Easy unification** of coding standards and approaches;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Better **code discoverability**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Naturally, there are no free lunches. We need to pay for the above goodies,
+    and the price comes in the form of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Scalability challenges**: As the codebase grows, managing a monorepo can
+    become increasingly difficult. At a really large scale, you’ll need powerful tools
+    and servers to handle operations like cloning, pulling, and pushing changes, which
+    can take a significant amount of time and resources.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Complexity**: A monorepo can be more complex to manage, particularly with
+    regard to dependencies and versioning. A change in a shared component could potentially
+    impact many projects, so extra caution is needed to avoid breaking changes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Visibility and access control**: With everyone working out of the same repository,
+    it can be difficult to control who has access to what. While not a disadvantage
+    as such, it could pose problems of a legal nature in cases where code is subject
+    to a very strict NDA.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The decision as to whether the advantages a monorepo offers are worth paying
+    the price is to be determined by each organization or team individually. However,
+    unless you are operating at a prohibitively large scale or are dealing with top-secret
+    missions, I would argue that — at least when it comes to my area of expertise,
+    the machine learning projects — a monorepo is a good architecture choice in most
+    cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s talk about why that is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23835533a1899635f3612622d3f49523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Machine learning with monorepos
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are at least six reasons why monorepos are particularly suitable for machine
+    learning projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data pipeline integration
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Consistency across experiments
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Simplified model versioning
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Cross-functional collaboration
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Atomic changes
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Unification of coding standards
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s discuss each of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data pipeline integration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Machine learning projects often involve data pipelines that preprocess, transform,
+    and feed data into the model. These pipelines might be tightly integrated with
+    the ML code. Keeping the data pipelines and ML code in the same repo helps maintain
+    this tight integration and streamline the workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consistency across experiments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Machine learning development involves a lot of experimentation. Having all experiments
+    in a monorepo ensures consistent environment setups and reduces the risk of discrepancies
+    between different experiments due to varying code or data versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simplified model versioning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a monorepo, the code and model versions are in sync because they are checked
+    into the same repository. This makes it easier to manage and trace model versions,
+    which can be especially important in projects where ML reproducibility is critical.
+    Just take the commit SHA at any given point in time, and it provides information
+    on the state of all models and services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cross-functional collaboration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Machine learning projects often involve collaboration between data scientists,
+    ML engineers, and software engineers. A monorepo facilitates this [cross-functional
+    collaboration](https://neptune.ai/blog/ml-collaboration-best-practices-from-ml-teams)
+    by providing a single source of truth for all project-related code and resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Atomic changes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the context of ML, a model’s performance can depend on various interconnected
+    factors like data preprocessing, feature extraction, model architecture, and post-processing.
+    A monorepo allows for atomic changes — changes to multiple components can be committed
+    as one, ensuring that interdependencies are always in sync.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unification of coding standards
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, machine learning teams often include members without a software engineering
+    background. These mathematicians, statisticians, and econometricians are brainy
+    folks with brilliant ideas and the skills to train models that solve business
+    problems. However, writing code that is clean, easy to read, and maintain might
+    not always be their strongest side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A monorepo helps by automatically checking and enforcing coding standards across
+    all projects, which not only ensures high code quality but also helps the less
+    engineering-inclined team members learn and grow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9dbd6e638b6820d6dac1719416168009.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'How they do it in the industry: famous monorepos'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the software development landscape, some of the largest and most successful
+    companies in the world use monorepos. Here are a few notable examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Google**: Google has long been a staunch advocate for the monorepo approach.
+    Their entire codebase, estimated to contain 2 billion lines of code, is contained
+    in a single, massive repository. They even [published a paper about it](https://research.google/pubs/pub45424/).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Meta**: Meta also employs a monorepo for their vast codebase. They created
+    a version control system called “Mercurial” to handle the size and complexity
+    of their monorepo.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Twitter**: Twitter has been managing their monorepo for a long time using
+    Pants, the build system we will talk about next!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Many other companies such as Microsoft, Uber, Airbnb, and Stripe [are using
+    the monorepo approach](https://en.wikipedia.org/wiki/Monorepo#:~:text=This%20practice%20dates%20back%20to,of%20code%20and%20daily%20changes)
+    at least for some parts of their codebases, too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enough of the theory! Let’s take a look at how to actually build a machine learning
+    monorepo. Because just throwing what used to be separate repositories into one
+    folder does not do the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8518f644286399e4088193971a851222.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to set up ML monorepo with Python?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Throughout this section, we will base our discussion around a [sample machine
+    learning repository](https://github.com/MichalOleszak/pants-monorepo-example)
+    I’ve created for this article. It is a simple monorepo holding just one project,
+    or module: a hand-written digits classifier called *mnist*, after the famous dataset
+    it uses.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All you need to know right now is that in the monorepo’s root, there is a directory
+    called mnist, and in it, there is some Python code for training the model, the
+    corresponding unit tests, and a Dockerfile to run training in a container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4c1059a813539b92d0daee3a685d087.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We will be using this small example to keep things simple, but in a larger monorepo,
+    *mnist* would be just one of the many project folders in the repo’s root, each
+    of which will contain source code, tests, dockerfiles, and requirement files at
+    the least.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1853da3f4c65f32ad70efa19fd79bd65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Build system: Why do you need one and how to choose it?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Why a Build System
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Think about all the actions, other than writing code, that the different teams
+    developing different projects within the monorepo take as part of their development
+    workflow. They would run linters against their code to ensure adherence to style
+    standards, run unit tests, build artifacts such as docker containers and Python
+    wheels, push them to external artifact repositories, and deploy them to production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take testing. You’ve made a change in a utility function you maintain, ran the
+    tests, and all’s green. But how can you be sure your change is not breaking code
+    for other teams that might be importing your utility? You should run *their* test
+    suite, too, of course.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But to do this, you need to know exactly where the code you changed is being
+    used. As the codebase grows, finding this out manually doesn’t scale well. Of
+    course, as an alternative, you can always execute all the tests, but again: that
+    approach doesn’t scale very well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e6003d2707e682757d3b2d4a620c3e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Why do you need a build system: testing. Image by the author, via neptune.ai.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example: production deployment. Whether you deploy weekly, daily, or
+    continuously, when the time comes, you would build all the services in the monorepo
+    and push them to production. But hey, do you need to build *all* of them on each
+    occasion? That could be time-consuming and expensive at scale.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some projects might not have been updated for weeks. On the other hand, the
+    shared utility code they use might have received updates. How do we decide what
+    to build? Again, it’s all about dependencies. Ideally, we would only build services
+    that have been affected by the recent changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3dfb9abeb2a76fad098602efa7078842.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Why do you need a build system: deployment. Image by author via neptune.ai.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of this can be handled with a simple shell script with a small codebase,
+    but as it scales and projects start sharing code, challenges emerge, many of which
+    revolve around dependency management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Picking the right system
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'All of the above is not a problem anymore if you invest in a proper build system.
+    A build system’s primary task is to build code. And it should do so in a clever
+    way: the developer should only need to tell it *what* to build (“build docker
+    images affected by my latest commit”, or “run only those tests that cover code
+    which uses the method I’ve updated”), but the *how* should be left for the system
+    to figure out.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a couple of great open-source build systems out there. Since most
+    machine learning is done in Python, let’s focus on the ones with the best Python
+    support. The two most popular choices in this regard are [Bazel](https://bazel.build/)
+    and [Pants](https://www.pantsbuild.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bazel is an open-source version of Google’s internal build system, Blaze. Pants
+    is also heavily inspired by Blaze and it aims for similar technical design goals
+    as Bazel. An interested reader will find a good comparison of Pants vs. Bazel
+    in this [blog post](https://blog.pantsbuild.org/pants-vs-bazel/) (but keep in
+    mind it comes from the Pants devs). The table at the bottom of [monorepo.tools](https://monorepo.tools/)
+    offers yet another comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both systems are great, and it is not my intention to declare a *better* solution
+    here. That being said, Pants is often described as easier to set up, more approachable,
+    and well-optimized for Python, which makes it a perfect fit for machine learning
+    monorepos.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my personal experience, the decisive factor that made me go with Pants was
+    its active and helpful community. Whenever you have questions or doubts, just
+    post on the community Slack channel, and a bunch of supportive folks will help
+    you out soon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23835533a1899635f3612622d3f49523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Introducing Pants
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Alright, time to get to the meat of it! We will go step by step, introducing
+    different Pants’ functionalities and how to implement them. Again, you can check
+    out the associated sample repo [here](https://github.com/MichalOleszak/pants-monorepo-example/tree/main).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pants is installable with pip. In this tutorial, we will use the most recent
+    stable version as of this writing, 2.15.1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pants is configurable through a global master config file named [*pants.toml*](https://github.com/MichalOleszak/pants-monorepo-example/blob/main/pants.toml)*.*
+    In it, we can configure Pants’ own behavior as well as the settings of downstream
+    tools it relies on, such as pytest or mypy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with a bare minimum *pants.toml:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the global section, we define the Pants version and the backend packages
+    we need. These packages are Pants’ engines that support different features. For
+    starters, we only include the Python backend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the source section, we set the source to the repository’s root. Since version
+    2.15, to make sure this is picked up, we also need to add an [empty BUILD_ROOT
+    file](https://github.com/MichalOleszak/pants-monorepo-example/blob/main/BUILD_ROOT)
+    at the repository’s root.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, in the Python section, we choose the Python version to use. Pants will
+    browse our system in search of a version that matches the conditions specified
+    here, so make sure you have this version installed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That’s a good start! Next, let’s take a look at any build system’s heart: the
+    BUILD files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Build files are configuration files used to define targets (what to build) and
+    their dependencies (what they need to work) in a declarative way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can have multiple build files at different levels of the directory tree.
+    The more there are, the more granular the control over dependency management.
+    Indeed, Google has a build file in virtually every directory in their repo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our example, we will use three build files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`mnist/BUILD` — in the project directory, this build file will define the Python
+    requirements for the project and the docker container to build;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`mnist/src/BUILD` — in the source code directory, this build file will define
+    Python sources, that is, files to be covered by Python-specific checks;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`mnist/tests/BUILD` — in the tests directory, this build file will define which
+    files to run with Pytest and what dependencies are needed for these tests to execute.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at the `mnist/src/BUILD`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And `mnist/BUILD` looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The two entries in the build files are referred to as targets. First, we have
+    a Python sources target, which we aptly call *python*, although the name could
+    be anything. We define our Python sources as all .py files in the directory. This
+    is relative to the build file’s location, that is: even if we had Python files
+    outside of the *mnist/src* directory, these sources only capture the contents
+    of the *mnist/src* folder. There is also a resolve filed; we will talk about it
+    in a moment.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we have the Python requirements target. It tells Pants where to find the
+    requirements needed to execute our Python code (again, relative to the build file’s
+    location, which is in the mnist project’s root in this case).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is all we need to get started. To make sure the build file definition
+    is correct, let’s run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As expected, we get: “No required changes to BUILD files found.” as the output.
+    Good!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s spend a bit more time on this command. In a nutshell, a bare *pants tailor*
+    can automatically create build files. However, it sometimes tends to add too many
+    for one’s needs, which is why I tend to add them manually, followed by the command
+    above that checks their correctness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The double semicolon at the end is the Pants notation which tells it to run
+    the command over the entire monorepo. Alternatively, we could have replaced it
+    with *mnist::* to run only against the *mnist* module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dependencies and lockfiles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To do efficient dependency management, Pants relies on lockfiles. Lockfiles
+    record the specific versions and sources of all dependencies used by each project.
+    This includes both direct and transitive dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By capturing this information, lockfiles ensure that the same versions of dependencies
+    are used consistently across different environments and builds. In other words,
+    they serve as a snapshot of the dependency graph, ensuring reproducibility and
+    consistency across builds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To generate a lockfile for our *mnist* module, we need the following addition
+    to *pants.toml:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We enable the resolves (Pants term for lockfiles’ environments) and define
+    one for *mnist* passing a file path. We also choose it as the default one. This
+    is the resolve we have passed to Python sources and Python requirements targets
+    before, which is how they know what dependencies are needed. We can now run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'to get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This has created a file at *mnist/mnist.lock*. This file should be checked with
+    git if you intend to use Pants for your remote CI/CD. And naturally, it needs
+    to be updated every time you update the *requirements.txt* file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With more projects in the monorepo, you would rather generate the lockfiles
+    selectively for the project that needs it, e.g. `pants generate-lockfiles --resolve=mnist`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for the setup! Now let’s use Pants to do something useful for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unifying code style with Pants
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pants natively supports a number of Python linters and code formatting tools
+    such as Black, yapf, Docformatter, Autoflake, Flake8, isort, Pyupgrade, or Bandit.
+    They are all used in the same way; in our example, let’s implement Black and Docformatter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so, we add appropriate two backends to *pants.toml:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We could configure both tools if we wanted to by adding additional sections
+    below in the toml file, but let’s stick with the defaults now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use the formatters, we need to execute what’s called a Pants goal. In this
+    case, two goals are relevant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the lint goal will run both tools (in the order in which they are listed
+    in backend packages, so Docformatter first, Black second) in the check mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It looks like our code adheres to the standards of both formatters! However,
+    if that was not the case, we could execute the fmt (short for “format”) goal that
+    adapts the code appropriately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: In practice, you might want to use more than these two formatters. In this case,
+    you may need to update each formatter’s config to ensure that it is compatible
+    with the others. For instance, if you are using Black with its default config
+    as we have done here, it will expect code lines not to exceed 88 characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But if you then want to add isort to automatically sort your imports, they
+    will clash: isort truncates lines after 79 characters. To make isort compatible
+    with Black, you would need to include the following section in the toml file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: All formatters can be configured in the same way in *pants.toml* by passing
+    the arguments to their underlying tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing with Pants
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s run some tests! To do this, we need two steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we add the appropriate sections to *pants.toml*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: These settings make sure that as the tests are run, a test coverage report is
+    produced. We also pass a couple of custom Pytest options to adapt its output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we need to go back to our `mnist/tests/BUILD` file and add a Python tests
+    target:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We call it tests and specify the resolve (i.e. lockfile) to use. Sources are
+    the locations where Pytest will be let in to look for tests to run; here, we explicitly
+    pass all .py files prefixed with “test_”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'to get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, it took around three seconds to run this test suite. Now, if
+    we re-run it again, we will get the results immediately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how Pants tells us these results are memoized, or cached. Since no changes
+    have been made to the tests, the code being tested, or the requirements, there
+    is no need to actually re-run the tests — their results are guaranteed to be the
+    same, so they are just served from the cache.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Checking static typing with Pants
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s add one more code quality check. Pants allows us to use mypy to check
+    static typing in Python. All we need to do is add the mypy backend in *pants.toml:*
+    `pants.backend.python.typecheck.mypy`*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You might also want to configure mypy to make its output more readable and
+    informative by including the following config section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this, we can run `pants check ::` to get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Shipping ML models with Pants
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s talk shipping. Most machine learning projects involve one or more Docker
+    containers, for example, processing training data, training a model, or serving
+    it via an API using Flask or FastAPI. In our toy project, we also have [a container
+    for model training](https://github.com/MichalOleszak/pants-monorepo-example/blob/main/mnist/Dockerfile).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pants supports automatic building and pushing of Docker images. Let’s see how
+    it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we add the Docker backend in *pants.toml:* `pants.backend.docker`*.*
+    We will also configure it, passing it a number of environment variables and a
+    build arg which will come in handy in a moment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, in the `mnist/BUILD` file, we will add two more targets: a files target
+    and a Docker image target.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: We call the Docker target `train_mnist`. As a dependency, we need to pass it
+    the list of files to be included in the container. The most convenient way to
+    do this is to define this list as a separate `files` target. Here, we simply include
+    all the files in the mnist module in a target called `module_files`, and pass
+    it as a dependency to the Docker image target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naturally, if you know that only some subset of files will be needed by the
+    container, it’s a good idea to pass only those as dependencies. It is essential
+    because these dependencies are used by Pants to infer whether a container has
+    been affected by a change and needs a rebuild. Here, with `module_files` including
+    all files, if any file in the mnist folder changes (even a readme!), Pants will
+    see the `train_mnist`docker image as affected by this change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we can also set the external registry and repository to which the
+    image shall be pushed, and the tags with which it will be pushed: here, I will
+    be pushing the image to my personal Docker Hub repo, always with two tags: “latest”,
+    and the short commit SHA which will be passed as a build arg.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this, we can build an image. Just one more thing: since Pants is working
+    in its isolated environments, it cannot read env vars from the host. Hence, to
+    build or push the image that requires the SHORT_SHA variable, we need to pass
+    it together with the Pants command.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can build the image like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'to get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A quick check reveals that the images have indeed been built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can also build and push images in one go using Pants. All it takes is replacing
+    the `package` command with the `publish` command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: This built the images and pushed them to my Docker Hub, [where they have indeed
+    landed](https://hub.docker.com/repository/docker/michaloleszak/mnist/general).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pants in CI/CD
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The same commands we have just manually run locally can be executed as parts
+    of a CI/CD pipeline. You can run them via services such as GitHub Actions or Google
+    CloudBuild, for instance as a PR check before a feature branch is allowed to be
+    merged to the main branch, or after the merge, to validate it’s green and build
+    & push artifacts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our toy repo, I have implemented [a pre-push commit hook](https://github.com/MichalOleszak/pants-monorepo-example/blob/main/.pre-commit-config.yaml)
+    that runs Pants commands on git push and only lets it through if they all pass.
+    In it, we are running the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can see some new flags for `pants check`, which is the typing check with
+    mypy. They ensure that the check is only run on files that have changed compared
+    to the main branch and their transitive dependencies. This is useful since mypy
+    tends to take some time to run. Limiting its scope to what’s actually needed accelerates
+    the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How would a docker build & push look like in a CI/CD pipeline? Somewhat like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We use the publish command as before, but with three additional arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`--changed-since=HEAD^` and `--changed-dependees=transitive` make sure that
+    only the containers affected by the changes compared to the previous commit are
+    built; this is useful for executing on the main branch after the merge.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`--filter-target-type=docker_image` makes sure that the only thing Pants does
+    is build and push Docker images; this is because the `publish` command can refer
+    to targets other than Docker: for example, it can be used to publish helm charts
+    to OCI registries. The same goes for the `package` command: on top of building
+    docker images, it can also create a Python package; for that reason, it’s a good
+    practice to pass the `--filter-target-type` option.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/23835533a1899635f3612622d3f49523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Monorepos are more often than not an excellent architecture choice for machine
+    learning teams. Managing them at scale, however, requires an investment in a proper
+    build system. One such system is Pants: it’s easy to set up and use, and t offers
+    native support for many Python and Docker features that machine learning teams
+    often use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of that, it is an open-source project with a large and helpful community.
+    I hope after reading this article you will go ahead and try it out. Even if you
+    don’t currently have a monolithic repository, Pants can still streamline and facilitate
+    many aspects of your daily work!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23835533a1899635f3612622d3f49523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Pants documentation: [https://www.pantsbuild.org/](https://www.pantsbuild.org/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Pants vs. Bazel blog post: [https://blog.pantsbuild.org/pants-vs-bazel/](https://blog.pantsbuild.org/pants-vs-bazel/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'monorepo.tools: [https://monorepo.tools/](https://monorepo.tools/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/23835533a1899635f3612622d3f49523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you liked this post, why don’t you [**subscribe for email updates**](https://michaloleszak.medium.com/subscribe)
+    on my new articles? And by [**becoming a Medium member**](https://michaloleszak.medium.com/membership),
+    you can support my writing and get unlimited access to all stories by other authors
+    and yours truly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to always keep your finger on the pulse of the increasingly faster-developing
+    field of machine learning and AI? Check out my new newsletter, [**AI Pulse**](https://pulseofai.substack.com/).
+    Need consulting? You can ask me anything or book me for a 1:1 [**here**](https://topmate.io/michaloleszak).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also try one of [my other articles](https://michaloleszak.github.io/blog/).
+    Can’t choose? Pick one of these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/unboxing-dinov2-metas-new-all-purpose-computer-vision-backbone-d8e22c059040?source=post_page-----8e0570de0c4c--------------------------------)
+    [## Unboxing DINOv2, Meta’s new all-purpose computer vision backbone'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are vision foundational models catching up with LLMs?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/unboxing-dinov2-metas-new-all-purpose-computer-vision-backbone-d8e22c059040?source=post_page-----8e0570de0c4c--------------------------------)
+    [](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----8e0570de0c4c--------------------------------)
+    [## Self-Supervised Learning in Computer Vision
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to train models with only a few labeled examples
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----8e0570de0c4c--------------------------------)
+    [](/how-to-detect-data-drift-with-hypothesis-testing-1a3be3f8e625?source=post_page-----8e0570de0c4c--------------------------------)
+    [## How to Detect Data Drift with Hypothesis Testing
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hint: forget about the p-values'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-detect-data-drift-with-hypothesis-testing-1a3be3f8e625?source=post_page-----8e0570de0c4c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

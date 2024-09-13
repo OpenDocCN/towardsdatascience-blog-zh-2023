@@ -1,0 +1,637 @@
+- en: Running Llama 2 on CPU Inference Locally for Document Q&A
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/running-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8](https://towardsdatascience.com/running-llama-2-on-cpu-inference-for-document-q-a-3d636037a3d8)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Clearly explained guide for running quantized open-source LLM applications on
+    CPUs using Llama 2, C Transformers, GGML, and LangChain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)[![Kenneth
+    Leung](../Images/2514dffb34529d6d757c0c4ec5f98334.png)](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------)
+    [Kenneth Leung](https://kennethleungty.medium.com/?source=post_page-----3d636037a3d8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d636037a3d8--------------------------------)
+    ·11 min read·Jul 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/887641ba170cdfdd4548d8d2553f96b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [NOAA](https://unsplash.com/@noaa?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/computing-cloud?orientation=landscape&license=free&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Third-party commercial large language model (LLM) providers like OpenAI’s GPT4
+    have democratized LLM use via simple API calls. However, teams may still require
+    self-managed or private deployment for model inference within enterprise perimeters
+    due to various reasons around data privacy and compliance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The proliferation of open-source LLMs has fortunately opened up a vast range
+    of options for us, thus reducing our reliance on these third-party providers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we host open-source models locally on-premise or in the cloud, the dedicated
+    compute capacity becomes a key consideration. While GPU instances may seem the
+    most convenient choice, the costs can easily spiral out of control.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this easy-to-follow guide, we will discover how to run quantized versions
+    of open-source LLMs on local CPU inference for retrieval-augmented generation
+    (aka document Q&A) in Python. In particular, we will leverage the latest, highly-performant
+    [Llama 2](https://ai.meta.com/llama/) chat model in this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '***(1)*** [*Quick Primer on Quantization*](#afd1)***(2)*** [*Tools and Data*](#3527)***(3)***
+    [*Open-Source LLM Selection*](#b5a9)***(4)*** [*Step-by-Step Guide*](#5fa3)***(5)***
+    [*Next Steps*](#be5c)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The accompanying GitHub repo for this article can be found [**here**](https://github.com/kennethleungty/Llama-2-Open-Source-LLM-CPU-Inference).
+  prefs: []
+  type: TYPE_NORMAL
+- en: (1) Quick *Primer on Quantization*
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LLMs have demonstrated excellent capabilities but are known to be compute- and
+    memory-intensive. To manage their downside, we can use quantization to compress
+    these models to reduce the memory footprint and accelerate computational inference
+    while maintaining model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization is the technique of reducing the number of bits used to represent
+    a number or value. In the context of LLMs, it involves reducing the precision
+    of the model’s parameters by storing the weights in lower-precision data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since it reduces model size, quantization is beneficial for deploying models
+    on resource-constrained devices like CPUs or embedded systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A common method is to quantize model weights from their original 16-bit floating-point
+    values to lower precision ones like 8-bit integer values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a385153273118660c8eb7265f870e49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Weight quantization from FP16 to INT8 | Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: (2) Tools and Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following diagram illustrates the architecture of the document knowledge
+    Q&A application we will build in this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0261b53ed8cc4fa5ac7e31b5d210072.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Document Q&A Architecture | Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The file we will run the document Q&A on is the public [177-page 2022 annual
+    report](https://ir.manutd.com/financial-information/annual-reports/2022.aspx)
+    of Manchester United Football Club.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Data Source:* Manchester United Plc (2022). 2022 Annual Report 2022 on Form
+    20-F. [https://ir.manutd.com/~/media/Files/M/Manutd-IR/documents/manu-20f-2022-09-24.pdf](https://ir.manutd.com/~/media/Files/M/Manutd-IR/documents/manu-20f-2022-09-24.pdf)
+    (CC0: Public Domain, as [SEC content](https://www.sec.gov/os/webmaster-faq#:~:text=All%20Government%2Dcreated%20content%20on,free%20to%20access%20and%20reuse.)
+    is public domain and free to use)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The local machine for this project has an **AMD Ryzen 5 5600X 6-Core Processor**
+    coupled with **16GB RAM** (DDR4 3600). While it also has an RTX 3060TI GPU (8GB
+    VRAM), it will not be used in this project since we will focus on CPU usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us now explore the software tools we will leverage in building this backend
+    application:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (i) LangChain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[LangChain](https://python.langchain.com/docs/get_started) is a popular framework
+    for developing applications powered by language models. It provides an extensive
+    set of integrations and data connectors, allowing us to chain and orchestrate
+    different modules to create advanced use cases like chatbots, data analysis, and
+    document Q&A.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (ii) C Transformers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[C Transformers](https://github.com/marella/ctransformers) is the Python library
+    that provides bindings for transformer models implemented in C/C++ using the [GGML](https://github.com/ggerganov/ggml)
+    library. At this point, let us first understand what GGML is about.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Built by the team at [ggml.ai](https://ggml.ai/), the GGML library is a tensor
+    library designed for machine learning, where it enables large models to be run
+    on consumer hardware with high performance. This is achieved through integer quantization
+    support and built-in optimization algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, GGML versions of LLMs (quantized models in binary formats) can
+    be run performantly on CPUs. Given that we are working with Python in this project,
+    we will use the C Transformers library, which essentially offers the Python bindings
+    for the GGML models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: C Transformers supports a selected set of open-source models, including popular
+    ones like Llama, GPT4All-J, MPT, and Falcon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ddb81375f29847ad669c11c9adde31ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LLMs (and corresponding model type name) supported on C Transformers | Image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: (iii) Sentence-Transformers Embeddings Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[sentence-transformers](https://github.com/UKPLab/sentence-transformers) is
+    a Python library that provides easy methods to compute embeddings (dense vector
+    representations) for sentences, text, and images.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It enables users to compute embeddings for more than 100 languages, which can
+    then be compared to find sentences with similar meanings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the open-source [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+    model for this project because it offers optimal speed and excellent general-purpose
+    embedding quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (iv) FAISS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Facebook AI Similarity Search (FAISS)](https://github.com/facebookresearch/faiss)
+    is a library designed for efficient similarity search and clustering of dense
+    vectors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given a set of embeddings, we can use FAISS to index them and then leverage
+    its powerful semantic search algorithms to search for the most similar vectors
+    within the index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although it is not a full-fledged vector store in the traditional sense (like
+    a database management system), it handles the storage of vectors in a way optimized
+    for efficient nearest-neighbor searches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (v) Poetry
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Poetry](https://python-poetry.org/) is used for setting up the virtual environment
+    and handling Python package management in this project because of its ease of
+    use and consistency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having previously worked with [venv](https://docs.python.org/3/library/venv.html),
+    I highly recommend switching to Poetry as it makes dependency management more
+    efficient and seamless.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Check out* [*this video*](https://www.youtube.com/watch?v=0f3moPe_bhk) *to
+    get started with Poetry.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kennethleungty.medium.com/membership?source=post_page-----3d636037a3d8--------------------------------)
+    [## Join Medium with Kenneth’s referral link'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kennethleungty.medium.com](https://kennethleungty.medium.com/membership?source=post_page-----3d636037a3d8--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: (3) Open-Source LLM Selection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There has been tremendous progress in the open-source LLM space, and the many
+    LLMs can be found on [HuggingFace’s Open LLM leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I chose the latest open-source [**Llama-2–7B-Chat model**](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
+    ([GGML 8-bit](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML)) for this
+    project based on the following considerations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Type (Llama 2)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is an open-source model supported in the C Transformers library.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Currently the top performer across multiple metrics based on its Open LLM leaderboard
+    rankings (as of July 2023).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Demonstrates a huge improvement on the previous benchmark set by the original
+    Llama model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is widely mentioned and downloaded in the community.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Size (7B)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that we are performing document Q&A, the LLM will primarily be used for
+    the relatively simple task of summarizing document chunks. Therefore, the 7B model
+    size fits our needs as we technically do not require an overly large model (e.g.,
+    65B and above) for this task.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fine-tuned Version (Llama-2-7B-Chat)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Llama-2-7B base model is built for text completion, so it lacks the fine-tuning
+    required for optimal performance in document Q&A use cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Llama-2–7B-Chat model is the ideal candidate for our use case since it is
+    designed for conversation and Q&A.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The model is licensed (partially) for commercial use. It is because the fine-tuned
+    model Llama-2-Chat model leverages publicly available instruction datasets and
+    over 1 million human annotations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Quantized Format (8-bit)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that the RAM is constrained to 16GB, the 8-bit GGML version is suitable
+    as it only requires a memory size of 9.6GB.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The 8-bit format also offers a comparable response quality to 16-bit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The original unquantized 16-bit model requires a memory of ~15 GB, which is
+    too close to the 16GB RAM limit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Other smaller quantized formats (i.e., 4-bit and 5–bit) are available, but they
+    come at the expense of accuracy and response quality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: (4) Step-by-Step Guide
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we know the various components, let us go through the step-by-step
+    guide on how to build the document Q&A application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The accompanying codes for this guide can be found in* [***this GitHub repo***](https://github.com/kennethleungty/Llama-2-Open-Source-LLM-CPU-Inference)*,
+    and all the dependencies can be found in the* [*requirements.txt*](https://github.com/kennethleungty/Llama-2-Open-Source-LLM-CPU-Inference/blob/main/requirements.txt)
+    *file.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Note****: Since many tutorials are already out there, we will* ***not***
+    *be deep diving into the intricacies and details of the general document Q&A components
+    (e.g., text chunking, vector store setup). We will instead focus on the open-source
+    LLM and CPU inference aspects in this article.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1 — Process data and build vector store
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this step, three sub-tasks will be performed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data ingestion and splitting text into chunks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load embeddings model (sentence-transformers)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Index chunks and store in FAISS vector store
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After running the Python script above, the vector store will be generated and
+    saved in the local directory named `'vectorstore/db_faiss'`, and is ready for
+    semantic search and retrieval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2 — Set up prompt template
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that we use the Llama-2–7B-Chat model, we must be mindful of the prompt
+    templates utilized here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, OpenAI’s GPT models are designed to be conversation-in and message-out.
+    It means input templates are expected to be in a chat-like [transcript format](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-ml)
+    (e.g., separate system and user messages).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, those templates would not work here because our Llama 2 model is not
+    specifically optimized for that kind of conversational interface. Instead, a classic
+    prompt template like the one below would be preferred.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** The relatively smaller LLMs, like the 7B model, appear particularly
+    sensitive to formatting. For instance, I got slightly different outputs when I
+    altered the whitespaces and indentation of the prompt template.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 3 — Download the Llama-2–7B-Chat GGML binary file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we will be running the LLM locally, we need to download the binary file
+    of the quantized Llama-2–7B-Chat model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can do so by visiting [TheBloke’s Llama-2–7B-Chat GGML page hosted on Hugging
+    Face](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML) and then downloading
+    the GGML 8-bit quantized file named `llama-2–7b-chat.ggmlv3.q8_0.bin`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4b9e92e2546826aae6a0a006154a48c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files and versions page of Llama-2–7B-Chat-GGML page on HuggingFace | Image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The downloaded `.bin` file for the 8-bit quantized model can be saved in a suitable
+    project subfolder like `/models`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The [model card page](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML)
+    also displays more information and details for each quantized format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9357c083bdf782b74d96b526c7989a08.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Different quantized formats with details | Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *To download other GGML quantized models supported by C Transformers,
+    visit the main* [*TheBloke page on HuggingFace*](https://huggingface.co/TheBloke)
+    *to search for your desired model and look for the links with names that end with
+    ‘-GGML’.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 4— Setup LLM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To utilize the GGML model we downloaded, we will leverage the [integration](https://python.langchain.com/docs/ecosystem/integrations/ctransformers)
+    between C Transformers and LangChain. Specifically, we will use the CTransformers
+    LLM wrapper in LangChain, which provides a unified interface for the GGML models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can define a host of [configuration settings](https://github.com/marella/ctransformers#config)
+    for the LLM, such as maximum new tokens, top k value, temperature, and repetition
+    penalty.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note****:* I set the temperature as 0.01 instead of 0 because I got odd
+    responses (e.g., a long repeated string of the letter E) when the temperature
+    was exactly zero.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 5 — Build and initialize RetrievalQA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the prompt template and C Transformers LLM ready, we write three functions
+    to build the LangChain RetrievalQA object that enables us to perform document
+    Q&A.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 6 — Combining into the main script
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is to combine the previous components into the `main.py` script.
+    The `argparse` module is used because we will pass our user query into the application
+    from the command line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that we will return source documents, additional code is appended to process
+    the document chunks for a better visual display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To evaluate the speed of CPU inference, the `timeit` module is also utilized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 7 — Running a sample query
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is now time to put our application to the test. Upon loading the virtual
+    environment from the project directory, we can run a command in the command line
+    interface (CLI) that comprises our user query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, we can ask about the value of the minimum guarantee payable by
+    Adidas (Manchester United’s global technical sponsor) with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***Note:*** If we are not using Poetry, we can omit the prepended `poetry run`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/f240bd0d09d6d249e0eca0ad1a743aad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output from user query passed into document Q&A application | Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output shows that we successfully obtained the correct response for our
+    user query (i.e., £750 million), along with the relevant document chunks that
+    are semantically similar to the query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The total time of 31 seconds for launching the application and generating a
+    response is pretty good, given that we are running it locally on an AMD Ryzen
+    5600X (which is a good CPU but by no means the best in the market currently).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result is even more impressive given that running LLM inference on GPUs
+    (e.g., directly on HuggingFace) can also take double-digit seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your Mileage May Vary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Depending on your CPU, the time taken to obtain a response may vary. For example,
+    when I test it out on my laptop, it could go into the range of several minutes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The thing to note is that getting LLMs to fit into consumer hardware is still
+    in the early stages, so we cannot expect speeds that are on par with OpenAI APIs
+    (which are driven by loads of computing power).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, one can certainly consider running this on a more powerful CPU instance,
+    or switching to using GPU instances (such as free ones on Google Colab).
+  prefs: []
+  type: TYPE_NORMAL
+- en: (5) Next Steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have built a document Q&A backend LLM application that runs on CPU
+    inference, there are many exciting steps we can take to bring this project forward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Build a frontend chat interface with Streamlit, especially since it has made
+    two major announcements recently: [Integration of Streamlit with LangChain](https://blog.streamlit.io/langchain-streamlit/),
+    and the [launch of Streamlit ChatUI](https://docs.streamlit.io/knowledge-base/tutorials/build-conversational-apps)
+    to build powerful chatbot interfaces easily.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dockerize and deploy the application on a cloud CPU instance. While we have
+    explored local inference, the application can easily be ported to the cloud. We
+    can also leverage more powerful CPU instances on the cloud to speed up inference
+    (e.g., [compute-optimized](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/compute-optimized-instances.html)
+    AWS EC2 instances like c5.4xlarge)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Experiment with slightly larger LLMs like the [Llama 13B Chat](https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML)
+    model. Since we have worked with 7B models, assessing the performance of slightly
+    larger ones is a good idea since they should theoretically be more accurate and
+    still fit within memory.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Experiment with smaller quantized formats like the 4-bit and 5-bit (including
+    those with the new k-quant method) to objectively evaluate the differences in
+    inference speed and response quality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Leverage local GPU to speed up inference. If we want to test the use of [GPUs
+    on the C Transformers models](https://github.com/marella/ctransformers#gpu), we
+    can do so by running some of the model layers on the GPU. It is useful because
+    Llama is the only model type that has GPU support currently.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluate the use of [vLLM](https://vllm.readthedocs.io/en/latest/), a high-throughput
+    and memory-efficient inference and serving engine for LLMs. However, utilizing
+    vLLM requires the use of GPUs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I will work on articles and projects addressing the above ideas in the upcoming
+    weeks, so stay tuned for more insightful generative AI content!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before you go
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I welcome you to **join me on a journey of data science discovery!** Follow
+    this [Medium](https://kennethleungty.medium.com/) page and visit my [GitHub](https://github.com/kennethleungty)
+    to stay updated with more engaging and practical content. Meanwhile, have fun
+    running open-source LLMs on CPU inference!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/arxiv-keyword-extraction-and-analysis-pipeline-with-keybert-and-taipy-2972e81d9fa4?source=post_page-----3d636037a3d8--------------------------------)
+    [## arXiv Keyword Extraction and Analysis Pipeline with KeyBERT and Taipy'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build a keyword analysis application in Python comprising a frontend user interface
+    and backend pipeline
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/arxiv-keyword-extraction-and-analysis-pipeline-with-keybert-and-taipy-2972e81d9fa4?source=post_page-----3d636037a3d8--------------------------------)
+    [](/how-to-dockerize-machine-learning-applications-built-with-h2o-mlflow-fastapi-and-streamlit-a56221035eb5?source=post_page-----3d636037a3d8--------------------------------)
+    [## How to Dockerize Machine Learning Applications Built with H2O, MLflow, FastAPI,
+    and Streamlit
+  prefs: []
+  type: TYPE_NORMAL
+- en: An easy-to-follow guide to containerizing multi-service ML applications with
+    Docker
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-dockerize-machine-learning-applications-built-with-h2o-mlflow-fastapi-and-streamlit-a56221035eb5?source=post_page-----3d636037a3d8--------------------------------)
+    [](/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f?source=post_page-----3d636037a3d8--------------------------------)
+    [## Micro, Macro & Weighted Averages of F1 Score, Clearly Explained
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the concepts behind the micro average, macro average and weighted
+    average of F1 score in multi-class classification.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f?source=post_page-----3d636037a3d8--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,316 @@
+- en: Deploying Multiple Models with SageMaker Pipelines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-multiple-models-with-sagemaker-pipelines-fb7363094c50](https://towardsdatascience.com/deploying-multiple-models-with-sagemaker-pipelines-fb7363094c50)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Applying MLOps best practices to advanced serving options
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----fb7363094c50--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----fb7363094c50--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb7363094c50--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fb7363094c50--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----fb7363094c50--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb7363094c50--------------------------------)
+    ·8 min read·Mar 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c86ec39899ba0ad0ba89fd4df2d483db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/f7uCQxhucw4) by [Growtika](https://unsplash.com/@growtika)
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLOps is an essential practice to productionizing your Machine Learning workflows.
+    With MLOps you can establish workflows that are catered for the ML lifecycle.
+    These make it easier to centrally maintain resources, update/track models, and
+    in general simplify the process as your ML experimentation scales up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A key MLOps tool within the [Amazon SageMaker](https://aws.amazon.com/sagemaker/)
+    ecosystem is [SageMaker Pipelines](https://aws.amazon.com/sagemaker/pipelines/).
+    With SageMaker Pipelines you can define workflows that are composed of different
+    defined ML **steps**. You can also structure these workflows by defining **parameters**
+    that you can inject as variables into your Pipeline. For a more general introduction
+    to SageMaker Pipelines, please refer to the [linked article](/an-introduction-to-sagemaker-pipelines-4018a819352d).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining a Pipeline in itself is not heavily complicated, but there’s a few
+    advanced use-cases that need some extra configuring. Specifically, say that you
+    are training multiple models that are needed for inference in your ML use-case.
+    Within SageMaker there is a hosting option known as [Multi-Model Endpoints](https://docs.aws.amazon.com/sagemaker/latest/dg/multi-model-endpoints.html)
+    (MME) where you can host several models on a singular endpoint and invoke a target
+    model. However, within SageMaker Pipelines there’s no native support for defining
+    or deploying a MME natively at the moment. In this blog post we’ll take a look
+    at how we can utilize a [Pipelines Lambda Step](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-lambda)
+    to deploy a Multi-Model Endpoint in a custom manner, while adhering to MLOPs best
+    practices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: For those of you new to AWS, make sure you make an account at the
+    following [link](https://aws.amazon.com/console/) if you want to follow along.
+    The article also assumes an intermediate understanding of SageMaker Deployment,
+    I would suggest following this [article](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
+    for understanding Deployment/Inference more in depth. In particular, for SageMaker
+    Multi-Model Endpoints I would refer to the following [blog](https://aws.amazon.com/blogs/machine-learning/part-3-model-hosting-patterns-in-amazon-sagemaker-run-and-optimize-multi-model-inference-with-amazon-sagemaker-multi-model-endpoints/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this example, we will be working in [SageMaker Studio](https://aws.amazon.com/sagemaker/studio/),
+    where we have access to the visual interfaces for SageMaker Pipelines and other
+    SageMaker components. For development we will be utilizing a Studio Notebook Instance
+    with a Data Science Kernel on an ml.t3.medium instance. To get started we need
+    to first import the necessary libraries for the different steps we will be utilizing
+    within SageMaker Pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we create a [Pipeline Session](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#pipeline-context),
+    this Pipeline Session ensures none of the training jobs are actually executed
+    within the notebook until the Pipeline itself is executed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: For this example we’ll utilize the [Abalone dataset](https://archive.ics.uci.edu/ml/datasets/abalone)
+    (CC BY 4.0) and run a [SageMaker XGBoost algorithm](https://aws.plainenglish.io/end-to-end-example-of-sagemaker-xgboost-eb9eae8a5207)
+    on it for a regression model. You can download the dataset from the publicly available
+    Amazon datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then [parameterize](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-parameters.html)
+    our Pipeline by defining defaults for both the training dataset and instance type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then also retrieve the [AWS provided container](https://aws.plainenglish.io/how-to-retrieve-amazon-sagemaker-deep-learning-images-ff4a5866299e)
+    for XGBoost that we will be utilizing for training and inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the training portion of our Pipeline we will be configuring the SageMaker
+    XGBoost algorithm for our regression Abalone dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: For our second estimator we then change our hyperparameters to adjust our model
+    training so we have two separate models behind our Multi-Model Endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then configure our training inputs for both estimators to point towards the
+    parameter we defined for our S3 training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then define two separate Training Steps that will be executed in parallel
+    via our Pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lambda Step
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A [Lambda Step](https://aws.amazon.com/blogs/machine-learning/use-a-sagemaker-pipeline-lambda-step-for-lightweight-model-deployments/)
+    essentially allows you to plug in a Lambda function within your Pipeline. For
+    every SageMaker Training Job a model.tar.gz is emitted containing the trained
+    model artifacts. Here we will utilize the Lambda step to retrieve the trained
+    model artifacts and deploy them to a SageMaker Multi-Model Endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we can do that we need to give our Lambda function proper permissions
+    to work with SageMaker. We can use the following existing [script](https://github.com/aws/amazon-sagemaker-examples/blob/main/sagemaker-pipelines/tabular/lambda-step/iam_helper.py)
+    to create an IAM Role for our Lambda Function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After we’ve defined our Lambda role we can create a Lambda function that does
+    a few things for us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Takes each individual model.tar.gz from each training job and places it into
+    a central S3 location containing both tarballs. For **MME they expect all model
+    tarballs to be in one singular S3 path**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Utilizes the boto3 client with SageMaker to create a SageMaker Model, Endpoint
+    Configuration, and Endpoint.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can utilize the following helper functions to achieve the first task, by
+    copying the training job artifacts into a central S3 location with both model
+    tarballs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The next steps for our Lambda function will be creating the necessary SageMaker
+    entities for creating a real-time endpoint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[SageMaker Model](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_model.html):
+    Contains the model data and container image, also defines Multi-Model vs Single
+    Model endpoint.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SageMaker Endpoint Configuration](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_endpoint_config.html):
+    Defines the hardware behind an endpoint, the instance type and count.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SageMaker Endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_endpoint.html):
+    Your REST endpoint that you can invoke for inference, for MME you also specify
+    the model that you want to perform inference against.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We return a successful message with our Lambda function once we are able to
+    start creating an endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then define this Lambda function in the necessary Lambda Step format for
+    our Pipeline to pick up on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also define what we are returning from the Lambda in the form of output parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then define our inputs with the two different trained model artifacts from
+    the training steps that we defined earlier in our notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pipeline Execution & Sample Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have our different steps configured we can stitch all of this together
+    into a singular Pipeline. We point towards our three different steps and the different
+    parameters we defined. Note that you can also define further parameters than we
+    did here depending on your use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now execute the Pipeline with the following commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Post execution we notice that in the Studio UI for the Pipelines tab a Directed
+    Acylic Graph (DAG) has been created for your Pipeline to display your workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5fe04b0971554aafc89456a4f2bf49f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MME DAG (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After a few minutes you should also see an endpoint has been created in the
+    SageMaker Console.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b77bb0a33a35294968e306c3735a5112.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Endpoint Created (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can then test this endpoint with a sample inference to ensure it’s working
+    properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/sagemaker-pipelines-examples?source=post_page-----fb7363094c50--------------------------------)
+    [## GitHub - RamVegiraju/sagemaker-pipelines-examples: SageMaker Pipelines Examples
+    Repo'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/sagemaker-pipelines-examples?source=post_page-----fb7363094c50--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for the entire example can be found at the link above (stay tuned for
+    more Pipelines examples). This example combines an advanced hosting option with
+    MLOPs best practices. It’s crucial to utilize MLOPs tools as you scale up your
+    ML experimentation as it helps simplify and parameterize your efforts so that
+    it’s easier for teams to collaborate and track. I hope this article was a good
+    overview of using Pipelines for a specific Hosting use-case in MME. As always
+    all feedback is appreciated, thank you for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

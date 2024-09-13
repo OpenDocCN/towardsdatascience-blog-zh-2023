@@ -1,0 +1,697 @@
+- en: A Complete Tutorial on Off-Policy Evaluation for Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe](https://towardsdatascience.com/a-complete-tutorial-on-off-policy-evaluation-for-recommender-systems-e92085018afe)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to reduce the offline-online evaluation gap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)[![Adrien
+    Biarnes](../Images/105f2bb62cb2bf825d74ea85b14eabfc.png)](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------)
+    [Adrien Biarnes](https://biarnes-adrien.medium.com/?source=post_page-----e92085018afe--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e92085018afe--------------------------------)
+    ·18 min read·Mar 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/601eef605ca244782eb4bd4437802193.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A recommender system jumping through the offline-online evaluation gap (AI-generated
+    image)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this tutorial, I will give some rationales about why one should care about
+    off-policy evaluation. Then I’ll introduce the right amount of theory on the matter.
+    I will not dive too deep into the latest methods and stop on what works well empirically.
+    It will be sufficient for the following part describing the practical aspects
+    of its implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating a recommender system
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s say you have an idea to increase the performance of your recommendation
+    system. Let’s simply say you got access to new metadata about your items, like
+    the main topic of the items, which should really help in predicting user engagement
+    on the platform more accurately. So how do you leverage that new feature? After
+    a rounded exploration phase of the new data, you perform the necessary modifications
+    in your data pipeline to transform the feature and feed it to the model along
+    with the other ones. You can now trigger the learning phase to produce the new
+    version of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great! Now, how do you evaluate the performance of the new model? How can you
+    conclude whether the new feature helps the recommendation and will drive more
+    engagement on your platform?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, you could directly put the new version in production alongside the old
+    one, redirect a portion of the traffic to the new model, and compare both performances
+    using the metrics you defined as the most important for your business (Click-Through-Rate,
+    Watch time, Dwelve time, Subscriptions, etc…). That is indeed called an AB test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1cc27bebc72de642b75dd187447df9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what if the new version is terrible and incurs a huge drop in revenue or
+    badly deteriorates the quality of your service? That could be very bad!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In general, as a machine learning practitioner, you’ll first want to validate
+    that the new version is better than the old one in an offline manner, meaning
+    without having to show anything to real users (I sense that this is pretty trivial
+    for most of you — but bear with me, I am coming to it).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Avoiding a drop in revenue is very important but it is not the only concern.
+    Performing an online AB test takes time, especially if you don’t have a lot of
+    traffic. In such cases, it might take up to several weeks for you to be able to
+    conclude with sufficient statistical confidence. Also, in such cases, you might
+    need to rewrite your model into a different stack in order for it to scale and
+    match the latency requirements. This could incur additional weeks of work (even
+    months). Hence, having a robust offline evaluation strategy allows one to iterate
+    faster on different ideas or hyper-parameters to tune. One can assess thousands
+    of ideas offline and only select the best promising candidates for online AB testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eefa71428ccffddbc3257b1b9659fef8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Building multiple candidate policies offline using logging data D_0
+  prefs: []
+  type: TYPE_NORMAL
+- en: But offline, we can’t directly measure the click-through rates or watch times
+    because we don’t know in advance whether future users will click or for how long
+    they will consume the recommended items. We operate in a counterfactual scenario.
+    That is, we don’t observe the rewards of the actions we did not take but only
+    the rewards of taken actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In an online setting, this major evaluation drawback is not an issue anymore.
+    We collect feedback based on what the user really does on the platform. On the
+    contrary, an offline evaluation will always be strongly biased towards measuring
+    past behaviors and is limited in terms of evaluating what will really happen online.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So are we to accept this fact as granted or can we do something about it?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What is off-policy evaluation and why should you care?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s first introduce some important pieces of vocabulary that one will encounter
+    when reading about off-policy evaluation. When a user enters your platform, the
+    following happens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d81f203062ab5014f4e20acbb4f6b78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Off-policy evaluation is about evaluating a new policy with data collected
+    from a different policy. We want to come up with an estimator **V_hat** that will
+    estimate the performance of the new recommender **π_e** given the log data **D_0**
+    collected and used to train the old policy **π_0**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4c28e58a28f67d9f37fc8bb0a86bb29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The direct method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As I said before when evaluating our recommender systems, we operate in a counterfactual
+    setting. We do not know what would have been the outcomes of the actions we did
+    not take. So basically we have a missing labels problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9faa94f62f265c1b07873ba47df656c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Missing labels problem for the newly recommended items
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the picture above, for the first recommendation, we managed to recommend
+    the clicked item seen in the logged data so we can say that we have a positive
+    prediction and the other ones are negatives. But for the rest of the evaluation
+    dataset, we recommended completely different items so we have no clue what would
+    have been the outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given that we have logged interaction data **D_0,** a straightforward idea,
+    that most ML practitioners can think of, is to use this data and produce a machine-learning
+    model that will directly estimate the missing rewards (eg. replacing the question
+    marks above with our best guesses). Then we can perform the evaluation as usual.
+    More formally, we are interested in producing a reward model **r_hat** that will
+    give us the expected value of the reward given a context and a specific action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f68a59c13b7453f26c58793a33579fa3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Many ML models can be used for this task. This is nice but in practice, it doesn’t
+    work very well! Let’s see why…
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It appears that the logged data and the data we want to predict do not come
+    from the same distribution. There is a big covariate shift. We have logged data
+    for some specific actions and we try to predict the reward for other ones (possibly
+    completely different). Let’s say we are exploiting 2 features to try to minimize
+    the regret of the reward model. We can then plot the reward space like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a716c9a3162282989cb876ca2c89fe2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author — Picturing the reward space
+  prefs: []
+  type: TYPE_NORMAL
+- en: The green dots are positive observations (observations the user was interested
+    in) and the red dots are negatives. What happens is that the reward space is mostly
+    empty. There are vast regions for which we do not have any observations. But our
+    new policy will probably have to decide in these unknown spaces. This means that
+    it really matters how the reward model will extrapolate. It really matters where
+    the decision boundaries will be located in the above plot. And this will not be
+    reflected in the regret function the reward model will try to minimize. Hence,
+    there is a very high chance that the extrapolation will be wrong. In the end,
+    this method displays a low variance but can be very biased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So using a model to predict the rewards does not seem like a working method.
+    What else can we do? This is where the model-free approaches come in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inverse Propensity Score (IPS)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The goal of this estimator is **to reweight the rewards in order to give more
+    or less importance to actions according to the propensity of the old and new policies
+    to take them.** We’ll want to lower the importance of an action that was much
+    more taken by the old policy than by the new one (and vice-versa).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize this concept. Below is the probability space of the old policy
+    **π_0** taking actions given the context**:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/141795fd44e8a1476fd804c2ea0f0b34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The red and green dots are still the observed rewards. The dark area is where
+    the concentration of the conditional action probability mass is located.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now the new policy **π_e** will take actions in a different part of the space,
+    like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19f0ec163ca996a16b4e64c9514ae3b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The goal of the IPS estimator will be to reweight the rewards in regard to
+    these action probabilities by applying the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e7ff73f992a42c82790303e140f0a09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The ratio between the two action probabilities is called the importance weight.
+    This gives the following result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc9527b38bd2944e8b8506606ee78b8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be proved that this method is unbiased meaning that the more data we
+    collect the more the IPS estimator will converge to the true value of the online
+    reward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you still have a hard time wrapping your head around this concept, let’s
+    simplify it even more. Let’s say that way only have 2 recommendable items. We
+    have collected the below amount of user interactions on these items (as seen in
+    the evaluation dataset):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38ed19196a67a515c2f9abdf61cee8ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Surely, if your new policy **π_e** always predicts item 1, the overall precision
+    of your recommender will be higher than a policy that always predicts item 2\.
+    Or should it? Now let’s add to this data, the associated amounts of displays:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61dc46b0f4b90ae6794be879f3db4e86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now seeing things like you surely understand the added value of the off-policy
+    evaluation. Taking into account the displays, we see that the old policy **π_0,**
+    which produced the above logs, highly favored item 1\. And this was probably not
+    the best possible recommendation. Favoring item 2 seems like a better option,
+    but in order to realize that we’ll need to take the displays into account during
+    the evaluation (eg. the propensity of policies to recommend items).
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this method can exhibit a strong variance in the sense that some reward
+    estimations might be completely off. And this is because we are computing the
+    ratio of two action probabilities which might sometimes take tiny values. For
+    example, if the action probability of the old policy for a given observation is
+    super small then the importance weight might become huge giving way too much importance
+    to this specific observation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clipped Inverse Propensity Score (CIPS)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This estimator is a variation of the vanilla IPS that tries to address the
+    challenge we just mentioned. It does so by clipping the importance weight so that
+    it can not get higher than a maximal value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af6dcbdf90e8172f55174fc3ac7c2ee6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The problem is that this modification breaks the unbiasedness of the IPS estimator
+    but most importantly it introduces a hyper-parameter that can be very impractical
+    to tune.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-Normalized Inverse Propensity Score (SNIPS)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/6786ff3c6048a5d559608cbd95dea425.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This time we reweight the vanilla IPS by the inverse of the empirical mean of
+    the importance weights. It simply rescales the results of the vanilla IPS. As
+    I said, the problem with IPS is that sometimes we might get huge importance weights
+    because of a tiny old policy action probability. The SNIPS estimator takes care
+    of this problem by “canceling” this huge importance weight because it will be
+    included in the denominator as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the end, the estimator works very well empirically and has no hyper-parameter
+    to tune which makes it very appealing for most ML practitioners.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to implement a reweighting off-policy evaluation method?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When going through the literature on the subject we can see that the vast majority
+    of the efforts deployed by machine learning researchers focus on finding the best
+    method to get an unbiased and low variance off-policy estimator of the online
+    reward. But almost no one talks about the practicalities of implementing such
+    strategies. What is worse, most researchers play along with simulated data to
+    demonstrate the robustness of their approach. This is great from a theoretical
+    standpoint but when it comes to implementing the method in real life, one shall
+    struggle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have seen that the Self-Normalized Inverse Propensity Score (SNIPS) estimator
+    works well empirically, has no hyperparameter to tune, has a low variance, and
+    is consistent (although biased).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So are we ready to implement this estimator? Well, no just quite yet.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The large part of whether the off-policy evaluation will work or not is mostly
+    due to our ability to compute the action probabilities **π(a_i|x_i)** as accurately
+    as possible. This is, in fact, **the most important part**!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to do so, we are first going to take the necessary time to properly
+    define the said probabilities. Let’s first think about the definition of the probability
+    **π** to “select” an action **a_i** given a context **x_i**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One has to remember that **our goal is to reweight the rewards in order to give
+    less importance to actions collected by the old logging policy π_0 when the new
+    policy π_e is very much less likely to take them** (and vice versa).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what is an action **a_i**? Here, it is important to make the distinction
+    between the probability of the policy to output an item to recommend and the probability
+    of the item being displayed to the user. These probabilities are vastly different.
+    Indeed, an algorithm can output 1000 items but only a handful will be displayed
+    to the user because of UI constraints (we can’t display 1000 items on a mobile
+    device). And as I just said before, we are interested in the probabilities that
+    the taken actions will end up in the logging data. So what we are interested in
+    are the display probabilities and not the recommender output probabilities. And
+    this fact is very important because it changes the source of the data one has
+    to consider if one wants to estimate the action probabilities (eg. infer the display
+    and not the output).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, what is the context **x_i**? Well, in reality, it can be anything. You,
+    as the modeler, are the one in charge of defining it. In theory, the more relevant
+    and precise the context, that is, the more relevant information we have, the better
+    we should able to estimate the display probabilities accurately. But in practice,
+    it also makes the task more difficult. The bigger the feature space, the more
+    data you need to produce robust estimates. And having robust estimates is critically
+    important. If your display probabilities are completely wrong you’ll end up giving
+    way too much or way too less importance to specific rewards which completely defeats
+    the purpose of the off-policy evaluation. As I will explain briefly, a good practice
+    is to simplify the context and only use the most important features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Display probability estimation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, a method that fails
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When I was first introduced to off-policy evaluation, I was to understand the
+    implementation performed by one of my predecessors. It was a fancy method where
+    the display probabilities were directly estimated by a deep-learning model. Just
+    to clarify, we were not using the direct method here. The model was not used to
+    directly estimate the unknown rewards. It was used to estimate the display probabilities
+    **π(a|x)** of the old and new policies. Equipped with the said probabilities we
+    could then compute the importance weights and apply one of the estimators like
+    IPS, CIPS, or SNIPS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Without getting into too many details, we can simply explain it with a picture.
+    What was done here was to go from a model that looked (from a very broad angle)
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07baf95e511223dab9523445ab69909c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author — Broad overview of the deep recommender architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e64a176a7ff8380d4ca72fb40e0b2fcd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author — Modified architecture to predict the display probabilities
+  prefs: []
+  type: TYPE_NORMAL
+- en: In theory, this was very neat because we would get probabilities given a very
+    precise set of inputs. We could estimate the display probabilities on a very granular
+    level. This was an implementation of an idea found in [this paper from the Google
+    YouTube team](https://arxiv.org/pdf/1812.02353.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But in practice it failed for the following reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now had 2 targets instead of one (the next video selected by the user **and**
+    the sequence of videos displayed as recommendations). This introduced additional
+    questions that were not properly managed like: What if we only have the next video
+    in the sequence but no associated displays (only 1 of the targets)? Indeed, in
+    the training data, we were using sequences of videos coming from other sources
+    (external) than the platform where we were not displaying any recommendations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Having 2 targets means having two different loss functions. How do you combine
+    them? If one of the losses leaves in a completely different range of values (which
+    is what was happening) then it might simply be insignificant when you combine
+    them (which would make one of the branches not learn anything).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The overall codebase gets much more complex.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In theory, introducing auxiliary tasks can be beneficial for the main task but
+    it requires them to be well aligned. In this case, the added complexity made the
+    new display probability task deteriorate the performance of the main task.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The outputted probabilities were not real probabilities. Indeed the model was
+    either way too confident or not confident at all. This is a pretty common scenario
+    with deep learning models that are known to be overconfident given their tendency
+    to overfit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This is what a kernel density plot of the display probabilities would look
+    like (simulated with fake data):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d0cc6be9f6be4165ea09891d6f75e05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author — Estimated display probability distribution
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here it is important to note that it is not just because you use a sigmoïd or
+    a softmax as the last activation of your neural network that you will get back
+    proper probabilities. The output of the network will effectively live in the space
+    [0,1] but the probabilities will, most likely, not be well calibrated. When a
+    well-calibrated model outputs 0.6 for a given observation, we shall find the associated
+    target 60 percent of the time in the long run. Here is [a Wikipedia article](https://en.wikipedia.org/wiki/Calibration_(statistics))
+    on the matter. Using well-calibrated probabilities is extra important in the context
+    of off-policy importance weights computation because we are using the ratio of
+    two display probabilities. When a model outputs 0.4 probability it should mean
+    that the target is to be found twice as much as when a model outputs 0.2 probability.
+    The ratio of 0.2 and 0.4 should hold the same importance as the ratio between
+    0.4 and 0.8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simpler and more accurate method?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Given my first experience and considering that it was not a success, my question
+    then was: do we really need to use a machine-learning model to estimate the display
+    probabilities? Why not just simply use the available data and estimate it directly?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to perform off-policy evaluation you need to log the displayed items.
+    So you should have that information in your database (whatever it is). If your
+    logging system is sufficiently well thought out, you also have the context in
+    the logs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When performing the direct estimation of the display probabilities using the
+    logged data we need to simplify things. The simpler the context, the more you’ll
+    be able to produce robust estimates. For example, if you are creating a recommender
+    that is trying to recommend a set of items to consume after a specific item, then
+    the most important feature is the input item. Your goal will then be to estimate
+    the probability that an item (let’s call it **i1**) is being displayed (action
+    **a_i**) when a specific item (let’s call it **i2**) is being consumed (context
+    **x_i**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to estimate this probability you then have 2 choices. Either you go
+    for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the frequentist estimate which is the number of times **i1** was displayed when
+    **i2** was consumed divided by the total number of times **i2** was consumed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the bayesian estimate: frequentist estimates can be unreliable when the number
+    of trials (displays in this case) is too low. Stating that the display probability
+    is 1.0 when we have 2 displays out of 2 trials does not seem like a robust estimate.
+    We’ll explain how this works in a dedicated section at the end.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Because we are computing these estimates using the logged data that was produced
+    by the old policy **π_0** we are effectively computing the display probabilities
+    of the old policy. In other words, we are answering the question: how likely it
+    is that the old policy chooses to display this specific item in this specific
+    context?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, how do we estimate the display probability of the new policy **π_e** given
+    that the said policy has never been put in production and we never collected display
+    logs with it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well, we do have the training data that was used to produce the policy **π_e**
+    so we have the context (the input item per observation in this case) and we can
+    record the predictions of **π_e** on the training data. So we have the input and
+    the output of the policy. The only thing that we are missing is whether the output
+    of the policy will be displayed to the user and up to what rank. So here is the
+    trick. We know that items on the top of the output of the recommender will have
+    more chances to be displayed to the user. We can even determine the overall probability
+    that an item will be displayed at specific ranks. It could for example look something
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1c05be0c87adc704f667eec681650b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So the trick is to state that an item (outputted by the policy) being displayed
+    to the user is a Bernoulli trial of probability p. Then we can sample the displayed
+    outcome according to p.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the end, will have everything we need to compute the display probabilities
+    of the new policy **π_e** exactly in the same way we did for **π_0** (in a frequentist
+    or bayesian fashion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equipped with the display probabilities we can then compute the importance weights
+    and perform an off-policy evaluation with the SNIPS estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I employed this method and it worked very effectively. Indeed, without off-policy
+    evaluation, the evaluation pipeline was giving a 10% decrease in the main metrics
+    but with off-policy evaluation, it transformed into a 2% increase. It was then
+    decided to perform an AB test which was indeed positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Side note on bayesian estimation of display probabilities
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As explained above, the display probabilities can be estimated with a Bayesian
+    approach to get more robust results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the frequentist paradigm, the parameter we want to estimate has a truly unique
+    value that we will get closer to by running more and more trials. It is a fixed
+    quantity, and there is no probability associated with it. On the contrary, in
+    the bayesian perspective, the parameter of interest has no true unique value but
+    is rather described with a probability distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is the problem with the frequentist approach in our case?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our parameter of interest is the display probability conditioned on the input
+    item. So we are computing the ratio of 2 count variables. The issue comes from
+    the fact that in some cases, the dividend of the ratio is too low. When the number
+    of displays is really low, the uncertainty in our estimate is very high. The variance
+    of the error of the estimator is really high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How can we remedy this?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Count variables follow a binomial distribution. The number of displays follows
+    a binomial of parameter p (the probability of a display). There is a p probability
+    to obtain a display and a 1-p probability to obtain a no-display event. The ratio
+    between the two counts follows a beta distribution with parameter alpha = (number
+    of successes + 1) and beta = (number of failures + 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What are we going to compute?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the bayesian paradigm, we define a prior belief P(Θ) about the parameter
+    distribution. We also define a likelihood function P(X|Θ) that tells us how likely
+    it is to observe the data given our belief of the parameter distribution. Everything
+    then stands on the shoulder of the Bayes formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61e682b46f572aaf1f392bf704767f86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Bayes theorem
+  prefs: []
+  type: TYPE_NORMAL
+- en: The posterior distribution P(Θ|X) is equal to the likelihood function P(X|Θ)
+    multiplied by the prior P(Θ) and divided by the evidence P(X), the probability
+    of observing the data. Now computing the probability of observing the data is
+    generally intractable. If we really need to obtain the exact probability estimates
+    along with credible intervals, etc…, we need to rely on advanced methods of Bayesian
+    inference like Markov Chain Monte Carlo - MCMC (and we get into a totally different
+    ball game).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the good thing in our case, is that the prior follows a well-known distribution
+    and so does the likelihood. The likelihood models the probability of observing
+    a success (a click) for a given trial (a display) so it also follows a binomial
+    law. The parameter of interest is the ratio of two count variables that both follow
+    a binomial so the prior follows a beta distribution. And the good thing about
+    the binomial and the beta distributions is that they are conjugate priors. This
+    means that we have a proven theoretical result that directly gives us the form
+    of the posterior without computing the evidence. In this case, the posterior also
+    follows a beta distribution with parameters alpha_posterior = (alpha_prior + nb_success)
+    and beta_posterior = (beta_prior + nb_failures).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know that the posterior follows a beta distribution, applying the
+    formula of the expected value of the beta distribution we can directly compute
+    the display probability which is simply the ratio between alpha_posterior and
+    beta_posterior. See [Wikipedia](https://en.wikipedia.org/wiki/Beta_distribution)
+    for more information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, an additional benefit of opting for a Bayesian approach in computing the
+    display probability is that we know the exact distribution of the posterior. Instead
+    of only using the expected value to perform the ranking, we could also have performed
+    a stochastic ranking procedure by sampling into the posterior to obtain the ranking
+    scores. This would favor exploration at the expense of exploitation but it would
+    probably result in more diversified recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In conclusion, off-policy evaluation is a very effective method to reduce the
+    offline-online gap and avoid the disappointment of getting inclusive results with
+    online tests when your offline results were positive (or the contrary).
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you start off with your recommendation endeavors it might not be the absolute
+    most important priority to set up an off-policy evaluation strategy but once you
+    start to have a model in production and you start iterating towards better models
+    it might be a good time to seriously think about it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, one important lesson that one could draw from my experience is that one
+    should always start with simple methods and iterate from there.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,262 @@
+- en: Building a Conformal Chatbot in Julia
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-conformal-chatbot-in-julia-1ed23363a280](https://towardsdatascience.com/building-a-conformal-chatbot-in-julia-1ed23363a280)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Conformal Prediction, LLMs and HuggingFace — Part 1
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@patrick.altmeyer?source=post_page-----1ed23363a280--------------------------------)[![Patrick
+    Altmeyer](../Images/b4c0bd875390f6dc8b81480f0712fea5.png)](https://medium.com/@patrick.altmeyer?source=post_page-----1ed23363a280--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ed23363a280--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ed23363a280--------------------------------)
+    [Patrick Altmeyer](https://medium.com/@patrick.altmeyer?source=post_page-----1ed23363a280--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ed23363a280--------------------------------)
+    ·7 min read·Jul 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLM) are all the buzz right now. They are used for a
+    variety of tasks, including text classification, question answering, and text
+    generation. In this tutorial, we will show how to conformalize a transformer language
+    model for text classification using `[ConformalPrediction.jl](https://juliatrustworthyai.github.io/ConformalPrediction.jl/dev/)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👀 At a Glance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In particular, we are interested in the task of intent classification as illustrated
+    in the sketch below. Firstly, we feed a customer query into an LLM to generate
+    embeddings. Next, we train a classifier to match these embeddings to possible
+    intents. Of course, for this supervised learning problem we need training data
+    consisting of inputs — queries — and outputs — labels indicating the true intent.
+    Finally, we apply Conformal Predition to quantify the predictive uncertainty of
+    our classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conformal Prediction (CP) is a rapidly emerging methodology for Predictive Uncertainty
+    Quantification. If you’re unfamiliar with CP, you may want to first check out
+    my 3-part introductory series on the topic starting with this [post](https://medium.com/towards-data-science/conformal-prediction-in-julia-351b81309e30).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/2bdcbc51d0e1128fa62d46fefe8a4188.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: High-level overview of a conformalized intent classifier. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🤗 HuggingFace
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will use the [Banking77](https://arxiv.org/abs/2003.04807) dataset (Casanueva
+    et al., 2020), which consists of 13,083 queries from 77 intents related to banking.
+    On the model side, we will use the [DistilRoBERTa](https://huggingface.co/mrm8488/distilroberta-finetuned-banking77)
+    model, which is a distilled version of [RoBERTa](https://arxiv.org/abs/1907.11692)
+    (Liu et al., 2019) fine-tuned on the Banking77 dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model can be loaded from HF straight into our running Julia session using
+    the `[Transformers.jl](https://github.com/chengchingwen/Transformers.jl/tree/master)`
+    package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This package makes working with HF models remarkably easy in Julia. Kudos to
+    the devs! *🙏*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Below we load the tokenizer `tkr` and the model `mod`. The tokenizer is used
+    to convert the text into a sequence of integers, which is then fed into the model.
+    The model outputs a hidden state, which is then fed into a classifier to get the
+    logits for each class. Finally, the logits are then passed through a softmax function
+    to get the corresponding predicted probabilities. Below we run a few queries through
+    the model to see how it performs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 🔁 `MLJ` Interface
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since our package is interfaced to `[MLJ.jl](https://alan-turing-institute.github.io/MLJ.jl/dev/)`,
+    we need to define a wrapper model that conforms to the `MLJ` interface. In order
+    to add the model for general use, we would probably go through `[MLJFlux.jl](https://github.com/FluxML/MLJFlux.jl)`,
+    but for this tutorial, we will make our life easy and simply overload the `MLJBase.fit`
+    and `MLJBase.predict` methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the model from HF is already pre-trained and we are not interested in
+    further fine-tuning, we will simply return the model object in the `MLJBase.fit`
+    method. The `MLJBase.predict` method will then take the model object and the query
+    and return the predicted probabilities. We also need to define the `MLJBase.target_scitype`
+    and `MLJBase.predict_mode` methods. The former tells `MLJ` what the output type
+    of the model is, and the latter can be used to retrieve the label with the highest
+    predicted probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To test that everything is working as expected, we fit the model and generated
+    predictions for a subset of the test data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that even though the LLM we’re using here isn’t really that large at all,
+    even a simple forward pass does take considerable time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🤖 Conformal Chatbot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To turn the wrapped, pre-trained model into a conformal intent classifier, we
+    can now rely on standard API calls. We first wrap our atomic model where we also
+    specify the desired coverage rate and method. Since even simple forward passes
+    are computationally expensive for our (small) LLM, we rely on Simple Inductive
+    Conformal Classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we use our conformal LLM to build a simple yet powerful chatbot that
+    runs directly in the Julia REPL. Without dwelling on the details too much, the
+    `conformal_chatbot` works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompt user to explain their intent.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feed user input through conformal LLM and present the output to the user.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the conformal prediction set includes more than one label, prompt the user
+    to either refine their input or choose one of the options included in the set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The following code implements these ideas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Below we show the output for two example queries. The first one is very ambiguous
+    (and misspelled as I just realised): “transfer mondey?”. As expected, the size
+    of the prediction set is therefore large.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is a more refined version of the prompt: “I tried to transfer
+    money to my friend, but it failed”. It yields a smaller prediction set, since
+    less ambiguous prompts result in lower predictive uncertainty.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The video below shows the REPL-based chatbot in action. You can recreate this
+    yourself and run the bot right from you terminal. To do so, just check out the
+    original [post](https://www.paltmeyer.com/blog/posts/conformal-llm/) on my blog
+    to find the full source code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/397e9866869f4464276f0c5e5bb44e9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Demo of the REPL-based Conformal Chatbot. Created by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🌯 Wrapping Up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This work was done in collaboration with colleagues at ING as part of the ING
+    Analytics 2023 Experiment Week. Our team demonstrated that Conformal Prediction
+    provides a powerful and principled alternative to top-*K* intent classification.
+    We won the first prize by popular vote.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, there are a lot of things that can be improved here. As far as Large
+    LMs are concerned, we have used a small one. In terms of Conformal Prediction,
+    we have only looked at simple inductive conformal classification. This is a good
+    starting point, but there are more advanced methods available, which are implemented
+    in the package and were investigated during the competition. Another thing we
+    did not take into consideration here is that we have many outcome classes and
+    may in practice be interested in achieving class-conditional coverage. Stay tuned
+    for more on this in future posts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in finding out more about Conformal Prediction in Julia,
+    go ahead and check out the [repo](https://github.com/JuliaTrustworthyAI/ConformalPrediction.jl)
+    and [docs](https://juliatrustworthyai.github.io/ConformalPrediction.jl/dev/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🎉 JuliaCon 2023 is around the corner and this year I will be giving a [talk](https://pretalx.com/juliacon2023/talk/JQWNNP/)
+    about *ConformalPrediction.jl.* Check out the details of my talk [here](https://pretalx.com/juliacon2023/talk/JQWNNP/)
+    and have a look at the full jam-packed conference [schedule](https://pretalx.com/juliacon2023/schedule/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 🎓 References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Casanueva, Iñigo, Tadas Temčinas, Daniela Gerz, Matthew Henderson, and Ivan
+    Vulić. 2020\. “Efficient Intent Detection with Dual Sentence Encoders.” In *Proceedings
+    of the 2nd Workshop on Natural Language Processing for Conversational AI* , 38–45\.
+    Online: Association for Computational Linguistics. [https://doi.org/10.18653/v1/2020.nlp4convai-1.5](https://doi.org/10.18653/v1/2020.nlp4convai-1.5).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Liu, Yinhan, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
+    Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019\. “RoBERTa: A Robustly
+    Optimized BERT Pretraining Approach.” arXiv. [https://doi.org/10.48550/arXiv.1907.11692](https://doi.org/10.48550/arXiv.1907.11692).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 💾 Data and Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [Banking77](https://arxiv.org/abs/2003.04807) dataset was retrieved from
+    HuggingFace. It is published under the Creative Commons Attribution 4.0 International
+    license (CC BY 4.0) and curated by [PolyAI](https://github.com/PolyAI-LDN) and
+    was originally published by Casanueva et al. (2020). With thanks also to [Manuel
+    Romero](https://twitter.com/mrm8488) who contributed the fine-tuned [DistilRoBERTa](https://huggingface.co/mrm8488/distilroberta-finetuned-banking77)
+    to HuggingFace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://www.paltmeyer.com*](https://www.paltmeyer.com/blog/posts/conformal-llm/)
+    *on July 5, 2023.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,277 @@
+- en: How to Optimize Multidimensional Numpy Array Operations with Numexpr
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-optimize-multidimensional-numpy-array-operations-with-numexpr-32ba9ea8e9a6](https://towardsdatascience.com/how-to-optimize-multidimensional-numpy-array-operations-with-numexpr-32ba9ea8e9a6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[FAST COMPUTING](https://medium.com/@qtalen/list/fast-computing-2a37a7e82be5)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A real-world case study of performance optimization in Numpy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----32ba9ea8e9a6--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----32ba9ea8e9a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32ba9ea8e9a6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32ba9ea8e9a6--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----32ba9ea8e9a6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32ba9ea8e9a6--------------------------------)
+    ·5 min read·Oct 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96fef5f72810913ebac709c8f00de6a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'How to Optimize Multidimensional Numpy Array Operations with Numexpr. Photo
+    Credit: Created by Author, [Canva](https://www.canva.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a relatively brief article. In it, I will use a real-world scenario
+    as an example to explain how to use [Numexpr expressions](https://numexpr.readthedocs.io/en/latest/user_guide.html?ref=dataleadsfuture.com#supported-functions)
+    in multidimensional Numpy arrays to achieve substantial performance improvements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There aren’t many articles explaining how to use Numexpr in multidimensional
+    Numpy arrays and how to use Numexpr expressions, so I hope this one will help
+    you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Recently, while reviewing some of my old work, I stumbled upon this piece of
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code transforms prediction results from probabilities to classification
+    results of 0 or 1 in the logistic regression model of machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But heavens, who would use a `for loop` to iterate over Numpy ndarray?
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can foresee that when the data reaches a certain amount, it will not only
+    occupy a lot of memory, but the performance will also be inferior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s right, the person who wrote this code was me when I was younger.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a sense of responsibility, I plan to rewrite this code with the Numexpr
+    library today.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Along the way, I will show you how to use Numexpr and Numexpr’s `where` expression
+    in multidimensional Numpy arrays to achieve significant performance improvements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you are not familiar with the basic usage of Numexpr, you can refer to this
+    article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a?source=post_page-----32ba9ea8e9a6--------------------------------)
+    [## Exploring Numexpr: A Powerful Engine Behind Pandas'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enhancing your data analysis performance with Python’s Numexpr and Pandas’ eval/query
+    functions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/exploring-numexpr-a-powerful-engine-behind-pandas-cdb94965ca3a?source=post_page-----32ba9ea8e9a6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article uses a real-world example to demonstrate the specific usage of
+    Numexpr’s API and expressions in Numpy and Pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`where(bool, number1, number2): number` - number1 if the bool condition is
+    true, number2 otherwise.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The above is the usage of the where expression in Numpy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When dealing with matrix data, you may used to using Pandas `DataFrame`. But
+    since the `eval` method of Pandas does not support the `where` expression, you
+    can only choose to use Numexpr in multidimensional Numpy ndarray.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t worry, I’ll explain it to you right away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before starting, we need to import the necessary packages and implement a `generate_ndarray`
+    method to generate a specific size ndarray for testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First, we generate a matrix of 200 rows to see if it is the test data we want:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: To be close to the actual situation of the logistic regression model, we generate
+    an ndarray of the shape `(200, 1)`an. Of course, you can also test other shapes
+    of ndarray according to your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we start writing the specific use of Numexpr in the `numexpr_to_binary
+    method`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we use the index to separate the columns that need to be processed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then, use the where expression of Numexpr to process the values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, merge the processed columns with other columns to generate the required
+    results.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the ndarray’s shape here is `(200, 1)`, there is only one column, so I
+    add a new dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can test the result with an array of 10 rows to see if it is what I want:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/13311bcec6696d413197750909d02feb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I test an array of 10 rows and the result is what I want. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look, the match is correct. Our task is completed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The entire process can be demonstrated with the following figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b69c20ea53ba88dd7a3408f48aa0219.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The entire process of how Numexpr transforms the multidimensional ndarray. Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Comparison
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After the code implementation, we need to compare the Numexpr implementation
+    version with the previous `for each` implementation version to confirm that there
+    has been a performance improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we implement a `numexpr_example` method. This method is based on the
+    implementation of Numexpr:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we need to supplement a `for_loop_example` method. This method refers
+    to the original code I need to rewrite and is used as a performance benchmark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, I wrote a test method `time_method`. This method will generate data from
+    10 to 10 to the 9th power rows separately, call the corresponding method, and
+    finally save the time required for different data amounts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We test the numexpr version and the `for_loop` version separately, and use
+    `matplotlib` to draw the time required for different amounts of data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2f0838e067b94b2ae7c340f88d0055db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Numexpr version of the implementation has a huge performance improvement.
+    Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be seen that when the number of rows of data is greater than 10 to the
+    6th power, the Numexpr version of the implementation has a huge performance improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After explaining the basic usage of Numexpr in the previous article, this article
+    uses a specific example in actual work to explain how to use Numexpr to rewrite
+    existing code to obtain performance improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article mainly uses two features of Numexpr:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numexpr allows calculations to be performed in a vectorized manner.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: During the calculation of Numexpr, no new arrays will be generated, thereby
+    significantly reducing memory usage.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Thank you for reading. If you have other solutions, please feel free to leave
+    a message and discuss them with me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading my stories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can [**subscribe**](https://www.dataleadsfuture.com/#/portal) to get the
+    latest data science stories from me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find me on [LinkedIn](https://www.linkedin.com/in/qtalen/) or [Twitter(X)](https://twitter.com/qtalen)
+    if you have any questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article was originally published on [Data Leads Future](https://www.dataleadsfuture.com/how-to-optimize-multidimensional-numpy-array-operations-with-numexpr/#/portal).
+  prefs: []
+  type: TYPE_NORMAL

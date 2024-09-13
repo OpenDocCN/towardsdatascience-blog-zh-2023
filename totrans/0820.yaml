@@ -1,0 +1,415 @@
+- en: Entropy-Regularized Reinforcement Learning Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/entropy-regularized-reinforcement-learning-explained-2ba959c92aad](https://towardsdatascience.com/entropy-regularized-reinforcement-learning-explained-2ba959c92aad)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn more reliable, robust, and transferable policies by adding entropy bonuses
+    to your algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wvheeswijk.medium.com/?source=post_page-----2ba959c92aad--------------------------------)[![Wouter
+    van Heeswijk, PhD](../Images/9c996bccd6fdfb6d9aa8b50b93338eb9.png)](https://wvheeswijk.medium.com/?source=post_page-----2ba959c92aad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ba959c92aad--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ba959c92aad--------------------------------)
+    [Wouter van Heeswijk, PhD](https://wvheeswijk.medium.com/?source=post_page-----2ba959c92aad--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ba959c92aad--------------------------------)
+    ·8 min read·Oct 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2fce76a87f64dcb27147a0868dc84b72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jeremy Thomas](https://unsplash.com/@jeremythomasphoto?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Entropy* is a concept associated with a state of disorder, randomness, or
+    uncertainty. It can be considered as a **measure of information for random variables**.
+    Traditionally, it is associated with fields such as thermodynamics, but the term
+    found its way to many other domains.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In 1948, Claude Shannon introduced the notion of entropy in information theory.
+    In this context, an event is considered to offer more information if it has a
+    lower probability of happening; the **information of an event is inversely correlated
+    to its probability of occurrence**. Intuitively: we learn more from rare events.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The notion of entropy can be formalized as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e73e66ad287c526dbcbf6c48ef1d9c81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Definition of entropy over a set of events x. The information of each event
+    is inversely correlated to its probability of occurrence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Reinforcement Learning (RL), the notion of entropy has been deployed as well,
+    with the purpose of encouraging exploration. In this context, entropy is a **measure
+    of predictability of actions** returned by a stochastic policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concretely, **RL takes the entropy of the policy (i.e., probability distribution
+    of actions) as a bonus and embeds it as a reward component**. This article addresses
+    the basic case, but entropy bonuses are an integral part of many state-of-the-art
+    RL algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is entropy?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, let’s first build a bit of intuition for the concept of entropy. The
+    figure below shows policies with low and high entropy, respectively. The low-entropy
+    policy is nearly deterministic; we almost always select the same action. In the
+    high-entropy policy, there is much more randomness in the action that we select.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8249108e3727eaceb0769c8cdaf37b7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of low-entropy policy (left) and high-entropy policy (right). In the
+    high-entropy policy, there is much more randomness in the action selection [image
+    by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s consider the entropy of a coin flip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shannon’s entropy utilizes a log function with base 2 (np.log2 in Numpy) and
+    the corresponding unit of measurement is called a bit. Other forms of entropy
+    use different bases. These distinctions are not terribly important to grasp the
+    main idea.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What happen if the coin is loaded? The figure below shows that **entropy would
+    decrease, as there is more certainty whether a given outcome would occur**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1b3060c05698700a76957ef49716bf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Entropy of a coin flip with varying probabilities of head and tail, measured
+    in bits. Entropy peaks when the outcome of the coin flip is most uncertain [image
+    from [Wikipedia](https://en.wikipedia.org/wiki/Entropy_(information_theory)#/media/File:Binary_entropy_plot.svg)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s compute the entropy of a fair die:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the die has a higher entropy (2.58 bit) than the fair coin (1 bit).
+    Although both have uniform outcome probabilities, the die displays lower individual
+    probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s consider the probabilities of a loaded die, e.g., [3/12, 1/12, 2/12,
+    2/12, 2/12, 2/12]. The corresponding entropy is 2.52, reflecting that outcomes
+    are slightly more predictable now (we are more likely to see 1 eye and less likely
+    to see 2 eyes). Finally, let’s consider a more heavily loaded die with probabilities
+    [7/12, 1/12, 1/12, 1/12, 1/12, 1/12]? Now, we get an entropy of 1.95\. The predictability
+    of the outcomes has further increased, as evidenced by the decreased entropy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Armed with an understanding of entropy, let’s see how we can utilize it in Reinforcement
+    Learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Entropy-Regularized Reinforcement Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We define entropy in the context of RL, in which action probabilities derive
+    from a stochastic policy π(⋅|s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17a5ae3a81c3bfe4fa2258dcfdff47d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Entropy bonus in reinforcement learning, computed by summing the product of
+    all action probabilities and their log
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use the entropy of the policy as an **entropy bonus**, adding it to our
+    reward function. Note that we do this for every time step, implying that present
+    actions also position us to maximize future entropy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a324b2256c1dbd631125d52652a26565.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Entropy-regularized reinforcement learning. The entropy bonus — weighted by
+    α — is added to the reward we seek to maximize
+  prefs: []
+  type: TYPE_NORMAL
+- en: This might seem counterintuitive at first. After all, RL aims to optimize decision-making,
+    which involves routinely picking good decisions over bad ones. Why would we alter
+    our reward signals in a way that encourages to *maximize* entropy? This would
+    be a good point to introduce the **principle of maximum entropy:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: “the probability distribution ***[policy]*** which best represents the current
+    state of knowledge about a system ***[environment]*** is the one with largest
+    entropy, in the context of precisely stated prior data ***[observed rewards]***”
+    — [Wikipedia](https://en.wikipedia.org/wiki/Principle_of_maximum_entropy)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If the entropy of the policy is large (e.g., shortly after initialization),
+    we don’t know all that much about the impact of different actions. The high-entropy
+    policy reflects that we haven’t yet sufficiently explored the environment and
+    need to observe more rewards from a variety of actions still.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, ultimately we do want to take good actions rather than endlessly
+    explore, meaning we have to decide the emphasis we put on the entropy bonus. This
+    is done through the **entropy regularization coefficient** α, which is a tunable
+    parameter. For practical purposes, the weighted entropy bonus *αH(π(⋅|s)* can
+    simply be viewed as a reward component that encourages exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the entropy bonus is always computed over the full action space, so
+    we add the same bonus when evaluating each action. In a typical stochastic policy
+    approach, **action probabilities are proportional to their expected rewards, including
+    the entropy bonus** (e.g., by applying a softmax function on them). Thus, if entropy
+    is very large relative to the rewards, action probabilities are more or less equal.
+    If entropy is very small, the rewards are leading in defining action probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Time to implement entropy-regularized reinforcement learning. For the purpose
+    of this article we use a basic discrete policy gradient algorithm in a multi-armed
+    bandit context, but it can easily be extended to more sophisticated environments
+    and algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that policy gradient algorithms have a built-in exploration mechanism
+    — entropy bonuses applied on inherently deterministic policies (e.g., Q-learning)
+    have more pronounced effects.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Incorporating entropy regularization is quite straightforward. We simply add
+    the entropy bonus to the rewards — so it will be incorporated in the loss function
+    — and proceed as usual. Depending on algorithm and problem setting, you might
+    encounter a number of variants in literature and codebases, but the core idea
+    remains the same. The code snippet below (a TensorFlow implementation of discrete
+    policy gradient) illustrates how it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partial code for entropy-regularized reinforcement learning, in this case extending
+    the discrete policy gradient algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider a set of slot machines with mean payoffs *μ=[1.00,0.80,0.90,0.98]*
+    and st. dev. *σ=0.01* for all machines. Clearly, the optimal policy is to play
+    Machine #1 with probability 1.0\. However, without sufficient exploration, it
+    is easy to mistake Machine #4 for the best machine.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To illustrate the idea, let’s first see the algorithmic behavior without entropy
+    bonus (α=0). We plot the probability of playing Machine #1\. Although each machine
+    starts with an equal probability, the algorithm fairly quickly identifies that
+    Machine #1 yields the highest expected reward and starts playing it with increased
+    probability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/221a756e901548799aa9e66e4542a5fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, the algorithm without entropy regularization converges to playing the
+    optimal Machine #1\. Left: probability per episode of playing Machine #1\. Right:
+    probabilities per machine after 10k episodes [image by author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, that could have gone very differently... Below we see a run with the
+    same algorithm, only this time it erroneously converges to the suboptimal Machine
+    #4.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53a0aa195796d2e588c02c59ea15d1d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this case, the algorithm without entropy regularization converges to predominantly
+    playing the suboptimal Machine #4\. Left: probability per episode of playing Machine
+    #1\. Right: probabilities per machine after 10k episodes [image by author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Now, we set α=1*. This yields an entropy bonus that is large relative to the
+    rewards. Although the probability of playing Machine #1 gradually increases, the
+    regularization component continues to encourage strong exploration even after
+    10k iterations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2454757681a09e04e3db97422e0323c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With entropy regularization, we see that the algorithm still explores a lot
+    after 10k episodes, although slowly recognizing that Machine #1 offers superior
+    rewards. Left: probability per episode of playing Machine #1\. Right: probabilities
+    per machine after 10k episodes [image by author]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evidently, in practice we don’t know the true best solution, nor the amount
+    of exploration that is desirable. Typically, you’ll encounter values in the neighborhood
+    of *α=0.001*, but you can imagine the ideal balance between exploration and exploitation
+    strongly depends on the problem. Thus, it often requires some **trial-and-error
+    to find an appropriate entropy bonus**. The coefficient *α* may also be dynamic,
+    either through a predetermined decay scheme or being a learned weight in itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applications in Reinforcement Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The principle of entropy regularization can be applied to just about any RL
+    algorithm. For instance, you may add entropy bonuses to Q-values and transform
+    the results into action probabilities through a softmax layer (soft Q-learning).
+    State-of-the-art algorithms such as Proximal Policy Optimization (PPO) or soft-actor
+    critic (SAC) typically include an entropy bonus, which is empirically shown to
+    often enhance performance. Specifically, it offers the following three benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I. Better solution quality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As elaborated earlier, the entropy bonus encourages exploration. Particularly
+    when dealing with **sparse rewards**, this is very helpful, as we rarely receives
+    feedback on action and might erroneously repeat sub-optimal actions for which
+    it happens to overestimate rewards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: II. Better robustness
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that the entropy bonus encourages to explore more, we will also encounter
+    rare or deviating state-action pairs more often. Because we have a encountered
+    a **richer and more diverse set of experiences**, we learn a policy that is better
+    equipped to handle a variety of situations. This added robustness enhances the
+    quality of the policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: III. Facilitate transfer learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Increased exploration also helps to adapt a learned policy to new tasks and
+    environments. The more diverse experiences allows to better adapt to the new situation,
+    because we already learned from comparable circumstances. As such, entropy regularization
+    is often useful for transfer learning, making it easy to **retrain or update learned
+    policies** when dealing with changing environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An entropy bonus encourages exploration of the action space, aiming to avoid
+    premature convergence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The balance between reward (exploitation) and bonus (exploration) is governed
+    through a coefficient that requires fine-tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Entropy bonuses are commonly used in modern RL algorithms such as PPO and SAC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Exploration enhances quality, robustness and adaptability to new instance variants.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Entropy regularization is particularly useful when dealing with sparse rewards,
+    when robustness is important, and/or when the policy should be applicable to related
+    problem settings.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*If you are interested in entropy regularization in RL, you might want to check
+    out the following articles as well:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-minimal-working-example-for-discrete-policy-gradients-in-tensorflow-2-0-d6a0d6b1a6d7?source=post_page-----2ba959c92aad--------------------------------)
+    [## A Minimal Working Example for Discrete Policy Gradients in TensorFlow 2.0'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A multi-armed bandit example for training discrete actor networks. With the
+    aid of the GradientTape functionality, the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-minimal-working-example-for-discrete-policy-gradients-in-tensorflow-2-0-d6a0d6b1a6d7?source=post_page-----2ba959c92aad--------------------------------)
+    [](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----2ba959c92aad--------------------------------)
+    [## Policy Gradients In Reinforcement Learning Explained
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Learn all about policy gradient algorithms based on likelihood ratios (REINFORCE):
+    the intuition, the derivation, the…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----2ba959c92aad--------------------------------)
+    [](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----2ba959c92aad--------------------------------)
+    [## Proximal Policy Optimization (PPO) Explained
+  prefs: []
+  type: TYPE_NORMAL
+- en: The journey from REINFORCE to the go-to algorithm in continuous control
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----2ba959c92aad--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ahmed, Z., Le Roux, N., Norouzi, M., & Schuurmans, D. (2019). [Understanding
+    the impact of entropy on policy optimization.](https://proceedings.mlr.press/v97/ahmed19a.html)
+    International Conference on Machine Learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eysenbach, B. & Levine, S. (2022). [Maximum Entropy RL (Provably) Solves Some
+    Robust RL Problems.](https://arxiv.org/pdf/2103.06257.pdf) International Conference
+    on Learning Representations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Haarnoja, T., Tang, H., Abbeel, P., & Levine, S. (2017). [Reinforcement learning
+    with deep energy-based policies.](https://proceedings.mlr.press/v70/haarnoja17a/haarnoja17a.pdf)
+    International Conference on Machine Learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reddy, A. (2021). [How Maximum Entropy makes Reinforcement Learning Robust.](https://mlberkeley.substack.com/p/max-ent)
+    Machine Learning at Berkeley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Schulman, J., Chen, X., & Abbeel, P. (2017). [Equivalence between policy gradients
+    and soft q-learning.](https://arxiv.org/abs/1704.06440) *arXiv preprint arXiv:1704.06440*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tang, H. & Haarnoja, T. (2017). [Learning Diverse Skills via Maximum Entropy
+    Deep Reinforcement Learning.](https://bair.berkeley.edu/blog/2017/10/06/soft-q-learning/)
+    BAIR, Berkeley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yu, H., Zhang, H., & Xu, W. (2022). [Do You Need the Entropy Reward (in Practice)?](https://arxiv.org/abs/2201.12434)
+    *arXiv preprint arXiv:2201.12434*.
+  prefs: []
+  type: TYPE_NORMAL

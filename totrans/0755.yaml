@@ -1,0 +1,332 @@
+- en: 'Document-Oriented Agents: A Journey with Vector Databases, LLMs, Langchain,
+    FastAPI, and Docker'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/document-oriented-agents-a-journey-with-vector-databases-llms-langchain-fastapi-and-docker-be0efcd229f4](https://towardsdatascience.com/document-oriented-agents-a-journey-with-vector-databases-llms-langchain-fastapi-and-docker-be0efcd229f4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Leveraging ChromaDB, Langchain, and ChatGPT: Enhanced Responses and Cited Sources
+    from Large Document Databases'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----be0efcd229f4--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----be0efcd229f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be0efcd229f4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be0efcd229f4--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----be0efcd229f4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be0efcd229f4--------------------------------)
+    ·11 min read·Jul 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Document-oriented agents are starting to get traction in the business landscape.
+    Companies increasingly leverage these tools to capitalize on internal documentation,
+    enhancing their business processes. A recent McKinsey report [1] underscores this
+    trend, suggesting generative AI could boost the global economy by $2.6–4.4 trillion
+    annually and automate up to 70% of current work activities. The study identifies
+    customer service, sales and marketing, and software development as the main sectors
+    that will be affected by the transformation. Most of the change is coming from
+    the fact that the information that powers these areas within a company can be
+    more accessible to both employees and customers through the usage of solutions
+    such as document-oriented agents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the current technology, we are still facing some challenges. Even if you
+    consider the new Large Language Models (LLMs) with 100k token limits, the models
+    still have limited context windows. While 100k tokens seem to be a high number,
+    it is a tiny number when we look at the size of the databases powering, for example,
+    a customer service department. Another problem that often arises is the inaccuracies
+    in model outputs. In this article, we’ll provide a step-by-step guide to building
+    a document-oriented agent that can handle documents of any size and deliver verifiable
+    answers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use a vector database — ChromaDB — to augment our model context length capabilities
+    and Langchain to facilitate integrations between the different components in our
+    architecture. As our LLM, we use OpenAI’s chatGPT. Since we want to serve our
+    application, we use FastAPI to create endpoints for users to interact with our
+    agent. Finally, our application is containerized using Docker, which allows us
+    to easily deploy it in any type of environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d0523469e24ad18eb21453c5c7fe2ed5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: The AI agents are getting smarter everyday ([image source](https://unsplash.com/photos/1DjbGRDh7-E))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the code is available on my [Github](https://github.com/luisroque/large_laguage_models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Vector Databases: The Essential Core of Semantic Search Applications'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Vector databases are essential to unlocking the power of generative AI. These
+    types of databases are optimized to handle vector embeddings — data representations
+    containing rich semantic information from the original data. Unlike traditional
+    scalar-based databases, which struggle with the complexity of vector embeddings,
+    vector databases index these embeddings, associating them with their source content
+    and allowing for advanced features like semantic information retrieval and long-term
+    memory in AI applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vector databases are not the same as vector indices, such as Facebook’s AI Similarity
+    Search (FAISS) — which we already covered in this series in a previous article
+    [2]. They allow data insertion, deletion, and updating, store associated metadata,
+    and support real-time data updates without needing full re-indexing — a time-consuming
+    and computationally expensive process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rather than exact matches, vector databases employ similarity metrics to find
+    vectors closest to a query. They use Approximate Nearest Neighbor (ANN) search
+    algorithms for optimized search. Some examples of such algorithms are: Random
+    Projection, Product Quantization, or Hierarchical Navigable Small World. These
+    algorithms compress the original vector, speeding up the query process. Furthermore,
+    similarity measures like Cosine similarity, Euclidean distance, and Dot product
+    compare and identify the most relevant results for a query.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 2 succinctly illustrates the similarity search process in vector databases.
+    Starting with ingestion of raw documents (i), the data is broken into manageable
+    chunks (ii) and converted into vector embeddings (iii). These embeddings are indexed
+    for quick retrieval (iv), and similarity metrics between the chunks vectors and
+    the user query are computed (v). The process ends with the most relevant data
+    chunks being output (vi), offering users insights aligned with their original
+    query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c048ed15d1633de81a99fea9a6f27138.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: The similarity search process: i) ingestion of raw documents, ii)
+    process into chunks, iii) creation of embeddings, iv) indexing, v) compute of
+    similarity metrics and, finally, vi) producing the output chunks (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a Document-Oriented Agent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We start by loading all necessary models and data at server startup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load our data from a predefined directory and process them into manageable
+    chunks. These chunks are designed to be sized so that we can pass the chunks to
+    the LLM as we got the results from the similarity search procedure. This process
+    utilizes the DirectoryLoader to load documents into memory and the RecursiveCharacterTextSplitter
+    to break them down into manageable chunks. It splits documents at a character
+    level, with a default chunk size of 1000 characters and a chunk overlap of 20
+    characters. The chunk overlap ensures there is contextual continuity between chunks,
+    minimizing the risk of losing meaningful context at the chunk borders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we generate vector embeddings from these chunks using the SentenceTransformerEmbeddings
+    method and index them in ChromaDB, our vector database. These embeddings are stored
+    in the database and serve as our searchable data. The database does not live in
+    memory; notice that we are persisting it on disk, which reduces our memory overhead.
+    Next, we load the chat model, specifically OpenAI’s gpt-3.5-turbo, which serves
+    as our LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, the “/query/{question}” endpoint receives user queries. It runs a similarity
+    search on the database, using the question as input. If matching documents exist,
+    they are fed into the LLM, and the answer is generated. The answer and the sources
+    (the original documents and their metadata) are returned, ensuring that the provided
+    information is easily verifiable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We containerized the application using Docker, which ensures isolation and
+    environment consistency, regardless of the deployment platform. The Dockerfile
+    below details our setup:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The application runs in a Python 3.9 environment and we need to install all
+    necessary dependencies from a requirements.txt file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The application is then served through Uvicorn on port 1010.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that we need to configure our environment variables. Our application requires
+    the OPENAI_API_KEY for the ChatOpenAI model. The best practice for sensitive information
+    like API keys is to store them as environment variables rather than hardcoding
+    them into the application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the python-dotenv package to load environment variables from a .env file
+    at the project root. In a production environment, we would want to use a more
+    secure method, such as Docker secrets or a secure vault service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Experiment: Understanding the Effectiveness of Document-Oriented Agents'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The experiment primary goal was to assess our document-oriented agent’s effectiveness
+    in providing comprehensive and accurate responses to user queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use a series of our Medium articles as our knowledge base. These articles,
+    covering a variety of AI and machine learning topics, are ingested and indexed
+    in our Chroma vector database. The selected articles were:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '“Whisper JAX vs PyTorch: Uncovering the Truth about ASR Performance on GPUs”'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “Testing the Massively Multilingual Speech (MMS) Model that Supports 1162 Languages”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “Harnessing the Falcon 40B Model, the Most Powerful Open-Source LLM”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '“The Power of OpenAI’s Function Calling in Language Learning Models: A Comprehensive
+    Guide”'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The articles were broken into manageable chunks, converted into vector embeddings,
+    and indexed in our database, thus forming the backbone of the agent’s knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The user query was executed by calling the API endpoint of our application,
+    which is implemented using FastAPI and deployed via Docker. The query we used
+    for the experiment was: “What is Falcon-40b and can I use it for commercial use?”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In response to our query, the LLM explained what Falcon-40b is and confirmed
+    that it can be used commercially. The information was backed up by four different
+    source chunks, all coming from the article: “Harnessing the Falcon 40B Model,
+    the Most Powerful Open-Source LLM”. Each source chunk was also added to the response,
+    as we saw above, so that the user could verify the original text supporting the
+    answer of the LLM. The chunks were also scored on their relevance to the query,
+    which gives us an additional perspective on the importance of that section to
+    the overall answer of the agent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we built a solution to overcome the challenges of handling
+    large-scale documents in AI systems, leveraging vector databases and a suite of
+    open-source tools. Our approach employs ChromaDB and Langchain with OpenAI’s ChatGPT
+    to build a capable document-oriented agent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our approach enables the agent to answer complex queries by searching and processing
+    chunks of text from large-scale databases — in our case, a series of Medium articles
+    on various AI topics. In addition to the agent’s answers, we also returned the
+    chunks of the original documents used to support the LLM’s claims and their score
+    regarding similarity to the user’s query. It is an important feature since these
+    agents can sometimes provide inaccurate information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serial entrepreneur and leader in the AI space. I develop AI products for businesses
+    and invest in AI-focused startups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Founder @ ZAAI](http://zaai.ai) | [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)
+    | [X/Twitter](https://x.com/luisbrasroque)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Large Language Models Chronicles: Navigating the NLP Frontier'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This article belongs to “Large Language Models Chronicles: Navigating the NLP
+    Frontier”, a new weekly series of articles that will explore how to leverage the
+    power of large models for various NLP tasks. By diving into these cutting-edge
+    technologies, we aim to empower developers, researchers, and enthusiasts to harness
+    the potential of NLP and unlock new possibilities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Articles published so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Summarizing the latest Spotify releases with ChatGPT](https://medium.com/towards-data-science/summarizing-the-latest-spotify-releases-with-chatgpt-553245a6df88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Master Semantic Search at Scale: Index Millions of Documents with Lightning-Fast
+    Inference Times using FAISS and Sentence Transformers](https://medium.com/towards-data-science/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Unlock the Power of Audio Data: Advanced Transcription and Diarization with
+    Whisper, WhisperX, and PyAnnotate](https://medium.com/towards-data-science/unlock-the-power-of-audio-data-advanced-transcription-and-diarization-with-whisper-whisperx-and-ed9424307281)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Whisper JAX vs PyTorch: Uncovering the Truth about ASR Performance on GPUs](https://medium.com/towards-data-science/whisper-jax-vs-pytorch-uncovering-the-truth-about-asr-performance-on-gpus-8794ba7a42f5)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Vosk for Efficient Enterprise-Grade Speech Recognition: An Evaluation and
+    Implementation Guide](https://medium.com/towards-data-science/vosk-for-efficient-enterprise-grade-speech-recognition-an-evaluation-and-implementation-guide-87a599217a6c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Testing the Massively Multilingual Speech (MMS) Model that Supports 1162 Languages](https://medium.com/towards-data-science/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Harnessing the Falcon 40B Model, the Most Powerful Open-Source LLM](https://medium.com/towards-data-science/harnessing-the-falcon-40b-model-the-most-powerful-open-source-llm-f70010bc8a10)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[The Power of OpenAI’s Function Calling in Language Learning Models: A Comprehensive
+    Guide](https://medium.com/towards-data-science/the-power-of-openais-function-calling-in-language-learning-models-a-comprehensive-guide-cce8cd84dc3c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/the-economic-potential-of-generative-ai-the-next-productivity-frontier#introduction](https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/the-economic-potential-of-generative-ai-the-next-productivity-frontier#introduction)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [Master Semantic Search at Scale: Index Millions of Documents with Lightning-Fast
+    Inference Times using FAISS and Sentence Transformers](https://medium.com/towards-data-science/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88)'
+  prefs: []
+  type: TYPE_NORMAL

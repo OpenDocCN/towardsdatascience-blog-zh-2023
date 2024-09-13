@@ -1,0 +1,878 @@
+- en: 'Solving Inverse Problems With Physics-Informed DeepONet: A Practical Guide
+    With Code Implementation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502](https://towardsdatascience.com/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Two case studies with parameter estimation and input function calibration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----27795eb4f502--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----27795eb4f502--------------------------------)[](https://towardsdatascience.com/?source=post_page-----27795eb4f502--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----27795eb4f502--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----27795eb4f502--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----27795eb4f502--------------------------------)
+    ·21 min read·Jul 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/375cf738f91896940d75caed2c8b983d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [愚木混株 cdd20](https://unsplash.com/@cdd20?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my [previous blog](https://medium.com/towards-data-science/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887),
+    we delved into the concept of physics-informed DeepONet (PI-DeepONet) and explored
+    why it is particularly suitable for operator learning, i.e., learning mappings
+    from an input function to an output function. We also turned theory into code
+    and implemented a PI-DeepONet that can accurately solve an ordinary differential
+    equation (ODE) even with unseen input forcing profiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ac9405ffbb94748bfce6bc08ba4c3b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Operators transform one function into another, which is a concept
+    frequently encountered in real-world dynamical systems. **Operator learning**
+    essentially involves training a neural network model to approximate this underlying
+    operator. A promising method to achieve that is **DeepONet**. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ability to solve these ***forward*** problems with PI-DeepONet is certainly
+    valuable. But is that all PI-DeepONet can do? Well, definitely not!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another important problem category we frequently encountered in computational
+    science and engineering is the so-called ***inverse problem***. In essence, this
+    type of problem **reverses the flow of information from output to input**: the
+    input is unknown and the output is observable, and the task is to estimate the
+    unknown input from the observed output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cab35d9a2efb313c05f626f8ae922355.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2\. In forward problems, the objective is to predict the outputs given
+    the known inputs via the operator. In inverse problems, the process is reversed:
+    known outputs are used to estimate the original, unknown inputs, often with only
+    partial knowledge of the underlying operator. Both forward and inverse problems
+    are commonly encountered in computational science and engineering. (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you might have guessed, PI-DeepONet can also be a super useful tool for
+    tackling these types of problems. In this blog, we will take a close look at how
+    that can be achieved. More concretely, we will address two case studies: one with
+    parameter estimation, and the other one with input function calibrations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This blog intends to be self-contained, with only a brief discussion on the
+    basics of physics-informed (PI-) learning, DeepONet, as well as our main focus,
+    PI-DeepONet. For a more comprehensive intro to those topics, feel free to check
+    out [my previous blog](https://medium.com/towards-data-science/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: With that in mind, let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Content
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '· [1\. PI-DeepONet: A refresher](#56d0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [2\. Problem Statements](#4238)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '· [3\. Problem 1: Parameter Estimation](#50f4)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3.1 How it works](#c17f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3.2 Implementing a PI-DeepONet pipeline](#33fd)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3.3 Results discussion](#5bac)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '· [4\. Problem 2: Input Function Estimation](#cc01)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.1 Solution stratgies](#e448)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '∘ [4.2 Optimization routine: TensorFlow](#da8c)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '∘ [4.3 Optimization routine: L-BFGS](#6bf1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [5\. Take-away](#a486)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Reference](#b410)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. PI-DeepONet: A refresher'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As its name implies, PI-DeepONet is the combination of two concepts: *physics-informed
+    learning*, and *DeepONet*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Physics-informed learning is a new paradigm of machine learning and gains particular
+    traction in the domain of dynamical system modeling. Its key idea is to explicitly
+    bake the governing differential equations directly into the machine learning model,
+    often through the introduction of an additional loss term in the loss function
+    that accounts for the residuals of the governing equations. The premise of this
+    learning approach is that the model built this way will respect known physical
+    laws and offer better generalizability, interpretability, and trustworthiness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DeepONet, on the other hand, resides in the traditional pure data-driven modeling
+    domain. However, what’s unique about it is that DeepONet is specifically designed
+    for **operator learning**, i.e., learning the mapping from an input function to
+    an output function. This situation is frequently encountered in many dynamical
+    systems. For instance, in a simple mass-spring system, the time-varying driving
+    force serves as an input function (of time), while the resultant mass displacement
+    is the output function (of time as well).
+  prefs: []
+  type: TYPE_NORMAL
+- en: DeepONet proposed a novel network architecture (as shown in Figure 3), where
+    a **branch net** is used to transform the profile of the input function, and a
+    **trunk net** is used to transform the temporal/spatial coordinates. The feature
+    vectors output by these two nets are then merged via a dot product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fe10410dafdbe1907c7408142907b24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. The architecture of DeepONet. The uniqueness of this method lies
+    in its separation of branch and trunk nets to handle input function profiles and
+    temporal/spatial coordinates, respectively. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, if we layer the concept of physics-informed learning on top of the DeepONet,
+    we obtain what is known as PI-DeepONet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1611ed23d6993195925a6cd19dc2691.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Compared to a DeepONet, a PI-DeepONet contains extra loss terms such
+    as the **ODE/PDE residual loss**, as well as the initial condition loss (IC loss)
+    and boundary condition loss (BC loss). The conventional data loss is optional
+    for PI-DeepONet, as it can directly learn the operator of the underlying dynamical
+    system solely from the associated governing equations. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once a PI-DeepONet is trained, it can predict the profile of the output function
+    for a given new input function profile in real-time, while ensuring that the predictions
+    align with the governing equations. As you can imagine, this makes PI-DeepONet
+    a potentially very powerful tool for a diverse range of dynamic system modeling
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, in many other system modeling scenarios, we may also need to perform
+    the exact opposite operation, i.e., we know the outputs and want to estimate the
+    unknown inputs based on observed output and our prior knowledge of system dynamics.
+    Generally speaking, this type of scenario falls in the scope of **inverse modeling**.
+    A question that naturally arises here is: can we also use PI-DeepONet to address
+    inverse estimation problems?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get into that, let’s first more precisely formulate the problems we
+    are aiming to solve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Problem Statements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We will use the same ODE discussed in the previous blog as our base model.
+    Previously, we investigated an initial value problem described by the following
+    equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with an initial condition s(0) = 0\. In the equation, u(*t*) is the input function
+    that varies over time, and s(*t*) denotes the state of the system at time *t*.
+    Our previous focus is on solving the **forward** problem, i.e., predicting s(·)
+    given u(·). Now, we will shift our focus and consider solving two types of inverse
+    problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Estimating unknown input parameters
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with a straightforward inverse problem. Imagine our governing ODE
+    has now evolved to be like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/298a2c22c0b53231f8bc8863fb14b9a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: initial condition s(0) = 0, a and b are **unknowns**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with *a* and *b* being the two unknown parameters. Our objective here is to
+    estimate the values of *a* and *b*, given the observed u(·) and s(·) profiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This type of problem falls in the scope of **parameter estimation,** where unknown
+    parameters of the system need to be identified from the measured data. Typical
+    examples of this type of problem include system identification for control engineering,
+    material thermal coefficients estimation in computational heat transfer, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our current case study, we will assume the true values for *a* and *b* are
+    both 0.5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Estimating the entire input function profile
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the second case study, we ramp up the problem complexity: Suppose that
+    we know perfectly about the ODE (i.e., we know the exact values of *a* and *b*).
+    However, while we have observed the s(·) profile, we don’t yet know the u(·) profile
+    that has generated this observed output function. Consequently, our objective
+    here is to estimate the u(·) profile, given the observed s(·) profile and known
+    ODE:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e845f5f86ad6e2e52b414c01d6942d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: initial condition s(0) = 0, a=0.5, b=0.5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we now aim to recover an entire input function instead of a small set
+    of unknown parameters, this case study will be much more challenging than the
+    first one. Unfortunately, this type of problem is inherently ill-posed and requires
+    strong regularization to help constrain the solution space. Nevertheless, they
+    often arise in various fields, including environmental engineering (e.g., identifying
+    the profile of pollutant sources), aerospace engineering (e.g., calibrating the
+    applied loads on aircraft), and wind engineering (e.g., wind force estimation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following two sections, we will address these two case studies one by
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. Problem 1: Parameter Estimation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we tackle the first case study: estimating the unknown parameters
+    in our target ODE. We will start with a brief discussion on how the general physics-informed
+    neural networks can be used to solve this type of problem, followed by implementing
+    a PI-DeepONet-based pipeline for parameter estimation. Afterward, we will apply
+    it to our case study and discuss the obtained results.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1 How it works
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the [original paper](https://www.sciencedirect.com/science/article/abs/pii/S0021999118307125)
+    on physics-informed neural networks (PINNs), Raissi and co-authors outlined the
+    strategy of using PINNs to solve inverse problem calibration problems: in essence,
+    we can simply set the unknown parameters (in our current case, parameters *a*
+    and *b*) as **trainable parameters** in the neural network, and optimize those
+    unknown parameters together with the weights and bias of the neural net to minimize
+    the loss function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, the secret sauce lies in constructing the loss function: as a **physics-informed
+    learning approach**, it not only contains a data mismatch term, which measures
+    the discrepancy between the predicted output of the network and the observed data,
+    but also a physics-informed regularization term, which calculates the residuals
+    (i.e., the difference between the left and right-hand side of the differential
+    equation) using the outputs of the neural network (and their derivatives) and
+    the current estimates of the parameters *a* and *b*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, when we perform this joint optimization, we’re effectively searching for
+    *a* and *b* values that would lead to a network’s outputs that simultaneously
+    fit the observed data and satisfy the governing differential equation. When the
+    loss function reaches its minimum value (i.e., the training is converged), the
+    final values of *a* and *b* we obtain are the ones that have achieved this balance,
+    and they are thus constituting the estimates of the unknown parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29eabf0d14cb453bf39079298d746c1f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. When using PI-DeepONet, the unknown parameters a and b are jointly
+    optimized with the weights and biases of the DeepONet model. When the training
+    is converged, the a and b values we end up with constitute their estimates. (Image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2 Implementing a PI-DeepONet pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Enough about the theory, it’s time to see some code 💻
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with the definition of PI-DeepONet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start by defining the trunk and branch networks (which are all simple fully
+    connected nets). The feature vectors produced by both nets are merged via a dot
+    product.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We proceed by adding a bias term on top of the dot product result, which is
+    achieved by defining a custom `BiasLayer()`. This strategy could improve the prediction
+    accuracy, as indicated in the [original DeepONet paper](https://arxiv.org/abs/1910.03193).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here comes the main change that makes our model capable of solving parameter
+    estimation problems: we add *a* and *b* to the collection of the neural network
+    model parameters. This way, when we set the `trainable` to be true, *a* and *b*
+    will be optimized together with the other usual weights and biases of the neural
+    network. Technically, we achieve this goal by defining a custom layer:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that this layer does nothing besides introducing the two parameters as
+    the model attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we define the function to calculate ODE residuals, which will serve as
+    the physics-informed loss term:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we have used `model.layers[-1]` to retrieve the parameter layer we
+    defined earlier. This would give us the *a* and *b* values to calculate the ODE
+    residuals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next up, we define the logic for calculating the gradients of total loss with
+    respect to the parameters (including both usual weights and biases, as well as
+    the unknown parameters *a* and *b*). This will prepare us for performing the gradient
+    descent for model training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that our loss function consists of three terms: the initial condition
+    loss, the ODE residuals, and the data loss. For forward problems, data loss is
+    optional, as the model can directly learn the underlying operator solely based
+    on the given differential equations. However, for inverse problems (as in the
+    current case, parameter estimations), incorporating a data loss is essential to
+    ensure we find the correct *a* and *b* values. For our current case, it is sufficient
+    to simply set all weights, i.e.,`IC_weight`, `ODE_weight`, and `data_weight` as
+    1.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we are ready to define the main training logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we set the same initial value of 1 for both *a* and *b*. Recall that the
+    true values of *a* and *b* are actually 0.5*.* In the following, let’s train the
+    PI-DeepONet model and see if it can recover the true values of *a* and *b*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please note that the code we discussed are only key snippets extracted from
+    the full training/validation logic. To see the complete code, check out the [notebook](https://github.com/ShuaiGuo16/PI-DeepONet/blob/main/case-study-inverse-parameter.ipynb).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3.3 Results discussion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To use PI-DeepONet to estimate unknown ODE parameters, we first need to generate
+    the training dataset. In our current case, the data generation proceeds in two
+    steps: firstly, we generate the u(·) profiles (i.e., the input function) using
+    a zero-mean **Gaussian Process**, with a radial basis function (RBF) kernel. Afterward,
+    we run `scipy.integrate.solve_ivp` on our target ODE (with both *a* and *b* set
+    as 0.5) to calculate the corresponding s(·) profiles (i.e., the output function).
+    The figure below shows three random samples used for training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49abe28b01c92a89948281ba89ea477e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Three samples were randomly selected from the training dataset for
+    illustration purposes. The upper row shows the u(·) profiles, while the lower
+    row shows the corresponding s(·) profiles calculated by running an ODE solver.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the training dataset is ready, we can kick off the PI-DeepONet training
+    process. The following figure displays the loss evolution, which indicates that
+    the model is properly trained and is able to fit both the data and ODE very well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cf5fe0b651ee8535a3c306eba57bec5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Loss convergence plot. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the PI-DeepONet is not the end. Instead, our ultimate goal is to estimate
+    the values of *a* and *b*. The following figure depicts the evolution of the unknown
+    parameters. We can clearly see that our PI-DeepONet is doing its job and has accurately
+    estimated the true values of *a* and *b*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b1ad194c77c63455d22ca0699945120.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. Our unknown parameters a and b gradually moved away from the specified
+    initial values and converged to their true values. This demonstrates that PI-DeepONet
+    is capable of performing inverse parameter calibration for differential equations
+    with functional inputs. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can further test the sensitivity of the estimation results with respect
+    to the initial values. The following figure shows the evolution of the parameters
+    under a different set of initial values (*a_init*=0.2, *b_init*=0.8):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b99ab18ff1d4b58a8435c2f0c165ccc3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. For a different set of initial values, our developed PI-DeepONet
+    model is able to accurately estimate the true values of a and b. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, we can see that the PI-DeepONet model is capable of performing parameter
+    calibrations when the input to the ODE is a function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4\. Problem 2: Input Function Estimation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Time to level up our game! In this section, we will tackle a more challenging
+    case study: estimating the entire profile of the input function u(·). Similar
+    to the previous section, we will start with a brief discussion of the solution
+    strategies, followed by implementing the proposed strategies to address our target
+    problem. We will look into two different strategies: one employing native TensorFlow
+    and another using the L-BFGS optimization algorithm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4.1 Solution stratgies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To devise our solution strategy, we need to consider two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Optimization efficiency
+  prefs: []
+  type: TYPE_NORMAL
+- en: At its core, our target inverse problem requires optimizing the input profile
+    u(·) such that the predicted s(·) matches with the observed s(·). Assuming that
+    we can calculate s(·) given u(·), many off-the-shelf optimizers can be used to
+    achieve our goal. Now the question is, how do we calculate s(·) given u(·)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The traditional method would be to employ a standard numerical ODE solver to
+    predict the output function s(·) given the input function u(·). However, optimization
+    processes typically involve multiple iterations. As a result, this approach of
+    using a numerical ODE solver to calculate s(·) would be too inefficient, as in
+    every iteration of the optimization loop, the u(·) will be updated, and a new
+    s(·) needs to be calculated. This is where PI-DeepONet comes into play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a first step, we need a fully trained PI-DeepONet. Since we have full knowledge
+    of the target ODE (recall that in this case study, we assume we know the true
+    values of *a* and *b*), we can easily train a PI-DeepONet solely based on ODE
+    residual loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the PI-DeepONet is trained, we can then freeze its weights & biases, treat
+    it as a fast “surrogate” model that can efficiently calculate s(·) given any u(·),
+    and embed this trained PI-DeepONet into the optimization routine. Since the inference
+    time of PI-DeepONet is negligible, the computational cost can be greatly reduced.
+    Meanwhile, the trained PI-DeepONet model will be fully differentiable. This suggests
+    that we are able to provide the gradients of the optimization objective function
+    with respect to the u(·), thus harnessing the efficiency of gradient-based optimization
+    algorithms. Both of those aspects make iterative optimization feasible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Optimization quantity
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we talk about estimating the profile of u(·), we are not attempting to
+    estimate the symbolic functional form of u(·). Instead, we are estimating **discrete
+    u(·) values** evaluated at a fixed set of time coordinates *t*₁, *t*₂, etc. This
+    also aligns with how we feed u(·) into the PI-DeepONet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generally, we would need to have a high number of discrete u(·) values to sufficiently
+    describe the profile of u(·). Consequently, our optimization problem would be
+    a high-dimensional one, as there are many parameters to optimize. This type of
+    problem is inherently ill-posed: simply finding a u(·) that can generate a matching
+    s(·) most likely would not be a very strong constraint, as there could easily
+    be many u(·)’s that can generate the exact same s(·) profile. We need a stronger
+    regularization to help constrain the solution space.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what should we do? Well, we can leverage the constraint brought by the known
+    ODE. Simply put, our goal would be to find a u(·), that **not only generates the
+    s(·) that matches with the observed s(·), but also satisfy the known ODE that
+    dictates the relationship between u(·) and s(·)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a373f0c2955a2f1cffab83f0b704f31b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. Illustration of the optimization strategy. (Imag by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now with those points clarified, let’s proceed to code up the optimization routine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4.2 Optimization routine: TensorFlow'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we have discussed previously, we start by training a PI-DeepONet that observes
+    the known governing ODE. We can reuse the code developed for the first case study.
+    The only changes we need to introduce are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set `a_init` and `b_init` to 0.5, as these are the true values of *a* and *b*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set the `trainable` flag of the `ParameterLayer` as False. This will prevent
+    updating *a* and *b* values during backpropagation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set `data_weight` to 0, as we don’t need the paired u(·)-s(·) for training.
+    The PI-DeepONet can be trained solely based on ODE residual loss, as we have shown
+    in the [previous blog](https://medium.com/towards-data-science/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The following figure shows the training process: the loss values are converged
+    and the PI-DeepONet has been properly trained.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23ffaeda1b53ce4053cf1446dae31371.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11\. Loss convergence of training PI-DeepONet without paired input-output
+    data. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we define the objective function and its gradients with respect to u(·)
+    for our optimization process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we mostly repurposed the `train_step()` function developed in
+    the first case study to define the objective function for optimization. For gradient
+    calculation, a major difference between the two functions is that, here, we calculate
+    the *gradients of the objective function (i.e., total loss) with respect to the
+    input u(·)*, whereas `train_step()` calculates the *gradients of the total loss
+    with respect to the neural network model parameters*. This makes sense as previously,
+    we want to optimize the neural network parameters (i.e., weights & biases), while
+    here we want to optimize the input u(·).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also note that we discretize u(·) with 100 points equally spaced within the
+    domain of [0, 1]. Therefore, the u(·) estimation task at our hand is essentially
+    optimizing those 100 discrete u(·) values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we define the main logic for optimizing the u(·):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Afterward, we can kick off the optimization process. For this case study, we
+    randomly generate one u(·) profile and use the numerical solver to calculate its
+    corresponding s(·) profile. Then, we assign the observed s(·) to `s_target` and
+    test if our optimization algorithm can indeed identify the u(·) we used to generate
+    the s(·).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For initialization, we simply use an all-zero profile for u(·) and assigned
+    it to `initial_u`. The following figure shows the convergence of the objective
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d376db67f81aed828f0ea09406cd4ad8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12\. We used Adam optimizer with a fixed learning rate (5e-3) to optimize
+    u(·). (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following figure shows the evolution of the u(·) profile. We can see that
+    as the number of iterations increased, the u(·) profile gradually converged to
+    the true u(·).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1c552a5b7c13f001ffbcffe747e1ded.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13\. During the inverse calibration process, u(·) gradually converged
+    to the true u(·), indicating that the PI-DeepONet approach is able to successfully
+    perform inverse calibration of the input function profile. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can then perform the usual forward simulation to obtain the predicted s(·)
+    given the optimized u(·). The forward simulation was conducted via both the numerical
+    ODE solver and the trained PI-DeepONet. We can see that the predicted s(·)’s follow
+    closely to the ground truth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecaa151acbcd93c1ac8f043e049c8e7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 14\. Forward simulation to calculate the s(·) given the optimized u(·).
+    The prediction results match very well with the ground truth. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can further test if our optimization strategy also worked for other u(·)
+    profiles. The following plots show six more random u(·) profiles we used in the
+    testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e45851dbe4f948a5f9ad5fa4cff149fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 15\. For different u(·) profiles, we ran the same PI-DeepONet-based optimization
+    routine with all-zero initialization. The results showed that our strategy has
+    managed to deliver satisfactory results. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, the results showed that the PI-DeepONet approach can successfully perform
+    inverse calibration for the entire input function profile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4.3 Optimization routine: L-BFGS'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The optimization routine we developed above was entirely operated in the TensorFlow
+    environment. As a matter of fact, we can also leverage second-order optimization
+    methods, such as L-BGFS implemented in SciPy, to achieve our goal. In this section,
+    we will look into how to integrate our developed PI-DeepONet into the L-BGFS optimization
+    workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you would like to learn more about L-BFGS approach, take a look at this
+    blog post: [Numerical optimization based on the L-BFGS method](/numerical-optimization-based-on-the-l-bfgs-method-f6582135b0ca)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To begin with, we define the objective function for the L-BFGS optimizer. The
+    objective function is again a combination of data loss and ODE residual loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Additionally, we need to define two different instances of the `obj_fn`: one
+    for returning the Numpy object, and one for returning the TensorFlow object.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `obj_fn_numpy` will be used by L-BFGS in SciPy to calculate the main objective
+    function, while the `obj_fn_tensor` will be used by TensorFlow to calculate the
+    gradients of the objective function with respect to u(·), as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we are ready to define the main optimization logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To test the effectiveness of the L-BFGS algorithm, we adopted the same u(·)
+    and s(·) investigated at the beginning of the previous subsection. We also set
+    the initial u(·) to be an all-zero profile. After running 1000 L-BFGS iterations,
+    we have obtained the following optimization results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/082e63f40279dc4ba8dba9e542ea7dc7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 16\. The calibrated u(·) and the predicted s(·). (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the L-BFGS algorithm also achieved desired results and successfully
+    estimated the u(·) profile. We further inspect six more u(·) profiles and obtained
+    similar results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/efc4559a620a0774752116669f814eb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 17\. Calibration results with L-BFGS algorithm for different u(·) profiles.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Take-away
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog, we investigated how to use PI-DeepONet, a novel network architecture
+    that combines the strengths of physics-informed learning and operator learning,
+    to solve inverse problems. We looked into two case studies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Parameter estimation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our goal is to estimate the unknown ODE parameters given the observed input
+    function u(·) and output function s(·). Our strategy is to incorporate those unknown
+    parameters as trainable parameters in the neural network, and optimize them jointly
+    with the weights and biases of the neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Input function calibration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our goal is to estimate the entire u(·) profile given the perfectly known ODE
+    and observed s(·). Our strategy is to first train a PI-DeepONet based on the known
+    ODE to serve as a fast surrogate model, and then optimize the discretized u(·)
+    values such that not only the generated s(·) match with the observed truth, but
+    also fulfill the known ODE that connects u(·) and s(·).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For both case studies, we have seen satisfactory results produced by the PI-DeepONet
+    approach, suggesting that this approach can be used to effectively address both
+    forward and inverse problems, thus serving as a promising tool for dynamical system
+    modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inverse problems pose unique challenges in computational science and engineering,
+    and yet we only scratched the surface of it in this blog. For many real-life applications,
+    we need to further consider other aspects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ Uncertainty quantification (UQ)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this blog, we simply assumed the observed input and output function values
+    are perfect. However, in practical scenarios, both the input and output data may
+    be contaminated by noise. Understanding how this uncertainty propagates through
+    our model is essential for making reliable estimations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ Modeling error
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this blog, we assumed our ODE perfectly describes the dynamics of the system.
+    However, in practical scenarios, this assumption will most likely not hold: the
+    differential equation might only be an approximation to the true underlying physical
+    processes, and there are missing physics that are not captured by the equation.
+    How to properly account for these induced modeling errors could be a challenging
+    yet interesting aspect to look at.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3️⃣ Extending to PDE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this blog, we demonstrated the workflow of solving inverse problems considering
+    only a simple ODE. However, many practical systems are governed by PDEs with more
+    spatial/temporal coordinates and complex input/output functional profiles. More
+    challenges can be expected when we extend our developed methodology to PDEs (e.g.,
+    computational efficiency will likely be a major issue, not only in training the
+    PI-DeepONet but also in performing optimization for inverse calibration).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Congrats on reaching this far! If you find my content useful, you could buy
+    me a coffee [here](https://www.buymeacoffee.com/Shuaiguo09f) 🤗 Thank you very
+    much for your support!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the companion notebooks with full code [here](https://github.com/ShuaiGuo16/PI-DeepONet/tree/main)
+    *💻*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To learn more about PI-DeepONet for **forward modeling**: [Operator Learning
+    via Physics-Informed DeepONet](/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To learn the best practices of physics-informed learning:[Unraveling the Design
+    Pattern of Physics-Informed Neural Networks](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can also subscribe to my [newsletter](https://shuaiguo.medium.com/subscribe)
+    or follow me on [Medium](https://shuaiguo.medium.com/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Wang et al., Learning the solution operator of parametric partial differential
+    equations with physics-informed DeepOnets. arXiv, 2021.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,458 @@
+- en: 'Machine Learning, Illustrated: Opening Black Box Models with SHAP'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/machine-learning-illustrated-opening-black-box-models-with-shap-9e92d0400680](https://towardsdatascience.com/machine-learning-illustrated-opening-black-box-models-with-shap-9e92d0400680)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to interpret and explain any machine learning model using SHAP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@shreya.rao?source=post_page-----9e92d0400680--------------------------------)[![Shreya
+    Rao](../Images/03f13be6f5f67783d32f0798f09a4f86.png)](https://medium.com/@shreya.rao?source=post_page-----9e92d0400680--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9e92d0400680--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9e92d0400680--------------------------------)
+    [Shreya Rao](https://medium.com/@shreya.rao?source=post_page-----9e92d0400680--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9e92d0400680--------------------------------)
+    ·10 min read·May 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shapley Values is a concept derived from cooperative game theory in Economics
+    that assigns a value to each player in a cooperative game based on their contributions
+    to the game. In the field of machine learning, this concept has been adapted into
+    the SHAP (SHapley Additive exPlanations) framework, which is an effective technique
+    for interpreting the workings of a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in learning more about Shapley Values, I highly recommend
+    checking out my [previous article](https://medium.com/@shreya.rao/economics-illustrated-shapley-values-7d33df43ada8)
+    on the math and intuition behind Shapley Values. Even though it’s been modified
+    for machine learning purposes, understanding its underlying principles can be
+    helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@shreya.rao/economics-illustrated-shapley-values-7d33df43ada8?source=post_page-----9e92d0400680--------------------------------)
+    [## Economics, Illustrated: Shapley Values'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shapley Values is a widely-used concept in game theory that provides a fair
+    way to distribute the total payoff of a…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@shreya.rao/economics-illustrated-shapley-values-7d33df43ada8?source=post_page-----9e92d0400680--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SHAP framework is similar to Shapley Values in that it calculates the individual
+    impact of features in a game (aka a machine learning model). However, machine
+    learning models are non-cooperative games, which means that features don’t necessarily
+    interact with each other as they do in cooperative games. Instead, each feature
+    contributes independently to the model’s output. While the Shapley Values formula
+    can be used, it can be computationally expensive and inaccurate due to the large
+    number of players and coalitions involved. To solve this problem, researchers
+    have developed alternative methods such as the Monte Carlo method and kernel-based
+    methods. In this article, we will delve deeper into the Monte Carlo method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s set this up with an example. Say we have a [dataset](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_california_housing.html)
+    of the prices of 20,640 houses in California.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use the features *MedInc, HouseAge, AveRooms, Latitude,* and *Longitude*
+    (**X**)…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9e9aa728c9b1f047e2360235dfee519.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '…to predict the price of a house (**y**). *Note: The house prices are expressed
+    in $100,000.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s build a model. This can be any model but we’ll use XGBoost (read my [previous
+    article](/xgboost-regression-explain-it-to-me-like-im-10-2cf324b0bbdb) to learn
+    the math behind XGBoost). Following the standard steps — divide the data into
+    train and test sets and train the model with the train set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then use this model to make predictions on the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s break this down further. We want the predicted house price of the first
+    sample (or house) in our test set. So for the first sample with these feature
+    values…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '…the predicted house price is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8d031456937a9971920a73371b7570b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The prediction made by XGBoost seems mysterious as it is a black-box model
+    so we don''t see what’s happening inside the **box**. To gain more insight into
+    how the value was predicted, there are two things we need to understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do the features affect the predicted house price positively or negatively? (For
+    instance, does a higher *MedInc* value lead to an increase in the predicted house
+    price?)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is the extent of these influences? (For instance, does *MedInc* have a
+    more significant impact on the predicted house price than *AveRooms*?)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To answer these questions and determine the contribution of each feature to
+    the house price prediction of 1.596, we can rely on the SHAP values of the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start by calculating the ***SHAP value of MedInc to this prediction of
+    1.596*** by following these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 0: Calculate the expected predicted house price'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The **expected predicted house price** is nothing but the a*verage of all the
+    predictions* made. Which is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, 2.07 serves as the expected predicted house price. We are now trying to
+    figure out why the predicted value of 1.596 deviates from the expected prediction
+    of 2.07\. Where is the discrepancy of 0.476 (2.07–1.596) coming from?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SHAP value of a feature measures how much that feature contributed to moving
+    the model’s prediction away/towards the expected predicted value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Get a random permutation of the features'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We started with this permutation of features…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdb2f16b821b15a994544bb27c8dba63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '…and after a random reshuffle, we get this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/619fe10cf225d257a337e8fa2d0f76d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We care about *MedInc* here, so let’s highlight *MedInc* and any feature to
+    the right of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f4a973514fd5ca9d4a70c16575b98f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Step 2: Pick a random sample from the dataset'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We go back to our test dataset and choose a random sample from it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0997fab0f5286f15e5dfdf642226a42f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Step 3: Form two new samples'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: These samples are going to be formed partially from the original sample…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1eddbf91915ef607150e0be25b47cc11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '…and the new sample that we just pulled in Step 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0997fab0f5286f15e5dfdf642226a42f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first sample that we create, called x1, is going to have all the same values
+    from our original sample except for the features to the right of *MedInc*. For
+    the features to the right of *MedInc*, we get from the new sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8723a7d0e91ad4f884ae6578c5642251.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The second sample that we create, called x2, is going to have all the values
+    from the original sample except for the features to the right of *MedInc* ***and
+    MedInc***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57a53edd16f43e6ad55865902d89a298.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From this, we can see that these are the exact sample samples except for one
+    key thing — they vary in their *MedInc* value, the feature we care about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: Use the new samples to make predictions and find the difference in
+    predictions'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we run these samples through our model and get predictions for them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/404b7d4e6ef4ab25dba1a1d6d431d147.png)![](../Images/988b7fbfbe21e81ecb2a0dbd8e86a64b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And we find the difference between these values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f0d0cbdea088dd0c9912c1c49f754d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since the only difference between x1 and x2 is the value of *MedInc,* this difference
+    represents the change in prediction when the value of *MedInc* is altered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 5: Repeat Steps 1–4 a couple of times and then calculate the average of
+    the differences'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All we do now is repeat the above process and calculate the average of all the
+    difference values found in Step 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume that we repeat this process 1000 times (this number may vary based
+    on the complexity of the model and dataset). After averaging the results, we obtained
+    a value of **0.22**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This 0.22 represents the SHAP value of *MedInc* in the first sample which implies
+    that *MedInc* contributes +0.22 towards adjusting the expected prediction of 2.07
+    to our prediction of 1.596.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can apply the same process to the other features — *HouseAge, AveRooms, Latitude,*
+    and *Longitude* to find their SHAP values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we understand the underlying calculations of SHAP, we can apply it
+    to our predictions by visualizing them. To visualize them, we will use ***Explainer***
+    from Python’s ***shap*** library and input our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will give us the SHAP values for all the features (*MedInc,* *HouseAge,
+    AveRooms, Latitude,* and *Longitude*) for each sample in the test set. Using these
+    SHAP values, let’s get plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Waterfall Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This plot helps us visualize the SHAP values of each sample in our data individually.
+    Let’s visualize the SHAP values of the first sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c495a96aeb6c1dcd086e1ea7f37fa0c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that the expected predicted value, E[f(X)] = 2.07, which is the value
+    calculated in Step 0, and the predicted house price of the first house, f(X) =
+    1.596 is our prediction of the first sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe that the SHAP value of *MedInc* is +0.22 (which we see in Step 5), the
+    SHAP value of *Longitude* is -2.35, etc. If we add and subtract all the above
+    SHAP values to and from 2.07, respectively, we arrive at the predicted value of
+    1.596 for the first house.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d56ac53edea49f36e9b272963d0c1d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ignoring the signs, the magnitude of the SHAP value for *Longitude*, 2.35, is
+    greater than that of the other features. This implied that *Longitude* has the
+    most significant impact on this particular prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just like we visualized the SHAP values of the first sample, we can visualize
+    SHAP values for the second sample too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/01b917c3c00b0c91f0df282f81694742.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparing the SHAP values for the first and second houses in our test data,
+    we observe significant differences. In the first house, *Longitude* had the most
+    significant impact on the predicted price, while in the second house, *MedInc*
+    has the most prominent influence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NOTE: These differences in the SHAP values highlight the unique contributions
+    of each feature to the model’s output for each sample. It’s essential to understand
+    these contributions to build trust in the model’s decision-making process and
+    ensure that it’s not biased or discriminatory.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. Force Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another way to visualize the above is a force plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/55044cac57d3c64cac41ef4327c95dbd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3\. Mean SHAP Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To determine which features are generally most important for our model’s predictions,
+    we can use a bar plot of the mean SHAP values across all observations. Taking
+    the mean of the absolute values ensures that positive and negative values do not
+    cancel each other out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/65409913e4de84a4ddf04af405b50f4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each feature has a corresponding bar, with the height representing the mean
+    SHAP value. For instance, in our plot, the feature with the largest mean SHAP
+    value is *Latitude*, indicating that it has the most substantial impact on our
+    model’s predictions. This information can help us understand which features are
+    critical to the model’s decision-making process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Beeswarm Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The beeswarm plot is a useful visualization to examine all of the SHAP values
+    for each feature. The y-axis groups the SHAP values by feature, with the color
+    of the points indicating the corresponding feature value. Typically, redder points
+    represent higher feature values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The beeswarm plot can help identify important relationships between features
+    and the model’s predictions. In this plot, the features are ordered by their mean
+    SHAP values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8aa359bf65e22090bf49cb223be05753.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By examining the SHAP values in the beeswarm plot, we can start to understand
+    the nature of the relationships between the features and the predicted house price.
+    For instance, for *MedInc*, we observe that SHAP values increase as the feature
+    value increases. This suggests that higher values of *MedInc* contribute to higher
+    predicted house prices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, for the *Latitude* and *Longitude*, we notice the opposite trend,
+    where higher feature values lead to lower SHAP values. This observation implies
+    that higher *Latitude* and *Longitude* values are associated with lower predicted
+    house prices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Dependence Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To gain a deeper understanding of the relationships between individual features
+    and their corresponding SHAP values, we can create dependence plots. A dependence
+    plot is a scatter plot that shows the relationship between the SHAP value and
+    the feature value for a single feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8428b1c963f86abd056ae4e55141a60d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/675f2522c40fbd98d264bc70c56b6ee2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By analyzing dependence plots, we can confirm the observations made in the beeswarm
+    plot. For instance, when we create a dependence plot for *MedInc*, we observe
+    a positive relationship between *MedInc* values and SHAP values. In other words,
+    higher *MedInc* values result in higher predicted house prices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, the dependence plots provide a more detailed understanding of the complex
+    relationships between individual features and predicted house prices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, SHAP values give us a peek and insights into how each feature
+    contributes to the model’s output. These insights can be further enhanced through
+    the use of visualizations. We can leverage SHAP to make more informed decisions
+    about feature selection, model improvement, and ultimately, achieve better performance
+    in our machine learning applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a5968fd00bf83cbd6acdff51388eb153.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As always, thank you for including me in your machine learning journey. Shoot
+    me an email at *shreya.statistics@gmail.com* or connect with me on [LinkedIn](https://www.linkedin.com/in/shreyarao24/)
+    for comments, questions, and suggestions!
+  prefs: []
+  type: TYPE_NORMAL

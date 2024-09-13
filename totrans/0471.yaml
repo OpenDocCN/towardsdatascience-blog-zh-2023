@@ -1,0 +1,495 @@
+- en: Can Transformers Learn to Strategize?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/can-transformers-learn-to-strategize-862770c996ea](https://towardsdatascience.com/can-transformers-learn-to-strategize-862770c996ea)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: TicTacGPT for playing simple board games
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://charlieoneill.medium.com/?source=post_page-----862770c996ea--------------------------------)[![Charlie
+    O''Neill](../Images/17aa117fc5787f93ff1f547b919786c8.png)](https://charlieoneill.medium.com/?source=post_page-----862770c996ea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----862770c996ea--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----862770c996ea--------------------------------)
+    [Charlie O''Neill](https://charlieoneill.medium.com/?source=post_page-----862770c996ea--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----862770c996ea--------------------------------)
+    ·27 min read·Sep 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/105981c00690836c0dd2d1ea74863f8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jon Tyson](https://unsplash.com/@jontyson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although most board games appeal to the use of convolutional neural nets or
+    other geometrically inspired architectures, the fact that we can actually represent
+    board states as strings begs the question of whether transformers can naturally
+    be applied to the game. Here, we’ll see if we can answer this in the context of
+    a simple game of tic-tac-toe. Whilst this may not seem very practical (almost
+    everyone knows that there is a closed-form Nash equilibrium strategy in this game
+    that is very simple to learn), it is a useful testbed for our questions. The reason
+    is that the game is simple enough that we can easily train a transformer to play
+    it, but complex enough that it is not immediately obvious what the best strategy
+    is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the game
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ll start by implementing a `TicTacToe` class. This is fairly straightforward.
+    We want to be able to represent the board as a string of 9 characters, one for
+    each square. We’ll use `X` for the first player, `O` for the second player, and
+    `-` for an empty square. We’ll also keep track of whose turn it is to play next,
+    and whether the game is over or not. We’ll also keep track of the winner, if there
+    is one. Finally, we’ll include a nice method to print the board so we don’t have
+    to stare at strings when debugging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating our training data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We want our transformer to take in a given board state and output a move, that
+    move being an integer from 0 to 8 representing the square it wants to place its
+    piece in. To do so, we’ll create a dataset of board states and moves. We’ll do
+    this by simulating all the possible winning positions of our player, and then
+    iterating over all the combinations of games that could have got us there. This
+    means the transformer will learn what constitutes a good move in any given board
+    state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To implement this, the `simulate_all_games` function generates both the training
+    and validation data. Specifically, the function simulates all possible Tic-Tac-Toe
+    games, exploring every permutation of moves for both players (‘X’ and ‘O’). This
+    exhaustive simulation ensures that the model is trained on a comprehensive dataset,
+    encompassing all conceivable game scenarios. During each simulated game, the function
+    records not just the winning or drawing outcomes but also the sequence of board
+    states and the moves that led to those outcomes. These board states and moves
+    are then transformed into numerical representations, suitable for training our
+    transformer. This ensures that the model learns not just to win, but to output
+    an appropriate winning move from any given board state. You can think of this
+    as akin to the ability of a regular language transformer to output an appropriate
+    token given any length of context, from just one token (i.e. our starting board
+    state) to the EOS token (i.e. our winning move yielding the final board state).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This gives us about 650,000 tensors to train on. These tensors look roughly
+    correct, but it’s a bit hard to tell without seeing the board visually. Let’s
+    recycle our `print_board` function to see what the some random board states, and
+    the next board state given the move, look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This seems plausible, but I’ve noticed that some games have a winning move available,
+    and yet the simulation makes a different move (that still ends up in a win). This
+    occurred in the example above. Let’s change the `simulate_all_games` function
+    to stop searching once we get to at least one potential winning move.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, let’s see how many moves we have to train on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: About 150,000 examples. This seems like a reasonable start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformer architecture with multi-head attention
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Attention is a mechanism whereby the model can learn to focus on certain parts
+    of the input sequence when making predictions. The transformer architecture uses
+    multi-head self-attention, which means that the model learns to attend to different
+    parts of the input sequence in different ways. This is useful because it allows
+    the model to learn different relationships between the input and output sequences.
+    For example, it might learn to attend to the first token in the input sequence
+    when predicting the first token in the output sequence, but attend to the last
+    token in the input sequence when predicting the second token in the output sequence.
+    This is a powerful mechanism that allows the model to learn complex relationships
+    between the input and output sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But how does this actually work? From the original *Attention is all you need*
+    paper, attention defined over a query matrix Q, a key matrix K, and a value matrix
+    V is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f580f3530c711f7a05af38349a4eee13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where we divide by sqrt{d_k} to ensure an appropriate variance in the softmax.
+    Let’s break down what’s actually happening here. Suppose we have an input of dimension
+    (B,T,C) where B is the batch-size, T is the sequence length, and C is the number
+    of channels. We can think of this as a batch of B sequences of length T, each
+    with C channels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, to implement a single head of self-attention, we need to create the query,
+    the key, and the value. In reality, these are linear layers with a certain `head_size`,
+    which is just how wide we want the linear layer to be. We don’t include a bias
+    term because we don’t want to learn a bias term for the attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, if you break down what we’re actually doing, we’re predicting the next
+    word in a sequence of words. Since we don’t want to cheat and use parts of the
+    sequence we haven’t seen yet (since we can’t do this during generation), we need
+    to mask out the parts of the sequence we haven’t seen yet. We do this by creating
+    a mask of shape (T,T) where T is the sequence length, and then setting all the
+    values in the upper triangle to negative infinity. This ensures that the softmax
+    will be 0 for all the masked values, and so the model will not attend to them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we multiply the attention weights by the value matrix to get the output
+    of the attention layer. This is the output of a single head of self-attention.
+    We can then repeat this process for as many heads as we want, and then concatenate
+    the outputs of each head to get the final output of the multi-head self-attention
+    layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s a single head of self-attention. To create multiple heads, we simply
+    repeat this process multiple times, and then concatenate the outputs of each head
+    to get the final output of the multi-head self-attention layer. We also add residual
+    connections in order to improve our ability to optimise this relatively deep model.
+    For a full walkthrough of similar code and the mechanisms behind decoder-only
+    transformers, I highly recommend Andrej Karpathy’s [nanoGPT lecture](https://www.youtube.com/watch?v=kCc8FmEb1nY).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: To make sure our architecture works as intended, let’s try passing a single
+    batch through.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A good step when doing this initial forward pass is to test whether the loss
+    is about equivalent to what we’d expect for random inputs. Since we have 9-dimensional
+    logits and we’re using cross-entropy loss, which is equivalent to the negative
+    log-likelihood of the correct class, we’d expect the loss to be about:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/efc854c3d72c8944f3e5dd24a38a3842.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Using quite a small transformer (about 25,000 parameters), we achieve the following
+    loss (note that I’m using a small amount of weight decay and dropout):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: That doesn’t seem very good. Let’s plot it to see what’s going on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/80b03da5de9c17e9e1ce1206541f3705.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initial losses for our transformer trained on the tic-tac-toe data (image by
+    author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can play the transformer using this code to see if it’s any good:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Okay, so I easily beat the model. Something is going wrong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving the transformer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'So at the moment, the transformer can’t even reliably learn the simple winning
+    moves from any given position. I can think of a few reasons for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transformer is only training on the winning moves, so maybe it’s not learning
+    how to play when I play a decent strategy that means no winning moves are available.
+    Theoretically, to counter this we should allow it to train on moves when the game
+    is pre-destined to be a draw.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The transformer is overparametrised. Trying to get a few hundred thousand neurons
+    to coordinate a simple strategy may take a long time to train and rely on grokking
+    and other phenomenon to get into a generalisable part of the optimisation landscape.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The transformer is underparametrised. Maybe it needs more neurons to learn a
+    good strategy. Saying this, I very much doubt that scaling up to a few million
+    neurons will help if a few hundred thousand doesn’t do the job.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: State-space analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before I move on, I want to analyse the number of neurons theoretically required
+    to encode the entire winning strategy for tic-tac-toe, we need to consider the
+    state space of the game and the complexity of the decision-making process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In tic-tac-toe, the game board is a 3 x 3 grid, and each cell can be in one
+    of three states: ‘X’, ‘O’, or empty (‘-’). So, the total number of possible board
+    states can be calculated as 3⁹ = 19683\. However, not all of these are valid states
+    in a real game; some of them are unreachable or illegal (e.g., a board with all
+    ‘X’s). The number of legal states is actually around 5,478, but for the purpose
+    of this analysis, we’ll consider the upper limit, i.e., 3⁹.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each state requires a decision: where to place the next ‘X’ (since we’re considering
+    a winning strategy for ‘X’). There are 9 possible positions, but the number of
+    legal moves is often less than 9, depending on how many cells are already occupied.
+    A neural network would have to map each possible board state to a correct move.
+    One way to achieve this mapping is through a fully connected layer that takes
+    the board state as input and outputs a probability distribution over the 9 possible
+    moves. The input layer would have 3x3=9 neurons (one for each cell), and the output
+    layer would have 9 neurons (one for each possible move). The hidden layers in
+    between would perform the complex task of learning the winning strategy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given that the input layer has 9 neurons and the output layer has 9 neurons,
+    the number of neurons in the hidden layers is what we’re interested in. Theoretically,
+    we could use a single hidden layer with 3⁹ neurons to map each possible state
+    to a winning move. This would be an upper bound and is likely far more than what
+    would actually be necessary due to the presence of unreachable/illegal states
+    and the inherent symmetries in tic-tac-toe that reduce the actual number of unique
+    states. So, in this upper-bound scenario, the total number of neurons would be:
+    9 + 19683 + 9 = 19701\. This is a theoretical upper bound and the actual number
+    could be much lower due to the factors mentioned earlier. Let’s try implementing
+    a simple feed-forward vanilla neural network to see how it does on our task. Rather
+    than having one layer with thousands of neurons, we’ll use three hidden layers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And let’s see what the loss looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd544cb64db73e78b64a4b96bef6e7a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training loss for a vanilla feed-forward neural network (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly, we’re saturating performance. There’s something about the task and
+    how we’ve set it up that prevents the models from learning an appropriate strategy.
+    To shift tack a bit, I’m going to try giving the model training data which just
+    consists of the optimal strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimal strategy training data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Newell and Simon’s 1972 tic-tac-toe program](https://en.wikipedia.org/wiki/Tic-tac-toe)
+    outlines the perfect strategy (to win or at least draw) if we choose the first
+    available move from the following preference over moves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Win*: If you have two in a row, play the third to get three in a row.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Block*: If the opponent has two in a row, play the third to block them.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Fork*: Create an opportunity where you can win in two ways.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Block Opponent’s Fork:* we either create two in a row to force a defence (if
+    this doesn’t result in a fork for them), or we block their potential fork.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Centre*: Play the centre.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Opposite Corner*: If the opponent is in the corner, play the opposite corner.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Empty Corner*: Play an empty corner.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Empty Side*: Play an empty side.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s rewrite our data generator to obtain all possible moves according to this
+    strategy. We’ll also simulate all games for both possible players going first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s retrain our model on our new training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4549f446f53811e26528645b2d42a5ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New loss with the optimal training data (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So much better! We’ve not only learned the strategy but it generalises to the
+    validation dataset (we get close to 0 loss on both train and val). I’m guessing
+    this is due to the inherent symmetries in board states, and the transformer has
+    learned a form of modular arithmetic over the board string to be invariant to
+    board states.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s try playing the new transformer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: It beat me! Used a fantastic fork. It seems our transformer has learned the
+    optimal strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I think the main takeaway here is that transformers are more than capable of
+    learning optimal strategies for games. Whilst a vanilla neural net could likely
+    have learned the same optimal strategy, the dynamic nature of attention means
+    that it might be able to attend to longer sequences representing the game over
+    time. These ideas naturally give rise to applying transformers in reinforcement
+    learning settings. For instance, [Janner et al. (2021)](https://arxiv.org/pdf/2106.02039.pdf)
+    used transformers to model distributions over trajectories and a beam search as
+    the planning algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another thing I learned from this project was that the process of the human
+    hand-holding the transformer through the optimal strategy obviously doesn’t scale,
+    particularly as games get more complex. For instance, Go isn’t a “solved” game,
+    so we couldn’t do what we did above and provide it with the optimal strategy to
+    train on. Instead, we’d have to use something like self-play to select good sequences
+    to then train the transformer on. I hope to experiment with ideas like this in
+    future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, there’s a ripe field to be explored by looking at hierarchies of prediction
+    and planning in transformers. As [Ba et al. (2016)](https://arxiv.org/pdf/1610.06258.pdf)
+    noted, deep learning has typically focused on methods to maintain temporary state
+    in activation dynamics, whereas our brain seems to operate by regulating temporary
+    state informatio via medium-term synaptic plasticity. In other words, there should
+    be some form of working memory/prediction that operates between the next-token
+    level and the long-term states in LSTMs for instance. The autoregressive decoder-only
+    transformer architecture that forms the backbone for GPT-3 is a powerful model
+    that can generate realistic-looking text simply by predicting one token into the
+    future. However, if we anthropomorphise intelligence, we know that quick intuitive
+    look-ahead (by one token) does not a genius make. In my mind, it would thus be
+    interesting to try and provide a model with multiple hierarchies of prediction,
+    where the model can learn to predict multiple tokens into the future. This would
+    be akin to the human ability to plan ahead, and would likely be a useful skill
+    for transformers to learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What does it mean to look ahead? There a few different avenues to explore here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Look ahead in time**: Can the transformer learn to predict not the next token
+    in the sequence but the token two, three, or more steps ahead? Is predicting two
+    tokens at once just equivalent to predicting one token, then predicting the next
+    token, or is there some strategic benefit to predicting two tokens at a time?
+    Does it force the transformer to *think* for longer?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Look ahead in space**: There is evidence that humans produce coarse-grained
+    semantic representations of tasks they are performing, and then use hierarchical
+    modules to “fill in the gaps” in these coarse-grained representations. You might
+    think of this as writing an essay: first you create a skeleton of points, then
+    you fill in the thesis sentences for each paragraph, and finally you flesh out
+    the details. Is it possible that transformers can learn to do the same thing?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Regardless of whether these are useful questions or not, I hope this post gave
+    some clarity and insight into exactly how we can reshape a problem to be suitable
+    for a transformer. Happy fine-tuning!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N.,
+    & Polosukhin, I. (2017). Attention is all you need. *Advances in neural information
+    processing systems*, *30*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Janner, M., Li, Q., & Levine, S. (2021). Offline reinforcement learning as one
+    big sequence modeling problem. *Advances in neural information processing systems*,
+    *34*, 1273–1286.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ba, J., Hinton, G. E., Mnih, V., Leibo, J. Z., & Ionescu, C. (2016). Using fast
+    weights to attend to the recent past. *Advances in neural information processing
+    systems*, *29*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Andrej Karpathy. *Let’s build GPT: from scratch, in code, spelled out.* [https://www.youtube.com/watch?v=kCc8FmEb1nY&t=5076s](https://www.youtube.com/watch?v=kCc8FmEb1nY&t=5076s)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

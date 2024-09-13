@@ -1,0 +1,547 @@
+- en: 'Leveraging Llama 2 Features in Real-world Applications: Building Scalable Chatbots
+    with FastAPI, Celery, Redis, and Docker'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/leveraging-llama-2-features-in-real-world-applications-building-scalable-chatbots-with-fastapi-406f1cbeb935](https://towardsdatascience.com/leveraging-llama-2-features-in-real-world-applications-building-scalable-chatbots-with-fastapi-406f1cbeb935)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'An In-Depth Exploration: Open vs Closed Source LLMs, Unpacking Llama 2’s Unique
+    Features, Mastering the Art of Prompt Engineering, and Designing Robust Solutions
+    with FastAPI, Celery, Redis, and Docker'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----406f1cbeb935--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----406f1cbeb935--------------------------------)[](https://towardsdatascience.com/?source=post_page-----406f1cbeb935--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----406f1cbeb935--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----406f1cbeb935--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----406f1cbeb935--------------------------------)
+    ·14 min read·Jul 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In an unexpected move, Meta open-sourced their Large Language Model (LLM), Llama
+    2, a few days ago in a decision that could reshape the current landscape of AI
+    development. It offers an alternative to the main companies in the space such
+    as OpenAI and Google that decided to maintain tight control over their AI models,
+    limiting accessibility and restricting broader innovation. Hopefully, Meta’s decision
+    will spark a collective response from the open-source community, counteracting
+    the trend of restricting access to the advances in the field. Llama 2’s new license
+    even goes further and allows commercial use, granting developers and businesses
+    opportunities to leverage the model within existing and new products.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Llama2 family consists of pre-trained and fine-tuned LLMs, including Llama2
+    and Llama2-Chat, scaling up to 70B parameters. These models have proven to perform
+    better than open-source models on various benchmarks [1]. They also hold their
+    ground against some closed-source models, offering a much-needed boost to open-source
+    AI development [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac354c16c872902e090191a859063032.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: The Llama 2 family ([image source](https://unsplash.com/photos/lpxf698eF6s))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you follow the Open LLM leaderboard from HuggingFace [1], you can see that
+    Meta’s Llama 2 holds a strong third-place position. After the LLama 2 announcement,
+    Stability AI released FreeWilly1 and FreeWilly2 [3]. FreeWilly1 is a fine-tuned
+    version of Llama, and FreeWilly2 of Llama 2\. Stability AI shared that they fine-tuned
+    both models on an Orca-style Dataset. The Orca dataset is a large, structured
+    collection of augmented data designed to fine-tune LLMs, where each entry consists
+    of a question and a corresponding response from GPT-4 or GPT-3.5\. Why are we
+    not using the FreeWilly2 model? Unfortunately, while Llama 2 allows commercial
+    use, FreeWilly2 can only be used for research purposes, governed by the Non-Commercial
+    Creative Commons license (CC BY-NC-4.0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will also go through the process of building a powerful
+    and scalable chat application using FastAPI, Celery, Redis, and Docker with Meta’s
+    Llama 2\. We aim to create an efficient, real-time application that can handle
+    multiple concurrent user requests and that offloads processing of responses from
+    the LLM to a task queue. It allows the application to maintain responsiveness
+    and we can manage the tasks effectively with Redis. Finally, we cover the deployment
+    and scaling with Docker. The application should demonstrate how these technologies
+    work together to provide a good chat experience at scale, showcasing the potential
+    of open-sourced language models like Llama 2 in a commercial setting. So let’s
+    dive in and start building!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open vs. closed-source
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have witnessed companies and research groups releasing new models almost
+    weekly, open or closed-sourced. Thus, who will win the AI arms race? To give an
+    informed guess, we need to understand a few aspects of the training procedure
+    of these models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Researchers use auto-regressive transformers on extensive self-supervised data
+    as a starting point. Let’s break down what auto-regressive transformers and self-supervised
+    data are to begin with. Auto-regressive transformers are a variant of transformer
+    models widely used in tasks involving sequential data, particularly in natural
+    language processing (NLP). These models generate sequences in an auto-regressive
+    manner, *i.e.*, they produce one part of the sequence at a time and use their
+    previous outputs as inputs for subsequent steps. It makes them particularly adept
+    at tasks like language translation, text generation, and more, where the context
+    of preceding data points influences the prediction of the following data point.
+    Self-supervised learning is a learning method where the input data itself provides
+    the training labels. It removes the need for explicit manual labeling by learning
+    to predict some parts of the data from others and allows the exploration of large
+    volumes of unlabeled data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a next step, researchers usually train the models to align with human preferences,
+    using techniques such as Reinforcement Learning with Human Feedback (RLHF). In
+    RLHF, an AI system learns from feedback that is based on the decisions it makes.
+    It involves creating a reward model that the AI system uses to learn which actions
+    lead to positive and negative outcomes. The aim is to align the AI system’s behavior
+    with human values and preferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the main challenges for the open-source community, then? Both steps
+    require significant computing power. Secondly, companies use their proprietary
+    data for the alignment step to fine-tune their models, significantly enhancing
+    their usability and safety.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Llama 2 family of models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Llama2 is an advanced version of Llama1, trained on a novel blend of publicly
+    available data. Key improvements include a 40% increase in the pre-training corpus
+    size, doubling the model’s context length, and adopting grouped-query attention
+    to improve inference scalability for larger models. Grouped-query attention is
+    a modification of the standard attention mechanism in transformer models used
+    to reduce computational costs. Instead of calculating attention scores for each
+    pair of input and output positions, which can be resource-intensive, grouped-query
+    attention divides queries into groups and processes them together. This method
+    retains much of the effectiveness of standard attention while enabling the handling
+    of longer sequences or larger models by lowering computational complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training corpus was composed of a new blend of data from publicly available
+    sources (no data from Meta’s products or services was used). In addition, efforts
+    were made to eliminate data from sites known to contain high volumes of personal
+    information. The training data comprised 2 trillion tokens, and the research team
+    decided to up-sample the most factual sources to increase knowledge accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variants of Llama2 with 7B, 13B, and 70B parameters are now available. Llama2-Chat,
+    a dialogue-optimized, fine-tuned version of Llama2, is also available with 7B,
+    13B, and 70B parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompt engineering with Llama 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Prompt engineering helps us to guide the LLMs to behave a certain way, and that
+    includes Llama 2\. In the context of Llama 2, a prompt refers to the initial instruction
+    or query given to the model, which is then used by the model to generate a response.
+    Nevertheless, with Llama 2, prompts can be quite elaborate and can contain a system
+    message that sets the context or “personality” of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Llama 2 uses a unique prompt format for initiating a conversation. Here’s how
+    it looks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: <s>[INST] <<SYS>> {{ system_prompt }} <</SYS>> {{ user_message }} [/INST]
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This template aligns with the training procedure of the model, so it has a big
+    impact on the quality of the output. In this template, ‘system_prompt’ represents
+    the instructions or context for the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<<SYS>>\nYou are J. Robert Oppenheimer, a brilliant physicist whose pioneering
+    work during the 20th century significantly contributed to the development of the
+    atomic bomb. Dive into the profound world of nuclear physics, challenge the boundaries
+    of scientific understanding, and unlock the mysteries of atomic energy with your
+    exceptional intellect. Embark on a momentous journey where your passion for science
+    knows no limits, and let your dedication to harnessing the power of the atom shape
+    the course of history and leave an indelible mark on the world.\n<</SYS>>\n[INST]\nUser:
+    How did your research lead to the creation of the atomic bomb?\n[/INST]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The ‘system_prompt’ provides general instructions for the model, which will
+    guide all its responses. The user’s message follows the system prompt and seeks
+    a specific response from the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In multi-turn conversations, all interactions between the user and the bot
+    are appended to the previous prompt and enclosed between the [INST] tags. Here’s
+    how it looks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: <s>[INST] <<SYS>> {{ system_prompt }} <</SYS>> {{ user_msg_1 }} [/INST] {{ model_answer_1
+    }} </s> <s>[INST] {{ user_msg_2 }} [/INST] {{ model_answer_2 }} </s> <s>[INST]
+    {{ user_msg_3 }} [/INST>
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Every new user message and model response is added to the existing conversation,
+    preserving the context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to note that Llama 2, like many AI models, is stateless and doesn’t
+    “remember” previous conversations. Therefore, it’s necessary to provide the entire
+    context every time you prompt the model. This is the reason why Meta worked on
+    increasing the context window for Llama 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a final remark, prompt engineering is more of an art than a science. The
+    best way to master it is through continuous testing and refining. Be creative
+    with your prompts and experiment with different formats and instructions. Also,
+    different LLMs benefit from different types of prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Solution architecture design: FastAPI, Celery, Redis, and Docker'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have been using FastAPI throughout this series to build our ML applications.
+    It is a high-performance web framework for building APIs. In this case, its asynchronous
+    capabilities enable it to handle multiple requests concurrently, which is critical
+    for a real-time chat application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to FastAPI, we use Celery as our distributed task queue to help
+    manage the computationally intensive task of generating responses from the LLM.
+    By offloading this process to a task queue, the application remains responsive
+    to new user requests while processing others, ensuring users are not left waiting.
+    Since we are using a distributed task queue, we need a message broker to aid the
+    asynchronous task processing. We selected Redis to do the job. It queues the tasks
+    from FastAPI to be picked up by Celery, enabling efficient, decoupled communication.
+    Furthermore, Redis’ in-memory data structure store is fast and allows for real-time
+    analytics, session caching, and maintaining user session data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following best practices, we use Docker to encapsulate the application and its
+    dependencies into isolated containers, which we can easily deploy across various
+    environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a chat API with Llama 2, FastAPI, Redis, and Celery
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This guide explains how to set up an application that uses Llama 2 with FastAPI,
+    Redis, and Celery. We’ll cover the concepts and how they all work together. In
+    our architecture, FastAPI is used to create a web server that takes incoming requests,
+    Celery is used for managing asynchronous tasks, and Redis acts as the broker and
+    backend for Celery, storing tasks and their results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The FastAPI application (app.py) consists of endpoints for generating text and
+    fetching task results. The /generate/ endpoint accepts a POST request with a prompt
+    as an input and returns a task ID. It uses the Celery task generate_text_task
+    to start the task asynchronously. The /task/{task_id} endpoint fetches the status/result
+    of a task by its ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Workers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Celery worker (celery_worker.py) file creates a Celery instance and defines
+    the generate_text_task function. This function accepts a prompt and generates
+    a text using the Llama 2 model. This function is registered as a Celery task with
+    the @celery.task decorator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The setup_model function is a worker initialization function. It sets up the
+    model loader when the worker process starts. This function is registered to be
+    called on the worker process initialization event using the @signals.worker_process_init.connect
+    decorator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The ModelLoader class in model_loader.py is responsible for loading the Llama
+    2 model from a given model path. It uses the HuggingFace’s transformers library
+    to load the model and its tokenizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Broker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To set up Redis, we have two options: we can use a docker container, or we
+    can use the Python package redis_server. If you decide to go with a docker container
+    (the preferred solution) you can just run the command below. The -p 6379:6379
+    option tells Docker to forward traffic incoming on the host''s port 6379, to the
+    container''s port 6379\. This way, Redis can actually be reached from outside
+    the docker container.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The second option is to do it from the Python interface. The redis_server.py
+    script handles the installation and starting of a Redis server. Recall that Redis
+    acts as both the message broker and results backend for Celery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Run the application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main execution script (run.py) is a client-side script that communicates
+    with the FastAPI application. It sends a prompt to the /generate/ endpoint, gets
+    the task ID, and periodically polls the /task/{task_id} endpoint until the task
+    is completed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The utils module (utils.py) provides a utility function generate_output for
+    generating a text from a prompt using a Llama 2 model and a tokenizer. The function
+    is decorated with @time_decorator and @memory_decorator to measure execution time
+    and memory usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In essence, when a prompt is received via the /generate/ endpoint, it’ is forwarded
+    to the Celery worker as an asynchronous task. The worker generates the text using
+    the Llama 2 model and stores the result in Redis. You can fetch the task status/result
+    using the /task/{task_id} endpoint at any point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deployment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are a few steps to take to deploy our application. First, let’s create
+    a Dockerfile for our application:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, let’s define the requirements.txt which is required so that we have all
+    the dependencies installed in the Docker container:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For setting up both the FastAPI application, Celery and a Redis server using
+    Docker Compose, you can create a docker-compose.yml file like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the Docker Compose configuration, the ‘web’ service represents the FastAPI
+    application built using the Dockerfile in the current directory. It maps the host’s
+    port 8000 to the container’s port 80\. The ‘worker’ service is the Celery worker
+    and shares the build context with the FastAPI application. The ‘redis’ service
+    uses the official Redis Docker image. The `depends_on` field ensures that Redis
+    starts before the 'web' and 'worker' services. All these services can be initiated
+    using the `docker-compose up` command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We tested Llama 2, the chat version with 7b parameters using the 4-bit quantization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We used the following input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prompt: <<SYS>>\nYou are J. Robert Oppenheimer, a brilliant physicist whose
+    pioneering work during the 20th century significantly contributed to the development
+    of the atomic bomb. Dive into the profound world of nuclear physics, challenge
+    the boundaries of scientific understanding, and unlock the mysteries of atomic
+    energy with your exceptional intellect. Embark on a momentous journey where your
+    passion for science knows no limits, and let your dedication to harnessing the
+    power of the atom shape the course of history and leave an indelible mark on the
+    world.\n<</SYS>>\n[INST]\nUser: How did your research lead to the creation of
+    the atomic bomb?\n[/INST]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The resulting dialogue generated by Llama 2 was as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ah, a most excellent question, my dear fellow! *adjusts spectacles*\nThe creation
+    of the atomic bomb, you see, was the culmination of a most intense and complex
+    scientific journey. It was a quest that spanned decades, involved some of the
+    brightest minds in physics, and pushed the boundaries of human understanding to
+    their very limits.\nYou see, my dear, the quest for the atomic bomb began in the
+    early 1930s, when a group of us at the University of California, Berkeley, realized
+    that the nucleus of an atom could be split, releasing an enormous amount of energy
+    in the process. This was a most remarkable discovery, as it revealed the incredible
+    potential of the atom as a source of power.\nBut, alas, the path to the atomic
+    bomb was not without its challenges. Oh, the obstacles we faced! *winks* The skeptics,
+    the naysayers, the doubters. They were legion, I tell you! *chuckles* But, we
+    persevered, my dear. We worked tirelessly, pouring over the data, testing and
+    retesting our theories. And, eventually, our hard work paid off.\nIn 1945, our
+    team successfully detonated the first atomic bomb at the Trinity Site in New Mexico.
+    It was a moment of pure elation, a culmination of years of hard work and dedication.
+    And, as the world watched in awe, we realized the incredible potential of the
+    atomic bomb.\nBut, my dear, the creation of the atomic bomb was…
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The text was generated in 4.77 seconds, and the peak VRAM usage was approximately
+    13.4 GB. One thing to always bear in mind is that because we are working with
+    transformers models, the memory requirements increase with the size of the generated
+    output sequence. In this case we defined max_length to be 500 tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results show that the Llama 2 model can produce complex and nuanced responses
+    in a reasonable time frame. Remember that we are using the smallest model (7b)
+    with the more significant quantization (4-bit).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we have shown throughout this article, Meta’s Llama 2 model offers new possibilities
+    for the open-source community. We walked through some of the key characteristics
+    and features of Llama 2, including its training process, architecture, and prompt
+    engineering design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, we provided an in-depth guide on building a chat application with
+    Llama 2 using FastAPI, Redis, and Celery. It should allow anyone to start building
+    scalable and real-time applications that serve Llama 2 (or any other commercially
+    licensed LLM) to a few thousand users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our results, we showcased the performance of the model in generating detailed
+    and contextually rich responses to complex prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serial entrepreneur and leader in the AI space. I develop AI products for businesses
+    and invest in AI-focused startups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Founder @ ZAAI](http://zaai.ai) | [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)
+    | [X/Twitter](https://x.com/luisbrasroque)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Large Language Models Chronicles: Navigating the NLP Frontier'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This article belongs to “Large Language Models Chronicles: Navigating the NLP
+    Frontier”, a new weekly series of articles that will explore how to leverage the
+    power of large models for various NLP tasks. By diving into these cutting-edge
+    technologies, we aim to empower developers, researchers, and enthusiasts to harness
+    the potential of NLP and unlock new possibilities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Articles published so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Summarizing the latest Spotify releases with ChatGPT](https://medium.com/towards-data-science/summarizing-the-latest-spotify-releases-with-chatgpt-553245a6df88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Master Semantic Search at Scale: Index Millions of Documents with Lightning-Fast
+    Inference Times using FAISS and Sentence Transformers](https://medium.com/towards-data-science/master-semantic-search-at-scale-index-millions-of-documents-with-lightning-fast-inference-times-fa395e4efd88)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Unlock the Power of Audio Data: Advanced Transcription and Diarization with
+    Whisper, WhisperX, and PyAnnotate](https://medium.com/towards-data-science/unlock-the-power-of-audio-data-advanced-transcription-and-diarization-with-whisper-whisperx-and-ed9424307281)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Whisper JAX vs PyTorch: Uncovering the Truth about ASR Performance on GPUs](https://medium.com/towards-data-science/whisper-jax-vs-pytorch-uncovering-the-truth-about-asr-performance-on-gpus-8794ba7a42f5)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Vosk for Efficient Enterprise-Grade Speech Recognition: An Evaluation and
+    Implementation Guide](https://medium.com/towards-data-science/vosk-for-efficient-enterprise-grade-speech-recognition-an-evaluation-and-implementation-guide-87a599217a6c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Testing the Massively Multilingual Speech (MMS) Model that Supports 1162 Languages](https://medium.com/towards-data-science/testing-the-massively-multilingual-speech-mms-model-that-supports-1162-languages-5db957ee1602)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Harnessing the Falcon 40B Model, the Most Powerful Open-Source LLM](https://medium.com/towards-data-science/harnessing-the-falcon-40b-model-the-most-powerful-open-source-llm-f70010bc8a10)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[The Power of OpenAI’s Function Calling in Language Learning Models: A Comprehensive
+    Guide](https://medium.com/towards-data-science/the-power-of-openais-function-calling-in-language-learning-models-a-comprehensive-guide-cce8cd84dc3c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Document-Oriented Agents: A Journey with Vector Databases, LLMs, Langchain,
+    FastAPI, and Docker](/document-oriented-agents-a-journey-with-vector-databases-llms-langchain-fastapi-and-docker-be0efcd229f4)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As always, the code is available on my [Github](https://github.com/luisroque/large_laguage_models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] — [https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] —Touvron, H., Martin, L., Stone, K., Albert, P., Almahairi, A., Babaei,
+    Y., Bashlykov, N., Batra, S., Bhargava, P., Bhosale, S., Bikel, D., Blecher, L.,
+    Ferrer, C. C., Chen, M., Cucurull, G., Esiobu, D., Fernandes, J., Fu, J., Fu,
+    W., Fuller, B., … Scialom, T. (2023). Llama 2: Open Foundation and Fine-Tuned
+    Chat Models. arXiv preprint [https://arxiv.org/abs/2307.09288](https://arxiv.org/abs/2307.09288)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] — [https://stability.ai/blog/freewilly-large-instruction-fine-tuned-models](https://stability.ai/blog/freewilly-large-instruction-fine-tuned-models)'
+  prefs: []
+  type: TYPE_NORMAL

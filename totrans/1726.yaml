@@ -1,0 +1,553 @@
+- en: 'Python: __init__ is NOT a constructor: a deep dive in Python object creation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/python-init-is-not-a-constructor-a-deep-dive-in-python-object-creation-9134d971e334](https://towardsdatascience.com/python-init-is-not-a-constructor-a-deep-dive-in-python-object-creation-9134d971e334)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tinkering with Python’s constructor to create fast, memory-efficient classes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)[![Mike
+    Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)
+    [Mike Huls](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)
+    ·9 min read·Nov 27, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50dee26173534a7a06708762a2ea94ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How Python builds objects (image by ChatGPT)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Did you know that the `__init__` method is **not a constructor**? But if `__init__`
+    doesn’t *create* the object, then what does? How do objects get created in Python?
+    Does Python even have a constructor?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of this article is to **better understand how Python creates objects**
+    and **manipulate this process to make better appplications**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we’ll take a deep dive in how Python creates objects. Next we’ll apply
+    this knowledge and discuss some interesting use cases with some practical examples.
+    Let’s code!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Theory: Creating objects in Python'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this part we’ll figure out what Python does under the hood when you create
+    an object. In the next part we’ll take this new knowledge and apply in in part
+    2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to create an object in Python?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This should be pretty simple; you just create an instance of a class. Alternatively
+    you could create a new built-in type like a `str` or an `int`. In the code below
+    an instance is created of a basic class. It just contains an `__init__` function
+    and a `say_hello` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the `__init__` method. It receives a `name` parameter and stores its
+    value on the `greet_name` attribute of the `SimpleObject` instance. This allows
+    our instance to keep *state*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now the question rises: in order to **save the state**, we need to have **something
+    to save the state on**. Where does `__init__` get the object from?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, is __init__ a constructor?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The answer: technically no. Constructors actually *create* the new object;
+    the `__init__` method is only responsible for setting the *state* of the object.
+    It just receives values through it’s parameters and assigns them to the class
+    attributes like `greet_name`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Python, the actual *creation* of an object right before initialization. For
+    **object creation, Python uses a method called** `**__new__**` that’s present
+    on each object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=post_page-----9134d971e334--------------------------------)
+    [## Creating and Publishing Your Own Python Package for Absolute Beginners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create, build an publish a Python Package in 5 minutes
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does __new__ do?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`__new__` is a **class method**, meaning it is called on the class itself,
+    not on an instance of the class. It is **present on each object** and is **responsible
+    for actually creating and returning** the object. The most important aspect of
+    `__new__` is that it must return an instance of the class. We’ll tinker with this
+    method later in this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where does the __new__ method come from?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The short answer: **everything in Python is an object**, and the **object class
+    has a** `**__new__**` **method**. You can think of this as *“each class inherits
+    from the* `*object*` *class”*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice that even though our `SimpleObject` class inherit from anything, we
+    can still proof that it’s an instance of `object`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In summary, everything is an object, `object` defines a `__new__` method thus
+    everything in Python has a `__new__` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does __new__ differ from __init__?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `__new__` method is used for actually **creating the object**: allocating
+    memory and returning the new object. Once the object is created we can **initialize**
+    it with `__init__`; setting up the initial *state*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/python-args-kwargs-and-all-other-ways-to-pass-arguments-to-your-function-bd2acdce72b5?source=post_page-----9134d971e334--------------------------------)
+    [## Python args, kwargs, and All Other Ways to Pass Arguments to Your Function'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expertly design your function parameters in 6 examples
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/python-args-kwargs-and-all-other-ways-to-pass-arguments-to-your-function-bd2acdce72b5?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does Python’s process of object creation look like?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Internally, the functions below get executed when you create a new object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`__new__`: allocates memory and returns the new object'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`__init__`: initialize newly created object; set state'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In the code below we demonstrate this by **overriding** `**__new__**` **with
+    our own function**. In the next part we’ll use this principle to do some interesting
+    things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(*we’ll explain why and how this code works in the next parts).* This will
+    print the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This means that we have access to the function that initialized an instance
+    of our class! We also see that `__new__` executes first. In the next part we’ll
+    understand the behaviour of `__new__`: what does `super().__new__(cls)` mean?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does `__new__` work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The default behaviour of `__new__` looks like the code below. In this part we’ll
+    try to understand what’s going on so that we tinker with it in the practical examples
+    in the next part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that `__new__` is being called on the `super()` method, which returns
+    a “reference” *(it’s actually a proxy-object)* to the parent-class of `SimpleObject`.
+    Remember that `SimpleObject` inherits from `object`, where the `__new__`method
+    is defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Breaking it down:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: we get a “reference” to the base class of the class we’re in. In the case of
+    `SimpleObject` we get a “reference” to `object`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We call `__new__` on the “reference” so `object.__new__`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We pass in `cls` as an argument.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*This is how class methods like* `*__new__*` *work; it’s a reference to the
+    class itself*'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Putting it all together**: we ask `SimpleObject`''s parent-class to create
+    a new instance of `SimpleObject`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the same as `my = object.__new__(SimpleObject)`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can I then also create a new instance using __new__?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Yes, remember that the default `__new__` implementation actually calls it directly:
+    `return super().**__new__**(cls)`. So the approaches in the code below do the
+    same:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What happens in the *direct* method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: we call the `__new__` function on `SimpleObject`, passing it the `SimpleObject`
+    type.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`SimpleObject.__new__` calls `__new__` on it’s parent class (`object`)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`object.__new__` creates and returns a instance of `SimpleObject`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`SimpleObject.__new__` returns the new instance'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: we call `__init__` to initialize it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These things also happen in the non-direct method but they are handled under
+    the hood so we don’t notice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/simple-trick-to-work-with-relative-paths-in-python-c072cdc9acb9?source=post_page-----9134d971e334--------------------------------)
+    [## Simple trick to work with relative paths in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the file path at runtime with ease
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/simple-trick-to-work-with-relative-paths-in-python-c072cdc9acb9?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Practical application 1: subclassing immutable types'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we know how `__new__` works we can use if to do some interesting things.
+    We’ll put the theory to practice and subclass an immutable type. This way we can
+    have our own, special type with it’s own methods defined on a very fast, built-in
+    type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have an application that processes many coordinates. For this reason we want
+    our coordinates stored in tuples since they’re small and memory-efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will create our own `Point`` class that inherits from `tuple``. This way
+    `Point`` is a `tuple`` so it’s very fast and small and we can add functionalities
+    like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: control over object creation (only create a new object if all coordinates are
+    positive e.g.)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: additional methods like calculating the distance between two coordinates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------)
+    [## Cython for absolute beginners: 30x faster code in two simple steps'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Easy Python code compilation for blazingly fast applications
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Point class with a __new__ override
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In our first try we just create a `Point` class that inherits from tuple and
+    tries to initialize the tuple with a `x,y` coordinate. **This won’t work:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The reason that this fails is because our class is a subclass of the `tuple`,
+    which are **immutable**. Remember that the `tuple` is created by `__new__`, after
+    which `__init__` runs. At the time of initialization, the tuple is already created
+    and cannot be altered anymore since they are immutable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We **can fix this** by overriding `__new__`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This works because in `__new__` we use `super()` to get a reference to the parent
+    of `Point`, which is `tuple`. Next we use `tuple.__new__` and pass it an iterable
+    (`(x, y)`) create a new tuple. This is the same as `tuple((1, 2))`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Controlling instance creation and additional methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The result is a `Point` class that is a `tuple` under the hood but we can add
+    all kinds of extras:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that we’ve added a method for calculating distances between `Point`s,
+    as well as some input validation. We now check in `__new__` if the provided `X`and
+    `y` values are positive and prevent object creation altogether when this is not
+    the case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----9134d971e334--------------------------------)
+    [## A complete guide to using environment variables and files with Docker and
+    Compose'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep your containers secure and flexible with this easy tutorial
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Practical application 2: adding metadata'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this example we’re creating a subclass from an immutable `float` and add
+    some metadata. The class below will produce a true `float` but we’ve added some
+    extra information about the symbol to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you see we inherit from `float` , which makes an instance of `Currency` an
+    actual `float`. As you see, we also have access to metadata like a symbol for
+    pretty printing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also notice that this is an actual float; we can perform `float` operations
+    without a problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----9134d971e334--------------------------------)
+    [## Args vs kwargs: which is the fastest way to call a function in Python?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A clear demonstration of the timeit module
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Practical application 3: Singleton pattern'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are cases when you don’t want to return a *new* object every time you
+    instantiate a class. A database connection for example. A singleton **restricts
+    the instantiation of a class to one single instance**. This pattern is used to
+    ensure that a class has only one instance and provides a **global point** of access
+    to that instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code creates an instance of the `Singleton` class if it doesn’t exist yet
+    and saves it as an attribute on the `cls`. When `Singleton` is called once more
+    it returns the instance that is has stored before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----9134d971e334--------------------------------)
+    [## Run Code after Your Program Exits with Python’s AtExit'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Register cleanup functions that run after your script ends or errors
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other Practical applications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Some other applications include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Controlling instance creation**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We’ve seen this in the `Point` example: add additional logic *before* creating
+    an instance. This can include input validation, modification, or logging.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Factory Methods**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Determine in `__new__` which class will be returned, based on inputs.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Caching**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For resource-intensive object creation. Like with the Singleton pattern, we
+    can store previously created objects on the class itself. We can check in `__new__`if
+    an equivalent object already existst and return it instead of creating a new one.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[](/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893?source=post_page-----9134d971e334--------------------------------)
+    [## Create Your Custom, private Python Package That You Can PIP Install From Your
+    Git Repository'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Share your self-built Python package using your git repo.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article we took a deep dive into Python object creation, learnt a lot
+    about how and why it works. Then we looked at some practical examples that demonstrate
+    that we can do a lot of interesting things with our newly acquired knowledge.
+    Controlling object creation can enable you to create efficient classes and professionalize
+    your code significantly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To improve your code even further, I think the most important part is to truly
+    understand your code, how Python works and apply the right data structures. For
+    this, check out my [**other articles here**](https://mikehuls.com/articles?tags=fast)or
+    this [**this presentation**](https://www.youtube.com/watch?v=N7cgUnW-tZQ).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope this article was as clear as I hope it to be but if this is not the
+    case please let me know what I can do to clarify further. In the meantime, check
+    out my [other articles](https://mikehuls.com/articles) on all kinds of programming-related
+    topics like these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Git for absolute beginners: understanding Git with the help of a video game](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Create and publish your own Python package](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Create a fast auto-documented, maintainable, and easy-to-use Python API in
+    5 lines of code with FastAPI](https://mikehuls.medium.com/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Happy coding!
+  prefs: []
+  type: TYPE_NORMAL
+- en: — Mike
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P.S: like what I’m doing?* [*Follow me*](https://mikehuls.medium.com)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)
+    [## Mike Huls - Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read writing from Mike Huls on Medium. I'm a full-stack developer with a passion
+    for programming, technology and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: mikehuls.medium.com](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

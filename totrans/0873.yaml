@@ -1,0 +1,767 @@
+- en: 'False Prophet: a Homemade Time Series Regression Model'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/false-prophet-a-homemade-time-series-regression-model-54e296b99438](https://towardsdatascience.com/false-prophet-a-homemade-time-series-regression-model-54e296b99438)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Borrowing ideas from Meta’s Prophet to build a powerful time series regression
+    model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)[![Bradley
+    Stephen Shaw](../Images/b3ef5e6e292083ff0f8523ec5ffe89f0.png)](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)[](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)
+    [Bradley Stephen Shaw](https://bradley-stephen-shaw.medium.com/?source=post_page-----54e296b99438--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----54e296b99438--------------------------------)
+    ·16 min read·Oct 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3ee91d49478804f92ad7d17cb7c3c44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Niklas Rhöse](https://unsplash.com/@blitzer?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this follow up article, I continue my mission to build Frankenstein’s time
+    series monster by combining ideas from the popular Prophet package¹ and the talk
+    “Winning with Simple, even Linear, Models”².
+  prefs: []
+  type: TYPE_NORMAL
+- en: After we’ve reminded ourselves of what we’re up to we’ll touch on the regression
+    model — what it is, and why it’s special.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll then move on to hyper-parameter tuning using time series cross-validation
+    to get an “optimal” model parameterisation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we’ll validate the model using SHAP before taking advantage of the
+    model form to allow bespoke investigations and manual adjustments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s a lot of ground to cover — let’s get cracking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: we covered the underlying data preparation and feature engineering
+    in a previous article, and so are jumping straight to modelling. Catch up on what
+    went on there:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=post_page-----54e296b99438--------------------------------)
+    [## False Prophet: Feature Engineering for a Homemade Time Series Regression (Part
+    1 of 2)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building on ideas from Meta’s Prophet package to create powerful features for
+    time series machine learning models
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/false-prophet-feature-engineering-for-a-homemade-time-series-regression-part-1-of-2-52d9df3d930d?source=post_page-----54e296b99438--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The big picture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s remind ourselves of what we’re doing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The end goal is simple: to generate the most accurate forecast of future events
+    across a specified time horizon.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We started from scratch with a time series containing only a date variable and
+    the quantity of interest. From this, we derived additional features to help us
+    model future outcomes accurately; these were heavily “inspired” by Prophet’s approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That brings us to where we are now: about ready to feed our engineered data
+    into a lightweight model, training it to forecast into the future. Later on we’ll
+    dive into the model’s internal workings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s remind ourselves of what the data looks like before we carry on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’re using real-world data from the UK — in this case, the STATS19 road traffic
+    accidents data set which contains information about certain car crashes³.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve summarised this large data set to an aggregated monthly count of accidents.
+    This means our target looks something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/341e08ba1d4b4fa2d786736ed7fea684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We previously pointed out the downward trend, strong seasonal effect and apparent
+    change in trend. Let’s see how well our feature engineering and modelling work
+    together to capture this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While it’s not quite Christmas, I do have a few characteristics on my model
+    wish list. I’ll lay these out and briefly cover why I’ve chosen to use a LASSO
+    model (spoiler!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firstly, the model should be as robust as possible.“Robust” can mean many things
+    so we’ll be a bit more specific: I’d like a model which can be trained and left
+    for a while. In other words, the model should be able to extrapolate to handle
+    previously unseen — but “normal” — input values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model needs to be interpretable and explainable. It should be easy to interrogate
+    and understand, and simple to explain. Ideally, I should be able to quantify —
+    accurately — the impact of various effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the model should have some sort of built-in feature selection. In theory
+    properly performed feature selection could improve the model performance, and
+    I could do a rigorous exercise to find the most effective set of features. In
+    reality, it’s Saturday afternoon and life’s too short. So the model will have
+    to sort itself out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While tree-based models tick one-and-a-bit of those boxes, they aren’t so hot
+    at extrapolation. They also can’t really be used to say certain things like “in
+    June, seasonality causes a movement of X%”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What I want is something generally linear (hint hint), with a bit extra on the
+    side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter the LASSO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Least Absolute Shrinkage and Selection Operator (LASSO) is a statistical
+    model. It performs both feature selection and regularisation in order to boost
+    the model’s predictive power and interpretability⁷.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We won’t focus too much on the nuts and bolts, and instead recognise that the
+    LASSO is a linear regression approach with a twist. During model training a modified
+    objective function is used, the aim of which is to maximise predictive power of
+    the model, subject to certain constraints on the regression coefficients. This
+    constraint — or “regularisation” — has the effect of shrinking feature coefficients
+    towards zero, effectively reducing a given feature’s impact on the model. If the
+    coefficient is shrunk to zero exactly, that feature will have absolutely no impact
+    on either model fit or prediction and the feature is effectively removed from
+    the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This feature coefficient shrinkage effectively reduces the likelihood of over-fitting
+    and so should improve the model’s ability to generalise to new and unseen data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: the LASSO regularisation is sometimes referred to as L1 regularisation
+    or the L1 penalty. This comes from the mathematical form of the regularisation
+    term which uses the L1 norm.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generalising things
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Scikit-learn implements the LASSO linearly — i.e. the `Lasso` class assumes
+    that the target can be represented as a linear combination of input features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s cast our minds back to the data we’re modelling. We can see that the magnitude
+    of the seasonal element of the series looks to move in line with the magnitude
+    of the trend, suggesting that the time series is multiplicative rather than additive.
+    In other words, our time series is the *product* of the time series elements rather
+    than the *sum* of them. This means we need a little imagination when it comes
+    to model form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Luckily we don’t have to get too inventive — by modelling the natural logarithm
+    of monthly road traffic accidents we can turn our additive LASSO into a multiplicative
+    model. We can loosely think of the model form as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2cf3ff93e361764f7ff69262d0babd13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '… which means our predictions look something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4401c23dab6e814b69da7a8ab70c68e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: the maths above uses the “hat” notation, which is convention when we’re
+    talking about estimated values. Since the predictions are derived from estimated
+    values of beta — which themselves are derived, given the data — we move to the
+    hat notation for both target and regression coefficient.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: More on this later, but it’s worth bearing in mind as we start to probe the
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alpha, the regularisation parameter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ve landed on our model, now we need to land on its parameterisation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In `sklearn` the regularisation strength of the LASSO is controlled through
+    the `alpha` argument. I don’t have much of a feeling for the optimal value of
+    this hyperparameter so will need to do some searching, bearing in mind that the
+    “optimal” model is the one which *forecasts* the best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need some sort of train-test split which allows us to test how well a given
+    parameterisation of the model forecasts into the future: the normal randomly split
+    cross-validation approach won’t cut the mustard, as the temporal element of the
+    target gets confused, or even worse — leaked.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately time series cross-validation is a thing and there’s a great implementation
+    of it available in scikit-learn. We’ll use this to search through various values
+    of `alpha` which are drawn (randomly) from a distribution of potential values
+    and assess the forecast accuracy using a variety of metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: if you’re not familiar with time series cross-validation, a quick introduction
+    is available here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://python.plainenglish.io/on-times-series-cross-validation-6d685eaf335b?source=post_page-----54e296b99438--------------------------------)
+    [## On Times Series Cross-Validation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maximising the utility of your time series data with smart subdivision.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: python.plainenglish.io](https://python.plainenglish.io/on-times-series-cross-validation-6d685eaf335b?source=post_page-----54e296b99438--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After some searching, we can visualise the forecasting error and choose the
+    value of `alpha` which minimises this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e79091969f51d7423f2c65d4399fa5e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the Mean Absolute Error (MAE), Root Mean Square Error (RMSE),
+    and Mean Absolute Percentage Error (MAPE) all reach a minimum when `alpha` is
+    close to 0.0017.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we’re not comparing models (yet), the actual value of the metrics doesn’t
+    matter too much. It’s also worth pointing out that MAPE isn’t actually a percentage;
+    I’ve formatted it as such in the chart above to help me get a feel for what turned
+    out to be quite small numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So far so good. But how well does a model with this `alpha` actually forecast?
+    Not too badly, actually:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d2de450098c26b2464fef34f50ba813.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chart above is a visual representation of the time series cross-validation
+    results for the LASSO model using the `alpha` parameter above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each coloured line represents an out-of-fold forecast from a model trained on
+    all the data (grey) prior to the forecast period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, the orange line represents the 12 month forecast for 2011 from
+    a model trained on data up to and including 2010.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The forecasts are a little difficult to see so let’s zoom in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ebce7ebce31eeaf5c463164d3baf922.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For such a noisy actual these predictions don’t seem to be doing too badly:
+    they appear to capture the in-year trend as well as predicting the stronger seasonality
+    movements.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the model predictions do tend to miss the first few samples in each
+    of the out-of-time periods before generally coming back in line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering that we noted a change in trend and seasonality in the underlying
+    data around 2012–2014, I’d say that this model is actually doing quite well!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use this value of `alpha` to refit the model to the entire span of data
+    before moving on to some model investigation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fa7d819e55412b7f0afe8494d13d892.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results, validation, and interrogation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We wanted a model that was easy to understand and explain. Let’s see how we
+    did.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SHAP validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The SHAP package is fairly ubiquitous when it comes to model assessment. We’re
+    going to skip the whole “What is SHAP? How does SHAP work?” spiel and go straight
+    to the results, pausing only briefly to remember that SHAP focusses on the drivers
+    of model predictions rather than the drivers of model fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pause over.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a starter, the overall summary highlights the biggest drivers of prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04ae249d2270366885f626059775c5a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Top of the charts appears to be the `year` feature, where we see higher values
+    of `year` driving predictions down. This aligns with the clear downward trend
+    that we’ve seen in our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see quite a few of the Prophet-inspired features playing a key role in the
+    predictions. It’s interesting to see `prophet_sin_12` make an appearance (and
+    be so high up the list!) — our hunch to extend the range of Prophet features created
+    seems to have paid off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a few other features that pop up — like one of the cyclically encoded
+    month features (`mth_sin` ), and the number of holidays in a month (`hols` ) —
+    but this list is dominated by the change point features. So much so that it probably
+    needs investigating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SHAP also allows us to visualise the drivers of individual predictions. For
+    a tale of two halves, let’s take a look at the very first and very last observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed444977873066045c2c83876c5663db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remembering that these two observations are some 20 years and 8,000 accidents
+    apart, it’s interesting that there is some common ground in the drivers of each
+    prediction: both predictions are highly influenced (although not necessarily in
+    the same direction) by `year` and `hols` .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s move onto something more imaginative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bespoke investigation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now start to get inventive with how we interrogate our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that we’ve effectively built a generalised linear model with a bit
+    of regularisation bolted on, and the transformation of the target means that we’ve
+    effectively used a log link function in doing so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that in model training, the feature coefficients (beta) are constrained
+    such that they end up shrinking towards zero. This gives us our first avenue of
+    investigation: checking the size of the fitted model parameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any feature with a non-zero coefficient is used in the model, and the size of
+    a feature’s coefficient is an indicator of just how “important” it is in the overall
+    mix of predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is fairly easily done, using the `coef_` attribute of the fitted model
+    to get coefficients, and then remembering to take the absolute value of extracted
+    coefficients before sorting and / or ranking. It’s probably a good idea to check
+    for features that could reasonably be expected to be included in the model but
+    aren’t.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What else can we do? Well, here is where it gets quite fun.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we’ve used a GLM, we can group features together to calculate the group
+    impact on the prediction. And since we’ve used a log link function, our impacts
+    are multiplicative and easier to understand — e.g. a group impact of 1.05 = increase
+    of 5%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, we have a load of Prophet features. It’s quite easy for us to
+    calculate the overall impact that all of the Prophet features have on the overall
+    prediction *directly*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This grouping isn’t necessarily limited either — we can group as we see fit.
+    In our case, I’m going to group features together into themes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Quantifying the impact of a feature group is then calculated as the dot product
+    between the coefficients and feature values of each feature in the group. This
+    leads us to neat explorations of the impact of each group over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We were a bit suspicious about the dominance of the change point features —
+    let’s visualise their impact to see how they affect predictions over time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ed707e8c47ffa63f9e6ba01dc29aa76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The majority of change points drive downward movements in prediction with the
+    exception of an upward change around 2013 or so. There are a lot of change points
+    being used, perhaps picking up a deficiency in the “pure” trend features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What about the combined effect of trend and change point features? These are
+    effectively the “trend” component in a Prophet model. Well, as it turns out, not
+    so difficult to get at either:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb40ecabf879f57ac344cb8468b2f681.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about the seasonal effect? I’m curious to see how the various seasonal
+    features fit together to form a single effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10884806e8283ebd2e1dfbbb8313aabb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interesting! We see here a dip in the early part of the year followed by a double
+    spike mid-way through the year — quite a complex effect to capture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, let’s take a look at the holiday effect where we’ve bundled together
+    business days and actual bank holidays. As the UK has so few bank holidays scattered
+    throughout the year, it’s likely that this group of features will be quite noisy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e680c0527202e507857572b23771db48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: … and that’s exactly what we see. Notice how the majority of impact oscillates
+    between a reduction of 1% (0.99) and an increase of 2% (1.02), with some sharp
+    drops likely coinciding with months with more holidays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think it’s fairly safe to say that we can isolate the impact of each effect
+    on any given observation — exactly what we wanted when we set out on this little
+    adventure!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrap up and ramble
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve covered a lot of ground in this article. As is tradition, a quick recap
+    before a bit of a ramble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After touching on our aspirations to build an awesome forecasting model we looked
+    at UK road traffic accident data. We saw strong trend and seasonality in our aggregated
+    monthly counts and knew that our feature engineering and modelling would need
+    to work overtime to capture these effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We discussed how the model that we build should be able to forecast well, should
+    be explainable and interpretable, and should have some form of inherent feature
+    selection. We also discussed why the LASSO model ticked those boxes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We moved on to the model form, and how we transformed the target in order to
+    better suit the multiplicative form of the time series. The regularisation parameter
+    `alpha` was explored, as was an appropriate (time series) cross-validation approach
+    to arrive at the optimal `alpha` for forecasting. We sense-checked by plotting
+    out-of-time forecasts before rebuilding the model using `alpha` and the entire
+    span of historical data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following that, we saw how SHAP can be used to effectively investigate the inner
+    workings of the LASSO model. We then took advantage of the separable nature of
+    the model to investigate and quantify the impact of the trend, seasonal, and holiday
+    effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s ramble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trees can’t extrapolate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: … and other reasons for using a generalised linear model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most well-known challenges with tree-based models is their inability
+    to extrapolate beyond the values of the data that they were trained on. Using
+    tree-based models indirectly puts an upper and lower bound on prediction values;
+    given how our series was trending over time, this probably isn’t an appropriate
+    concession to make.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Neural networks can extrapolate but given their complexity I decided to fall
+    back to my bread-and-butter: the humble GLM.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although simple, GLM have a lot going for them. Even more so given our specific
+    requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GLM are widely used and understood. Their familiarity means that they are easy
+    to explain and communicate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The model structure means that effective selection of a link function can make
+    the model tractable. Particularly useful is the comparison we can do relative
+    to the “base” observation as this allows us to quantify the impact of a given
+    level of a given feature, all else being equal.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Along a similar line, we can calculate the *exact* effect of a given level of
+    a given feature. This makes it much more straightforward to ensure that certain
+    conditions — like a customer’s expectation — are enforced.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'On a more practical note, our model form allows us to do some manual “adjustments”
+    straightforwardly. As an example: what if we believe that our time series trend
+    is heading in a different direction to what the data suggests? Well, we can apply
+    the modelled seasonality and holiday effects on top of the assumed future trend
+    and arrive at a bespoke forecast. We can generalise this approach and apply various
+    adjustments — great for scenario testing and communicating the outcome of “what
+    if?” questions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, it’s not all sunshine and rainbows with GLM. They can be quite tricky
+    to build, oftentimes requiring expert judgement. They can also become annoyingly
+    fiddly when we start to introduce feature interactions (which we have to create
+    ourselves!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As with most things, you have to pick the right tool for the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Leftovers: the model residuals'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We fitted a model to a time series known to have a strong trend and seasonal
+    effect present. How do we know that we’ve captured that trend and seasonality
+    adequately?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One avenue to investigate is the model residuals: the difference between the
+    actual and predicted values. Any trend or seasonality in the residuals would indicate
+    that the model hasn’t adequately accounted for these effects; we’d need to take
+    steps to address this.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naturally I’ve not done this. Do as I say, not as I do and all that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly, the approach of investigating model residuals does actually segue
+    neatly to different modelling approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some practitioners — including those I work with — are advocates for mixed models
+    where we fit a simple model to the original series and then model the residuals
+    with a different kind of time series model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The underlying logic here is that the simple model adequately captures the
+    trend, and so the residuals contain no long-term non-periodic effect: that is,
+    the residuals are stationary. This opens the door to other techniques which either
+    rely on the assumption of stationarity — like some time series approaches — or
+    can benefit from stationarity as they don’t handle extrapolation particularly
+    well — like tree-based approaches.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Group SHAP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Most practitioners love a bit of SHAP. And for good reason — look how informative
+    and easy to understand those visualisations are!
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it would be even better if we were able to combine various features
+    into sets of features, and feed those *sets* of features into the SHAP visualisations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although we did something similar manually, SHAP waterfall plots for grouped
+    features would really bring to life the drivers of prediction… and it looks like
+    we might be able to do just that¹⁰.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making life easier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My workflow does everything the hard way, including manual cross-validation
+    loops. This is not a brag, believe me — I’d much rather take the path of least
+    resistance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I ended up doing things manually because I couldn’t get scikit-learn’s randomised
+    cross-validation¹² search to work. I think it’s due to using a `Pipeline` estimator
+    rather than just the `Lasso` class (remember that we need to normalise input features
+    before fitting a LASSO model) but I’m not sure. If you know the solution — or
+    can point me in the right direction — please do let me know.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly `LassoCV` turns out to be a thing in scikit-learn. This is a self-tuning
+    LASSO model — that’s right, point it at your data and it determines the optimal
+    value of `alpha` autonomously. It looks like it can even take bespoke instances
+    of cross-validation generators¹¹ although I’m not sure if that includes time series
+    cross-validation. One to check out for next time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it from me. I hope you enjoyed reading this as much as I enjoyed writing
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, please let me know what you think — I’m really interested to hear
+    about your experiences with Prophet or with modelling time series in different
+    ways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Until next time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References and and useful resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[GitHub — facebook/prophet: Tool for producing high quality forecasts for time
+    series data that has multiple seasonality with linear or non-linear growth.](https://github.com/facebook/prophet)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Vincent Warmerdam: Winning with Simple, even Linear, Models | PyData London
+    2018 — YouTube](https://www.youtube.com/watch?v=68ABAU_V8qI&list=WL&index=32&t=2183s)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://roadtraffic.dft.gov.uk/downloads](https://roadtraffic.dft.gov.uk/downloads)
+    used under the [Open Government Licence (nationalarchives.gov.uk)](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Forecasting at scale (peerj.com)](https://peerj.com/preprints/3190.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A comprehensive guide to time series decomposition | Towards AI](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Trend Changepoints | Prophet (facebook.github.io)](https://facebook.github.io/prophet/docs/trend_changepoints.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Lasso (statistics) — Wikipedia](https://en.wikipedia.org/wiki/Lasso_(statistics))'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Civil-liability-act-2018-Q-and-A.docx (live.com)](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F5c62d226ed915d04538f124f%2FCivil-liability-act-2018-Q-and-A.docx%23%3A%7E%3Atext%3DThe%2520Civil%2520Liability%2520Act%25202018%2520makes%2520important%2520changes%2520to%2520the%2Cinjury%2520discount%2520rate%2520is%2520set.&wdOrigin=BROWSELINK)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[interaction.pdf (mcgill.ca)](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Is it Valid to Aggregate SHAP values to Sets of of Features? · Issue #933
+    · shap/shap · GitHub](https://github.com/shap/shap/issues/933)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[3.2.3.1.5\. sklearn.linear_model.LassoCV — scikit-learn 0.15-git documentation](https://scikit-learn.org/0.15/modules/generated/sklearn.linear_model.LassoCV.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[sklearn.model_selection.RandomizedSearchCV — scikit-learn 1.3.1 documentation](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

@@ -1,0 +1,740 @@
+- en: Recurrent Neural Networks, Explained and Visualized from the Ground Up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/recurrent-neural-networks-explained-and-visualized-from-the-ground-up-51c023f2b6fe](https://towardsdatascience.com/recurrent-neural-networks-explained-and-visualized-from-the-ground-up-51c023f2b6fe)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/0b3a777d2e37126f432db24797c1b6ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Unsplash](https://unsplash.com/photos/rSrK-P0Wips)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With an application to machine translation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://andre-ye.medium.com/?source=post_page-----51c023f2b6fe--------------------------------)[![Andre
+    Ye](../Images/c69b022a665d3ee13f9fec2f1f73bf32.png)](https://andre-ye.medium.com/?source=post_page-----51c023f2b6fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51c023f2b6fe--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51c023f2b6fe--------------------------------)
+    [Andre Ye](https://andre-ye.medium.com/?source=post_page-----51c023f2b6fe--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51c023f2b6fe--------------------------------)
+    ·23 min read·Jun 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recurrent Neural Networks (RNNs) are neural networks that can operate sequentially.
+    Although they’re not as popular as they were even just several years ago, they
+    represent an important development in the progression of deep learning and are
+    a natural extension of feedforward networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post, we’ll cover the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The step from feedforward to recurrent networks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multilayer recurrent networks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Long short-term memory networks (LSTMs)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sequential output (‘text output’)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bidirectionality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autoregressive generation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An application to machine translation (a high-level understanding of Google
+    Translate’s 2016 model architecture)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The aim of the post is not only to explain how RNNs work (there are plenty of
+    posts which do that), but to explore their design choices and high-level intuitive
+    logic with the aid of illustrations. I hope this article will provide some unique
+    value not only to your grasp of this particular technical topic but also more
+    generally the flexibility of deep learning design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The design of the [Recurrent Neural Network](https://apps.dtic.mil/dtic/tr/fulltext/u2/a164453.pdf)
+    (1985) is premised upon two observations about how an ideal model, such as a human
+    reading text, would process sequential information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*It should track the information ‘learned’ so far so it can relate new information
+    to previously seen information*. To understand the sentence “the quick brown fox
+    jumped over the lazy dog”, I need to keep track of the words ‘quick’ and ‘brown’
+    to understand later that these apply to the word ‘fox’. If I do not retain any
+    of this information in my ‘short-term memory’, so to speak, I will not understand
+    the sequential significance of information. When I finish the sentence on ‘lazy
+    dog’, I read this noun in relationship to the ‘quick brown fox’ which I previous
+    encountered.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Even though later information will always be read in the context of earlier
+    information, we want to process each word (token) in a similar way regardless
+    of its position*. We should not for some reason systematically transform the word
+    at the third position different from the word in the first position, even though
+    we might read the former in light of the latter. Note that the previous proposed
+    approach — in which embeddings for all tokens are stacked side-to-side and presented
+    simultaneously to the model — does not possess this property, since there is no
+    guarantee that the embedding corresponding to the first word is read with the
+    same rules as the embedding corresponding to the third one. This general property
+    is also known as positional invariance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A Recurrent Neural Network is comprised, at the core, of recurrent layers. A
+    recurrent layer, like a feed-forward layer, is a set of learnable mathematical
+    transformations. It turns out that we can approximately understand recurrent layers
+    in terms of Multi-Layer Perceptrons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ‘short-term memory’ of a recurrent layer is referred to as its *hidden
+    state*. This is a vector — just a list of numbers — which communicates crucial
+    information about what the network has learned so far. Then, for every token in
+    the standardized text, we *incorporate the new information into the hidden state*.
+    We do this using two MLPs: one MLP transforms the current embedding, and the other
+    transforms the current hidden state. The outputs of these two MLPs are added together
+    to form the updated hidden state, or the ‘updated short-term memory’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d496c088659d1b9f85ebf37ad7cdd03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We then repeat this for the next token — the embedding is passed into an MLP
+    and the updated hidden state is passed into another; the outputs of both are added
+    together. This is repeated for each token in the sequence: one MLP transforms
+    the input into a form ready for incorporation into short term memory (hidden state),
+    while another prepares the short term memory (hidden state) to be updated. This
+    satisfies our first requirement — that we want to read new information in context
+    of old information. Moreover, both of these MLPs *are the same across each timestep*.
+    That is, we use the same rules for how to merge the current hidden state with
+    new information. This satisfies our second requirement — that we must use the
+    same rules for each timestep.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Both of these MLPs are generally implemented as just one layer deep: that is,
+    it is just one large stack of logistic regressions. For instance, the following
+    figure demonstrates how the architecture for MLP A might look like, assuming that
+    each embedding is eight numbers long and that the hidden state also consists of
+    eight numbers. This is a simple but effective transformation to map the embedding
+    vector to a vector suitable for merging with the hidden state.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c12377e1cbe382becda6e97204b6edaa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When we finish incorporating the last token into the hidden state, the recurrent
+    layer’s job is finished. It has produced a vector — a list of numbers — which
+    represents information accumulated by reading over a sequence of tokens in a sequential
+    way. We can then pass this vector through a third MLP, which learns the relationship
+    between the ‘current state of memory’ and the prediction task (in this case, whether
+    the stock price went down or up).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mechanics for updating the weights are too complex to discuss in detail
+    in this book, but it is similar to the logic of the backpropagation algorithm.
+    The additional complication is to trace the compounded effect of each parameter
+    acting repeatedly on its own output (hence the ‘recurrent’ nature of the model),
+    which can mathematically be addressed with a modified algorithm termed ‘backpropagation
+    through time’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Recurrent Neural Network is a fairly intuitive way to approach the modeling
+    of sequential data. It is yet another case of complex arrangements of linear regression
+    models, but it is quite powerful: it allows us to systematically approach difficult
+    sequential learning problems such as language.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For convenience of diagramming and simplicity, you will often see the recurrent
+    layer represented simply as a block, rather than as an expanded cell acting sequentially
+    on a series of inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/640cbaa9e4a7ed59d00fda968150d2dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is the simplest flavor of a Recurrent Neural Network for text: standardized
+    input tokens are mapped to embeddings, which are fed into a recurrent layer; the
+    output of the recurrent layer (the ‘most recent state of memory’) is processed
+    by an MLP and mapped to a predicted target.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complex Flavors of Recurrent Networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recurrent layers allow for networks to approach sequential problems. However,
+    there are a few problems with our current model of a Recurrent Neural Network.
+    To understand how recurrent neural networks are used in real applications to model
+    difficult problems, we need to add a few more bells and whistles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of these problems is a *lack of depth*: a recurrent layer simply passes
+    once over the text, and thus obtains only a surface-level, cursory reading of
+    the content. Consider the sentence “Happiness is not an ideal of reason but of
+    imagination”, from the philosopher Immanuel Kant. To understand this sentence
+    in its true depth, we cannot simply pass over the words once. Instead, we read
+    over the words, and then — this is the critical step — *we read over our thoughts*.
+    We evaluate if our immediate interpretation of the sentence makes sense, and perhaps
+    modify it to make deeper sense. We might even read over our thoughts about our
+    thoughts. This all happens very quickly and often without our conscious knowledge,
+    but it is a process which enables us to extract multiple layers of depth from
+    the content of text.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correspondingly, we can add *multiple recurrent layers* to increase the depth
+    of understanding. While the first recurrent layer picks up on surface-level information
+    form the text, the second recurrent layer reads over the ‘thoughts’ of the first
+    recurrent layer. The double-informed ‘most recent memory state’ of the *second*
+    layer is then used as the input to the MLP which makes the final decision. Alternatively,
+    we could add more than two recurrent layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8cdfe60807421ede75a0442622f33b49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To be specific about how this stacking mechanism works, consult the following
+    figure: rather than simply passing each hidden state on to be updated, we also
+    give this input state to the *next* recurrent layer. While the first input to
+    the first recurrent layer is an embedding, the first input to the *second* recurrent
+    layer is “what the first recurrent layer thought about the first input”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ca82cb796c8ef732be6536e48d7ae2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Almost all Recurrent Neural Networks employed for real-world language modeling
+    problems use stacks of recurrent layers rather than a single recurrent layer due
+    to the increased depth of understanding and language reasoning. For large stacks
+    of recurrent layers, we often use *recurrent residual connections*. Recall the
+    concept of a residual connection, in which an earlier version of information is
+    added to a later version of information. Similarly, we can place residual connections
+    between the hidden states of each layer such that layers can refer to various
+    ‘depths of thinking’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8351e7ce0df3d2b3c6a8789cb1a7d439.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'While recurrent models may perform well on short and simple sentences such
+    as “feds announce recession”, financial documents and news articles are often
+    much longer than a few words. For longer sequences, standard recurrent models
+    run into a persistent *long-term memory loss* problem: often the signal or importance
+    of words earlier on in the sequence are diluted and overshadowed by later words.
+    Since each timestep adds its own influence to the hidden state, it partially destroys
+    a bit of the earlier information. Thus, at the end of the sequence, most of the
+    information at the beginning becomes unrecoverable. The recurrent model has a
+    narrow window of attentive focus/memory. If we want to make a model which can
+    look over and analyze documents with comparable understanding and depth as a human,
+    we need to address this memory problem.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The [Long Short-Term Memory (LSTM)](https://www.bioinf.jku.at/publications/older/2604.pdf)
+    (1997) layer is a more complex recurrent layer. Its specific mechanics are too
+    complex to be discussed accurately or completely in this book, but we can roughly
+    understand it as an attempt to separate ‘long-term memory’ from ‘short-term memory’.
+    Both components are relevant when ‘reading’ over a sequence: we need long-term
+    memory to track information across large distances in time, but also short-term
+    memory to focus on specific, localized information. Therefore, instead of just
+    storing a single hidden state, the LSTM layer also uses a ‘cell state’ (representing
+    the ‘long term memory’).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each step, the input is incorporated with the hidden state in the same fashion
+    as in the standard recurrent layer. Afterwards, however, comes three steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Long-term memory clearing*. Long-term memory is precious; it holds information
+    that we will keep throughout time. The current short-term memory state is used
+    to determine what part of the long-term memory is no longer needed and ‘cuts it
+    out’ to make room for new memory.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Long-term memory update*. Now that space has been cleared in the long-term
+    memory, the short-term memory is used to update (add to) the long-term memory,
+    thereby committing new information to long-term memory.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Short-term memory informing*. At this point, the long-term memory state is
+    fully updated with respect to the current timestep. Because we want the long-term
+    memory to inform how short-term memory function, the long-term memory helps cut
+    out and modify the short-term memory. Ideally, the long-term memory is greater
+    oversight on what is important and what is not important to keep in short-term
+    memory.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Therefore, the short-term memory and long-term memory — which, remember, are
+    both lists of numbers — interact with each other and the input at each timestep
+    to read the input sequence in a way which allows for close reading without catastrophic
+    forgetting. This three-step process is depicted graphically in the following figure.
+    A `+`indicates information addition, whereas `x` indicates information removing
+    or cleansing. (Addition and multiplication are the mathematical operations used
+    to implement these ideas in practice. Say the current value of the hidden state
+    is 10\. If I multiply it by 0.1, it becomes 1 — therefore, I have ‘cut down’ the
+    information in the hidden state.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28669a8fb613065d4bb8434c24c02fc8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using stacks of LSTMs with residual connections, we can build powerful language
+    interpretation models which are capable of reading (‘understanding’, if you like)
+    paragraphs and even entire articles of text. Besides being used in financial analysis
+    to pore through large volumes of financial and news reports, such models can also
+    be used to predict potentially suicidal or terroristic individuals from their
+    social media post texts and messages, to recommend customers novel products they
+    are likely to purchase given their previous product reviews, and to detect toxic
+    or harassing comments and posts on online platforms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Such applications force us to think critically about their material philosophical
+    implications. The government has a strong interest in detecting potential terrorists,
+    and the shooters behind recent massacres have often been shown to have had a troubling
+    public social media record — but the tragedy was that they were not found in a
+    sea of Internet information. Language models like recurrent models, as you have
+    seen for yourself, function purely mathematically: they attempt to find the weights
+    and biases which best model the relationship between the input text and the output
+    text. But to the extent that these weights and biases mean something, they can
+    ‘read’ information in an effective and exceedingly quick manner — much more quickly
+    and maybe even more effectively than human readers. These models may allow the
+    government to detect, track, and stop potential terrorists before they act. Of
+    course, this can come at the cost of privacy. Moreover, we have seen how language
+    models — while capable of mechanically tracking down patterns and relationships
+    within the data — are really just mathematical algorithms which are capable of
+    making mistakes. How should a model’s mistaken labeling of an individual as a
+    potential terrorist be reconciled?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Social media platforms, both under pressure from users and the government,
+    want to reduce harassment and toxicity on online forums. This may seem to be a
+    deceptively simple task, conceptually speaking: label a corpus of social media
+    comments as toxic or not toxic, then train a language model to predict a particular
+    text sample’s toxicity. The immediate problem is that digital discourse is incredibly
+    challenging due to the reliance upon quickly changing references (memes), in-jokes,
+    well-veiled sarcasm, and prerequisite contextual knowledge. The more interesting
+    philosophical problem, however, is if one can and should really train a mathematical
+    model (an ‘objective’ model) to predict a seemingly ‘subjective’ target like toxicity.
+    After all, what is toxic to one individual may not be toxic to another.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we venture into models which work with increasingly personal forms of data
+    — language being the medium through which we communicate and absorb almost all
+    of our knowledge — we find an increased significance to think about and work towards
+    answering these questions. If you are interested in this line of research, you
+    may want to look into alignment, jury learning, constitutional AI, RLHF, and value
+    pluralism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neural Machine Translation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Concepts*: multi-output recurrent models, bidirectionality, attention'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Machine translation is an incredible technology: it allows individuals who
+    previously could not communicate at all without significant difficulty to engage
+    in free dialogue. A Hindi speaker can read a website written in Spanish with a
+    click of a ‘Translate this page’ button, and vice versa. An English speaker watching
+    a Russian movie can enable live-translated transcriptions. A Chinese tourist in
+    France can order food by obtaining a photo-based translation of the menu. Machine
+    translation, in a very literal way, melds languages and cultures together.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior to the rise of deep learning, the dominant approach to machine translation
+    was based on lookup tables. For instance, in Chinese, ‘I’ translates to ‘我’, ‘drive’
+    translates to ‘开’, and ‘car’ translates to ‘车’. Thus ‘I drive car’ would be translated
+    word-to-word as ‘我开车’. Any bilingual speaker, however, knows the weaknesses of
+    this system. Many words which are spelled the same have different meanings. One
+    language may have multiple words which are translated in another language as just
+    one word. Moreover, different languages have different grammatical structures,
+    so the translated words themselves would need to be rearranged. Articles in English
+    have multiple different context-dependent translations in gendered languages like
+    Spanish and French. Many attempts to reconcile these problems with clever linguistic
+    solutions have been devised, but are limited in efficacy to short and simple sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep learning, on the other hand, provides us the chance to build models which
+    more deeply understand language — perhaps even closer to how humans understand
+    language — and therefore more effectively perform the important task of translation.
+    In this section, we will introduce multiple additional ideas from the deep modeling
+    of language and culminate in a technical exploration of how Google Translate works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text-Output Recurrent Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Currently, the most glaring obstacle to building a viable recurrent model is
+    the inability to *output text*. The previously discussed recurrent models could
+    ‘read’ but not ‘write’ — the output, instead, was a single number (or a collection
+    of numbers, a vector). To address this, we need to endow language models with
+    the ability to output entire series of text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Luckily, we do not have to do much work. Recall the previously introduced concept
+    of recurrent layer stacking: rather than only collecting the ‘memory state’ after
+    the recurrent layer has run through the entire sequence, we collect the ‘memory
+    state’ *at each timestep*. Thus, to output a sequence, we can collect the output
+    of a memory state at each timestep. Then, we pass each memory state into a designated
+    MLP which predicts which word of the output vocabulary to predict given the memory
+    state (marked as ‘MLP C’). The word with the highest predicted probability is
+    selected as the output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2dad127d02a4facb045fea2058df644.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To be absolutely clear about how each memory-state is transformed into an output
+    prediction, consider the following progression of figures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the first figure, the first outputted hidden state (this the hidden state
+    derived after the layer has read the first word, ‘the’) is passed into MLP C.
+    MLP C outputs a *probability distribution over the output vocabulary*; that is,
+    it gives each word in the output vocabulary a probability indicating how likely
+    it is for that word to be chosen as the translation at that time. This is a feedforward
+    network: we are essentially performing a logistic regression on the hidden state
+    to determine the likelihood of a given word. Ideally, the word with the largest
+    probability should be ‘les’, since this is the French translation of ‘the’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ded365557efb1cccd1ebb61582ea21a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The next hidden state, derived after the recurrent layer has read through both
+    ‘the’ and ‘machines’, is passed into MLP C again. This time, the word with the
+    highest probability should ideally be ‘machine’ (this is the plural translation
+    of ‘machines’ in French).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2087111f8fcaebabce4e80930e56985a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The most likely word selected in the last timestep should be ‘gagnent’, which
+    is the translation for ‘win’ in its particular tense. The model should select
+    ‘gagnent’ and not ‘gagner’, or some different tense of the word, based on the
+    previous information it has read. This is where the advantages of using a deep
+    learning model for translation shines: the ability to grasp grammatical rules
+    which manifest across the entire sentence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08ff1fb65794487c0421087dd13ee9fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Practically speaking, we often want to stack multiple recurrent layers together
+    rather than just a single recurrent layer. This allows us to develop multiple
+    layers of understanding, first ‘understanding’ what the input text means, then
+    re-expressing the ‘meaning’ of the input text in terms of the output language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9fb96be5f2f1ff841854239b49c2ea8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bidirectionality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Note that the recurrent layer proceeds sequentially. When it reads the text
+    “the machines win”, it first reads “the”, then “machines”, then “win”. While the
+    last word, “win”, is read in context of the previous words “the” and “machines”,
+    this converse is not true: the first word, “the”, is *not* read in context of
+    the *later* words “machines” and “win”. This is a problem, because language is
+    often spoken in anticipation of what we will say later. In a gendered language
+    like French, an article like “the” can take on many different forms — “la” for
+    a feminine object, “le” for a masculine object, and “les” for plural objects.
+    We do not know which version of “the” to translate. Of course, once we read the
+    rest of the sentence — “the machines” — we know that the object is plural and
+    that we should use “les”. This is a case in which earlier parts of a text are
+    informed by later parts. More generally speaking, when we re-read a sentence —
+    which we often do instinctively without realizing it — we are reading the beginning
+    in context of the beginning. Even though language is read in sequence, it must
+    often be interpreted ‘out of sequence’ (that is, not strictly unidirectionally
+    from-beginning-to-end).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address this problem, we can use *bidirectionality* — a simple modification
+    to recurrent models which enables layers to ‘read’ both forwards and backwards.
+    A *bidirectional recurrent layer* is really two different recurrent layers. One
+    layer reads forward in time, whereas the other reads backwards. After both are
+    finished reading, their outputs at each timestep are added together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d09726387b5e789a76ad9bf772c9da4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bidirectionality enables the model to read text in a way such that the past
+    is read in the context of the future, in addition to reading the future in context
+    of the past (the default functionality of a recurrent layer). Note that the output
+    of the bidirectional recurrent layer at each timestep is informed by the entire
+    sequence rather than just all the timesteps before it. For instance, in a 10-timestep
+    sequence, the timestep at *t* = 3 is informed by a ‘memory state’ which has already
+    read through the sequence [*t* = 0] → [*t =* 1] → [*t* = 2] → [*t* = 3] *as well*
+    *as* another ‘memory state’ which has already read through the sequence [*t* =
+    9] → [*t* = 8] → [*t* = 7] → [*t* = 6] → [*t* = 5] → [*t* = 4] → [*t* = 3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: This simple modification enables significantly richer depth of language understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoregressive Generation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Our current working model of a translation model is a large stack of (bidirectional)
+    recurrent layers. However, there is a problem: when we translate some text *A*
+    into some other text *B*, we don’t just write *B* with reference to *A*, we also
+    write *B in reference to itself*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can’t directly translate complex sentences from the Russian “Грузовик внезапно
+    остановился потому что дорогу переходила курица” into the English “The truck suddenly
+    stopped because a chicken was crossing the road” by directly reading out the Russian:
+    if we translated the Russian word-for-word in order, we would get “Truck suddenly
+    stopped because road was crossed by chicken”. In Russian, the object is placed
+    after the noun, but keeping this form in English is certainly readable but not
+    smooth nor ‘optimal’, so to speak. The key idea is this: to obtain a comprehensible
+    and usable translation, we not only need to make sure the translation is faithful
+    to the original text but also ‘faithful to itself’ (self-consistent).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to do this, we need a different text generation called *autoregressive
+    generation*. This allows the model to translate each word not only in relationship
+    to the original text, but to what the model has already translated. Autoregressive
+    generaiton is the dominant paradigm not only for neural translation models but
+    for all sorts of modern text generation models, including advanced chatbots and
+    content generators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We begin with an ‘encoder’ model. The encoder model, in this case, can be represented
+    as a stack of recurrent layers. The encoder reads in the input sequence and derives
+    a single output, the encoded representation. This single list of numbers represents
+    the ‘essence’ of the input text sequence in quantitative form — its ‘universal/real
+    meaning’, if you will. The objective of the encoder is to distill the input sequence
+    into this fundamental packet of meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11ef4e5c4899c524da9d813e7b45ddb3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once this encoded representation has been obtained, we begin the task of *decoding*.
+    The decoder is similarly structured to the encoder — we can think of it as another
+    stack of recurrent layers which accepts a sequence and produces an output. In
+    this case, the decoder accepts the encoded representation (i.e. the output of
+    the encoder) *and* a special ‘start token’ (denoted </s>). The start token represents
+    the beginning of a sentence. The decoder’s task is to predict the next word in
+    the given sentence; in this case, it is given a ‘zero-word sentence’ and therefore
+    must predict the first word. In this case, there is no previous translated content,
+    so the decoder is relying wholly on the encoded representation: it predicts the
+    first word, ‘The’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f494d3a6e3215df562f7d5a6b0a967cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next is the key autoregressive step: we take the decoder’s previous outputs
+    and plug them back into the decoder. We now have a ‘one-word sentence’ (the start
+    token followed by the word ‘The’). Both tokens are passed into the decoder, along
+    the encoded representation — the same one as before, outputted by the encoder
+    — and now the decoder predicts the next word, “truck”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a9874d558fc2823e7b4a092ca7545b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This token is then treated as another input. Here, we can more clearly realize
+    why autoregressive generation is a helpful algorithmic scaffold for text generation:
+    being given the knowledge that the current working sentence is “The truck” constrains
+    how we can complete it. In this case, the next word will likely be a verb or an
+    adverb, which we ‘know’ as a grammatical structure. On the other hand, if the
+    decoder only had access to the original Russian text, it would not be able to
+    effectively constrain the set of possibilities. In this case, the decoder is able
+    to reference both what has previously been translated and the meaning of the original
+    Russian sentence to correctly predict the next word as “suddenly”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4048674b8a1e510831b706bf5644b08d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This autoregressive generation process continues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba152de9d0d54c0c925cc0ac96cf0a5f.png)![](../Images/4abbf1a12c74e288f7cb519d4746d6f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Lastly, to end a sentence, the decoder model predicts a designated ‘end token’
+    (denoted as </e>). In this case, the decoder will have ‘matched’ the current translated
+    sentence against the encoded representation to determine whether the translation
+    is satisfactory and stop the sentence generation process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d537de8d81e29164eff4ecc8f58d930.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2016 Google Translate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'By now, we’ve covered a lot of ground. Now, we have most of the pieces needed
+    to develop a somewhat thorough understanding of how the model for Google Translate
+    was designed. I need to say very little towards the significance of a model like
+    that provided by Google Translate: even if rough, an accurate and accessible neural
+    machine translation system breaks down many language barriers. For us, this particular
+    model helps unify many of the concepts we’ve talked about in one cohesive application.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This information is taken from the 2016 [Google Neural Machine Translation paper](https://arxiv.org/abs/1609.08144),
+    which introduced Google’s deep learning system for machine translation. While
+    it is almost certain that the model in use has changed in the many years since
+    then, this system still provides an interesting case study into neural machine
+    translation systems. For clarity, we will refer to this system as ‘Google Translate’,
+    acknowledging that it is likely not current.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Google Translate uses an encoder-decoder autoregressive model. That is, the
+    model consists of *encoder component* and a *decoder component*; the decoder is
+    autoregressive (recall from earlier: it accepts previously generated outputs as
+    an input in addition to other information, in this case the output of the encoder).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The encoder is a stack of *seven* long short-term memory (LSTM) layers. The
+    first layer is bidirectional (there are therefore technically 8 layers, since
+    a bidirectional layer ‘counts as two’), which allows it to capture important patterns
+    in the input text going in both directions (bottom figure, left). Moreover, the
+    architecture employs *residual connections* between every layer (bottom figure,
+    right). Recall from previous discussion that residual connections in recurrent
+    neural networks can be implemented by adding the input to a recurrent layer to
+    the output at every timestep, such that the recurrent layer ends up learning the
+    optimal difference to apply to the input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22774fe6edf6d852af058c78b744cdc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The decoder is also a stack of eight LSTM layers. It accepts the previously
+    generated sequence in autoregressive fashion, beginning with the start token `</s>`.
+    The Google Neural Machine Translation architecture, however, uses both autoregressive
+    generation *and* attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Attention scores are computed for each of the original text words (represented
+    by hidden states in the encoder, which iteratively transform text but still positionally
+    represents it). We can think of attention as a dialogue between the decoder and
+    the encoder. The decoder says: “I have generated [sentence] so far, I want to
+    predict the next translated word. Which words in the original sentence are most
+    relevant to this next translated word?” The encoder replies, “Let me look at what
+    you are thinking about, and I will match it to what I have learned about each
+    word in the original input… ah, you should pay attention to [word A] but not so
+    much to [word B] and [word C], they are less relevant to predicting the next particular
+    word.” The decoder thanks the encoder: “I will think about this information to
+    determine how I go about generating, such that I indeed focus on [word A].” Information
+    about attention is sent to every LSTM layer, such that this attention information
+    is known at all levels of generation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This represents the main mass of the Google Neural Machine Translation system.
+    The model is trained on a large dataset of translation tasks: given the input
+    in English, say, predict the output in Spanish. The model learns the optimal ways
+    of reading (i.e. the parameters in the encoder), the optimal ways of attending
+    to the input (i.e. the attention calculation), and the optimal ways of relating
+    the attended input to an output in Spanish (i.e. the parameters in the decoder).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/254fcf5ffc5a0a13c1220b2c37848389.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Subsequent work has expanded neural machine translation systems to multilingual
+    capability, in which a single model can be used to translate between multiple
+    pairs of languages. This is not only necessary from a practical standpoint — it
+    is infeasible to train and store a model for every pair of languages — but also
+    has shown to improve the translation between any two pair of languages. Moreover,
+    the GNMT paper provides details on training — this is a very deep architecture
+    which is constrained by hardware — and actual deployment — large models are slow
+    not only to train but also to get predictions on, but Google Translate users don’t
+    want to have to wait more than a few seconds to translate text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the GNMT system certainly is a landmark in computational language understanding,
+    just a few years later a new, in some ways radically simplified, approach would
+    completely change up language modeling — and do away altogether with the once-common
+    recurrent layers which we so painstakingly worked to understand. Keep posted for
+    a second post on Transformers!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this post, we did a thorough survey of recurrent neural networks: their
+    design logic, more complex features, and applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some key points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RNNs are a natural extension of feedforward networks and can be used for machine
+    translation. RNNs are designed to track information learned so far and relate
+    new information to previously seen information, similar to how humans process
+    sequential information.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: RNNs use recurrent layers that have a hidden state representing short-term memory.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recurrent layers can be stacked to increase the depth of understanding and reasoning
+    in the network.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Long Short-Term Memory (LSTM) networks are a more complex type of recurrent
+    layer that separate long-term memory from short-term memory. LSTMs have mechanisms
+    for clearing, updating, and informing both long-term and short-term memory.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: RNNs have applications in various fields such as financial analysis, social
+    media analysis, recommendation systems, and language translation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The use of RNNs in real-world applications raises philosophical and ethical
+    questions regarding privacy, model mistakes, and subjectivity in labeling toxic
+    or harmful content.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Neural Machine Translation is a powerful application of RNNs that enables language
+    translation between different languages, facilitating communication and cultural
+    exchange.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All photos by author.*'
+  prefs: []
+  type: TYPE_NORMAL

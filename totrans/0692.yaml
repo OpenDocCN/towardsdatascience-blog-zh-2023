@@ -1,0 +1,597 @@
+- en: Deep Deterministic Policy Gradients (DDPG) Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-4643c1f71b2e](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-4643c1f71b2e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A gradient-based reinforcement learning algorithm to learn deterministic policies
+    for continuous action spaces
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wvheeswijk.medium.com/?source=post_page-----4643c1f71b2e--------------------------------)[![Wouter
+    van Heeswijk, PhD](../Images/9c996bccd6fdfb6d9aa8b50b93338eb9.png)](https://wvheeswijk.medium.com/?source=post_page-----4643c1f71b2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4643c1f71b2e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4643c1f71b2e--------------------------------)
+    [Wouter van Heeswijk, PhD](https://wvheeswijk.medium.com/?source=post_page-----4643c1f71b2e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4643c1f71b2e--------------------------------)
+    ·11 min read·Apr 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2b615669a6ed7f8931e91857e17ab23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jonathan Ford](https://unsplash.com/@jonfordphotos?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article introduces Deep Deterministic Policy Gradient (DDPG) — a Reinforcement
+    Learning algorithm suitable for **deterministic policies applied in continuous
+    action spaces**. By combining the actor-critic paradigm with deep neural networks,
+    continuous action spaces can be tackled without resorting to stochastic policies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Especially for continuous control tasks in which randomness in actions is undesirable
+    — e.g., robotics or navigation — DDPG might be just the algorithm you need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does DDPG fit in the RL landscape?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: DDPG displays elements of policy-based methods as well as value-based methods,
+    making it a hybrid policy class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----4643c1f71b2e--------------------------------)
+    [## The Four Policy Classes of Reinforcement Learning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----4643c1f71b2e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Policy gradient methods** like [REINFORCE](https://medium.com/towards-data-science/policy-gradients-in-reinforcement-learning-explained-ecec7df94245),
+    [TRPO](https://medium.com/towards-data-science/trust-region-policy-optimization-trpo-explained-4b56bd206fc2),
+    and [PPO](/proximal-policy-optimization-ppo-explained-abed1952457b) use stochastic
+    policies *π:a~P(a|s)* to explore and compare actions. These methods draw actions
+    from a differentiable distribution *P_θ(a|s)*, which enables the computation of
+    gradients with respect to *θ*. The inherent randomness in these decisions could
+    be undesirable real-world applications. DDPG eliminates this randomness, yielding
+    simpler and more predictable policies.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Value-based methods** like [SARSA](/walking-off-the-cliff-with-off-policy-reinforcement-learning-7fdbcdfe31ff),
+    [Monte Carlo Learning](https://medium.com/towards-data-science/cliff-walking-with-monte-carlo-reinforcement-learning-587e9d3bc4e7),
+    and [Deep Q-Learning](/a-minimal-working-example-for-deep-q-learning-in-tensorflow-2-0-e0ca8a944d5e)
+    are based on deterministic policies that always return a single action given an
+    input state. However, these methods assume a finite number of actions, which makes
+    evaluating their value functions and selecting the most rewarding actions difficult
+    for continuous action spaces with infinitely many actions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you guessed, Deep Deterministic Policy Gradients fill the gap, incorporating
+    **elements of both Deep Q-Learning and policy gradient methods**. DDPG effectively
+    handles continuous action spaces and has been successfully applied in robotic
+    control- and game-playing tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re unfamiliar with policy gradient algorithms (in particular REINFORCE)
+    or value-based methods (in particular DQN), it’s recommended to learn about them
+    before exploring DDPG.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'DDPG: The critic'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: DDPG is remarkably **close to Deep Q-Learning**, sharing both notation and concepts.
+    Let’s make a quick journey.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DQN for continuous action spaces?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In vanilla (i.e., tabular) Q-learning, we use Q-values to approximate the Bellman
+    value function *V*. Q-values are defined for every state-action pair and thus
+    denoted by *Q(s,a)*. Tabular Q-learning requires a **lookup table** containing
+    a Q-value for each pair, thus necessitating a discrete state space and a discrete
+    action space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Time to put the *‘deep’* in Deep Reinforcement Learning. Compared to lookup
+    tables, introducing a **neural network** has two advantages: (i) it provides a
+    single general expression for the entire state space and (ii) by extension, it
+    can also handle continuous *state* spaces.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, we need to deal with continuous *action* spaces; we thus cannot output
+    Q-values for every action. Instead, we provide a single action as *input* and
+    compute the **Q-value for the state-action pair** (a procedure also known as *naive
+    DQN*)**.** In mathematical terms, we can represent the network as Q*:(s,a)→Q(s,a),*
+    i.e., outputting a single Q- value for a given state-action pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The corresponding critic network looks as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/498549fcd89c8b20d14a7cc450afd5ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a critic network Q:(s,a) in DDPG. The network takes both the state
+    vector and action vector as input, and outputs a single Q-value [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although offering generalization, the neural network introduces some stability
+    issues. Being a single representation for *all* states, each update also affects
+    *all* Q-values. As observation tuples *(s,a,r,s’)* are collected sequentially,
+    there tends to be a **high temporal correlation** between them that makes overfitting
+    all too likely. Without going into too much detail here, the following three techniques
+    are needed to properly train the value network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Experience replay**: Sample observations *(s,a,r,s’)* from experience buffer,
+    breaking the correlation between subsequently collected tuples.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Batch learning**: Train value network with batches of observations, making
+    for more reliable and impactful updates.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Target networks**: Use a different network to compute *Q(s’,a’)* than *Q(s,a)*,
+    reducing correlation between expectation and observation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/how-to-model-experience-replay-batch-learning-and-target-networks-c1350db93172?source=post_page-----4643c1f71b2e--------------------------------)
+    [## How To Model Experience Replay, Batch Learning and Target Networks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quick tutorial on three essential tricks for stable and successful Deep Q-learning,
+    using TensorFlow 2.0
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-model-experience-replay-batch-learning-and-target-networks-c1350db93172?source=post_page-----4643c1f71b2e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Critic network updates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that the basics are refreshed, let’s tie the aforementioned concepts to
+    DDPG. We define a **critic network Q_ϕ** as detailed before, parameterized by
+    ϕ (representing the network weights).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We set out with the loss function that we aim to minimize, which should look
+    familiar to those experienced with Q-learning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/656c05d9121e6be6546c0f00f5df8f6f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compared to DQN, the critical distinction is that for the action corresponding
+    to *s’* — instead of maximizing over the action space — **we determine the action
+    *a’* through a target actor network** *μ_{θ_targ}* (more on that later). After
+    that sidestep, we update the critic network as usual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside from updating the main critic network, we must also update the target
+    critic network. In Deep Q-Learning this is often a periodic copy of the main value
+    network (e.g., copy once every 100 episodes). In DDPG, it is common to use a **lagging
+    target network** using polyak averaging, making the target network trail behind
+    the main value network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0226601920d4cbc65040a6b4bc956476.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With ρ typically being close to 1, the **target network adapts very slowly**
+    and gradually over time, which improves training stability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DDPG: The actor'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In DDPG, actor and critic are closely intertwined in an off-policy fashion.
+    We first explore the off-policy nature of the algorithm, before moving to action
+    generation and actor network updates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Off-policy training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In pure policy gradient methods, we directly update a policy *μ_θ* (parameterized
+    by *θ*) to maximize expected rewards, without resorting to explicit value functions
+    to capture these rewards. DDPG is a hybrid that also uses Q-values, but from an
+    actor perspective **maximizing the objective** *J(θ)* look similar at face value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82bc426a25853f63c1934ea35d8d5327.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, a closer look at the expectation reveals that DDPG is an **off-policy
+    method**, whereas typical actor-critic methods are on-policy. Most actor-critic
+    models maximize an expectation *E_{τ~π_θ}*, with *τ* being the state-action trajectory
+    generated by policy *π_θ*. In contrast, DDPG takes an expectation over sample
+    states drawn from the experience buffer (*E_{s~D}*). As DDPG optimizes a policy
+    using experiences generated with different policies, it is an **off-policy algorithm.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The role of the replay buffer in this off-policy context needs some attention.
+    Why *can* we re-use old experiences, and why *should* we?
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s explore why the buffer *can* include experiences obtained with
+    different policies than the present one. As the policy is updated over time, the
+    replay buffer holds **experiences stemming from outdated policies**. As optimal
+    Q-values apply to *any* transition, it does not matter what policy generated them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, the reason the replay buffer *should* contain a **diverse range of experiences**
+    is that we deploy a deterministic policy. If the algorithm would be on-policy,
+    we would likely have limited exploration. By drawing upon past experiences, we
+    also train on observations that are unlikely to be encountered under the present
+    policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aaff6f97effa5c119059c31e6e08c1b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of an actor network μ_θ:s in DDPG. The network takes the state vector
+    as input, and outputs a deterministic action μ(s). During training, a separate
+    random noise ϵ is typically added [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Action exploration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What about the exploration mechanism that policy gradient methods are so famous
+    for? After all, we now deploy a deterministic policy rather than a stochastic
+    one, right? DDPG resolves this by simply **adding some noise** ***ϵ*** during
+    training, which is removed when deploying the policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Early implementations of DDPG used rather complicated noise constructs (e.g.,
+    time-correlated Ornstein-Uhlenbeck noise), but later empirical results suggested
+    that **plain Gaussian noise** *ϵ~N(0,σ^2)* works equally well. The noise may be
+    gradually reduced over time, but is not a trainable component *σ_θ* such as in
+    stochastic policies. A final note is that we may **clip the action range**. Evidently,
+    some tuning effort is involved in the exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary, the **actor generates actions** as follows. It takes the state
+    as input, outputs a deterministic value, and adds some random noise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7a4efb3cd025d01cca3981bd7e121b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Actor network updates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A final note on the policy update, which is not necessarily trivial. We update
+    the actor network parameters *θ* based on the Q-values returned by the critic
+    network (parameterized by *ϕ*). Thus, we keep Q-values constant — that is, we
+    don’t update *ϕ* in this step — and try to maximize the expected reward by changing
+    the action. This means we **assume that the critic network is differentiable w.r.t.
+    the action**, such that we can update the action in a direction that maximizes
+    the Q-value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecd78f932e63e0fe9dbdb9d68fca1859.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although the second gradient *∇_θ* is often omitted for readability, it offers
+    some clarification. We train the actor network to **output better actions**, which
+    in turn improves the obtained Q-values. If you wanted, you could detail the procedure
+    by applying the chain rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **actor target network** is updated with polyak averaging, in the same vein
+    as the critic target network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f758f6a5bf043ea96b21a0d57870ead.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pulling it all together
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have an actor, we have a critic, so nothing stops us from completing the
+    algorithm now!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8e86f070d5ab4439d2f0c0fb46d4fc8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Outline of the DDPG outline [image by author, initial outline generated with
+    ChatGPT]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s go through the procedure step by step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialization [line 1–4]
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/477e53600385a47ab065c361b6ad12cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDPG initialization [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We set out with four networks as detailed below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Actor network μ_**θ'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterized by θ
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Outputs deterministic action based on input *s*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Actor target network μ_{θ_targ}**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterized by *θ_targ*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provides action for *s’* when training critic network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Critic network Q_**ϕ**(s,a)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterized by *ϕ*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Outputs Q-value *Q(s,a)* (expectation) based on input *(s,a)*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Critic target network μ**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterized by *ϕ_tar*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Outputs Q-value *Q(s’,a’)* (target) when training critic network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We start with an empty replay buffer *D*. Unlike on-policy methods, we **do
+    not empty the buffer after updating the policy,** as we re-use older transitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we set the learning rate *ρ* to **update the target networks.** For
+    simplicity, we assume it is identical for both target networks. Recall that *ρ*
+    should be set close to 1 (e.g., something like 0.995), such that the the networks
+    are updated slowly and targets remain rather stable over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data collection [line 9–11]
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/623f60f26adc0d097753f47ee82200a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDPG data collection [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actions are generated using the actor network, which outputs deterministic actions.
+    To increase exploration, noise is added to these actions. The resulting observation
+    tuples are stored in the replay buffer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating the actor and critic network [line 12–17]
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/9569b5d4a9bd7b3b7a88c2598fd98727.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDPG main network updates [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: A random mini-batch *B⊆D* is sampled from the replay buffer (including observations
+    stemming from older policies).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To update the critic, we **minimize the squared error** between the observation
+    (obtained with the target networks) and the expectation (obtained with the main
+    networks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To update the actor, we compute the **sample policy gradient**, with the Q-values
+    kept fixed. In a neural network setting, we compute a pseudo loss which is the
+    cumulative Q-value of the generated actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **training procedure** might be clarified by the Keras snippet below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating the target networks [line 18–19]
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/3ecde0b56ea4ad82349688101f9adbd3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDPG target network updates [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the actor target network and the critic target network are updated using
+    **polyak averaging**, with their weights moving a bit closer to the updated main
+    networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Returning the trained network [line 23]
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/0b5c52b7f0e8f58beabaf534d7f0dca4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DDPG trained actor network [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although we had to go through some trouble, the resulting policy looks very
+    clean. Unlike in DQN, we don’t perform an explicit maximization over the action
+    space, so we have **no need for Q-values anymore** [note we never used them to
+    take decisions, just to improve them].
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also have **no need for the target networks** anymore, which were just required
+    to stabilize training and prevent oscillations. Ideally, the main- and target
+    networks will have converged, such that we have *μ_θ=μ_{θ_targ}* (and *Q_ϕ=Q_{ϕ_targ}*).
+    That way, we know our policy has truly converged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we drop the exploration noise *ϵ*, which was never an integral aspect
+    of the policy. We are left with an **actor network that takes the state as input
+    and outputs a deterministic action**, which for many applications is exactly the
+    simplicity we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What distinguishes DDPG from other algorithms?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We established that DDPG is a hybrid class method, incorporating elements from
+    both policy gradient methods and value-based methods. This goes for all actor-critic
+    methods though, so what precisely makes DDPG unique?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DDPG handles continuous action spaces:** The algorithm is specifically designed
+    to handle continuous action spaces, without relying on stochastic policies. Deterministic
+    policies may be easier to learn, and policies without inherent randomness are
+    often preferable in real-world applications.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DDPG is off-policy.** Unlike common actor-critic algorithms, experiences
+    are drawn from a replay buffer that includes observations from older policies.
+    The off-policy nature is necessary to sufficiently explore (as actions are generated
+    deterministically). It also offers benefits such as greater sample efficiency
+    and enhanced stability.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DDPG is conceptually very close to DQN:** In essence, DDPG is a variant of
+    DQN that works for continuous action spaces. To circumvent the need to explicitly
+    maximize over all actions — DQN enumerates over the full action space to identify
+    the highest Q(s,a) value — actions are provided by an actor network which is optimized
+    separately.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DDPG outputs an actor network:** Although close to DQN in terms of training,
+    during deployment we only need the trained actor network. This network takes the
+    state as input and deterministically outputs an action.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Although it might not seem so at first glance, the **deterministic nature of
+    DDPG tends to simplify training**, being more stable and sample-efficient than
+    online counterparts. The output is a comprehensive actor network that deterministically
+    generates actions. Because of these properties, it has become a staple in continuous
+    control tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*More background on the building blocks of DDPG? Check out the following articles.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Deep Q-Learning (DQN):*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-minimal-working-example-for-deep-q-learning-in-tensorflow-2-0-e0ca8a944d5e?source=post_page-----4643c1f71b2e--------------------------------)
+    [## A Minimal Working Example for Deep Q-Learning in TensorFlow 2.0'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A multi-armed bandit example to train a Q-network. The update procedure takes
+    just a few lines of code using TensorFlow
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-minimal-working-example-for-deep-q-learning-in-tensorflow-2-0-e0ca8a944d5e?source=post_page-----4643c1f71b2e--------------------------------)
+    [](/deep-q-learning-for-the-cliff-walking-problem-b54835409046?source=post_page-----4643c1f71b2e--------------------------------)
+    [## Deep Q-Learning for the Cliff Walking Problem
+  prefs: []
+  type: TYPE_NORMAL
+- en: A full Python implementation with TensorFlow 2.0 to navigate the cliff.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/deep-q-learning-for-the-cliff-walking-problem-b54835409046?source=post_page-----4643c1f71b2e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Policy gradient methods:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----4643c1f71b2e--------------------------------)
+    [## Policy Gradients In Reinforcement Learning Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Learn all about policy gradient algorithms based on likelihood ratios (REINFORCE):
+    the intuition, the derivation, the…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----4643c1f71b2e--------------------------------)
+    [](/deep-policy-gradient-for-cliff-walking-37d5014fd4bc?source=post_page-----4643c1f71b2e--------------------------------)
+    [## Deep Policy Gradient For Cliff Walking
+  prefs: []
+  type: TYPE_NORMAL
+- en: A TensorFlow 2.0 implementation in Python. In this solution, the actor is represented
+    by a neural network, which is…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/deep-policy-gradient-for-cliff-walking-37d5014fd4bc?source=post_page-----4643c1f71b2e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: OpenAI (2018). Deep Deterministic Policy Gradient. [https://spinningup.openai.com/en/latest/algorithms/ddpg.html](https://spinningup.openai.com/en/latest/algorithms/ddpg.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keras (2020). Deep Deterministic Policy Gradient (DDPG) by amifunny. [https://keras.io/examples/rl/ddpg_pendulum/](https://keras.io/examples/rl/ddpg_pendulum/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lillicrap, T. P., Hunt, J. J., Pritzel, A., Heess, N., Erez, T., Tassa, Y.,
+    … & Wierstra, D. (2015). Continuous control with deep reinforcement learning.
+    *arXiv preprint arXiv:1509.02971*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yang, A. & Philion, J(2020). *Continuous Control With Deep Reinforcement Learning.*
+    [https://www.pair.toronto.edu/csc2621-w20/assets/slides/lec3_ddpg.pdf](https://www.pair.toronto.edu/csc2621-w20/assets/slides/lec3_ddpg.pdf)
+  prefs: []
+  type: TYPE_NORMAL

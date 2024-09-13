@@ -1,0 +1,668 @@
+- en: Five Ways To Handle Large Action Spaces in Reinforcement Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/five-ways-to-handle-large-action-spaces-in-reinforcement-learning-8ba6b6ca7472](https://towardsdatascience.com/five-ways-to-handle-large-action-spaces-in-reinforcement-learning-8ba6b6ca7472)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Action spaces, particularly in combinatorial optimization problems, may grow
+    unwieldy in size. This article discusses five strategies to handle them.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)[![Wouter
+    van Heeswijk, PhD](../Images/9c996bccd6fdfb6d9aa8b50b93338eb9.png)](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)
+    [Wouter van Heeswijk, PhD](https://wvheeswijk.medium.com/?source=post_page-----8ba6b6ca7472--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ba6b6ca7472--------------------------------)
+    ·14 min read·Aug 18, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/faed2a6acffe7d9d787734e7815479db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: And…action! [Photo by [Jakob Owens](https://unsplash.com/@jakobowens1?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Handling large action spaces remains a fairly open problem in Reinforcement
+    Learning. Researchers have made great strides in terms of handling large *state*
+    spaces, with convolutional networks and transformers being some recent high-profile
+    examples. However, there are three so-called **curses of dimensionality**: state,
+    outcome, and action [1]. As of yet, the latter is still rather understudied.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still, there is a growing body of methods that attempt to handle large action
+    spaces. This article presents five ways that handle the latter at scale, focusing
+    in particular on the **high-dimensional discrete action spaces** that are often
+    encountered in combinatorial optimization problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Refresher: three curses of dimensionality'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A quick refresher on the three curses of dimensionality is in order. Assuming
+    we express the problem at hand as a system of [Bellman equations](https://medium.com/towards-data-science/why-reinforcement-learning-doesnt-need-bellman-s-equation-c9c2e51a0b7),
+    note there are **three sets to evaluate** — in practice in the form of nested
+    loops — each of which may be prohibitively large:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/778c5ac24425298d745e4c29063a838e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bellman equations require that, for each state-action pair (s,a)∈S×A, all potential
+    outcomes s’∈S’ must be evaluated, quickly rendering enumeration of this stochastic
+    optimization problem computationally infeasible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At its core, Reinforcement Learning is a Monte Carlo simulation, sampling random
+    transitions instead of enumerating all possible outcomes. By the Law of Large
+    Numbers, the sample outcomes should ultimately facilitate convergence to the true
+    value. This way, we transform the stochastic problem into a deterministic one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69cd38fec79ac633db712b98ac8e1ba4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A value function approximation yields a deterministic optimization problem,
+    in which we do not need to evaluate the entire outcome space when evaluating a
+    state-action pair, but just a single downstream value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transformation allows us to handle large *outcome* spaces. To deal with
+    large *state* spaces, we must be able to generalize to previously unseen states.
+    Common approaches are feature extraction or aggregation, and this is where the
+    bulk of research attention is focused.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can evaluate a single value corresponding to the state-action pair — rather
+    than evaluating all outcomes corresponding to it — it is often not problematic
+    to evaluate hundreds or thousands of actions. For many problems (e.g., chess,
+    video games), this is sufficient, and there is no need to make further approximations
+    w.r.t. the action space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nonetheless, *if* the action space remains prohibitively large, we can’t apply
+    the same solution directions as we do for outcome and state spaces. Simply sampling
+    an action — as we do with outcomes — gives no guarantee it is any good and bypasses
+    the notion of learning and using an intelligent decision-making policy. Generalizations
+    such as applied on states don’t work either, as ultimately we do need a specific
+    action that can be applied into the environment. Hence, we need some other solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a ‘large’ action space?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into solutions, let’s first establish what we mean by a ‘large’
+    action space. For generalization, we denote the action by some vector `a=[a_n]_n∈N`,
+    where `N` denotes the dimension of the action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The term ‘large’ may be defined in multiple ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Number of actions:** The number of values an action can assume. Note that
+    the number is potentially unbounded, e.g., the full integer domain. Obviously,
+    for vector-based actions the number of actions increases much quicker than for
+    scalar-based ones. Consider a 9-dimensional vector, for which each element can
+    assume 10 values. The total action space then already amounts to 10⁹ =1 billion
+    actions!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Continuous decision variables**: If the action vector contains one or more
+    continuous variables, the number of actions is by definition infinite. Continuous
+    variables are common in, e.g., robotics, with joint movements being represented
+    by real-valued numbers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Dimension**: For [vector-based decisions](https://medium.com/codex/quickly-generate-combinatorial-action-spaces-15962118e508),
+    the dimension (number of elements) has a massive impact — each additional element
+    exponentially increases complexity. Especially when actions are permutations,
+    vector-based decision spaces get very large, very quickly.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Enumerable**: An action space of a billion may be ‘large’ by conventional
+    standards; you definitely don’t want to evaluate a billion actions for every iteration.
+    Such an action space can still be enumerated in stored in a computer’s memory
+    though. In contrast, other problems exhibit action spaces so gigantic we have
+    no hope of ever enumerating them. If action spaces grow exponentially with the
+    problem size, they quickly become intractably large.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The focus in this article will be on **multi-dimensional discrete action spaces**.
+    These are commonly encountered in real-life problems, giving rise to combinatorial
+    optimization problems that explode in size very quickly. Consider operations research
+    problems for instance: managing a fleet of taxis, inventory reorder policies for
+    large numbers of items, stacking containers on a ship, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s make the magnitude of the problems we are dealing with a bit more tangible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider managing container shipments in a port, with each container characterized
+    by (i) destination, (ii) due date and (iii) arrival date. Say we have 10 potential
+    destinations, 20 due dates and 5 arrival dates. There are then 10*20*5 unique
+    container types, translating into an action vector with 1000 dimensions. Factor
+    in some different shipment options and a modestly large container yard, and it
+    is not hard to create action spaces larger than the number of grains of sand on
+    earth, or any arbitrary analogy you would like to make.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Another example?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a recommender system for 1000 items, in which we recommend two items
+    to the user. Thus, there are 1000*999 (i.e., about 1 million) combinations of
+    items to recommend. Clearly, recommending 3, 4 or 5 items will exponentially grow
+    the action space.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/d612e9d1917411b829304d080bad807a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector-based action spaces often increase exponentially w.r.t. the dimensionality
+    of the action vector. Combinatorial optimization problems are notorious for generating
+    extremely large action spaces even for seemingly simple instances [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: I. Actor-based methods (only for continuous action spaces!)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Value-based methods such as Q-learning fall apart for continuous action, requiring
+    an **infinite number of Q-values** to be computed. One could discretize the action
+    space, with the granularity dictating the tradeoff between action space size and
+    accuracy. For instance, a turning a steering wheel (continuous space) could be
+    expressed into 360 discrete degrees, or 36, 3600, etc. For vector-based decisions,
+    such discretizations quickly fall apart though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter actor-based methods [2]. These methods typically employ a neural network,
+    taking the state as input and outputting parameters that enable to **sample from
+    probability distributions**. For instance, the output nodes could be the mean
+    and standard deviation of a Gaussian distribution, from which we can subsequently
+    sample the continuous action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generalization to vector-based decisions is fairly straightforward, with each
+    vector element being represented by a separate distribution (i.e., linear scaling
+    w.r.t. vector dimension). As such, also **high-dimensional continuous action spaces**
+    can be efficiently handled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The crux is that the actor network **directly maps the state to an action**,
+    without the need to check values for each state-action pair. If desired — as it
+    often is for the purpose of variance reduction — these actor methods can be extended
+    to an actor-critic network, the critic network being an extension that outputs
+    values for the generated state-action pair. For continuous action spaces, actor-critic
+    methods such as [PPO](/proximal-policy-optimization-ppo-explained-abed1952457b)
+    remain state-of-the-art.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc634cecd7178e7c5b282c639a32c1f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For continuous action spaces, actor network efficiently generate and evaluate
+    actions, e.g., by outputting mean and sigma of a Gaussian distribution to sample
+    from. When extending to multi-dimensional action vectors, statistical parameters
+    correspond to individual vector elements, such that the output layer scales linearly
+    with action dimensionality. [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, **actor-based models do not scale well for discrete action spaces**.
+    In that case, each output node represents the selection probability of a single
+    action. For obvious reasons, that will not scale well if we have billions of discrete
+    actions. Thus, for discrete action spaces, we need to figure out something else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: II. Mathematical programming
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Many real-world decision-making problems can be expressed through a **convex
+    action space.** Convexityis an incredibly powerful property to have. You have
+    to see it to believe it, really. Solvers such as CPLEX and Gurobi can handle large
+    decision problems extremely efficiently, even if they pertain to **thousands of
+    decision variables,** amounting to millions or even billions of actions[1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular for **linear problems** — which many real-world problems (approximately)
+    are — solvers have been highly optimized over the past decades. Note that piecewise
+    linear functions may be used to approximate nonlinear functions, e.g., ReLUs in
+    neural networks [3]. Continuous decision variables are no problem either. In fact,
+    they are typically easier to handle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mathematical programs are also highly suitable for **handling constraints**.
+    Performing explicit feasibility checks to construct an action mask may be tedious.
+    The constraint equations weed out all missing/infeasible actions in an efficient
+    manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although scale-ups through mathematical programming maybe highly significant,
+    there are **no theoretical guarantees** w.r.t. growing action spaces. Computational
+    effort may still increase exponentially with the action space. Still, in practice,
+    the scalability compared to optimization is often very substantial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on problem structure, the efficacy of mathematical programming may
+    be enhanced with methods such as **column generation or Bender’s decomposition**.
+    Strong implementations can improve performance by orders of magnitude. The downside
+    is that such algorithms require deep insight into the problem structure as well
+    as substantial design effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/using-linear-programming-to-boost-your-reinforcement-learning-algorithms-994977665902?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## Using Linear Programming to Boost Your Reinforcement Learning Algorithms'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large and high-dimensional action spaces are often computational bottlenecks
+    in Reinforcement Learning. Formulating…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/using-linear-programming-to-boost-your-reinforcement-learning-algorithms-994977665902?source=post_page-----8ba6b6ca7472--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: III. Heuristics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Heuristics impose search- or decision rules on the action space, bypassing evaluation
+    of the full action space to boost speed and efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Action space reduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the simplest ways to search an action space more efficiently is to cut
+    parts of it. Obviously this risks cutting high-quality parts of the region. However,
+    domain knowledge may be leveraged to **define reasonable decision rules**, for
+    instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Never dispatch a truck that is filled less than 70%
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mario should always move to the right
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Always recommend coffee filters when someone buys a coffee machine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One can see this is tricky. Sometimes Mario may need to move to the left to
+    make a jump. Perhaps we have to wait a long time for that 70% fill rate in a quiet
+    week. Maybe the customer is more interested in a coffee bean grinder than filters.
+    Human expertise, logic and intuition are powerful, but have glaring shortcomings
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although heuristic reductions might substantially reduce the computational burden,
+    their design is highly **problem-specific** and not necessarily scalable when
+    changing the problem instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/afacf6df24c34934c73db7692ca5f051.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By cutting regions of the action space (e.g., by adding constraints), the search
+    may become less prohibitive. Poorly chosen cuts may delete high-quality actions
+    though [image by [Sdo](https://commons.wikimedia.org/wiki/User:Sdo) via [Wikipedia](https://en.wikipedia.org/wiki/Cutting-plane_method#/media/File:TSP_cutting_plane.png)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metaheuristics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Base heuristics often rely on human-defined decision rules, which may be suboptimal.
+    In fact, many problem structures are beyond human cognitive limits. To automate
+    the search for good solutions, metaheuristics (e.g., simulated annealing, genetic
+    algorithms) **guide the search over the action space**, for instance by occasionally
+    accepting non-improving actions or by re-combining them [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **search process of metaheuristics is often problem-agnostic**, although
+    inevitably there will be problem-specific elements that need to be designed by
+    the user. Tuning of parameters is necessary as well — and we already have plenty
+    of those in RL — while theoretical guarantees are foregone (for practical purposes,
+    at least).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The drawbacks aside, metaheuristics have proven there mettle for many highly
+    challenging optimization problems, and the powerful combination of tunable search
+    and heuristic designs ensures it can be tailored to about any action space out
+    there. Especially for **messy real-world problems**, metaheuristics may be your
+    best bet to tackle large action spaces [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matheuristics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A particular branch of heuristics **merges** **metaheuristics with mathematical
+    programming** [5], aiming to leverage the best of both worlds. Recall that mathematical
+    programs are particularly suitable to exploit convex structures and large numbers
+    of decision variables, whereas heuristics can be used to control the search space
+    and procedure. If the action space is so large that even mathematical programming
+    cannot return a solution in acceptable time, combining it with heuristics may
+    be a way out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generic heuristic implementations include techniques such as local **branching,
+    proximity search and variable fixing**. To give some examples: we may heuristically
+    reduce an action space, then search that action space using mathematical programming.
+    Alternatively, we might solve a high-level program with mathematical programming
+    (e.g., allocate customers to vehicles) and fill in the details heuristically (e.g.,
+    heuristically generate routes). There are many angles with different distributions
+    of subroutines.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matheuristics can be very powerful and scale far beyond pure mathematical programming
+    — at a **loss of performance guarantee** — but can also be rather design-intensive.
+    However, when done correctly, the marriage between mathematical programming and
+    heuristics may be a very fruitful one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: IV. Continuous-to-discrete mappings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned earlier, actor-based methods can effectively handle multi-dimensional
+    continuous action spaces by providing **element-wise outputs**. If only we could
+    do the same for discrete spaces…
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fortunately, many discrete problems have some **underlying continuous representation**.
+    For instance: we may not be able to ship `5.742…` containers, but if such a real-valued
+    solution gives good solutions, chances are shipping 5 or 6 containers works pretty
+    well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the required continuous representation exist, we can deploy an actor network
+    to obtain a so-called proto-action (a continuous approximation of the discrete
+    action), which we subsequently transform to a ‘similar’ discrete action. This
+    **transformation from continuous proto-action to discrete action** is not necessarily
+    trivial. Time to dive into some mappings that achieve this feat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MinMax
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most straightforward way to transform a continuous action to a discrete
+    one is to **simply round the elements**. A continuous proto-action `[3.67…,1.22…,2.49…]`
+    would for instance translate to `[4,1,2]`. Such mappings can be tailored a bit,
+    but that’s the general idea [6]. As we only need to sample one continuous action
+    and apply one transformation, this approach can scale to extremely large action
+    spaces, beyond the realm of enumeration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If continuous quantities have meaningful structural relations with their discrete
+    counterparts, straightforward mappings may work very well. For instance, in inventory
+    management, rounding the number of items to order to the nearest integer is perfectly
+    reasonable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not all discrete action spaces exhibit such clean continuous representations,
+    unfortunately. Suppose we train a recommender system and the integer indicates
+    the item to recommend. If `a=3` represents a fridge and `a=4` represents a mixer,
+    the most suitable neighbor to proto-action `3.48…` is far from obvious. Let’s
+    check some more advanced mappings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*k*-nearest neighbor'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The *k*-nearest neighbor (*k*nn) method also sets out with a proto-action, but
+    subsequently **searches through a neighborhood of discrete actions** [7]. To efficiently
+    do this, the full action space is encoded *a priori*, such that we can quickly
+    find the `k` nearest neighbors for each continuous action we may define.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After identifying neighbors, *k*nn subsequently **evaluate their Q-values**
+    to select the best one. The value of `k` may be tuned, with larger numbers of
+    neighbors potentially identifying better actions, at the cost of more computational
+    effort and increasingly off-policy actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the strength and weakness of *k*nn lie in its *a priori* enumeration of
+    the action space. The pre-processing phase enables a **highly efficient lookup
+    of neighbors**, but also requires the space to be enumerable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learned action representations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The ‘closest’ discrete neighbor to a continuous proto-action may not be an obvious
+    one, and the relations between them may vary across the action space. Instead
+    of having a fixed, user-defined neighbors, we can also learn action representations
+    that map the continuous action to a discrete one. In a separate supervised learning
+    phase, neural networks are applied to **learn tailored representations for each
+    discrete action** [8].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learned action representations offers a **powerful generalization** that eliminates
+    the need for human reasoning on suitable neighbors, allowing applications for
+    complex action space structures. The drawback is that action representations must
+    be learned for each discrete action, adding an extra layer of complexity to the
+    RL algorithm. Each representation must be stored in memory, as such also confining
+    the method to **enumerable action spaces**. Additionally, learned action representations
+    might struggle with higher-dimensional action vectors, as the target vector becomes
+    increasingly difficult to learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca5ebb13be09543b7cb139dcccbcf22e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Learned action representations try to learn embeddings that map continuous proto-actions
+    to the most suitable discrete neighbor, depending on the structure of the action
+    space [Photo by [Michael Busch](https://unsplash.com/@migelon?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic neighborhood search
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The MinMax method is simple and intuitive in its mappings, but the closest
+    neighbor may not always be the most appropriate one. Methods such as *k*nn and
+    learned action representations handle complex action spaces, but require explicit
+    embeddings for each action and thus only handle enumerable action spaces. Through
+    dynamic neighborhood construction [9], **discrete neighbors to the proto-action
+    are generated and evaluated on-the-fly,** thereby scaling to action spaces beyond
+    enumeration. The following two steps are followed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Perturbation**: Efficiently generate a neighborhood through a perturbation
+    scheme that alters one element at a time, such that computational effort is linear
+    w.r.t. the action vector’s dimension.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Simulated annealing**: the perturbation scheme efficiently generates a neighborhood
+    of discrete actions, but it omits actions that require multi-element perturbations.
+    To recover such actions (if needed), simulated annealing explores new neighbors
+    to actions with the highest Q-values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Similar to MinMax, dynamic neighborhood search requires a **specific action
+    space structur**e in which small perturbations generate neighbors with comparable
+    rewards. Such structures may be found in many real-world problems (e.g., spatiotemporal
+    representations), but the method does not generalize to all discrete action spaces.
+    Finally, runtime per iteration is longer due to the need to generate and evaluate
+    actions each time, although it may find superior actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: V. Factorization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Factorization (also decomposition) is a method that **groups actions and finds
+    action representations** for each grouping that are easier to learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An example of a factorization approach is **binarization**, in which all actions
+    are expressed in binary code [10,11]. For each bit, an associated value function/subpolicy
+    is learned, exponentially reducing the number of evaluations. As for many methods,
+    full enumeration of the action space is a prerequisite.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e2af7bc74c3517f2d126a6fbec13fe1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Binarizations may be represented on a hypercube, over which we can perform a
+    structured search per bit [image by [Vlad2i](https://commons.wikimedia.org/wiki/User:Vlad2i~commonswiki)
+    via [Wikimedia](https://commons.wikimedia.org/wiki/File:Hypercube.png)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: A special variant of factorization deploys a **hierarchical or multi-agent rationale**
+    to factorize the action space [12]. Consider managing a fleet of taxis, in which
+    the allocation of individual taxis is represented by individual vector elements.
+    Centrally controlling this fleet opens up a ton of combinations, which all would
+    need to be evaluated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, we could **reason at the level of individual agent**, solving a much
+    simpler allocation problem in their local environment. Such a multi-agent perspective
+    may be reasonable given the context, as the decisions of taxis on the other side
+    of the city will have no or negligible impact on the local decision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although computationally much easier than central control, the resulting solution
+    may be suboptimal, e.g., two taxis may accept the same customer. To ensure that
+    the action is feasible and possibly improve it using global system knowledge,
+    an **ex-post synchronisation step is required**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The design of multi-agent or hierarchical RL methods might be challenging and
+    its applicability strongly depends on the problem at hand. If done properly though,
+    decomposition may yield high-quality global solutions while performing much quicker
+    reasoning at the local level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: That was quite a long read, so I won’t blame you if you scrolled straight to
+    the end. This table summarizes the most salient points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53d9c542020eeb16c8a226a8fb98e8b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Brief description of five strategies that handle large action spaces in reinforcement
+    learning, including their pros and cons [image by author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Other Reinforcement Learning articles by the author:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## Proximal Policy Optimization (PPO) Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The journey from REINFORCE to the go-to algorithm in continuous control
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/proximal-policy-optimization-ppo-explained-abed1952457b?source=post_page-----8ba6b6ca7472--------------------------------)
+    [](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## Policy Gradients In Reinforcement Learning Explained
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Learn all about policy gradient algorithms based on likelihood ratios (REINFORCE):
+    the intuition, the derivation, the…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/policy-gradients-in-reinforcement-learning-explained-ecec7df94245?source=post_page-----8ba6b6ca7472--------------------------------)
+    [](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----8ba6b6ca7472--------------------------------)
+    [## The Four Policy Classes of Reinforcement Learning
+  prefs: []
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-four-policy-classes-of-reinforcement-learning-38185daa6c8a?source=post_page-----8ba6b6ca7472--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Powell, W. B. (2022). *Reinforcement Learning and Stochastic Optimization:
+    A unified framework for sequential decisions*. John Wiley & Sons.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Sutton, R. S., & Barto, A. G. (2018). *Reinforcement learning: An introduction*.
+    MIT Press.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Van Heeswijk, W. & La Poutré, H. (2020, December). Deep reinforcement learning
+    in linear discrete action spaces. In *2020 IEEE* *Winter Simulation Conference
+    (WSC)* (pp. 1063–1074).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Wikipedia contributors (2023). Metaheuristics. [https://en.wikipedia.org/wiki/Metaheuristic](https://en.wikipedia.org/wiki/Metaheuristic)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Fischetti, M., Fischetti, M. (2018). Matheuristics. In: Martí, R., Pardalos,
+    P., Resende, M. (eds) Handbook of Heuristics. Springer, Cham.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Vanvuchelen, N., Moor, B. de & Boute R. (2022). The use of continuous action
+    representations to scale deep reinforcement learning for inventory control. SSRN,
+    10 2022\. [https://dx.doi.org/10.2139/ssrn.4253600.](https://dx.doi.org/10.2139/ssrn.4253600.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Dulac-Arnold et al. (2015). Deep reinforcement learning in large discrete
+    action spaces. arXiv preprint arXiv:1512.07679.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Chandak, Y. et al. (2019). Learning action representations for reinforcement
+    learning. In International conference on machine learning, pages 941–950\. PMLR,
+    2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Akkerman, F., Luy, J., Van Heeswijk, W., & Schiffer, M. (2023). Handling
+    Large Discrete Action Spaces via Dynamic Neighborhood Construction. *arXiv preprint
+    arXiv:2305.19891*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Dulac-Arnold et al. (2012). Fast reinforcement learning with'
+  prefs: []
+  type: TYPE_NORMAL
+- en: large action sets using error-correcting output codes for MDP factorization.
+    In Joint European Conference on Machine Learning and Knowledge Discovery in Databases,
+    180–194.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Pazis J. & Parr, R. (2011). Generalized value functions for large action
+    sets. In Proceedings of the 28th International Conference on Machine Learning
+    (ICML-11), 1185–1192.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Enders, T., Harrison, J., Pavone, M., & Schiffer, M. (2023). Hybrid multi-agent
+    deep reinforcement learning for autonomous mobility on demand systems. In *Learning
+    for Dynamics and Control Conference* (pp. 1284–1296). PMLR.'
+  prefs: []
+  type: TYPE_NORMAL

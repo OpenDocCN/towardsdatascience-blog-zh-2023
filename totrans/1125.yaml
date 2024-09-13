@@ -1,0 +1,520 @@
+- en: How to Chat With Any PDFs and Image Files Using Large Language Models — With
+    Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-chat-with-any-file-from-pdfs-to-images-using-large-language-models-with-code-4bcfd7e440bc](https://towardsdatascience.com/how-to-chat-with-any-file-from-pdfs-to-images-using-large-language-models-with-code-4bcfd7e440bc)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Complete guide to building an AI assistant that can answer questions about any
+    file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://zoumanakeita.medium.com/?source=post_page-----4bcfd7e440bc--------------------------------)[![Zoumana
+    Keita](../Images/34a15c1d03687816dbdbc065f5719f80.png)](https://zoumanakeita.medium.com/?source=post_page-----4bcfd7e440bc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bcfd7e440bc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4bcfd7e440bc--------------------------------)
+    [Zoumana Keita](https://zoumanakeita.medium.com/?source=post_page-----4bcfd7e440bc--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bcfd7e440bc--------------------------------)
+    ·9 min read·Aug 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So much valuable information is trapped in PDF and image files. Luckily, we
+    have these powerful brains capable of processing those files to find specific
+    information, which in fact is great.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how many of us, deep inside wouldn’t like to have a tool that can answer
+    any question about a given document?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: That is the whole purpose of this article. I will explain step-by-step how to
+    build a system that can chat with any PDFs and image files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you prefer to watch video instead, check the link below:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The video format of the article
+  prefs: []
+  type: TYPE_NORMAL
+- en: General Workflow of the project
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s always good to have a clear understanding of the main components of the
+    system being built. So let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84a8f95dccd53c58aa61e24bcae40112.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: End-to-end workflow of the overall chat system (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the user submits the document to be processed, which can be in PDF or
+    image format.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A second module is used to detect the format of the file so that the relevant
+    content extraction function is applied.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The content of the document is then split into multiple chunks using the `Data
+    Splitter` module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Those chunks are finally transformed into embeddings using the `Chunk Transformer`
+    before they are stored in the vector store.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: At the end of the process, the user’s query is used to find relevant chunks
+    containing the answer to that query, and the result is returned as a JSON to the
+    user.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1\. Detect document type
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For each input document, specific processing is applied depending on its type,
+    whether it is `PDF` , or `image.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: This can be achieved with the helper function `detect_document_type` combined
+    with the `guess` function from the built-in Python module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can test the function on two types of documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`transformer_paper.pdf` is the Transformers research paper [from Arxiv](https://arxiv.org/pdf/1706.03762.pdf).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`zoumana_article_information.png` is the image document containing information
+    about the main topics I have covered on Medium.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f6456b0157ceb2106c561fe6d04c038.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Files types successfully detected (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both file type is successfully detected by the `detect_document_type` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Extract content based on document type
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `[langchain](https://python.langchain.com/docs/get_started/introduction.html)`
+    library provides different modules to extract the content of a given type of document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`UnstructuredImageLoader` extracts image content.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`UnstructuredFileLoader` extracts the content of any pdf and Txt files.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can combine these modules and the above `detect_document_type` function to
+    implement the text extraction logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These modules can be used to implement end-to-end text extraction logic within
+    the `extract_file_content` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see them in action! 🔥
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, let’s print the first `400` characters of each file content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first 400 characters of each of the above documents are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The research paper content starts with `Provided proper attribution is provided`
+    and ends with `Jacod Uszkoreit* Google Research usz@google.com.`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The image document’s content starts with `This document provides a quick summary`
+    and ends with `Data Science section covers basic to advance concepts.`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/c03c271f7d3bd2cb53d17f3989ac0dd5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First 400 characters of the Transformers paper and the Article Information document
+    (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Chat Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The input document is broken into chunks, then an embedding is created for each
+    chunk before implementing the question-answering logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**a. Document chunking**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chunks represent smaller segments of a larger piece of text. This process
+    is essential to ensure that a piece of content is represented with as little noise
+    as possible, making it semantically relevant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple chunking strategies can be applied. For instance, we have the `NLTKTextSplitter`
+    , `SpacyTextSplitter` , `RecursiveCharacterTextSplitter` , `CharacterTextSplitter`
+    and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each one of these strategies has its own pros and cons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main focus of this article is made on the `CharacterTextSplitter` which
+    creates chunks from the input documents based on `\n\n` , and measure each chunk's
+    length (`length_function` ) by its number of characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `chunk_size` tells that we want a maximum of 1000 characters in each chunk,
+    and a smaller value will result in more chunks, while a larger one will generate
+    fewer chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is important to note that the way the `chunk_size` is chosen can affect the
+    overall result. So, a good approach is to try different values and chose the one
+    that better fits one's use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, the `chunk_overlap` means that we want a maximum of 200 overlapping characters
+    between consecutive chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, imagine that we have a document containing the text `Chat with
+    your documents using LLMs` and want to apply the chunking using the `Chunk Size
+    = 10` and `Chunk overlap = 5.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The process is explained in the image below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c513e3c8a79c4e85371ebed619bb1ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Document chunking illustration (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that we ended up with a total of 7 chunks for an input document of
+    35 characters (spaces included).
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, why do we use these overlaps in the first place?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Including these overlaps, the `CharacterTextSplitter` ensures that the underlying
+    context is maintained between the chunks, which is especially useful when working
+    with long pieces of documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly to the `chunk_size` there is no fixed value of `chunk_overlap` . Different
+    values need to be tested to choose the one with better results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let’s see their application in our scenario:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15039c16589eb887d710631a85066443.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of chunks in each document (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a larger document like the research paper, we have a lot more chunks (51)
+    compared to the one-page article document, which is only 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**b. Create embeddings of the chunks**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use the `OpenAIEmbeddings` module, which uses `text-embedding-ada-002`
+    model by default to create the embedding of the chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead of using the `text-embedding-ada-002` can use a different model (e.g.
+    `gpt-3.5-turbo-0301`) by changing the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: model = “`gpt-3.5-turbo-0301`”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: deployment = "`<DEPLOYMENT-NAME>` “ which corresponds to the name given during
+    the deployment of the model. The default value is also `text-embedding-ada-002`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For simplicity’s sake, we will stick to using the default parameters’ value
+    in this tutorial. But before that, we need to acquire the OpenAI credentials,
+    and all the steps are provided in the [following article](https://medium.com/geekculture/how-to-fine-tune-gpt3-using-openai-api-and-python-9ef813879af4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**c. Create document search**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get the answer to a given query, we need to create a vector store that finds
+    the closest matching chunk to that query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Such vector store can be created using the `from_texts` function from `FAISS`
+    module and the function takes two main parameters: `text_splitter` and `embeddings`
+    which are both defined previously.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: By running the `get_doc_search` on the research paper chunks, we can see that
+    the result is of a `vectorstores` . The result would have been the same if we
+    used the article_information_chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83925a3f53662ad0e178de1561b3efcb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector store of the research paper (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**d. Start chatting with your documents**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Congrats on making it that far! 🎉
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `chat_with_file` function is used to implement the end-to-end logic of the
+    chat by combining all the above functions, along with the with `similarity_search`
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final function takes two parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The file we want to chat with, and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The query provided by the user
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s take a step back to properly understand what is happening in the above
+    code block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `load_qa_chain` provides an interface to perform question-answering over
+    a set of documents. In this specific case, we are using the default `OpenAI GPT-3`
+    large language model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `chain_type` is `map_rerank` . By doing so, the `load_qa_chain` function
+    returns the answers based on a confidence score given by the chain. There are
+    other `chain_type` that can be used such as `map_reduce` , `stuff` , `refine`
+    and more. Each one has its own pros and cons.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By setting `return_intermediate_steps=True` , we can access the metadata such
+    as the above confidence score.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Its output is a dictionary of two keys: the **answer** to the query, and the
+    confidence **score**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can finally chat with the our files, starting with the image document:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Chat with the image document**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To chat with the image document, we provide the path to the document, and the
+    question we want the model to answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34fd452b4430151ca4a7a5bea6dbceb1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of a query on the image document (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is 100% confident in its response. By looking at the first paragraph
+    of the original document below, we can see that the model response is indeed correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/110f996f430c1236dcc24ef9b5b2b9b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First two paragraphs of the original article image document (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most interesting parts is that it provided a brief summary of the
+    main topics covered in the document ( statistics, model evaluation metrics, SQL
+    queries, etc.).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Chat with the PDF file**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The process with the PDF file is similar to the one in the above section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again we are getting a 100% confidence score from the model. The answer
+    to the question looks pretty correct!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6947fe479ba82c3cde792c3bf82f6981.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of a query on the PDF document (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In both cases, the model was able to provide a human-like response in a few
+    seconds. Making a human go through the same process would take minutes, even hours
+    depending on the length of the document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Congratulations!!!🎉
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article provided enough tools to help you take your knowledge to
+    the next level. The code is available on [my GitHub](https://github.com/keitazoumana/Medium-Articles-Notebooks/blob/main/Chat_With_Any_Document.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my next article, I will explain how to integrate this system into a nice
+    user interface. Stay tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, If you enjoy reading my stories and wish to support my writing, consider
+    becoming a Medium member. It’s $5 a month, giving you unlimited access to thousands
+    of Python guides and Data science articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By signing up using [my link](https://zoumanakeita.medium.com/membership), I
+    will earn a small commission at no extra cost to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://zoumanakeita.medium.com/membership?source=post_page-----4bcfd7e440bc--------------------------------)
+    [## Join Medium with my referral link - Zoumana Keita'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: zoumanakeita.medium.com](https://zoumanakeita.medium.com/membership?source=post_page-----4bcfd7e440bc--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to follow me on [Twitter](https://twitter.com/zoumana_keita_), and
+    [YouTube](https://www.youtube.com/channel/UC9xKdy8cz6ZuJU5FTNtM_pQ), or say Hi
+    on [LinkedIn](https://www.linkedin.com/in/zoumana-keita/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Let’s connect here for a 1–1 discussion](https://topmate.io/zoumanakeita)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before you leave, there are more great resources below you might be interested
+    in reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Text Embeddings with the OpenAI API](https://medium.com/geekculture/introduction-to-text-embeddings-with-the-openai-api-1f83d2a15fda)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[How to Extract Text from Any PDF and Image for Large Language Model](https://medium.com/towards-data-science/how-to-extract-text-from-any-pdf-and-image-for-large-language-model-2d17f02875e6)'
+  prefs: []
+  type: TYPE_NORMAL

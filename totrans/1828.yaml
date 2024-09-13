@@ -1,0 +1,831 @@
+- en: Self-Supervised Learning in Computer Vision
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/self-supervised-learning-in-computer-vision-fd43719b1625](https://towardsdatascience.com/self-supervised-learning-in-computer-vision-fd43719b1625)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to train models with only a few labeled examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michaloleszak.medium.com/?source=post_page-----fd43719b1625--------------------------------)[![Michał
+    Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----fd43719b1625--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fd43719b1625--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fd43719b1625--------------------------------)
+    [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----fd43719b1625--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fd43719b1625--------------------------------)
+    ·18 min read·Jan 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/94977b17c73bc401bb5cd47c4a23f8ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A large portion of the value delivered by AI so far comes from supervised models
+    trained on increasingly large datasets. Many of these datasets have been labeled
+    by humans, a job that is mundane, time-consuming, error-prone, and sometimes expensive.
+    Self-supervised learning (SSL) is a different learning paradigm allowing machines
+    to learn from unlabeled data. In this article, we will discuss how SSL works and
+    how to apply it to computer vision. We will compare simple approaches to state-of-the-art
+    and see SSL in action for medical diagnosis, a domain that can benefit a lot from
+    it but at the same time requires a deep understanding of the approach to be able
+    to implement it correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What is self-supervised learning?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[According to Yann LeCun](https://ai.facebook.com/blog/self-supervised-learning-the-dark-matter-of-intelligence/),
+    Chief AI Scientist at Meta, self-supervised learning is “one of the most promising
+    ways to build background knowledge and approximate a form of common sense in AI
+    systems”. The idea behind the self-supervised approach is to train models on data
+    without annotations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-supervised learning is one of the most promising ways to build background
+    knowledge and approximate a form of common sense in AI systems.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ~ Yann LeCun
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Consider two other learning paradigms: supervised and unsupervised learning.
+    In supervised learning, we present the model with some inputs and the corresponding
+    labels and its job is to find a mapping between them that would generalize to
+    new data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In unsupervised learning, on the other hand, we have just the inputs and no
+    labels, and the learning goal is to explore patterns in the input data with the
+    objective to cluster similar examples, reduce data dimensionality or detect anomalies,
+    among others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7a14ca14a000424f3e2cdc278d9d215.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Learning paradigms. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-supervised learning sits in between these two in some sense. It is similar
+    to unsupervised learning in that it learns from unlabeled data, but it is also
+    supervised at the same time since the model creates its own pseudo-labels to learn
+    from during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is not exactly new. Self-supervised learning has been used a lot in
+    the past, most notably in NLP to train large language models such as BERT or GPT.
+    Such models might be given raw text with the task to predict the next token in
+    the sequence from the preceding tokens. And so, for each training example, the
+    model would set up its pseudo label as the next word in the sentence, let’s say.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Models trained in a self-supervised way create their own pseudo-labels from
+    unlabeled data.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'But it is the past three years that have seen self-supervised learning re-discovered
+    for computer vision with breakthrough papers from [Google](https://arxiv.org/abs/2002.05709),
+    [DeepMind](https://arxiv.org/pdf/2006.07733.pdf), and [Meta](https://arxiv.org/pdf/1911.05722.pdf).
+    The principle, however, is still the same: the model creates its own pseudo-labels,
+    for example by masking part of the image and trying to predict it, or by rotating
+    the image and attempting to predict the rotation angle. We will discuss the exact
+    techniques in a moment.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a basic grasp of what self-supervised learning is all about,
+    let’s see why it is particularly useful in medical applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scarce annotations in medical data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The medical sector produces a lot of images. According to IBM, up to 90% of
+    all medical data comes in the form of an image. These data are a result of performing
+    various examinations such as the X-ray, of which there are 3.6 billion made each
+    year, according to WHO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This vast amount of data seems to offer a great opportunity to apply machine
+    learning algorithms, which feed on data, in order to help humans in diagnostic
+    and treatment processes. If not for one issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Traditional, supervised machine learning models, in order to learn from data,
+    require more than just the training examples. They also need annotations, or labels:
+    when we present a supervised model with an X-ray image during training, we need
+    to tell it what medical conditions are to be recognized in it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, annotations are a scarce good in the medical domain, and obtaining
+    them is a challenging quest. They usually need to be provided by expert doctors
+    whose time is expensive and arguably could be better spent attending to their
+    patients. Enters self-supervised learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Self-supervised learning solves scarce annotations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In scarce annotations settings such as recognizing medical conditions in X-ray
+    images, we typically find ourselves in the situation presented on the left-hand
+    side in the picture below: we have a lot of data, but only a small portion of
+    it is annotated.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we were to follow a traditional, supervised approach, we could only use the
+    small labeled set for training the model. Thanks to self-supervised learning,
+    however, we can learn from unlabeled images, too. Let’s see how to do it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c524e3329e716701652b6d094323101c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Self-supervised learning workflow. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a first step, we let the self-supervised model generate its pseudo-labels
+    from the unlabeled data and train on them. This is referred to as **self-supervised
+    pre-training**, in which the model solves what is called a **pretext task**. This
+    could be predicting a masked image fragment or the rotation angle, as we have
+    said before; we will discuss choosing the pretext task later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result of the above is a pre-trained model that has learned the patterns
+    present in the unlabeled data. This model knows nothing about particular medical
+    conditions (as such information would only be available in the labels that it
+    has not seen) but it might have learned that **some X-rays are different from
+    others in a consistent way**. This is what LeCun refers to as building background
+    knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The self-supervised learning workflow comprises two steps: pre-training on
+    unlabeled data to build background knowledge and fine-tuning on labeled data to
+    learn to solve the downstream task.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The second step is to **fine-tune this pre-trained model in a regular, supervised
+    manner** on the labeled portion of the data. The trick here is that now that the
+    model has some background knowledge about the patterns in the dataset, providing
+    it with just a couple of annotated examples should be enough for it to learn how
+    to solve the **downstream task**, which in our case is detecting medical conditions
+    in X-ray images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pretext tasks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us now discuss the pretext tasks that the model is solving in the pre-training
+    step. Many have been proposed in the literature and the possibilities are limitless.
+    The only requirement is that we must be able to create the pseudo-label from the
+    input data itself. Let’s take a look at a couple of the most popular traditional
+    approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Masked prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Masked prediction simply means masking some part of the input image and having
+    the model try to predict it from the remainder of the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92816326dd4518afbbfef7651de74ad7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Masked prediction. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformation prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'An entire family of methods exists that can be grouped together under the broad
+    name of transformation prediction. In these tasks, we apply some transformations
+    to the image, such as rotating it, shifting the colors, and so on. The model is
+    then tasked with predicting the parameters of the transformation: the angle of
+    ratio, the amount of color shift, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/283be383b7d1de5f423425412393bb17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformation prediction. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jigsaw puzzle
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Yet another approach is to have the model solve a jigsaw puzzle. We cut the
+    input image into a number of pieces, re-arrange them randomly, and ask the model
+    to come up with the correct original arrangement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a5bb3f08391a9d02add6c253b2e52c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Jigsaw puzzle. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instance discrimination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Some other approaches focus the pretext task on instance discrimination. This
+    requires one to have multiple views of the same object, for example, pictures
+    of the same cat taken from different angles or in different places. Variations
+    of this method generate the views automatically, e.g. from 3D point clouds or
+    using generative models. The pretext task is then to recognize whether two images
+    represent the exact same object or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of each of the pretext tasks we have discussed so far is to force the
+    model to learn the structure and patterns in the data. The most recent research,
+    however, has found a somewhat different approach to work best in achieving this
+    goal. The winning approaches are based on **contrastive learning**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Contrastive learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Contrastive learning is based on the principle of contrasting samples against
+    each other in order to learn which patterns are common between the samples and
+    which set them apart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contrastive learning contrasts samples against each other to learn which patterns
+    are common between them and which set them apart.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Supervised contrastive learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This approach is not limited to self-supervised learning. In fact, it originated
+    as a solution to supervised, few-shot problems. Imagine you are responsible for
+    security in an office building and you want to install an automatic door that
+    would only open for verified employees. You only get a few pictures of each employee
+    to train your model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A solution here could be to train a model to recognize, given two images, whether
+    they depict the same person or not. The system can then compare each incoming
+    person''s face to your database of employees’ pictures and look for a match. Such
+    models are typically trained in a contrastive way. During training, they are presented
+    with three pictures to contrast against each other: two of the same person, and
+    one of a different one. The goal is to learn that the first two are similar to
+    each other and dissimilar to the third one. This contrastive approach is supervised
+    since you know who is in which picture and can use this knowledge to generate
+    the training samples.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contrastive learning can be used for both supervised and self-supervised learning
+    tasks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A slightly different flavor of contrastive learning turns out to be very well-suited
+    for self-supervised problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Self-supervised contrastive learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this approach, we also present the model with three images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first one is a random image from the training data set and is referred to
+    as the **anchor image**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The second image is the same anchor image but transformed in some way, for instance
+    through a rotation or a color shift, and is referred to as a **positive example**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The third image is another random image from the training data, different from
+    the first one, and is referred to as a **negative example**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5907e93f3080dcf653bd9435b0bcbef4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Contrastive self-supervised learning. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of learning is to teach the model that the first two images are similar
+    and we want their latent representations to be close to one another (after all,
+    a rotated black and white cat is still a cat), while the last image is dissimilar
+    from the first two and its latent representation, or embedding, should be far
+    away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now discuss a couple of self-supervised contrastive architectures in greater
+    detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Triplet loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The arguably simplest approach one could imagine is a triplet loss-based model.
+    We pass the anchor, the positive, and the negative images through a backbone model,
+    such as a ResNet or a visual transformer, in order to obtain their embeddings,
+    and then pass these to a triplet loss function, whose goal is to teach the model
+    to place the anchor and positive images close together in the latent space, and
+    the anchor and negative — far apart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23d2aaa8196ecb212f81da94a8668467.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple triplet loss-based model architecture. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The triplet loss-based model is a simplistic one. Now, let’s take a look at
+    a few state-of-the-art approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SimCLR
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Simple Framework for Contrastive Learning, or SimCLR for short, has been
+    proposed in a [paper by Google Research](https://arxiv.org/abs/2002.05709) in
+    2020.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model takes two input images: the anchor, and its transformed version,
+    or the positive example, and passes each of them through a ResNet encoder, a multi-layer
+    perception, and a learnable non-linear layer. The Noise Contrastive Estimation
+    (NCE) loss then aims to maximize the similarity between the two embeddings while
+    minimizing the similarity to embeddings of other images from the same mini-batch.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f98af8534a4794c163509645d73666b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'SimCLR architecture. Image source: [LINK](https://generallyintelligent.com/blog/2020-08-24-understanding-self-supervised-contrastive-learning/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SimCLR achieved great results in image recognition. Unfortunately, as the authors
+    show, it works best with a batch size as large as 4096 and when trained for a
+    long time. This makes it practically unusable for individuals and companies not
+    willing to spend many dollars on cloud computing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoCo
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Facebook AI Research team’s [Momentum Contrast](https://arxiv.org/abs/1911.05722),
+    or MoCo, alleviates some of SimCLR’s disadvantages. They managed to reduce the
+    batch size to 256 thanks to a clever trick.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MoCo has two encoder networks whose parameters are optimized separately, one
+    for the anchor image (*online encoder*) and the other one for the positive example
+    (*momentum encoder*). The online encoder is optimized by a regular gradient descent-based
+    algorithm, while the momentum encoder is updated based on an exponential moving
+    average of the online encoder’s weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most importantly, MoCo keeps a memory bank of the momentum encoder’s embeddings
+    and samples negative examples from it to compute the NCE loss. This eliminates
+    the need for large batch size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e91a19d230f3fa1d4a4daa151155c34c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'MoCo architecture. Image source: [LINK](https://generallyintelligent.com/blog/2020-08-24-understanding-self-supervised-contrastive-learning/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Memory banks have been used for contrastive learning before MoCo, but they typically
+    stored representations produced by an online encoder. As a result, such a memory
+    bank would at the same time store images produced at various stages of the training
+    and thus be inconsistent. The introduction of the momentum update based on the
+    moving average of the online weights allows MoCo to keep a consistent memory bank,
+    a source of good negative examples for the calculation of the loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the time of its publication, MoCo surpassed top supervised models in many
+    different computer vision tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BYOL
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Bootstrap Your Own Latent](https://arxiv.org/abs/2006.07733), or BYOL is a
+    DeepMind’s child. It builds on top of MoCo, also taking advantage of two networks,
+    one updated with the moving average of the other’s weights.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, instead of using a contrastive loss function, BYOL learns to map the
+    positive example and the normalized anchor to the same location in the embedding
+    space. In other words, the online network is trained to predict the other network’s
+    representation. This eliminates the need for negative examples and the memory
+    bank altogether.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0f5b1964c6b7bbaa9f4dd8260329417.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'BYOL architecture. Image source: [LINK](https://generallyintelligent.com/blog/2020-08-24-understanding-self-supervised-contrastive-learning/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although BYOL does not explicitly contrast different images against each other,
+    [a thorough investigation](https://generallyintelligent.com/blog/2020-08-24-understanding-self-supervised-contrastive-learning/)
+    found that it is actually learning in a contrastive fashion, albeit indirectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Others
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There exist many other modern self-supervised architectures and more appear
+    every almost month, beating the results of their predecessors. Current research
+    tends to focus in large measure on the models’ transferability to many diverse
+    downstream tasks. Most of them come from Meta researchers. Some notable examples
+    are [Barlow Twins](https://arxiv.org/abs/2103.03230), [SwAV](https://arxiv.org/pdf/2006.09882.pdf),
+    [SimSiam](https://arxiv.org/abs/2011.10566), and the most recent [Tico](https://arxiv.org/pdf/2206.10698.pdf)
+    and [VICRegL](https://arxiv.org/abs/2210.01571).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Choosing transformations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have talked about how self-supervised learning works and how it solves the
+    scarce annotations problem, so prevalent with medical data. We have also inspected
+    various pretext tasks and state-of-the-art contrastive architectures, which contrast
+    the anchor image against its transformed version. The final piece of the puzzle
+    we are missing is how to choose transformations to be applied to the anchor image.
+    And this choice turns out to be the crucial step to successfully applying self-supervised
+    learning to real-world problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The correct choice of transformations in contrastive learning is crucial to
+    successfully solving real-world problems.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: State-of-the-art literature including the SimCLR and MoCo papers discussed earlier
+    claim to have identified the best set of transformations to use. They suggest
+    random cropping, color jitter, and blur. The authors have proved these to work
+    best on a wide set of downstream tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, things are not that simple. Different transformations introduce
+    different invariances to the model, which might not always be desirable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What should not be contrastive
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A great paper by Xiao et al. titled [What Should Not Be Contrastive in Contrastive
+    Learning](https://arxiv.org/abs/2008.05659) illustrates this phenomenon pretty
+    neatly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider a dataset consisting of three classes of images: birds, flowers, and
+    elephants, and three possible transformations to apply to the anchor images during
+    contrastive pre-training: color shift, rotation, and texture change. Depending
+    on which transformation you choose, you will be able to solve some downstream
+    tasks but not others.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Different transformations introduce different invariances to the model, which
+    might not always be desirable.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'If you use color shift as your transformation, you will **introduce color invariance
+    to the model**: in the contrastive pre-training step, the loss function will force
+    the model to encode semantically similar but differently-colored images close
+    to one another in the embedding space.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/219203e1c29a80a0bf0d89f75a8fade3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Different transformations introduce different invariances to the model. Source:
+    [LINK](https://arxiv.org/pdf/2008.05659.pdf).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can then fine-tune your model to do coarse-grained classification tasks
+    such as distinguishing birds from elephants since they differ in so many more
+    things than color. However, fine-grained classification tasks such as distinguishing
+    between different bird or flower species will be much harder. In these cases,
+    the classes often differ mostly in color, and because the model has been taught
+    during pre-training to ignore color, it might do poorly at these downstream tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of transformations should be guided by the downstream task we want
+    to solve.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I encourage you to take a moment to look at the figure from the paper above
+    and think about how rotation and texture transformations influence which tasks
+    the model will be predestined to perform poorly at.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The takeaway from the examples above is that the choice of transformations should
+    be guided by the specifics of the downstream task we want to solve. Pre-training
+    with wrong transformations might actually hinder the model from performing well
+    down the road.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformations for chest X-rays
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s now take a look at how important the transformations choice is for X-ray
+    images. Imagine we ignore our downstream task of classifying the images into different
+    medical conditions and just follow Google’s and Meta’s researchers' advice and
+    use the random crop as our transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/626b6245a338bdc0e508ab549399f372.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Choosing the right transformations for X-ray images. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let the salmon-colored circle represent a part of the image that indicates
+    a particular condition, some kind of damage in the lung. With random cropping,
+    we might end up with a positive example like the one in the figure above: with
+    the damaged area cropped out.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The contrastive loss would then teach the model that a lung with the damage
+    and a lung without it are similar. Such a pre-training could make it difficult
+    to fine-tune the model to recognize this type of lung damage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other two allegedly best transformations are also no good with X-ray data.
+    Applying color jitter or blur will likely be counter-productive with gray-scale
+    images where the shade of gray or a local blur presence might indicate a particular
+    medical condition. Once again, the transformations must always be chosen with
+    the particular dataset and downstream task in mind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for theoretical considerations; let’s see self-supervised contrastive
+    learning in practice for X-ray classification!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: X-ray classification with self-supervised learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Together with my colleagues at Tooploox, we set off to discover how much value
+    self-supervised learning can bring to medical diagnosis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have used the [CheXpert dataset](https://aimi.stanford.edu/chexpert-chest-x-rays)
+    consisting of around 220k chest X-ray images labeled with ten mutually non-exclusive
+    classes indicating different medical conditions and the presence of supporting
+    devices in the patient. We have only used the subset of more than 200k frontal
+    images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We selected a random subset of around 200k images for self-supervised pre-training.
+    After a series of experiments, we decided to use a slight random rotation, horizontal
+    flip, and random perspective as transformations to apply to the anchor image.
+    All images in CheXpert come with labels but we have ignored them for the pre-training
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/535cb30ca68051daaa0dedba019d68df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Example image from the CheXpert dataset. Source: [LINK](https://aimi.stanford.edu/chexpert-chest-x-rays).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After pre-training, we fine-tuned the model in a supervised fashion on the
+    labeled data sets of varying sizes: from 250 to 10k images. The goal was to study
+    how the performance varies with the size of the labeled set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we tested the models on a small test of 300 manually labeled images
+    (the fine-tuning data labels have been obtained by the dataset authors by automatically
+    parsing the patient’s records, which might have introduced some noise to these
+    labels; the test labels, on the contrary, are of high-quality thanks to manual
+    labeling by doctors).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We compare three model architectures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A traditional transfer learning approach with ResNet18\. It is trained in a
+    supervised way only on the labeled fine-tuning set. It reflects the scenario in
+    which we do not use self-supervised learning and thus are forced to ignore that
+    unlabeled data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A simple triplet loss model as discussed earlier with the same ResNet18 as a
+    backbone, but pre-trained in a contrastive manner using the triplet loss and our
+    choice of transformations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Meta’s MoCo, also with ResNet18 backbone and our transformations set.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each model has been trained and tested ten times, each with a different size
+    of the labeled fine-tuning set. We compare them via the area under the ROC curve
+    or the AUC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The AUC for different architectures and labeled set sizes are shown in the figure
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e8971ba6554c7172b4a0119acb1cb0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Models comparison. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The self-supervised models clearly beat the supervised baseline. There are,
+    however, other interesting conclusions to be drawn from these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Self-supervised pre-training provides the **largest gain when the labeled set
+    is the smallest**: it beats the supervised baseline by 10 percentage points with
+    only 250 labeled examples.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Self-supervised pre-training improves upon the supervised baseline **even when
+    the labeled dataset is larger**: with 10k labeled examples, the gain still amounts
+    to around 6 percentage points.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MoCo yields more gain over the baseline than Triplet Loss**, especially when
+    the labeled dataset is small.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s also take a closer look at the class frequencies in our data. The left
+    panel in the figure below shows MoCo’s advantage over the baseline (as measured
+    by the AUC difference) for each class separately. The right panel shows the class
+    frequencies in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d6efa5b4e42c750f61f69a7895f5341.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: While self-supervision yields some gain for each of the ten classes, it seems
+    to be the largest for relatively rare classes. This is consistent with the results
+    from the previous plot showing the strongest improvement for small sizes of the
+    labeled set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Self-supervised learning for computer vision has made great progress over the
+    last three years. Contrastive architectures released by big AI research labs,
+    with Meta in the lead, are constantly raising the bar higher and higher. This
+    has two major consequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the ability to efficiently take advantage of unlabeled datasets will
+    come as a game changer in many industries where annotated data are scarce.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And second, training these so-called foundation models that learn from unlabeled
+    data to get the background knowledge which can transfer to multiple different
+    downstream task is an important step in generalizing AI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Acknowledgments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article is based on a talk I gave at the Data Science Summit conference
+    in Warsaw, Poland on Dec 18, 2022\. Presentation slides are available [here](https://drive.google.com/file/d/1op183zxDNBchTNdih91yDsWbizXkgieR/view).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Research into applying self-supervised learning to medical applications was
+    a joint effort with my colleagues at Tooploox. You can read more about it [on
+    the company blog](https://tooploox.com/self-supervised-learning-in-healthcare).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d563ec9011ce2508cbf4feb267de73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you liked this post, why don’t you [**subscribe for email updates**](https://michaloleszak.medium.com/subscribe)
+    on my new articles? And by [**becoming a Medium member**](https://michaloleszak.medium.com/membership),
+    you can support my writing and get unlimited access to all stories by other authors
+    and yours truly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to always keep your finger on the pulse of the increasingly faster-developing
+    field of machine learning and AI? Check out my new newsletter, [**AI Pulse**](https://pulseofai.substack.com/).
+    Need consulting? You can ask me anything or book me for a 1:1 [**here**](https://topmate.io/michaloleszak).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also try one of [my other articles](https://michaloleszak.github.io/blog/).
+    Can’t choose? Pick one of these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/monte-carlo-dropout-7fd52f8b6571?source=post_page-----fd43719b1625--------------------------------)
+    [## Monte Carlo Dropout'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improve your neural network for free with one small trick, getting model uncertainty
+    estimate as a bonus.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/monte-carlo-dropout-7fd52f8b6571?source=post_page-----fd43719b1625--------------------------------)
+    [](/on-the-importance-of-bayesian-thinking-in-everyday-life-a74475fcceeb?source=post_page-----fd43719b1625--------------------------------)
+    [## On the Importance of Bayesian Thinking in Everyday Life
+  prefs: []
+  type: TYPE_NORMAL
+- en: This simple mind-shift will help you better understand the uncertain world around
+    you
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/on-the-importance-of-bayesian-thinking-in-everyday-life-a74475fcceeb?source=post_page-----fd43719b1625--------------------------------)
+    [](/establishing-causality-part-4-5d3b5e917790?source=post_page-----fd43719b1625--------------------------------)
+    [## Establishing Causality: Part 4'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking advantage of policy shifts with Difference-In-Differences
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/establishing-causality-part-4-5d3b5e917790?source=post_page-----fd43719b1625--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

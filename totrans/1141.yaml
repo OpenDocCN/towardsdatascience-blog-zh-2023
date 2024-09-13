@@ -1,0 +1,321 @@
+- en: How to Create a Time Series Network Graph Visualization in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-create-a-time-series-network-graph-visualization-in-python-8da0227fa4b8](https://towardsdatascience.com/how-to-create-a-time-series-network-graph-visualization-in-python-8da0227fa4b8)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Use Plotly and NetworkX to show how a network evolves over time
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ds-claudia.medium.com/?source=post_page-----8da0227fa4b8--------------------------------)[![Claudia
+    Ng](../Images/e3f42d73e4a459a4a276aaa293fa6861.png)](https://ds-claudia.medium.com/?source=post_page-----8da0227fa4b8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8da0227fa4b8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8da0227fa4b8--------------------------------)
+    [Claudia Ng](https://ds-claudia.medium.com/?source=post_page-----8da0227fa4b8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8da0227fa4b8--------------------------------)
+    ·9 min read·Oct 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32d47dc42370ba8c6be98f368dde3c7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualizing changes in connections to a selected physician over time
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, you will learn to create a time series network visualization
+    in Python that shows how connections in a network develop over time, as illustrated
+    in the animation above. Network data is very effective for revealing connections,
+    and time series data can be useful for uncovering trends and anomalies in the
+    underlying data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this article, we will create an example using a Kaggle [dataset](https://www.kaggle.com/datasets/rohitrox/healthcare-provider-fraud-detection-analysis/data?select=Train_Beneficiarydata-1542865627584.csv)
+    on healthcare provider fraud. (This dataset is currently licensed CC0: Public
+    Domain on Kaggle. Please note that this dataset might not be accurate, and it’s
+    used in this article only for demonstration purposes).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will combine data from the provided link to get a cluster of fraudulent claims
+    associated with the given attending physician, followed by plotting the connections
+    between this physician and other entities (up to a certain number of hops away)
+    over time based on the claim start date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be sure to have [Plotly](https://plotly.com/python/getting-started/) and [NetworkX](https://networkx.org/documentation/stable/install.html)
+    installed in your Python virtual environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to learn an effective way to visualize how a network grows over
+    time, read on!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Findings from Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This dataset contains a total of 82,063 distinct physicians, of which 20,592
+    have at least one fraudulent claim. While the majority of these physicians have
+    only a handful of fraudulent claims, there is a small fraction who are prolific
+    fraudsters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The top 25% of physicians have at least 5 claims, and the most egregious example
+    is a physician with 2,534 fraudulent claims!
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it is easy to calculate these statistics on the physician level, a time
+    series network visualization is a good way to make sense of the scale of fraud
+    committed by this physician and over what timeframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding Connections
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given a physician, what if we could find its connections that also have fraudulent
+    claims up to a certain number of hops away?
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this, we will write a function that takes a DataFrame with claims data,
+    AttendingPhysician (string) and MaxHops (integer) as arguments and returns a DataFrame
+    containing fraudulent claims associated with the given AttendingPhysician up to
+    a maximum number of hops away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Starting from one physician, this function executes to identify beneficiaries
+    and physicians with fraudulent claims connected to the cluster. It continues as
+    long as the number of iterations is at or under MaxHops and it hasn’t converged,
+    meaning that the cluster size at the end of the previous iteration is smaller
+    than the cluster size after this iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below is a code snippet illustrating how to do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that you know how to get connections of fraudulent claims associated with
+    a given physician, let’s pick a random physician. Let’s use AttendingPhysician
+    `PHY379763` as an example, who has only 2 claims but both were fraudulent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After using the function above to find this physician’s connections up to 2
+    hops away, the resulting dataset has 1,483 fraudulent claims containing 920 unique
+    beneficiaries and 2 other physicians (so 3 distinct physicians altogether).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is crazy to think that looking at the connections to a physician with only
+    2 claims can expand so quickly!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating the Time Series Network Plot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'After gathering the connections data, we are now ready to create a visualization.
+    This can be broken down into 4 steps: i) building the main graph, ii) drawing
+    a graph per time interval, iii) plotting the graphs per time interval, iv) configuring
+    the figure.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I. Building the Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To begin, initialize an empty graph using `networkx`and add data to it from
+    the DataFrame. In this example, the graph will contain two sets of nodes: one
+    set of nodes for beneficiaries and another set for physicians.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is important to label the nodes with {type, ID (`BeneID`or `AttendingPhysician`),
+    claim start date (`ClaimStartDt`)}, because later on we will use the date to select
+    nodes to remove for our monthly graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, add the edges between connections. In this case, the edges exist between
+    connected beneficiaries and physicians, and the label of these edges contain the
+    {beneficiary ID (`BeneID`), physician ID (`AttendingPhysician`), claim start date
+    (`ClaimStartDt`)}. Again, we will use the date to select edges to remove for the
+    monthly graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below is what this section looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the `RootPhysicianID` is the given physician ID that we started with,
+    and we use a different label for this node so that we can give it a distinct color
+    later on when plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, it is important to get the positions of nodes and edges using the`nx.spring_layout()`
+    function, so that we can supply these positions to monthly graphs in order for
+    nodes and edges to appear consistently in the same positions over time later on
+    in the plotting step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: II. Draw a Graph per Interval
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, decide on what time interval and frequency you would like your visualization
+    to show. In this case, we will be using monthly intervals, so the resulting plot
+    will create sliders for each month in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Start by identifying the months to loop through by grabbing the unique months
+    in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, loop through each month to duplicate the original graph (`G`) and create
+    a new graph (`new_G`) that we can modify to show data for this month. Then, identify
+    and grab nodes and edges to remove if they occur after this month based on the
+    claim start date in the labels. Remove these nodes, edges and any self-loops:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have a graph created for every month, it is time to plot them and
+    add them to a Plotly Figure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: III. Plotting the Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To plot a network graph using Plotly, start by selecting the positions (x- and
+    y-coordinates) of nodes and edges from the positions selected in the previous
+    step stored in the variable `pos`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also add extra text and/ or colors for different nodes, and then add
+    these edges and nodes to the figure. We will choose and define colors for different
+    nodes and store this in a dictionary called `color_mappings`. The keys correspond
+    to the node labels and the values are the colors’ hex codes. Here is a helpful
+    [website](https://palettes.shecodes.io/) for choosing colors that go well together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below is the function to plot a graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The function above is useful and will be reused to plot each monthly graph
+    as such:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: IV. Configuring Figure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Up until this step, we have a main graph (`G`) containing all nodes and edges,
+    monthly graphs (multiple `new_G`‘s) containing all nodes and edges with claim
+    start dates up to that month, and a Plotly figure (`fig`) containing multiple
+    traces that plots the network graphs for each month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we have to add the steps for the slider. There should be a step for each
+    month on the slider, and we need to configure what traces to show at each step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember that we have two sets of traces, one for nodes and one for edges for
+    each month, so we will set the visibility for these traces accordingly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After creating steps for the slider, we can update the layout of the figure
+    to add the slider, title and other miscellaneous configurations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: All that is left is to show the figure and your time series network plot should
+    appear!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, use the following command if you wish to save the interactive plot
+    as an html file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Network visualizations are very powerful, and adding a time series component
+    make them even more informative! Visualizing the growth of a network has many
+    applications in various fields, ranging from understanding the origins of a disease
+    to following the expansion of services and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example we saw involved finding fraudulent claims associated with a selected
+    physician up to two hops away, and then plotting this out over time to see how
+    fraud for this cluster developed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To recap, you learned how to find connections to a given entity up to a maximum
+    number of hop and create a time series network plot by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: i) Building the main graph (`G`),
+  prefs: []
+  type: TYPE_NORMAL
+- en: ii) Drawing a new graph for each time interval (monthly in this case),
+  prefs: []
+  type: TYPE_NORMAL
+- en: iii) Plotting each monthly graph (multiple `new_G`’s) and adding them to the
+    figure (`fig`),
+  prefs: []
+  type: TYPE_NORMAL
+- en: iv) Configuring the slider for the figure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is fascinating to visualize how the connections between physicians and beneficiaries
+    grew over time!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comment below with your thoughts and learnings. What data will you try this
+    on? What insights did you draw from creating the visualization?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Link to this [Jupyter notebook](https://github.com/claudian37/DS_Portfolio/tree/master/healthcare_fraud_network_viz)
+    on Github
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Do you feel stuck in your analyst role? You might even feel a sense of imposter
+    syndrome trying to learn new skills without a PhD or computer science background.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I transitioned to Data Science in 2020 without a technical background, and
+    I want to help others do the same. I’ve created a* [***FREE Five-Day Data Science
+    LaunchPad Email Course***](http://www.ds-claudia.com) *to jump-start your career.
+    🚀*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[www.ds-claudia.com](http://www.ds-claudia.com)'
+  prefs: []
+  type: TYPE_NORMAL

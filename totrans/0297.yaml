@@ -1,0 +1,503 @@
+- en: An Introduction to OpenAI Function Calling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/an-introduction-to-openai-function-calling-e47e7cd7680e](https://towardsdatascience.com/an-introduction-to-openai-function-calling-e47e7cd7680e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: No more unstructured data outputs; turn ChatGPT’s completions into structured
+    JSON!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)[![David
+    Hundley](../Images/1779ef96ec3d338f8fe4a9567ba7b194.png)](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------)
+    [David Hundley](https://dkhundley.medium.com/?source=post_page-----e47e7cd7680e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e47e7cd7680e--------------------------------)
+    ·16 min read·Jul 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14ae6814c08319c738cd14cdd99e5771.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Title card created by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few months ago, OpenAI released their API to the general public, which excited
+    many developers who wanted to make use of ChatGPT’s outputs in a systematic way.
+    As exciting has this has been, it’s equally been a bit of a nightmare since we
+    programmers tend to work in the realm of **structured data types**. We like integers,
+    booleans, and lists. The unstructured string can be unwieldy to deal with, and
+    in order to get consistent results, a programmer is required to face their worst
+    nightmare: developing a regular expression (Regex) for proper parsing. 🤢'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, prompt engineering can actually help quite a bit here, but it’s
+    still not perfect. For example, if you want to have ChatGPT analyze the sentiment
+    of a movie review for positivity or negativity, you might structure a prompt that
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This prompt honestly does pretty decently, but the results aren’t precisely
+    consistent. For example, I have seen ChatGPT produce outputs that look like the
+    following in terms of the movie sentiment example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Positive`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`positive`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Positive.`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This might not seem like a big deal, but in the world of programming, those
+    are NOT equal. Again, you can get around a simpler example like this with a bit
+    of Regex, but beyond the fact that most people (including myself) are terrible
+    at writing regular expressions, there are simply some instances where even Regex
+    can’t parse the information correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can tell, programmers have been hoping that OpenAI would add functionality
+    to support structured JSON outputs, and OpenAI has delivered in the form of **function
+    calling**. [Function calling](https://openai.com/blog/function-calling-and-other-api-updates)
+    is exactly as it sounds: it allows ChatGPT to produce arguments that can interact
+    with a custom function in a manner that uses structured data types. Yup, no more
+    fancy prompt engineering and Regex to cross your fingers and hope you get the
+    right outcome. In this post, we’ll cover how to make use of this new functionality,
+    but first, let’s start with an example of how we used to attempt to produce structured
+    data outputs with prompt engineering and Regex.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we jump into the bulk of our post, please allow me to [share a link to
+    this Jupyter notebook in my GitHub](https://github.com/dkhundley/openai-api-tutorial/blob/main/notebooks/function-calling.ipynb).
+    This notebook contains all the code I will be running (and more) as part of this
+    blog post. Additionally, I would encourage you to [check out OpenAI’s official
+    function calling documentation](https://platform.openai.com/docs/guides/gpt/function-calling)
+    for anything that I may not cover here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pre-Function Calling Days
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To demonstrate what we used to do in the “pre-function calling days”, I wrote
+    a small bit of text about myself, and we’ll be using the OpenAPI to extract bits
+    of information from this text. Here is the “About Me” text we’ll be working with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hello! My name is David Hundley. I am a principal machine learning engineer
+    at State Farm. I enjoy learning about AI and teaching what I learn back to others.
+    I have two daughters. I drive a Tesla Model 3, and my favorite video game series
+    is The Legend of Zelda.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Let’s say I want to extract the following bits of information from that text:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Name
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Job title
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Company
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Number of children *as an integer (This is important!)*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Car make
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Car model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Favorite video game series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here’s how I would engineer a few-shot prompt in order to produce a structured
+    JSON output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s check out how ChatGPT returned this completion to me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c5674a1a303f8dab4da738c821fea48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The “Pre-Function Calling” Days (Captured by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see, this actually isn’t bad. But it’s not ideal and could prove
+    to be risky for the following reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are not guaranteed that OpenAI’s response will provide a clean JSON output.
+    It could have produced something like “Here is your JSON:” followed by the JSON
+    output, meaning that in order to use `json.loads()` to parse the string into a
+    JSON object, we’d first have to strip out that little bit of text that opens the
+    response.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are not guaranteed that the keys in the key-value pairs of the JSON object
+    will be consistent from API call to API call. Recall the example from above of
+    the 3 instances of the word `Positive`. This is precisely the same risk you run
+    trying to have ChatGPT parse out keys through few-shot prompt engineering. The
+    only way you could maybe lock this down is with Regex, which comes with its own
+    baggage as we already discussed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are not guaranteed to receive our responses in the proper data type format.
+    While our prompt engineering to extract number of children did parse into a proper
+    integer, we’re at the mercy of crossing our fingers and hoping we get that consistent
+    result for every API call.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We could summarize these issues into a single statement: **Without function
+    calling, we are not guaranteed to get consistent results that are important for
+    the precision required for systematic implementation.** It’s a nontrivial issue
+    that can be very challenging to remedy through prompt engineering and regular
+    expressions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter Function Calling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we’ve built an intuition around why getting structured outputs from
+    ChatGPT was formerly problematic, let’s move into looking at the new function
+    calling capability introduced by OpenAI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Function calling is actually a bit of a misnomer. OpenAI is not actually running
+    your code in a true function call. Rather, it’s simply setting up the structured
+    arguments you’d need to execute your own custom functions, and I’d argue this
+    is preferred behavior. While you might be thinking that it doesn’t make sense
+    that the OpenAI API isn’t executing your custom function, consider that in order
+    to do that, you’d have to pass that function code into ChatGPT. This function
+    code probably contains proprietary information that you would NOT want to expose
+    to anybody, hence why it’s good that you don’t actually have to pass this code
+    to make use of OpenAI’s function calling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s jump into an example of how to enable function calling with a single
+    custom function. Using our “About Me” sample text from the previous section, let’s
+    create a custom function called `extract_person_info`. This function needs just
+    three bits of information: person name, job title, and number of children. (We’ll
+    revisit extracting the rest of the information in the next section; I just want
+    to start simpler for now.) This custom function is intentionally very simple and
+    will simply take our arguments and print them together in a single string. Here’s
+    the code for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In order to make use of function calling, we need to set up a JSON object in
+    a specific way that notes the name of our custom function and what data elements
+    we are hoping ChatGPT will extract from the body of the text. Because of the specificity
+    on how this JSON object should look, I would encourage you reference OpenAI’s
+    developer documentation if you want to know any details that I don’t cover here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(Note: In the OpenAI documentation, I noticed one element in the JSON object
+    called `required` that seemingly indicates that a parameter must be present for
+    ChatGPT to properly recognize the function. I tried testing this out, and either
+    this isn’t how this functionality works or I did something wrong. Either way,
+    I transparently have no idea what this `required` parameter indicates. 😅)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how we need to structure our JSON object to make use of our custom
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: You’re probably already familiar with JSON syntax, although let me draw attention
+    for a moment to the data type associated to each property. If you are a Python
+    developer like myself, be aware that the data typing for this JSON structure is
+    NOT directly equivalent to how we define data structures in Python. Generally
+    speaking, we can find equivalencies that work out alright, but if you want to
+    know more about the specific data types associated with this JSON structure, [check
+    out this documentation](https://json-schema.org/understanding-json-schema/reference/object.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we’re ready to make our API call to get the results! Using the Python client,
+    you’ll notice the syntax is very similar to how we obtain completions in general.
+    We’re just going to add some additional arguments into this call that represent
+    our function calling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we simply pass in our list of custom functions (or in our case
+    for now, our singular custom function) as the `functions` parameter, and you’ll
+    also notice an additional parameter called `function_call` that we’ve set to `auto`.
+    Don’t worry about this for now as we’ll revisit what this `auto` piece is doing
+    in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s run this code and take a look at the full API response from ChatGPT
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28cfd91d92c922e97466bb09a518c43c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Function calling with a single function (Captured by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the most part, this response looks the same as a non-function call response,
+    but now there’s an additional field in the response called `function_call`, and
+    nested under this dictionary are two additional items: `name` and `arguments`.
+    `name` indicates the name of our custom function that we will be calling with
+    ChatGPT’s output, and `arguments` contains a string that we can load using `json.loads()`
+    to load our custom function arguments as a JSON object.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice now that we’re getting much more consistency than we were in our pre-function
+    calling methodology. Now we can be guaranteed that the keys of the key-value pairs
+    WILL be consistent, and the data types WILL be consistent. No need for fancy prompt
+    engineering or regular expressions!
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s the core of OpenAI’s function calling! Of course, this was a very simplistic
+    example to get you going, but you probably have additional questions. Let’s cover
+    those in this next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But What About…?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The previous section covered a very simple example of how to enable function
+    calling, but if you’re like me, you probably have some additional questions beyond
+    this point. Naturally, I can’t cover all these questions, but I do want to cover
+    two big ones that are slightly more advanced than what we covered in the previous
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if the prompt I submit doesn’t contain the information I want to extract
+    per my custom function?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In our original example, our custom function sought to extract three very specific
+    bits of information, and we demonstrated that this worked successfully by passing
+    in my custom “About Me” text as a prompt. But you might be wondering, what happens
+    if you pass in any other prompt that doesn’t contain that information?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall that we set a parameter in our API client call called `function_call`
+    that we set to `auto`. We’ll explore this even deeper in the next subsection,
+    but what this parameter is essentially doing is telling ChatGPT to use its best
+    judgment in figuring out when to structure the output for one of our custom functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So what happens when we submit a prompt that doesn’t match any of our custom
+    functions? Simply put, it defaults to typical behavior as if function calling
+    doesn’t exist. Let’s test this out with an arbitrary prompt: “How tall is the
+    Eiffel Tower?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/051335d6f9aa49a57801d18b5d99372a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Function calling but with a prompt that doesn’t match the function (Captured
+    by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, we are getting a typical “Completions” output though we passed
+    in our custom function. Naturally, this makes sense since this arbitrary Eiffel
+    Towel prompt contains none of the specific information we are looking for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if I want to pass multiple custom functions and some of them have overlapping
+    parameters?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In short, ChatGPT intelligently handles this without a problem. Where we previously
+    passed in one custom function as essentially a list of Python dictionaries, we
+    just need to keep adding additional Python dictionaries to this same list, each
+    representing its own distinct function. Let’s add two new functions: one called
+    `extract_vehicle_info` and another called `extract_all_info`. Here’s what our
+    adjusted syntax looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice specifically how the `extract_all_info` covers some of the same parameters
+    as our original `extract_person_info` function, so how does ChatGPT know which
+    one to select? Simply put, ChatGPT looks for the best match. If we pass in a prompt
+    that contains all the arguments needed for the `extract_all_info` function, that’s
+    the one it’ll select. But if we just pass in a prompt that contains either just
+    simple information about me or a prompt about my vehicle, it’ll leverage the respective
+    functions that do that. Let’s execute that in code here with a few samples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sample 1: The original “About Me” text. (See above.)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Sample 2: *“My name is David Hundley. I am a principal machine learning engineer,
+    and I have two daughters.”*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Sample 3: *“She drives a Kia Sportage.”*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b7fb9578c9fc406ec2389c960695b2e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Sample #1’s Results (Captured by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ca85cd4c01fe31f567aedb45838fbfd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Sample #2’s Results (Captured by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f10796afa0b3dd7f8c45034501135b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Sample #3’s results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With each of the respective prompts, ChatGPT selected the correct custom function,
+    and we can specifically note that in the `name` value under `function_call` in
+    the API’s response object. In addition to this being a handy way to identify which
+    function to use the arguments for, we can programmatically map our actual custom
+    Python function to this value to run the correct code appropriately. If that doesn’t
+    make sense, perhaps looking at this in code would make this more clear:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d881eb31c35582412985e4f3e656dba7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Final programmatic results! (Captured by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '****Beware one thing****: In the spirit of full transparency, I had to run
+    that code there multiple times to get it to produce like that. The trouble is
+    that because the `extract_person_info` and `extract_all_info` are more similar
+    in nature, ChatGPT kept confusing those for one another. I guess the lesson to
+    be learned here is that your functions should be extracting distinct information.
+    I also only tested using `gpt-3.5-turbo`, so it’s possible that a more powerful
+    model like GPT-4 could have handled that better.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*****Friday, 7/28/23 Update**: I added a new section on how this works with
+    LangChain!***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI Function Calling with LangChain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given the popular usage of LangChain, I thought it might be useful for how you
+    might use this same function calling capability within that framework. Now, for
+    folks familiar with LangChain, you might already be aware that LangChain offers
+    its own parsing capabilities, and these parsing capabilities are largely enabled
+    through advanced prompt engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are already making use of these LangChain parsers, you might be wondering,
+    “Should I pivot to use OpenAI function calling for better performance?” Unfortunately,
+    there’s not a clean way to answer this question as OpenAI has abstracted away
+    what it’s actually doing to enable function calling. (Trust me, I dug through
+    the OpenAI client source code, and [this line here](https://github.com/openai/openai-python/blob/main/openai/api_resources/abstract/engine_api_resource.py#L156)
+    shows that it is indeed abstracted away!) If you’re already making use of LangChain’s
+    parsers, I would probably recommend you stick with those, especially since they
+    are portable for other LLMs beyond OpenAI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The good news is that if you want to make use of OpenAI function calling in
+    tandem with other LangChain functionality (and are okay with only being able to
+    pass in one function calling template), you can absolutely do that! I’m not going
+    to cover LangChain in depth in this post, but I would like to show the quick code
+    to enable this. It’s essentially going to involve us importing some LangChain
+    objects and using those as “wrappers” around what we’ve already created.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we proceed forward, there’s also another issue with LangChain’s implementation…
+    it doesn’t seem to allow us to submit multiple function calling templates at once.
+    Additionally, we will have to reformat the JSON schema for this specific implementation.
+    It looks very similar. Let’s do a back-to-back comparison. Here’s the original
+    JSON schema for native OpenAI function calling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here is what the reformatted version looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This little code snippet will show you how to perform the exact same functionality
+    that we’ve done above, except now with LangChain!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see in the screenshot below, we get the exact same results as we
+    did before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbe2a02e8c06b602a9fa94b3e014ca38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of the LangChain call (Screenshot captured by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping Up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope you can see now why function calling can be so powerful! When it comes
+    to building applications that leverage Generative AI, this kind of function calling
+    is a godsend for programmers. By not having to worry so much now about the output
+    JSON structure, we can now focus our time on building out other parts of the application.
+    It’s an awesome time to be working in this space
+  prefs: []
+  type: TYPE_NORMAL

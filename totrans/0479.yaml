@@ -1,0 +1,533 @@
+- en: 'Causal Inference: Quasi-Experiments'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/causal-inference-quasi-experiments-36d35ca5f754](https://towardsdatascience.com/causal-inference-quasi-experiments-36d35ca5f754)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Your PM forgot to run an **A/B test**… what now?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ianhojy.medium.com/?source=post_page-----36d35ca5f754--------------------------------)[![Ian
+    Ho](../Images/1b56c25ee3bedfb5c7369d4bfc93aa91.png)](https://ianhojy.medium.com/?source=post_page-----36d35ca5f754--------------------------------)[](https://towardsdatascience.com/?source=post_page-----36d35ca5f754--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----36d35ca5f754--------------------------------)
+    [Ian Ho](https://ianhojy.medium.com/?source=post_page-----36d35ca5f754--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----36d35ca5f754--------------------------------)
+    ·12 min read·Aug 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4b772f76b325ef375d908ed308e86ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Isaac Smith](https://unsplash.com/@isaacmsmith?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article is Part 1 of n (depending on how much I end up rambling on) in
+    a series of articles about using quasi-experiments for causal inference. Briefly,
+    Part 1 will explain the whys and hows of quasi-experiments, as well as the nuances
+    involved when applying approaches like PSM. In Part 2, I will talk more about
+    the limitations of quasi-experiments and what you should be cautious about when
+    making decisions based on them. I will also propose a framework for heterogenous
+    impact estimation that can help overcome extrapolation bias. In Part 3… I’m still
+    not sure yet.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You may also have come across other articles explaining Quasi-Experiments,
+    but I’m still going to try explaining it my way. Give it a read.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Causal Inference?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The cost of developing and launching products and features is ultimately justified
+    by the positive impact on the consumer. It is thus unsurprising to hear product
+    managers make all sorts of claims, such as “We are thrilled to announce that our
+    latest feature launch has led to an impressive 12% increase in revenue!”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sounds fabulous and, to be honest, most senior managers are more than happy
+    to just accept such statements as the truth. My goal today is to convince you
+    to take a deeper look into the methods of causal inference that (should) lie behind
+    these claims. With a better grasp of causal inference, you will be better positioned
+    to evaluate the impact that products and features bring for your users and your
+    company.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us see what ChatGPT has to say about why Causal Inference is needed for
+    products:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Causal inference empowers product teams with the ability to move beyond simply
+    observing correlations in data and to establish a deeper understanding of the
+    causal mechanisms driving product performance. (unsurprisingly already more succinctly
+    expressed than anything I could produce)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: One aspect really worth mentioning here is the idea of correlation and causality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correlation does not imply Causation. (don’t roll your eyes just yet)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s be honest, so many of us say it and think we know what it means. When
+    someone asks us what it means, we bring up a hilarious graph to prove our intellectual
+    competencies (check out this [popular example of spurious correlations](https://www.tylervigen.com/spurious-correlations)),
+    and proudly claim that we will never make such a mistake in our daily impact estimation
+    work. Well, experience tells me that many people who *know of* this fallacy do
+    not really understand how it looks in the real world. This often stems from poor
+    fundamentals in the domain of causal inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/edb5ab00d7a85dcdd44a4256ca123c79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: [https://www.tylervigen.com/spurious-correlations](https://www.tylervigen.com/spurious-correlations)
+    (CC BY 4.0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So if causal inference is important to objectively evaluate the returns of our
+    investments in products and features, how do we go about doing it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In its most uncontroversial form, causal inference is often operationalised
+    by A/B testing (unfortunately, not the topic of today’s discussion). However,
+    the reality is that experiments are not always available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Quasi-Experiments: Why?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Firstly, sometimes we just forget to do experiments. This often happens when
+    product teams *successfully* prove impact using a subset of experiment users,
+    and then proceed to launch to all users. In the process, they forget to retain
+    a control hold-out group to evaluate universal impact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Secondly, sometimes experimentation is just not possible. For instance, the
+    product or feature may involve a change that is highly visible to users, or a
+    change that users are highly sensitive to. In such situations, user experience
+    prevails and a control group is simply not realistic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where **Quasi-Experiments** come in. Unlike actual A/B tests, these
+    quasi-experiments are conducted retrospectively. Generally speaking, it involves
+    analysing a subset of users to simulate the conducting of an experiment after-the-fact
+    of a product or feature launch. Let’s get into the specifics using an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imagine you are a data scientist working for an e-commerce company, something
+    like Shopee or Lazada. 6 months ago, your company universally launched an engagement
+    feature X that your CEO believes has the potential to increase user spending on
+    the platform. Your PM comes to you one fine day and says that the CEO wants to
+    know how the feature launch has impacted the company. You remind your PM that
+    because this was a universal launch, there was no control group and all users
+    had access to the engagement feature. So, your PM says, “That’s no problem. Just
+    compare the users who actually used the feature (Treatment Group: Treatment=1)
+    versus those who did not use the feature (Control Group: Treatment=0). Do some
+    hypothesis testing, and voila, the difference in spending will be the impact of
+    Feature X.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92dfe923786769946a2b0b5c04e98b62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Acting on the wisdom of your PM, you run the numbers and behold, a +$12 difference
+    in the treatment group versus the ‘control’ group. How did we get the +$12?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Average Treatment Group spending in Apr 2023:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*$ (42 + 26) / 2 = $ 34*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Average Control Group spending in Apr 2023:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*$ (36 + 20 + 19 + 13) / 4 = $22*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Difference in spending = $ 34 minus $22 = $12*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your PM is happy with the estimated uplift and gives you a pat on the back for
+    helping to secure the team’s annual bonus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you lay in bed that night, something continues to bother your conscience.
+    Indeed, this methodology suffers from the problem of confounding variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ChatGPT describes **confounding variables** as such:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confounding variables, also known as confounders, are extraneous factors that
+    can influence both the dependent variable (the outcome of interest) and the independent
+    variable (the factor being studied) in a research study. These variables can lead
+    to misleading or incorrect conclusions about the true relationship between the
+    independent and dependent variables.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In context, the potential confounding variable is in fact the outcome variable
+    itself: user spending. But how so?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If users who spent more (in Feb 2023) actually have a higher likelihood of using
+    this new feature X (in Mar 2023), then the observed +12% uplift of spending in
+    Apr 2023 may in fact be attributable to inherent differences in spending preferences,
+    instead of the usage of feature X itself. Put another way, if feature X was not
+    launched, the users in the treatment group might have spent more in Apr 2023 anyway.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where Quasi-Experiments can help to provide a more robust (and conscionable)
+    impact estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I could go more into the statistics of confounding variables and the biases,
+    but I’m not going to do that so that I can actually move on to Quasi-Experiments.
+    Also, you might be wondering why randomised A/B tests do not suffer from this
+    problem of confounding variables. Refer to Annex A for an explanation. Again,
+    not the main focus of today’s discussion. Also, the concept of confounding variables
+    is closely related to Omitted Variables Bias, it’s not exactly the same but if
+    you here’s an* [*explanation*](/omitted-variable-bias-and-what-can-we-do-about-it-344ac1477699)
+    *of OVB for the uninitiated.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Anyway, hope I have not lost you yet.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e527c6e024bafe0161f009657697a69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Representation of Confounding Relationship'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Quasi-Experiments: How?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here’s a high-level overview of how Quasi-Experiments generally overcome the
+    problem of confounding variables in the absence of randomised A/B tests. Let’s
+    use the product feature X launch as the continuing example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each of the 2 users in the Treatment Group, it would be great if we could
+    get a glimpse into the parallel universe where the only delta was that these 2
+    users did not end up using the feature X. Since we’re not yet living in a Sci-fi
+    world, the next best option would be to essentially *estimate* this parallel universe
+    using statistical methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, this is done by subsetting users in the Control Group (4 of them)
+    who were most similar to the Treatment Group users before the launch of Feature
+    X. Put another way, these Pseudo-Control Group would simulate how the Treatment
+    users would behave if the Treatment users had not adopted Feature X.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our conveniently doctored example, we would find the users in the Control
+    Group who were most similar in terms of Feb 2023 spending (pre-launch) to our
+    Treatment Group. Specifically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For User A, the closest lookalike user would be User C, since both spent $10
+    in Feb 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For User B, the closest lookalike user would be User D, since both spent $8
+    in Feb 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, we **omit** User E and F from this analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74c2678b9986101b5bc91735ee70664f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Matching Treatment Group to a Pseudo-Control Group'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In summary, why did we choose User C to compare to User A? Given the similar
+    (exactly same in this case) amount of spending in Feb 2023 pre-launch, we postulate
+    that User A would effectively have been User C if not for the launch and usage
+    of Feature X.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So what do we tell our PM? Here are the revised calculations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Average Treatment Group spending in Apr 2023:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*$ (42 + 26) / 2 = $ 34*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Average Control Group spending in Apr 2023:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*$ (36 + 20) / 2 = $28*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Difference in spending = $ 34 minus $28 = $6*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As seen in this example, **the estimated impact of using Feature X drops from
+    an uplift of $12 to $6.** Unfortunately for your PM, this year’s bonus might end
+    up a little bit smaller than expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, I carefully manipulated the numerical values to prove my point here,
+    but I have actually seen estimation biases of even greater proportions in the
+    real product world. It should be clear by now that having robust methodologies
+    is extremely consequential in evaluating the impact of product and feature decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*At this point, it is worth reminding readers of the confounding causality
+    that exists in this example. Specifically, past spending is a confounder in the
+    causal relationship between Feature X usage and future spending. Importantly,
+    a confounding relationship exists because we hypothesise that past spending is
+    an indicator of likelihood of adopting Feature X. This likelihood concept is crucial
+    to keep in mind as we talk more about Propensity Score Matching (PSM) later on.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Propensity Score Matching
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the convenient example of Feature X above, we only had one confounding variable
+    (past spending in Feb 2023). Looking at this problem using a ***confounding***
+    framework, there may be many more attributes that affect the likelihood of using
+    Feature X after launch. Some of these attributes may be known and observable,
+    while others may remain unknown or simply unobservable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In one of my previous projects, there were dozens of user attributes that we
+    wanted to use to match Treatment users to Pseudo-Control users. You could apply
+    a KNN model to find lookalike users, but you quickly run into performance issues
+    when there are too many attributes and too many users to search through. If you
+    have a mix of numerical and categorical values, there is the additional complication
+    of defining *distance*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to overcome this computational problem is through a process of **dimensionality
+    reduction.** At least to me, that’s essentially what PSM is doing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that we previously modelled the confounding relationship as the confounder(s)
+    affecting the likelihood of adopting Feature X (treatment). Therefore, we can
+    instead take the following steps to subset a Pseudo-Control group who are lookalikes
+    with our Treatment Group:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use a logistic regression (or any other binary classification model which produces
+    probability predictions) to model the relationship between the Treatment (1 or
+    0) against the full set of potential confounders (Past spending etc.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the fitted classification model to predict the probability of Treatment
+    (Propensity Score) given each user’s attributes/confounders.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Match users in the Treatment Group with users in the Pseudo-Control group based
+    on the estimated Propensity Score. Therefore, Propensity Score Matching.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: By taking these steps, the matching process becomes a lot more computationally
+    efficient. Besides being incredibly efficient, the math also works out nicely
+    under the right assumptions. (Refer to this [article](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3144483/)
+    for more on the expected value properties, and some [proofs](http://users.nber.org/~rdehejia/!@$AEM/Topic%2009%20Matching%20Advanced/Topic%2009%20Propensity%20Score.pdf)
+    here if that’s your thing and you’re still unconvinced). Of course, there are
+    trade-offs to such an approach, and I will cover some of these limitations in
+    the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For R users, there is a well-known library called [MatchIt](https://cran.r-project.org/web/packages/MatchIt/vignettes/MatchIt.html)
+    to implement it, and one such example walkthrough can be found [here](https://ds4ps.org/PROG-EVAL-III/MatchingScores.html).
+    Personally, apart from the fact that I’m not a fan of R, I’m also not a fan of
+    libraries that abstract away too much of the computation behind the scenes, so
+    I never really used this package but wrote my own code to in PySpark to run do
+    matching more efficiently for Big Datasets (millions of users). Someone else also
+    has a simple walkthrough for how to do it in Python, so check it out [here](/propensity-score-matching-a0d373863eec).
+    *Hit me up if you want to learn more about how I implemented it*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Propensity Score Matching: Limitations'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I want to avoid spending too much time demonstrating the implementation of PSM,
+    partially because there are many reference examples out there already, but also
+    because I am more interested to talk about the nuances involved when conducting
+    this type of impact estimation. Applying PSM is easy, but understanding the assumptions,
+    caveats and limitations comes only with experience and experimentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PMs who don’t understand confounding variables are dangerous, but Data Scientists
+    who misuse Quasi-Experimentation methodologies can be even more dangerous, especially
+    because the methodology appears so intuitively sound on the surface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my Part 2 article, I will spend more time going through these nuances that
+    I have learnt in my experience applying PSM to real world examples. For now, here
+    are some of the more important limitations that one should always keep in mind
+    when applying PSM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assumption of Ignorable Treatment Assignment**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PSM relies on the assumption of “ignorable treatment assignment,” which means
+    that all confounding variables affect both Treatment probability (e.g. probability
+    of using Feature X) and the outcome (e.g. Future Spending) are adequately measured
+    and included in the modelling of the Propensity Score. If there are unmeasured
+    or unobservable confounders, the matching may not adequately resolve the problem
+    of estimation bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample Overlap and Common Support**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PSM requires sufficient overlap in the propensity score distributions between
+    the treatment and control groups. In situations where there is limited common
+    support (i.e., few or no subjects with similar propensity scores in both groups),
+    matching becomes challenging, and we may need to resort to other methods. Even
+    though I’m not a fan of R, the documentation for [MatchIt](https://cran.r-project.org/web/packages/MatchIt/vignettes/MatchIt.html)
+    explains quite well the considerations of support as well as other matching methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Selection Bias in Propensity Score Estimation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The accuracy of the propensity score model (e.g. Logistic Regression) depends
+    on the correct specification of the model. If the model is misspecified or includes
+    irrelevant variables, it may introduce selection bias. The choice of the method
+    for estimating propensity scores can drastically change the estimated impact.
+    Different estimation methods may yield different matches and, consequently, different
+    estimates of causal impacts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A final word on the model used to predict Propensity Scores: In my various
+    discussions with Data Scientists on how to conduct Step 1 (Fitting the Logistic
+    Regression Model), many get caught up with trying to find the best model that
+    reduces the prediction error. I don’t blame them for wanting to do so, it’s almost
+    like a Data Scientist reflex to want to minimise RMSE when you run model.fit(X,
+    y). However, it is also worth remembering that the immediate objective of modelling
+    in PSM is not to achieve the best classification predictions. Instead, it is about
+    finding a computationally efficient way to achieve* [*attribute balance*](http://www2.stat.duke.edu/~fl35/teaching/640/Chap3.3_observational_PS.pdf)
+    *and common support. Thus, the best-fitting models may not always produce the
+    best matching outcomes. More on this in the Part 2 article.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It’s important to always remember what we’re measuring here. For those familiar
+    with statistics, we are overcoming the bias of using Average Treatment Effects
+    (ATE), and PSM only returns the Average Effect of the Treatment on the Treated
+    (ATT). For a fuller discussion, refer to this [link](https://academic.oup.com/ejcts/article/53/6/1112/4978231).
+    Therefore, please proceed with a tremendous degree of caution when extrapolating
+    the ATT estimates to the wider population. (I will save this topic for a later
+    discussion)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, Data Scientists often hold tremendous power in influencing the decisions
+    and evaluations of products and features. Thus, I believe that a commensurate
+    degree of responsibility falls on the shoulders of Data Scientists, to utilise
+    only the most robust and sound methodologies when conducting impact estimation.
+    See you in Part 2!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Annex A: Randomisation & Confounding**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Randomisation is achieved by assigning each individual to one of the treatment
+    groups (e.g., control or treatment) with equal probability. We can represent the
+    treatment assignment as a binary variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: T = 1 if the individual receives the treatment,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: T = 0 if the individual is in the control group.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The key property of random assignment is that the treatment assignment is independent
+    of any potential outcome (Y) or covariates (X), both observed and unobserved.
+    Mathematically, we can express this as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: P(Y|T, X) = P(Y|T)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that the probability of the outcome given the treatment and covariates
+    is the same as the probability of the outcome given only the treatment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://www.tylervigen.com/spurious-correlations?source=post_page-----36d35ca5f754--------------------------------)
+    [## Spurious correlations'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Discover a correlation: find new correlations. Note from Tyler: This isn''t
+    working right now - sorry! It''s a conflict…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'www.tylervigen.com](https://www.tylervigen.com/spurious-correlations?source=post_page-----36d35ca5f754--------------------------------)
+    [](https://academic.oup.com/ejcts/article/53/6/1112/4978231?source=post_page-----36d35ca5f754--------------------------------)
+    [## Statistical primer: propensity score matching and its alternatives†'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Abstract. Propensity score (PS) methods offer certain advantages over more traditional
+    regression methods to control…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: academic.oup.com](https://academic.oup.com/ejcts/article/53/6/1112/4978231?source=post_page-----36d35ca5f754--------------------------------)
+    [](/omitted-variable-bias-and-what-can-we-do-about-it-344ac1477699?source=post_page-----36d35ca5f754--------------------------------)
+    [## Understanding Omitted Variable Bias
+  prefs: []
+  type: TYPE_NORMAL
+- en: A step-by-step guide for the most pervasive type of bias
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/omitted-variable-bias-and-what-can-we-do-about-it-344ac1477699?source=post_page-----36d35ca5f754--------------------------------)  [##
+    MatchIt: Getting Started'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Noah Greifer Ho et al. ( MatchIt implements the suggestions of 2007) for improving
+    parametric statistical models for…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: cran.r-project.org](https://cran.r-project.org/web/packages/MatchIt/vignettes/MatchIt.html?source=post_page-----36d35ca5f754--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Special Thanks: Shin Ler*'
+  prefs: []
+  type: TYPE_NORMAL

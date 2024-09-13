@@ -1,0 +1,1028 @@
+- en: Extracting Data from (Azure) SQL Server Huge Tables in RFC 4180-Compliant CSV
+    Files
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/extracting-data-from-azure-sql-server-huge-tables-in-rfc-4180-compliant-csv-files-1cb09a7a0883](https://towardsdatascience.com/extracting-data-from-azure-sql-server-huge-tables-in-rfc-4180-compliant-csv-files-1cb09a7a0883)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The nightmare of extracting data containing strings with special characters
+    from (Azure) SQL Server huge tables into CSV files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://lucazavarella.medium.com/?source=post_page-----1cb09a7a0883--------------------------------)[![Luca
+    Zavarella](../Images/6af72e50d79498ac378e2f1e469a0e65.png)](https://lucazavarella.medium.com/?source=post_page-----1cb09a7a0883--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1cb09a7a0883--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1cb09a7a0883--------------------------------)
+    [Luca Zavarella](https://lucazavarella.medium.com/?source=post_page-----1cb09a7a0883--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1cb09a7a0883--------------------------------)
+    ·21 min read·Jan 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/623f3bda214162d325d7158441329fe3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image from Unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: When a team of Data Scientists from outside your company is hired to implement
+    Machine Learning models, you somehow have to share with them the data to be used
+    for model training. If the aforementioned team cannot directly access the data
+    persisted in a database, the first option is to extract it from the database into
+    files in CSV format. Considering that most of the time these data are in large
+    quantities (5+ GB) and that some fields may contain special characters (comma,
+    which coincides with the field separator; carriage return and/or new line characters),
+    the usual tools used for export by non-developer users may not be adequate, even
+    causing memory problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article you will see how to solve the problem of extracting a large
+    amount of data containing special characters from an (Azure) SQL Server database
+    in RFC 4180-Compliant CSV Files using PowerShell functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you need to extract data from an (Azure) SQL Server database, the first
+    tools that come to mind for the user are [*SQL Server Management Studio*](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?WT.mc_id=AI-MVP-5003688)
+    (SSMS) and *Azure Data Studio* (ADS). This is because both contain simple features
+    that allow you to extract data from a database with a few clicks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The interfacing tool with (Azure) SQL Server par excellence is SSMS. Recently
+    Microsoft has been investing heavily in adding features in ADS to make it the
+    tool of choice for the Microsoft data platform on Azure and beyond. Therefore,
+    when you install the latest versions of SSMS today, the setup also installs ADS
+    behind the scenes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any third-party system that involves importing a CSV file to load a dataset
+    must be based on a standard that defines the CSV format. Therefore, before moving
+    on to practical tests, let’s see if there is a standard definition of the CSV
+    format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s the RFC 4180
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'RFC 4180 is a standard that formalizes the format used for *Comma-Separated
+    Values* (CSV) files and the specific *Multipurpose Internet Mail Extensions* (MIME)
+    type associated with the CSV format (“text/csv”). The contents of this standard
+    can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## RFC 4180: Common Format and MIME Type for Comma-Separated Values (CSV)
+    Files'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'INFORMATIONAL 7111 Errata Exist Network Working Group Y. Shafranovich Request
+    for Comments: 4180 SolidMatrix…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.rfc-editor.org](https://www.rfc-editor.org/rfc/rfc4180?source=post_page-----1cb09a7a0883--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see from the definition of the format in the previous link, while
+    the first four points are fairly obvious, the remaining three need to be read
+    carefully:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each field *may or may not be enclosed in double quotes* (however
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: some programs, such as Microsoft Excel, do not use double quotes
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: at all). If fields are not enclosed with double quotes, then
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: double quotes may not appear inside the fields.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Fields containing line breaks (CR/LF), double quotes, and commas
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*should be enclosed in double-quotes*.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: If double-quotes are used to enclose fields, then a double-quote
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: appearing inside a field *must be escaped by preceding it with
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: another double quote*.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Keeping in mind also the examples given in the link, it is evident that the
+    value of a field will be enclosed with double quotes only when needed. It doesn’t
+    make sense to use double quotes for all the values of a field when only some of
+    the values need them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you need to share information with third-party systems using CSV format
+    files, the following applies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important that the CSV files you generate from your exports are RFC 4180
+    compliant to be sure that the files can be read by any external system that provides
+    CSV file import capability.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In order to test how the upon mentioned tools extracts data in CSV format, let’s
+    create a simple table containing special characters mentioned in the RFC 4180
+    standard, and Unicode characters to ensure the generality of the contents in text
+    fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a dummy table containing special characters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, you have to create the `extract_test` table in your SQL Server instance
+    using the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then you can add data to this table using the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from the contents of the INSERT statements, we have provided
+    all the special characters mentioned in the standard. We have also used Japanese
+    characters, so that we can verify that the CSV file is written correctly using
+    the Unicode character table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evidently the table created in this case will not be a 5 GB table, but will
+    contain special characters to test CSV format exports. Here the output of a SELECT
+    in ADS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eaf2a39c72049f69be92efdf94cd812c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1 — Output of the content of your dummy table on ADS (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do not worry from the fact that the carriage return does not show up in the
+    output grid of ADS or SSMS. The way the INSERT of that row was done, the carriage
+    return is there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, let’s try to extract data from this table using SSMS and ADS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Microsoft user-friendly tools to extract data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s first try to use the traditional tool with which we interface with SQL
+    Server, namely the SQL Server Management Studio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting data with SSMS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once you have opened SSMS and connected to your database instance, right-click
+    on the name of the database hosting the table you’ve just created, go to *Tasks*
+    and then *Export Data*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e5a5cd2336ac931a44980e7caa97902.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 — Exporting data from a database using SSMS (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You will be shown an initial screen describing the Extract Data activity. If
+    you go forward, you will be shown this window:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6771f58266f92bbcff0a8ae2331beae9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 — Selecting a data source from the Export Wizard (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select the SQL Server Client data source, enter your server instance name, then
+    choose the authentication to use to login to database. In my case, having persisted
+    the test table on an Azure SQL database, I used a SQL Server authentication to
+    access my *test-sql-bug* database, as you can see in *Figure 3*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the next screen of the Wizard you have the option of selecting the export
+    destination. In our case, select *Flat File Destination*, create a CSV destination
+    file via the *Browse* button in your preferred folder (remember to select the
+    CSV extension in the Open window that opens after pressing Browse). Remember to
+    check the *Unicode* flag to make sure you also handle the Japanese characters
+    in our example. After that, select *Delimited* as the format, leaving the *Text
+    qualifier* at “*<none>*”. Also make sure that the “*Column names in the first
+    data row*” flag is checked. Then press *Next*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0449416dd54667408166e7b20be2d06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 — Selecting a destination for the data output (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next window select *Copy data from one or more tables or views* and press
+    *Next* again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the configuration window that appears you can then select the table ` `[dbo].[extract_text]`
+    as *Source table or view*. For the other options, you can leave everything as
+    is, since the row delimiter (*CR\LF*) and the column delimiter (*comma*) are as
+    defined by the RFC 4180 standard. Then press *Next*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd514fc41e93dd51c7ee8655eb5a34d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5 — Configuring the flat file destination options (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next window keep *Run immediately* selected and press *Finish*. A summary
+    window of the selected options will appear. Press *Finish* again and the extraction
+    will start. When finished, press *Close*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you now try to open the output CSV file with a text editor (not Excel),
+    you will notice the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ef38686fd3879fea02e5673ccb17c5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6 — The output of the SSMS Export Wizard without text qualifier (by the
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basically, in this case the Export Wizard extracts the contents of each text
+    field regardless of whether it may contain special characters (comma and carriage
+    return). This means that any carriage return contained in a text field is interpreted
+    as a row delimiter by the system that has to read the file, just as any comma
+    contained in a text field is interpreted as a field delimiter. Unicode characters,
+    on the other hand, have been treated correctly. Therefore, the generated CSV file
+    will not be recognized as correct by any third-party system that needs to import
+    that information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you try to repeat the export, this time entering the double quotes as a
+    text qualifier, you will get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a30ade9cdc7cbcb38a845d1c32daf9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7 — The output of the SSMS Export Wizard using double quotes as text
+    qualifier (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, all extracted values are surrounded by double quotes, including
+    the header. However, this forces an external system that must read the data to
+    consider all numeric values as strings. Moreover, if a value in a text field contains
+    a double quote character, it is not escaped, generating parsing problems for external
+    systems. Therefore, again, the generated CSV file will not be recognized as correct
+    by any third-party system that needs to import this information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regarding the scalability of the extraction operation on very large masses of
+    data, there are no problems, because the Export Wizard uses *SQL Server Integration
+    Services* (SSIS) as its engine, which is developed to handle huge bulk volumes
+    of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Moreover, it may sometimes happen that you need to take action on the data
+    source data types to avoid some errors during export with the Export Wizard, as
+    highlighted in this blog post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.sqlshack.com/export-data-sql-server-flat-file/?source=post_page-----1cb09a7a0883--------------------------------)
+    [## How to export data from SQL Server to a Flat file'
+  prefs: []
+  type: TYPE_NORMAL
+- en: December 7, 2017 by In this article, we will illustrate how to export SQL Server
+    data into a Flat file, by using the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.sqlshack.com](https://www.sqlshack.com/export-data-sql-server-flat-file/?source=post_page-----1cb09a7a0883--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can conclude this section by stating the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the SSMS Export Wizard as a tool for extracting data in CSV format from
+    an (Azure) SQL Server database doesn’t guarantee having a format that complies
+    with the standard defined by RFC 4180, with the consequence that the extracted
+    information may not be properly read by an external system.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Instead, let’s see what happens when we use Azure Data Studio to extract the
+    information in CSV format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting data with ADS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once Azure Data Studio is open, the first thing to do is to [add a new connection
+    to your server instance](https://learn.microsoft.com/en-us/sql/azure-data-studio/quickstart-sql-server?WT.mc_id=AI-MVP-5003688).
+    Watch out that starting with newer versions, the *Encrypted* option is set to
+    *True* by default. This will not result in connection errors if you connect to
+    an Azure SQL database, but it might generate one if your data source is an on-prem
+    SQL Server. In that case, you can set the option to *False*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That said, in order to extract the contents of a table (or view, or query)
+    in ADS, you must first perform a SELECT query and display its contents in the
+    output grid running it. After that, simply press the “Save As CSV” button at the
+    top right of the grid:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/761cd9020cf9946afb9c7c68b290f0c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8 — Saving the output of a query in ADS in CSV format (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An output file selection window will open, allowing you to name the file that
+    will be extracted (in our case *ExtractTestADS.csv*). As soon as you press the
+    *Save* button, the contents of the CSV file will be shown directly within ADS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f3abdf699119f41e38bb107d72ac01c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9 — The output of ADS in CSV format (by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wow! The output generated by ADS complies with the RFC 4180 standard to all
+    intents and purposes! Thus, it would seem that ADS is the perfect tool for extracting
+    information in CSV format from an (Azure) SQL database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there is a scalability problem. Since ADS requires that the query output
+    be first exposed in the output grid, this limits the functionality when dealing
+    with many GB of data. In these cases, containing all that data in a grid involves
+    taking up so much RAM on the system, causing the application to crash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can therefore conclude this section as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ADS’s CSV format data export procedure guarantees output that conforms to the
+    RFC 4180 standard. However, the use of ADS for extraction tasks is indicated when
+    the size of the dataset to be exported is rather limited. When more than 2–3 GB
+    of data needs to be extracted, ADS may occupy the entire system memory and crash.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In general, we can therefore conclude that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, the *user-friendly features* provided by Microsoft’s data platform
+    tools don’t allow to extract huge amount of data in CSV format following the RFC
+    4180 standard.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s try to see if we can achieve our goal through more specific tools known
+    by expert users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the BCP tool to extract data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The *Bulk Copy Program* (BCP) command line utility is used to import large numbers
+    of new rows into SQL Server tables or to export data from tables to data files
+    in a user-specified format. This is the solution that imports or exports data
+    *as fast as possible* in even very large quantities. Therefore, it has no problem
+    with scalability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition to being installed by default with a standard on-prem SQL Server
+    installation, and in addition to being able to be [installed stand-alone](https://learn.microsoft.com/en-us/sql/tools/bcp-utility?WT.mc_id=AI-MVP-5003688)
+    on a Windows operating system, the BCP utility can also be used from the Azure
+    cloud shell to interact with an Azure SQL database, as shown in this blog post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kontext.tech/article/763/export-csv-file-from-azure-sql-databases?source=post_page-----1cb09a7a0883--------------------------------)
+    [## Export CSV File from Azure SQL Databases'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are many ways to export CSV file from Azure SQL Databases. This article
+    shows two approaches: bcp and sqlcmd…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kontext.tech](https://kontext.tech/article/763/export-csv-file-from-azure-sql-databases?source=post_page-----1cb09a7a0883--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Without going into too much detail, the main problem with BCP is that it doesn’t
+    extract table headers and doesn’t handle double quotes in a simple way out of
+    the box. This is evidenced by the fact that [*Erland Sommarskog*](https://sessionize.com/ErlandSommarskog/)’s
+    reference guide for its use reports a number of workarounds for getting both headers
+    and double quotes, as you can see here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## Using the Bulk-Load Tools in SQL Server'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An SQL text by Erland Sommarskog, SQL Server MVP. Most recent update 2021-01-26\.
+    Copyright applies to this text. See…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.sommarskog.se](https://www.sommarskog.se/bulkload.html?source=post_page-----1cb09a7a0883--------------------------------#exportexamples)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the drawbacks of this is approach is that you have to know in advance
+    which fields need double quotes (unless you provide them for all text fields).
+    Generally, I do not have the ability to know in advance which fields might have
+    the need for double quotes. I just want to extract the data worry-free. Should
+    you be able to get the headers and double quotes via Erland’s advice, however,
+    the quotes would be applied to all values in the selected fields. As Erland himself
+    points out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '… the assumption is that the data should always be quoted. If you only want
+    to quote when needed, you will need to handle this in your query, which is outside
+    the scope of this article. All I can say is: good luck. Or more directly: avoid
+    it if you can.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Also, should a field with double quotes have a string containing both a comma
+    and a double quote, the BCP does not handle the feature of escaping the double
+    quote by doubling it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can therefore state that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using BCP to export data in a CSV format that includes both headers and double
+    quotes is very arcane for the non-expert user. One downside is that you have to
+    know in advance for which fields to provide double quotes. In addition, it would
+    still not result in a format consistent with the RFC 4180 standard.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I will not go into the details of using Microsoft’s other command-line tool
+    called [SQLCMD](https://learn.microsoft.com/en-us/sql/tools/sqlcmd-utility?WT.mc_id=AI-MVP-5003688),
+    because the issues are similar to those highlighted in this section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what? How to proceed? Since I couldn’t find an application on the Internet
+    that was able to extract data in an RFC 4180-compliant CSV format and at the same
+    time handle very large data masses, the only possible solution was to develop
+    a *custom solution* that can be easily used even by the non-expert user. Let’s
+    see how this solution works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Developing a custom solution in PowerShell
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first thing I asked myself when I decided to develop a specific solution
+    for this problem was what programming language to use. The first language that
+    came to mind was definitely Python. I then thought, however, that a standard user
+    approaching the world of automation on a Windows machine may not know Python,
+    and he would not find it preinstalled on the operating system. That is why the
+    choice fell on *PowerShell*, which provides, among other things, a specific module
+    for SQL Server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Issues with the SQL Server PowerShell module
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first attempt I made was to use the [SQL Server PowerShell module](https://learn.microsoft.com/en-us/sql/powershell/download-sql-server-ps-module?WT.mc_id=AI-MVP-5003688),
+    which allows SQL Server developers, administrators, and business intelligence
+    professionals to automate database development and server administration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, the command I tried to use to send the query needed to retrieve
+    the data to the Azure SQL database was [Invoke-Sqlcmd](https://learn.microsoft.com/en-us/powershell/module/sqlserver/invoke-sqlcmd?WT.mc_id=AI-MVP-5003688).
+    This command does nothing more than invoke the [sqlcmd.exe command-line utility](https://learn.microsoft.com/en-us/sql/tools/sqlcmd-utility?WT.mc_id=AI-MVP-5003688),
+    often used by automation processes to retrieve information from a SQL Server database.
+    So far, so good. The problem is that Invoke-Sqlcmd persists all query output directly
+    into PowerShell data structures. As you can guess, when the query output takes
+    up more than 3–4 GB, you have the same problem encountered with extraction done
+    in ADS, which is that your system becomes unstable due to excessive RAM consumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, I found it appropriate to directly use [ADO.NET objects](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/retrieving-and-modifying-data?WT.mc_id=AI-MVP-5003688)
+    in PowerShell to try to work around the problem. Let’s see how I used them in
+    this solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batch exporting data to output file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The main idea of my solution is to always use an intermediate data structure
+    (a [*DataTable*](https://learn.microsoft.com/en-us/dotnet/api/system.data.datatable?WT.mc_id=AI-MVP-5003688))
+    that would collect the query data, but a number of rows at a time. Once the maximum
+    capacity of the intermediate data structure is reached, its contents are written
+    to the target file, it is emptied and is immediately loaded with the next rows
+    of data from the data source:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3198964bb710faa2e714c6b1f447642.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10 — Main process of the solution (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This process goes on until there are new lines to read in the data source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might wonder why I used an intermediate DataTable and didn’t implement a
+    direct write stream to the output file through the [*StreamWriter*](https://learn.microsoft.com/en-us/dotnet/api/system.io.streamwriter?WT.mc_id=AI-MVP-5003688).
+    The answer lies in the ability to use PowerShell’s *Export-Csv* [cmdlet](https://learn.microsoft.com/en-us/powershell/scripting/developer/cmdlet/cmdlet-overview?WT.mc_id=AI-MVP-5003688)
+    directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing data using Export-Csv
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the goals I set for myself when I have to solve a problem is always not
+    to reinvent the wheel if there are already convenient solutions that help you
+    solve it completely or partially. In this case, I thought I would dispense with
+    rewriting all the logic that handles the special characters mentioned by the RFC
+    4180 standard using the [*Export-Csv* cmdlet](https://learn.microsoft.com/en-us/previous-versions/powershell/module/microsoft.powershell.utility/export-csv?WT.mc_id=AI-MVP-5003688).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Checking the PowerShell cmdlet guide, I realized that *Export-Csv* provides
+    the parameters that control the use of double quotes only as of version 7:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17eccee714413ecca5c7cd538b60c771.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11 — Differences between Export-Csv versions 6 and 7 (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, the [*UseQuotes parameter*](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/export-csv?view=powershell-7.3&WT.mc_id=AI-MVP-5003688#-usequotes)
+    provides the value *AsNeeded* and defines its functionality as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: only quote fields that contain a delimiter character, double-quote, or newline
+    character
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Basically, it’s what we want in order to meet the requirements of the RFC 4180
+    standard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Should you wish to provide double quotes only for certain fields, you can specify
+    them explicitly via the *QuoteFields* parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now there is just a small problem with PowerShell versioning. Keep in mind that
+    Windows 10, Windows 11, and Windows Server 2022 preinstall version 5.1 of Windows
+    PowerShell (also known as Desktop edition). In order to use the newer versions
+    of the *Export-Csv* cmdlet, you must install the [newer version of PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?WT.mc_id=AI-MVP-5003688)
+    (at least PowerShell 7.0), which is for all intents and purposes a separate piece
+    of software from Windows PowerShell based on .NET Core (if you are interested
+    in learning about its evolution over time, you can learn more at [this link](https://www.itechtics.com/windows-powershell-vs-powershell-core/)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s important to emphasize the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since this module was developed for Core versions of PowerShell, it can also
+    be used on Linux and macOS systems.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: That said, let’s see how to use this new module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to use the SqlBulkExport module
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The new *SqlBulkExport* module is available on GitHub here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/lucazav/sql-bulk-export?source=post_page-----1cb09a7a0883--------------------------------)
+    [## GitHub - lucazav/sql-bulk-export: This PowerShell module contains two functions
+    that are useful for…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This PowerShell module contains two functions that are useful for exporting
+    large amounts of data from tables, views…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/lucazav/sql-bulk-export?source=post_page-----1cb09a7a0883--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It provides two functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Export-SqlBulkCsv**: Exports the content of a SQL Server database table,
+    view or query in an RFC 4180-Compliant CSV file. This function supports the export
+    of huge result sets, writing the CSV file content in multiple batches.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Export-SqlBulkCsvByPeriod**: Exports the content of a SQL Server database
+    table, view or query in multiple RFC 4180-Compliant CSV files, broken down by
+    time period (yearly, monthly or daily), based on the contents of a selected date
+    field. This function supports the export of huge result sets, writing each CSV
+    file content in multiple batches.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Both functions require the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*ServerName*: The SQL Server instance name to connect to.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Port*: The SQL Server instance port number. By default, it is 1433.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*DatabaseName*: The SQL Server database name to connect to.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*SchemaName*: The database schema of a table of view from which extract data.
+    By default, it is “*dbo*”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*TableViewName*: The database table or view name from which extract data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Query*: The T-SQL query with which extract data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*User*: The username to use to connect to database.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Password*: The password of the username to connect to database.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*ConnectionTimeout*: The connection timeout in seconds. By default it is 30
+    seconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*DatabaseCulture*: The database culture code (es. it-IT). It’s used to extract
+    the decimal separator properly. By default, it is “*en-US*”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*BatchSize*: The size (number of rows) of batches that are written to the output
+    file until data to extract is over.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*OutputFileFullPath*: Full path (including filename and csv extension) of the
+    output file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*SeparatorChar*: Character used to build string separators shown in console.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The *Export-SqlBulkCsvByPeriod* function provides three more mandatory parameters
+    to be able to partition the result set according to a time period:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*DateColumnName*: Date/time type column by which data will be broken down by
+    the time period.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*StartPeriod*: Time period string (allowed formats: “*yyyy*”, “*yyyy-MM*”,
+    “*yyyy-MM-dd*”) representing the period from which to start extracting data (period
+    in question included).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*EndPeriod*: Time period string (allowed formats: “*yyyy*”, “*yyyy-MM*”, “*yyyy-MM-dd*”)
+    representing the period up to which to extract data (period in question included).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It’s evident that the formats used for the two input periods must be consistent
+    with each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to note that extracting multiple CSV files broken down by a time
+    period using the *Export-SqlBulkCsvByPeriod* function is only possible using a
+    table/view, and not a query. If there are, for example, special needs for selecting
+    fields and filters to be applied to a table, one must then first expose a view
+    with these logics to then be able to extract multiple CSV files by time period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, the *Export-SqlBulkCsvByPeriod* function involves the use of the string
+    token `{}` (curly brackets open and closed) within the name of the output CSV
+    file, which token will be replaced by the string associated with the time period
+    of the transactions contained in the CSV file in question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both functions automatically recognize when to connect using Windows authentication
+    or SQL Server authentication based on whether or not the User and Password parameters
+    are passed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before proceeding with the examples, make sure you have installed the latest
+    version of PowerShell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing the latest PowerShell and SqlBulkExport versions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to install the latest version of PowerShell on Windows machines, download
+    and run the 64-bit installer (in our case, version 7.3.0) from [this link](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?WT.mc_id=AI-MVP-5003688#installing-the-msi-package).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Click *Next* to all the Setup Wizard windows. Then click *Finish*. You’ll see
+    the PowerShell 7 (x64) prompt installed into your applications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5360576ace50843f971a799953bfa3d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12 — PowerShell 7 just installed (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run it and you’ll see the PowerShell prompt ready for your commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbc29ca3bc3b72081470f642617b7c9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13 — PowerShell 7 prompt ready (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can enter the `$PSVersionTable` command and press Enter to check if all
+    is working fine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4ecfb1c7ad431c5bbc2917190935fb7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 14 — PSVersionTable output (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great! If necessary, you can also install PowerShell on [Linux](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-linux?WT.mc_id=AI-MVP-5003688)
+    or [macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos?WT.mc_id=AI-MVP-5003688).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now you have to download the SqlBulkExport module files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go to the [releases page](https://github.com/lucazav/sql-bulk-export/releases)
+    of the SqlBulkExport GitHub repository and download the *Source code.zip* file
+    of the latest release.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Once your file is saved on your machine, unzip it and copy its content into
+    the `C:\Temp` folder (or you can choose your preferred folder). So, your module
+    files will be persisted into the `C:\Temp\sql-bulk-export-<version>` folder.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ok! Now you are ready to try few examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Export the content of our dummy table in one CSV file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us try extracting the contents of the *extract_test* table created at the
+    beginning of this article to check its consistency with the RFC 4180 standard.
+    In our case, the table in question is persisted in an Azure SQL database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the PowerShell 7 prompt, enter the `cd C:\Temp\sql-bulk-export-<version>`
+    command and press *Enter* to change your working directory to the module’s one.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Enter the `Import-Module -Name ".\SqlBulkExport.psd1"` command to import the
+    *SqlBulkExport* module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Enter the `Export-SqlBulkCsv -ServerName "<your-server-name>" -DatabaseName
+    "<your-database-name>" -User "<username>" -Password "<password>" -TableViewName
+    "export_test" -BatchSize 30000 -OutputFileFullPath "C:\Temp\ExtractedTestPS.csv"`
+    to export the content of a database table (or view) into the *ExtractedTestPS.csv*
+    file in batches of 30K rows. Here the output:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/f9c971ff04c77ac0b4730993bbf3e986.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 15 — Console output of the command that extracts the contents of the
+    dummy table into a CSV file (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here the content of the output CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eeb8565fad9adc7fd92f210ae911f75b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 16 — Dummy table extracted in a CSV file using the SqlBulkExport module
+    (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the output CSV file content meets the RFC 4180 standard. Because
+    the dummy table used had few rows, only one batch was used for extraction. Let’s
+    now try to extract the contents of a table having a few tens of thousands of rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exporting the content of a table/view in one CSV file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As before, also the table we’re going to use to extract data from, is persisted
+    in an Azure SQL database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the PowerShell 7 prompt, enter the `cd C:\Temp\sql-bulk-export-<version>`
+    command and press *Enter* to change your working directory to the module’s one.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Enter the `Import-Module -Name ".\SqlBulkExport.psd1"` command to import the
+    *SqlBulkExport* module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Enter the `Export-SqlBulkCsv -ServerName "<your-server-name>" -DatabaseName
+    "<your-database-name>" -User "<username>" -Password "<password>" -TableViewName
+    "<your-table-or-view-name>" -BatchSize 30000 -OutputFileFullPath "C:\Temp\output.csv"`
+    command to export the content of a database table (or view) into the *output.csv*
+    file in batches of 30K rows. Here the output:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/a5cec7c861005446c9f0d03d8c9c04ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 17 — Console output of the command that extracts the contents of a tab/view
+    into a CSV file (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, it took 3 batches of 30K rows to extract the contents of a table
+    of about 74K rows, taking a total of 1 second and 88 milliseconds. Not bad!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try using a query to export the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exporting the output of a query in one CSV file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this case we will extract data from the same table as in the previous case,
+    but using a query like `SELECT * FROM <table> WHERE <condition>`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the PowerShell 7 prompt, enter the `cd C:\Temp\sql-bulk-export-<version>`
+    command and press *Enter* to change your working directory to the module’s one.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Enter the `Import-Module -Name ".\SqlBulkExport.psd1"` command to import the
+    *SqlBulkExport* module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Enter the `Export-SqlBulkCsv -ServerName "<your-server-name>" -DatabaseName
+    "<your-database-name>" -User "<username>" -Password "<password>" -Query "SELECT
+    * FROM <your-table-or-view-name> WHERE <condition>" -BatchSize 30000 -OutputFileFullPath
+    "C:\Temp\output.csv"` command to export the content of a query result set into
+    the *output.csv* file in batches of 30K rows. Here the output:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/d49bc259f0d72c2e9eb8eef2e6d11347.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 18 — Console output of the command that extracts the output of a query
+    into a CSV file (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Everything works like a charm! Let us now try exporting the contents of one
+    view to multiple monthly CSV files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exporting the content of a table/view in multiple monthly CSV files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Imagine you have a transaction table containing hundreds of thousands of rows
+    per month. There is a group of Data Scientists from outside the company who are
+    assigned to do advanced analysis on the transaction history. For convenience,
+    they ask you to extract a dataset consisting of subsets of the fields available
+    in the table for a couple of months of transactions. Instead of generating a single
+    CSV file, they ask you to provide them with multiple CSV files broken down by
+    month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see how to do this thanks to the *Export-SqlBulkCsvByPeriod* function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the PowerShell 7 prompt, enter the `cd C:\Temp\sql-bulk-export-<version>`
+    command and press *Enter* to change your working directory to the module’s one.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Enter the `Import-Module -Name ".\SqlBulkExport.psd1"` command to import the
+    *SqlBulkExport* module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Enter the `Export-SqlBulkCsvByPeriod -ServerName "<your-server-name>" -DatabaseName
+    "<your-database-name>" -User "<username>" -Password "<password>" -TableViewName
+    "<your-table-name>" -DateColumnName "<your-date-column-name>" -StartPeriod "2022-01"
+    -EndPeriod "2022-03" -BatchSize 100000 -OutputFileFullPath "C:\Temp\output_{}.csv"`
+    command to export the content of a database table (or view) into multiple monthly
+    CSV files in batches of 100K rows, starting from January 2022 to March 2022\.
+    Here the output:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/3a3b9613b382db4191d13ffd0b515f40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 19 — Console output of the command that extracts multiple monthly CSV
+    file (image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazing! You just extracted about 1.5mln rows broken down into three monthly
+    CSV files in just 1 minute and 19 seconds!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The need that prompted me to write this article is to extract a large amount
+    of data (3–4+ GB) into one or more files in CSV format compliant with the RFC
+    4180 standard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You have seen how the tools provided by Microsoft (whether they are IDEs, such
+    as SSMS and ADS; whether they are command-line tools, such as BCP) are unable
+    to meet the above need. The only tool that seemed a bit more suitable is ADS,
+    but it cannot extract large amounts of data without crashing. Without mincing
+    words, it is quite embarrassing that to date Microsoft has not yet made a tool
+    available to users that would meet the requirements set forth above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not having found software on the Internet that met the above needs, I wrote
+    the *SqlBulkExport* PowerShell module that solves the problem and made it available
+    opensource [on GitHub](https://github.com/lucazav/sql-bulk-export) under an MIT
+    license. I emphasize that I am not a PowerShell developer, so any input from you
+    that would improve the solution is really welcome!
+  prefs: []
+  type: TYPE_NORMAL

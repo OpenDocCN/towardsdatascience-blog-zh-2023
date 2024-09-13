@@ -1,0 +1,346 @@
+- en: Why Your RAG Is Not Reliable in a Production Environment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/why-your-rag-is-not-reliable-in-a-production-environment-9e6a73b3eddb](https://towardsdatascience.com/why-your-rag-is-not-reliable-in-a-production-environment-9e6a73b3eddb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: And how you should tune it properly
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ahmedbesbes.medium.com/?source=post_page-----9e6a73b3eddb--------------------------------)[![Ahmed
+    Besbes](../Images/93804d9291439715e578f204b79c9bdd.png)](https://ahmedbesbes.medium.com/?source=post_page-----9e6a73b3eddb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9e6a73b3eddb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9e6a73b3eddb--------------------------------)
+    [Ahmed Besbes](https://ahmedbesbes.medium.com/?source=post_page-----9e6a73b3eddb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9e6a73b3eddb--------------------------------)
+    ·7 min read·Oct 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96beae64de9f7f71263e41a7767a45fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Ivan Jermakov](https://unsplash.com/@ivanjermakov?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the rise of LLMs, the Retrieval Augmented Generation (RAG) [framework](https://arxiv.org/abs/2005.11401)
+    also gained popularity by making it possible to build question-answering systems
+    over data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve all seen those demos of chatbots conversing with PDFs or emails.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While these systems are certainly impressive, they might not be reliable in
+    production without tweaking and experimentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***In this post, I explore the problems behind the RAG framework and go over
+    some tips to improve its performance. This goes from leveraging document metadata
+    to fine-tuning hyperparameters.***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: These findings are based on my experience as an ML engineer who’s still learning
+    about this tech and building RAGs in the pharmaceutical industry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without much further ado, let’s have a look 🔍
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in practical tips to increase your productivity in building
+    ML systems, you feel free to subscribe to my [newsletter](https://thetechbuffet.substack.com/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I send weekly insights in programming and system design to help you ship AI
+    products faster.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: RAG in a nutshell ⚙️
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s get the basics right first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s how RAG works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It first takes an input question and retrieves relevant documents to it from
+    an external database. Then, it passes those chunks as a context in a prompt to
+    help an LLM generate an *augmented* answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That’s basically saying:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“Hey LLM, here’s my question, and here are some pieces of text to help you
+    understand the problem. Give me an answer.”*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/fa22dfd8e1aebc6a46efc827dcf82c0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should not be fooled by the simplicity of this diagram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, RAG hides a certain complexity and involves the following components
+    behind the scenes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Loaders to parse external data in different formats: PDFs, websites, Doc files,
+    etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Splitters to chunk the raw data into smaller pieces of text
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An embedding model to convert the chunks into vectors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A vector database to store the vectors and query them
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A prompt to combine the question and the retrieved documents
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An LLM to generate the answer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you like diagrams, here’s another for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A tad more complex but it illustrates the indexing and retrieval processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/883ab9133ece2fa4c0037256a7a67418.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image modified by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Phew!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t worry though, you can still prototype your RAG very quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Frameworks like [LangChain](https://www.langchain.com/) abstracted most of the
+    steps involved in building a RAG and it became easy to prototype those systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How easy is that? 5-line-of-code easy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6e3739a9cd5b8aa3d08e942a5b00d40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Of course, there’s always a problem with the apparent simplicity of such code
+    snippets: depending on your use case, they don’t always work as-is and need very
+    careful tuning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: They’re great as quick-starts but they’re certainly not a reliable solution
+    for an industrialized application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problems with RAG
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you start building RAG systems with little to no tuning, you may be surprised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s what I noticed during the first weeks of using LangChain and building
+    RAGs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1 — The retrieved documents are not always relevant to the question.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you closely look at the chunks that the database retrieves, you will sometimes
+    notice that they’re not exactly relevant to the problem. They’re certainly similar
+    to the question to some extent but in many cases, they’re not fully aligned with
+    what the user asks for. Moreover, these chunks can often be redundant and overlapping
+    which makes the generated answer … repetitive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a small experiment that shows that the most similar documents to the
+    query (in the embedding space) are neither the most relevant ones nor the most
+    semantically similar (how surprising is that!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, the model disregarded the sentiment of the sentence and wasn’t
+    even robust to plural (adding an “s” decreases the similarity by 8%)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0712ca4a3ee2e3aef95fbb18d94d77d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**2 — RAG systems lack basic world knowledge** If you instruct a RAG to only
+    rely on an external database to provide answers, it may surprise you by inventing
+    facts or refusing to answer simple questions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I built a RAG once on tennis-related Reddit posts. While it successfully answered
+    questions about the Wimbledon Open of that time, it was unable to answer general
+    questions on tennis rules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I know you’re not supposed to ask questions beyond the scope of the data you
+    feed the system, but if you deploy a RAG-based service, you should expect anything
+    from the users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3 — Speed**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on the type of database you use and the size of the LLM, your RAG
+    can be painfully slow. This can degrade the user experience. You should make your
+    benchmarks first before building your solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4 — A lossy process**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given how RAG splits the raw data into chunks, embeds those chunks, and retrieves
+    the top K similar ones, the intrinsic information is gradually lost and distilled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, it becomes impossible to retain all the information from the external
+    documents and provide a perfect answer to the question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is important to keep in mind: we’re dealing with a lot of approximations
+    here.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tips to improve the performance of your RAG
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: RAGs can show strange behaviors if you blindly plug them into your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can however solve these issues by applying some tips and best practices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉 **Inspect and clean your data**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The good old “garbage in, garbage out” principle still applies to RAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you feed documents that are noisy (Hello HTML tags!), not consistent with
+    each other, confusing, or even redundant, the generated answer will suffer and
+    reflect these defects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be cautious when selecting the data your RAG will tap into.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, instead of combining FAQs that are inherently short with long PDFs,
+    you could create two vector stores instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a quick sanity check to assess the data quality: do the exercise for
+    a question or two. If you find it hard to get an answer with the support of the
+    data you have at your disposal, don’t expect the RAG to perform better.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉 **Finetune the chunk size, the top_k, and the chunk overlap**
+  prefs: []
+  type: TYPE_NORMAL
+- en: These parameters are **very** important since chunking is the core part of a
+    RAG system. (Remember, the documents we retrieve from the store are **chunks**!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: These parameters impact the quality of the retrieved results and consequently,
+    the generated answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, a small chunk size might not catch enough context, while a big
+    chunk size might introduce a lot of irrelevant noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is no miraculous magic number I can give you here. The best solution is
+    to run experiments and validate these hyperparameters on a test set. (Yes, building
+    a test set is important!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s also this [guide](https://www.pinecone.io/learn/chunking-strategies/)
+    on chunking strategies from Pinecone that’s worth reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉 **Leverage your document metadata**
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s sometimes useful to filter over the available metadata (for example the
+    date) after the documents are retrieved from the database. This provides another
+    filtering dimension and doesn’t cost anything.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '👉 **Tweak your system prompt** to give your RAG a default behavior or specific
+    instructions. Here’s a system prompt I used in one of my projects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 👉 **Transform the input query**
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you don’t express yourself clearly enough, the RAG might not find the relevant
+    documents it needs to build a useful context. One way to solve that could be to
+    **rephrase** the query by the LLM and try again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another solution could be to try the [HyDE](https://boston.lti.cs.cmu.edu/luyug/HyDE/HyDE.pdf)
+    method that takes the query, generates a hypothetical response, and uses both
+    for retrieval in the embedding space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Query transformation is an exciting area that could improve RAG systems since
+    LLMs tend to work better over smaller queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: That’s it for today!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you’ve enjoyed this post and learned something useful about RAGs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As this technology is relatively new, many optimization techniques will emerge
+    making this framework more reliable and ready for industrialized applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you too are building RAGs, I’m curious to know which optimization techniques
+    you use. Please let me know in the comments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Until next time 👋!
+  prefs: []
+  type: TYPE_NORMAL

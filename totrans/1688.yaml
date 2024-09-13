@@ -1,0 +1,355 @@
+- en: 'Probabilistic ML with Quantile Matching: an Example with Python'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/probabilistic-ml-with-quantile-matching-an-example-with-python-c367eee85f18](https://towardsdatascience.com/probabilistic-ml-with-quantile-matching-an-example-with-python-c367eee85f18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A little-known technique for turning quantile regression predictions into a
+    probability distribution.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@davide.burba?source=post_page-----c367eee85f18--------------------------------)[![Davide
+    Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----c367eee85f18--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c367eee85f18--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c367eee85f18--------------------------------)
+    [Davide Burba](https://medium.com/@davide.burba?source=post_page-----c367eee85f18--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c367eee85f18--------------------------------)
+    ·8 min read·Sep 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9bb85cf428835906622aac028af79f44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Quantile Matching”, by [Giulia Roggia](https://www.instagram.com/giulia_roggia__/).
+    Used with permission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Quantile regression](#476d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Quantile matching](#cb2f)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Python example: predict diabetes progression](#fe8d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Conclusion](#ee5a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When we train regressive models, we obtain point predictions. However, in practice
+    we are often interested in estimating the uncertainty associated to each prediction.
+    To achieve that, we assume that the value we are trying to predict is a random
+    variable, and the goal is to estimate its distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many methods available to estimate uncertainty from predictions, such
+    as [variance estimation](https://en.wikipedia.org/wiki/Prediction_interval), [Bayesian
+    methods](https://www.probabilitycourse.com/chapter9/9_1_9_bayesian_interval_estimation.php),
+    [conformal predictions](https://arxiv.org/abs/2107.07511), etc. Quantile regression
+    is one of these well-known methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantile regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Quantile regression consists in estimating one model for each quantile you
+    are interested in. This can be achieved by the use of an asymmetric loss function,
+    known as [pinball loss](https://www.lokad.com/pinball-loss-function-definition/).
+    Quantile regression is simple, easy to understand, and readily available in high
+    performing libraries such as [LightGBM](https://lightgbm.readthedocs.io/en/latest/Parameters.html).
+    However, quantile regression presents some issues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is no guarantee that the order of the quantiles will be correct. For example,
+    your prediction for the 50% quantile could be greater than the one you get for
+    the 60% quantile, which is absurd.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To obtain an estimate of the entire distribution, you need to train many models.
+    For instance, if you need an estimate for each point percent quantile, you have
+    to train 99 models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s how [quantile matching](https://stats.lse.ac.uk/q.yao/qyao.links/paper/mqe.pdf)
+    can help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantile matching
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The goal of quantile matching is to fit a distribution function given a sample
+    of quantile estimates. We can frame this as a regression problem, so the curve
+    doesn’t have to perfectly fit the quantiles. Instead, it should be “as close as
+    possible”, while keeping the properties which make it a distribution function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, we are interested in estimating the inverse cumulative distribution
+    function: given a probability *alpha*, we want to know what is the value *v* for
+    which *P(X<v)=alpha*, where *P* represent a probability and *X* the random variable
+    we are trying to predict.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following example, we provide 3 alternatives to fit such distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Python example: predict diabetes progression'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/9a9d34ce7b03e9e80abe90800e20a6b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this section we showcase an example implementation of quantile matching
+    applied to the diabetes dataset available in [Sklearn](https://scikit-learn.org/stable/datasets/toy_dataset.html#diabetes-dataset):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ten baseline variables, age, sex, body mass index, average blood pressure, and
+    six blood serum measurements were obtained for each of n = 442 diabetes patients,
+    as well as the response of interest, a quantitative measure of disease progression
+    one year after baseline.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Let’s start by importing the needed libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Quantile matching methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We define three alternatives to estimate an inverse cumulative distribution
+    function from a set of quantiles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fit a normal distribution
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Fit a “half-normal” distribution: a distribution that consists in two normals
+    with different standard deviations below and above the median (not to be confused
+    with the absolute value of a normal distribution, which is also known as half-normal).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Cubic interpolation: use cubic splines to estimate a smooth increasing curve.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note that these three methods are progressively more flexible. The first one
+    constrains the output to follow a normal distribution. The second one allows to
+    have asymmetries, which are often seen in real-world examples, e.g. when predicting
+    price returns. The third one doesn’t make any assumption on the underlying distribution,
+    e.g. it allows for multi-modality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To implement these methods, we use an easy-to-extend design pattern:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A base abstract class which defines an interface for matcher classes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A set of concrete classes which implement different algorithms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A factory that returns the class for the desired method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'First, let’s define the base class and the factory. For simplicity, we establish
+    an interface to fit and predict one sample at a time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we can proceed with the concrete implementations. First, the normal distribution:
+    we frame the problem as a non-linear optimization, where we need to estimate the
+    parameters that minimize the squared difference between the fitted curve and the
+    observed values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the half-normal distribution, we re-use the class defined above: once for
+    the values below the median, and once for the values above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that inside the *fit_one* method we apply a little trick to ensure that
+    the two distributions have the same median.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The implementation for cubic interpolation is straight-forward:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Quantile regression wrapper
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We define a class to fit a few Lightgbm models with quantile regression for
+    a pre-defined set of quantiles. We implement a method *predict_raw* to get the
+    raw predictions from each model, and a method *predict_cdf* to get the (inverse)
+    cumulative distribution function over a grid of quantiles using the *QuantileMatcher*
+    classes defined before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Diabetes dataset: fit and predict'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now load the diabetes dataset and use the class defined above to train
+    the models and predict the distribution of the target values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Graphic analysis of the predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To get a sense of what our models look like, we can plot the predicted distributions
+    for a few samples. Let’s define an helper function to plot the predicted cumulative
+    distribution function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s the graph we obtain by predicting the first sample in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/121cc3a3dddc99ce93b81e8e6fba06db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Cumulative Distribution at index 0\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see how the three methods produce different curves. While the normal
+    and the half-normal distributions are quite close and smooth, the cubic interpolation
+    is less regular, perfectly fitting all the “raw” predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although convenient to evaluate its quantile values, it can be difficult to
+    analyze the global behaviour of a distribution in terms of its cumulative distribution.
+    To get a better view, we can estimate the corresponding probability distribution
+    by using [finite differences](https://en.wikipedia.org/wiki/Finite_difference_method).
+    Let us define an helper function to do that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By applying the function above on the first sample in the dataset, we obtain
+    the graph below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bb85b6231452f4bd95add3ade78b69e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Probability Distribution at index 0\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s have a look at the cumulative and probability distributions for a couple
+    more samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These are the figures we obtain for the second sample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/468f91e417da7f9aac6410a224e7933a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Cumulative Distribution at index 1\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/339fd3eb9f26d2a8cb7a8faa1c44a3ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Probability Distribution at index 1\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And these are the figures we obtain for the third sample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/643915955105b98ffd37fd3b32f94b94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Cumulative Distribution at index 2\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c13e0af727fc9921860477da0c0fc7f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted Cumulative Distribution at index 2\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the normal and the half-normal distribution don’t coincide,
+    suggesting an asymmetry in the true underlying distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also notice that cubic interpolation gives multi-modal and often extreme
+    results. This is due to the fact that interpolation is less constrained to a specific
+    form and tends to have high derivative when fitting close points. These results
+    are probably not realistic, and a smoothing technique might help to mitigate this
+    issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From a first look, the half-normal distribution seems to be the best choice,
+    since it provides a realistic distribution while being able to model asymmetric
+    behaviours. However, the best way to choose the matching algorithm would be to
+    cross-validate predictions and evaluate relevant metrics, such as the width of
+    the prediction intervals combined with their accuracy (a 90% interval should contain
+    the target approximately 90% of the time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned in the beginning, this technique is not very popular, and I haven’t
+    had the occasion to use it in real-world scenarios yet. So, if you use it in your
+    projects, please let me know!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The full code used in this example is available* [*here*](https://github.com/davide-burba/code-collection/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Enjoyed this article?* [*Checkout my other ones*](https://medium.com/@davide.burba)
+    *and follow me for more!* [*Click here*](https://medium.com/@davide.burba/membership)
+    *to read unlimited articles and support me at no additional cost for you* ❤️'
+  prefs: []
+  type: TYPE_NORMAL

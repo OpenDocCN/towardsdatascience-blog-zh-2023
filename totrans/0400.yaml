@@ -1,0 +1,594 @@
+- en: 'Boosting Model Accuracy: Techniques I Learned During My Machine Learning Thesis
+    at Spotify (+Code Snippets)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/boosting-model-accuracy-techniques-i-learned-during-my-machine-learning-thesis-at-spotify-code-8027f9c11e57](https://towardsdatascience.com/boosting-model-accuracy-techniques-i-learned-during-my-machine-learning-thesis-at-spotify-code-8027f9c11e57)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A tech data scientist’s stack to improve stubborn ML models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@elalamik?source=post_page-----8027f9c11e57--------------------------------)[![Khouloud
+    El Alami](../Images/58840bfe28a60892b51d40ad6ba7f5e8.png)](https://medium.com/@elalamik?source=post_page-----8027f9c11e57--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8027f9c11e57--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8027f9c11e57--------------------------------)
+    [Khouloud El Alami](https://medium.com/@elalamik?source=post_page-----8027f9c11e57--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8027f9c11e57--------------------------------)
+    ·12 min read·Aug 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article is one of a two-part piece documenting my learnings from my Machine
+    Learning Thesis at Spotify. Be sure to also check out* [*the second article on
+    how I implemented Feature Importance in this research*](/feature-importance-analysis-with-shap-i-learned-at-spotify-aacd769831b4)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/feature-importance-analysis-with-shap-i-learned-at-spotify-aacd769831b4?source=post_page-----8027f9c11e57--------------------------------)
+    [## Feature Importance Analysis with SHAP I Learned at Spotify (with the Help
+    of the Avengers)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identifying top features and understanding how they affect prediction outcomes
+    of machine learning models with SHAP
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/feature-importance-analysis-with-shap-i-learned-at-spotify-aacd769831b4?source=post_page-----8027f9c11e57--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In 2021, I spent 8 months building a predictive model to measure *user satisfaction*
+    as part of my Thesis at Spotify.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2106c3fd9d7bd76cadf0157aecf85277.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'My goal was to understand what made users satisfied with their music experience.
+    To do so, I built a LightGBM classifier whose output was a binary response:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*y = 1 → the user is seemingly satisfied'
+  prefs: []
+  type: TYPE_NORMAL
+- en: y = 0 → not so much*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting human satisfaction is a challenge because humans are by definition
+    unsatisfied. Even a machine isn’t so fit to decipher the mysteries of the human
+    psyche. So naturally my model was as confused as one can be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Human Predictor to Fortune Teller
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My accuracy score was around 0.5, which is the worst possible outcome you can
+    get on a classifier. It means the algorithm has a 50% chance of predicting yes
+    or no, and that’s as random as a human guess.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So I spent 2 months trying and combining different techniques to improve the
+    prediction of my model. In the end, I was finally able to improve my ROC score
+    from 0.5 to 0.73, which was a big success!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I will share with you the techniques I used to significantly enhance
+    the accuracy of my model. This article might come in handy whenever you’re dealing
+    with models that just won’t cooperate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Due to the confidentiality of this research, I cannot share sensitive information,
+    but I’ll do my very best for it not to sound confusing.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, make sure to subscribe to my newsletter!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Click on the link below & I’ll send you more **personalized content and insider
+    tips** to help you on your journey to becoming a Data Scientist!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@elalamik/subscribe?source=post_page-----8027f9c11e57--------------------------------)
+    [## Join +1k readers 💌 that follow my journey as a Data Scientist in Tech + Spotify,
+    don’t miss out!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Join +1k readers 💌 that follow my journey as a Data Scientist in Tech + Spotify,
+    don’t miss out! By signing up, you…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@elalamik/subscribe?source=post_page-----8027f9c11e57--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '#0\. Data Preparation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into the methods I used, I just want to make sure you get the
+    basics right first. Some of these methods rely on encoding your variables and
+    preparing your data accordingly in order for them to work. Some of the code snippets
+    I’ve included also reference user-defined functions I created in the data preparation
+    section, so be sure to check them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bba31f366c84e7be4e7fca230a55f625.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here’s what my pipeline looked like in the order I implemented things
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Encode Variables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Make sure your variables are encoded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Ordinal features,* so that the model preserves the ordinal information'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Categorical features,* so that the model can interpret nominal data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'So first, let’s store our variables somewhere. Again, because the research
+    is confidential, I cannot disclose the data I used, so let’s use these instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, make sure to build the function that encodes the variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then apply that function to your list of variables. This means you need to create
+    lists with strings of the name of your variables, i.e. a list for your *ordinal*
+    variables, one for the *categorical* ones, and one for the *numerical* ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Split the Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Split your dataframe to get your *train*, *validation*, and *test* sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train Set** — to train the model on the algorithm you pick eg. LightGBM'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Validation Set** — to hyper-tune your parameters and optimize your prediction
+    results'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Test Set** — to make your final predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 🔊 Keep in mind
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In my research, I split the data twice for two different purposes. The first
+    split happens in the very beginning to create the train, validation, and test
+    sets based on a user-level split. The other split happens much below when doing
+    cross-validation and hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initial split allows for a more flexible and randomized division of data,
+    which ensures a good diversity of users in each set. The test set is set aside
+    for final model evaluation, while the train and validation sets are used for model
+    development and hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my research, I used `**GroupShuffleSplit**` as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '#1\. Feature Engineering'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Feature engineering made a huge difference in improving the accuracy of my model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it comes to user listening satisfaction, I wanted to know whether it was
+    more dependent on the user, their streaming behavior, or other factors. While
+    the preliminary user data I had was meaningful, it lacked sufficient information
+    gain and predictive power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most significant step in my optimization process became then to create new
+    features that could better capture user satisfaction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the name suggests, creating new features is a *creative* process, so it means
+    you need to sit down and put your domain knowledge to work, and think through
+    novel ways to capture important information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The two main methods I used in this process were:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Feature Interaction.** The most important transformation I did was to combine
+    already existing features together to create ratios.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Example: Let’s say I have a feature measuring total minutes streamed, and
+    another one tracking total minutes streamed when tracks are new releases. One
+    thing I could do here would be to extract the minutes streamed from new releases
+    and then divide it over the total minutes streamed to create a “new music streams
+    ratio”. This captures completely new information.*'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Feature Aggregation.** Another thing I did was aggregate data over time and
+    groups to create summarized features, such as the mean or standard deviation.
+    This means you can create the same features but over different aggregates per
+    time group.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Example: Averaging over the number of tracks streamed per day per playlist
+    over the last 7 days, 14 days, and 30 days. And voilà, you just unlocked new information.*'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 🔊 Keep in mind
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Feature engineering is also an iterative process. You may need to experiment
+    with different combinations of features, transformations, and techniques to find
+    the best set of features for your specific problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Always validate the performance of your model with the new features on a separate
+    validation set to ensure that the improvements are not due to overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '#2\. Feature Selection'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So I was feeding many features to my model without really knowing which ones
+    were relevant. We may think that the more variables we have the better our model
+    will learn, but if our model is learning from everything including garbage, this
+    ends up being more harmful than anything.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having too many features means that some of them could introduce noise to the
+    model which is bad because it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hides the underlying patterns or relationships within the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Leads to overfitting as the model learns from the noise rather than the true
+    relationships.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Increases complexity and slows down training.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To avoid all these problems, we go chasing down the culprits using methods such
+    as Pearson’s Correlation Coefficient, Recursive Feature Elimination, or Chi2 Test,
+    amongst many others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my case, I used the first two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pearson’s Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This coef measures the **linear** relationship between two or more variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is the ratio between the covariance of two features and the product of their
+    standard deviations. The final output is between -1 and 1 where 1 suggests a positive
+    *linear* relationship between variables and -1 a negative one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pearson’s correlation coefficient serves 2 purposes in feature selection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filter out the least important features**, which tend to show a low correlation
+    with the target variable.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Limit multicollinearity between variables** to avoid overfitting that may
+    arise with data redundancy.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Why use it?** It’s a computationally cheap statistical method for picking
+    up the intrinsic properties of dependent variables.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How to use it?** Correlation heatmaps point out the linear relationships
+    existing between the variables'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 🚨 Be careful with non-linear relationships!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes non-linear relationships between variables might also exist, which
+    means you might want to be careful when filtering out multicollinear features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detecting non-linear relationships can provide more nuanced and accurate insights
+    into the data, which means you may want to keep them. To do so, you can use alternative
+    methods such as Spearman’s Rank Correlation, Kendall’s Tau, Scatter Plots, etc…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It recursively narrows down features by weighting and ranking them using an
+    importance algorithm. Starting with all features, it fits the chosen machine learning
+    model, ranks the features, and iterates with smaller subsets until reaching the
+    desired feature count (the one you initially set).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why use it?** The result is a ranking of features by importance, which allows
+    us to kick out features with the least predictive power from the party.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🚨 Be careful with encoding!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: RFE requires prior numerical encoding of categorical variables in order to work,
+    so refer back to the initial section for encoding variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I combined the results of these 2 methods when filtering out the least important
+    features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Pearson’s Correlation Coefficient, I found no strong linearity between
+    the dependent features and the target variable. So I kept all of them *(I was
+    also scared of removing non-linear relationships).*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Recursive Feature Elimination, I removed the lowest-ranked features *(because
+    why not)*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '#3\. Hyperparameter Tuning'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hyperparameter tuning is a mandatory stop when optimizing a machine learning
+    model. It’s basically the part where you look for one of the best combinations
+    of parameters that can give you great performance for your model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my research, I used a two-step strategy combining `**GroupKFold**` cross-validation
+    with `**RandomizedSearchCV**`for hyperparameter tuning, which was the best combination
+    given that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sample data was very large *(300k users).*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The user data needed to be split appropriately *(we don’t want to find K’s streaming
+    data in all splits, no no)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Step 1:** Preventing Data Leakage with GroupKFold'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My data consisted of multiple records for individual users. Because data gets
+    split for hyperparameter tuning, I needed to prevent data leakage by ensuring
+    that information from the same user was not split between the training and validation
+    sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best method to do so is `**GroupKFold**`, which divides the data over a
+    training and validating set randomly using different portions of the dataset at
+    each iteration. This creates separate sets with distinct and non-overlapping users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is crucial for achieving a reliable performance assessment, as you want
+    your model to be tested on entirely unseen users, not just new data from users
+    it has seen during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2:** Efficient Hyperparameter Tuning with RandomizedSearchCV'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My sample data was around 300k users, which was the largest one I could afford
+    without triggering a system crash, given my computational capabilities. Using
+    `**RandomizedSearchCV**` is much more efficient when your sample is this large.
+    It works wonders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of searching through all possible hyperparameter combinations like a
+    traditional grid search would do, it randomly samples a subset of the hyperparameter
+    space. Then it evaluates the performance of the selected combinations using cross-validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✨Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'By combining these two, I performed hyperparameter tuning on multiple data
+    subsets with non-overlapping users. This way I was able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Address data leakage concerns
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ensure computational efficiency
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Implement a robust basis for hyperparameter selection
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: After we’re done identifying the best hyperparameters through `**RandomizedSearchCV**`
+    and `**GroupKFold**`, we use the initial train and validation sets from `**GroupShuffleSplit**`
+    to train the final model with the selected hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that `split_df()` function we created at the very beginning of this
+    article? We’re using it in this step to get our data split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then we plug in the best parameters found with hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 🔊 Keep in mind
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I’m mentioning this because it confused me a lot while I was working on this
+    research. The `eval_set` is used for monitoring the model's performance on a specific
+    validation set during training. This is different than cross-validation, which
+    evaluates the model's ability to generalize across multiple training-validation
+    splits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '#4\. Data Generation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After implementing all the previous steps, my model still needed an extra boost.
+    Because some groups in my data were more underrepresented than others, my model
+    had a wee bit of a struggle to generalize through them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So I made sure to generate a larger random sample of users for all of the underrepresented
+    sets. This last step gave my model exactly what it needed to properly generalize
+    all that beautiful wisdom from the data and make reliable predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last Word
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Keep in mind that the process of optimizing a model is an iterative one, which
+    means that you may have to combine and repeat some of these methods until you
+    reach a satisfying performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization Methods Recap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Feature Engineering** — Creating new features using different methods such
+    as feature aggregation, transformation, temporal data encoding, standardization
+    and more can introduce new information to the data.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Feature Selection** — After creating new features, evaluate their importance
+    and remove irrelevant or redundant features that do not contribute to model performance.
+    Some methods include Pearson’s Correlation Coefficient, Recursive Feature Elimination,
+    or Chi2.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Hyperparameter Tuning** — Preventing Data Leakage with GroupKFold then searching
+    for the best parameters with RandomisedSearchCV in a computationally efficient
+    way.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Data Generation —** Make sure groups are equally represented in the sample
+    and if needed and possible, increase the sample size to cover a larger sample
+    of data points.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I have GIFTS for you 🎁!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sign up to my [**newsletter**](https://levelupwithk.substack.com/) **K’s DataLadder**
+    and you’ll automatically get my **ultimate SQL cheat sheet** with all the queries
+    I use every day in my job in big tech + another secret gift!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I share each week what it’s like to be a Data Scientist in Tech, alongside practical
+    tips, skills, and stories all meant to help you level up — because no one really
+    knows until they’re in it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you haven’t done that already
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Subscribe to my[**YouTube**](https://rebrand.ly/tdf62uv)channel. New video coming
+    up very soon!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Follow meon[**Instagram**](https://www.instagram.com/elalamikhouloud/), [**LinkedIn**](https://www.linkedin.com/in/elalamik/),
+    [**X**](https://twitter.com/elalamik), whatever works for you
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See you soon!
+  prefs: []
+  type: TYPE_NORMAL

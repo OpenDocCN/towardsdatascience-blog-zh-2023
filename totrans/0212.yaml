@@ -1,0 +1,515 @@
+- en: A Performant Recommender System Without Cold Start Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b](https://towardsdatascience.com/a-performant-recommender-system-without-cold-start-problem-69bf2f0f0b9b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Recommendation System](https://medium.com/tag/recommendation-system)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When collaboration and content-based recommenders merge
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[![Dr.
+    Robert Kübler](../Images/3b8d8b88f76c0c43d9c305e3885e7ab9.png)](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------)
+    [Dr. Robert Kübler](https://dr-robert-kuebler.medium.com/?source=post_page-----69bf2f0f0b9b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69bf2f0f0b9b--------------------------------)
+    ·11 min read·Jan 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0e674a93dd06ef0ac51647be57bbd22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Ivan Aleksic](https://unsplash.com/@ivalex?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perhaps the most famous recommender system is the so-called **matrix factorization**.
+    In this **collaborative** recommender, users and items are represented with an
+    **embedding**, which is nothing more but a vector of numbers. The intuition is
+    that the dot product of the user and the item embedding should result in the rating
+    that the user would give this item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are not yet familiar with these concepts, I recommend (😉) reading my
+    other article before you proceed since I explain many concepts and code snippets
+    there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-embedding-based-recommender-systems-956faceb1919?source=post_page-----69bf2f0f0b9b--------------------------------)
+    [## Introduction to Embedding-Based Recommender Systems'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn to build a simple recommender in TensorFlow
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-embedding-based-recommender-systems-956faceb1919?source=post_page-----69bf2f0f0b9b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Cold Start Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Purely collaborative recommender systems such as matrix factorization have the
+    advantage that you can usually immediately build them even without having too
+    much data about your users and movies/articles/items you want to recommend. You
+    only have to know who rated what and how; for example, user *B* gave movie *Y*
+    a rating of 2 stars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1445f7bebc146490dd07c4960680fa87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, they fall short when you have **new** **users or items** that you want
+    to make predictions for since the model had no possibility of learning anything
+    for them, leaving you with basically random recommendations for them — the dreaded
+    **cold start problem**. Let us assume that another user *E* registers, and we
+    also add a new movie *W* to the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75385b2e5f953f3aa8c5b5e144ba238e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will show you a simple way to mitigate the cold start problem
+    by incorporating more features about the users and items — this is the **content-based**
+    component we will bake into our model. Using actual content data, such as user
+    age or a movie genre, produces models that can deal with new users or movies in
+    a better way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to MovieLens
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As in my last article, I will use the [MovieLens](https://movielens.org/) dataset
+    that provides us with user-movie ratings. Furthermore, it even contains some more
+    user and movie features, and while we ignored these in the last article, we will
+    use them today to build an even better model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can find the code on* [*my Github*](https://github.com/Garve/Towards-Data-Science---Notebooks/blob/main/TDS%20-%20A%20Performant%20Recommender%20System%20Without%20Cold%20Start%C2%A0Problem.ipynb)*.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Following the last article let us
+  prefs: []
+  type: TYPE_NORMAL
+- en: grab the data using tensorflow-datasets
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: make a dataframe out of it and change some column types, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: sort it according to the time to conduct a temporal train-test split
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `filtered_data` dataframe
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1d25ca050a152a9e1bba81fdee26380.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: tells us that besides **user_id, movie_id** and the target **user_rating** we
+    have the **user features**
+  prefs: []
+  type: TYPE_NORMAL
+- en: bucketized_user_age
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: user_gender
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: user_occupation_label
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: user_occupation_text
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: user_zip_code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and the **movie features**
+  prefs: []
+  type: TYPE_NORMAL
+- en: movie_genres
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: movie_title
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Using some stereotypes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuitively, these features should help a lot since a model could learn things
+    like “Women like dramas” or “Young people dislike old movies”.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will now find out how to use all of these additional features via a simple
+    network architecture called **LightFM**. The name was chosen by [Maciej Kula](https://www.linkedin.com/in/maciej-kula-57283147/)
+    in his well-written paper **Metadata Embeddings for User and Item Cold-start Recommendations**
+    [1]. Please give it a read!
+  prefs: []
+  type: TYPE_NORMAL
+- en: LightFM is a hybrid of a collaborative as well as a content-based recommender
+    since it uses ratings as well as user and item features.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Simple Idea of LightFM
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us first recap what our simple matrix factorization looked like, omitting
+    biases. In our old recommender, we used the **user_id** and **movie_id**, embedded
+    both, and computed the dot product to calculate the rating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e6ee1d11d43d46b20f23f4f6241ff41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matrix factorization architecture, image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For **LightFM**, it works like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We **embed all the features** that we have, user and movie features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The user (movie) embedding is the **sum of all these user (movie) feature embeddings**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'That’s it already! For some subset of features, the network architecture could
+    look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1026153ed5733b5d7693965251cdd499.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LightFM architecture, image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advantages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The good thing about this approach is that even if you get a new user or movie
+    into the database, you can create meaningful embeddings as long as you know their
+    features (*contents*). You will not know the embeddings for the IDs — the main
+    problem in the matrix factorization approach — but we hope that the other embeddings
+    make up for it. In a cold start setting, **user_id** or **movie_id** are unknown,
+    but we can still give them some default embedding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation in TensorFlow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With only the two IDs as input, it is sufficient to explicitly type out an input,
+    encoding, embedding, and bias. However, for our number of features, it makes sense
+    to define some config first and then use loops.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *We will omit* ***movie_title*** *and* ***movie_genres*** *since
+    we have to treat them differently than the rest. However, I will tell you things
+    you can do to incorporate these features as well.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have an extensive configuration dictionary that tells us about each feature
+  prefs: []
+  type: TYPE_NORMAL
+- en: which input *dtype* the input layer needs,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if the features belong to the movie or user features,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: which lookup layer is needed, i.e. `IntegerLookup` for integer features and
+    `StringLookup` for string features,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and the vocabulary, i.e., the unique classes per feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Then, we can define a TensorFlow model that does what we have seen in the LightFM
+    architecture image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: I know this is quite hefty. But there should be no big surprises if you also
+    read my other article about embedding-based recommenders. We are ready to train
+    the model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The performance on the test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can also try out the matrix factorization in this setting; you only have
+    to change the `features_config` dictionary to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: by deleting some rows and then executing the rest of the code. The results,
+    in this case, are a test MSE of 1.322 and an MAE of 0.953, which is much worse
+    than the LightFM results. This looks great!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dealing With The Movie Genre
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far, we have ignored the perhaps extremely informative column **movie_genres**
+    because it is a bit harder to handle than the categorical variables since here
+    we have a list of integers instead of just one integer. So, we have to make up
+    some logic to deal with this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c13e6726a3bb9b84eab7d7aa1cf3504c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The easiest thing to do with this is to make an embedding for each genre and
+    then take the mean of them. You can use the `GlobalAveragePooling1D` layer for
+    this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to realize this idea in code, do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The rest stays the same. You only have to add the feature **movie_genres** to
+    the model during fit, evaluation, and testing as well. The shape of the genres
+    is a bit difficult since the lists don’t have the same length, so TensorFlow has
+    trouble turning this into a regular tensor. Luckily, TensorFlow still got us covered
+    by providing **ragged tensors** via `tf.ragged.constant` that can handle these
+    variable-size tensors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fitting and evaluating the model on the test set shows yet another improvement,
+    although smaller than expected. The MSE is about 1.0, and MAE is about 0.807.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60f1b2ab0d69716a5356a9344c469ac5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All of my results combined. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dealing with the Movie Title
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another interesting feature we have ignored so far since it contains information
+    about the movie franchise. With this information, we could make it easy for the
+    model to learn that some users like all the Batman movies a lot, for example.
+    *Coding this is homework for you, though.* One way to do this is to split the
+    title strings into a list of words and then proceed as we did with the genres.
+    You can even use sentence encoders, transformer-like architecture, LSTMs, or anything
+    else to turn a text into an embedding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making Predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can make a prediction by providing all the necessary features like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, you can see that some unknown user who is young, has gender 0, occupation
+    label 12, living in the 65712 zip code area, and is a writer would probably like
+    the movie with id 1 that belongs to the genres 1, 2, and 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More Interesting Insights From The Paper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My small experiment showed that LightFM could increase the model performance,
+    as also stated in [1]. This is great, although something you might have expected
+    already since **LightFM is a generalized version of matrix factorization**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this regard, the paper author writes the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “In both cold-start and low-density scenarios, LightFM performs at least as
+    well as pure content-based models, substantially outperforming them when either
+    (1) collaborative information is available in the training set or (2) user features
+    are included in the model.”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “When collaborative data is abundant (warm-start, dense user-item matrix), LightFM
+    performs at least as well as the MF model.”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “Embeddings produced by LightFM encode important semantic information about
+    features and can be used for related recommendation tasks such as tag recommendations.”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'There is no proof of these statements, but he reached this conclusion by testing
+    it on two datasets. Both datasets have **binary labels,** though, meaning that
+    either the item was useful for the user or not. With binary labels, he chose the
+    AUC as his evaluation metric and summarized his findings in this table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c105fc4e74e6fa3f59a2c3392a8dfa3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the paper, MF = Matrix Factorization. Higher numbers are better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we can also see that LightFM outperforms the other methods in the cold
+    start and even the warm start setting. It is good to see that LightFM is not worse
+    than MF in the warm start setting, but the main selling point is that **LightFM
+    completely destroys MF in the cold setting**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Remember:*** *An AUC of 0.5 means random guessing in the sense that the
+    probability that a randomly picked* ***relevant item*** *for some user* ***scores
+    higher******than a*** *randomly chosen* ***non-relevant item*** *for this user
+    is* ***50%****.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have discussed how purely collaborative recommender systems,
+    such as matrix factorization, have trouble when seeing new users or items, referred
+    to as the cold start problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can mitigate this problem once we have more information about users and items
+    since the model can learn some general patterns, such as that young people dislike
+    old movies. So, if we have a new user and know they are young, a good model should
+    score older movies lower than newer ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still, if this new user keeps rating movies, the model can adjust and learn
+    to display old movies like [Nosferatu](https://en.wikipedia.org/wiki/Nosferatu)
+    if the user’s behavior indicates that this might be a good fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A model with these desirable properties feels a bit *Bayesian* to me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The user and item feature embeddings serve as a kind of prior that has a great
+    influence on the predictions as long as we don’t have interaction data. As interactions
+    come in, this prior gets changed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: However, it is an interesting question whether the user and item features lose
+    their relevance once we have a **dense rating matrix**, e.g., if each user rated
+    95% of all movies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anyway, LightFM is a good candidate for such a model, as indicated by my and
+    the paper author’s experiments. LightFM beats MF, especially in the cold start
+    setting on our selected datasets. If the cold start is not an issue, the improvements
+    are minor and might even be just statistical noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You can also try the paper** [**author’s implementation of LightFM**](https://github.com/lyst/lightfm)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] M. Kula, [Metadata Embeddings for User and Item Cold-start Recommendations](https://arxiv.org/abs/1507.08439)
+    (2015), arXiv preprint arXiv:1507.08439'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope that you learned something new, interesting, and useful today. Thanks
+    for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you have any questions, write me on* [*LinkedIn*](https://www.linkedin.com/in/dr-robert-k%C3%BCbler-983859150/)*!*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: And if you want to dive deeper into the world of algorithms, give my new publication
+    **All About Algorithms** a try! I’m still searching for writers!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/all-about-algorithms?source=post_page-----69bf2f0f0b9b--------------------------------)
+    [## All About Algorithms'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From intuitive explanations to in-depth analysis, algorithms come to life with
+    examples, code, and awesome…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/all-about-algorithms?source=post_page-----69bf2f0f0b9b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

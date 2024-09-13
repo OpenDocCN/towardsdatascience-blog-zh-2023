@@ -1,0 +1,391 @@
+- en: Fast and Scalable Hyperparameter Tuning and Cross-validation in AWS SageMaker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb](https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using SageMaker Managed Warm Pools
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[![João
+    Pereira](../Images/2946b185eb134ddfaa71cf5af5e3cda6.png)](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
+    [João Pereira](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
+    ·8 min read·Mar 3, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/125320a8ffef1abf9fcab6a60572290d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [SpaceX](https://unsplash.com/@spacex?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article shares a recipe to **speeding up to 60%** yourhyperparameter tuning
+    with cross-validation in SageMaker Pipelines leveraging SageMaker Managed Warm
+    Pools. By using Warm Pools, the runtime of a Tuning step with 120 sequential jobs
+    is reduced **from 10h to 4h**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving and evaluating the performance of a machine learning model often requires
+    a variety of ingredients. Hyperparameter tuning and cross-validation are 2 such
+    ingredients. The first finds the best version of a model, while the second estimates
+    how a model will generalize to unseen data. These steps, combined, introduce computing
+    challenges as they require training and validating a model multiple times, in
+    parallel and/or in sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***What this article is about…***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are Warm Pools and how to leverage them to speed-up hyperparameter tuning
+    with cross-validation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to design a production-grade SageMaker Pipeline that includes Processing,
+    Tuning, Training, and Lambda steps.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We will consider [Bayesian optimization](/bayesian-optimization-for-hyperparameter-tuning-how-and-why-655b0ee0b399)
+    for hyperparameter tuning that leverages the scores of the hyperparameter combinations
+    already tested to choose the hyperparameter set to test in the next round. We
+    will use [*k*-fold cross-validation](https://medium.com/@zstern/k-fold-cross-validation-explained-5aeba90ebb3)
+    to score each combination of hyperparameters, in which the splits are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f98ae8209ab60a0f673cbedde9fd943.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 𝑘-fold cross-validation strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full dataset is partitioned into 𝑘 validation folds, the model trained on
+    𝑘-1 folds, and validated on its corresponding held-out fold. The overall score
+    is the average over the individual validation scores obtained for each validation
+    fold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Storyline*:***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1\. [What are Warm Pools?](#5fb3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. [End-to-end SageMaker Pipeline](#9b0f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. [What happens inside the Tuning step?](#66e1)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4\. [What do we get out of using Warm Pools?](#7360)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 5\. [Summary](#2c90)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1\. What are Warm Pools?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Whenever a training job is launched in AWS, the provisioned instance takes roughly
+    3min to bootstrap before the training script is executed. This startup time adds
+    up when running multiple jobs sequentially, which is the case when performing
+    hyperparameter tuning using a Bayesian optimization strategy. Here, dozens or
+    even hundreds of jobs are run in sequence leading to a significant total time
+    that can be on par with or even higher than the actual execution times of the
+    scripts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[SageMaker Managed Warm Pools](https://aws.amazon.com/about-aws/whats-new/2022/09/reduce-ml-model-training-job-startup-time-8x-sagemaker-training-managed-warm-pools/)
+    make it possible to retain training infrastructure after a job is completed for
+    a desired number of seconds, enabling saving the instance startup time for every
+    subsequent job.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Enabling Warm Pools is straightforward. You simply add an extra parameter (`keep_alive_period_in_seconds`)
+    when creating a training job in SageMaker:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you want to learn more about SageMaker Managed Warm Pools, here is the documentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## Train Using SageMaker Managed Warm Pools'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SageMaker Managed Warm Pools let you retain and reuse provisioned infrastructure
+    after the completion of a training job…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.aws.amazon.com](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html?source=post_page-----d2b4095412eb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know what are Warm Pools, in [Section 2](#9b0f) we are going to
+    dive deep into how to leverage them to speed-up the overall runtime of a SageMaker
+    Pipeline that includes hyperparameter tuning with cross-validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. End-to-end SageMaker Pipeline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following figure depicts an end-to-end SageMaker Pipeline that performs
+    hyperparameter tuning with cross-validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb9e36cdf54d270bfa876e123c87e0b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture diagram of the end-to-end SageMaker Pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will create the pipeline using the [SageMaker Python SDK](https://sagemaker.readthedocs.io/en/stable/),
+    which is an open-source library that simplifies the process of training, tuning,
+    and deploying machine learning models in AWS SageMaker. The pipeline steps in
+    the diagram are summarized as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data Preprocessing(**`ProcessingStep`**) —** Data is retrieved from the source,
+    transformed, and split into *k* cross-validation folds. An additional full dataset
+    is saved for final training.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Hyperparameter Tuning With CV(**`TuningStep`**) —** This is the step that
+    we will concentrate on. It finds the combination of hyperparameters that achieves
+    the best average performance across validation folds.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Optimal Hyperparameters Retrieval(**`LambdaStep`**) —** Fires a *Lambda*
+    function that retrieves the optimal set of hyperparameters by accessing the results
+    of the hyperparameter tuning job using *Boto3*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Final Training(**`TrainingStep`**) —** Trains the model on the full dataset
+    `train_full.csv` with the optimal hyperparameters.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Model Registration (**`ModelStep`**) —** Registers the final trained model
+    in the SageMaker Model Registry.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Inference (**`TransformStep`**) —** Generates predictions using the registered
+    model.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Please find detailed documentation on how to implement these steps on the [SageMaker
+    Developer Guide](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. What happens inside the Tuning step?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s now dig deeper into the **pipeline step 2** that iteratively tries and
+    cross-validates multiple hyperparameter combinations in parallel and in sequence.
+    The solution is represented in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82a6c6ada9427d721d1e193e628e4d1f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture diagram of the hyperparameter tuning with cross-validation step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution relies on SageMaker Automatic Model Tuning to create and orchestrate
+    the training jobs that test multiple hyperparameter combinations. The Automatic
+    Model Tuning job can be launched using the `HyperparameterTuner` available in
+    the [SageMaker Python SDK](https://sagemaker.readthedocs.io/en/stable/). It creates
+    *M*x*N* hyperparameter tuning training jobs, *M* of which are run in parallel
+    over *N* sequential rounds that progressively search for the best hyperparameters.
+    Each of these jobs launches and monitors a set of *K* cross-validation jobs. At
+    each tuning round, *M*x*K* instances in a Warm Pool are **retained for the next
+    round**. In the subsequent rounds there is no instance startup time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SageMaker's `HyperparameterTuner` already makes use of Warm Pools as announced
+    on the [AWS News Blog](https://aws.amazon.com/about-aws/whats-new/2022/08/amazon-sagemaker-automatic-model-tuning-reuses-sagemaker-training-instances-reduce-start-up-overheads/).
+    However, the cross-validation training jobs that are created in each tuning job
+    — that cross-validate a specific combination of hyperparameters — have to be **manually
+    created and monitored**, **and the provisioned** **instances are not kept in a
+    Warm Pool**. Each hyperparameter tuning training job will only finish when all
+    the underlying cross-validation training jobs have completed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To bring the architecture above to life and enable Warm Pools for **all** training
+    jobs, we need to create three main scripts: `pipeline.py`, `cross_validation.py`,
+    and `training.py`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`**pipeline.py**` **script —** Defines the SageMaker Pipeline steps described
+    in [Section 2](#9b0f), which includes SageMaker''s `HyperparameterTuner`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`**cross_validation.py**` **script** — Serves as entry point of SageMaker''s
+    `HyperparameterTuner`. It launches multiple cross-validation training jobs. It
+    is inside this script that the `keep_alive_period_in_seconds` parameter has to
+    be specified, when calling the SageMaker Training Job API. The script computes
+    and logs the average validation score across all validation folds. Logging the
+    value enables easy reading of that metric using *Regex* by the `HyperparameterTuner`
+    (as in the code snippet above). This metric is going to be tagged to each combination
+    of hyperparameters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tip:** Add a small delay, i.e., a few seconds, between the calls to the SageMaker
+    APIs that create and monitor the training jobs to prevent the“Rate Exceeded” error,
+    as in the example:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Tip:** [Disable the debugger profiler](https://docs.aws.amazon.com/sagemaker/latest/dg/debugger-turn-off.html)
+    when launching your SageMaker training jobs. These profiler instances will be
+    as many as the training instances and can make the overall cost increase significantly.
+    You can do so by simply setting `disable_profiler=True`in the Estimator definition.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`**training.py**`**script** — Trains a model on a given input training set.
+    The hyperparameters being cross-validated are passed as arguments of this script.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tip:** Write a general-purpose `*training.py*`script and reuse it for training
+    the model on cross-validation sets and for training the final model with the optimal
+    hyperparameters on the full training set.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To control each parallel cross-validation set of jobs, as well as to compute
+    a final validation metric for each specific hyperparameter combination tested,
+    there are several custom functions that have to be implemented inside the `cross_validation.py`
+    script. [This example](https://github.com/aws-samples/sagemaker-cross-validation-pipeline)
+    provides good inspiration, even though it does not enable Warm Pools or Lambda.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How many jobs are created in total?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*M* x *N* x *(K+1)* jobs. Why?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*M* x *N* hyperparameter tuning training jobs — M in parallel and N in sequence
+    — matches the number of hyperparameter combinations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*K* parallel cross-validation jobs *per* hyperparameter tuning training job
+    + 1 (the hyperparameter tuning training job itself).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we have **5** validation folds, run **4** hyperparameter tuning training
+    jobs in parallel and **120** in sequence, then the **total number of jobs will
+    be 2880**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Important:** Make sure that you have all the required service quotas in place
+    for the instance types that you are using. Check the AWS guides to understand
+    how to set these quotas for both [Warm Pools](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html#train-warm-pools-resource-limits)
+    and [Automatic Model Tuning](https://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning-limits.html).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4\. What do we get out of using Warm Pools?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s say we want to run N=120 sequential training jobs and that the startup
+    time of the instances is 3min and that training takes 2min to run (5min per job).
+    This means that the total runtime is approximately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Without* Warm Pools: 5min x 120 jobs = **10h**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*With* Warm Pools: 5min x 1 job + 2min x 119 jobs ≈ **4h**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**This means that with Warm Pools the process takes 60% less time!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I showed how we can leverage Warm Pools to significantly speed-up
+    hyperparameter tuning with cross-validation in SageMaker Pipelines. Warm Pools
+    are a great feature of SageMaker that not only enables more efficient production
+    pipelines, but also faster iterations in experiments. At the moment, SageMaker
+    Managed Warm Pools have been integrated in SageMaker Training, but not in SageMaker
+    Processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: — João Pereira
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thank you for reading. Hope this article helps you scaling hyperparameter
+    tuning in SageMaker. If you would like to read my future articles, please* [*follow
+    me*](https://medium.com/@joao.pereira.abt/subscribe)*. Feedback is highly appreciated!
+    Leave a comment below if you have any questions or reach out to me directly* [***by
+    email***](mailto:mail@joao-pereira.pt) *or in* [***LinkedIn***](https://www.linkedin.com/in/jpcpereira/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

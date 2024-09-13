@@ -1,0 +1,421 @@
+- en: 'Python Quirks: Understand How a Variable Can Be Modified by a Function That
+    Doesn’t Return Anything'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/python-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923](https://towardsdatascience.com/python-quirks-understand-how-a-variable-can-be-modified-by-a-function-that-doesnt-return-anything-343a40cc6923)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into how Python passes arguments and mutability to prevent unexpected
+    bugs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)[![Mike
+    Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)[](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------)
+    [Mike Huls](https://mikehuls.medium.com/?source=post_page-----343a40cc6923--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----343a40cc6923--------------------------------)
+    ·8 min read·Apr 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66a1b3b46f16c0c485439cbce8fc83b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tracking down the unexpected bugs (image by [cottonbro studio](https://www.pexels.com/@cottonbro/)
+    on [Pexels](https://www.pexels.com/photo/photo-of-person-taking-down-notes-7319070/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article we’ll put on our detective hat and solve a “*Python Mystery*”.
+    In this episode we’ll find out how **a function that doesn’t return a value can
+    alter a variable**. (see below for example). This is not all: **it only ‘works’
+    on some types of variables**. Additionally it’s pretty easy to fall into the trap
+    of this behaviour so it’s important to know what causes it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll focus on understanding the mechanics beneath the mystery. Not only will
+    a better understanding of Python make you a **better developer**, it will also
+    **save you a lot of frustration** trying to solve incomprehensible bugs. Let’s
+    code!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mystery — an example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s first analyze our “*Python Mystery*” a bit more: suppose we have two
+    functions that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***accept*** a variable'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***modify*** that variable'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***don’t return*** the variable'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: For both functions we define a variable, print it out, call the function with
+    the variable and then print it out again
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What happened? Why has the `my_list` variable **changed** while the `my_str`
+    variable **hasn’t**? This is despite the functions not returning anything! Three
+    questions arise, which we will anser in three corresponding chapters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does the function “have access” to the variable?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Why is the list altered while the string is unchanged?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How can we prevent this behaviour?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[](/thread-your-python-program-with-two-lines-of-code-3b474407dbb8?source=post_page-----343a40cc6923--------------------------------)
+    [## Thread Your Python Program with Two Lines of Code'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speed up your program by doing multiple things simultaneously
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/thread-your-python-program-with-two-lines-of-code-3b474407dbb8?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. How the function accesses the variable
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To find this out we need to understand how the variable ends up in the function:
+    we need to know **how Python passes variables to functions**. There are many ways
+    this can be done. In order to understand how Python passes variables to functions,
+    we first need to look into [**how Python stores values in memory**](/why-is-python-so-slow-and-how-to-speed-it-up-485b5a84154e).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1.1 How Python stores variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You might think that when we define a variable like this: `person = ''mike''`
+    that there is an object in memory named `‘person’` with the value `‘mike’` (see
+    the images below). This is only party true.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbe0ce130c0df00650699664d05a909d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How variables get stored in memory in Python vs other languages (think C .e.g.)
+    (Expertly drawn by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python works with **references**. It creates an object in memory and then it
+    creates a reference called `‘person’` that points to the object in memory, at
+    a specific memory address, with the value `‘mike’`. Think of it as hanging a label
+    on the object where the object in memory gets a label with the name of the variable
+    on it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we then do something like this: `person2 = person` we do not create a new
+    object in memory, merely a new reference called ‘person2’ to the object in memory
+    that already exists:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e31e37a5b5145078b38a97694c0e4e6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Create a new reference that points to the same object (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Redefining `person2 = ‘bert''` will cause Python to create a new object in
+    memory and point the reference named “person2” to there:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/482ef44ae3de0b39f6d3a45256e209b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 1.2 Does Python pass the object or the reference to the function?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s pretty key to understand that when we call `somefunction(person)` **we
+    don’t give the function an object in memory but merely the reference to that object**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python passes variables ***“by reference”*** as opposed to ***“by value”.***
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'This is the first answer to solve the mystery: we give the function a reference
+    to a value in memory in stead of providing the function a **copy of the object**.
+    This is why we can alter the value **without the function returning** anything.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now look at the other part of the solution: why some variables can be
+    altered while others cannot.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----343a40cc6923--------------------------------)
+    [## Args vs kwargs: which is the fastest way to call a function in Python?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A clear demonstration of the timeit module
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Why can some values be altered while others cannot? — mutability
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Mutability is the ability of objects to change their values after they are
+    created. Let’s start with an overview of mutable variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you see the `str` is immutable; this means that it cannot change after it’s
+    initialized. Then how is it possible that we’ve ‘modified’ our string in our earlier
+    example (something like this: `input_string += ‘a''`). The next few parts explain
+    what happens when we try to **alter** and **overwrite** mutable and immutable
+    values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/why-is-python-so-slow-and-how-to-speed-it-up-485b5a84154e?source=post_page-----343a40cc6923--------------------------------)
+    [## Why Python is so slow and how to speed it up'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take a look under the hood to see where Python’s bottlenecks lie
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/why-is-python-so-slow-and-how-to-speed-it-up-485b5a84154e?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1 What happens when we try to alter immutable values?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We create a variable called `my_str` with the value `'a'`. Next we use the `id`
+    function to print the variable’s memory address. This is the location in memory
+    where the reference(s) point to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To re-iterate: in the example below we create a *reference* called `my_str`
+    that points to an *object in memory* that has the value `''a''``. and is located
+    at *memory address* `1988650365763`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, on line 3, we add `'b'` to `my_str` and print the memory location again.
+    As you see, by the changing memory location, the `my_str` is different after you’ve
+    added `'b'` to it. This means that a **new object is created in memory**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It may seem like Python alters the string but under the hood it just creates
+    a new object in memory and ponts the reference called `my_str` to that new object.
+    The old object with value `'a’` will get get removed. Check out [**this article**](/why-is-python-so-slow-and-how-to-speed-it-up-485b5a84154e)
+    to read more about why Python doesn’t just overwrite object in memory and how
+    the old values get removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 What happens when we try to alter mutable values?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s do the same experiment with a mutable variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: So the reference called `my_list` still points to the same location in memory
+    where the object resides. This proves that the object in memory has changed! Also
+    notice that elements inside the list can contain immutable types. If we try to
+    alter these variables the same happens as described in the previous section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 What happens when we try to overwrite variables?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we’ve seen in the previous part Python doesn’t overwrite objects in memory.
+    Let’s see this in action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you see all memory locations are changed, both mutable and immutable variables.
+    This is the default way Python works with variables. Notice that we **don’t try
+    to change the contents** of the mutable list: we’re defining a new list; we’re
+    not mutating it but assigning completely new data to `my_lst`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Why are some values mutable while others aren’t?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The mutability is often a design choice; some variables guarantee that the contents
+    remain unchanged and ordered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/getting-started-with-cython-how-to-perform-1-7-billion-calculations-per-second-in-python-b83374cfcf77?source=post_page-----343a40cc6923--------------------------------)
+    [## Getting started with Cython: How to perform >1.7 billion calculations per
+    second in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combine the ease of Python with the speed of C
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/getting-started-with-cython-how-to-perform-1-7-billion-calculations-per-second-in-python-b83374cfcf77?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Solution: Pass-by-reference and mutability in action'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this part we’ll take our new-found knowledge and solve the mystery. In the
+    code below we declare a (mutable) list and pass it (by reference) to a function.
+    The function is then able to alter the contents of the list. We can see this by
+    the fact that the memory address is the same on the 3rd line and the last one
+    while the content has changed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: How does this work with immutable values?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Good question. Let’s check it out with a tuple that’s immutable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since we cannot mutate the value we have to ‘overwrite ’ the `input_tuple` in
+    the `change_tuple` function. This doesn’t mean that the object in memory gets
+    overwritten but that a new object gets created in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we modify the reference `input_tuple` that exists in the scope of the `change_tuple`
+    function so that it now points to this new object. When we exit the function this
+    reference gets cleaned up and in the outer scope the `my_tup` reference still
+    points to the old object’s memory address.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In short: the ‘new’ tuple only exists in the scope of the function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/image-analysis-for-beginners-destroying-duck-hunt-with-opencv-e19a27fd8b6?source=post_page-----343a40cc6923--------------------------------)
+    [## Destroying Duck Hunt with OpenCV — image analysis for beginners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write code that will beat every Duck Hunt high score
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/image-analysis-for-beginners-destroying-duck-hunt-with-opencv-e19a27fd8b6?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. How to prevent unwanted behaviour
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You can prevent this behaviour by giving the function a `my_list.copy()`. This
+    creates a copy of the list first and provides the function with a ***reference***
+    to that copy so that all changes alter the copy in stead of `my_list`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----343a40cc6923--------------------------------)
+    [## A complete guide to using environment variables and files with Docker and
+    Compose'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep your containers secure and flexible with this easy tutorial
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve discussed mutability and the way Python passes variables to function;
+    two important concepts to understand when designing your Python code. With this
+    article I hope you avoid incomprehensible errors and a lot of time debugging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope this article was as clear as I hope it to be but if this is not the
+    case please let me know what I can do to clarify further. In the meantime, check
+    out my [other articles](https://mikehuls.com/articles?tags=python) on all kinds
+    of programming-related topics like these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Git for absolute beginners: understanding Git with the help of a video game](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Create and publish your own Python package](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Create a fast auto-documented, maintainable, and easy-to-use Python API in
+    5 lines of code with FastAPI](https://mikehuls.medium.com/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Happy coding!
+  prefs: []
+  type: TYPE_NORMAL
+- en: — Mike
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P.S: like what I’m doing?* [*Follow me!*](https://mikehuls.medium.com/membership)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mikehuls.medium.com/membership?source=post_page-----343a40cc6923--------------------------------)
+    [## Join Medium with my referral link - Mike Huls'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Mike Huls (and thousands of other writers on Medium).
+    Your membership fee directly supports Mike…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: mikehuls.medium.com](https://mikehuls.medium.com/membership?source=post_page-----343a40cc6923--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

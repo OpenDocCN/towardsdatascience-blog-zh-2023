@@ -1,0 +1,630 @@
+- en: Fine-Tuning Large Language Models (LLMs)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fine-tuning-large-language-models-llms-23473d763b91](https://towardsdatascience.com/fine-tuning-large-language-models-llms-23473d763b91)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A conceptual overview with example Python code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shawhin.medium.com/?source=post_page-----23473d763b91--------------------------------)[![Shaw
+    Talebi](../Images/1449cc7c08890e2078f9e5d07897e3df.png)](https://shawhin.medium.com/?source=post_page-----23473d763b91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----23473d763b91--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----23473d763b91--------------------------------)
+    [Shaw Talebi](https://shawhin.medium.com/?source=post_page-----23473d763b91--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----23473d763b91--------------------------------)
+    ·14 min read·Sep 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the 5th article in a [series on using Large Language Models](https://medium.com/towards-data-science/a-practical-introduction-to-llms-65194dda1148)
+    (LLMs) in practice. In this post, we will discuss how to fine-tune (FT) a pre-trained
+    LLM. We start by introducing key FT concepts and techniques, then finish with
+    a concrete example of how to fine-tune a model (locally) using Python and Hugging
+    Face’s software ecosystem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d74b7565b127d69e37ddf51e16125896.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tuning a language model. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [previous article](https://medium.com/towards-data-science/prompt-engineering-how-to-trick-ai-into-solving-your-problems-7ce1ed3b553f)
+    of this series, we saw how we could build practical LLM-powered applications by
+    integrating prompt engineering into our Python code. For the vast majority of
+    LLM use cases, this is the initial approach I recommend because it requires significantly
+    less resources and technical expertise than other methods while still providing
+    much of the upside.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there are situations where prompting an existing LLM out-of-the-box
+    doesn’t cut it, and a more sophisticated solution is required. This is where model
+    fine-tuning can help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Supplemental Video.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is Fine-tuning?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Fine-tuning** is taking a pre-trained model and **training at least one internal
+    model parameter** (i.e. weights). In the context of LLMs, what this typically
+    accomplishes is transforming a general-purpose base model (e.g. GPT-3) into a
+    specialized model for a particular use case (e.g. ChatGPT) [1].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **key upside** of this approach is that models can achieve better performance
+    while requiring (far) fewer manually labeled examples compared to models that
+    solely rely on supervised training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While strictly self-supervised base models can exhibit impressive performance
+    on a wide variety of tasks with the help of prompt engineering [2], they are still
+    word predictors and may generate completions that are not entirely helpful or
+    accurate. For example, let’s compare the completions of davinci (base GPT-3 model)
+    and text-davinci-003 (a fine-tuned model).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3618c95fe5ccf99162d28d4b1bb1344.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Completion comparison of davinci (base GPT-3 model) and text-davinci-003 (a
+    fine-tuned model). Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the base model is simply trying to complete the text by listing a set
+    of questions like a Google search or homework assignment, while the **fine-tuned
+    model gives a more helpful response**. The flavor of fine-tuning used for text-davinci-003
+    is **alignment tuning,** which aims to make the LLM’s responses more helpful,
+    honest, and harmless, but more on that later [3,4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why Fine-tune**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Fine-tuning not only improves the performance of a base model, but **a smaller
+    (fine-tuned) model can often outperform larger (more expensive) models** on the
+    set of tasks on which it was trained [4]. This was demonstrated by OpenAI with
+    their first generation “InstructGPT” models, where the 1.3B parameter InstructGPT
+    model completions were preferred over the 175B parameter GPT-3 base model despite
+    being 100x smaller [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although most of the LLMs we may interact with these days are not strictly self-supervised
+    models like GPT-3, there are still drawbacks to prompting an existing fine-tuned
+    model for a specific use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A big one is LLMs have a finite context window. Thus, the model may perform
+    sub-optimally on tasks that require a large knowledge base or domain-specific
+    information [1]. Fine-tuned models can avoid this issue by “learning” this information
+    during the fine-tuning process. This also precludes the need to jam-pack prompts
+    with additional context and thus can result in lower inference costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3 Ways to Fine-tune**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are **3 generic ways one can fine-tune** a model: self-supervised, supervised,
+    and reinforcement learning. These are not mutually exclusive in that any combination
+    of these three approaches can be used in succession to fine-tune a single model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Self-supervised Learning**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Self-supervised learning** consists of **training a model based on the inherent
+    structure of the training data**. In the context of LLMs, what this typically
+    looks like is given a sequence of words (or tokens, to be more precise), predict
+    the next word (token).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this is how many pre-trained language models are developed these days,
+    it can also be used for model fine-tuning. A potential use case of this is developing
+    a model that can mimic a person’s writing style given a set of example texts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised Learning**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next, and perhaps most popular, way to fine-tune a model is via **supervised
+    learning**. This involves **training a model on input-output pairs** for a particular
+    task. An example is **instruction tuning,** which aims to improve model performance
+    in answering questions or responding to user prompts [1,3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **key step** in supervised learning is **curating a training dataset**.
+    A simple way to do this is to create question-answer pairs and integrate them
+    into a prompt template [1,3]. For example, the question-answer pair: *Who was
+    the 35th President of the United States? — John F. Kennedy* could be pasted into
+    the below prompt template. More example prompt templates are available in section
+    A.2.1 of ref [4].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using a prompt template is important because base models like GPT-3 are essentially
+    “document completers”. Meaning, given some text, the model generates more text
+    that (statistically) makes sense in that context. This goes back to the [previous
+    blog](https://medium.com/towards-data-science/prompt-engineering-how-to-trick-ai-into-solving-your-problems-7ce1ed3b553f)
+    of this series and the idea of “tricking” a language model into solving your problem
+    via prompt engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/prompt-engineering-how-to-trick-ai-into-solving-your-problems-7ce1ed3b553f?source=post_page-----23473d763b91--------------------------------)
+    [## Prompt Engineering — How to trick AI into solving your problems'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7 prompting tricks, Langchain, and Python example code
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/prompt-engineering-how-to-trick-ai-into-solving-your-problems-7ce1ed3b553f?source=post_page-----23473d763b91--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reinforcement Learning**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, one can use **reinforcement learning (RL)** to fine-tune models. RL
+    **uses a reward model to guide the training of the base model**. This can take
+    many different forms, but the basic idea is to train the reward model to score
+    language model completions such that they reflect the preferences of human labelers
+    [3,4]. The reward model can then be combined with a reinforcement learning algorithm
+    (e.g. Proximal Policy Optimization (PPO)) to fine-tune the pre-trained model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An example of how RL can be used for model fine-tuning is demonstrated by OpenAI’s
+    InstructGPT models, which were developed through **3 key steps** [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generate high-quality prompt-response pairs and fine-tune a pre-trained model
+    using supervised learning. (~13k training prompts) *Note: One can (alternatively)
+    skip to step 2 with the pre-trained model [3].*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the fine-tuned model to generate completions and have human-labelers rank
+    responses based on their preferences. Use these preferences to train the reward
+    model. (~33k training prompts)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the reward model and an RL algorithm (e.g. PPO) to fine-tune the model further.
+    (~31k training prompts)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While the strategy above does generally result in LLM completions that are significantly
+    more preferable to the base model, it can also come at a cost of lower performance
+    in a subset of tasks. This drop in performance is also known as an **alignment
+    tax** [3,4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised Fine-tuning Steps (High-level)**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we saw above, there are many ways in which one can fine-tune an existing
+    language model. However, for the remainder of this article, we will focus on fine-tuning
+    via supervised learning. Below is a high-level procedure for supervised model
+    fine-tuning [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Choose fine-tuning task** (e.g. summarization, question answering, text classification)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Prepare training dataset** i.e. create (100–10k) input-output pairs and preprocess
+    data (i.e. tokenize, truncate, and pad text).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Choose a base model** (experiment with different models and choose one that
+    performs best on the desired task).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Fine-tune model via supervised learning**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Evaluate model performance**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While each of these steps could be an article of their own, I want to focus
+    on **step 4** and discuss how we can go about training the fine-tuned model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3 Options for Parameter Training**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When it comes to fine-tuning a model with ~100M-100B parameters, one needs to
+    be thoughtful of computational costs. Toward this end, an important question is
+    — *which parameters do we (re)train?*
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the mountain of parameters at play, we have countless choices for which
+    ones we train. Here, I will focus on **three generic options** of which to choose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 1: Retrain all parameters**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first option is to **train all internal model parameters** (called **full
+    parameter tuning**) [3]. While this option is simple (conceptually), it is the
+    most computationally expensive. Additionally, a known issue with full parameter
+    tuning is the phenomenon of catastrophic forgetting. This is where the model “forgets”
+    useful information it “learned” in its initial training [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way we can mitigate the downsides of Option 1 is to freeze a large portion
+    of the model parameters, which brings us to Option 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 2: Transfer Learning**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The big idea with **transfer learning (TL)** is to preserve the useful representations/features
+    the model has learned from past training when applying the model to a new task.
+    This generally consists of **dropping “the head” of a neural network (NN) and
+    replacing it with a new one** (e.g. adding new layers with randomized weights).
+    *Note: The head of an NN includes its final layers, which translate the model’s
+    internal representations to output values.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While leaving the majority of parameters untouched mitigates the huge computational
+    cost of training an LLM, TL may not necessarily resolve the problem of catastrophic
+    forgetting. To better handle both of these issues, we can turn to a different
+    set of approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 3: Parameter Efficient Fine-tuning (PEFT)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**PEFT** involves **augmenting a base model with a relatively small number
+    of trainable parameters**. The key result of this is a fine-tuning methodology
+    that demonstrates comparable performance to full parameter tuning at a tiny fraction
+    of the computational and storage cost [5].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PEFT encapsulates a family of techniques, one of which is the popular **LoRA
+    (Low-Rank Adaptation)** method [6]. The basic idea behind LoRA is to pick a subset
+    of layers in an existing model and modify their weights according to the following
+    equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/446dc4369edc5bc4655f4986a426a513.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Equation showing how weight matrices are modified for fine-tuning using LoRA
+    [6]. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where *h()* = a hidden layer that will be tuned, *x* = the input to *h()*, *W₀*
+    = the original weight matrix for the *h*, and *ΔW* = a matrix of trainable parameters
+    injected into *h*. *ΔW* is decomposed according to *ΔW*=*BA*, where *ΔW* is a
+    d by k matrix, *B* is d by r, and *A* is r by k*.* r is the assumed “intrinsic
+    rank” of *ΔW* (which can be as small as 1 or 2) [6].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sorry for all the math, but the **key point is the (d * k) weights in *W₀* are
+    frozen and, thus, not included in optimization**. Instead, the ((d * r) + (r *
+    k)) weights making up matrices *B* and *A* are the only ones that are trained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plugging in some made-up numbers for d=100, k=100, and r=2 to get a sense of
+    the efficiency gains, the **number of trainable parameters drops from 10,000 to
+    400** in that layer. In practice, the authors of the LoRA paper cited a **10,000x
+    reduction in parameter checkpoint size** using LoRA fine-tune GPT-3 compared to
+    full parameter tuning [6].
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make this more concrete, let’s see how we can use LoRA to fine-tune a language
+    model efficiently enough to run on a personal computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example Code: Fine-tuning an LLM using LoRA**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this example, we will use the Hugging Face ecosystem to fine-tune a language
+    model to classify text as ‘positive’ or ‘negative’. Here, we fine-tune [*distilbert-base-uncased*](https://huggingface.co/distilbert-base-uncased),
+    a ~70M parameter model based on [BERT](https://arxiv.org/pdf/1810.04805.pdf).
+    Since this base model was trained to do language modeling and not classification,
+    we employ **transfer learning** to replace the base model head with a classification
+    head. Additionally, we use **LoRA** to fine-tune the model efficiently enough
+    that it can run on my Mac Mini (M1 chip with 16GB memory) in a reasonable amount
+    of time (~20 min).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code, along with the conda environment files, are available on the [GitHub
+    repository](https://github.com/ShawhinT/YouTube-Blog/tree/main/LLMs/fine-tuning).
+    The [final model](https://huggingface.co/shawhin/distilbert-base-uncased-lora-text-classification)
+    and [dataset](https://huggingface.co/datasets/shawhin/imdb-truncated) [7] are
+    available on Hugging Face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/ShawhinT/YouTube-Blog/tree/main/LLMs/fine-tuning?source=post_page-----23473d763b91--------------------------------)
+    [## YouTube-Blog/LLMs/fine-tuning at main · ShawhinT/YouTube-Blog'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Codes to complement YouTube videos and blog posts on Medium. - YouTube-Blog/LLMs/fine-tuning
+    at main ·…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/ShawhinT/YouTube-Blog/tree/main/LLMs/fine-tuning?source=post_page-----23473d763b91--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imports
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We start by importing helpful libraries and modules. [Datasets](https://huggingface.co/docs/datasets/index),
+    [transformers](https://huggingface.co/docs/transformers/index), [peft](https://huggingface.co/docs/peft/index),
+    and [evaluate](https://huggingface.co/docs/evaluate/index) are all libraries from
+    [Hugging Face](https://huggingface.co/) (HF).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Base model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we load in our base model. The base model here is a relatively small one,
+    but there are several other (larger) ones that we could have used (e.g. roberta-base,
+    llama2, gpt2). A full list is available [here](https://huggingface.co/docs/transformers/model_doc/auto#transformers.AutoModelForSequenceClassification).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Load data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can then load our [training and validation data](https://huggingface.co/datasets/shawhin/imdb-truncated)
+    from HF’s datasets library. This is a dataset of 2000 movie reviews (1000 for
+    training and 1000 for validation) with binary labels indicating whether the review
+    is positive (or not).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Preprocess data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we need to preprocess our data so that it can be used for training. This
+    consists of using a tokenizer to convert the text into an integer representation
+    understood by the base model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: To apply the tokenizer to the dataset, we use the .*map()* method. This takes
+    in a custom function that specifies how the text should be preprocessed. In this
+    case, that function is called *tokenize_function()*. In addition to translating
+    text to integers, this function truncates integer sequences such that they are
+    no longer than 512 numbers to conform to the base model’s max input length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point, we can also create a data collator, which will dynamically pad
+    examples in each batch during training such that they all have the same length.
+    This is computationally more efficient than padding all examples to be equal in
+    length across the entire dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Evaluation metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can define how we want to evaluate our fine-tuned model via a custom function.
+    Here, we define the *compute_metrics()* function to compute the model’s accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Untrained model performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before training our model, we can evaluate how the base model with a randomly
+    initialized classification head performs on some example inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: As expected, the model performance is equivalent to random guessing. Let’s see
+    how we can improve this with fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning with LoRA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To use LoRA for fine-tuning, we first need a config file. This sets all the
+    parameters for the LoRA algorithm. See comments in the code block for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then create a new version of our model that can be trained via PEFT.
+    Notice that the scale of trainable parameters was reduced by about 100x.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we define hyperparameters for model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we create a trainer() object and fine-tune the model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above code will generate the following table of metrics during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75c8df11198f7db7e4d932cd45924488.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model training metrics. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trained model performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To see how the model performance has improved, let’s apply it to the same 5
+    examples from before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The fine-tuned model improved significantly from its prior random guessing,
+    correctly classifying all but one of the examples in the above code. This aligns
+    with the ~90% accuracy metric we saw during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Links: [Code Repo](https://github.com/ShawhinT/YouTube-Blog/tree/main/LLMs/fine-tuning)
+    | [Model](https://huggingface.co/shawhin/distilbert-base-uncased-lora-text-classification)
+    | [Dataset](https://huggingface.co/datasets/shawhin/imdb-truncated)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While fine-tuning an existing model requires more computational resources and
+    technical expertise than using one out-of-the-box, (smaller) fine-tuned models
+    can outperform (larger) pre-trained base models for a particular use case, even
+    when employing clever prompt engineering strategies. Furthermore, with all the
+    open-source LLM resources available, it’s never been easier to fine-tune a model
+    for a custom application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next article of this series will go one step beyond model fine-tuning and
+    discuss how to train a language model from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '👉 **More on LLMs**: [Introduction](/a-practical-introduction-to-llms-65194dda1148)
+    | [OpenAI API](https://medium.com/towards-data-science/cracking-open-the-openai-python-api-230e4cae7971)
+    | [Hugging Face Transformers](https://medium.com/towards-data-science/cracking-open-the-hugging-face-transformers-library-350aa0ef0161)
+    | [Prompt Engineering](https://medium.com/towards-data-science/prompt-engineering-how-to-trick-ai-into-solving-your-problems-7ce1ed3b553f)
+    | [Build an LLM](/how-to-build-an-llm-from-scratch-8c477768f1f9) | [QLoRA](/qlora-how-to-fine-tune-an-llm-on-a-single-gpu-4e44d6b5be32)
+    | [RAG](https://medium.com/towards-data-science/how-to-improve-llms-with-rag-abdc132f76ac)
+    | [Text Embeddings](/text-embeddings-classification-and-semantic-search-8291746220be)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Shaw Talebi](../Images/02eefb458c6eeff7cd29d40c212e3b22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Shaw Talebi](https://shawhin.medium.com/?source=post_page-----23473d763b91--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[View list](https://shawhin.medium.com/list/large-language-models-llms-8e009ae3054c?source=post_page-----23473d763b91--------------------------------)13
+    stories![](../Images/82e865594c68f5307e75665842d197bb.png)![](../Images/b9436354721f807e0390b5e301be2119.png)![](../Images/59c8db581de77a908457dec8981f3c37.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Connect**: [My website](https://shawhintalebi.com/) | [Book a call](https://calendly.com/shawhintalebi)
+    | [Ask me anything](https://shawhintalebi.com/contact/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Socials**: [YouTube 🎥](https://www.youtube.com/channel/UCa9gErQ9AE5jT2DZLjXBIdA)
+    | [LinkedIn](https://www.linkedin.com/in/shawhintalebi/) | [Twitter](https://twitter.com/ShawhinT)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Support**: [Buy me a coffee](https://www.buymeacoffee.com/shawhint) ☕️'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://shawhin.medium.com/subscribe?source=post_page-----23473d763b91--------------------------------)
+    [## Get FREE access to every new story I write'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get FREE access to every new story I write P.S. I do not share your email with
+    anyone By signing up, you will create a…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: shawhin.medium.com](https://shawhin.medium.com/subscribe?source=post_page-----23473d763b91--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Deeplearning.ai Finetuning Large Langauge Models Short Course: [https://www.deeplearning.ai/short-courses/finetuning-large-language-models/](https://www.deeplearning.ai/short-courses/finetuning-large-language-models/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [arXiv:2005.14165](https://arxiv.org/abs/2005.14165) **[cs.CL] (**GPT-3
+    Paper)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [arXiv:2303.18223](https://arxiv.org/abs/2303.18223) **[cs.CL] (**Survey
+    of LLMs)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [arXiv:2203.02155](https://arxiv.org/abs/2203.02155) **[cs.CL] (**InstructGPT
+    paper)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] 🤗 PEFT: Parameter-Efficient Fine-Tuning of Billion-Scale Models on Low-Resource
+    Hardware: [https://huggingface.co/blog/peft](https://huggingface.co/blog/peft)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [arXiv:2106.09685](https://arxiv.org/abs/2106.09685) **[cs.CL]** (LoRA
+    paper)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Original dataset source — Andrew L. Maas, Raymond E. Daly, Peter T. Pham,
+    Dan Huang, Andrew Y. Ng, and Christopher Potts. 2011\. [Learning Word Vectors
+    for Sentiment Analysis](https://aclanthology.org/P11-1015). In *Proceedings of
+    the 49th Annual Meeting of the Association for Computational Linguistics: Human
+    Language Technologies*, pages 142–150, Portland, Oregon, USA. Association for
+    Computational Linguistics.'
+  prefs: []
+  type: TYPE_NORMAL

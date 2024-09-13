@@ -1,0 +1,535 @@
+- en: Optimizing Neural Networks For Deep Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/optimisation-algorithms-neural-networks-101-256e16a88412](https://towardsdatascience.com/optimisation-algorithms-neural-networks-101-256e16a88412)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to improve training beyond the “vanilla” gradient descent algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@egorhowell?source=post_page-----256e16a88412--------------------------------)[![Egor
+    Howell](../Images/1f796e828f1625440467d01dcc3e40cd.png)](https://medium.com/@egorhowell?source=post_page-----256e16a88412--------------------------------)[](https://towardsdatascience.com/?source=post_page-----256e16a88412--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----256e16a88412--------------------------------)
+    [Egor Howell](https://medium.com/@egorhowell?source=post_page-----256e16a88412--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----256e16a88412--------------------------------)
+    ·8 min read·Nov 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4296e3c0bd744ca991919ad968f9e98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://www.flaticon.com/free-icons/neural-network](https://www.flaticon.com/free-icons/neural-network).neural
+    network icons. Neural network icons created by andinur — Flaticon.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In my last post, we discussed how you can improve the performance of neural
+    networks through [***hyperparameter tuning***](/optimise-your-hyperparameter-tuning-with-hyperopt-861573239eb5):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/hyperparameter-tuning-neural-networks-101-ca1102891b27?source=post_page-----256e16a88412--------------------------------)
+    [## Hyperparameter Tuning: Neural Networks 101'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How you can improve the “learning” and “training” of neural networks through
+    tuning hyperparameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/hyperparameter-tuning-neural-networks-101-ca1102891b27?source=post_page-----256e16a88412--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a process whereby the best hyperparameters such as learning rate and
+    number of hidden layers are “tuned” to find the most optimal ones for our network
+    to boost its performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, this tuning process for large deep neural networks ([***deep
+    learning***](https://en.wikipedia.org/wiki/Deep_learning)) is painstakingly slow.
+    One way to improve upon this is to use *faster optimisers* than the traditional
+    “vanilla” gradient descent method. In this post, we will dive into the most popular
+    optimisers and variants of [***gradient descent***](/why-gradient-descent-is-so-common-in-data-science-def3e6515c5c)
+    that can enhance the speed of training and also convergence and compare them in
+    PyTorch!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recap: Gradient Descent'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving in, let’s quickly brush up on our knowledge of gradient descent
+    and the theory behind it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of gradient descent is to update the parameters of the model by subtracting
+    the gradient (partial derivative) of the parameter with respect to the loss function.
+    A learning rate, ***α***, serves to regulate this process to ensure updating of
+    the parameters occurs on a reasonable scale and doesn’t over or undershoot the
+    optimal value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2a7441d5107d106a25205788200a684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient descent. Equation by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***θ*** are the parameters of the model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***J(θ)*** is the loss function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***∇J(θ)*** is the gradient of the loss function. ***∇*** is the gradient operator,
+    also known as [***nabla***](https://en.wikipedia.org/wiki/Nabla_symbol).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***α*** is the learning rate.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'I wrote a previous article on gradient descent and how it works if you want
+    to familiarise yourself a bit more about it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/why-gradient-descent-is-so-common-in-data-science-def3e6515c5c?source=post_page-----256e16a88412--------------------------------)
+    [## Linear Regression: Gradient Descent Vs Analytical Solution'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An explanation of why Gradient Descent is frequently used in Data Science with
+    an implementation in C
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/why-gradient-descent-is-so-common-in-data-science-def3e6515c5c?source=post_page-----256e16a88412--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Momentum
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Gradient descent is often visualised as a ball rolling down a hill. When it
+    reaches the bottom of the valley, it has converged to the minimum, which is the
+    optimal value. A ball rolling downhill consistently will garner some *momentum,*
+    however, regular gradient descent works on an individual iteration basis and does
+    not know the previous updates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By including momentum in the gradient descent update, it provides the algorithm
+    information about previous gradients that it has computed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mathematically, what we have is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19e655b5a915b2e471a1946a13502485.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Momentum gradient descent. Equation by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***v_t***​ is the current velocity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***β*** is the momentum coefficient, a value between 0 and 1\. This is also
+    sometimes interpreted as the ‘*friction*.’ You would need to find the best value
+    of ***β,*** but often ***0.9*** is a good baseline***.***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***t*** is the current time step or iteration number.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***v_{t*−1}​** is the velocity from the previous step (the last calculated
+    value).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The rest of the terms mean the same as declared earlier for vanilla gradient
+    descent!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Notice that we are utilising information from the previous gradients to ‘accelerate’
+    the current gradient in the direction of the previous ones. This increases the
+    speed of convergence and dampens any oscillations that may occur with vanilla
+    gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Momentum is easily implemented in [***PyTorch***](https://pytorch.org/docs/stable/optim.html)
+    as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Nesterov Accelerated Gradient
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[***Nesterov accelerated gradient***](https://golden.com/wiki/Nesterov_momentum-YX9WPE5)
+    ***(NAG)***, or Nesterov momentum, is a slight modification to the momentum algorithm
+    that often leads to better convergence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: NAG measures the gradient with respect to the loss function slightly ahead of
+    ***θ.*** This improves convergence as the *momentum* value will generally be heading
+    towards the optimal point. Therefore, allowing the algorithm to take a slight
+    step ahead every time leads it to converge quicker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbc5f2eeaadfb2811a54dba24e553b15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nesterov accelerated gradient descent. Equation by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where ***∇J(θ+βv_{t−1}​)*** is the gradient of the loss function evaluated at
+    a point slightly ahead of the current ***θ***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the terms in the above equation are the same ones as for the previous optimisers,
+    so I won’t list them out all again!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Nesterov accelerated gradient is also easily implemented in [***PyTorch***](https://pytorch.org/docs/stable/optim.html)***:***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: AdaGrad
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[***Adaptive Gradient Algorithm (Adagrad)***](https://optimization.cbe.cornell.edu/index.php?title=AdaGrad)
+    is a gradient descent algorithm that uses an adaptive learning rate that gets
+    smaller if a feature/parameter is updated more frequently. In other words, it
+    decays the learning rate a lot more for steeper gradients than shallow ones.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/778ea9cbc67421eb5e62fce392b89d24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adagrad. Equation by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***G***​ is a diagonal matrix that accumulates the squares of all the gradients
+    up to the time step for each parameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***ϵ*** is a tiny smoothing term to avoid division by zero problems when ***G***
+    is very small.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***⊙*** denotes element-wise multiplication. This is the [***Hadamard product.***](https://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The rest of the terms in the above equation are the same ones as for the previous
+    optimisers, so I won’t list them out all again!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'An example of element-wise multiplication for matrices, assuming ***A*** and
+    ***B*** are both ***2x2***:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/723511d56611bab9dcc6be64a8354860.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of the Hadamard product. Equation by author in LaTeX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, the larger the value of ***G***, the smaller the update will
+    be to the parameter. It’s basically a moving average of the squared gradients.
+    This ensures the learning slows down and doesn’t overshoot the optimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One problem with Adagrad is that it sometimes decays the learning rate so much
+    that neural networks stop learning too early on and plateau. Therefore, it’s not
+    generally recommended to use Adagrad when training neural nets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: RMSProp
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[***RMSProp (Root Mean Squared Propagation)***](https://deepchecks.com/glossary/rmsprop/#:~:text=RMSprop%20is%20an%20innovative%20stochastic,and%20other%20Machine%20Learning%20techniques.)
+    fixes the issue of Adagrad finishing training too early by only taking into account
+    recent gradients. It does this by introducing another hyperparameter, ***β***,
+    that scales down the impact of values inside the diagonal matrix ***G***:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbfc2874b74d780204e2a5b77c565158.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RMSProp. Equation by author in LaTeX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the terms in the above equation are the same ones as for the previous optimisers,
+    so I won’t list them out all again!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Like the other optimisers, RMSProp is simple to implement in PyTorch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Adam
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The final optimiser we will look at is [***Adaptive Moment Estimation***](https://arxiv.org/abs/1412.6980),
+    better known as *Adam*. This algorithm is a combination of both momentum and RMSProp,
+    so it’s kinda the best of both worlds. Although, it has a few more steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5e12b0431f48f8edf3066491d7211a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adam optimiser. Equation by author in LaTeX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first two and last steps are pretty much the momentum and RMSProp algorithms
+    we showed earlier. Steps three and four are correcting the bias of ***v_t*** and
+    ***G_t*** as they are initialised to 0 at the start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adam is an *adaptive learning rate* algorithm like RMSProp, so you don’t need
+    to necessarily tune the learning rate when using this optimiser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rest of the terms in the above equation are the same ones as for the previous
+    optimisers, so I won’t list them out all again!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Here’s how you apply Adam in PyTorch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Other Optimisers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many other gradient descent optimisers out there, and the ones we
+    have considered here are only *first-order derivatives*, which are called [***Jacobians***](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant).
+    A second-order derivative exists, called [***Hessians***](https://en.wikipedia.org/wiki/Hessian_matrix)***,***
+    but their compute complexity is on the order of ***O²***, whereas first-orders
+    is only ***O***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practise, deep neural networks have tens of thousands to millions of rows
+    of data, so Hessian gradient descent methods are rarely used. The gold standard
+    is really Adam or Nestorov for most cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is also batch, mini-batch, and stochastic gradient descent which affect
+    the compute speed of the network. I have written about these algorithms in my
+    [previous article linked here](https://medium.com/towards-data-science/hyperparameter-tuning-neural-networks-101-ca1102891b27).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some other used optimisers are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[*Adamax*](https://arxiv.org/abs/1412.6980)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[*Nadam*](https://openreview.net/pdf?id=OM0jvwB8jIp57ZJjtNEZ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[*ADAMW*](https://openreview.net/forum?id=rk6qdGgCZ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A full comprehensive list can be found [here](https://github.com/harsh306/awesome-nn-optimization).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Comparison
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The code below is a comparison of the different optimisers that we discussed
+    above for the ***J(θ) = θ²*** loss function. The minimum is at ***θ = 0:***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/50d96b2fc313b4cfcaa191a03adcda37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Optimiser comparison. Plot by author in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This plot is quite interesting, some key things to point out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Both Momentum and Nestorov overshoot the optimal value of* ***θ.***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Adagrad is very slow. This is in line with what we discussed before regarding
+    the training stopping too early as the learning rate decays rapidly and learning
+    plateaus.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Adam and RMSProp seem to be the best with RMSProp reaching the optimal value
+    quicker.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Of course, this is only a simple example and in real-life problems, the best
+    optimiser will likely be different. So, it is often well worth trying a variety
+    of different ones and picking the best-performing one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This code is available at my GitHub here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/egorhowell/Medium-Articles/blob/main/Neural%20Networks/optimisers.py?source=post_page-----256e16a88412--------------------------------)
+    [## Medium-Articles/Neural Networks/optimisers.py at main · egorhowell/Medium-Articles'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code I use in my medium blog/articles. Contribute to egorhowell/Medium-Articles
+    development by creating an account on…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/egorhowell/Medium-Articles/blob/main/Neural%20Networks/optimisers.py?source=post_page-----256e16a88412--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary & Further Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we have seen several methods to speed up and improve the performance
+    of the vanilla gradient descent. The two types of methods are momentum-based,
+    using information from previous gradients, and adaptive-based, changing the learning
+    rate regarding the computed gradients. In literature, the Adam optimiser is often
+    the one recommended and used the most in research. However, it is always worth
+    trying different optimisers, to determine which ones suit your model the most.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another Thing!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I have a free newsletter, [**Dishing the Data**](https://dishingthedata.substack.com/),
+    where I share weekly tips for becoming a better Data Scientist. There is no “fluff”
+    or “clickbait,” just pure actionable insights from a practicing Data Scientist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://newsletter.egorhowell.com/?source=post_page-----256e16a88412--------------------------------)
+    [## Dishing The Data | Egor Howell | Substack'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How To Become A Better Data Scientist. Click to read Dishing The Data, by Egor
+    Howell, a Substack publication with…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: newsletter.egorhowell.com](https://newsletter.egorhowell.com/?source=post_page-----256e16a88412--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connect With Me!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[**YouTube**](https://www.youtube.com/@egorhowell)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**LinkedIn**](https://www.linkedin.com/in/egor-howell-092a721b3/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Twitter**](https://twitter.com/EgorHowell)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**GitHub**](https://github.com/egorhowell)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References & Further Reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Andrej Karpathy Neural Network Course*](https://www.youtube.com/watch?v=i94OvYb6noo)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[*PyTorch site*](https://pytorch.org/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[*Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow, 2nd Edition.
+    Aurélien Géron. September 2019\. Publisher(s): O’Reilly Media, Inc. ISBN: 9781492032649*](https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/)*.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[*Great blog on optimising neural networks*](/neural-network-optimization-7ca72d4db3e0)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Some of my other blogs on neural networks that might be of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/activation-functions-non-linearity-neural-networks-101-ab0036a2e701?source=post_page-----256e16a88412--------------------------------)
+    [## Activation Functions & Non-Linearity: Neural Networks 101'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explaining why neural networks can learn (nearly) anything and everything
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/activation-functions-non-linearity-neural-networks-101-ab0036a2e701?source=post_page-----256e16a88412--------------------------------)
+    [](/forward-pass-backpropagation-neural-networks-101-3a75996ada3b?source=post_page-----256e16a88412--------------------------------)
+    [## Forward Pass & Backpropagation: Neural Networks 101'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explaining how neural networks “train” and “learn” patterns in data by hand
+    and in code using PyTorch
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/forward-pass-backpropagation-neural-networks-101-3a75996ada3b?source=post_page-----256e16a88412--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,789 @@
+- en: A Tableau Calculus for the Analysis of Experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-tableau-calculus-for-the-analysis-of-experiments-53655dd04eb8](https://towardsdatascience.com/a-tableau-calculus-for-the-analysis-of-experiments-53655dd04eb8)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unravelling the Fundamental Data Structure of Experimental Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dataneversleeps.medium.com/?source=post_page-----53655dd04eb8--------------------------------)[![Jared
+    M. Maruskin, PhD](../Images/771dcac046565d4760077afecb3fadef.png)](https://dataneversleeps.medium.com/?source=post_page-----53655dd04eb8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----53655dd04eb8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----53655dd04eb8--------------------------------)
+    [Jared M. Maruskin, PhD](https://dataneversleeps.medium.com/?source=post_page-----53655dd04eb8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----53655dd04eb8--------------------------------)
+    ·21 min read·Oct 3, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b26caa5a37392803d3b6c958678d500a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental analysis often involves analyzing groups containing varying numbers
+    of elements; for example, a different number of units for each treatment assignment
+    within each stratum. We therefore encounter objects that are *like matrices*,
+    except they are not perfect rectangular blocks; i.e., they are not always “filled.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this note, we define a new structure, called a *tableau*, which can be regarded
+    as a partially filled matrix, and seek to formalize the operations on tableaus
+    that are used in the analysis of experiment. We then show how *tableau notation*
+    can be used to express the key equations in a variety of statistical contexts,
+    including stratification, clustering, and the sum-of-squares decomposition. Moreover,
+    we express these equations in both an *invariant* and *index* form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*invariant notation (coordinate-free form)* — defined in terms of *objects*
+    and *operators*, much like the matrix-vector product A⋅x, and'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*index notation (coordinate form)* — defined explicitly in terms of indexed
+    arrays and summation of multiple indices, much like expressing the matrix-vector
+    product as *∑ⱼAᵢⱼ xⱼ.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Outline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This post consists of four main sections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Review of classic notation, the pros and cons;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Theoretical development of the Tableau Calculus;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Application to Experiments (completely randomized, block-randomized, adjustment
+    formula, cluster-randomized, block-cluster, and ANOVA sum of squares decomposition);
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Python implementation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Classic Notation: Pros and Cons'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In experimental analysis, there are three main styles of notation that are
+    commonly used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*classic notation —* treatment assignment is explicitly enumerated: unit *(ijk)*
+    describes the *k*th unit in the *j*th stratum of the *i*th treatment group (see
+    [1], [2], and [5]);'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*assignment notation* — the assignment mechanism is treated as an independent
+    variable, and we consider sums over quantities like *ZᵢYᵢ* or *Zᵢⱼ Yᵢⱼ* (see [2],
+    [3], and [4]); and'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*set notation* — explicit variables referring to treatment and control sets;
+    *Yᵗ* and *Yᶜ*, or *Y⁺ⱼ* for the aggregate sums of the *j*th cluster, and then
+    *Y⁺ₜ and Y⁺_c* for the set of aggregate sums for treatment and control clusters,
+    etc. (see [5]).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Classic notation allows one to express formula in the most compact manner, as
+    treatment assignment is directly indexed in the response array, which is useful
+    in describing stratification, multi-level experiments, and ANOVA. However, this
+    notation is philosophically unsettling as the enumeration of units directly depends
+    on the treatment assignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assignment notation, on the other hand, enumerates units without regard to treatment
+    assignment, but requires an auxiliary assignment mechanism *Z* and a doubling
+    of the number of multi-summations, with one set of sums containing a factor *Z*
+    and the other a factor *(1-Z)*. This has the shortcoming that it is not amenable
+    to multi-level design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, set notation simplifies things a great deal, but requires special
+    definitions for every different set: in clustering, *Y⁺ⱼ* is the aggregate sum
+    for the *j*th cluster, and *Y⁺ₜ={Y⁺ⱼ : zⱼ=1}*, but these are not used in block
+    design, etc; i.e., we have to keep defining different notation to refer to different
+    groups, subgroups, or sums of a single fundamental underlying object.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tableau notation seeks the best of each world: its basic worldview is consistent
+    with assignment notation, but we define a structure called a tableau and a set
+    of operations that allows one to write equations in an invariant form, which can
+    be understood across contexts without having to define specific sets each time.
+    Moreover, we take the novel interpretation of the assignment mechanism as a *mask*,
+    such that we may consider the *subtableaus* consisting of treatment and control
+    assignments, and then apply our basic operations on these subtableaus to express
+    key statistical formula.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tableau Notation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Getting Started: Tableaus, Shapes, and Index Spaces'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall that an *l*-dimensional matrix is a rectangular array structure specified
+    by its side lengths *(n₁, …, nₗ).* Its *n₁…nₗ* components are indexed by an index
+    space
+  prefs: []
+  type: TYPE_NORMAL
+- en: An *l*-dimensional *tableau* *T* is an *l*-dimensional array indexed by values
+    in a bounded set *I ⊂ ℤˡ₊* of positive integer arrays called the index space.
+    So a tableau is just a partially filled matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We say that a tableau *T* is in *standard form* if each index ranges from 1
+    to some terminal integer (without skipping) and if the range of index *iₖ* depends
+    only on the values of the *(k-1)* preceding indices. An *l*-dimensional tableau
+    in standard form may be described by its *shape ηˡ*, which is itself an *(l-1)*-dimensional
+    standard tableau, defined such that *ι=(i₁,…,iₗ)∈I* if and only if *(i₁,…,iₗ₋₁)∈I(ηˡ)*
+    and *iₗ ∈ {1,…, ηˡ_{i₁,…,iₗ₋₁}}*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively, the shape is given by a sequence of tableaus *⟨η¹,…,ηˡ⟩*, such
+    that *ηᵏ* is a *(k-1)*-dimensional tableau defined inductively as the shape of
+    *ηᵏ⁺¹*, for *k=(l-1),…,1*. The tableau *ηᵏ* thus determines the range of the index
+    *iₖ*, as it depends on the preceding indices. This defines the index space inductively
+    by the relations *i₁∈{1,…η¹}* and
+  prefs: []
+  type: TYPE_NORMAL
+- en: for *k=2, …, l*. Notice how the range of each index may depend on the values
+    of the preceding indices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In experimentation, we always *start* in standard form; i.e., the standard form
+    is the enumeration of the experimental units within clusters, strata, etc. Our
+    definition of tableau is, however, more general, to accommodate other structures
+    we will encounter in a bit (namely, *masked tableaus*, which, in the context of
+    experimentation, are the subset of components assigned to treatment or control;
+    more on this later).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example 1\.** As a simple example, consider a 3-dimensional tableau *T*,
+    with shape *η³* as shown below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/502b5e5f593bcaa06d553475ccafd9bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table 1\. The shape η³ of a 3-dimensional tableau T; Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, *η¹=5*, and *η²=⟨ 5, 2, 3, 2, 4 ⟩* represents the number of elements in
+    each row. For example, when *i=3* and *j=2*, the component *k* would range *k=1,…,
+    22*, and so forth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: p-Cells; Outer and Inner Index Spaces
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For any *p=1, …, l*, a *p*-cell of a tableau *T* is a subtableau consisting
+    of all units that share the first *p* components; i.e., an individual *p*-cell
+    is specified by *ιₚ = (i₁, …, iₚ)*, which we shall denote *T_[i₁, …, iₚ]*. In
+    the context of experimentation, the *cells*, without reference to a *p*, are typically
+    assumed to be the *penultimate cells* with *p=l-1*. A *p*-cell is a *q*-dimensional
+    tableau, with *q=l-p*, indexed over the space
+  prefs: []
+  type: TYPE_NORMAL
+- en: which we refer to as the *outer index space* at *ιₚ*. The set of all *p*-cells
+    is indexed by the *inner index space*
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *Πₚ* is the projection operator. In this way, for any *p*, we may *loosely*
+    think of the index space as the *bundle structure*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where the fibers *I_[ιₚ]* vary based on the location *ιₚ* of the base. (*Note:
+    I use the word* loosely*, as the fibers, though of the same dimension, are in
+    general of different shape as we vary location in the base space, which is why
+    they depend on ιₚ*.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In continuing the example from the previous section, the cell at *(3,2)* would
+    consist of the (unseen) 1-dimensional array of 22 components, whereas the cell
+    at *(3,1)* would only contain 10 components. The inner space *I₂* would consist
+    of the 16 permutations of *(ij)* defined in the the shape tableau shown in the
+    table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, the 1-cell at *i=4* would consist of the 2-dimensional tableau indexed
+    by the outer space at *i=4* given by {*1}* × *{1,…,5} ∪ {2} × {1,…,15}*. The inner
+    space *I₁* is just the enumeration of the rows: *I₁={1,2,3,4,5}*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Total and Partial Sums
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The *total sum* of a tableau *T*, denoted *T*∘, is the sum of all its components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The total sum of a given *p*-cell *(i₁…iₚ)* is referred to as a *q*-partial
+    sum of *T*, as it requires a total of *q=l-p* summations, and is defined by
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the second equality holds whenever *T* is in standard form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a given *p*, we may therefore construct a *p*-tableau consisting of all
+    *q*-partial sums of *T*, denoted by *⊕_q T* or *T_(q)*, such that the *ιₚ* component
+    is defined as
+  prefs: []
+  type: TYPE_NORMAL
+- en: for all *ιₚ ∈ I*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary, for *p+q=l*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a *p*-cell at *ιₚ* is a *q*-dimensional subtableau *T_[ιₚ]* defined over the
+    outer index space *I[ιₚ]*, for which the first *p* indices are held fixed; and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the *q*th partial sum *⊕_qT* or *T_(q)* is a *p*-dimensional tableau defined
+    on the inner index space *Iₚ*, as the total sum of the individual *p*-cells.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, whenever we have an operator *𝒪* acting on a *p*-cell, it acts on
+    the *q*-dimensional *outer index space* (i.e., the fibers), and the result varies
+    over the *p*-dimensional *inner index space* (i.e., the base); so that, for instance,
+    we would regard the quantity *𝒪(T_{[ιₚ]})* as a *p*-tableau over *Iₚ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unity Tableaus and Counts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A *unity tableau* is a constant tableau with value 1\. Given a tableau *T*,
+    its associated unity tableau *U* is just a unity tableau with the same shape.
+    The partial sums of *U* are the counts of the corresponding *p*-cells:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will refer to this tableau as *nᵖ* when we wish to refer to it in invariant
+    form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Average and Variance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For any tableau *T* with *n=|T|* components, we may define its average as
+  prefs: []
+  type: TYPE_NORMAL
+- en: and its weighted average as
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that the *squares* *(T — μ(T))²* constitute a tableau with the same shape
+    as *T*. We therefore define the following *sums of squares*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(standard and weighted; note that, unlike in the definition of the weighted
+    average, weights here are *not* automatically normalized). And, finally, the sample
+    variance and variance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When applying any of these operations to individual *p*-cells, we think of the
+    *p*-cell as fixed, for the purpose of the operation, but then allow the *p*-cell
+    to vary through *Iₚ* once the operation is complete. For instance, *SS(T_[i₁ …
+    iₚ])* should be regarded as a *p*-tableau over the inner space *Iₚ*, though the
+    actual sum-of-squares operations are carried out over the individual outer spaces
+    *I_[i₁…iₚ]*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Addition and Multiplication of Tableaus: Special Cases'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Addition and multiplication are typically defined componentwise (which, in the
+    special case of matrices, reduces to matrix sums and Hadamard products). There
+    are, however, two special cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider two tableaus *T* and *S*, with index spaces *I_T* and *I_S*. Then the
+    *outer sum T+S* is defined over the union index space *I_T ∪ I_S*, using the convention
+    that *x +* **null** *= x.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If *A* is a *p*-tableau defined over the inner index space *Iₚ* of a second
+    tableau *T*, of greater dimension, then the (outer-cast) product *AT* is defined
+    in the natural way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: i.e., the tableau *A* is “cast” to the higher space, and then multiplication
+    is carried out componentwise. (This will be useful in the context of cluster randomization,
+    where the assignment is done at the cluster level, and thus represents a lower-dimensional
+    tableau than the full response tableau.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Masks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A *mask M* of a tableau *T* is a binary tableau of the same shape, or the shape
+    of any inner index space. Its complement is also a mask, defined by *Mᶜ=1-M =
+    ¬M*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A mask and its complement sum to the unity tableau and therefore create a partition.
+    In general, we say that the set of masks *{M₁, …, Mₘ}* forms a partition of *I*
+    if *M₁+…+Mₘ = U*, where *U* is the unity tableau over *I*. (Notice the use of
+    the *outer sum*, as the masks are defined over mutually exclusive subsets of the
+    index space.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *masked tableau* *MT* (alternatively *T[M]*) is the subtableau of *T* formed
+    by restricting the index space to the set
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlike componentwise multiplication, the magnitude of a masked tableau is not
+    the magnitude of the original tableau, but the magnitude of the reduced space,
+    which is equivalent to the total sum of the mask: *|MT| = M∘*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: in our definition, the Truth values of a mask select the “active” components
+    of the underlying tableau, which is the opposite convention used in numpy masked
+    arrays*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tableau Notation for Experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In relation to experiments,
+  prefs: []
+  type: TYPE_NORMAL
+- en: experimental design consists of determining a shape *η* and randomization procedure
+    for selecting an assignment mechanism *Z*, often constrained by its fixed partial
+    sums, which we will denote using *a*;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the responses of individual units are stored in a tableau *Y* with shape *η*;
+    and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the assignment mechanism *Z* is a mask over *Y*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we consider the *potential outcomes* Y(1)=Y(Z=1) and Y(0)=Y(Z=0), the actual
+    response is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Y = ZY(1) + (1-Z)Y(0).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice the difference in interpretation provided here: *ZY(1)* and *(1-Z)Y(0)*
+    are the *masked* potential outcomes, and are therefore defined on their corresponding
+    non-overlapping subtableaus.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, the goal of experimentation is to estimate the *total treatment
+    effect* (which I will refer to as either *Δ* or *τ*):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is, however, unobservable, as we may only know the response under treatment
+    or the response under control for any single experimental unit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For multi-level experiments with *m* possible treatment assignments (including
+    control), we instead let *Z* be a *categorical tableau*, with categories enumerated
+    *1, …, m*, and then define the set of masks
+  prefs: []
+  type: TYPE_NORMAL
+- en: for *z=1,…, m*, such that we may express the potential outcomes formula as
+  prefs: []
+  type: TYPE_NORMAL
+- en: Completely Randomized Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a completely randomized design, we consider a set of *n* units, of which
+    we will randomly assign *a* to the treatment group. The response *Y* is a 1-dimensional
+    tableau ranging *i=1,…, n*, and the assignment mechanism *Z* is a 1-dimensional
+    mask of the same size, chosen at random from the space *𝔹ⁿ*, subject to the constraint
+    *||Z||₁ = a*. If we define the masked tableaus for treatment and control as
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'we may express the classic *difference-in-means estimator* as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note our interpretation of *Yᵗ* and *Yᶜ* as subtableaus of the response tableau.
+    Thus, the treatment and control averages may be expressed in index notation as
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of our interpretation of *ZY* as a masked tableau, we divide by *a=Z∘*,
+    the number of treatment units, and not *n*; similarly for *(1-Z)Y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *T* statistic is defined by
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the within-group mean squared error is defined by
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note we are just applying the sum-of-squares operator over the treatment and
+    control subtableaus obtained by the assignment mask and its complement. In coordinates,
+    this is may be expressed as
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the null hypothesis of no effect, the test statistic *T* is distributed
+    as a *t* distribution with *n-2* degrees of freedom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Block-Randomized Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a block-randomized design, we first partition the experimental units into
+    a collection of *s* strata. We then index the units by *(ij)*, where *i=1,…,s*
+    refers to the stratum and *j=1,…,nᵢ* refers to the *j*th element in the *i*th
+    stratum. Next, we impose the constraint that we will randomly assign *aᵢ* units
+    to treatment for the *i*th stratum, subject to the *balancing property*, which
+    requires each stratum to contain the same fraction of treatment units; i.e., the
+    propensity *πᵢ=aᵢ/nᵢ* is independent of *i*. (This is necessary for the difference-in-means
+    estimator, as defined above, to be unbiased.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our arrangement of units defines an *l*-shape *η=⟨s, nᵢ⟩*, and so our assignment
+    mechanism *Z* is chosen at random over two dimensional tableaus with shape *η*,
+    subject to the constraint that *aᵢ=Zᵢ∘= π nᵢ* are fixed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The formula for the *T*-statistic is unchanged, except now the treatment and
+    control averages are given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: and the MSW is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the sum of squares operate on the 1-cells, fixed for each stratum,
+    and masked by the assignment mechanism (treatment) or its complement (control).
+    In index notation, this is equivalent to
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The treatment and control stratum averages are defined in the obvious way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note what we mentioned before: the operation of averaging is carried out over
+    the *outer index space*, as it is acting on the 1-cells at *i*. The result is
+    then free to vary over the *inner index space*, defined by *I_1={1, …, s}.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the null hypothesis of no effect, the test statistic *T* is distributed
+    as a *t*-distribution with *n-2s* degrees of freedom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Adjustment Formula
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When the *balancing property* does not hold, which is often the case in observational
+    studies (*natural experiments*), we replace the difference-in-means estimator
+    defined above with the *adjustment formula*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The adjustment formula is obtained by taking the *weighted* average of each
+    stratum’s observed classic *difference-in-means* estimator, using the number *nᵢ*
+    of units in each stratum as weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cluster-Randomized Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Cluster-randomization is similar to block design, except the assignment is done
+    *at the cluster level*, not at individual unit level within each stratum. This
+    is common in quasi-experiments, where individual level randomization is impractical
+    or impossible; for example, with *out-of-home (OOH)* marketing efforts, where
+    randomization may be conducted at the *city* level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, our response is a 2-tableau *Y*, ranging *i=1,…, c* and *j=1,…,
+    nᵢ*, where there are *nᵢ* units in the *i*th cluster, for each of *c* clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The assignment mechanism, however, is a 1-tableau *Z,* defined at random over
+    the innder index space *I₁={1,…,c}*, subject to the constraint *||Z||₁=a.* Note
+    the importance of the “outer-cast” multiplication rule, as our masked responses
+    can still be described by *Yᵗ = ZY* and *Yᶜ = (1-Z)Y*. Note also that the variable
+    *a=Z∘* represents the total *number of clusters* assigned to the treatment group.
+    This is logical, as the treatment units are the *clusters*, not the individuals.
+    The estimator for the total treatment effect is then given in its invariant form
+    by
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the partial sums are carried out first, followed by averaging over the
+    treatment and control clusters. (The version on the right may seem more intuitive
+    here, though the left is the “most” invariant form.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just an application of the Thompson-Horwitz estimator, using propensities
+    *a/c* for the treatment clusters and *(a-c)/a* for the control clusters. In index
+    notation, this is equivalent to
+  prefs: []
+  type: TYPE_NORMAL
+- en: Block-Cluster Randomized Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a block-cluster design, the clusters are first grouped into strata. This
+    may be useful, for example, in grouping similarly sized cities together within
+    a country, to ensure there is balance in the treatment assignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The individual at *(ijk)* is the *k*th unit in cluster *(ij)*, which is the
+    *j*th cluster in stratum *i,* for *i=1,…,s*, *j=1,…,cᵢ*, and *k=1,…,nᵢⱼ*. Thus
+    the response is described by a 3-tableau *Y* of shape *η=⟨s, cᵢ, nᵢⱼ⟩*. The assignment
+    mechanism *Z* is a 2-tableau of shape *η=⟨s, cᵢ⟩*; i.e., over the inner space
+    *I₂*, selected at random subject to the constraint that *aᵢ* clusters within the
+    *i*th stratum be assigned to treatment, yielding a propensity of *πᵢ=aᵢ/cᵢ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The masked quantities *Yᵗ=ZY* and *Yᶜ=(1-Z)Y* still make sense, given our outer-case
+    product rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The estimate of total treatment effect is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the similarity between this formula, the simple cluster formula, and the
+    adjustment formula. We start by performing the first partial sum within each cluster
+    *before* averaging; we next average over the clusters within each stratum (hence
+    dividing by *aᵢ* and *cᵢ-aᵢ*, respectively), and then, finally, we apply the adjustment
+    formula to average across strata.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To break-down these operations in detail:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Yᵗ=ZY* is the masked subtableau consisting of treatment units, a 3-dimensional
+    tableau still enumerated by *(ijk)*;'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*⊕₁Yᵗ* is the first partial sum, obtained by summing the response of all treated
+    units within the *(ij)*th cluster, thus yielding a 2-dimensional tableau of *aggregated
+    responses*;'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*⊕₁Yᵗ_[i]* is the 1-cell (indexed by *j*), comprised of the aggregated responses
+    for each treatment cluster within the cell;'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*μ(⊕₁Yᵗ_[i])* is obtained by averaging the cluster-level aggregated responses
+    over each stratum, yielding a 1-dimensional tableau indexed by stratum *i*;'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the final average is the weighted stratum averages of the difference *μ(⊕₁Yᵗ_[i])
+    — μ(⊕₁Yᶜ_[i]).*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In index notation, this is equivalent to
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s kinda magic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ANOVA Sum of Squares Decomposition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In ANOVA, we are interested in the decomposition of the total sum of squares
+    into the between-group and within-group sums of squares. Here, we have *m* groups,
+    where the *i*th group has *nᵢ* units. The response *Y* is indexed by *(ij)* over
+    this range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The total sum of squares (SST) is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: The decomposition rule shows that this is equivalent to the sum of the between-group
+    (SSB) and within-group sums (SSW) of squares. The SSW is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Note this matches the formula we obtained for MSW in the block-randomized design.)
+    The sum of squares is applied to the individual 1-cells (groups), and the result
+    is totaled across groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SSB is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the group averages are computed first, and then a (weighted) sum-of-squares
+    is performed across the group averages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expressed in tableau notation, the sum of squares decomposition is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A Python implementation is provided below. This consits of three classes: a
+    Tableau class, which is then subclassed to a CountTableau and a Mask class. A
+    CountTableau object is constructed for every Tableau object, which can be used
+    to obtain the cell counts. The Mask class overwrites the __init__ method, to assert
+    all values passed in are Boolean, and the __mul__ method, to modify the count
+    of the masked return object.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The __iter__ method uses recursion to iterate through the tableau, in the style
+    of key, value pairs (much like enumerate(some_list) or k, v in some_dict.items()).
+    Moreover, we implement a __call__ method, which can be used in conjunction with
+    iteration, such that **for k, v in T(2):** would iterate through the inner index
+    space *I₂*, returning the fibers *T_{ιₚ}*, for each *ιₚ∈ I₂*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, both the *mean* and *sumSquares* methods take an optional argument
+    *p*, for which the calculation would be conducted over the fibers, and a *p*-dimensional
+    tableau over the inner index space returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Addition is defined for *A+B* if *A* is higher-dimensional than *B*, which is
+    required for sum of squares computation. Multiplication is the opposite, *AB*
+    is defined as long as *A* is lower-dimensional than *B*. This is required for
+    compatibility with left-multiplying by a lower-dimensional mask, as required for
+    cluster analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also implemented the __getitem__ and __setitem__. The former has some coolness,
+    unlike nested arrays, we can use notation T[1,2,3] to get the *p*-cell at *(1,2,3)*.
+    (We don’t even need to fill the remaining dimensions with *:*s; e.g., *T[1,2,3]*
+    will do, for a 5-dimensional tableau, without needing to write *T[1,2,3,:,:]*!
+    And this is better than working with the original nested arrays, which require
+    A[1][2][3].) The __setitem__ uses recursion to set values, and you can even pass
+    a subtableau of the appropriate shape here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic operations are illustrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: A simulation of a block design is given below. We used 5 strata, with a treatment
+    propensity of 30%. In our simulation, the treatment effect was a constant 10;
+    strata responses were normally distributed with std 10, and strata means were
+    separated in increments of 10\. Each strata contained a random number of units
+    between 400 and 500\. We measured a difference-in-means of 9.7 and rejected the
+    null hypothesis with 95% confidence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, an example of cluster design is given.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: A few notes about the cluster example. First, we made the cluster means super
+    close together. The variance of the estimator for stratification depends primarily
+    upon the within strata variance, whereas in the case of clustering, it depends
+    on the between cluster variance. Since we only simulated a small number of clusters,
+    this is a very low power result. Finally, note that the formula for tau_hat only
+    works because of the *if not any* logic towards the end of the *sum* method of
+    our *Tableau* class; otherwise the partial sum would reset the count tableau,
+    and this would result in dividing by the total number of clusters, not the masked
+    number of clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But could we resist doing an example of a block-cluster design? Here we let
+    the cluster means vary by strata, and we show how to implement the block-cluster
+    formula.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We defined an explicit algebraic structure called a *tableau,* which is essentially
+    a partially filled matrix, and various operations on it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a given dimension *p*, we defined the inner and outer index spaces, and
+    showed how operators applied to *p*-cells should operate over the outer index
+    space, returning quantities that vary over the inner index space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We showed how these basic operations proliferate experimental analysis, by examining
+    a variety of key statistical formula (difference-in-means, *T*-statistics, estimated
+    treatment effect for cluster randomization, within-group and between-group sums
+    of squares) and casting them into both invariant and index forms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we provided a Python implementation of our Tableau data structure,
+    and showed how key formula can be executed using a few lines of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] P.D. Berger, R.E. Mauer, and G.B. Celli, *Experimental Design: With Applications
+    in Management, Engineering, and the Sciences* (2018), 2nd ed., Springer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] J. Maruskin, [*Fundamentals of Data Science Trilogy: Experiment, Model,
+    Learn*](https://www.amazon.com/Fundamentals-Data-Science-Trilogy-Experiment-Model-Learn/dp/1941043038/ref=sr_1_5?crid=23E5N6RECFXJF&keywords=jared+maruskin&qid=1695921221&sprefix=jared+maruski%2Caps%2C245&sr=8-5)(2022),
+    Cayenne Canyon Press.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] P.R. Rosenbaum, *Observational Studies* (2002), 2nd ed., Springer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] P.D. Rosenbaum, *Design of Observational Studies* (2020), 2nd ed., Springer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] M. Saveski, J. Pouget-Abadie, G. Saint-Jacques, W. Duan, S. Ghosh, Y. Xu,
+    E.M. Airoldi, [Detecting Network Effects: Randomizing Over Randomized Experiments](https://www.kdd.org/kdd2017/papers/view/detecting-network-effects-randomizing-over-randomized-experiments)
+    (2017), KDD Research Paper, Halifax, NS, Canada.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] D. Selvamutha and D. Das, *Introduction to Statistical Methods, Design
+    of Experiments, and Statistical Quality Control* (2018) Springer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Unless otherwise noted, all images by the Author.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,350 @@
+- en: Using Tqdm with Asyncio in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-tqdm-with-asyncio-in-python-5c0f6e747d55](https://towardsdatascience.com/using-tqdm-with-asyncio-in-python-5c0f6e747d55)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An efficient way to monitor concurrent tasks’ progress
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----5c0f6e747d55--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----5c0f6e747d55--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c0f6e747d55--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5c0f6e747d55--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----5c0f6e747d55--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c0f6e747d55--------------------------------)
+    ·6 min read·May 2, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/93400ad3e3d4ab25829de2c79ad64482.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jungwoo Hong](https://unsplash.com/@hjwinunsplsh?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What’s bothering me
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using concurrent programming in Python for efficiency is not unusual for a data
+    scientist. Watching various sub-processes or concurrent threads in the background
+    to keep my computation or IO-bound tasks in order is always satisfying.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But one thing that still bothers me is that when I’m concurrently processing
+    hundreds or thousands of files or executing hundreds of processes in the background,
+    I’m always worried about whether a few tasks will hang secretly and the whole
+    code will never finish. I also have difficulty knowing where the code is now in
+    execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The worst part is that when I’m looking at a blank screen, it’s hard to tell
+    how much longer my code will take to execute or what the ETA is. This is very
+    detrimental to my ability to organize my work schedule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, I wanted a way to let me know where the code execution had gotten
+    to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How it was done in the past
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A more traditional approach is to share a memory area between tasks, put a counter
+    in this memory area, let this counter+1 when a task is finished, and then use
+    a thread to keep printing the value of this counter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is never a good solution: On the one hand, I need to add a code for counting
+    into your existing business logic, which violates the principle of “low coupling,
+    high cohesion”. On the other hand, I’d have to be very careful with the locking
+    mechanism due to thread-safety issues, which would cause unnecessary performance
+    problems.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: tqdm is the way
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/5d86f9b8c52b6901ef85c6e0038e3e27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: tqdm uses a progress bar to indicate the progress of your tasks. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: One day, I discovered the tqdm library, which uses a progress bar to visualize
+    the progress of my code. Could I use the progress bar to visualize the completion
+    and ETA of my asyncio tasks?
+  prefs: []
+  type: TYPE_NORMAL
+- en: I went ahead and researched, and I succeeded. Then I’m sharing this method with
+    you so that every programmer can have a chance to monitor their concurrent tasks'
+    progress. Let’s go.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background on asyncio in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before we start, I’d like you to get some background on Python asyncio. My
+    article describes the usage of some of asyncio’s common APIs, which will help
+    us better understand the design of tqdm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----5c0f6e747d55--------------------------------)
+    [## Use These Methods to Make Your Python Concurrent Tasks Perform Better'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Best practices for asyncio.gather, asyncio.as_completed, and asyncio.wait
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1?source=post_page-----5c0f6e747d55--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview of tqdm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As the official website describes, tqdm is a tool that displays a progress bar
+    for your loops. It is straightforward to use, highly customizable and has a shallow
+    resource footprint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A typical usage is to pass an iterable object into the tqdm constructor, and
+    you get a progress bar like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Or you can manually go through and update the progress of the progress bar
+    as the file is being read:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1304d663701a4ca0a0ee2b697128eb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Use tqdm to indicate the progress of reading a large dataset. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrating tqdm with asyncio
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overall, tqdm is very easy to use. However, there needs to be more information
+    on GitHub about integrating tqdm with asyncio. So I went digging through the source
+    code to see if tqdm supports asyncio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, the latest version of tqdm provides the package `tqdm.asyncio`,
+    which provides the Class `tqdm_asyncio`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Class `tqdm_asyncio` has two related methods. One is `tqdm_asyncio.as_completed`.
+    As you can see from the source code, it is a wrapper for `asyncio.as_completed`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The other is `tqdm_asyncio.gather` , which, as seen from the source code, is
+    based on an implementation of `tqdm_asyncio.as_completed` that emulates the functionality
+    of `asyncio.gather`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, next, I will describe the usage of these two APIs. Before we start, we
+    also need to do some preparation work. Here, I have written a simple method that
+    simulates a concurrent task with a random sleep time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Immediately afterward, we will create 2000 concurrent tasks and then use `tqdm_asyncio.gather`
+    instead of the familiar `asyncio.gather` method to see if the progress bar works
+    properly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0da8d913063f292224fb3f57cbc38029.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The effect of tqdm_asyncio.gather. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ta-da! I finally know where my task is done. Pretty cool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Or let’s replace `tqdm_asyncio.gather` with `tqdm_asyncio.as_completed` and
+    try again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6d111505cc17a6b22e6682a65f6b282.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: tqdm_asyncio.as_completed also works fine. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great, it still works fine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advanced Tips and Tricks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Some common configuration items
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: tqdm has a rich set of [configuration items](https://github.com/tqdm/tqdm#parameters),
+    so here are some common ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`desc`. You can configure a desc parameter to display a title in front of the
+    progress bar, which is useful when distinguishing between multiple groups of tasks.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fb210b2c148a3c5ff37a95df05fdac51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The role of the desc configuration item. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`ncols`. If the default progress bar is too short, you can make it longer with
+    this parameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/c3e6aca7a52ec8784c9ce6de050aabaa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Use ncols to change the width of the bar. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`colour`. Pycharm’s cli shows the progress bar in red by default, which is
+    still too harsh, so you can use this parameter to change the bar to another color.
+    But as of writing this article, I still haven’t found a way to change the text
+    to white.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/85deb7612014ff6b81d601c4bf31d0f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Use colour to change the color of the bar. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`bar_format`. This option allows you to flexibly control the content and format
+    of the progress bar display. For example, if you want to display an ETA at the
+    top.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9a8f524c70bdc55088bee398f8c67c7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Use bar_format to customize the content of the progress bar. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handling of exceptions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As you can see from the source code, tqdm implements the `gather` method through
+    the `tqdm_asyncio.as_completed` method. Therefore, we can’t skip exception-catching
+    by using the `return_exceptions` parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which is a pity. But we can still handle exceptions within `tqdm_asyncio.as_completed`
+    via `try…exception` in `tqdm_asyncio.as_completed`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ab29732e138a6e664d86fa0d324d13d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Handling of exceptions. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real-World Use Cases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Many code examples for asyncio are used `asyncio.sleep` to simulate IO-bound
+    cases, which unfortunately oversimplifies the real-world matter. We should use
+    a real-world case to explain using tqdm in asyncio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we cannot use a real case in this chapter for space reasons. In the
+    next chapter, we will demonstrate how the tqdm progress bar works in the real
+    world in an example of using asyncio to implement a map-reduce program to handle
+    large files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----5c0f6e747d55--------------------------------)
+    [## Combining Multiprocessing and Asyncio in Python for Performance Boosts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a Real-world Example to Explain the Code Implementation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----5c0f6e747d55--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Using tqdm to indicate progress in asyncio code has many benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can show progress in the caller’s progress bar without intruding into the
+    business code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All work can be done in the main process without worrying about thread safety
+    and performance issues.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The graphical presentation is always much more vivid than boring text descriptions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And all this with just one line of code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’ve also tried other libraries for progress bars, such as [alive-progress](https://pypi.org/project/alive-progress/),
+    which is much cooler in presentation, but alive-progress doesn’t support asyncio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: tqdm can also produce some cool effects if set up correctly, but I haven’t delved
+    into it due to time, so feel free to discuss further and leave comments. You may
+    help more interested readers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
+    access to all of my posts and those of thousands of other authors. It only costs
+    you the price of a cup of coffee, but it’s a great encouragement to me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/using-tqdm-with-asyncio-in-python/](https://www.dataleadsfuture.com/using-tqdm-with-asyncio-in-python/)'
+  prefs: []
+  type: TYPE_NORMAL

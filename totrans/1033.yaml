@@ -1,0 +1,337 @@
+- en: Harnessing Multi-Core Power with Asyncio in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f](https://towardsdatascience.com/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Boost your Python application’s performance by efficiently utilizing multiple
+    CPU cores with asyncio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)
+    ·7 min read·May 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/229d20ad602218a5869ea3daecce8616.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I will show you how to execute Python asyncio code on a multi-core
+    CPU to unlock the full performance of concurrent tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is our problem?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: asyncio uses only one core.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In previous articles, I covered the mechanics of using Python asyncio in detail.
+    With this knowledge, you can learn that asyncio allows IO-bound tasks to execute
+    at high speed by manually switching task execution to bypass the GIL contention
+    process during multi-threaded task switching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Theoretically, the execution time of IO-bound tasks depends on the time from
+    initiation to the response of an IO operation and is not dependent on your CPU
+    performance. Thus, we can concurrently initiate tens of thousands of IO tasks
+    and complete them quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But recently, I was writing a program that needed to crawl tens of thousands
+    of web pages simultaneously and found that although my asyncio program was much
+    more efficient than programs that use iterative crawling of web pages, it still
+    made me wait for a long time. Should I be using the full performance of my computer?
+    So I opened Task Manager and checked:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a6532d75e085230100c06fe182e5996.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Only one core has a load. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: I found that since the beginning, my code was running on only one CPU core,
+    and several other cores were idle. In addition to launching IO operations to grab
+    network data, a task has to unpack and format the data after it returns. Although
+    this part of the operation does not consume much CPU performance, after more tasks,
+    these CPU-bound operations will severely impact the overall performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wanted to make my asyncio concurrent tasks execute in parallel on multiple
+    cores. Would that squeeze the performance out of my computer?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The underlying principles of asyncio
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To solve this puzzle, we must start with the underlying asyncio implementation,
+    the event loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b758e8a4edaa316f667b8d276ffb5997.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How does the event loop work. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in the figure, asyncio’s performance improvement for programs starts
+    with IO-intensive tasks. IO-intensive tasks include HTTP requests, reading and
+    writing files, accessing databases, etc. The most important feature of these tasks
+    is that the CPU does not block and spends a lot of time computing while waiting
+    for external data to be returned, which is very different from another class of
+    synchronous tasks that require the CPU to be occupied all the time to compute
+    a specific result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we generate a batch of asyncio tasks, the code will first put these tasks
+    into a queue. At this point, there is a thread called event loop that grabs one
+    task at a time from the queue and executes it. When the task reaches the await
+    statement and waits (usually for the return of a request), the event loop grabs
+    another task from the queue and executes it. Until the previously waiting task
+    gets data through a callback, the event loop returns to the previous waiting task
+    and finishes executing the rest of the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the event loop thread executes on only one core, the event loop blocks
+    when the “rest of the code” happens to take up CPU time. When the number of tasks
+    in this category is large, each small blocking segment adds up and slows down
+    the program as a whole.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is my solution?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From this, we know that asyncio programs slow down because our Python code executes
+    the event loop on only one core, and the processing of IO data causes the program
+    to slow down. Is there a way to start an event loop on each CPU core to execute
+    it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we all know, starting with Python 3.7, all asyncio code is recommended to
+    be executed using the method `asyncio.run`, which is a high-level abstraction
+    that calls the event loop to execute the code as an alternative to the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from the code, each time we call `asyncio.run`, we get (if it
+    already exists) or create a new event loop. Could we achieve our goal of executing
+    asyncio tasks on multiple cores simultaneously if we could call the `asyncio.run`
+    method on each core separately?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The previous article used a real-life example to explain using asyncio’s `loop.run_in_executor`
+    method to parallelize the execution of code in a process pool while also getting
+    the results of each child process from the main process. If you haven’t read the
+    previous article, you can check it out here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----1764404ce44f--------------------------------)
+    [## Combining Multiprocessing and Asyncio in Python for Performance Boosts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a real-world example to demonstrate a map-reduce program
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----1764404ce44f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, our solution emerges: distribute many concurrent tasks to multiple sub-processes
+    using multi-core execution via the `loop.run_in_executor` method, and then call
+    `asyncio.run` on each sub-process to start the respective event loop and execute
+    the concurrent code. The following diagram shows The entire flow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/576f27087e45a3871343d5dfec459fc7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How the code is executed. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the green part represents the sub-processes we started. The yellow part
+    represents the concurrent tasks we started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparation before starting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Simulating the task implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we can solve the problem, we need to prepare before we start. In this
+    example, we can’t write actual code to crawl the web content because it would
+    be very annoying for the target website, so we will simulate our real task with
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the code shows, we first use `asyncio.sleep` to simulate the return of the
+    IO task in random time and an iterative summation to simulate the CPU processing
+    after the data is returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The effect of traditional code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we take the traditional approach of starting 10,000 concurrent tasks
+    in a main method and watch the time consumed by this batch of concurrent tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the figure shows, executing the asyncio tasks with only one core takes a
+    longer time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9177895ae0985cf1c0e717bc37989c36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Takes a long time on a single core. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next, let’s implement the multi-core asyncio code according to the flowchart
+    and see if the performance is improved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Designing the overall structure of the code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, as an architect, we still need first to define the overall script structure,
+    what methods are required, and what tasks each method needs to accomplish:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The specific implementation of each method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Then, let’s implement each method step by step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `query_concurrently` method will start the specified batch of tasks concurrently
+    and get the results via the `asyncio.gather` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `run_batch_tasks` method is not an async method, as it is started directly
+    in the child process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, there is our `main` method. This method will call the `loop.run_in_executor`
+    method to have the `run_batch_tasks` method execute in the process pool and merge
+    the results of the child process execution into a list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we are writing a multi-process script, we need to use `if __name__ ==
+    “__main__”` to start the main method in the main process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Execute the code and see the results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we start the script and look at the load on each core in the task manager:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a926d4be139a26f9625a2fcda8a0a5cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All cores are almost utilized. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, all the CPU cores are utilized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we observe the code execution time and confirm that the multi-threaded
+    asyncio code does indeed speed up the code execution by several times! Mission
+    accomplished!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e64a6dfd249ddaed28e499cfed5499f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nearly triple the performance boost! Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I explained why asyncio could execute IO-intensive tasks concurrently
+    but still takes longer than expected when running large batches of concurrent
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is because in the traditional implementation scheme of asyncio code, the
+    event loop can only execute tasks on one core, and the other cores are in an idle
+    state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So I have implemented a solution for you to call each event loop on multiple
+    cores separately to execute concurrent tasks in parallel. And finally, it improved
+    the performance of the code significantly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the limitation of my ability, the solution in this article inevitably
+    has imperfections. I welcome your comments and discussion. I will actively answer
+    for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using asyncio in new code can speed up the program. But in reality, there are
+    still a number of legacy systems. How to integrate asyncio concurrent code in
+    these legacy systems will become another big challenge. If you are interested
+    in learning more about this, you can read my next article at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c?source=post_page-----1764404ce44f--------------------------------)
+    [## Combining Traditional Thread-Based Code and Asyncio in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A comprehensive guide to integrating synchronous and asynchronous programming
+    in Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c?source=post_page-----1764404ce44f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
+    access to all of my posts and those of thousands of other authors. It only costs
+    you the price of a cup of coffee, but it’s a great encouragement to me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/harnessing-multi-core-power-with-asyncio-in-python/](https://www.dataleadsfuture.com/harnessing-multi-core-power-with-asyncio-in-python/)'
+  prefs: []
+  type: TYPE_NORMAL

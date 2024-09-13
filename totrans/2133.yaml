@@ -1,0 +1,376 @@
+- en: Towards Stand-Alone Self-Attention in Vision
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5](https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*A deep dive into the application of the transformer architecture and its self-attention
+    operation for vision*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[![Julian
+    Hatzky](../Images/9f1ce9a29d215feeb5223e8fd659383e.png)](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)
+    [Julian Hatzky](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)
+    ·14 min read·Apr 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b58911b38409853b14032c171382c9bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by author using [craiyon AI](https://www.craiyon.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While self-attention is already widely adopted in NLP and significantly contributes
+    to the performance of state-of-the-art models (e.g. [2], [3]), more and more work
+    is being done to achieve similar results in vision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though, there are hybrid approaches that combine for example CNNs with
+    attention [4] or apply linear transformations on patches of the image [5], a pure
+    attention-based model is harder to train effectively due to various reasons that
+    we will investigate further on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *Stand-Alone Self-Attention in Vision Models* [6] paper introduces the idea
+    of such a pure attention-based model for vision. In the following, I will give
+    an overview of the paper’s ideas and related follow-up work. Further, I assume
+    that you are familiar with the [workings of the transformer](https://peterbloem.nl/blog/transformers)
+    and have a [basic knowledge of CNNs](https://www.youtube.com/watch?v=2hS_54kgMHs).
+    An understanding of [PyTorch](https://pytorch.org/) is also beneficial for the
+    coding parts but these can also be safely skipped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you are on the other hand only interested in the code, feel free to skip
+    this article and directly take a look at* [*this annotated colab notebook*](https://colab.research.google.com/drive/1DDjyC3d1R8jgbaP73u6-77FIlnCEN57M?usp=sharing)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Case for Self-Attention in Vision
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: CNNs are commonly used to build neural networks for image processing due to
+    their powerful geometric prior of translation equivariance. This means that they
+    can handle relative shifts of the input well, making them robust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, self-attention does not have this prior and is instead permutation
+    equivariant. This means that if the input is rearranged, the output will be rearranged
+    in an equivalent way. Although permutation equivariance is more general, it is
+    not as useful for images as translation equivariance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, we can use different positional encodings to constrain the self-attention
+    operation and achieve translation equivariance. Positional encoding — which is
+    also called *positional embedding* when it has learnable parameters, allows us
+    to have a more flexible architecture than CNNs while still being able to incorporate
+    certain priors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing Basic Self-Attention in 1D
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For one-dimensional inputs like text and speech, the single-head self-attention
+    operation is defined as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f163f0984657a7943673bcf2c87a0fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***Scaled Dot-Product Attention***as proposed in [1]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: which is essentially a scaled dot-product between the query Q and the key K
+    followed by another dot-product between the resulting matrix and V.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also express the dot-product as a weighted sum explicitly and show how
+    to get a specific output. Keep that in mind because later we will generalize this
+    for 2D images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a9590fdd288736100a52c7fde657f35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Self-Attention for a specific output yᵢ
+  prefs: []
+  type: TYPE_NORMAL
+- en: In PyTorch, this could look as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Global vs Local Self-attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When we talk about global and local self-attention in visual models, we are
+    referring to how much of the image the model is looking at. Global self-attention
+    looks at the entire image at once, while local self-attention focuses only on
+    certain parts. Generally, the larger the area the model is looking at, the more
+    complex it becomes and the more memory it requires.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take a closer look at the basic self-attention operation and how it performs
+    with larger image sizes. To do this, we’ll use a concept called [big O notation](https://en.wikipedia.org/wiki/Big_O_notation)
+    to express the complexity of the operation as the input size *n* increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The self-attention operation involves three separate calculations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating QKᵀ has a complexity of O(n² d_k)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The softmax operation, which involves exponentiation, summation, and division,
+    has a quadratic complexity of O(n²)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Multiplying softmax(QKᵀ)V has a complexity of O(n² d_v)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In total, the basic self-attention operation scales quadratically as the length
+    of the input sequence *n* increases. So, as we apply self-attention to larger
+    and larger images — which are of roughly length *n² = h*w* themselves due to their
+    2D nature — the space and time complexity of the operation becomes increasingly
+    higher. This is one reason why using global receptive fields on larger images
+    can be difficult and why local receptive fields are an appealing solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Revisiting CNNs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In Figure 1, we can see that we use small squares called kernels that slide
+    across the image. We choose a center point [i,j] on the image and kernel size,
+    which determines how much of the image is included in the kernel. The kernel is
+    applied to every pixel in the image and the values are fed into the same neural
+    network, so we use fewer parameters. *Note that in the figure, there are multiple
+    pixels in each square, but in reality, we only have one pixel per square unless
+    we use pooling to group them together.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca3fc4cbf503b9bde38a0bbcaed3218a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1**: An example of a local convolutional window around a point [i,
+    j] (red square) with spatial extend k=3\. ©J. Hatzky'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The size of the kernel can vary between the layers of the network. This allows
+    the network to learn local correlation structures within a particular layer. In
+    recent work, differential kernels of variable size have been introduced [7], but
+    we will focus on the basic approach used in traditional CNNs. Since the convolutional
+    kernel is an important concept that we will build upon, I explain it using the
+    notation used in [6].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The input image is specified by its height *h*, width *w,* and channel size
+    *din* (e.g. 3 for RGB image): x ∈ ℝʰˣʷˣᵈⁱⁿ. We define a local neighborhood Nₖ
+    around a pixel xᵢⱼ using a spatial extent k, which is the set of pixels within
+    the kernel. For example, N₃(2,2) would be the set of pixels within a 3x3 square
+    centered around the pixel at row 2, column 2\. For completeness, we can define
+    it as: Nₖ(i, j) = {a, b ∣ |a − i| ≤ k/2, |b − j| ≤ k/2}. We optimize a weight
+    matrix W ∈ ℝᵏˣᵏˣᵈᵒᵘᵗˣᵈⁱⁿ to calculate a specific output yᵢⱼ for each pixel.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba472173308aa2bdf87d4f886be9de1f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Weighted sum with spatial extend k and center [i, j]
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get this output, we sum up the product of depth-wise matrix multiplications
+    for each pixel in the local neighborhood. This operation is translation equivariant,
+    which means it’s designed to recognize patterns regardless of where they appear
+    in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Memory Block as a 2D Local Receptive Field
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To perform self-attention on a 2D image, researchers in [6] came up with a memory
+    block concept that is inspired by the way CNNs work. If you want to apply self-attention
+    globally, you just need to make the memory block as big as the entire image. The
+    memory block is essentially the same as the receptive field used in CNNs, but
+    instead of using a CNN, we apply the self-attention operation on the pixels in
+    the receptive field Nₖ, which creates a learnable connection between any pair
+    of pixels in the local memory block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To define the single-head self-attention operation for this 2D case, we can
+    use the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82c493c731e7da96156ea1aaca3f96ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Self-Attention for a specific output yᵢⱼ
+  prefs: []
+  type: TYPE_NORMAL
+- en: While losing the translation equivariance of the CNN, we now gained the more
+    general permutation equivariance that is a property of self-attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how this would look in PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This simple implementation has one big downside to it. We lose all the spatial
+    information when we apply self-attention to the flattened memory block. One way
+    to resolve this is by adding positional information — the subject of the next
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2D Relative Positional Embedding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In addition to the 2D self-attention, [6] introduces the 2D application of relative
+    embeddings. Relative embeddings for 1D were first introduced by [8] and then later
+    on extended by e.g. [9] and [10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: With relative embeddings we first get a powerful positional representation that
+    has the potential to generalize better than say absolute embeddings [8], to bigger
+    images (or longer sequences as is the case in NLP).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further, we introduce a powerful inductive bias in the model which is translation
+    equivariance, and which already has been proven to be very helpful in the case
+    of CNNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way that relative positional embeddings work in 2D is to define relative
+    indices for the x (columns) and y (rows) direction. Relative here means, that
+    the indices should be relative to the pixel yᵢⱼ that is queried (Figure 2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1581a063d2864f0d0c78c7f69ef02b33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2**: Relative positional embedding for a specific pixel ab ∈ Nₖ(i,
+    j). ©J. Hatzky'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As proposed in [6], the row and column offsets are associated with an embedding
+    *r* for *(a-i)* and *(b-j)* respectively each with dimension *1/2*dout*. The row
+    and column offset embeddings are then concatenated to form this spatial-relative
+    attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdbd5f32e0c3bfe96b7bdd2e2ff7705c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Relative positional embeddings are added within the self-attention operation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Essentially, what we create here is an embedding matrix that contains relative
+    positional information and that is added to the *QK* dot-product within the *softmax*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See below how it could be done in PyTorch. Note that there are more efficient
+    ways to implement this, which we will not cover here as we stick to the introduced
+    formulation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Putting it all together
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we are at the point where we can put all the parts together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a better understanding, Figure 3 is an overview of the data flow and shapes
+    involved in self-attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af2658cc029341d382bc397fc7330736.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3**: Overview of the shapes throughout the self-attention. Inspired
+    by [this GitHub post](https://github.com/MartinGer/Stand-Alone-Self-Attention-in-Vision-Models/tree/master).
+    ©J. Hatzky'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s create a class that implements the whole model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Epilogue**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The *Stand-Alone Self-Attention in Vision Models [6]* paper presents a fascinating
+    idea for applying pure self-attention models in vision. Despite the self-attention
+    operation’s complexity, the paper demonstrates an effective approach that uses
+    local receptive fields, also known as memory blocks, to reduce computational resources.
+    While the more recently published vision transformers may be stealing the limelight,
+    this method has immense potential to become a top contender for state-of-the-art
+    architectures in vision with additional software and hardware improvements. It’s
+    an exciting piece of work that could take vision models to the next level!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Interested in more code? Feel free to look at* [*this annotated colab notebook*](https://colab.research.google.com/drive/1DDjyC3d1R8jgbaP73u6-77FIlnCEN57M?usp=sharing)
+    *where I apply this model to the CIFAR-10 dataset.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Spotted a mistake? Please let me know!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] [Vaswani et al.](https://arxiv.org/abs/1706.03762)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [Devlin et al.](https://arxiv.org/abs/1810.04805)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [Brown et al.](https://arxiv.org/abs/2005.14165)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [Zhang et al.](https://arxiv.org/pdf/2206.01821.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [Dosovitskiy et al.](https://arxiv.org/pdf/2010.11929.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [Ramachandran et al.](https://arxiv.org/abs/1906.05909)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [Romero et al.](https://arxiv.org/abs/2110.08059)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] [Shaw et al.](https://arxiv.org/abs/1803.02155)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] [Dai et al.](https://arxiv.org/pdf/1901.02860.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] [Liutkus et al.](https://arxiv.org/pdf/2105.08399.pdf)'
+  prefs: []
+  type: TYPE_NORMAL

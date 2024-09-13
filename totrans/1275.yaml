@@ -1,0 +1,214 @@
+- en: How to write reproducible TensorFlow input pipelines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-write-reproducible-tensorflow-input-pipelines-72d5e4b66932](https://towardsdatascience.com/how-to-write-reproducible-tensorflow-input-pipelines-72d5e4b66932)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Fix the input ordering by using seeds
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)[![Pascal
+    Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)
+    [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)
+    ·6 min read·Jan 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: When preparing machine learning experiments, the input pipeline plays a critical
+    role in data preparation. While they are often straightforward to construct —
+    the machine learning frameworks make this relatively easy —, they lack reproducibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f8ae83ad000df4f9014a188dab704b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Quinten de Graaf](https://unsplash.com/@quinten149?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is by default: randomness in the input data, such as applying shuffling
+    after each epoch, has been shown to play an important role in neural network training.
+    As such, it’s an obvious choice to “enable” randomness by default. However, when
+    we want to gain a deeper understanding of our training, we want to keep as many
+    influences/parameters fixed as possible. The input order is one of them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Does fixing the input ordering mean we must forgo altogether shuffling or other
+    randomization operations? No, thankfully not. Let me explain why. When dealing
+    with randomness, we have one choice that we can make: setting the seed of the
+    randomness-inducing operation. The machine learning frameworks deduce any other
+    operations and their orders from this seed, usually an integer number such as
+    42, 111, or 1337.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, think about randomly selecting a number from a list. When this operation
+    is not seeded, we will draw a different number every time we run the drawing.
+    However, if we were to set a fixed seed, we would get reproducible results. This
+    example is trivial, but behind the ML frameworks’ scenes, that’s what happens.
+    So, when creating a reproducible input pipeline, we must focus on setting seeds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Global seed
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, I’ll use TensorFlow as the ML framework of choice, but the
+    gist applies to any other packages, too. In TensorFlow, we have two places that
+    we can customize. The first place is the global seed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To set the global seed, TensorFlow offers two methods, [*set_seed*](https://www.tensorflow.org/api_docs/python/tf/random/set_seed),
+    and [*set_random_seed*](https://www.tensorflow.org/api_docs/python/tf/keras/utils/set_random_seed),
+    the latter of which I prefer using as it also sets the random seeds for other
+    standard packages. In any case, if we only specify the global seed, whenever a
+    randomness-based operation (such as shuffle) is called, the packages derive a
+    so-called operation-level seed from this global seed. On the same system and the
+    same version, this is reproducible. However, the derived seeds might differ across
+    computing environments and TensorFlow versions. To change this, we need to set
+    the operation-level seeds as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Operation-level seeds
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we do this? From my experience, the place where we need to pass a seed
+    can be easily identified by reading the function documentation or the possible
+    parameters of that function. Take [the shuffle operation](https://www.tensorflow.org/api_docs/python/tf/data/Dataset#shuffle),
+    for example. This operation operates on a TensorFlow dataset and randomly shuffles
+    its elements. If we read the corresponding documentation (or check the function’s
+    parameters), we’ll notice that it contains one called *seed;* that’s what we are
+    looking for. Now, we just set an arbitrary integer number here and *keep it fixed*
+    (that’s important!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: After setting this operation-level seed, we can do the same for all other operations
+    that offer a *seed* parameter. After we’ve done so, the question is, how can we
+    make sure that our seeding strategy works? For example, how can we know that we
+    always get the same data samples in the same order?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To answer this, I’ve prepared a simple python script. This script, which you
+    can [find on GitHub here](https://github.com/phrasenmaeher/reproducible_pipelines),
+    loads a dataset from TensorFlow’s collection of datasets, [TensorFlow Datasets](https://www.tensorflow.org/datasets/catalog/overview#all_datasets)
+    (TFDS for short), applies a user-defined preprocessing pipeline, and prints the
+    ordering of the elements. Here’s the caveat: For all datasets loaded from TFDS,
+    we can use a sample’s unique id (within its corresponding dataset) to track its
+    ordering across multiple pipeline runs. For a custom dataset, such an ID does
+    not necessarily exist. However, that’s easy to add. For example, if you load NumPy
+    arrays into a TF data pipeline, don’t pass tuple (x,y) but tuple (x, y, id), where
+    the id column corresponds to the *x*’s identification number.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, if, instead, you work with TFRecord files, the procedure is similar, too.
+    Here, when creating a [*tf.train.Example*](https://www.tensorflow.org/api_docs/python/tf/train/Example),
+    add an additional feature. In my [hands-on instruction to TFRecords](/a-practical-guide-to-tfrecords-584536bc786c),
+    the place to do so is where we define an example’s dictionary. Head to the article
+    to learn about this data structure and where to add user-defined ids.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After we’ve loaded a dataset containing sample-ids, we can print the ids to
+    see the ordering. In TensorFlow, an ID looks like this: ‘mnist-train.tfrecord-00000-of-00001__209’.
+    Without boring you with the implementational details, we can deduce the actual
+    id from this string with the help of a small utility function [taken from the
+    TensorFlow documentation](https://www.tensorflow.org/datasets/determinism#finding_the_dataset_examples_ids).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Non-reproducible pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For illustrational purposes, my script uses the small MNIST dataset by default.
+    It loads the dataset four times, using a deliberately tiny batch size of four
+    samples (this makes it easier to compare the sample ordering). The first two calls
+    use no global and no operation-level seeds and illustrate what happens when we
+    do not care about data ordering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have printed the truncated output below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, we can see that the ordering and the actually selected elements are different.
+    Note: For readability reasons, I’ve printed the elements of 5 data batches only
+    (=20 items; 4 [batch size] x 5 [num batches]). You can increase the count by passing
+    any other positive integer in lines 5 and 13 in the previous code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reproducible pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After the two previous runs, let’s see what happens when we use seeds. For
+    this, we call *run_pipeline_reproducible*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside this function, we call the *seed_everything* method, which, well, seeds
+    everything, making use of the previously mentioned *set_random_seed* method from
+    TensorFlow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the seeding, which sets the global seeds for all randomness-inducing packages
+    (e.g., NumPy, random, TensorFlow itself), we again call the data pipeline, this
+    time passing *reproducible=True*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This argument is passed through to all data-modifying methods, such as *load_data*
+    (below) and “create_pipeline” (see addendum at the end of this blog).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The “reproducible” flag sets the operation-level seeds wherever possible, using
+    an arbitrarily chosen integer. In the script, the seed is used in the shuffle
+    and the *.load()* operation from TFDS. After setting this number, the output demonstrates
+    that we have indeed built a reproducible data pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Crucially, the ordering stays consistent across multiple calls to the script.
+    That is, even when we close our IDE/shell and run the script anew, the output
+    order is the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The summarization of this blog post is short: Set the global seed and the operation
+    level seeds. For this, use the *seed_everything()* function shown previously and
+    look for places where you can pass a seed. In those places, give an arbitrary
+    integer number — my favorites are 42 and 1337 — and keep them. That’s it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To run the pipeline yourself, head to GitHub [here](https://github.com/phrasenmaeher/reproducible_pipelines).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Addendum
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you’d like to play around with other data types, such as audio, you have
+    to adopt lines 4 and 10 in the following function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, if you’d like to add further data-processing operations, such as
+    augmentations, equally modify the *create_pipeline* function. In those cases,
+    just set a seed whenever one can be set. This guarantees, e.g., reproducible data
+    augmentations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'See the snippet below for an illustration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The augmentation operations are, by default, unseeded (equal to passing *seed=None*).
+    Thus, to achieve reproducibility, set a seed in these places.
+  prefs: []
+  type: TYPE_NORMAL

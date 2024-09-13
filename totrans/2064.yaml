@@ -1,0 +1,347 @@
+- en: 'The SQL Unit Testing Landscape: 2023'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-sql-unit-testing-landscape-2023-7a8c5f986dd3](https://towardsdatascience.com/the-sql-unit-testing-landscape-2023-7a8c5f986dd3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Advancing speed and safety in SQL development
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@cisenbe?source=post_page-----7a8c5f986dd3--------------------------------)[![Chad
+    Isenberg](../Images/56e50c1ee292ac672df4b8062e460c8e.png)](https://medium.com/@cisenbe?source=post_page-----7a8c5f986dd3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a8c5f986dd3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a8c5f986dd3--------------------------------)
+    [Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----7a8c5f986dd3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a8c5f986dd3--------------------------------)
+    ·9 min read·May 2, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7df8aad2d9bf6732036f59b3df2c4a19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Ilse Orsel](https://unsplash.com/@lgtts?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The evolution of SQL development
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although SQL is nearly [50 years old](https://en.wikipedia.org/wiki/SQL) (or
+    perhaps *because* it’s nearly 50 years old), development in the language has been
+    slow to adopt modern practices and tools. For decades, our primary “IDEs” were
+    management tools like [SSMS](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16)
+    and [DBeaver](https://dbeaver.io/), version control was accomplished via naming
+    conventions like *stored_proc_2022_03_15*, and testing consisted of running your
+    queries against production tables and exporting to a spreadsheet for manual reconciliation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But things have been improving rapidly over the last decade. Those database
+    management tools, as well as cloud consoles for warehouses, are pretty feature
+    rich with syntax highlighting, code completion, and plan visualizations. We have
+    database versioning through tools like [Liquibase](https://docs.liquibase.com/home.html),
+    [Flyway](https://documentation.red-gate.com/fd/welcome-to-flyway-184127914.html),
+    and [dbt](https://docs.getdbt.com/docs/introduction). And even testing / auditing
+    is less of a headache with things like [dbt-audit-helper](https://github.com/dbt-labs/dbt-audit-helper).
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the last frontiers is SQL [unit testing](https://en.wikipedia.org/wiki/Unit_testing),
+    which is still very much in its infancy. Let’s dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why should we unit test?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For those who have come into SQL development from outside of software engineering,
+    the value of unit testing may not be immediately obvious. Typically, query development
+    is a fairly fast cycle of “write query, run query, look at result set, modify
+    query, repeat” But as your query complexity and data size grow, you run into some
+    barriers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, you can engage in a lot of redundant testing. Consider the following
+    transform:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The query itself isn’t exciting. But from a testing standpoint, what do we
+    actually need to test, and what is being tested? We only need four records to
+    cover our cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*order_count < 50*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*order_count > 50*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*order_count = 50*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*order_count IS NULL*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Against your production database, you could be scanning millions or billions
+    of records for your tests, and that can add up. You can (and should) have a development
+    environment with a smaller subset of cleansed data, but this can still leave you
+    with far more records than what you actually need to adequately test your queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other major issue is that even your full production dataset might not contain
+    all reasonable test cases. Especially when you’re onboarding a new data source,
+    or if development or operations teams are changing how they generate data, it’s
+    entirely possible that you’ll need test coverage for scenarios that don’t yet
+    exist in your data!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, the biggest dividends are earned during maintenance. When you need
+    to make a change to existing functionality, a robust unit test suite will give
+    you confidence that you’re not breaking your queries. If your change breaks a
+    unit test, you know that you have work to do: either change your query to preserve
+    needed functionality, or modify your test to reflect the new logic. And since
+    you’re using very small mock datasets, you can get your feedback almost instantly
+    while developing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yes, you’ll still need to do integrations testing and auditing, but with good
+    test coverage, you can catch many of your errors before this stage, saving you
+    time and compute costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate some of these ideas, here’s a scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say I’m working on a particularly complicated query that takes 30 minutes
+    and $10 to execute against the production dataset. During the course of development,
+    I have to execute the query 5 times as I make small adjustments, each time spending
+    another $1 and 2 minutes while my audit query completes (noting that this step
+    could be much more expensive if I manually audit results). As an average [American
+    data engineer](https://www.salary.com/research/salary/listing/data-engineer-salary)
+    making $120K / year, my time is approximately $57 / hour (ignoring taxes, benefits,
+    etc.). My development cost $171 in labor and $55 in compute, for a total of $226.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implementing unit tests to cover the same query might take me an hour or two,
+    since it’s really complicated. But now my first 4 runs of the query are essentially
+    free; since we’ll be processing a handful of records, execution will take a handful
+    of seconds, and I’m only on the hook for the final run for validation: $11 and
+    30 minutes of time ($28.50), for a total of $39.50\. Combined with the unit test
+    overhead, we’re looking at $153.50, a savings of ~33%.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are plenty of counterarguments. What if the query only cost pennies and
+    took seconds to run in the first place? What if I only had to make a trivial change
+    and completed the work in one pass? What if I were working on a scaled-back development
+    environment that cut my costs by half or more?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your specific use-cases may dictate how much value you can get out of unit testing,
+    but I would argue that no matter your circumstances, you need to think about your
+    testing strategy and the tradeoffs you’re making. Testing incurs costs but is
+    crucial to developing high-quality products; this is no different in the data
+    world than it is in software.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So where’s our pytest equivalent?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To answer the headline: there isn’t one. Hopefully I’ve sold you on the idea
+    that unit testing can give us the coverage we need with a very minimal amount
+    of data. But of course, there’s a catch. In the SQL world, what is a “unit”? For
+    a language Python or Java, unit testing is frequently done at the method or class
+    level; as the name implies, these are the most basic “units” of functionality
+    that need to be tested.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In SQL, is a unit the entire query? Is it a single CTE? A group of CTEs that
+    convey some meaning together? The latter adds complexity to unit testing solutions
+    since SQL isn’t readily composable like general-purpose languages; you can’t just
+    “call” a CTE like you would a method. Good data modeling can help reduce this
+    burden by making your queries more modular, but good test design is still challenging,
+    and there are scarce best practices available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of pre-built options for SQL unit testing, but there’s no
+    standard at this point. There’s an excellent [dbt thread](https://github.com/dbt-labs/dbt-core/discussions/4455)
+    that details the benefits and potential approaches, but unfortunately, this isn’t
+    something that has made the roadmap just yet. Let’s review some of the more popular
+    options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: tSQLt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[tSQLt](https://tsqlt.org/) is an open source project maintained by [Redgate](https://www.red-gate.com/),
+    a big name in the SQL Server development space. Like a lot of SQL Server solutions,
+    tSQLt is implemented as a series of stored procedures added as database objects
+    into your target database.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the [tutorial](https://tsqlt.org/user-guide/tsqlt-tutorial/), here’s a
+    test of a stored procedure, with mocks handled as variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: tSQLt also offers functionality for mocking tables and views, as well as asserting
+    equalities, inequalities, and existence of various database objects. This tool
+    is particularly well-suited to applications database development since, well,
+    that’s one of SQL Server’s primary use-cases. You certainly *can* apply this to
+    analytics (and there are plenty of data warehouses implemented in SQL Server),
+    but the focus is clearly on a different kind of development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: dbt-unit-testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[dbt-unit-testing](https://github.com/EqualExperts/dbt-unit-testing) is a dbt
+    package maintained by [Equal Experts](https://www.equalexperts.com/), a global
+    technology consultancy. The approach is to create custom tests that utilize the
+    package’s macros, and then to run them. Here, mocks can be defined in query- or
+    CSV-style, and some clever work with Jinja macros substitutes the mocks for the
+    actual table references. From their docs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once you’ve established your tests, it’s as simple as running dbt test, and
+    you get formatted output (also from the docs):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In addition to manually creating mocks, this package supports functionality
+    to infer columns by directly querying your warehouse. In my personal experience,
+    I had trouble getting this working, but this functionality could be very useful
+    for wide tables, as you’re otherwise on the hook for enumerating every single
+    column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: dbt-datamocktool
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[dbt-datamocktool](https://github.com/mjirv/dbt-datamocktool) is another dbt
+    package that takes a slightly different approach. Mocks and expectations are created
+    as seed files, and then tests are defined as inputs to the package’s existing
+    test in *schema.yml*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In addition to providing the mock data, you’ll map the models’ sources and
+    refs to the appropriate mocks. This approach is more hands-on, but it’s also more
+    lightweight in terms of what it demands from your project. Unlike dbt-unit-testing,
+    you don’t have to override the *ref()* and *source()* macros with package-specific
+    versions. The majority of the functionality is coming from dbt’s native components:
+    tests and seeds.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other exciting feature is support for incremental models for adapters that
+    support the *MERGE* operation. This is especially important in the dbt landscape
+    since the incremental materialization fundamentally runs different queries depending
+    on the “mode” of the dbt invocation; you need to be able to test both “versions”
+    of the query for full coverage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQLMesh
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A newcomer to the SQL modeling / templating space, [SQLMesh](https://sqlmesh.readthedocs.io/en/stable/)
+    brings a ton of goodies, not the least of which is native unit test support. Tests
+    are defined in YAML files and then executed on-demand or upon rebuilding of a
+    SQLMesh plan.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mocking is straightforward, with mocks and expectations defined inside the
+    same file. A killer feature I haven’t seen elsewhere is the ability to test *individual
+    CTEs*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we saw with dbt-unit-testing, test output is visualized nicely:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: For me personally, this is the most compelling SQL unit testing option I’ve
+    seen; however, it’s also complicated by the fact that it’s a SQL framework that
+    isn’t dbt. This is an early-stage tool facing a de-facto industry standard, and
+    between feature gaps and adoption inertia (i. e., it has to be better by enough
+    to get teams to switch), it’s uncertain what its future holds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That being said, read the docs and get an idea of why, as impressive as the
+    unit testing framework is, that’s not even SQLMesh’s best feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are we there yet?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'No. At the end of the day, the existing solutions are all pretty close in functionality
+    and suffer from similar drawbacks. All of the tools do more or less the same thing:
+    run your queries with mock inputs and compare the query output to an expectation.
+    Some are more sophisticated than others in how they construct the test scenarios
+    and generate output, but the differences are relatively small.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are three hurdles to adoption that I can see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The industry hasn’t coalesced around a standard. dbt has been remarkably successful
+    even though it has significant and serious gaps (column-level lineage, unit testing,
+    scalability); adoption has driven adoption. No unit testing solution has hit critical
+    mass
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The culture isn’t there yet. SQL developers have been producing successful solutions
+    for decades without access to unit testing. While the rise of the analytics engineer
+    has brought more and more software engineering best practices to SQL development,
+    it hasn’t brought all of them, and unit testing is one of the gaps
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Data mocking is still an unsolved problem. In all of the documented examples,
+    we’re looking at a handful of columns with simple relations between a handful
+    of tables. Real queries can be orders of magnitude more complex. The developer
+    feels the burden of many, sometimes dozens of join conditions and the referential
+    integrity needed to make the tests pass. To some extent, this can be seen as a
+    feature: i. e., the developer has to reason about every join and every record.
+    But practically speaking, it’s a slog, especially when real data that will just
+    work is tantalizingly in reach'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I’m hopeful that the increasing number of conversations about the importance
+    of testing, quality, and standards in the industry is pushing us toward more mature
+    practices and better outcomes. When we can develop queries as safely and quickly
+    as we can develop other software, we’re going to unlock a lot of value.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,420 @@
+- en: On using intermediary results in DAX Measures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/on-using-intermediary-results-in-dax-measures-9971efa72ae](https://towardsdatascience.com/on-using-intermediary-results-in-dax-measures-9971efa72ae)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*We use table variables in DAX all the time. But what when we need to calculate
+    intermediary results and reuse them later in a DAX Measure? This challenge sounds
+    easy, but it’s not.*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)[![Salvatore
+    Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)
+    [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)
+    ·8 min read·Mar 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56e23375995cfedbed0a540dd53def90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Mika Baumeister](https://unsplash.com/@mbaumi?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We are using intermediary table variables all the time in DAX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, look at the following Measure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case, we generate a Year-To-Date table based on the actual Filter context
+    with the help of the [DATESYTD()](https://dax.guide/datesytd/) function containing
+    all the dates from January 1st of the Year in the actual Filter Context up to
+    the actual date (Based on the current Filter Context of course).
+  prefs: []
+  type: TYPE_NORMAL
+- en: But sometimes, we need to do more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, we need to query a table based on the current filter context and
+    perform further calculations on the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we must generate an intermediary table and assign the result to
+    a variable inside the Measure to perform the needed calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we need the Filter Context, we cannot pre-create a table with these intermediary
+    results, as this table would be huge to accommodate all possible filter combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, let’s look at how we can do it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Base Query
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The Base query is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The (truncated) result of this query is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fcb5f7a619471291932e62a9a536de3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1 — Result of Base Query (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what happens if this is only a starting point, and we need to work on this
+    result in a Measure to perform further calculations?
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, we want to display the sum of all Rows for each Month.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we would need to calculate the Average Sales Amount for each Month
+    and sum the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how I would create a solution intuitively, which doesn’t work, and,
+    afterward, how the solution will work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How not to do it — or how it doesn’t work
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first intuitive way to solve the requirement above would be to generate
+    a Variable with the [ADDCOLUMNS()](dax.guide/addcolumns/) function to pre-calculate
+    the table with the Average Sales. Then aggregate the rows to get the needed result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After executing this Query in [DAX Studio](https://www.sqlbi.com/tools/dax-studio/),
+    I get the following error message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32d97083929e60a6dfe7976e58312d2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 — Error Message with the first try (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The issue is that SUM() cannot work with table variables as we need it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try it in a slightly different way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s replace SUM() with [SUMX()](https://dax.guide/sumx/) after the RETURN
+    statement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The error message is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16b8ecb1f882586ddff1073f20cded94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 — Error message with the second approach (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, SUMX() cannot access columns in table variables either.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I tried other methods to get the needed result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use [CALCULATETABLE()](https://dax.guide/calculatetable/) to generate the table
+    which can be used by SUM() or SUMX()
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But this function can also not access the column in the table variable.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Use of [FILTER()](https://dax.guide/filter/) to generate the table and use it
+    in SUM()
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While FILTER() had no problem, SUM() couldn’t access the table variable.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: But wait … FILTER() doesn’t generate any error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can I use FILTER() with SUMX()?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see if this approach works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Working Solution — FILTER() and SUMX()
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first working approach is the following Query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first table variable AverageSalesPerCust is still the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second step is to use the FILTER() function to define the new table variable
+    AvgSalesOver0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'UPDATE Januar 2024: As stated in the Comments by [AlexisOlson](https://medium.com/u/b20dbba0ee98?source=post_page-----9971efa72ae--------------------------------),
+    FILTER() shouldn’t be needed. In another case, I used the same technique without
+    FILTER(), which worked. At the moment, I don’t know why I need FILTER() here.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, I use the FILTER() function to convert the table variable AverageSalesPerCust
+    into a table variable usable by aggregation functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As FILTER() needs at least two parameters, I have to add the “Filter” *[AverageSales]
+    > 0* to make sure that the FILTER function works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Surprisingly, SUMX has no problems accessing a table variable constructed with
+    the FILTER() function, and I can use this table variable to calculate the aggregation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The (truncated) result of the query looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c437046584344c9cf912b880cfbaf3ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 — Result of working solution (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: But the execution needs some time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When I look at the performance metrics, I notice some issues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbe4d3520dfb745d91115733236fe816.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5 — Performance metrics for the first solution (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The total execution time is over three seconds, while over two seconds are spent
+    in Formula Engine (FE) as it needs to process through three million rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This needs to be more efficient, and we must try to find a more efficient solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization attempt with CALCULATETABLE()
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I combined CALCULATETABLE() with FILTER() to get the following solution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The difference is that I enclosed ADDCOLUMNS() with a CALCULATETABLE() function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I added a Dummy filter, hoping the execution plan would change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this version keeps everything the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try something else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization attempt with a Dummy Filter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The next idea was to replace the Predicate in the FILTER function with a Dummy
+    filter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The assumption was that a predicate without reference to a column (1=1) could
+    lead to more efficient execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, this didn’t change the outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is no optimization possible or necessary?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I tried other table functions to construct the first table variable, with the
+    average sales per customer, but everything stayed the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After some thought, I realized this issue could not be solved within DAX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Storage Engine (SE) is not able to work how we would need it, or I wasn’t
+    able to find the correct solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, the DAX engine will resort to the capabilities of the Formula Engine,
+    thus loading the three million rows into memory and aggregating the data there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes there is no better solution than the one we’ve found.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And three seconds is the maximum upper limit of what users are willing to wait
+    for a result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can consider this solution as good enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But wait a moment. I execute the Measure with the entire dataset containing
+    data from over ten years. Is this a realistic scenario?
+  prefs: []
+  type: TYPE_NORMAL
+- en: A more realistic scenario is that the user will analyze only one or two years
+    of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a filter to restrict the query to only one year, the execution time plummets
+    to less than two tents of a second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d1d20868d21fd3faac2a2157608858b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6 — Performance Metrics for selecting only one year (Figure by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As this will be a common scenario in a report, the Solution is ready to use
+    in reports.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Lessons learned:** Remember to use real-world scenarios and use cases when
+    testing the performance of a complex measure.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4e000b2b0fd5db5cd67c3d6eea3df23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Lucas Santos](https://unsplash.com/@_staticvoid?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Template for the Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Based on these results, the template for the Solution looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, we can use this form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The second form is shorter, and everything is contained in one variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I encourage you to add comments to explain why you’re adding a FILTER() to the
+    Measure with a FILTER 1=1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This would make no sense to someone who doesn’t know this technique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you don’t know how to collect and interpret performance metrics in DAX Studio
+    or are unsure about the interpretation of the Metrics shown there, read this article,
+    where I dig into this feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9?source=post_page-----9971efa72ae--------------------------------)
+    [## How to get performance data from Power BI with DAX Studio'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes we have a slow Report, and we need to figure out why. We will see
+    how to collect performance data and the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9?source=post_page-----9971efa72ae--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I use the Contoso sample dataset, like in my previous articles. You can download
+    the ContosoRetailDW Dataset for free from Microsoft [here](https://www.microsoft.com/en-us/download/details.aspx?id=18279).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Contoso Data can be freely used under the MIT License, as described [here](https://github.com/microsoft/Power-BI-Embedded-Contoso-Sales-Demo).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I enlarged the dataset to make the DAX engine work harder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Online Sales table contains 71 million rows (instead of 12.6 million rows),
+    and the Retail Sales table contains 18.5 million rows (instead of 3.4 million
+    rows).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@salvatorecagliari/membership?source=post_page-----9971efa72ae--------------------------------)
+    [## Join Medium with my referral link - Salvatore Cagliari'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Salvatore Cagliari (and thousands of other writers on
+    Medium). Your membership fee directly…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@salvatorecagliari/membership?source=post_page-----9971efa72ae--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

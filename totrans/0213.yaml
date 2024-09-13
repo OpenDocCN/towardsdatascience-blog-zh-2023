@@ -1,0 +1,482 @@
+- en: A Performant Way to Query Streaming Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-performant-way-to-query-streaming-data-b95c52b2361e](https://towardsdatascience.com/a-performant-way-to-query-streaming-data-b95c52b2361e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Improving a real-time streaming project with ksqlDB
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://harrisonfhoffman.medium.com/?source=post_page-----b95c52b2361e--------------------------------)[![Harrison
+    Hoffman](../Images/5eaa3e2bd0507297eb6c4a7efcf06324.png)](https://harrisonfhoffman.medium.com/?source=post_page-----b95c52b2361e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b95c52b2361e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b95c52b2361e--------------------------------)
+    [Harrison Hoffman](https://harrisonfhoffman.medium.com/?source=post_page-----b95c52b2361e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b95c52b2361e--------------------------------)
+    ·13 min read·May 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ad66dc44368d76b3dccaa094133115e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: North Carolina. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a [previous article](/a-real-time-streaming-project-with-smartphone-data-7e838a1b009d),
+    the components of a real-time streaming project that consumes and processes smartphone
+    sensor data with FastAPI, Kafka, QuestDB, and Docker, were explored. This project
+    was a first pass at implementing an architecture that can move streaming data
+    from smartphones, through a Kafka log, and into a time series database where the
+    data can be readily queried and processed. The end product was a dashboard that
+    polled the database and displayed sensor readings in near real-time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://youtube.com/shorts/zRUVvz5vsl8?feature=share&source=post_page-----b95c52b2361e--------------------------------)
+    [## Streaming Smartphone Data with FastAPI, Kafka, QuestDB, and Docker'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This video demonstrates the visualization of real-time smartphone sensor data
+    using FastAPI, Kafka, QuestDB, and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: youtube.com](https://youtube.com/shorts/zRUVvz5vsl8?feature=share&source=post_page-----b95c52b2361e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One criticism of the project was the introduction of unnecessary latency due
+    to writing data from Kafka to the database, and querying the database to display
+    the most recent sensor readings. When our primary objective is to analyze data
+    in near real-time, writing to and reading from a database becomes inefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is one of the problems that [ksqlDB](https://docs.ksqldb.io/en/latest/)
+    was created to solve. Instead of writing data to the database and querying it
+    for analysis, ksqlDB enables direct processing and analysis of data streams, eliminating
+    the need to persist data in a database before accessing it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article will expand on the previous by introducing ksqlDB for querying
+    and processing streaming data. Unlike traditional database polling, implementing
+    [push queries](https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-reference/select-push-query/)
+    in ksqlDB significantly reduces latency in the dashboard and simplifies the backend
+    infrastructure. All code used to build this project is available on GitHub:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/hfhoffman1144/smartphone_sensor_stream2?source=post_page-----b95c52b2361e--------------------------------)
+    [## GitHub - hfhoffman1144/smartphone_sensor_stream2: Stream smartphone sensor
+    data with FastAPI…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stream smartphone data from Sensor Logger (see…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/hfhoffman1144/smartphone_sensor_stream2?source=post_page-----b95c52b2361e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The End Product
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The objective of this project is the same as before: to develop a real-time
+    dashboard that [visualizes sensor data](https://www.youtube.com/watch?v=zEMfVRgBuLA).
+    However, in this iteration, our focus is on minimizing the perceptible latency
+    between the phone and the dashboard by harnessing the power of ksqlDB. Here’s
+    what the new dashboard should look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a45ebf91611918d6086364083c54191e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Smartphone Accelerometer Data Queried from ksqlDB. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tri-axial accelerometer data from the smartphone is sent to a FastAPI app, written
+    to Kafka, queried with ksqlDB, and displayed in the dashboard. Notice how quickly
+    the plot responds to the phone’s movement — the delay is nearly undetectable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This project also supports streaming from multiple smartphones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/382201beb14e374606a32f14f58c4b21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Streaming Data from Two Smartphones Simultaneously. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Project Architecture**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The architecture for this project is simpler than [before](/a-real-time-streaming-project-with-smartphone-data-7e838a1b009d)
+    because QuestDB, and its consumer, are no longer required to get data to the dashboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d62c945dd242a3da0d920a85f0ded5a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Project Architecture. Image by Author (made with Lucidchart).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each smartphone sends sensor readings (accelerometer, gyroscope, and magnetometer)
+    via POST request to a [FastAPI](https://fastapi.tiangolo.com/lo/) application
+    (the producer). The producer reformats the request body to a ksqlDB-compatible
+    JSON format and asynchronously writes sensor readings to a [Kafka topic](https://dattell.com/data-architecture-blog/what-is-a-kafka-topic/#:~:text=Kafka%20topics%20are%20the%20categories,consumers%20read%20data%20from%20topics.).
+    Once sensor data arrives in the Kafka topic, it can be readily queried with ksqlDB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To obtain a continuous stream of sensor data, the client can establish a [server-sent
+    event (SSE)](https://www.w3schools.com/html/html5_serversentevents.asp) connection
+    with the backend (a FastAPI application). The backend initiates a [push query](https://docs.ksqldb.io/en/latest/concepts/queries/#:~:text=A%20push%20query%20is%20a%20form%20of%20query%20issued%20by%20a%20client%20that%20subscribes%20to%20a%20result%20as%20it%20changes%20in%20real%2Dtime.)
+    through a ksqlDB API that continuously sends sensor data to the frontend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the directory for the project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Three [FastAPI](https://fastapi.tiangolo.com/lo/) applications are written
+    to facilitate data flow and visualization— the producer, the dashboard frontend,
+    and the dashboard backend. These apps, along with Kafak and ksqlDB, are orchestrated
+    via [docker-compose](https://docs.docker.com/compose/):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice the four services not explicitly written in code (thankfully): Zookeeper,
+    Kafka, ksqlDB, and Kafka-CLI. These services work together with the producer and
+    dashboard to create the project. Let’s explore these components in more detail.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Producer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Similar to before](/a-real-time-streaming-project-with-smartphone-data-7e838a1b009d#:~:text=to%20the%20system.-,The%20Producer,-So%20far%2C%20we),
+    the producer is a FastAPI app that accepts data sent from smartphones (over POST
+    request) and writes to a Kafka log. Here’s the directory structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We won’t go through every file in the producer directory since everything is
+    available on [GitHub](https://github.com/hfhoffman1144/smartphone_sensor_stream2).
+    Instead, let’s take a look at `main.py` (the driving script of the producer API):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The explanation of this code is largely the same as in the [previous article](/a-real-time-streaming-project-with-smartphone-data-7e838a1b009d#:~:text=Line%209%20instantiates,the%20data%20argument)%3A).
+    The main difference is that sensor readings in the request payload need to be
+    reformatted before they are written to Kafka. This new format allows the sensor
+    data to be queried in a SQL-like fashion by ksqlDB. Each POST request from the
+    phone sends JSON data that looks similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Individual sensor readings are located under “payload” and are written to Kafka
+    in the `kafka_produce()` route:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `flatten_dict()` function located in `producer/app/core/utils.py` takes
+    a raw sensor message in the payload, for instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And reformats the message to be compatible with a ksqlDB schema — this is what
+    is written to Kafka:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Each entry in the reformatted sensor reading can be thought of as a column that
+    can be queried by ksqlDB. More on this in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ksqlDB
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point, sensor readings can flow from smartphones to the FastAPI producer,
+    where they are written to Kafka in a ksqlDB-compatible format. ksqlDB can then
+    query recent and historical data in Kafka.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[ksqlDB](https://docs.ksqldb.io/en/latest/) is an open-source streaming engine
+    designed to process, analyze, and transform real-time data streams from Kafka
+    using a SQL-like syntax. Put simply, ksqlDB enables interaction with data in Kafka
+    topics using familiar relational database concepts like tables, queries, materialized
+    views, queries, joins, and aggregations. The [capabilities](https://docs.ksqldb.io/en/latest/concepts/)
+    of ksqlDB are extensive and won’t be fully covered in this article, but the documentation
+    provides good definitions of the core concepts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://docs.ksqldb.io/en/latest/concepts/?source=post_page-----b95c52b2361e--------------------------------)
+    [## ksqlDB Concepts - ksqlDB Documentation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn about ksqlDB under the hood.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.ksqldb.io](https://docs.ksqldb.io/en/latest/concepts/?source=post_page-----b95c52b2361e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this project, a stream is created over the topic that stores smartphone
+    sensor readings (the data written by the producer):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The above ksqlDB statement creates a stream, `smartphone_sensor_stream`, that
+    can be used to query sensor readings written to the `smartphone-sensor-data` Kafka
+    topic. Libraries like [ksql-python](https://github.com/bryanyang0528/ksql-python)
+    can be leveraged to interface with the ksqlDB REST API and programmatically execute
+    queries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: A [push query](https://docs.ksqldb.io/en/latest/concepts/queries/#:~:text=A%20push%20query%20is%20a%20form%20of%20query%20issued%20by%20a%20client%20that%20subscribes%20to%20a%20result%20as%20it%20changes%20in%20real%2Dtime.)
+    is executed to retrieve sensor readings as they are written to the topic. In essence,
+    a push query opens a long-lived connection that sends updates to a client any
+    time new data is received in the topic. This makes push queries a good choice
+    for streaming smartphone data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The above query “pushes” the device ID, time, and accelerometer values from
+    `smartphone_sensor_stream` every time the stream is updated with data. This can
+    be executed with ksql-python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The ksql-python client returns a [generator](https://wiki.python.org/moin/Generators)
+    object that yields messages as they are written to Kafka and read from the stream.
+    Unlike a conventional for loop that iterates over a fixed-size array, this loop
+    will continue executing as long as data is received in the stream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The messages yielded from the query look similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: One message is returned at a time, each of which can be thought of as a row
+    in the `smartphone_sensor_stream`ksql stream. Keep in mind that ksqlDB can perform
+    more complex queries such as aggregates and joins, but for this project, only
+    a basic `select`is needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dashboard Backend
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The dashboard backend is a FastAPI app that accepts SSE requests for sensor
+    data streams. Once an SSE connection is requested, a ksqlDB push query is opened
+    and continuously sends messages to the frontend as they arrive in Kafka. The directory
+    structure for the dashboard backend looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s first take a look at `data_api.py` — the interface between ksqlDB and
+    the dashboard backend:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this script, `create_ksql_device_stream()` creates the ksqlDB stream defined
+    in the previous section, and `ksql_sensor_push()` returns a generator that yields
+    the results of the sensor data push query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s break down the components of `main.py` — the driving script for the dashboard
+    backend. Here are the dependencies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The primary imports to note are `EventSourceResponse` (the [class](https://www.starlette.io/responses/#eventsourceresponse:~:text=A%20response%20class%20that%20implements%20Server%2DSent%20Events.%20It%20enables%20event%20streaming%20from%20the%20server%20to%20the%20client%20without%20the%20complexity%20of%20websockets.)
+    that implements SSE) and the functions from `data_api.py`. Next a KSQLAPI object
+    and a FastAPI app are instantiated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, the SSE endpoint that sends sensor data from ksqlDB to the frontend
+    is defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `message_stream()` endpoint accepts [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET)
+    requests that open long-lived connections through which the backend can continuously
+    send sensor data. Within `message_stream()`, a [coroutine](https://docs.python.org/3/library/asyncio-task.html#coroutines)
+    called `event_generator()` is defined and returned. The purpose of `event_generator()`is
+    to create a while loop that yields sensor data messages as they are processed
+    by ksqlDB. The only time this loop terminates is when the client closes the connection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dashboard Frontend
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The dashboard frontend is an HTML page hosted by a FastAPI application. Its
+    purpose is to demonstrate that data is flowing through the components of this
+    project, and is by no means a comprehensive frontend. The interface looks like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d396fa7843ad4903f266249e753e8360.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Displaying Smartphone Sensor Data Streams on the Dashboard. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the user clicks “Start Streaming”, an SSE connection is opened with the
+    backend, and data from the push query is sent continuously. All code used to create
+    the frontend, along with instructions on how to get everything running, is available
+    on [GitHub](https://github.com/hfhoffman1144/smartphone_sensor_stream2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article introduced ksqlDB as a solution to improve the real-time streaming
+    project that was previously built using FastAPI, Kafka, QuestDB, and Docker. The
+    project aimed to create a dashboard that visualizes sensor data in near real-time.
+    One of the challenges faced was the unnecessary latency caused by writing data
+    from Kafka to a database and querying the database for analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ksqlDB, a database purpose-built for stream processing, was implemented to address
+    this issue. Instead of persisting data in a database before accessing it, ksqlDB
+    enables direct processing and analysis of data streams in Kafka. By implementing
+    push queries in ksqlDB, the latency in the dashboard was significantly reduced,
+    resulting in a nearly undetectable delay in displaying sensor readings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The use of ksqlDB simplified the backend infrastructure and allowed for efficient
+    analysis of sensor readings in near real-time. Future articles will continue making
+    improvements on this project and enhancing its functionality with new tools and
+    features. As always, feedback is greatly appreciated. Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Become a Member:* [*https://harrisonfhoffman.medium.com/membership*](https://harrisonfhoffman.medium.com/membership)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '***Apache Kafka:***[*https://kafka.apache.org/*](https://kafka.apache.org/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Event-Driven Architectures — The Queue vs The Log:*** [*https://jack-vanlightly.com/blog/2018/5/20/event-driven-architectures-the-queue-vs-the-log*](https://jack-vanlightly.com/blog/2018/5/20/event-driven-architectures-the-queue-vs-the-log)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Lucidchart:***[*https://www.lucidchart.com/*](https://www.lucidchart.com/pages/landing?utm_source=google&utm_medium=cpc&utm_campaign=_chart_en_us_mixed_search_brand_exact_&km_CPC_CampaignId=1457964857&km_CPC_AdGroupID=57044764032&km_CPC_Keyword=lucidchart&km_CPC_MatchType=e&km_CPC_ExtensionID=&km_CPC_Network=g&km_CPC_AdPosition=&km_CPC_Creative=442433231228&km_CPC_TargetID=aud-552508845082%3Akwd-33511936169&km_CPC_Country=9026996&km_CPC_Device=c&km_CPC_placement=&km_CPC_target=&gclid=Cj0KCQiAkMGcBhCSARIsAIW6d0CWGMutQsstwP9ldA4dNOtZFA1Rx74z64sS-PRobNhZ_vyLMUMrESIaAslAEALw_wcB)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Kafka Poc using FastApi:*** [*https://github.com/GavriloviciEduard/fastapi-kafka*](https://github.com/GavriloviciEduard/fastapi-kafka)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***geo-stream-kafka:***[*https://github.com/iwpnd/geo-stream-kafka*](https://github.com/iwpnd/geo-stream-kafka)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***18 Most Popular IoT Devices in 2022:*** [*https://www.softwaretestinghelp.com/iot-devices/#:~:text=Smart%20Mobiles%2C%20smart%20refrigerators%2C%20smartwatches,there%20by%20the%20year%202022%3F*](https://www.softwaretestinghelp.com/iot-devices/#:~:text=Smart%20Mobiles%2C%20smart%20refrigerators%2C%20smartwatches,there%20by%20the%20year%202022%3F)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***FastAPI:***[*https://fastapi.tiangolo.com/*](https://fastapi.tiangolo.com/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***QuestDB:***[*https://questdb.io/docs/*](https://questdb.io/docs/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***Row vs Column Oriented Databases:***[*https://dataschool.com/data-modeling-101/row-vs-column-oriented-databases/*](https://dataschool.com/data-modeling-101/row-vs-column-oriented-databases/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**ksqlDB**: [https://docs.ksqldb.io/en/latest/](https://docs.ksqldb.io/en/latest/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

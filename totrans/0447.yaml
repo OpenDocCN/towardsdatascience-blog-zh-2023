@@ -1,0 +1,338 @@
+- en: Building Blocks of Causal Inference — A DAGgy Approach Using Lego
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-blocks-of-causal-inference-a-daggy-approach-using-lego-cac1372348f3](https://towardsdatascience.com/building-blocks-of-causal-inference-a-daggy-approach-using-lego-cac1372348f3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An Introduction to Causal Inference with DAGs and Bayesian Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mmgillin.medium.com/?source=post_page-----cac1372348f3--------------------------------)[![Murray
+    Gillin](../Images/40619967eb8911fa1d651503143b940c.png)](https://mmgillin.medium.com/?source=post_page-----cac1372348f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cac1372348f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cac1372348f3--------------------------------)
+    [Murray Gillin](https://mmgillin.medium.com/?source=post_page-----cac1372348f3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cac1372348f3--------------------------------)
+    ·9 min read·Feb 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Causal inference is a fascinating topic. Causal models seek to create a mechanistic
+    understanding of how variables are related. Recently I’ve been reading [Statistical
+    Rethinking by Richard McElreath](https://xcelab.net/rm/statistical-rethinking/),
+    whose eloquent and accessible writing has changed the way I think about not just
+    regression and statistical analysis, but life.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article seeks to explore causal modelling using Directed Acyclic Graphs
+    or DAGs and [brms](https://paul-buerkner.github.io/brms/) ([Buerkner](https://www.jstatsoft.org/article/view/v080i01)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe10c108fa784cf687d96ac142ce244c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I found this wonderful article by Ziegler et al, that seeks to teach the pedagogy
+    of multiple linear regression models to school children. The dataset I’ll be using
+    is taken from this and is available under CC BY 4.0 license.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.tandfonline.com/doi/full/10.1080/26939169.2021.1946450?scroll=top&needAccess=true&role=tab&source=post_page-----cac1372348f3--------------------------------)
+    [## Building a Multiple Linear Regression Model With LEGO Brick Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Abstract We present an innovative activity that uses data about LEGO sets to
+    help students self-discover multiple…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.tandfonline.com](https://www.tandfonline.com/doi/full/10.1080/26939169.2021.1946450?scroll=top&needAccess=true&role=tab&source=post_page-----cac1372348f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Load Packages and Data**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We perform some basic data cleansing, and then min/max scale the variables so
+    that they’re on the same scale so that our later interpretation of beta posterior
+    means later is lot easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploratory Data Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using GGally:ggpairs we generate the below pair plot for our variables of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ba8f83ff90cd7b3f8bc54354a31595ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Variable Pairplot Using Min-Max Scaled Variables (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nothing overtly interesting to note, other than the strong positive linear relationships
+    between all three variables. But what is the correct *causal* model? Does increasing
+    the price also increase the number of pieces? I don’t think so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Causal Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using the loaded dataset we are going to create a causal understanding of Price.
+    The dataset is conceptually easy to understand causally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thousands of Lego sets exist from basic children’s Duplo to large sets with
+    thousands of pieces like the Millenium Falcon or Death Star from Star Wars. Prices
+    can start from $10–20 to thousands for limited edition scale model sets. Can we
+    create a reasonable causal model for the price given a set’s features?
+  prefs: []
+  type: TYPE_NORMAL
+- en: DAGs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the below, we use the daggity package to set up our proposed DAG with some
+    plot co-ordinates and then use ggdag to plot the below figure that describes all
+    the different pathways that Weight and the number of Pieces can influence the
+    Price of a lego set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our task is now to test the implications of these DAGs and then finalise a causal
+    model that best describes the influence of these variables on Price based on our
+    dataset. To begin with, we can reasonably say that the number of pieces is positively
+    correlated with weight and price, i.e. the more pieces a set has, the heavier
+    it will be and more expensive. Similarly, we can also reason that larger, heavier
+    sets should cost more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/06ba7c973ab778ea1b377de184e34c98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Complete DAG for Weight, Pieces and Price (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regress Price on Pieces
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A natural place to start is regressing the price on the number of pieces, Pcs
+    → Pr. The beauty of Bayesian analysis is being able to provide prior distributions
+    before looking at the data. The distribution of set prices is described by a normal
+    distribution, where the mean is described by linear terms of the intercept and
+    gradient term for pieces. The intercept is described by a relatively broad gaussian
+    distribution with a mean value of $20 and a standard deviation of $6\. In essence,
+    this describes the distribution of base prices of a Lego set without any pieces.
+    The beta term describes the value increase per piece. A Google search indicates
+    the average price of a Lego piece is 11c, so this is a good start, and we’ll make
+    the standard deviation sufficiently broad.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0aa3af11d9eabb2463155875f3b972ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pcs → Pr Prior Formula (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c8c63c90d50dd15b8b22319ab8495e52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary Output for Pcs → Pr (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our priors weren’t too far off after being exposed to the data, the posterior
+    mean for the intercept term represents the average price of a Lego set with zero
+    pieces, and each piece adds 8c to the value of the set. The posterior distributions
+    have fairly discrete error terms on their respective scales, thus the model is
+    fairly confident of these values based on the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regress Price on Weight
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Similarly above, set some reasonable yet broad priors that will be swamped by
+    the data. We’ve assumed the same intercept prior as before, the beta term for
+    Weight, again very broad, with a mean of $50/kg and a standard deviation of $15.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c0d27ac427ab6a97e0f5c94df57713d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: W → Pr Prior Formula (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/22c55104992bd30d73c410d19b4e1f51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary Output for W → Pr (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This time the Intercept term is lower than before, with a posterior mean of
+    $5.77, and the gradient term for Weight has a posterior mean of $57.90/kg. Note
+    this model is more confident as the error values are more discrete than when regressing
+    Price on Pieces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regress Price on Pieces and Weight
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now things get a little more interesting — we’ve created two Bayesian regression
+    models for Price, using both the number of Pieces and Weight. Both seem reasonably
+    ok models, but which is the better causal model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Meet the Collider, whereby the number of Pieces and Weight are independent of
+    each other (Pcs _||_ W). We can already remove this form consideration given what
+    we mechanistically know about the variables, but let’s develop models to support
+    this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21044588c7e895d7ece2790b374cecc9.png)![](../Images/e8f305904850d841c8c3c947176532c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Collider DAG and Formula for W → Pr ← Pcs (Images by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/578a968cb0e1d27129eeff3ae28159f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Outputs Summary for W → Pr ← Pcs (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We notice immediately that the coefficient for the intercept has not changed
+    much at all — and both the predictor coefficients have decreased, this isn’t surprising
+    given how strongly correlated they are, and an example of multicollinearity. This
+    is enough to disprove the Collider as an appropriate causal model, violating the
+    independence assumption between the two variables. Below we visualise the posterior
+    distributions of Weight and Pieces together as a scatter plot, to display multicollinearity,
+    there is some shared axis of variance. On the right-hand side, we also see the
+    near-zero difference in posterior distributions of the Weight term between regressing
+    on Weight vs. Weight and Pieces together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f32c0fabb1c10eb36556dd7da7f3d2de.png)![](../Images/440f4840fcfd52628fda38fc6d74aab3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Weight and Pieces Demonstrate Multicollinearity, Variables Min-Max Scaled (Image
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next DAG is known as the Pipe, whereby the number of pieces is independent
+    of Price when conditioning on Weight, (or Pcs _||_ Pr | W). Alternatively, we
+    think about it as, once we know the Weight of a set, knowing the number of Pieces
+    adds no further value to our understanding of Price.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c295e988b88b107679284d158e7efee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Pipe Pcs → W → Pr (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below we establish the Pipe as a Bayesian model, using the priors from our previous
+    examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f1c4207cc045594d0d75bcf6cbaec56d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary Output for Pcs → W → Pr (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Price intercept remains unchanged as we are regressing on Weight, and the
+    posterior mean of which is effectively the same as our first model W → Pr. The
+    posterior mean of the Weight Intercept could potentially represent the weight
+    of the packaging before any pieces are added. The regression coefficient for Pieces
+    is relatively small (0.0014kg/1.4g per piece).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s test the implied conditional independence with a counterfactual model.
+    We establish new data, varying the number of pieces while holding the weight constant
+    at 1kg.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0b65328041078e1a3e6de06d45374bad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Counterfactual Plot for Pieces on Price (Image by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the impact of Pieces on Price is mediated through Weight, it holds that Price
+    will remain constant as Weight is constant regardless of the number of Pieces.
+    This supports the implied conditional independency, that Price is independent
+    of Pieces when conditioning on Weight (or Pcs _||_ Pr | W). Alternatively, once
+    we know the Weight of a set, knowing the number of Pieces adds no further information
+    to our understanding of Price.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Concluding Remarks**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ve demonstrated an accessible introduction to causal modelling
+    using Bayesian regression. We’ve developed a causal model for the impacts of physical
+    variables (Pieces and Weight) on Price, and found that we can reasonably believe
+    that regressing Price on Weight is a decent causal model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’d like to take a chance to thank Richard McElreath for his wonderful writing
+    and lectures on causal modelling which have inspired me to change the way I think,
+    taking a more rigorous Bayesian approach to my work and life.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you. I hope you enjoyed reading this as much as I enjoyed writing. If
+    you’re not a Medium member — use my referral link below and get regular updates
+    on new publications from myself and other fantastic Medium authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mmgillin.medium.com/membership?source=post_page-----cac1372348f3--------------------------------)
+    [## Murray Gillin - Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read writing from Murray Gillin on Medium. Business Risk Analyst at Amazon Australia
+    | Passionate Data Analyst and ML…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: mmgillin.medium.com](https://mmgillin.medium.com/membership?source=post_page-----cac1372348f3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

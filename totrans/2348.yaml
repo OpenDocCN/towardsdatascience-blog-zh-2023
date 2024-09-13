@@ -1,0 +1,922 @@
+- en: When AutoML Meets Large Language Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/when-automl-meets-large-language-model-756e6bb9baa7](https://towardsdatascience.com/when-automl-meets-large-language-model-756e6bb9baa7)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Leveraging the power of LLMs to guide hyperparameter searches
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----756e6bb9baa7--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----756e6bb9baa7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----756e6bb9baa7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----756e6bb9baa7--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----756e6bb9baa7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----756e6bb9baa7--------------------------------)
+    ·23 min read·Oct 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf26341128d5b5fbb82f432835e76c2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [John Schnobrich](https://unsplash.com/@johnschno?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Automated machine learning*, or AutoML in short, aims to automate various
+    steps of a machine learning pipeline. A crucial aspect of it is **hyperparameter
+    tuning**. Hyperparameters refer to parameters that govern the structure and behavior
+    of an ML algorithm (e.g., the number of layers in a neural network model), and
+    the values of those parameters are set beforehand instead of learning from the
+    data, unlike other ML parameters (e.g., weights and biases of a neural network
+    layer).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current practices used in AutoML for hyperparameter tuning rely heavily
+    on sophisticated algorithms (such as [Bayesian optimization](https://medium.com/towards-data-science/an-introduction-to-surrogate-optimization-intuition-illustration-case-study-and-the-code-5d9364aed51b))
+    to automatically identify the optimal combination of the hyperparameters that
+    yields the best model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While approaching the hyperparameter tuning problems from a pure algorithmic
+    point of view can work, there is another crucial piece of information that could
+    complement the algorithmic search strategy: **human expertise**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Senior data scientists, based on their years of experience and deep understanding
+    of the ML algorithms, often intuitively know where to initiate the search, which
+    regions of the search space might be more promising, or when to narrow down or
+    expand the possibilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, this gives us a very interesting idea: can we design a **scalable
+    expertise-guided search strategy** that leverages both the nuanced insights provided
+    by the expert and the search efficiency offered by the AutoML algorithms?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where the **large language models** (LLM), such as GPT-4, can play a
+    role. Among their vast amount of training data, a certain portion of the corpus
+    contains texts that are dedicated to explaining and discussing the best practices
+    of machine learning (ML). Thanks to that, the LLMs are able to internalize a substantial
+    amount of ML expertise and obtain a significant chunk of the collective ML wisdom.
+    This positions LLMs as potential knowledgable ML experts who can interact with
+    the existing AutoML tool to collaboratively perform expert-guided hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ddfb39d0a9b05fc40b3bbe3f19050ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An illustration of LLM-guided hyperparameter tuning. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, let’s take this idea for a spin and implement an **LLM-guided
+    hyperparameter tuning workflow**. Specifically, we will develop a workflow that
+    combines LLM guidance with a simple random search, and then compare its tuning
+    results against an off-the-shelf, state-of-the-art, algorithmic-based AutoML tool
+    called [FLAML](https://microsoft.github.io/FLAML/) (from Microsoft Research).
+    The rationale for this comparison is to assess if tapping into ML domain expertise
+    can truly bring value, even when paired with a straightforward search algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Does this idea resonate with you? let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[NOTE]: All the prompts shown in this blog are generated and optimized by ChatGPT
+    (GPT-4). This is necessary as it ensures the quality of the prompts and beneficial
+    as it saves one from tedious manual prompt engineering.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This is the 4rd blog on my series of LLM projects. The 1st one is [Building
+    an AI-Powered Language Learning App](/building-an-ai-powered-language-learning-app-learning-from-two-ai-chatting-6db7f9b0d7cd),
+    the 2nd one is [Developing an Autonomous Dual-Chatbot System for Research Paper
+    Digesting](/developing-an-autonomous-dual-chatbot-system-for-research-paper-digesting-ea46943e9343),
+    and the 3rd one is [Training Problem-Solving Skills in Data Science with Real-Life
+    Simulations](/training-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c).
+    Feel free to check them out!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Table of Content
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**·** [**1\. Case Study**](#9ff4)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [1.1 Dataset description](#0e69)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [1.2 Model description](#48d1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**·** [**2\. Workflow Design**](#6418) **·** [**3\. Configuring the Chatbot**](#f2d7)
+    **·** [**4\. Suggesting Optimization Metric**](#06cb) **·** [**5\. Defining Initial
+    Search Space**](#1a84) **·** [**6\. Refining Search Space**](#c4be) **·** [**7\.
+    Tuning Log Analysis**](#b34a)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [7.1 Random search with successive halving](#eaa7)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [7.2 Log analysis](#f702)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**·** [**8\. Case Study**](#edc2)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [8.1 Determining metric](#f0ac)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [8.2 1st search iteration](#56af)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [8.3 2nd search iteration](#9055)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [8.4 3rd search iteration](#950f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [8.5 Testing](#b072)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**·** [**9\. Comparison Against Out-of-Box AutoML Tool**](#19b1) **·** [**10\.
+    Conclusion**](#2ddd)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Case Study
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To ground our discussion in a concrete example, let’s start by introducing the
+    case study we will investigate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog, we will be looking at a hyperparameter tuning task for a **binary
+    classification** problem. More specifically, we will investigate a cybersecurity
+    dataset called the [**NSL-KDD**](https://www.unb.ca/cic/datasets/nsl.html) dataset
+    and identify the optimal hyperparameters of an [**XGBoost**](https://xgboost.readthedocs.io/en/stable/)model
+    such that the trained model can accurately distinguish benign and attack activities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1.1 Dataset description
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The NSL-KDD dataset is a widely used dataset in the field of network intrusion
+    detection. The full dataset contains four attack categories, i.e., dos(Denial
+    of Service), r2l(unauthorized Access from a Remote Machine), u2r(privilege escalation
+    attempts), as well as probe (brute-force probing attacks). For our current case
+    study, we investigate a *binary classification* problem: we only consider data
+    samples that are either “benign” or “probe” in nature and train a classifier that
+    can distinguish between those two states.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The NSL-KDD dataset consists of 40 features (e.g., connection length, protocol
+    type, transmitted data bytes, etc.) that are derived from raw network traffic
+    data, and capture various characteristics of individual network connections. The
+    dataset has been pre-divided into a train and a test set. The following table
+    shows the number of samples in both sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/147d68e05fb8230c6c1f69a5970e892d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of samples in train and test set. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that our current dataset is imbalanced. This is typical in cybersecurity
+    applications as the available number of attack samples is usually much smaller
+    than the number of benign samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the pre-processed datasets [here](https://github.com/ShuaiGuo16/LLM-guided-AutoML/tree/main/dataset).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1.2 Model description
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although the full AutoML entails model selection, in the current case study,
+    we limit our scope to only optimizing the XGBoost model. XGBoost model is known
+    for its versatile performance, under the condition that the right model hyperparameters
+    are being used. Unfortunately, given the large number of tunable hyperparameters
+    of XGBoost, it is non-trivial to identify the optimal hyperparameter combination
+    for a given dataset. This is exactly where AutoML can bring value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We consider tuning the following XGBoost hyperparameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: n_estimators, max_depth, min_child_weight, gamma, scale_pos_weight, learning_rate,
+    subsample, colsample_bylevel, colsample_bytree, reg_alpha, and reg_lambda.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For detailed descriptions of the above-mentioned hyperparameters, please refer
+    to the [official documentation](https://xgboost.readthedocs.io/en/stable/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Workflow Design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To realize the LLM-guided hyperparameter tuning, there are two questions we
+    need to answer: how should we incorporate the LLM’s ML expertise into the tuning
+    process? And how should we let LLM interact with the tuning tool?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ How to incorporate the LLM’s ML expertise into the tuning process?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well, there are at least three places in the tuning process where LLM’s ML
+    expertise can provide guidance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Suggest optimization metric**: Hyperparameter tuning usually requires a metric
+    to define what is deemed as “optimal” among various competing hyperparameter combinations.
+    This sets the target for the underlying optimization algorithms (e.g., Bayesian
+    optimization) in AutoML. LLMs can provide insights into which metrics are more
+    suitable for specific types of problems and dataset characteristics and potentially
+    offer explanations of the advantages and disadvantages of candidate metrics.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Suggest initial search space**: As most hyperparameter tuning tasks are conducted
+    in an iterative manner, it is usually necessary to configure an initial search
+    space to set the stage for the optimization process. LLMs, based on their learned
+    ML best practices, can recommend hyperparameter ranges that are meaningful to
+    the investigated dataset characteristics and the selected ML model. This can potentially
+    reduce the need for unnecessary explorations, thus saving a significant amount
+    of computation time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Suggest refinement for search space**: As the tuning process progresses,
+    it is usually necessary to refine the configured search space. Refinement can
+    take two directions, i.e., narrowing down the ranges of certain hyperparameters
+    to regions that show promise, or expanding the ranges of certain hyperparameters
+    to explore new areas. LLMs, by analyzing the optimization logs from the previous
+    rounds, can automatically propose new refinements that drive the tuning process
+    to more promising results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2️⃣ How to let LLM interact with the tuning tool?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ideally, we could wrap the random search tool as an API and implement an LLM-based
+    **agent** that can access this API to perform tuning. However, given the limited
+    time, I didn’t manage to configure a working agent that could reliably perform
+    the iterative tuning process I outlined above: sometimes the agent couldn’t properly
+    use the tool due to the incorrect input schema; other times the agent simply diverged
+    from the task.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatively, I implemented a simple chatbot-based workflow, which consists
+    of the following two components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A chatbot with memory. Here, memory is important because the chatbot needs to
+    recall the previously suggested search space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Three prompts correspond to suggesting optimization metric, suggesting initial
+    search space, and suggesting search space refinement, respectively.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To kick-start the workflow, the chatbot is first prompted to suggest a suitable
+    optimization metric based on the problem context and the dataset characteristics.
+    The chatbot’s response will then be parsed and the name of the metric will be
+    extracted and stored as a variable. As a second step, the chatbot is prompted
+    to suggest an initial search space. Same as in the first step, the response will
+    be parsed and the search space will be extracted and stored as a variable. With
+    both pieces of information available, the random search tool will be invoked with
+    the chatbot-suggested metric and search space. Overall, this constitutes the first
+    round of iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the random search tool completes the search, the chatbot will be prompted
+    to recommend refinement of the search space based on the results obtained from
+    the last run. After a new search space is successfully parsed from the chatbot’s
+    response, another round of random search will proceed. This process iterates until
+    either the computational budget is exhausted, or the convergence is obtained,
+    e.g., no more improvement over the previous run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c217e54637dd58fd79a95279472c13d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An illustration of a chatbot-based solution for achieving LLM-guided hyperparameter
+    tuning. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although not as elegant as the agent-based approach, this chatbot-based workflow
+    bears a couple of benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Easy to implement and realize quality control**. The integration of a chatbot
+    with the tuning tool is simplified to designing three prompts and a couple of
+    helper functions to extract target information from the chatbot’s response. This
+    is much simpler compared to a fully integrated agent-based approach. Also, quality
+    control becomes more manageable as the hyperparameter tuning task is divided into
+    explicit steps, where each step can be monitored and adjusted, ensuring that the
+    search process remains on track.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fully transparent decision-making**. As the chatbot will clearly articulate
+    each decision or recommendation it has made, the hyperparameter tuning process
+    is no longer a black-box process for the user. This is crucial for achieving *interpretable*
+    and *trustworthy* AutoML.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Allow incorporation of human intuition**. Although the current workflow is
+    designed to be autonomous, it can be trivially extended to allow the human expert
+    to either choose to accept the advice or make necessary adjustments based on their
+    own expertise, before each search iteration. This flexibility opens the door for
+    *human-in-the-loop tuning* and potentially leads to better optimization results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the next sections, we will go through the details of configuring the chatbot,
+    as well as the prompts for suggesting the metric, initial search space, and search
+    space refinement, individually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Configuring the Chatbot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can easily set up a chatbot with memory using LangChain. We start by importing
+    the necessary libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In LangChain, a chatbot can be configured by an`ConversationChain` object,
+    which requires a backbone LLM, a memory object to hold conversation history, as
+    well as a prompt template to specify the chatbot’s behavior:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code snippet above, the variable `system_message` sets the context for
+    the chatbot, which is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that we have specified the role, the purpose, and the expected behavior
+    of the chatbot in the system message. Later, we can make inferences with the configured
+    chatbot using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: where the `prompt`is the specific instructions we have for the chatbot, i.e.,
+    suggesting optimization metric, suggesting initial search space, or suggesting
+    refining search space. We will cover those prompts in the next couple of sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Suggesting Optimization Metric
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As the first step of LLM-guided hyperparameter tuning, we would like the chatbot
+    to propose a suitable metric for the tuning tool to optimize. This decision should
+    be based on several factors, including the nature of the problem (i.e., regression
+    or classification), the characteristics of the given dataset, and any other specific
+    requirements from business or real-world implications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following snippet defines the prompt to achieve our goal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the prompt shown above, we have informed the chatbot of the context of the
+    problem, the dataset characteristics (encapsulated in the variable `report`, which
+    we will discuss later), the objective (recommending a suitable hyperparameter
+    optimization metric for training an XGBoost model), the specific requirements
+    (high detection rate and low false alarm rate), and the candidate metrics (they
+    are all supported in sci-kit learn). Note that we explicitly asked the chatbot
+    to output the metric name inside a [BEGIN]-[END] block, which eases the automatic
+    extraction of the information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To generate the data report, we can define the following function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we specifically calculated if the given dataset is imbalanced, as this
+    information could impact the selection of the optimization metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have completed the first prompt for instructing the chatbot to suggest
+    a suitable metric for evaluating the performance of various hyperparameter configurations.
+    Next, let’s look at constructing the prompt for defining the initial search space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**5\. Defining Initial Search Space**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Besides the optimization metric, we still need an initial search space of the
+    hyperparameters to start the tuning round. The following snippet shows the prompt
+    for achieving that goal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The prompt above contains quite a lot of information, so let’s break it down:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We started by informing the chatbot about our objective.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We provided a list of tunable hyperparameters and their meanings. Additionally,
+    we also indicate the expected data type of each hyperparameter. This piece of
+    information is important for the LLM to decide the sampling distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We defined the expected output format for the search space for effective parsing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We indicated available sampling distributions the LLM can suggest.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that we explicitly asked the chatbot to briefly explain the rationale behind
+    the suggested search space. This is crucial for achieving transparency and interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for recommending the initial search space. Next, we look at refining
+    the search space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Refining Search Space
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After obtaining the optimization metric and initial search space from the chatbot,
+    we can kick-start a tuning round. Afterward, we can feed the generated AutoML
+    logs into the chatbot and prompt it to suggest refinements to the search space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following snippet shows the prompt to achieve the goal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are a couple of things worth explaining:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We supply the chatbot with the top-5 best-performing configurations as well
+    as their associated test scores from the last tuning round. This could serve as
+    the base for the chatbot to determine the next round of refinement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By including the best test scores of the last run and all previous runs, the
+    chatbot could know if the suggested search space from the previous run is effective
+    or not.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We explicitly ask the chatbot to consider further exploring the search space.
+    Generally, the best practice in optimization is to **balance exploration and exploitation**.
+    Since our employed random search algorithm (which will be discussed in the results
+    section) already entailed the *exploitation*, it makes sense that we instruct
+    the LLM to focus more on *exploration*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As with the other prompts, we asked the LLM to reason about its suggestions
+    for transparency and interpretability.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the next section, let’s take a look at the log analysis logic that produces
+    the `top_n` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Tuning Log Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As an iterative approach, we would like the chatbot to propose a new search
+    space once the previous search run has been completed, and the basis for that
+    decision-making process should be the log produced during the last search run.
+    In this section, we first introduced the search algorithm employed in the current
+    case study. Then, we discuss the log structure and the code to extract useful
+    insights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.1 Random search with successive halving
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As mentioned at the beginning of this post, we would like to couple a simple
+    hyperparameter search algorithm with the LLM to examine if domain expertise can
+    bring value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the simplest tuning approaches is **random search**: for a defined search
+    space (which is specified by attaching sampling distributions to the hyperparameters),
+    a given number of instances of hyperparameter combinations are sampled and their
+    associated model performances are evaluated. The sampled hyperparameter configuration
+    which produced the best performance is deemed as the best.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite its simplicity, the naive version of the random search may lead to inefficient
+    use of computational resources, as it does not discriminate between hyperparameter
+    configurations and poor hyperparameter choices are trained anyway.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address this issue, the **successive halving** technique is proposed to enhance
+    the basic random search strategy. Essentially, a successive halving strategy first
+    evaluates many configurations for a small number of resources, and then gradually
+    allocates more resources to only the promising ones. As a result, poor configurations
+    can be effectively discarded early on, therefore enhancing the search efficiency.
+    Sci-kit Learn provides the`[HalvingRandomSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.HalvingRandomSearchCV.html)`
+    estimator that exactly implements this strategy, which we will adopt in our current
+    case study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.2 Log analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When running the `[HalvingRandomSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.HalvingRandomSearchCV.html)`
+    search, the search logs are stored in the attribute `cv_results_`. The raw logs
+    are in a dictionary format, which can be converted to a Pandas Dataframe for better
+    insights extraction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d792bd9f77cdd9399c163cc7a0f550f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Logs produced by the search algorithm. (Examples taken from the [official user
+    guide](https://scikit-learn.org/stable/modules/grid_search.html#successive-halving-cv-results).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our current purposes, we would like to extract the top-N (default 5) best-performing
+    configurations as well as their associated test scores. The following function
+    shows how we can achieve that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 8\. Case Study
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we have all the pieces, it’s time to apply the LLM-guided workflow to our
+    case study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.1 Determining metric
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To begin with, we prompt the LLM to suggest a suitable optimization metric:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is the response produced by the LLM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4de8c745b8dcf8e34ba6db0c3e505e68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LLM suggested a suitable metric and provided the reasoning. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the LLM recommended the “F1” score as the metric based on the
+    problem context and dataset characteristics, which aligns with our expectations.
+    In addition, the metric name is correctly enclosed between our specified markers
+    for postprocessing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.2 1st search iteration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we prompt the LLM to suggest an initial search space:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of LLM is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/600300d6a76769e45671c9ec4a119283.png)![](../Images/4f43e2b130e9c79be142e94115b2f1ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LLM suggested an initial search space and provided the reasoning. (Image by
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the LLM has faithfully followed our instructions and provided
+    detailed explanations regarding setting the variational range for each of the
+    tunable hyperparameters. This is crucial for ensuring the transparency of the
+    hyperparameter tuning process. Also, note that the LLM has managed to output a
+    search space with the correct format. This shows the importance of giving specific
+    examples in the prompt design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we invoke the random search with successive halving and run for the first
+    iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the `HalvingRandomSearchCV` estimator is still experimental. Therefore,
+    it is necessary to first explicitly import `enable_halving_search_cv` before using
+    the estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the `HalvingRandomSearchCV` estimator requires setting up a couple of
+    parameters. In addition to specifying the estimator (clf), the parameter distribution
+    (search space), and the optimization metric (f1), we also need to specify the
+    parameters that govern the time budget. For our current case, we set `n_candidates`
+    to 500, which means that we will sample 500 candidate configurations (each configuration
+    has a different hyperparameter combination) at the first iteration. Also, the
+    `factor` is set to 3, meaning that only one-third of the candidates are selected
+    for each subsequent iteration. Meanwhile, those selected one-third of the candidates
+    will use 3 times more resources (i.e., the number of training samples) in the
+    subsequent iteration. Finally, we set `min_resource` to ‘exhaust’, meaning that
+    at the last iteration, the remaining candidates will use all the available training
+    samples. For a detailed description of setting up the `HalvingRandomSearchCV`
+    estimator, please refer to this post: [11 Times Faster Hyperparameter Tuning with
+    HalvingGridSearch](/11-times-faster-hyperparameter-tuning-with-halvinggridsearch-232ed0160155).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A snapshot of the logs produced by running the `HalvingRandomSearchCV` estimator
+    is shown below. The wall time for running the search is around 20 minutes on my
+    PC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b3d4f7ac96bd8387075ff4b8535ca6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Snapshot of the logs produced by the successive halving random search algorithm.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.3 2nd search iteration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once the search is completed, we can retrieve the search history stored in
+    `search.cv_results`and send it to the previously-defined `log_analysis()` function
+    to extract tuning insights. Afterward, we call `suggest_refine_search_space()`
+    function to prompt the LLM to recommend a new search space based on the previous
+    search results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The response of the LLM is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99bf92d70ab4368587e5e9b67f529dff.png)![](../Images/9d33863c6bfdb562d5621ae313802eea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LLM suggested a refinement of search space and provided the reasoning. (Image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we can see that the LLM has suggested narrowed space for some hyperparameters
+    and expanded space for other hyperparameters. The rationale for those suggestions
+    is also clearly articulated, which promotes interpretability and transparency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given the refined search space, we can run the `HalvingRandomSearchCV` estimator
+    for the second time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The wall time for running the search is around 29 minutes on my PC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.4 3rd search iteration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s run one more iteration with the LLM-guided search. Same as before, we
+    first extract useful insights from the previous search logs and then prompt the
+    LLM to suggest further refinement for the search space. The response produced
+    by the LLM is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/540632b029e66cbdc8a8e703cf94cb62.png)![](../Images/fa9ed4b32ca9bd7882a8a1d4f81d0240.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LLM suggested a refinement of search space and provided the reasoning. (Image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given the newly defined search space, we run the `HalvingRandomSearchCV` estimator
+    for the third time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The wall time for running the search is around 11 minutes on my PC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.5 Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now we have gone through three rounds of random search, let’s test the performance
+    of the obtained XGBoost model. For that, we can define a helper function to calculate
+    various performance indices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code snippet above, we applied the trained XGBoost model to the testing
+    dataset and assessed its performance. The obtained confusion matrix is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/120b41a0c443fd2cf2227f2d8da24863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The confusion matrix of applying the trained XGBoost model to the testing dataset.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on the confusion matrix, we can calculate various performance metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Accuracy: 94.22%'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Precision: 89.5%'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Detection rate (recall): 80.52%'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'False alarm rate (1-Specificity): 2.35%'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'ROC-AUC score: 0.983'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'F1 score: 0.848'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Matthews correlation coefficient: 0.81'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 9\. Comparison Against Out-of-Box AutoML Tool
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we have mentioned in the beginning, we would like to compare the tuning results
+    of the developed LLM-guided search against an off-the-shelf, algorithmic-based
+    AutoML tool to assess if tapping into ML domain expertise can truly bring value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The AutoML tool we will be employing is called [FLAML](https://microsoft.github.io/FLAML/),
+    which is developed by Microsoft Research and stands for *A Fast Library for Automated
+    Machine Learning & Tuning*. This tool is state-of-the-art and supports fast and
+    economical automatic tuning, capable of handling large search space with heterogeneous
+    evaluation costs and complex constraints/guidance/early stopping. For installing
+    the library, please refer to the [official page](https://microsoft.github.io/FLAML/docs/Installation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using this tool is extremely simple: in the code snippet below, we first instantiate
+    an `AutoML` object and then call its `fit()` method to kick off the hyperparameter
+    tuning process. We limit the tuning to the XGBoost model only (FLAML also supports
+    other model types) and set a time budget of 3600s, which is roughly the same as
+    the total time we spent on 3-rounds of LLM-guided search (Random search time+
+    LLM response time).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results comparison between the LLM-guided search and out-of-box FLAML is
+    shown in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3201aa335fbd481e84542172ca070b9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results comparison between two tuning approaches. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the LLM-guided search has yielded better results than the out-of-box
+    FLAML for all of the considered metrics. Since we are looking at a cybersecurity
+    application, the two most important metrics are the **detection rate** and the
+    **false alarm rate**. Here, we can see that the LLM-guided search has managed
+    to significantly improve the detection rate while slightly lowering the false
+    alarm rate. As a result, the XGBoost model trained via the LLM-guided search would
+    be a superior anomaly detector compared to the FLAML-searched one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, we can conclude that for our current case study, leveraging the ML
+    domain expertise embedded in the LLM can indeed bring value in hyperparameter
+    tuning, even when paired with a straightforward search algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10\. Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog, we investigated a new paradigm of AutoML: LLM-guided hyperparameter
+    tuning. Here, the key idea is to treat the large language model as an ML expert
+    and leverage its ML domain knowledge to propose a suitable optimization metric,
+    suggest initial search space, as well as recommend refinement for the search space.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Later, we applied this approach to identify the optimal XGBoost model for a
+    cybersecurity dataset, and our results indicated that the informed hyperparameter
+    search (i.e., the LLM-guided search) yielded a better anomaly detection model
+    than the pure algorithmic-based AutoML tool FLAML, achieving a higher detection
+    rate and a lower false alarm rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you find my content useful, you could buy me a coffee [here](https://www.buymeacoffee.com/Shuaiguo09f)
+    🤗As always, you can find the companion notebook with full code [here](https://github.com/ShuaiGuo16/LLM-guided-AutoML/tree/main)💻If
+    you would like to look deeper, feel free to check out the following two recent
+    research papers that investigated the same topic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[AutoML-GPT: Automatic Machine Learning with GPT](https://arxiv.org/pdf/2305.02499.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[AutoML in the Age of Large Language Models: Current Challenges, Future Opportunities
+    and Risks](https://arxiv.org/pdf/2306.08107.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Also, if you are interested in other interesting applications of large language
+    models, take a look at my previous blogs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Building an AI-Powered Language Learning App](/building-an-ai-powered-language-learning-app-learning-from-two-ai-chatting-6db7f9b0d7cd)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Developing an Autonomous Dual-Chatbot System for Research Paper Digesting](/developing-an-autonomous-dual-chatbot-system-for-research-paper-digesting-ea46943e9343)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Training Problem-Solving Skills in Data Science with Real-Life Simulations](/training-soft-skills-in-data-science-with-real-life-simulations-a-role-playing-dual-chatbot-c80dec3dd08c).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Looking forward to sharing with you more exciting LLM projects. Stay tuned!
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,604 @@
+- en: Effectively Optimize Your Regression Model with Bayesian Hyperparameter Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/effectively-optimize-your-regression-model-with-bayesian-hyperparameter-tuning-819c19f5dab3](https://towardsdatascience.com/effectively-optimize-your-regression-model-with-bayesian-hyperparameter-tuning-819c19f5dab3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn to effectively optimize hyperparameters, and prevent creating overtrained
+    models for XGBoost, CatBoost, and LightBoost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://erdogant.medium.com/?source=post_page-----819c19f5dab3--------------------------------)[![Erdogan
+    Taskesen](../Images/8e62cdae0502687710d8ae4bbcd8966e.png)](https://erdogant.medium.com/?source=post_page-----819c19f5dab3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----819c19f5dab3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----819c19f5dab3--------------------------------)
+    [Erdogan Taskesen](https://erdogant.medium.com/?source=post_page-----819c19f5dab3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----819c19f5dab3--------------------------------)
+    ·15 min read·Jul 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/85d161655226ea3f51d0055d58fa9bfe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Alexey Ruban](https://unsplash.com/@intelligenciya?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/tune?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient boosting techniques such as *XGBoost, CatBoost, and LightBoost* has
+    gained much popularity in recent years for both classification and regression
+    tasks. An important part of the process is the tuning of hyperparameters to gain
+    the best model performance. The key is to optimize the hyperparameter search space
+    together with finding a model that can generalize on new unseen data. *In this
+    blog, I will demonstrate 1\. how to learn a boosted decision tree* ***regression***
+    *model with optimized hyperparameters using Bayesian optimization, 2\. how to
+    select a model that can generalize (and is not overtrained), 3\. how to interpret
+    and visually explain the optimized hyperparameter space together with the model
+    performance accuracy. The* [*HGBoost*](https://erdogant.github.io/hgboost/) *library
+    is ideal for this task which performs, among others a double loop cross-validation
+    to protect against overtraining.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: A brief introduction.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Gradient boosting algorithms such as Extreme Gradient Boosting (*XGboost*),
+    Light Gradient Boosting (*Lightboost*), and *CatBoost* are powerful ensemble machine
+    learning algorithms for predictive modeling (*classification* and *regression
+    tasks)* that can be applied to data sets in the form of *tabular*, *continuous,
+    and mixed* forms *[1,2,3 ]*. ***Here I will focus on the regression task.*** In
+    the following sections, we will train a boosted decision tree model using a double-loop
+    cross-validation loop. We will carefully split the data set, set up the search
+    space, and perform Bayesian optimization using the library [*Hyperopt*](http://hyperopt.github.io/hyperopt/).
+    After training the model, we can deeper interpret the results by creating insightful
+    plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you need more background or are not entirely familiar with these concepts,
+    I recommend reading this blog:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/a-guide-to-find-the-best-boosting-model-using-bayesian-hyperparameter-tuning-but-without-c98b6a1ecac8?source=post_page-----819c19f5dab3--------------------------------)
+    [## A Guide to Find the Best Boosting Model using Bayesian Hyperparameter Tuning
+    but without…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boosted decision tree algorithms may outperform other models but overfitting
+    is a real danger. Fit your model using the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/a-guide-to-find-the-best-boosting-model-using-bayesian-hyperparameter-tuning-but-without-c98b6a1ecac8?source=post_page-----819c19f5dab3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you need a hands-on guide for the **classification task**, I recommend reading
+    this blog:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://erdogant.medium.com/hands-on-guide-for-hyperparameter-tuning-with-bayesian-optimization-for-classification-models-2002224bfa3d?source=post_page-----819c19f5dab3--------------------------------)
+    [## Hands-on Guide for Hyperparameter Tuning with Bayesian Optimization for Classification
+    Models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to split the data, optimize hyperparameters, prevent overtraining,
+    select the best model, and create…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: erdogant.medium.com](https://erdogant.medium.com/hands-on-guide-for-hyperparameter-tuning-with-bayesian-optimization-for-classification-models-2002224bfa3d?source=post_page-----819c19f5dab3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Before we go to the hands-on example, I will first briefly discuss the* [*HGBoost
+    library [4]*](https://erdogant.github.io/hgboost/) *.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Steps Towards a Hyperoptimized Regression Model.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are multiple steps required to train a regression model with optimized
+    hyperparameters and to prevent creating an overtrained model. The first three
+    steps will form the basis, and be the input to the *HGboost* model. Let’s go step-by-step
+    go through the steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a model with hyperoptimized parameters is time-costly, and complexer
+    compared to not hyperoptimized models. To prevent adopting overtrained models,
+    it requires making (sanity) checks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Import and initialize the *HGBoost* library.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Import data set, and pre-processing.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Decide and select the most appropriate evaluation metric.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**The hgboost library takes care of all the following steps:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the data into a *train set*, *test set*, and *validation* set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a double-loop cross-validation model where the inner loop is to optimize
+    the hyperparameters and an outer loop for validation and scoring the models.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select the best-performing model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluate the best-performing model on the independent validation set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Learn the final model on the entire dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create insightful plots for model and search space evaluation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The final step is the interpretation of the results. *Let's go through each
+    of the steps in the next section.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1\. Import and initialize.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can install *HGBoost* using pip with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: After the installation, we can import and initialize a model for a *regression
+    task*. The input parameters can be changed accordingly or the defaults (code section
+    1) can be used. I will set `max_eval=1000` iterations. The next step is to read
+    (or import) the data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step 2\. Reading and preprocessing the data set.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For demonstration, let’s use the data science salary data set [6] that can be
+    imported using the function `import_example(data=’ds_salaries’)`. This dataset
+    contains 4134 samples and 11 features. I will set `salary_in_usd`as the ***target
+    value***. For preprocessing, I will use the internal `.preprocessing()` function
+    ***(****code section 2****)*** which utilizes the [***df2onehot library***](https://github.com/erdogant/df2onehot)[5]that
+    in its turn encodes the categorical values into one-hot. Note that continuous
+    values are not encoded but remain untouched. At this point, it is strongly recommended
+    to do the Exploratory Data Analysis (EDA), and make sanity checks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The largest model performance gains typically follow from pre-processing, and
+    feature engineering.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: After the preprocessing step, there are 4134 rows x 198 columns. Be aware that
+    the pre-processing steps in this example are based under the assumption that we
+    are going to train a *XGboost* model. Different models (*Xgboost, Lightboost,
+    Adaboost*) require different preprocessing steps. As an example, the one-hot encoding
+    is required for *XGBoost* whereas other models can process non-numeric factors.
+    *Read* [***this blog***](/a-guide-to-find-the-best-boosting-model-using-bayesian-hyperparameter-tuning-but-without-c98b6a1ecac8)
+    *for more information about the (dis)advantages, and preprocessing steps.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 3\. Set the hyper-parameter search space.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The search space for hyperparameter optimization is defined in *HGBoost* and
+    slightly differs between the models *XGBoost, LightBoost, and CatBoost* (code
+    section 3). *Note that the search space (code section below) is pre-defined in
+    HGboost.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step 4\. Train/ Test/ Evaluation sets and Evaluation Metrics.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For supervised machine learning tasks, it is important to split the data to
+    avoid [overfitting](https://www.techtarget.com/whatis/definition/overfitting)
+    when learning the model. Overfitting is when the model fits (or learns) the data
+    too well and then fails to predict (new) unseen data reliably.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without splitting the data carefully, you are at risk to overfit the model parameters
+    and fit (or learn) the data too well. It can then easily fail to correctly predict
+    new (unseen) data samples.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the training process, the data set is divided into a *training set*, a *testing
+    set,* and, an *independent validation set*. *The validation set remains untouched
+    during the entire training process. It is used only once to evaluate the final
+    model performance.* Splitting the dataset is performed in percentages, such as
+    `test_size=0.2` and `eval_size=0.2`. The model evaluation metric can be set using
+    the `eval_metric`. The default ***evaluation metric*** is set to Root Mean Squared
+    Error (***RMSE***), but other flavors such as the Mean Squared Error (***MSE***)
+    or Mean Absolute Error (***MAE***) can also be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 5\. Fit, Optimize Hyperparameters, and Select The Best Model.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point, we preprocessed the data for *XGBoost* and decided which evaluation
+    metric to use. ***We can now start fitting a model and optimizing the hyperparameters.***
+    The first step in *HGBoost* for the hyperparameter optimization is setting up
+    the inner loop for optimizing the hyperparameters using Bayesian optimization
+    and, the outer loop to test how well the best-performing models can generalize
+    using *k*-fold cross-validation. The search space depends on the available hyperparameters*.*
+    The evaluation metric is set to MAE because of the good interpretability. Or in
+    other words, if we would see MAE=10000 with ***salary*** as the target value,
+    it depicts that on average, the predictive distance from the true value is 10000
+    USD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: By running the above code section, we iterated across the search space and created
+    1000 different models (`max_eval=1000`) for which the performances are evaluated.
+    Next, the models are ranked on their initial model performance. We can now evaluate
+    the robustness of the top *K* best-performing models `top_cv_evals=10` using the
+    5-fold cross-validation scheme (`cv=5`). In this sense, we aim to prevent finding
+    an overtrained model. In this example, the best scoring model across the 1000
+    iterations scored *MAE=35220*, while the average MAE based on the 5-fold cross-validation
+    was *MAE=35860*. The MAE on the independent validation set is *35270* using the
+    best model from the 5-fold CV. *Although we do not select the best scoring model,
+    we do prevent taking a model that is subject to being overfitted.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best model is not necessarily the one with the best model performance but
+    the one that can generalize on (new) unseen data, providing accurate predictions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***We now have a model that is ready to make predictions on new data.*** But
+    before making predictions, let’s first try to understand what happened in all
+    the steps above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 6\. Interpretation of the results.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point, we have a trained model and briefly looked at the regression
+    results based on the cross-validation, and using the independent validation set.
+    All tested hyperparameters for the different models are returned, which can be
+    deeper examined(code section below)*.* See also *Figure 1* where the summary of
+    all model results `results['summary']` is shown in a data frame. In addition,
+    we can also examine the results by making plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/af3eda5a237184f7d32555792f83707f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. The output of the results[‘summary’] data frame contains all model
+    results. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating plots is important to deeper examine the model performance and to investigate
+    how the hyperparameters are tuned during the Bayesian optimization process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gaining intuition with the model results is important to know whether the model
+    parameters are choosen reliable.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We can create the following plots using the built-in functionalities of *HGBsoost*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Plots to investigate the hyperparameter space.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Plot to summarize all evaluated models.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Plot the performances for the cross-validations.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Plot the results of the independent validation set*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Plot the decision tree to understand how features are used.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interpretation of the Hyperparameter Tuning.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start by investigating how the hyperparameters are tuned during the Bayesian
+    Optimization process*.* With the function `.plot_params()` we can create insightful
+    plots as depicted in ***Figure 2***. This figure contains multiple histograms
+    (or kernel density plots), where each subplot contains a single parameter that
+    is optimized during the 1000 model iterations. The small bars at the bottom of
+    the histogram depict the 1000 evaluations. In contrast, the black dashed vertical
+    lines depict the specific parameter value that is used across the top 10 best-performing
+    models. The green dashed line depicts the best-performing model ***without***
+    the cross-validation approach, and the red dashed line depicts the best-performing
+    model ***with*** cross-validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s have a look at ***Figure 2A***. In the left bottom corner of the figure,
+    there is the parameter ***subsample*** for which the values range from 0.5 up
+    to 1\. There is a clear peak around 0.95 which indicates that the Bayesian optimization
+    explored these regions more intensively. Our best-performing model seems to use
+    *subsample=0.956* (red dashed line). But here is more to look at. When we now
+    look at ***Figure 2B***, we also have the *subsample* for which each dot is one
+    of the 1000 models. The horizontal axes are the iterations and the vertical axis
+    is the optimized values. For this parameter, there is a clear trend during the
+    iterations of the optimization process. It first explored the lower bound regions
+    and then moved towards the upper bound regions because models scored apparently
+    better when increasing the *subsample* value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In this manner, all the hyperparameters can be interpreted in relation to
+    the different models.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a78739ed854fbadd02a6f9543e2a8dcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Tuned hyperparameters during the 1000 iterations for the regression
+    model. A. The distribution of the seven parameters. B. Each dot is one iteration
+    for which a particular value is selected. Note that this image is only for illustration
+    and not the real results. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretation of the model performance across all evaluated models.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With the plot function `.plot()` we create insights into the performance (MAE
+    in this case) of the 1000 models (***Figure 3***). The green dashed line depicts
+    the best-performing model ***without*** the cross-validation approach, and the
+    red dashed line depicts the best-performing model ***with*** cross-validation.
+    ***Our selected model is the one with the red dashed line.*** In general, we can
+    see a trend that model performance improves during the iterations as the MAE scores
+    get lower. This indicates that Bayesian optimization works very well. Furthermore,
+    when we look at the top 10 scoring models (the red squared ones), their performance
+    is slightly worse during the k-fold cross-validation. Or in other words, the best
+    model during the 1000 iterations is depicted with the green dashed line but in
+    the CV it does not perform the best. Therefore, a model that can better generalize
+    from the top 10 is selected (red dashed line), aka the one with the lowest average
+    MAE from the k-fold CV. In this manner, we aim to select the best-performing model
+    that can also generalize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0517b126c153fc4668dea92609ab0cd1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Model performance for the 1000 evaluations and cross-validation.
+    (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretation of the model performance on the independent validation set.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To make sure the model can generalize on unseen data, we use the independent
+    validation set. ***Figure 4***depicts the regression line and the predictions
+    do not show strong outliers or a consistent over or underestimation. An underestimation
+    is seen for the low salaries as the model predicted the salaries of those cases
+    were predicted less than the real salary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b15db596c5803ec89358c7171aa9c01f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Results on the independent validation set. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To deeper investigate how our final model generalizes, we can plot the results
+    for the 5-fold cross-validation using the function `.plot_cv()`. This will create
+    the ROC curves for the different folds as shown in ***Figure 5***. Here we can
+    see that the slope of the model, across the different folds, is more or less similar.
+    Thus our final model does not show irregularities on the k-fold CV.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13ca0cd68ec4553664563b6d463269c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Results for the 5-fold CV using the model with optimized hyperparameters.
+    (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision Tree plot of the best model.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With the decision tree plot (***Figure 6***) we can get a better understanding
+    of how the model makes the decision. It may also give some intuition whether such
+    a model can generalize over other datasets. Note that the best tree is returned
+    by default `num_tree=0`but many trees are created that can be returned by specifying
+    the input parameter `.treeplot(num_trees=1)` . In addition, we can also plot the
+    best-performing features as depicted in ***Figure 7***. The features *Remote*,
+    *work year*, and *experience level* are the top 3 features that are important
+    in the prediction of the salary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2e38a84963ead3515d36bff4743f45d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Decision tree plot for the best model. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f225c804aca28b1aba41aa280d94199.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Feature importance. (image from the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Make Predictions on new data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After having the final trained model, we can now use it to make *predictions*
+    on new data. Suppose that ***X*** is new data, and is similarly pre-processed
+    as in the training process, then we can use the `.predict(X)` function to make
+    predictions. This function returns the classification probability and the prediction
+    label *(****code section 5)***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Save and load model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Saving and loading models can become handy. In order to accomplish this, there
+    are two functions: `.save()` and function `.load()`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Wrapping up.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I demonstrated how to train a **regression** model with optimized hyperparameters
+    by splitting the dataset into a train, test, and independent validation set. Within
+    the train-test set, there is the inner loop for optimizing the hyperparameters
+    using Bayesian optimization (with hyperopt) and, the outer loop to score how well
+    the top-performing models can generalize based on k-fold cross-validation. In
+    this manner, we aim to select the model that can generalize with the best accuracy.
+    Note that in our example, the best-scoring model seems to have (more or less)
+    a similar score to a model with default parameters. This strengthens my point
+    that an important part before training any model is to do the typical modeling
+    workflow: *Start with the Exploratory Data Analysis (EDA), iteratively do the
+    cleaning, feature engineering, and feature selection. The largest performance
+    gains typically follow from these steps.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [HGBoost library](https://erdogant.github.io/hgboost/) also supports learning
+    classification models, multi-class models, and even an ensemble of boosting tree
+    models.For all tasks, the same double-loop cross-validation scheme is applied
+    to make sure the best-performing and most robust model is selected. Furthermore,
+    *HGBoost* utilizes the [HyperOpt](http://hyperopt.github.io/hyperopt/) [7, 8]
+    library for the Bayesian optimization algorithm which is one of the most popular
+    libraries for hyperparameter optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Be safe. Stay frosty.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Cheers, E.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you find this article helpful, you are welcome to* [*follow me*](http://erdogant.medium.com/)
+    *because I write more about model training and optimizations. If you are thinking
+    of taking a Medium membership, you can support my work a bit by using my* [*referral
+    link*](https://medium.com/@erdogant/membership)*. It is the same price as a coffee
+    but allows you to read unlimited articles monthly.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Software
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[HGBoost Github](http://github.com/erdogant/hgboost)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[HGBoost documentation pages](https://erdogant.github.io/hgboost/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Colab notebook](https://erdogant.github.io/hgboost/pages/html/Blog.html#colab-regression-notebook)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Other relevant links
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Let’s connect on LinkedIn](https://www.linkedin.com/in/erdogant/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Follow me on Github](https://github.com/erdogant)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Nan Zhu et al, [*XGBoost: Implementing the Winningest Kaggle Algorithm in Spark
+    and Flink*](https://www.kdnuggets.com/2016/03/xgboost-implementing-winningest-kaggle-algorithm-spark-flink.html).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Welcome to LightGBM’s documentation](https://lightgbm.readthedocs.io/)!'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[CatBoost is a high-performance open source library for gradient boosting on
+    decision trees](https://catboost.ai/).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: E. Taskesen, 2020, [*Hyperoptimized Gradient Boosting*](https://github.com/erdogant/hgboost)*.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'E.Taskesen, 2019, [*df2onehot: Convert unstructured DataFrames into structured
+    dataframes.*](https://github.com/erdogant/df2onehot)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Kaggle, [*Machine Learning from Disaster*](https://www.kaggle.com/c/titanic)*.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'James Bergstra et al, 2013, [*Hyperopt: A Python Library for Optimizing the
+    Hyperparameters of Machine Learning Algorithms.*](https://conference.scipy.org/proceedings/scipy2013/pdfs/bergstra_hyperopt.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Kris Wright, 2017, [*Parameter Tuning with Hyperopt*.](https://medium.com/district-data-labs/parameter-tuning-with-hyperopt-faa86acdfdce)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

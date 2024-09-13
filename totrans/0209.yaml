@@ -1,0 +1,338 @@
+- en: A Little Pandas Hack to Handle Large Datasets with Limited Memory
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-little-pandas-hack-to-handle-large-datasets-with-limited-memory-6745140f473b](https://towardsdatascience.com/a-little-pandas-hack-to-handle-large-datasets-with-limited-memory-6745140f473b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Pandas defaults aren’t optimal. A tiny configuration can compress your dataframe
+    to fit in your memory.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://thuwarakesh.medium.com/?source=post_page-----6745140f473b--------------------------------)[![Thuwarakesh
+    Murallie](../Images/44f1a14a899426592bbd8c7f73ce169d.png)](https://thuwarakesh.medium.com/?source=post_page-----6745140f473b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6745140f473b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6745140f473b--------------------------------)
+    [Thuwarakesh Murallie](https://thuwarakesh.medium.com/?source=post_page-----6745140f473b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6745140f473b--------------------------------)
+    ·8 min read·Jan 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4b1299e06f03069b94110ff87456e73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can compress a huge Pandas dataframe without losing its properties, just
+    like squeezing a burger. Save memory and work faster with this little trick. —
+    Photo by [Leonardo Luz](https://www.pexels.com/photo/photo-of-a-burger-between-a-person-s-hands-14001304/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I never thought my code needed improvement. I’ve always complained that I don’t
+    have enough memory or the dataset was too big to handle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My go-to solution was to put them on a Postgres DB and write SQL queries. After
+    all, that is an acceptable way to handle large-scale datasets. I kept doing this
+    whenever I got a large dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But I don’t get the complete flexibility I get in Python. For this reason, I
+    had to combine them and alternate between them. For instance, I load the dataset
+    on a SQL database and write a Python script to run SQL queries, often using Sqlalchemy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it gives me the flexibility of both worlds, I have issues sharing my code
+    with other team members. Other members should have the knowledge and setup for
+    relational databases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The classic solution for this problem is increasing the memory and running tasks
+    in parallel. On the infrastructure part, moving to the cloud was my favorite solution.
+    I can pay for the high-performance resources only for their usage. And on the
+    parallel execution side, technologies like [Dask](https://www.dask.org/) cover
+    me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yet, I recently discovered code optimization is the first and usually the most
+    rewarding solution. If your code doesn’t do well on a single thread, how can we
+    guarantee that parallelization could boost the performance? If your code doesn’t
+    take the full benefit of your local computer, what’s the point in moving to the
+    cloud?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Among the many Pandas optimization techniques I’ve learned, one was profound.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trick is …
+  prefs: []
+  type: TYPE_NORMAL
+- en: Save memory with correct data types.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pandas infer dtypes based on the values present in each column. But it has no
+    context. But you have!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If all values in a column are whole numbers, Pandas would usually assign int64
+    as that column’s data type. Yet, there are more int variants you can use. int8,
+    int16, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The defaults are fine for most cases. But sometimes, it’s a too-large placeholder
+    for smaller values. Pull up a notebook and type the following code and notice
+    its output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Int64 can hold values from -9223372036854775808 to 9223372036854775807\. I don’t
+    even know how we call these numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But in most real-life cases, you can infer the possible column values. For example,
+    in a hotel reservation system, the number of guests in a room can almost always
+    be in a single digit. If it’s a dormitory, perhaps in two digits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-detect-memory-leakage-in-your-python-application-f83ae1ad897d?source=post_page-----6745140f473b--------------------------------)
+    [## How to Detect Memory Leakage in Your Python Application'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standard Python libraries that could tell the memory usage and execution time
+    of every line
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-detect-memory-leakage-in-your-python-application-f83ae1ad897d?source=post_page-----6745140f473b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why don’t we use int8 instead? It can hold values from -128 to +128\. This smaller
+    placeholder can take less space compared to the wasteful int64.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s test this on a demo dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following script generates a random dataset. In real life, you won’t be
+    generating datasets, though. Notice its data types and memory usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This generated dataset has one million records and takes about 180 MB of memory.
+    The room_rate variable has a range of 152.17–430.43\. But it has been assigned
+    float64 data type. For this, float16 is more than sufficient. Likewise, let’s
+    convert the number_of_guests to an integer and channel to a category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly, booking status is a boolean represented categorically. For analysis
+    purposes, we can change it to a boolean. But one may argue to keep it as a category
+    instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s how we convert the data types to more desirable ones and how much memory
+    it takes now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We reduced our 180MB dataset by converting the data types to a 5MB. **That’s
+    a ~96% saving.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a good idea to compress the dataset and store it in an optimal storage
+    format for later usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/best-file-format-to-store-large-data-dfa47701929f?source=post_page-----6745140f473b--------------------------------)
+    [## CSVs Are Overrated! I Give up Some of Its Benefits to Gain More.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What I use instead for to have a small file size and better performance.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/best-file-format-to-store-large-data-dfa47701929f?source=post_page-----6745140f473b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to pick the data type for each column?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pandas' default data types are almost always not optimal. As we’ve seen in the
+    previous section, integers, regardless of their range, are assigned int64\. For
+    smaller datasets, we don’t have to worry about this. Performance impact is usually
+    insignificant, even at hundreds of thousands of lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But we should take this more seriously when our computations get complex, and
+    the dataset size is also bigger. The challenge is to assign the smallest possible
+    placeholder without losing information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to get a description of your dataset. It can tell a lot of
+    information all in one place. Check out the output of describe in our example
+    above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For non-numeric variables, you’ll get the number of unique values, the most
+    frequent value, and its count. Looking at this, we can guess that channel must
+    be a category and booking_status may be a boolean. Because, out of our 1M records,
+    only 4 unique channels are repeating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For numerical columns, we get the minimum and maximum values. By also looking
+    at the quartile values, you can come to a conclusion if this column needs to be
+    an integer or a floating point. In each case, you can also decide the size of
+    the as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a table of numerical data types and their value ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Observe your dataset carefully and pick the smallest that can work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For non-numeric datasets, Pandas usually assign ‘object’ as its type. The object
+    data type is complex and inefficient in most cases. Thus, if the column values
+    are not free-form, you can assign ‘category’ as its data type. Here is how much
+    memory it saves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can achieve about 8X memory saving by simply converting to a category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-speed-up-python-data-pipelines-up-to-91x-80d7accfe7ec?source=post_page-----6745140f473b--------------------------------)
+    [## How to Speed up Python Data Pipelines up to 91X?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A 5-minute tutorial that could save months of your big-data projects.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-speed-up-python-data-pipelines-up-to-91x-80d7accfe7ec?source=post_page-----6745140f473b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting data types needs more domain expertise.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our demo was too easy because we generated the dataset. But datasets in the
+    real world are usually complex. So do type conversions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use the .astype method on any dataframe to convert types directly.
+    But in my example, I’ve used the assign method instead. That’s because we often
+    need to modify the column before we type conversions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine a situation when the number_of_guests column has null values. We can’t
+    convert this column to int8 without filling the gap with some reasonable default.
+    Zero may not make sense as there can’t be a booking with no person. We may think
+    `1` is a good default. But if most bookings in the hotel have two people, then
+    `2` is better. We can also bring in the channel variable to carefully pick defaults
+    for each channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following example is a conditional way of assigning defaults. Note that
+    we convert them to the correct data types only after filling in the appropriate
+    missing values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Likewise, picking the default requires domain knowledge not present in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another challenge is future values. If you analyze offline, you can pick the
+    data types only by looking at the dataset. But if your code lives inside a data
+    pipeline, you should also think about future values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/the-prefect-way-to-automate-orchestrate-data-pipelines-d4465638bac2?source=post_page-----6745140f473b--------------------------------)
+    [## The Prefect Way to Automate & Orchestrate Data Pipelines'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am migrating all my ETL work from Airflow to this super-cool framework
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-prefect-way-to-automate-orchestrate-data-pipelines-d4465638bac2?source=post_page-----6745140f473b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you get an incompatible value for a column, you may get an error or a wrong
+    value instead. See the following example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that any values smaller than 128 have been correctly converted. But values
+    128 and above are converted incorrectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perhaps you should validate the dataset before you pass it to transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/data-validation-for-pandas-b24613959364?source=post_page-----6745140f473b--------------------------------)
+    [## High-Quality Data Comes With High-Quality Validations'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s how you can ensure the quality of Pandas dataframes in every stage of
+    your data pipeline
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/data-validation-for-pandas-b24613959364?source=post_page-----6745140f473b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final thoughts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As data professionals, we work with massive datasets. And our top-of-the-mind
+    solution to performance issues is to stack up more resources and parallel execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But I’ve found that some optimization could let us work with larger dataframes
+    on smaller computers. The trick is to assign the correct data type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Picking the correct data type needs domain knowledge. Also, if you’re building
+    a data pipeline, you should think about future values as well. You don’t need
+    to worry about it in offline analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this helps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading, friend! Say Hi to me on [**LinkedIn**](https://www.linkedin.com/in/thuwarakesh/),
+    [**Twitter**](https://twitter.com/Thuwarakesh), and [**Medium**](https://thuwarakesh.medium.com/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Not a Medium member yet? Please use this link to [**become a member**](https://thuwarakesh.medium.com/membership)
+    because, at no extra cost for you, I earn a small commission for referring you.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

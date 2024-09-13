@@ -1,0 +1,396 @@
+- en: A Beginner’s Guide to LLM Fine-Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672](https://towardsdatascience.com/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to fine-tune Llama and other LLMs with one tool
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)[![Maxime
+    Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------)
+    [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----4bae7d4da672--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bae7d4da672--------------------------------)
+    ·8 min read·Aug 30, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cd56f68c14e07ab9ae3eb624bd064ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The growing interest in Large Language Models (LLMs) has led to a surge in **tools
+    and wrappers designed to streamline their training process**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Popular options include [FastChat](https://github.com/lm-sys/FastChat) from
+    LMSYS (used to train [Vicuna](https://huggingface.co/lmsys/vicuna-13b-v1.5)) and
+    Hugging Face’s [transformers](https://github.com/huggingface/transformers)/[trl](https://github.com/huggingface/trl)
+    libraries (used in [my previous article](/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32)).
+    In addition, each big LLM project, like [WizardLM](https://github.com/nlpxucan/WizardLM/tree/main),
+    tends to have its own training script, inspired by the original [Alpaca](https://github.com/tatsu-lab/stanford_alpaca)
+    implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will use [**Axolotl**](https://github.com/OpenAccess-AI-Collective/axolotl),
+    a tool created by the OpenAccess AI Collective. We will use it to fine-tune a
+    [**Code Llama 7b**](https://github.com/OpenAccess-AI-Collective/axolotl/blob/main/examples/llama-2/qlora.yml)
+    model on an evol-instruct dataset comprised of 1,000 samples of Python code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🤔 Why Axolotl?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The main appeal of Axolotl is that it provides a one-stop solution, which includes
+    numerous features, model architectures, and an active community. Here’s a quick
+    list of my favorite things about it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Configuration**: All parameters used to train an LLM are neatly stored in
+    a yaml config file. This makes it convenient for sharing and reproducing models.
+    You can see an example for Llama 2 [here](https://github.com/OpenAccess-AI-Collective/axolotl/tree/main/examples/llama-2).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Dataset Flexibility**: Axolotl allows the specification of multiple datasets
+    with varied prompt formats such as alpaca (`{"instruction": "...", "input": "...",
+    "output": "..."}`), sharegpt:chat (`{"conversations": [{"from": "...", "value":
+    "..."}]}`), and raw completion (`{"text": "..."}`). Combining datasets is seamless,
+    and the hassle of unifying the prompt format is eliminated.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Features**: Axolotl is packed with SOTA techniques such as FSDP, deepspeed,
+    LoRA, QLoRA, ReLoRA, sample packing, GPTQ, FlashAttention, xformers, and rope
+    scaling.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Utilities**: There are numerous user-friendly utilities integrated, including
+    the addition or alteration of special tokens, or a custom wandb configuration.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Some well-known models trained using this tool are [Manticore-13b](https://huggingface.co/openaccess-ai-collective/manticore-13b)
+    from the OpenAccess AI Collective and [Samantha-1.11–70b](https://huggingface.co/ehartford/Samantha-1.11-70b)
+    from Eric Hartford. Like other wrappers, it is built on top of the transformers
+    library and uses many of its features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ⚙️ Create your own config file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before anything, we need a configuration file. You can reuse an existing configuration
+    from the `[examples](https://github.com/OpenAccess-AI-Collective/axolotl/tree/main/examples)`
+    folder. In our case, we will tweak the [QLoRA config](https://github.com/OpenAccess-AI-Collective/axolotl/blob/main/examples/llama-2/qlora.yml)
+    for Llama 2 to create our own **Code Llama** model. The model will be trained
+    on a subset of 1,000 Python samples from the `[nickrosh/Evol-Instruct-Code-80k-v1](https://huggingface.co/datasets/nickrosh/Evol-Instruct-Code-80k-v1)`
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we must change the `base_model` and `base_model_config` fields to "codellama/CodeLlama-7b-hf".
+    To push our trained adapter to the Hugging Face Hub, let's add a new field `hub_model_id`,
+    which corresponds to the name of our model, "EvolCodeLlama-7b". Now, we have to
+    update the dataset to `[mlabonne/Evol-Instruct-Python-1k](https://huggingface.co/datasets/mlabonne/Evol-Instruct-Python-1k)`
+    and set `type` to "alpaca".
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's no sample bigger than 2048 tokens in this dataset, so we can reduce
+    the `sequence_len` to "2048" and save some VRAM. Talking about VRAM, we’re going
+    to use a `micro_batch_size` of 10 and a `gradient_accumulation_steps` of 1 to
+    maximize its use. In practice, you try different values until you use >95% of
+    the available VRAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For convenience, I'm going to add the name "axolotl" to the `wandb_project`
+    field so it's easier to track on my account. I'm also setting the `warmup_steps`
+    to "100" (personal preference) and the `eval_steps` to 0.01 so we'll end up with
+    100 evaluations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s how the final config file should look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can also find this config file [here](https://gist.github.com/mlabonne/8055f6335e2b85f082c8c75561321a66)
+    as a GitHub gist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we start training our model, I want to introduce a few parameters that
+    are important to understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**QLoRA**: We’re using QLoRA for fine-tuning, which is why we’re loading the
+    base model in 4-bit precision (NF4 format). You can check [this article](https://medium.com/towards-data-science/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b)
+    from [Benjamin Marie](https://medium.com/u/ad2a414578b3?source=post_page-----4bae7d4da672--------------------------------)
+    to know more about QLoRA.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Gradient checkpointing**: It lowers the VRAM requirements by removing some
+    activations that are re-computed on demand during the backward pass. It also slows
+    down training by about 20%, according to Hugging Face’s [documentation](https://huggingface.co/docs/transformers/v4.18.0/en/performance).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**FlashAttention**: This implements the [FlashAttention](https://github.com/Dao-AILab/flash-attention)
+    mechanism, which improves the speed and memory efficiency of our model thanks
+    to a clever fusion of GPU operations (learn more about it in [this article](https://gordicaleksa.medium.com/eli5-flash-attention-5c44017022ad)
+    from [Aleksa Gordić](https://medium.com/u/37f02ae83e8c?source=post_page-----4bae7d4da672--------------------------------)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Sample packing**: Smart way of creating batches with as little padding as
+    possible, by reorganizing the order of the samples ([bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem)).
+    As a result, we need fewer batches to train the model on the same dataset. It
+    was inspired by the [Multipack Sampler](https://github.com/imoneoi/multipack_sampler/tree/master)
+    (see [my note](https://mlabonne.github.io/blog/notes/Large%20Language%20Models/multipack_sampler.html))
+    and [Krell et al.](https://arxiv.org/pdf/2107.02027.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can find FlashAttention in some other tools, but sample packing is relatively
+    new. As far as I know, [OpenChat](https://github.com/imoneoi/openchat) was the
+    first project to use sample packing during fine-tuning. Thanks to Axolotl, we’ll
+    use these techniques for free.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🦙 Fine-tune Code Llama
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having the config file ready, it’s time to get our hands dirty with the actual
+    fine-tuning. You might consider running the training on a Colab notebook. However,
+    for those without access to a high-performance GPU, a more cost-effective solution
+    consists of renting **cloud-based GPU services**, like AWS, [Lambda Labs](https://lambdalabs.com/),
+    [Vast.ai](https://vast.ai/), [Banana](https://www.banana.dev/), or [RunPod](https://www.runpod.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Personally, I use RunPod, which is a popular option in the fine-tuning community.
+    It’s not the cheapest service but it hits a good tradeoff with a clean UI. You
+    can easily replicate the following steps using your favorite service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When your RunPod account is set up, go to Manage > Templates and click on “New
+    Template”. Here is a simple template:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/827c395c5294c1d157914fe4661ef301.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s review the different fields and their corresponding values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Template Name**: Axolotl (you can choose whatever you want)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Container Image**: winglian/axolotl-runpod:main-py3.10-cu118–2.0.1'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Container Disk**: 100 GB'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Volume Disk**: 0 GB'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Volume Mount Path**: /workspace'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In addition, there are two handy environment variables can include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**HUGGING_FACE_HUB_TOKEN**: you can find your token on [this page](https://huggingface.co/settings/tokens)
+    (requires an account)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**WANDB_API_KEY**: you can find your key on [this page](https://wandb.ai/authorize)
+    (requires an account)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Alternatively, you can simply log in the terminal later (using huggingface-cli
+    login and wandb login). Once you’re set-up, go to Community Cloud and deploy an
+    RTX 3090\. Here you can search for the name of your template and select it as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/93732516ab48d2df1b5b62b9641f1117.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can click on “Continue” and RunPod will deploy your template. You can see
+    the installation in your pod’s logs (Manage > Pods). When the option becomes available,
+    click on “Connect”. Here, click on “Start Web Terminal” and then “Connect to Web
+    Terminal”. You are now connected to your pod!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following steps are **the same no matter what service you choose**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We install Axolotl and the PEFT library as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '2\. Download the config file we created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '3\. You can now **start fine-tuning the model** with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: If everything is configured correctly, you should be able to train the model
+    in a little more than **one hour** (it took me 1h 11m 44s). If you check the GPU
+    memory used, you’ll see almost 100% with this config, which means we’re optimizing
+    it pretty nicely. If you’re using a GPU with more VRAM (like an A100), you can
+    increase the micro-batch size to make sure you’re fully using it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the meantime, feel free to close the web terminal and check your loss on
+    Weights & Biases. We’re using tmux so the training won’t stop if you close the
+    terminal. Here are my loss curves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fab0126f54062cf424f89f11e300d20c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We see a steady improvement in the eval loss, which is a good sign. However,
+    you can also spot drops in the eval loss that are not correlated with a decrease
+    in the quality of the outputs… The best way to evaluate your model is simply by
+    using it: you can run it in the terminal with the command `accelerate launch scripts/finetune.py
+    EvolCodeLlama-7b.yaml --inference --lora_model_dir="./qlora-out"`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The QLoRA adapter should already be uploaded to the Hugging Face Hub. However,
+    you can also **merge the base Code Llama model with this adapter and push the
+    merged model** there by following these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Download [this script](https://gist.github.com/mlabonne/a3542b0519708b8871d0703c938bba9f):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '2\. Execute it with this command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Congratulations, you should have **your own EvolCodeLlama-7b** on the Hugging
+    Face Hub at this point! For reference, you can access my own model trained with
+    this process here: `[mlabonne/EvolCodeLlama-7b](https://huggingface.co/mlabonne/EvolCodeLlama-7b)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Considering that our EvolCodeLlama-7b is a code LLM, it would be interesting
+    to compare its performance with other models on **standard benchmarks**, such
+    as [HumanEval](https://github.com/openai/human-eval) and [MBPP](https://github.com/google-research/google-research/tree/master/mbpp).
+    For reference, you can find a leaderboard at the following address: [Multilingual
+    Code Evals](https://huggingface.co/spaces/bigcode/multilingual-code-evals).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re happy with this model, you can **quantize** it with GGML for local
+    inference with [this free Google Colab notebook](https://colab.research.google.com/drive/1pL8k7m04mgE5jo2NrjGi8atB0j_37aDD?usp=sharing).
+    You can also fine-tune **bigger models** (e.g., 70b parameters) thanks to [deepspeed](https://github.com/microsoft/DeepSpeed),
+    which only requires an additional config file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we’ve covered the essentials of **how to efficiently fine-tune
+    LLMs**. We customized parameters to train on our Code Llama model on a small Python
+    dataset. Finally, we merged the weights and uploaded the result on Hugging Face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you found this guide useful. I recommend using Axolotl with a cloud-based
+    GPU service to get some experience and upload a few models on Hugging Face. Build
+    your own datasets, play with the parameters, and break stuff along the way. Like
+    with every wrapper, don’t hesitate to check the source code to get a good intuition
+    of what it’s actually doing. It will massively help in the long run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to the OpenAccess AI Collective and all the contributors!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in more technical content around LLMs, [follow me on Medium](https://medium.com/@mlabonne).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Related articles
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32?source=post_page-----4bae7d4da672--------------------------------)
+    [## Fine-Tune Your Own Llama 2 Model in a Colab Notebook'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A practical introduction to LLM fine-tuning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32?source=post_page-----4bae7d4da672--------------------------------)
+    [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----4bae7d4da672--------------------------------)
+    [## 4-bit Quantization with GPTQ
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantize your own LLMs using AutoGPTQ
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----4bae7d4da672--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Learn more about machine learning and support my work with one click — become
+    a Medium member here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne/membership?source=post_page-----4bae7d4da672--------------------------------)
+    [## Join Medium with my referral link - Maxime Labonne'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@mlabonne/membership?source=post_page-----4bae7d4da672--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

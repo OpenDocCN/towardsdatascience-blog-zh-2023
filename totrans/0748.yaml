@@ -1,0 +1,652 @@
+- en: Distributed data parallel and distributed model parallel in PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540](https://towardsdatascience.com/distributed-data-and-model-parallel-in-deep-learning-6dbb8d9c3540)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how distributed data parallel and distributed model parallel works inside
+    stochastic gradient descent to let you train gigantic models over huge datasets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Wei
+    Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)
+    [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----6dbb8d9c3540--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dbb8d9c3540--------------------------------)
+    ·14 min read·May 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecced4c819e71328af444db89219dc4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Olga Zhushman](https://unsplash.com/ja/@ori_photostory?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You must have heard that recent successful models, such as ChatGPT, have trillions
+    of parameters and trained with terabytes of data. In the meanwhile, you may have
+    experienced that your deep learning model with tens of millions of parameters
+    didn’t even fit in a GPU and it trained for days with only gigabytes of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wonder why other people could achieve so much in the same life time,
+    and want to be them, please understand the two techniques that enable the training
+    of large deep learning models with huge datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distributed data parallel** splits a mini-batch across GPUs. It lets you
+    train faster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Distributed model parallel** splits a model’s parameters, gradients and optimizer’s
+    internal states across GPUs. It lets you load larger models in GPUs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are many API implementations of distributed data parallel and distributed
+    model parallel, such as [DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html),
+    [FSDP](https://pytorch.org/docs/stable/fsdp.html) and [DeepSpeed](https://github.com/microsoft/DeepSpeed).
+    They all have the common theme of splitting the training data or the model into
+    parts and distributing the parts to different GPUs. This article is not about
+    how to use those APIs because tutorials are abundant. This article is a intuitive
+    theoretical touch on how these APIs work behind the scene. It is a “touch” because
+    in no way this article completes these two huge topics — it stops as soon as you
+    get enough background and courage to dive into them yourself, or to face technical
+    interviews.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallelism in stochastic gradient descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To understand how distributed data and model parallel works really means to
+    understand how they work in the stochastic gradient descent algorithm that performs
+    parameter learning (or equivalently, model training) of a deep neural network.
+    Specifically, we need to understand how these two techniques work in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The forward pass which computes model prediction and the loss function for a
+    data point, or sample.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The back-propagation pass, or backward pass, which computes the gradient of
+    the loss function with respect to each model parameter.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s start with the easier of the two, distributed data parallel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed Data Parallel
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It addresses the problem of huge training dataset by parallelizing how stochastic
+    gradient descent goes over the training data. Let’s refresh our memory about the
+    stochastic gradient descent procedure in a single GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Steps in stochastic gradient descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The training procedure loads the full model into that GPU.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then the procedure goes over the full training dataset many times; each time
+    is called an epoch.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In each epoch the procedure goes over all the samples in the training dataset
+    exactly once via randomly sampled mini-batches. A mini-batch consists of several
+    data points. This random sampling is without replacement, making sure that a single
+    data point exists in a mini-batch exactly once during an epoch. The random sampling
+    of mini-batch is explains the word “stochastic” in the the algorithm’s name. Each
+    data point is used in the forward pass and the backward pass.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the forward pass, the procedure pushes each data point in a mini-batch through
+    the neural network to compute the model’s output, i.e., its prediction, then uses
+    the model’s prediction to compute the loss function by calculating the difference
+    between the prediction and the actual.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the backward pass, the procedure computes the gradient of the loss with respect
+    to each model parameter, that is, the weights and bias in the neural network.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The procedure then uses the current values for the model parameters and their
+    gradients to assign a new set of values for the model parameters via the weight
+    update rule. If a parameter’s current value is *w*, its gradient is *∇w* and the
+    learning rate is *α*, then the weight update rule computes the new parameter value
+    *w′* as *w′ ← w - α·∇w.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat step 3 to 6 until model is sufficiently trained, for example, until the
+    loss is not decreasing for a while, or simply until you run out of money or patience.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Distributed data parallel distributes a mini-batch to multiple GPUs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Distributed data parallel makes one improvement over the above training procedure
+    at step 4 and 5\. It splits a mini-batch into different parts and sends them off
+    to different GPUs to perform the forward and backward pass. This way, the same
+    mini-batch can be processed faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand what this exactly means, let’s imagine our mini-batch consists
+    of only two data points. That is, our batch size is 2\. The two data points in
+    this mini-batch is *(X₁, Y₁)* and *(X₂, Y₂)*. For the first data point, the forward
+    pass uses *X₁* to compute model’s prediction *ŷ₁*, and same for the second data
+    point to compute *ŷ₂*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we have two GPUs, named GPU1 and GPU2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Forward pass in distributed model parallel**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we take the usual quadratic loss function, then the forward pass finally
+    computes the value of the loss *L*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a481000e4da710b76bbab26926ea1dec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss computation in distributed data parallel
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that at line (3), the two terms *L₁* and *L₂* only depends on a single,
+    but different data point. So the computation of the loss term *L₁* is independent
+    from the computation of *L₂*. This allows distributed data parallel to send the
+    first data point *(X₁, Y₁)* to GPU1 and the second data point *(X₂, Y₂)* to GPU2
+    to perform the loss computation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, to make the above work, each GPU must have loaded with the full model,
+    so it can push a single data point through the whole network to compute model’s
+    prediction and then the loss for that data point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backward pass in distributed model parallel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s look at the backward pass, which computes the gradient of the loss
+    function with respect to every model parameters. We will focus on a single model
+    parameter, say *w₁.* The gradient of the loss *L* with respect to *w₁*, denoted
+    as *∇w₁*, is computed via*:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/325f99ed10523f2e4d41b09fbc212514.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient computation in distributed data parallel
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the [linearity of differentiation](https://en.wikipedia.org/wiki/Linearity_of_differentiation),
+    line (3) splits the full gradient into two terms, each for a single data point.
+    Since we have two GPUs and each GPU is loaded with the full model and receives
+    a single data point, that GPU can compute the gradient for that data point. In
+    other words, the two gradient terms at line (3) can be computed in parallel using
+    two GPUs. That is, GPU1 computes and holds the *∂L₁* quantity, and GPU2 *∂L₂*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synchronized parameter weight update
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Finally, stochastic gradient descent performs parameter value update by using
+    the weight update rule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aea528e06bb5c675ff136c580610f0c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient descent weight update rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rule gives a new value *w₁′* from the current the parameter value *w₁* by
+    subtracting *α·∇w₁* from it, hence the phrase *gradient descent. α* is the learning
+    rate; it controls the step size of the descent. Note here I use the symbol “*w₁”*
+    to denote both the parameter name and its current value to avoid introducing too
+    many symbols.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All GPUs need to perform the weight update for *w₁* using the same*∇w₁* to make
+    sure that every GPU has the same model after the weight update step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we should have spotted a problem: the weight update rule needs the full
+    gradient *∇w₁* for the model parameter *w₁*, but neither GPU has this quantity.
+    GPU1 holds the quantity *∂L₁* because it computes *∂L₁* in it; and GPU2 holds
+    *∂L₂.* To solve this problem, some inter-GPU computation happens to sum *∂L₁*
+    and *∂L₂,* then transfers the sum to both GPUs*.* The [AllReduce](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#allreduce)
+    GPU operator does the job.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The AllReduce operator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [AllReduce operator](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#allreduce)
+    performs reductions on data, such as sum, max, across all GPUs and writes the
+    result to all GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following figure illustrates AllReduce summing up partial gradients *∂L₁*
+    and *∂L₂* for the model parameter *w₁* from the two GPUs and writing the result
+    — the full gradient *∇w₁* to all GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cab8ce7ce94fb4c5686c2e1a588daa12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the AllReduce operator, by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why distributed parallel reduces training time?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data transfer among GPUs takes time, but as long as data transfer takes less
+    time than computing the loss and gradient for all the data points in a mini-batch,
+    there is a time gain at the expense of more money spent to hire more GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are rich, you can hire 10,000 GPUs, and set your mini-batch size to 10,000\.
+    So in a single optimization step, you can process a significant amount of your
+    training data. I will let your imagination go wild right here to think about what
+    this means for your terabyte-sized dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Caveat in distributed data parallel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is one catch in distributed data parallel — it requires each GPU to hold
+    the full model. You won’t be able to load large models in a single GPU, which
+    usually has 16GB to 24GB or memory, so they roughly support a hundred million
+    parameters. To train models larger than that, we need distributed model parallel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed model parallel
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Distributed model parallel splits a model’s parameters, their gradients and
+    the optimizer’s internal states into different parts, and distributes those parts
+    across GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is easy to understand why distributed model parallel needs to split model’s
+    parameters and their gradients — the weight update rule in stochastic gradient
+    descent needs both. But what are optimizer’s internal states?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Optimizer’s internal states**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You see, to mitigate problems introduced in the stochastic part of the stochastic
+    gradient descent algorithm, optimisers such as Adam keeps track two additional
+    pieces of information for each model parameter: the moving average of its gradient
+    to achieve less zigzagging in weight update, and the moving average of the squared
+    gradient to achieve adaptive learning rate per parameter. For more details, please
+    take a look at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33?source=post_page-----6dbb8d9c3540--------------------------------)
+    [## Can We Use Stochastic Gradient Descent (SGD) on a Linear Regression Model?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn why it is valid to use SGD on a linear regression model for parameter
+    learning, see however, SGD can be…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33?source=post_page-----6dbb8d9c3540--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mathematically, Adam’s weight update rules for the parameter *w₁* are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04c43201d536bc54233d5accc2259df1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Adam optimizer’s weight update rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (1) computes the moving average of the gradient for the *w₁* parameter.
+    The *multiplier × old_value + (1-multiplier) × new_value* formula structure tells
+    us this is an exponential moving average. *m₁* is the current value of the exponential
+    moving average, and *β₁* controls the amount of contribution that the new value,
+    here the new gradient *∇w₁*, brings to the new moving average value. *m₁′* is
+    the new value for the gradient moving average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, line (2) computes the exponential moving average of the squared gradient,
+    where *v₁* is the current moving average value of squared gradient, and *β₂* controls
+    the amount of contribution from the squared gradient *(∇w₁)²* during the averaging.
+    *v₁′* is the new value for the squared gradient moving average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Line (3) is the parameter weight update rule. Notice that it mentions the current
+    value of the parameter *w₁*, the gradient moving average *m₁′*, and the squared
+    gradient moving average *v₁′*. Again, see [*Can We Use Stochastic Gradient Descent
+    (SGD) on a Linear Regression Model?*](/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33)
+    for the intuition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradient moving average and the squared gradient moving average are the
+    Adam optimizer’s internal state, in fact, Adam also keeps a full copy of the weights,
+    but that’s technical detail that you don’t need to worry about in this article.
+    Different optimizers may hold different internal states.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to split a model into parts?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To understand how distributed model parallel splits a model into parts, imagine,
+    even with mini-batch size set to 1, our neural network is too large to fit in
+    the memory of a GPU, like this neural network bellow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07673a9988cbdb34be6d2fc988541cd6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Neural network architecture illustration by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This neural network accepts two input units. So for a single training data point
+    *(X₁, Y₁)*, where *X₁* consists of two input units *X₁ = [x₁, x₂]*, the network
+    accepts *x₁, x₂* as its inputs and uses two hidden layers with four neurons *h₁*
+    to *h*₄ to compute the model’s prediction *ŷ₁* and uses the actual *Y₁* and the
+    model prediction *ŷ₁* to compute the loss *L.* For simplicity, there is no activation
+    in the neural network, every node receiving multiple in-arrows sums the received
+    quantities together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How can we split this model into parts so each part can fit into a single GPU?
+    They are many many ways. One way is to split the model vertically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e1d9448bdd464e9ecb398d4c177a644.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Not-so-smart splitting of model, by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: with *w₁~w₄* in GPU1 and *w₅~w₁₀* in GPU2\. Note that input *(X₁, Y₁)* is always
+    in all GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This cutting will work but it is not a smart one because it forces the computation
+    to be sequential. GPU2 needs to wait for result from GPU1\. Specifically, GPU2
+    needs to wait for values of the neurons *h₁* and *h*₂ before it can start to compute
+    the values for *h₃* and *h₄*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We realize that to parallel computation requires splitting the model horizontally.
+    I will use a even simpler to illustrate this horizontal cutting to make the formulas
+    shorter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a567ed9ae96946eaa4d9db68fc8f442f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Neural network architecture illustration by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward pass in distributed model parallel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following equations describe the forward pass of this neural network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78201aa16aa0d8cbd984199c5ef28aec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Neural network forward pass equations
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that equation (1) and (2) are independent of each other, so they
+    can be computed in parallel. Equation (3) and (4) requires both *h₁* and *h*₂,
+    so they need wait for the computation of *h₁* and *h*₂.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Equivalently, I can re-write the above equations (1) to (3) into the following
+    block matrix form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8f2097487b864bd1e058df80bf70145.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Neural network forward pass equations in block matrix form
+  prefs: []
+  type: TYPE_NORMAL
+- en: with block *A₁* and *A*₂ being
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81c6789bde60c86b02c2b1d08897fd0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Block matrices for the weight matrix
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now realize that we can put *X₁A₁* in GPU1 and *X₁A₂* in GPU2 to compute
+    them in parallel. In other words, distribute model parallel can put parameters
+    *w₁* and *w₂* in GPU1, and *w₃* and *w₄* into GPU2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The AllReduce operator will sum them up, which gives the value of the model
+    prediction *ŷ₁* and make *ŷ₁* available to both GPUs. With *ŷ₁* available, both
+    GPUs now can compute the loss *L*. Note in the forward pass, the training data
+    (*X₁, Y₁)* is always loaded in all GPUs*.* Or the AllReduce operator can compute
+    both the model prediction and the loss then copies the prediction and loss to
+    all GPUs in one go, via a technique called operation fusion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backward pass in distributed model parallel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s check the backward pass. It computes the gradients using the chain
+    rule. You are already familiarized yourself with the chain rule before getting
+    your current data science job, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/97b5c916e14a1f6562d8768c2e0cd5bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient computation in distributed model parallel
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equation (1) and (2) are executed in GPU1, equation (3) and (4) in GPU2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to check if in GPU1 there is sufficient information to compute the gradient
+    for the model parameter *w₁* and *w₂*, and the same for GPU2 for the model parameter
+    *w₃* and *w₄.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s focus on *w₁* by looking at equation (1). It reveals that computing the
+    gradient *∇w₁* requires:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training data x*₁, Y₁*, which is always available to all GPUs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model prediction *ŷ₁*, which is made available to all GPUs by AllReduce.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So GPU1 is able to compute the gradient for *w₁.* And since GPU1 has the model
+    weight *w₁* and its gradient *∇w₁*, it will be able to compute the exponential
+    moving average of the gradient and the exponential moving average of the squared
+    gradient, which are the optimizer’s internal states.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is how distributed model parallel works at a very high level. Note there
+    are many ways to split a model into pieces in distributed model parallel. The
+    above shows one above way to illustrate how the technique works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ReduceScatter operator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There is one more thing I want to mention in distributed model parallel. In
+    a more realistic neural network, there are multiple routes from the model’s prediction
+    to its inputs. See the original neural network I introduced, shown below again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e8a1f80200bd7bbab586fc373a23ce9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Neural network architecture illustration by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To compute the gradient of *L* with respect to the model parameter *w₁*, there
+    are two routes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'route1: *L → ŷ₁ → h₃ → h₁ → x₁*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'route2: *L → ŷ₁ → h*₄ *→ h₁ → x₁*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The full gradient is thus the sum of the gradient computed in these two routes,
+    in formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/956b077678fe831491b83d42caf2fe39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradients with two routes
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is quite likely that the gradient from route1 and the gradient from route2
+    are computed in two different GPUs. To compute the full gradient *∇w₁*, information
+    from these GPUs needs to be synchronized, and summed, similar to AllReduce. The
+    difference now is that the sum doesn’t need to be propagated to all GPUs, it only
+    needs to be put into the single GPU that is responsible for the weight update
+    for the model parameter *w₁.* The ReduceScatter operator is for this purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ReduceScatter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [ReduceScatter](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/operations.html#reducescatter)
+    operator performs the same operation as the AllReduce operator, except the result
+    is scattered in equal blocks among GPUs, each GPU getting a chunk of the data
+    based on its rank index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5fb0f809adf0ca83d3f1e93ef290fcd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the ReduceScatter operator, by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use our example, the ReduceScatter operator sums up the partial gradients for
+    the *w₁* parameter, namely *∂route₁* from route1 and *∂route₂* from route2, which
+    are computed in different GPUs, and puts the sum into exactly the single GPU that
+    is responsible for weight update for *w₁*, here is GPU1*.* Note that GPU2 does
+    not receive the full gradient *∇w₁*, because it is not responsible for performing
+    the weight update for the *w₁* parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed model parallel is not designed to address training speed
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note that the goal of distributed model parallel is to let you load a larger
+    model into multiple GPUs, and not to train a model faster. In fact, from the above
+    example where we cut the model horizontally, in each GPUs, the computation passes,
+    both forward and backward, are not shorter, they are just thinner. This means
+    going through a pass has the same amount of steps, thus they are not necessarily
+    faster (but it can be faster since there is less computation in a pass, of course,
+    you need to fact in time spent in data synchronization). To train a large model
+    faster, we need to combine distributed data and model parallel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combining distributed data and model parallel
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It is a common practice to enable both distributed data parallel and distributed
+    model parallel in training. And the above mentioned APIs such as PyTorch’s FSDP,
+    supports this combination. Conceptually:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed model parallel works in an inner layer, where it distributed a large
+    model to a group of GPUs. This group of GPUs can at least handle a single data
+    point from a mini-batch. They behaves as a single monster GPU that has unlimited
+    amount of memory. This way, you can load larger models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Distributed model parallel works in an outer layer, where it distributes different
+    data points from the same mini-batch to different monster GPUs simulated by distribute
+    model parallel. This way, you train the large model faster.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article explains how distributed data parallel and distributed model parallel
+    in the context of the stochastic gradient descent algorithm at a theoretical level.
+    For API usages, please refer to other documentations mentioned above, such as
+    [DDP](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html), [FSDP](https://pytorch.org/docs/stable/fsdp.html)
+    and [DeepSpeed](https://github.com/microsoft/DeepSpeed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support me
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you like my story, please condiser becoming my referred member. I receive
+    a small fraction of your subscription fee, that supports me greatly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
+    [## Join Medium with my referral link - Wei Yi'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Wei Yi (and thousands of other writers on Medium). I have
+    fun spending thousands of hours writing…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----6dbb8d9c3540--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

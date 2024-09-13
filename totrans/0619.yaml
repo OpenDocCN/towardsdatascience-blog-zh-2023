@@ -1,0 +1,290 @@
+- en: Custom Scoring Functions in Scikit-Learn
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/custom-scoring-functions-in-scikit-learn-d33a1ebc8f90](https://towardsdatascience.com/custom-scoring-functions-in-scikit-learn-d33a1ebc8f90)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into scoring functions for use in RandomizedSearchCV, GridSearchCV
+    and cross_val_score
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)[![Zachary
+    Raicik](../Images/860760b53fcc75013007067190e8ca65.png)](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)
+    [Zachary Raicik](https://medium.com/@raicik.zach?source=post_page-----d33a1ebc8f90--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d33a1ebc8f90--------------------------------)
+    ·7 min read·Nov 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8365cc9231da4ae74d2b17f8e6e04ef9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [engin akyurt](https://unsplash.com/@enginakyurt?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`RandomizedSearchCV`, `GridSearchCV`, and `cross_val_score` are all tools to
+    optimize and evaluate machine learning models in scikit-learn. Each of these tools
+    offers a systematic approach to hyper-parameter tuning and model performance assessment.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a long time, I used these tools out of the box without any consideration
+    for the scoring function. However, I eventually learned that when using these
+    tools, scikit-learn defaults to the model’s inherent scoring function to evaluate
+    performance. The default scoring metric isn’t always appropriate, which can lead
+    to misinformed decisions regarding the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The remainder of this article will delve into how and when to utilize custom
+    scoring functions in scikit-learn.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Example: Tweedie Regression on Insurance Claims'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this example, we develop a regressor for predicting future insurance claim
+    costs, a task complicated by the inherent uncertainty in insurance data. Uncertainty
+    in insurance data stems from a couple of places.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once someone has purchased an insurance policy, there is no guarantee they will
+    ever file a claim. This leads to a high concentration of zeroes in the target.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If someone does file a claim, the size of that claim could be large or small.
+    This leads to a large variance in our target variable.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By default, `RandomizedSearchCV`, `GridSearchCV`, and `cross_val_score` use
+    the default scoring metric associated with the classifier or regressor passed
+    to it. For many widely used regressors traditional metrics like R² and RMSE are
+    the default scores. However, using these metrics to make decisions about parameter
+    tuning or evaluate model performance for insurance data will often lead to incorrect
+    decisions and results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, when working with insurance data we need to ensure we pass an
+    appropriate scoring function to these tools to ensure we correctly set the model’s
+    parameters and evaluate the model’s performance. More generally, any time you
+    use these tools you should ensure that the scoring function being used is appropriate
+    for your data. In some cases, you might just want to use a scoring function different
+    than the default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next few subsections, we will build a tweedie regressor using light GBM,
+    `RandomizedSearchCV` , and a custom scoring function. This example is intended
+    to demonstrate how to use scoring functions in tools like `RandomizedSearchCV`,
+    `GridSearchCV`, or `cross_val_score` . This example is not intended to provide
+    a detailed overview of machine learning model development, hyper-parameter tuning,
+    or produce a good model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulating our Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Due to the sensitive nature of insurance data, it’s often hard to find publicly
+    available claims history datasets. For that reason, we have simulated our own
+    dataset using the code provided below. The dataset is intended to simulate insurance
+    claims. Each row represents a policyholder where for each policyholder we simulate
+    the number of claims they have incurred, as well as the size of any claims they
+    have incurred. Simulating the dataset ensures the data has a few defining characteristics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`policy_exposure`, or how long the person has held the policy, is uniformly
+    distributed between 1 and 12 months.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`num_claims`, or how many claims someone has filed, is poisson distributed.
+    This ensures a right skewed distribution, where the majority of people haven’t
+    filed any claims.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`claim_cost`, or the total amount of an individuals claims, is gamma distributed.
+    The claim cost is zero if the number of claims is 0.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Building our Regressor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing we will do is import our [light GBM](https://lightgbm.readthedocs.io/en/latest/index.html)
+    (“LGBM”) regressor. We will set the regression objective to tweedie. The evaluation
+    metric is independent of the objective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Tweedie distribution is a type of statistical distribution that encompasses
+    a range of other well-known distributions, including the Normal, Poisson, and
+    Gamma distributions. The Tweedie distribution’s power parameter determines the
+    specific form of the distribution within the Tweedie family. A power parameter
+    between 1 and 2 leads to a compound Poisson-Gamma distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, since we simulated our data, we already know that the number of
+    claims follow a poisson distribution and the size of these claims follow a Gamma
+    distribution. For that reason, we will set up a randomized grid search to find
+    the optimal parameter value between 1 and 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`RandomizedSearchCV` with Default Scoring'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When building tweedie models on insurance data, one common evaluation metric
+    is `mean_tweedie_deviance`**.** However, our initial grid search will intentionally
+    use the estimators default scoring function (R² in this case) to select the optimal
+    parameter. Once the search is complete, we will calculate the `mean_tweedie_deviance`
+    so that we can compare it to future grid searches designed to optimize `mean_tweedie_deviance`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We confirm that the models score is equal to R².
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can alsoe view the optimal power parameter. Interpreting `mean_tweedie_deviance`
+    on it’s own can be tricky. However, generally the lower the better. We will use
+    this as value as our baseline to compare to future searches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`RandomizedSearchCV` using `make_scorer`'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Without additional evaluation, the results using the default scorer look okay.
+    However, let’s imagine we’re experienced data scientists and we recognize that
+    using R² to tune our model is inappropriate. We decide we want to switch our scoring
+    function to `mean_tweedie_deviance` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make this available to `RandomizedSearchCV` , we use scikit-learn’s `make_scorer`.
+    From the Scikit-learn [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html),
+    `make_scorer` is a function to “make a scorer from a performance metric or loss
+    function.” In other words, this function allows us to use any function available
+    in `sklearn.metrics` as a scoring function for use in `RandomizedSearchCV`, `GridSearchCV`,
+    or `cross_val_score`. There are a few other available arguments in the documentation,
+    however the only one we need is `greater_is_better` to tell our search that lower
+    `mean_tweedie_deviance` is better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s relatively easy to set up a scoring metric using `make_scorer`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: With our new scoring function, we run our search in the same way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again, we can view the results of our grid search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results are the same as those from the default scorer, but why? When we
+    create our custom scoring function using `make_scorer`, the search doesn’t use
+    the whatever power it’s testing in the calculation of `mean_tweedie_deviance`.
+    Instead, it uses the default power. According to the scikit-learn [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_tweedie_deviance.html),
+    the default power for `mean_tweedie_deviance` is 0\. `Mean_tweedie_deviance` with
+    a power of zero reduces to root mean squared error, which leads to the same power
+    selection as when we use the default scoring metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we were focused on tuning other LGBM parameters and already knew the power
+    we wanted, we could use a scoring function like the one below. However, since
+    we are tuning the power parameter, this is not possible for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`RandomizedSearchCV` using Custom Scoring Object'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Instead of using `make_scorer`, we can write our own function and use it as
+    our scoring metric. As long as the function signature is `(y_true, y_pred)` or
+    `(estimator, X, y)`, scikit-learn tools like RandomizedSearchCV, GridSearchCV,
+    or cross_val_score can accept the function as a scoring function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our example, we elect to design our scoring function with the signature
+    `(estimator, X, y)` . Having the estimator available in the function allows us
+    to access the estimator’s power to correctly calculate `mean_tweedie_deviance`
+    during the search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we simply pass this function to our search!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Like before, let’s look at the optimal power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We notice that the `power` is a slightly higher, and the `mean_tweedie_deviance`
+    is much lower! Since `mean_tweedie_deviance` is a more appropriate metric for
+    this model, we can feel good about this result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may have noticed that when we calculate our `mean_tweedie_deviance` after
+    our search is complete, we pass sample weights as an input. However, in our custom
+    scoring object, we don’t use any sample weights. Passing additional arguments
+    to custom scoring objects is necessary if the required information isn’t available
+    in any of the variables in the required signature. Although it’s possible to provide
+    additional inputs, it requires building your own k-fold validation methodology,
+    which is beyond the scope of this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we explored the complexities of customizing scoring metrics in
+    `RandomizedSearchCV`. The concepts covered in this article extend to additional
+    tools like `GridSearchCV`, or `cross_val_score`. Additionally, we discussed a
+    few limitations of this approach. Remember, it’s important to consider that the
+    default scoring metrics might not always be appropriate for the task at hand!
+  prefs: []
+  type: TYPE_NORMAL

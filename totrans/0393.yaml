@@ -1,0 +1,461 @@
+- en: 'BigQuery Optimization Strategies 3: Table Flattening'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/bigquery-optimization-strategies-3-table-flattening-373d34c08cea](https://towardsdatascience.com/bigquery-optimization-strategies-3-table-flattening-373d34c08cea)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: About Exploding Tables and Imploding Arrays
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)[![Martin
+    Weitzmann](../Images/c1d8ddc6db774465126c9aff1eab7ae2.png)](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)
+    [Martin Weitzmann](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)
+    ·9 min read·Feb 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Arrays are one of the coolest features for an analytics databases you can think
+    of, because it can store additional information right at the place and time it
+    happened. Let’s explore some basic examples and then have a look at arrays in
+    Google Analytics 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/076ff3f2da5c8b766f6edf93ed5c02e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Torsten Dederichs](https://unsplash.com/@tdederichs?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For storing sales history, for example, we can just store the products bought
+    in an array together with the purchase event and not in a separate table — it’s
+    better to save all the SQL join hassle later in the analyses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And while arrays are not super intuitive, I would argue that SQL joins are worse
+    (mostly because people [use the wrong mental model to explain them](https://medium.com/towards-data-science/explain-sql-joins-the-right-way-f6ea784b568b)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In terms of query optimization, there is a simple rule for dealing with arrays
+    in SQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If you can aggregate the array — do it!**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let me explain — when you need information from an array you have two choices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*aggregate* the array / reduce it to one value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*lateral join* the array to the table / “flatten” the table'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you need only *one value*, then aggregate — if you really need *multiple*
+    *values* then filter, filter and filter again, then do the expensive lateral join.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By the way — if you want a more elaborate refresher on querying nested data,
+    please have a read here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/https-medium-com-martin-weitzmann-bigquery-sql-on-nested-data-cf9589c105f4?source=post_page-----373d34c08cea--------------------------------)
+    [## BigQuery: SQL on Nested Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BigQuery can be very powerful because nested data means working on pre-joined
+    tables. But analysts struggle to use its…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/https-medium-com-martin-weitzmann-bigquery-sql-on-nested-data-cf9589c105f4?source=post_page-----373d34c08cea--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we want to focus on optimization, here is only a short version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Array Aggregation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This means to reduce/implode your array to one value, i.e.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'select one value from the array: `my_array[OFFSET(2)]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'use a function that aggregates: `ARRAY_LENGTH(my_array)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: use a sub-query for custom aggregation `(select sum(x) from unnest([3, 6, 7,
+    2]) as x)`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We’ll look at more examples later!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lateral Joins
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: These joins are lateral because they combine a table with something that changes
+    and is unique for every row. In our case it’s an array — it usually contains different
+    values in every row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With unnesting arrays this just means that you take every value in the array
+    and add it to a copy of the parent row. So we go from two rows …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3, 6, 8]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[2, 7]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: to 5 rows …
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3, [3, 6, 8]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 6, [3, 6, 8]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 8, [3, 6, 8]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 2, [2, 7]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 7, [2, 7]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We got the elements out of their array, but we also got from 2 rows to 5, a
+    150% increase!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Source: [https://giphy.com/channel/ThisIsAOK](https://giphy.com/channel/ThisIsAOK)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine what happens in a table with more than two rows — it *explodes in
+    size* and someone has to *pay* for this intense calculation!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We should really try to avoid *these kinds of* lateral joins *if we can*! And
+    that is what you need to check in your use-case: **Can I avoid a *lateral join*
+    with an array?** or maybe better **Can I avoid a *table explosion*?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing an avoidable *lateral cross join* implementation with its *array aggregation*
+    counter-part just means to **push pre-aggregation onto the array level** while
+    **completely dropping the join operation**. This saves resources both in terms
+    of computation as well as cache needed (that might spill to disc and further slow
+    down the query execution).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minimal Examples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start with a table with two food items containing the name and ingredients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pasta al Pomodoro**, [pasta, tomatoes, olive oil, garlic, basil, salt]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Kimchi**, [Napa cabbage, Korean pepper flakes, daikon radish, garlic, ginger,
+    salt]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here are our prompts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the number of daikon radishes in all foods!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Find all ingredients that contain both letters ‘a’ and ‘i’
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Find the number of ingredients that contain both letters ‘a’ and ‘i’
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'All three cases can be solved by just flattening the table and then do the
+    grouping and/or counting. But let’s actually have a closer look — here is the
+    table as CTE:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0cf18e320e2da8181d2af2b843614de9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Yummy Query Result (Screenshot by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just *paste the query* into your console and follow along.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Number of daikons in all foods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Can we aggregate?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sure — in theory we just need one information from the array: *how many daikons
+    does it contain?* And then just sum up the result over all rows.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with *adding the information to each row* — I put the comment numbering
+    to show the order of execution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1a1ab9888a8f54230c053f41827fc27f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Amazingly Aggregated Arrays! (Screenshot by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have this information in the 3rd column, we can just sum it up in
+    the parent query! So, we basically just *wrap the sub-query into a* `*SUM()*`and
+    remove the wildcard `*` …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: … and we end up with the result `1`. Try it with garlic and other ingredients!
+  prefs: []
+  type: TYPE_NORMAL
+- en: And yes, the most confusing thing about SQL is that the order of reading the
+    query doesn’t match the order of execution at all. But at least it’s consistent
+    and you know exactly what a queries output is like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find all ingredients that contain both letters ‘a’ and ‘i’
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Can we aggregate? Hm, difficult, because we might have more than one ingredient
+    in the array and we might want to group by all ingredients with ‘a’ and ‘i’ —
+    so we need to “flatten” the table first …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Nice and short query … but the table just grew from 2 to 12 entries!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9c0be8ba43af6d998ca7f83fc42bc62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table Explosion Action a.k.a. Lateral Cross Join (Screenshot by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Luckily, BigQuery works columnar and we don’t need the array anymore. We can
+    also filter for the actual condition and so we end up with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e0e048f9603f03fd58a54f2ee8833e1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nice output — the nasty cross join is hidden in the back-end (Screenshot by
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can use this output to group and summarize and get more information
+    — but *we couldn’t have done it without* the cross join! You see that **we changed
+    the table meaning**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Before*: every row represents a food'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*After*: every row represents an ingredient'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you do “flatten” your table, be aware of *how the meaning of your table changed*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the number of ingredients that contain both letters ‘a’ and ‘i’
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now this is awfully similar to the one we just had, no? You guessed it, we don’t
+    need the cross join for this one anymore! Because we can aggregate the array,
+    right? We just do a pre-count inside the array and sum up the results!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f677e91c2e4f439a0537bfa69136de13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nice output — no nasty cross join needed! (Screenshot by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, you can again wrap a `SUM()` around the sub-query and get a table
+    aggregate. But let’s look at some real-world scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google Analytics 4
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With the schema we’re confronted with here, we got two kinds of arrays:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Store **custom variables** and their value (non-hierarchical): *event_params*,
+    *user_properties*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Provide **hierarchical** information: *items*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Custom variables are semantically on the same level as the parent row, we just
+    can’t introduce new columns and so we store them in an array. Items are semantically
+    *under* the event. E.g. in the items view event we want to know the concrete items
+    that have been viewed by a user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the **custom variables** you will probably *almost always* use a **sub-query**
+    because you only want *one variable at a time*. It’s more of a challenge with
+    the second case: items. Let’s have a look at this exploratory query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s find events that contain items so we understand better what data is stored
+    in the wild …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f95854fcc1f7b9420cc899eba8a66c54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Screenshot by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume we want to count the amount of viewed items that had the color
+    ‘Charcoal’ in their name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f7414c8e6959140ecf626bee48d741b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sub-query count and visual count seem to match (screenshot by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looks good! Let’s wrap it up into a sum of the count and group by *page_title*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a23b4435670cb84f6f23b307fe263508.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Charcoal for the Kids! (screenshot by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The kids section provides the most Charcoal item views … that must be important
+    information for someone!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anyways, I think we will be happy to only have used sub-queries here instead
+    of cross joins when we scale this analysis up to year-on-year comparison for the
+    last 6 months globally while we continue to add more really important metrics
+    that management needs urgently to make very important decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll leave it to you to develop good queries for lateral cross joins in GA4,
+    but the only use-cases I can think of is some item dimension that you need to
+    group by — like *item_category*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope you enjoyed this little tour around optimized queries on arrays with
+    SQL in BigQuery! Check out the other articles in this series:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/bigquery-sql-optimization-2-with-temp-tables-to-fast-results-41869b15fcff?source=post_page-----373d34c08cea--------------------------------)
+    [## BigQuery SQL Optimization 2: WITH Temp Tables to Fast Results'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to use Temporary Tables instead of WITH
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/bigquery-sql-optimization-2-with-temp-tables-to-fast-results-41869b15fcff?source=post_page-----373d34c08cea--------------------------------)
+    [](/bigquery-sql-optimization-1-filter-as-early-as-possible-60dfd65593ff?source=post_page-----373d34c08cea--------------------------------)
+    [## BigQuery SQL Optimization 1: Filter as Early as Possible'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s talk about low performing SQL and how to use and optimize filters with
+    WHERE, HAVING, and QUALIFY in flat and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/bigquery-sql-optimization-1-filter-as-early-as-possible-60dfd65593ff?source=post_page-----373d34c08cea--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Did you enjoy reading this article?* [*Become a member*](https://medium.com/@martin.weitzmann/membership)
+    *and join a growing community of curious minds!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@martin.weitzmann/membership?source=post_page-----373d34c08cea--------------------------------)
+    [## Join Medium with my referral link - Martin Weitzmann'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Martin Weitzmann (and thousands of other writers on Medium)
+    …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@martin.weitzmann/membership?source=post_page-----373d34c08cea--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

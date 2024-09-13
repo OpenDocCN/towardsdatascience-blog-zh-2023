@@ -1,0 +1,436 @@
+- en: UMAP Variance Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/umap-variance-explained-b0eacb5b0801](https://towardsdatascience.com/umap-variance-explained-b0eacb5b0801)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[MATHEMATICAL STATISTICS AND MACHINE LEARNING FOR LIFE SCIENCES](https://towardsdatascience.com/tagged/stats-ml-life-sciences)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A simple way to interpret UMAP components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://nikolay-oskolkov.medium.com/?source=post_page-----b0eacb5b0801--------------------------------)[![Nikolay
+    Oskolkov](../Images/23ec4d70ea0d237eb26782c0c98ed00a.png)](https://nikolay-oskolkov.medium.com/?source=post_page-----b0eacb5b0801--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b0eacb5b0801--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b0eacb5b0801--------------------------------)
+    [Nikolay Oskolkov](https://nikolay-oskolkov.medium.com/?source=post_page-----b0eacb5b0801--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b0eacb5b0801--------------------------------)
+    ·19 min read·Mar 27, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a5c3be44e4808f1ca5e658c9ba47eaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: UMAP computed on [MNIST black and white images of handwritten digits](https://en.wikipedia.org/wiki/MNIST_database).
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the **twenty fifth** post from my column [**Mathematical Statistics
+    and Machine Learning for Life Sciences**](https://towardsdatascience.com/tagged/stats-ml-life-sciences),
+    where I use plain language to discuss analytical methods from Computational Biology
+    and Life Sciences. [**UMAP**](https://arxiv.org/abs/1802.03426)is a [**dimensionality
+    reduction**](https://en.wikipedia.org/wiki/Dimensionality_reduction) technique
+    that together with [**tSNE**](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)
+    became increasingly popular and *de-facto* a standard tool for analysis of [**single
+    cell genomics**](https://en.wikipedia.org/wiki/Single-cell_sequencing) data, where
+    traditional methods such as [**PCA**](https://en.wikipedia.org/wiki/Principal_component_analysis)
+    **have limitations**. However, one disadvantage of UMAP and tSNE in comparison
+    with PCA is their **non-interpretable** components that are not straightforward
+    to link to the variation in the original data. In this article, I suggest a simple
+    method for **estimating amount of variation explained** **by leading UMAP and
+    tSNE components**. Using the classic [MNIST](https://en.wikipedia.org/wiki/MNIST_database)
+    dataset of black and white images of handwritten digits as a benchmark, I demonstrate
+    that **leading UMAP and tSNE components are inferior to PCA components in terms
+    of explaining total data variation**, however, surprisingly, demonstrate a better
+    linkage to the labels of data points, i.e. they explain more **biological rather
+    than total variation in the data**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing MNIST Data for Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a benchmark dataset, we will be using the [**MNIST**](https://en.wikipedia.org/wiki/MNIST_database)which
+    includes 70 000 black and white images of handwritten digits of **28 x 28 pixels**
+    **resolution,** i.e. **784 pixels** per image. First, we will download the MNIST
+    dataset, check its dimensions and visualize a few random images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bbb2ee20e2181038303ea0ac141c5ad8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A few random MNIST images of handwritten digits. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The values of MNIST dataset represent **pixel intensities** varying from 0 to
+    255, where 0 corresponds to the black background. Therefore, MNIST is a **“zero-inflated”**
+    data set which is very **similar to a** **typical single cell** gene expression
+    dataset. It is usually recommended to normalize the black and white pixel intensities
+    by the largest 255 value. However, here, by analogy with single cell gene expression,
+    we will use a **log-transform** as another mild normalization strategy. Also,
+    for the sake of time, we will not use all the 70 000 images but **randomly pick
+    10 000 images**, later we will draw 10 000 images a few times to make sure that
+    our conclusions are robust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As a first exploratory step, in order to **understand the variation** **in MNIST**,
+    we will perform a PCA analysis on the MNIST itself and a **shuffled** version
+    of MNIST. This will help us to estimate the number of meaningful, i.e. non-redundant,
+    dimensions out of the initial 784 dimensions, i.e. we will figure our the number
+    of **informative** dimensions to keep for all the future tested dimension reduction
+    and clustering techniques. More details are [here](/how-to-tune-hyperparameters-of-tsne-7c0596a18868).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/94bf20752b11ee9fbc7a5fe0fcc8ec1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PCA 2D map, scree plot, and diagnostic figures addressing the number of informative
+    principal components in the MNIST images of handwritten digits data set. Image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: An important outcome of the PCA analysis on MNIST and shuffled MNIST is that
+    the dataset seems to have **62 informative** principal componentsthat all together
+    **capture 86% of variation in the data**. Therefore, if we replace the original
+    dataset including 784 features by 62 PCs, we will keep most of the variation in
+    the data, but will **reduce the dimensionality of the data by more than 10 times**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let us visualize the MNIST dataset as a 2D map using UMAP and tSNE dimension
+    reduction techniques. In both cases, we will use 2 top principal components, i.e.
+    2 PCs, for initialization. The perplexity hyperparameterfor tSNE and the number
+    of nearest neighbors for UMAP will be computed as a square root of the number
+    of data points (images). See [here](/how-to-tune-hyperparameters-of-tsne-7c0596a18868)
+    for details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5e6cf27df107b6aa10b7c06c5dd2594e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: tSNE and UMAP two-dimensional maps of MNIST handwritten digits data. Image by
+    author
+  prefs: []
+  type: TYPE_NORMAL
+- en: One obvious conclusion that can be drawn from the comparison of 2D PCA, tSNE
+    and UMAP pictures is that the **classes** **of handwritten digits** are much more
+    resolved by the non-linear **neighbor-graph** dimensionality reduction methods
+    such as tSNE / UMAP compared to the **linear** **matrix factorization** techniques
+    such as PCA. Therefore if we assume the classes of handwritten digits (aka biological
+    phenotype, e.g. cell type in scRNAseq experiments) to comprise **most of the variation**
+    in the MNIST data, it probably makes sense to hypothesize that **two tSNE/UMAP
+    components are capabale of capturing more biological variation than two PCA components
+    (at least in the MNIST dataset)**. In the next sections, we are going to try to
+    **quantify and prove this hypothesis**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MNIST variation explained by PCA components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As non-linearneighbor-graph based techniques, **UMAP / tSNE do not seem to have
+    the concept of variance explained by its components** **in contrast to matrix
+    factorization linear dimension reduction techniques such as PCA**, see for example
+    the [answer](https://github.com/lmcinnes/umap/issues/122) of Leland McInnes, the
+    author of UMAP. Here, nevertheless, we will try to quantify the amount of MNIST
+    variation in pixel intensities explained by UMAP / tSNE components and compare
+    it with the amount of variation explained by PCA components using the [**Partial
+    Least Square (PLS) regression**](https://en.wikipedia.org/wiki/Partial_least_squares_regression)
+    and the [**R-squared statistic**](https://en.wikipedia.org/wiki/Coefficient_of_determination)
+    generalized for matrix operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us check the percentage of MNIST variation explained by first principal
+    component (PC1), we can easily compute and extract it from the PCA as the normalized
+    **first eigen value** of MNIST. Below, we can see that **PC1 explains ~11% of
+    MNIST variation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, **we will** **reproduce this number from the** **Partial Least Squares
+    (PLS)** **regression**. We are going to use the following reasoning. Suppose we
+    want to **approximate a matrix X by another matrix PCA_matrix**, which for now
+    includes only one column, that is PC1, but generally can include up to 784 columns
+    for MNIST dataset. Then, we can fit a PLS linear regression model of **X = B *
+    PCA_matrix** and compute a [**R-squared statistic**](https://en.wikipedia.org/wiki/Coefficient_of_determination)
+    which will reflect the amount of variation in **X** explained by **PCA_matrix**.
+    In the matrix form, the [R-squared statistic](https://en.wikipedia.org/wiki/Coefficient_of_determination)
+    will be given by the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/144e59fde8f7fd2f478158cf04c9c208.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where **B*PCA_matrix** represents a prediction of **X** from its approximation
+    **PCA_matrix** and will be found from the PLS regression (first equation). To
+    technically implement this procedure in **scikit-learn Python module**, we will
+    first fit a PLS model with **X** as a response variable, and **PCA_matrix** as
+    an explanatory variable, we compute a prediction **y_pred = B*PCA_matrix**, and,
+    finally, we can either use the **r2_score** function in scikit-learn, or the second
+    equation above for computing the [R-squared statistic](https://en.wikipedia.org/wiki/Coefficient_of_determination).
+    Let us check that both will give identical answers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thus, by utilizing PLS regression, we computed the fraction of total MNIST **variation
+    explained by the first principal component** **outside of the PCA algorithm**.
+    Compare the fraction calculated by the PLS with the respective variance explained
+    by the PCA algorithm pca.explained_variance_ratio_[0] which is the ratio of first
+    eigen value divided by the sum of all eigen values. They are nearly identical.
+    Now let **PCA_matrix** consist of a number of PCs. Below, we demonstrate that
+    the PLS computation of cumulative fraction of variance explained by principal
+    components will result in **nearly identical** to PCA cumulative variance explained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/18c9c122c04f8e0aa06f9b2bbf5b9755.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of cumulative variances in MNIST image pixel intensities data explained
+    by PCA algorithm and PLS-based approach. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For clarity, we plot PLS-computed MNIST variance explained for PC1-PC20 on the
+    top of the native PCA eigen value based variance explained which is done for PC1
+    — PC100\. We can see, that **the** **curves of cumulative variance explained computed
+    by PLS and PCA nicely coincide**. This is no surprise since PLS computation essentially
+    mimics what is going under the hood in the PCA algorithm. However, very importantly,
+    this gives us an **instrument** of computing variance of **X** explained by **any
+    approximation**, i.e. not only the **PCA_matrix** but also any other matrix. In
+    the next session, we will use **UMAP_matrix** as an approximation of the original
+    **X** matrix of MNIST pixel intensities and **compare the cumulative variance
+    of X explained by UMAP and PCA components**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MNIST variation explained by UMAP components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section we will use the methodology of PLS estimation of variance explained
+    developed in the previous section. Again, we will use the same reasoning: since
+    UMAP gives some sort of **approximation** **of the original data** **X**, and
+    people even run **clustering on 2D UMAP** for discovering cell types in scRNAseq
+    field, we can use the **UMAP_matrix** (and we can do the same for tSNE) as an
+    approximation of **X**, then we fit the PLS model **X=B * UMAP_matrix**, and estimate
+    the fraction of MNIST variance explained by UMAP components via R-squared statistic
+    as'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bff56ab4bae4e757d2606b5d6b0ae95c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, we will use the PLS methodology developed in the previous section, and
+    compute the fraction of MNIST variance explained by the first UMAP component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We conclude that **first components of both UMAP and tSNE explain about 7% of
+    MNIST variation which is lower than the 11% explained by the first PCA component**.
+    This is not surprising. Intuitively, it is hard to expect that there can be another
+    latent variable alternative to PC1 that explains more than 11% of MNIST variation
+    without redefining the concept of “explained variance”. The current definition
+    comes from the PCA (**normalized eigen values**), and linear regression, that
+    is R-squared, analyses. Both are linear frameworks. **In addition,** **PC1 by
+    definition corresponds to a direction of maximal data variation**. Therefore,
+    if another latent variable comes from a nonlinear analysis such as UMAP, that
+    does not *per se* attempts to maximize variation in the data, **it would be hard
+    to expect that e.g. UMAP1 explains more variation in MNIST** **within linear definition
+    of “variance explained”**. Now we will calculate the variance explained by a few
+    top tSNE and UMAP components. To make our analysis more robust towards sampling
+    of the 10 000 images, we will independently draw them **N_iter** times. Also,
+    for each iteration, we will slightly **change /** **perturb** **the hyperparameters
+    of UMAP and tSNE, as well as the number of data points for PCA**. This will allow
+    us to build **confidence intervals** and address the sensitivity of our analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c0e87730240753177159acb8cd7c75f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cumulative variance in MNIST image pixel intensities data explained by PCA,
+    tSNE and UMAP components. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we conclude that leading PCA components explain consistently more variation
+    in MNIST dataset than leading tSNE and UMAP components. This result was expected
+    since UMAP and tSNE do not aim at building directions of maximal variation in
+    contrast to PCA. Further, **the amounts of variation in the MNIST data explained
+    by leading tSNE and UMAP components are comparable, and both lower than the ones
+    explained by PCA components**. Therefore, we seem to observe a systematic difference
+    in MNIST explained variance **between matrix factorization and neghbor-graph dimensionality
+    reduction techniques**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Biological variation explained by UMAP components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous section, we showed that leading components of UMAP and tSNE
+    explain significantly less variation in MNIST dataset compared to the leading
+    PCA components, which is a sort of **expected result** since PCA by definition
+    attempts to find components of maximal variation in the data in contrast to UMAP
+    and tSNE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is however an interesting paradox: looking at the 2D UMAP and tSNE figures
+    of MNIST data we can clearly see more **distinct** clusters of handwritten digits
+    compared to the ones in the corresponding 2D PCA figure. **Despite 2D UMAP and
+    tSNE explain less variation in** MNIST **than PCA**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Here, we are going to hypothesize that UMAP / tSNE components are linked to
+    a **phenotype of interest**, that is MNIST **labels** in our case, or cell types
+    for scRNAseq, **rather than total variation in the data**. To check this hypothesis,
+    let us first explore how leading PCA, UMAP and tSNE components correlate with
+    the MNIST labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/50fe3a391b1723753fbf729be66a2fbc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pairwise Spearman correlations between MNIST labels and PCA / tSNE / UMAP components.
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can observe, that **both tSNE1 and UMAP1 have a stronger correlation with
+    the MNIST labels compared to PC1**. Further, the second components of PCA, tSNE
+    and UMAP have comparable strength of correlation with the MNIST labels, **whereas
+    the** **third UMAP component has a much stronger correlation with MNIST labels
+    compared to the third components of PCA and tSNE**, that is PC3 and tSNE3, respectively,
+    which **appear to be almost uncorrelated with the MNIST labels**. In the complete
+    notebook, available on my [github](https://github.com/NikolayOskolkov/UMAP_VarianceExplained),
+    I show that the **obtained heatmap is robust** **with respect to sampling and
+    perturbations of PCA / tSNE / UMAP hyperparameters**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Alternatively**, we can also quantify the linkage between the PCA, tSNE and
+    UMAP components on one side, and the MNIST labels (classes of digits, aka cell
+    types in scRNAseq data) on the other side, through the **PLS regression** methodology
+    developed in the previous sections. By analogy, if we consider **UMAP_matrix**
+    (or **PCA_matrix** or **tSNE_matrix**) as an approximation of the MNIST vector
+    of **labels**, we can fit the PLS model **labels= B * UMAP_matrix**, and estimate
+    the fraction of **variation in the MNIST** **labels** **explained by the UMAP
+    components** as'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38885f1e36fef283e485d7379df5d97a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let us test how much variance in MNIST **labels** is explained by PC1, tSNE1
+    and UMAP1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can clearly see that tSNE1, and especially UMAP1, explain much more variation
+    in MNIST labels compared to PC1, which confirms what we have previously observed
+    with Spearman correlation in the heatmap above. We can also reproduce the **R-squared**
+    values above from the linear regression model in **statsmodels** package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/747e74fd087029c335546e63c0d2ca7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, **once we have made sure that** **we can correctly compute** the variance
+    in MNIST labels explained by PC1, tSNE1 and UMAP1 by using the PLS and R — squared
+    methodology, we can extend this procedure for other leading PCA /tSNE/ UMAP components,
+    and visualize how thecumulative variance explained changesas more and more components
+    are added.As per usual, we will perturb the PCA, tSNE and UMAP with respect to
+    the sub-sampling iteration, number of images and hyperparameters of the methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8370fcea93acd07e61f9786869c53039.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cumulative variance in MNIST labels explained by PCA, tSNE and UMAP components.
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Here,** **surprisingly, we observe that** **leading UMAP and tSNE components
+    seem to explain much more of variation in the MNIST labels compared to leading
+    PCA components.** This is somehow counter-intuitive as we saw in the previous
+    section that leading tSNE and UMAP components explain less variation in MNIST
+    image pixel intensities. Nevertheless, this cumulative explained variance plot
+    above basically confirms the correlation heatmap between the MNIST labels, and
+    PCA / tSNE / UMAP components obtained previously.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we have an interesting effect. We saw in the previous section that the
+    leading tSNE and UMAP components can not capture more variation in the MNIST than
+    leading PCA components. However, surpisingly, they are **able to capture more
+    variation in MNIST labels, that is classes of handwritten digits, despite the
+    classes were not provided to tSNE / UMAP at all, when performing the dimension
+    reduction.** In other words, all three dimension reduction techniques are completely
+    unsupervised, i.e. they know nothing about the classes of handwritten digits.
+    Nevertheless, **tSNE and especially UMAP components seem to be, surprisingly,
+    linked to the classes of digits** without being able to capture substantial proportion
+    of variation in MNIST pixel intensities across the images. I do not fully understand
+    this effect but believe it is an interesting observation, which I would be curious
+    to further explore. **Let me know in the comments, if you have more insights into
+    the nature of this effect.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have learnt that a **Partial Least Squares (PLS)** **approach**
+    can be used for building **intuition about data variation explained by tSNE and
+    UMAP components**. Using this approach, we demonstrated that **tSNE and UMAP components
+    explain (unsurprisingly) less variation in MNIST image pixel intensities** **data
+    compared to PCA components**, however, are surprisingly strongly **linked to the
+    labels of MNIST images**. The nature of this effect is unclear taken into account
+    the unsupervised design of all the three dimension reduction techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As per usual, let me know in the comments below what analytical methods from
+    Life Sciencesand Computational Biology seem **especially mysterious** to you and
+    I will try to address them in this column. Check the files used for the post on
+    my [github](https://github.com/NikolayOskolkov/UMAP_VarianceExplained). Follow
+    me at **Medium** [**Nikolay Oskolkov**](https://medium.com/u/8570b484f56c?source=post_page-----b0eacb5b0801--------------------------------),
+    in **Twitter** @NikolayOskolkov, in **Mastodon** @oskolkov@mastodon.social and
+    connect via [**Linkedin**](http://linkedin.com/in/nikolay-oskolkov-abb321186).
+    In the next post, I will discuss **how to cluster in UMAP space**, stay tuned.
+  prefs: []
+  type: TYPE_NORMAL

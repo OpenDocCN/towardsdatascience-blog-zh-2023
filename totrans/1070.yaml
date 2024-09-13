@@ -1,0 +1,409 @@
+- en: How Does XGBoost Handle Multiclass Classification?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-does-xgboost-handle-multiclass-classification-6c76ba71f6f0](https://towardsdatascience.com/how-does-xgboost-handle-multiclass-classification-6c76ba71f6f0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It’s crucial to understand the underlying workings of classification using this
+    kind of model, as it impacts performance.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)[![Saupin
+    Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)
+    [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)
+    ·7 min read·Jan 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23c7c84600c2af0aa36124702225ee8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Andrew Coop](https://unsplash.com/@andrewcoop?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we are going to see how the ensemble of decision trees trained
+    using Gradient Boosting libraries like XGBoost, LightGBM and CatBoost performs
+    multiclass classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Indeed, an ensemble of decision trees associates a real value to a set of features,
+    so the question is: how do decision tree ensembles transform a scalar value to
+    a multiclass label?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the underlying workings of classification using this kind of model
+    is crucial, as it impacts performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will enter progressively into the subject following the plan below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reminder and toy example of binary classification in Python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: First binary classification using XGBoost as a regressor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second binary classification using XGBoost as a classifier
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multiclass classification using XGBoost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The versatility of Decision Tree based Ensemble Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'XGBoost, LightGBM, or CatBoost are libraries that share (by default) the same
+    kind of underlying model: decision trees.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These decision trees are combined iteratively, using Gradient Boosting. *I.e.*
+    the addition of new nodes to the current tree is done so that a non-linear objective,
+    usually the squared error, is optimized. To handle the non-linearity, the objective
+    is linearized using its Gradient and Hessian.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hence the name Gradient Boosting. More detail in my previous paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----6c76ba71f6f0--------------------------------)
+    [## DIY XGBoost library in less than 200 lines of python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBoost explained as well as gradient boosting method and HP tuning by building
+    your own gradient boosting library for…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----6c76ba71f6f0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting with ensemble of decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a reminder, the prediction process is relatively simple: given a row of
+    data, each decision tree of the ensemble is browsed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on the value of features, each tree then associates a unique value,
+    attached to the final leaf.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The unique predictions of each tree are then simply summed up to give the overall
+    prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The figure below illustrates this in a simple example, where an ensemble of
+    decision trees models the identity function for an integer between 1 and 4:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba83d213afa3f8ccc3cfeff175032d65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simple ensemble of decision trees. Schema from the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, when the input is 1, the first tree generates 8, the second tree
+    -6, and the last one -1\. Summing these three values gives 1, which is the expected
+    output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This example is extracted from my book, [Practical Gradient Boosting](https://amzn.to/3UVVVgw),
+    on gradient boosting:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://amzn.to/3QmRqtO?source=post_page-----6c76ba71f6f0--------------------------------)
+    [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This book on Gradient Boosting methods is intended for students, academics,
+    engineers, and data scientists who wish …](https://amzn.to/3QmRqtO?source=post_page-----6c76ba71f6f0--------------------------------)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Using a single scalar value, the best we can do is perform a binary classification,
+    labelling negative predictions with one class, and positive ones with the other
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary classification without XGBoost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before discovering this first option, *i.e.* binary classification with XGBoost
+    as a regressor, let’s show in detail how binary classification is done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem we are trying to solve here is simple: we want to establish a student''s
+    probability of success depending on the number of hours he spends studying his
+    subject.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The figure below shows the data collected, i.e. the number of hours of work
+    and the results: ***pass*** or ***failed***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f8fa9a1aa130304439e42a47c837ba8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability of success depends on study hours. Plot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The standard model that is used for classification is the logistic function.
+    This function is similar to linear regression, except that instead of taking a
+    value in the range ℝ, it generates only values in the range [0, 1]. Its formula
+    is worth being known:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd395a8e9b470b506a04011e19e41523.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Logistic function. Formula by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As always in machine learning, finding the best parameters for a model, here
+    the logistic function, is done by minimizing an error. Facing a binary problem,
+    where the positive output can be modelled by a 1 and the negative output by a
+    0, it’s possible to combine both errors in a single expression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bca3e2741a00b9c3363e4c60fad3c14a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple error function. Formula by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the `y_k` are the observed samples whereas `f(x_k)` are the prediction
+    made by the model `f`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The difficulty with this basic error is that, accordingly to the binary nature
+    of the logistic function, which mainly takes only two values: zero and one, the
+    error with respect to the model parameter `m`will also take mainly two values.
+    Hence outside the vicinity of the optimal parameters, the error will be flat.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc65388bde9bfdc5c3f4fac1e6d0c772.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Saturation of the error when using directly the error. Plot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use this formula, and this would work, as long as we provide a pretty
+    good estimate of the optimal parameter. If it’s not the case, we risk ending up
+    in the flat zone where the error is almost constant. In this area, the gradient
+    will be almost zero, and the convergence of the steepest descent will be agonizingly
+    slow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need a way to process the error output, which is limited to the range [0,
+    1] for a given sample to ℝ+ so that there is no more saturation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the additional constraint that a null error must remain a null error after
+    the transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trick is to realize that log(1) is zero, whereas log(0) is -**∞.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore the log-loss is used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cceada6be3af4ee683eaffcc264a3044.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log-loss. Formula by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the `y_k` are the observed samples whereas `f(x_k)` are the prediction
+    made by the model `f`. Note the minus sign in front of the addition operator and
+    the inversion of `1-f(x_k)` with `f(x_k)`. This is because `log(1)=0`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the log loss, the error is no longer saturated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7c4a33ea704ffa9529c15e89b3640304.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The plot of the error using the log loss. Plot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The simplest way to minimize this error is to use the steepest descent, which
+    only requires computing the gradient of the error. Many options are possible to
+    do that. Here we are going to use symbolic differentiation using `sympy`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logistic regression. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm found the expected value, 14.77, which is very close to the theoretical
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now go back to our subject, binary classification with decision trees
+    and gradient boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary classification with XGBoost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s start with a simple example, using the [Cleveland Heart Disease Dataset](https://archive.ics.uci.edu/ml/datasets/heart+disease)
+    (CC BY 4.0), where the classification is done using regression. As we are performing
+    a binary classification, it is possible to use a simple regression, as we can
+    attach a positive value, 1.0, to positive labels, and a negative value, -1, to
+    negative labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing classification using a regressor. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The default error used by XGBoost is the squared error. The predictions are
+    rounded to integers, and as you can see thanks to the confusion matrix, the model
+    performs prediction without error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A similar result can be achieved using directly an XGBoost classifier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing classification using a classifier. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, there is no need to round predictions to get the corresponding
+    class. All the job is done natively by the XGBClassifier. Let’s see how XGBoost
+    handles that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: XGBClassifier trains multiple models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In fact, when you are doing classification with XGBoost, using the XGBClassifier
+    (or xgb.train with the right parameters for classification), XGBoost does in fact
+    train multiple models, one for each class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The snippet of code below shows how to get more insight into the internals of
+    XGBoost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting the individual probabilities for each class. Code by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More specifically, the `predict_proba` the method allows getting access to the
+    raw data generated by the internal models. This clearly reveals that when doing
+    classification XGBoost makes a probability prediction for each class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The predicted class is then the one with the highest probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking at the code that is done to integrate XGBoost into `sklearn`, we have
+    the confirmation that XGBoost makes multiple predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract from the open source code of XGBoost. See [https://github.com/dmlc/xgboost/blob/master/python-package/xgboost/sklearn.py#L1541](https://github.com/dmlc/xgboost/blob/master/python-package/xgboost/sklearn.py#L1541)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen, line 25, `argmax` is used to retrieve the index of the class
+    with the highest probability when `softprob` is used. In the case where the objective
+    used is `softmax`, the prediction is simply cast into integers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does XGBoost perform multiclass classification?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Usually, the explanations regarding how XGBoost handle multiclass classification
+    state that it trains multiple trees, one for each class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is not exactly the case. In fact, all the trees are constructed at the
+    same time, using a vector objective function instead of a scalar one. *I.e.* there
+    is an objective for each class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The XGBoost [documentation](https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html)
+    gives an example of such an objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract from the XGBoost documentation. See [https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html](https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two things very interesting in this snippet of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The objective name is `multi:softprob` when using the integrated objective
+    in XGBoost. This is quite confusing, as the aim is not really the `softprob` ,
+    but the log loss of the `softmax`. This appears clearly in the code, as the gradient
+    is directly the `softmax.` But `softmax` is not the gradient of `softmax` , but
+    the gradient of its log loss:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/0eb5f103ba26452f16ba23cfde091843.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The gradient of the log loss of softmax. Formulas by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. The other point is that the code uses a variable `hess` that stands for
+    the hessian. However, this is not really the hessian that is used mathematically
+    speaking, but the second derivative. Hence the right name for this would be a
+    laplacian.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have shown in this paper how classification is handled by XGBoost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is crucial to understand that classifying `n` classes generate trees `n`
+    times more complex.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also important to notice that the name of the objective functions exposed
+    in the XGBoost API are not always very explicit. For instance, when doing classification,
+    the objective optimized is not `softmax` or `softprob`, but their log loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want to get more detail on Gradient Boosting methods, please have a
+    look at my book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://amzn.to/3Zeq8tU?source=post_page-----6c76ba71f6f0--------------------------------)
+    [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This book on Gradient Boosting methods is intended for students, academics,
+    engineers, and data scientists who wish to](https://amzn.to/3Zeq8tU?source=post_page-----6c76ba71f6f0--------------------------------)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL

@@ -1,0 +1,466 @@
+- en: Using SHAP to Debug a PyTorch Image Regression Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d](https://towardsdatascience.com/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using DeepShap to understand and improve the model powering an autonomous car
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)[![Conor
+    O''Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------)
+    [Conor O''Sullivan](https://conorosullyds.medium.com/?source=post_page-----4b562ddef30d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4b562ddef30d--------------------------------)
+    ·11 min read·Jan 10, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/965f5964b6c98ef14db3694ad7588c2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '(source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autonomous cars terrify me. Big hunks of metal flying around with no humans
+    to stop them if something goes wrong. To reduce this risk it is not enough to
+    evaluate the models powering these beasts. We also need to understand how they
+    are making predictions. This is to avoid any edge cases that would cause unforeseen
+    accidents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, so our application is not so consequential. We will be debugging the model
+    used to power a mini-automated car (the worst you could expect is a bruised ankle).
+    Still, IML methods can be useful. We will see how they can even improve the performance
+    of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tune ResNet-18 using PyTorch with image data and a continuous target variable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluate the model using MSE and scatter plots
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interpret the model using DeepSHAP
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Correct the model through better data collection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Discuss how image augmentation could further improve the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Along the way, we will discuss some key pieces of Python code. You can also
+    find the full project on [GitHub](https://github.com/conorosully/SHAP-tutorial/blob/main/src/image_data.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are new to SHAP, then check out the **video** below**.** If you want
+    more, then check out my [**SHAP course**](https://adataodyssey.com/courses/shap-with-python/)**.**
+    You can get free access if you sign up for my [**Newsletter**](https://mailchi.mp/aa82a5ce1dc0/signup)
+    :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python packages
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We start the project by collecting data in one room only (this will come back
+    to haunt us). As mentioned, we use images to power an automated car. You can find
+    examples of these on [Kaggle](https://www.kaggle.com/datasets/conorsully1/jatracer-images?select=object_detection).
+    These images are all 224 x 224 pixels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We display one of them with the code below. Take note of the image name (line
+    2). The first two numbers are x and y coordinates within the 224 x 224 frame.
+    In **Figure 1**, you can see we have displayed these coordinates using a green
+    circle (line 8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/480d8a4bf80557fca51cf4ce598573c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: example of input image of track (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These coordinates are the target variable. The model predicts them using the
+    image as input. This prediction is then used to direct the car. In this case,
+    you can see the car is coming up to a left turn. The ideal direction is to go
+    towards the coordinates given by the green circle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the PyTorch model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I want to focus on SHAP so we won’t go into too much depth on the modelling
+    code. If you have any questions, feel free to ask them in the comments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start by creating the **ImageDataset** class. This is used to load our image
+    data and target variables. It does this using the **paths** to our images. One
+    thing to point out is how the target variables are scaled — both **x** and **y**
+    will be between **-1** and **1**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In fact, when the model is deployed only the x predictions are used to direct
+    the car. Because of scaling, the sign of the x prediction will determine the car’s
+    direction. When **x < 0**, the car should turn left. Similarly, when **x > 0**
+    the car should turn right. The larger the x value the sharper the turn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the ImageDataset class to create training and validation data loaders.
+    This is done by doing a random **80/20** split of all the image paths from room
+    1\. In the end, we have **1,217** and **305** images in the training and validation
+    set respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the **batch_size** of the **valid_loader**. We are using the length of
+    the validation dataset (i.e. 305). This allows us to load all validation data
+    in one iteration. If you are working with larger datasets you may need to use
+    a smaller batch size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load a pretrained ResNet18 model (line 5). By setting **model.fc**, we update
+    the final layer (line 6). It is a fully connected layer from 512 nodes to our
+    2 target variable nodes. We will be using the Adam optimizer to fine-tune this
+    model (line 9).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: I’ve trained the model using a GPU (line 2). You will still be able to run the
+    code on a CPU. Fine-tuning is not as computationally expensive as training from
+    scratch!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we have our model training code. We train for 10 epochs using MSE as
+    our loss function. Our final model is the one that has the lowest MSE on the validation
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Evaluation metrics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point, we want to understand how our model is doing. We look at MSE
+    and scatter plots of actual vs predicted x values. We ignore y for now as it does
+    not impact the direction of the car.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training and validation set
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Figure 2** gives these metrics on the training and validation set. The diagonal
+    red line gives perfect predictions. There is a similar variation around this line
+    for **x < 0** and **x > 0**. In other words, the model is able to predict left
+    and right turns with similar accuracy. Similar performance on the training and
+    validation set also indicates that the model is not overfitted.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1244d02c4608d8292bb5c47f8904a7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: model evaluation on training and validation set (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create the above plot, we use the **model_evaluation** function. Note, the
+    data loaders should be created so that they will load all data in the first iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can see what we mean when we use the function below. We have created a new
+    **train_loader** setting the batch size to the length of the training dataset.
+    It is also important to load the saved model (line 2). Otherwise, you will end
+    up using the model trained during the last epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Moving to a new locations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The results look good! We would expect the car to perform well and it did.
+    That is until we moved it to a new location:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac24f769db9587ade7b762bf46f95e4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: model going wrong in a new location (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We collect some data from new locations (room 2 and room 3). Running the evaluation
+    on these images, you can see that our model does not perform as well. This is
+    strange! The car is on the exact same track so why does the room matter?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5fd30bf321e46ac5eb3649df59d68097.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: model evaluation on room 2 and room 3 (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging the model using SHAP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We look to SHAP for the answer. It can be used to understand which pixels are
+    important for a given prediction. We start by loading our saved model (line 2).
+    SHAP has not been implemented for GPU so we set the device to CPU (lines 5–6).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: To calculate SHAP values, we need to get some background images. SHAP will integrate
+    over these images when calculating values. We are using a **batch_size** of 100
+    images. This should give us reasonable approximations. Increasing the number of
+    images will improve the approximation but it will also increase the computation
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We create an explainer object by passing our model and background images into
+    the **DeepExplainer** function. This function approximates SHAP values efficiently
+    for neural networks. As an alternative, you could replace it with the **GradientExplainer**
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We load 2 example images — a right and left turn (line 2) and transform them
+    (line 6). This is important as the images should be in the same format as used
+    to train the model. We then calculate the SHAP values for the predictions made
+    using these images (line 10).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we can display the SHAP values using the **image_plot** function.
+    But, we first need to restructure them. The SHAP values are returned with dimensions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**( #targets, #images, #channels, #width, #height)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use the transpose function so we have dimensions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**( #targets, #images, #width, #height, #channels)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, we have also passed the original images into the **image_plot** function.
+    The **test_input** images would look strange due to the transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can see the result in **Figure 4**. The first column gives the original
+    images. The second and third columns are the SHAP values for the x and y prediction
+    respectively. Blue pixels have decreased the prediction. In comparison, red pixels
+    have increased the prediction. In other words, for the x prediction, red pixels
+    have resulted in a sharper right turn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/996afc6e687106197c27ae1f796ff6d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: example shap values on a left an right turn (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are getting somewhere. The important result is that the model is using
+    background pixels. You can see this in Figure 5 where we zoom in on the x prediction
+    for the right turn. In other words, the background is important to the prediction.
+    That explains the poor performance! When we moved to a new room, the background
+    changed and our predictions became unreliable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c10a5ffc40ef7b10fd59e4240b4705b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: shap values for x prediction of right turn (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is overfitted to the data from room 1\. The same objects and background
+    are present in every image. As a result, the model associates these with left
+    and right turns. We couldn’t identify this in our evaluation as we have the same
+    background in both the training and validation images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c310b18d34dbc7beff0814b3f6ef991f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: overfitting to training data (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We want our model to perform well under all conditions. To achieve this, we
+    would expect it to only use pixels from the track. So, let’s discuss some ways
+    of making the model more robust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collecting new data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The best solution is to simply collect more data. We already have some from
+    room 2 and 3\. Following the same process, we train a new model using data from
+    all 3 rooms. Looking at **Figure 7**, it now has a better performance on images
+    from the new rooms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10716511b78e52460d55d1b4b3ac4ea0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: evaluation of the new model on rooms 2 and 3 (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hope is that by training on data from multiple rooms we break the associations
+    between turns and the background. Different objects are now present on left and
+    right turns but the track remains the same. The model should learn that the track
+    is what is important to the prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can confirm this by looking at the SHAP values for the new model. These are
+    for the same turns we saw in **Figure 4**. There is now less weight put on the
+    background pixels. Okay, it’s not perfect but we are getting somewhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7eaf7b8a5080b75e89c7e6b8ac901e88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: shap values from model trained on all 3 rooms (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could continue to collect data. The more locations we collect data the more
+    robust our model will be. However, data collection can be time-consuming (and
+    boring!). Instead, we can look to data augmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Augmentations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data augmentation is when we systematically or randomly alter images using code.
+    This allows us to artificially introduce noise and increase the size of our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, we could double the size of our dataset by **flipping images**
+    on the vertical axis. We can do this because our track is symmetrical. As seen
+    in Figure 9, **deletion** could also be a useful method. This involves including
+    images where objects or the entire background have been removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7eeb92d54e15f3bc7b7d973e68ef02d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9: example of image augmentation using deletion (source: author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When building a robust model, you should also consider factors like lighting
+    conditions and image quality. We can simulate these using color jitter or by adding
+    noise. If you want to learn about all of these methods check out the article below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/augmenting-images-for-deep-learning-3f1ea92a891c?source=post_page-----4b562ddef30d--------------------------------)
+    [## Augmenting Images for Deep Learning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Python to augment data by flipping, adjusting brightness, color jitter
+    and random noise
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/augmenting-images-for-deep-learning-3f1ea92a891c?source=post_page-----4b562ddef30d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above article, we also discuss why it is difficult to tell if these augmentations
+    have made the model more robust. We could deploy the model in many environments
+    but this is time-consuming. Thankfully, SHAP can be used as an alternative. Like
+    with data collection, it can give us insight into how the augmentations have changed
+    the way the model makes predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you enjoyed this article! You can support me by becoming one of my [**referred
+    members**](https://conorosullyds.medium.com/membership) **:)**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://conorosullyds.medium.com/membership?source=post_page-----4b562ddef30d--------------------------------)
+    [## Join Medium with my referral link — Conor O’Sullivan'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: conorosullyds.medium.com](https://conorosullyds.medium.com/membership?source=post_page-----4b562ddef30d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| [Twitter](https://twitter.com/conorosullyDS) | [YouTube](https://www.youtube.com/channel/UChsoWqJbEjBwrn00Zvghi4w)
+    | [Newsletter](https://mailchi.mp/aa82a5ce1dc0/signup) — sign up for FREE access
+    to a [Python SHAP course](https://adataodyssey.com/courses/shap-with-python/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**JatRacer Images** (CC0: Public Domain) [https://www.kaggle.com/datasets/conorsully1/jatracer-images](https://www.kaggle.com/datasets/conorsully1/jatracer-images)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SHAP, **PyTorch Deep Explainer MNIST example** [https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/PyTorch%20Deep%20Explainer%20MNIST%20example.html](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/PyTorch%20Deep%20Explainer%20MNIST%20example.html)
+  prefs: []
+  type: TYPE_NORMAL

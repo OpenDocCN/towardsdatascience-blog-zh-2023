@@ -1,0 +1,386 @@
+- en: Data Collators in HuggingFace
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/data-collators-in-huggingface-a0c76db798d2](https://towardsdatascience.com/data-collators-in-huggingface-a0c76db798d2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What they are and what they do
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)[![Mina
+    Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------)
+    [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----a0c76db798d2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0c76db798d2--------------------------------)
+    ·9 min read·Nov 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ddfbf36b4be5c6b3f2d3216d22460d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [unsplash.com](https://unsplash.com/photos/assorted-source-codes-sp1BZ1atp7M)
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I started learning HuggingFace, data collators were one of the least intuitive
+    components for me. I had a hard time understanding them, and I did not find good
+    enough resources that explain them intuitively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we take a look at what data collators are, how they differ, and
+    how to write a customized data collator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data Collators: High Level'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data collators are an essential part of data processing in HuggingFace. We all
+    have used them after tokenizing the data, and before passing the data to the Trainer
+    object to train the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a nutshell, they put together a list of samples into a mini training batch.
+    What they do depends on the task they are defined for, but at the very least they
+    pad or truncate input samples to make sure all samples in a mini batch are of
+    same length. Typical mini-batch sizes range from 16 to 256 samples, depending
+    on the model size, data, and hardware constraints.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Data collators are **task-specific**. There is a data collator for each of
+    the following tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Causal language modeling (CLM)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Masking language modeling (MLM)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sequence classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Seq2Seq
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Token classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Some data collators are simple.* For example for the “sequence classification”
+    task, the data collator just needs to pad all sequences in a mini batch to ensure
+    they are of the same length. It would then concatenate them into one tensor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Some data collators are quite complex*, as they need to handle the data processing
+    for that task.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic Data Collators
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Two of most basic data collators are as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**1)DefaultDataCollator**](https://github.com/huggingface/transformers/blob/v4.35.0/src/transformers/data/data_collator.py#L78)**:**
+    This does not do any padding or truncation. It assumes all input samples are of
+    the same length. If your input samples are not of the same length, this would
+    throw errors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After tokenizing about the output is :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you see the two sequences have different lengths. The first sequence is 4
+    tokens, the second sequence is 6 tokens. This is the cause of error when you try
+    to call the data loader !
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now if we change the input to two sequences of the same length, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then the code works fine and the output will be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that it does not return `labels`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**2) DataCollatorWithPadding**](https://github.com/huggingface/transformers/blob/v4.35.0/src/transformers/data/data_collator.py#L215)**:**
+    This collator pads the input samples so that they are all of the same length.
+    For padding,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: either it pads to the `max_length` argument provided
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: or it pads to the largest sequence in the batch.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See the [documentation](https://github.com/huggingface/transformers/blob/v4.35.0/src/transformers/data/data_collator.py#L215)
+    for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, this collator accepts *tokenizer* as many tokenizers have different
+    padding token and so **DataCollatorWithPadding** accepts tokenizer to figure out
+    the padding token while padding the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of above code is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note the first sequence which was 4 tokens is now padded to be 6 tokens. The
+    padding token id is 0 in `bert-base-uncase` tokenizer. Let’s see that in code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code outputs
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: and `pad_token = [PAD]` is what is used in padding. Let’s check its token_id.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: and this prints `0` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pay attention that DataCollatorWithPadding similar to DefaultDataCollator does
+    not create `labels`. If you have labels in your data already, they will return
+    it but otherwise they won’t create it !!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a nutshell, use these two collators if your labels is straightforward and
+    your data does not need any special processing before feeding it to the model
+    for training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language Modeling Data Collators
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Language modeling data collator comes in two modes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'MLM data collator: this is for masked language modeling, where we mask 15%
+    of tokens and the model predict them'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'CLM data collator: this is for causal language modeling where we mask all tokens
+    to the right side of the current token, and expect the model to predict the next
+    token at each step.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In code, the MLM collator is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and the CLM collator is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s see an example of MLM collator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It prints the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Few points to pay attention to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1)**The `input_ids` for both example starts with `101` and end with `102`
+    . In the second example, after `102` , there is a `0` which we know already is
+    a padding token. Let’s see what is `101` and `102` ?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: It prints `[CLS]` and `[SEP]` tokens, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2)** It returns `labels` , unlike the basic data collators. We see there
+    are many `-100` in labels. Note the length of the `labels` is the same as length
+    of `input_ids` for each sample! The places that `label=-100` it means the corresponding
+    token was not masked, and therefore we have to ignore this when computing the
+    loss. MLM uses cross entropy loss function and if you check the [documentation](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html)
+    the default `ignore_index=-100` ; that means ignore if a label is set to `-100`
+    .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3) Third point to pay attention to is that for the first example, the lable
+    is `[-100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100]`
+    which means none of its tokens were masked. However for the second input, the
+    labels are `[-100, -100, -100, 4083, -100, -100, -100, -100, -100, -100, -100,
+    -100]` and we see that one token was masked and its corresponding label is `4083`.
+    The corresponding token in the `input_ids` is `103` which is the token_id for
+    `[MASK]` token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The CLM collator is a lot easier as it is for causal language modeling i.e
+    to predict the next token. Let’s take a look at an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the output is as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: you see for the two examples, the labels is a copy of input_ids. It is because
+    in causal language modeling, the task is to predict the token given all previous
+    tokens and the label for a position is the token itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Customize A Data Collator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s assume you have a dataset that contain two columns: *instruction* and
+    *response*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/374b3f866e6a56054bcdf2e8a7f648f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And you want to do *instruction tuning* on a pre-trained model. Without getting
+    into too much details of training, we notice that we should have a customized
+    data collator to only mask response and not the instruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say we write a function that combines the two columns into the following
+    format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Below is an instruction that describes a task. Write a response that appropriately
+    completes the request. ### Instruction: {instruction} ### Response: {response}
+    ### End`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data now looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a007260bacde6a05127c40c16b51934.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We see that there are special tokens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instruction
+  prefs:
+  - PREF_UL
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Response
+  prefs:
+  - PREF_UL
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: End
+  prefs:
+  - PREF_UL
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: So let’s get started by writing customized data collator. We want to have a
+    collator that only masks response and not instruction. Why? because we want the
+    model to generate the response not the instruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This data collator finds the location of `###Response: \n` and changes the
+    label to any token before that to `-100` .This way the loss function is going
+    to ignore those tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And when we call the collator, we use it as :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: As usual, we use this data_collator inside Training object before doing the
+    model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we looked at data collators in HuggingFace. We learned that data
+    collators are responsible for padding the sequences so that all samples in a batch
+    are of same length. We also saw four different examples of data collators. One
+    important data collator is `DataCollatorForLanguageModeling` which is used for
+    both MLM and CLM training. We also saw an example of how to modify a data collator
+    for instruction tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have any questions or suggestions, feel free to reach out to me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Email: mina.ghashami@gmail.com'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LinkedIn: [https://www.linkedin.com/in/minaghashami/](https://www.linkedin.com/in/minaghashami/)'
+  prefs: []
+  type: TYPE_NORMAL

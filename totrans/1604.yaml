@@ -1,0 +1,873 @@
+- en: Optimizing Browsing A Taxonomy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/optimizing-browsing-a-taxonomy-30596bcdbd9d](https://towardsdatascience.com/optimizing-browsing-a-taxonomy-30596bcdbd9d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Problems, models, and implementation issues**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)
+    ·20 min read·Jan 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/701afca47c30a4c877941cba92f3156f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [mcmurryjulie](https://pixabay.com/users/mcmurryjulie-2375405/) from
+    [pixabay](https://pixabay.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The driving use case for this is [https://jagota-arun.medium.com/interactive-and-adaptive-menu-ordering-agent-bb447c58b3af](https://jagota-arun.medium.com/interactive-and-adaptive-menu-ordering-agent-bb447c58b3af)
+    (Not a prerequisite read.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we focus on the modeling. What is it? How does it relate to recommender
+    systems? And then on the implementation. As in object-oriented design. Classes
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The object-oriented exposition style extends the benefits of sequencing, modularity,
+    composability, and extensibility to writing. Good fit here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The single most important concept in this post is that of taxonomy. Everything
+    happens on it. User browsing, user actions (on leaves), modeling, and scoring
+    to dynamically rearrange the taxonomy for the user to optimize her browsing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So let’s start by defining it. By taxonomy, we mean a tree of choices, with
+    concrete items of interest on its leaves. We assume ultimately the user cares
+    about reaching leaves of interest. The internal nodes are mainly there for navigation.
+    We learn from whether a user acts or not on a leaf.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An example is a restaurant menu. The menu items are on the leaves. The internal
+    nodes are the various categories on the menu: drinks, appetizers, main dishes,
+    etc. A user action is to order a particular menu item. Should the user want to
+    order a drink, she’d go down the *drinks* subtree.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a video-watching setting, the user’s action may be to view the video.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We model a user’s interaction with the taxonomy as a session in which the user
+    navigates certain portions of the tree. When the user reaches a suitable leaf,
+    she can act or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our primary interest is learning to prefer certain nodes in the tree from the
+    user’s actions on specific leaves. We want to learn preferences on leaves as well
+    as on internal nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How does this relate to usual recommender systems?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generally, we expect a recommender system to primarily recommend new items.
+    Our focus here is on streamlining the user’s navigation to items of interest.
+    This may include items the user has acted on before. As in the restaurant setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another thing to note is that recommender systems usually operate on user-item
+    matrices, not on taxonomies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Object-Oriented Exposition**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our most important class will be *UserInteractionsWithTaxonomy*. Its role should
+    be clear from its name and our earlier discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This class gets instantiated to model the interactions of a particular user
+    with a particular taxonomy. The taxonomy needs to be supplied when the class is
+    instantiated. The caller is responsible for associating the instantiated model
+    with the appropriate user. As depicted below. This class will maintain a counter
+    for each node in the taxonomy. These counters will be initialized to zero on a
+    new instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: “User” can be whatever the modeler wants. A single person or an entire group
+    of people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Key Methods**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*UserInteractionsWithTaxonomy* will support a method *act*. This method will
+    model an instance of one action by the user on a particular leaf. Such as ordering
+    a specific item on a restaurant’s menu.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our first version of the method *act*, an invocation will increment the counts
+    of the leaf and all of its ancestors. To be able to do this efficiently, this
+    class may maintain parent arcs for all nodes in the taxonomy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that we have chosen to learn user preferences only from *act* actions.
+    We could generalize this to incorporate feedback from user clicks on the tree’s
+    internal nodes. We won’t pursue this here, as we think act actions are better
+    predictors of user preferences than internal node clicks. The reader is welcome
+    to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A second method will simulate a click by the user on a certain node in the tree.
+    This will let us track where the user currently is on the tree, so we can present
+    the appropriate choices below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will express these choices in a method *choices()* which will return scores
+    of the children of the current node that the user is on the tree. More precisely,
+    it will return a list of [*child*, *score*] pairs where *child* is a child of
+    *self*.*current_node* and *score* its score. This list is in nonincreasing order
+    by score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is an example flow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see the internals of this class together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the parameter *pc* in the method *act*. We will explain it later. For
+    now, let’s assume *pc* equals 1, its default value. So “increment … by *pc*” means
+    “increment … by 1” or in short “increment …”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method *score*(*.*) returns *P*(*child*|*parent*), the probability that
+    the user will visit *child* next given that she is currently at *parent*. This
+    is just the count of the child divided by the count of the parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cold Start Problems**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say the user visits a new restaurant. As is, the scoring method cannot be used
+    because the user has no order history there. So we have to wait for the user to
+    order a few items before we can score. This scenario is known as the *user cold-start
+    problem*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, there is a *taxonomy cold start problem*. In the restaurant setting,
+    this would correspond to a brand new restaurant opening up. No interactions with
+    any users yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, there are finer versions of cold start problems buried inside our current
+    scoring. Our score function is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Imagine a restaurant in which a user has order history but none under a particular
+    category, say *desserts*. The count of *parent* = *desserts* will be 0 so none
+    of its children can be scored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now imagine that the user has ordered within a category but not within a particular
+    subcategory. Such as a particular drink within the drinks category. The child’s
+    score will be 0\. Sure, 0 is a valid score, but probably not what we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In summary, an item that has never been ordered will either not be scorable
+    or score 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cold start problems are frequently encountered in the setting of recommender
+    systems, see [4]. In such settings, the taxonomy cold start problem corresponds
+    to the item cold start problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Alleviating The Cold Start Problems**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple approach to alleviating all the cold start problems is to initialize
+    the counters at all the nodes to a certain positive number called *pc*. While
+    it needs to be positive, it could be less than 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our setting, we will support a similar mechanism which is more powerful.
+    Without being any more complex, from either the modeling or the coding perspective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will add a method *act_randomly*(*n*, *pc*) to the class *UserInteractionsWithTaxonomy*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now come back to the scenario of the user visiting a restaurant for the first
+    time. Say we call *act_randomly*(*n* = 100, *pc* = 0.01). The effect of this will
+    be as if the user had ordered 100 times at this restaurant, picking a random item
+    on the menu in each instance. To account for *pc*, we should call each of these
+    orders “fractional”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why use *pc* at all? That is, why not set it to 1? Because in some settings
+    we may want a single *actual* order to be much more significant than a single
+    virtual order. In this case, we would set *pc* to a value much less than 1\. In
+    other settings, we may want the opposite behavior. Only if a user has ordered
+    a certain item a certain minimum number of times should we deem it significant.
+    In this case, we would set *pc* to a value greater than 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *act_randomly* approach alleviates all the aforementioned cold start problems.
+    That said, we can often do better on the user cold start problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Warming Up A User Cold Start Using A Taxonomy Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a restaurant that has a lot of history of users engaging with it. The
+    interactions from this history can be used to form a model for this restaurant.
+    This model, which we will call the *restaurant model*, is really an instance of
+    *UserInteractionsWithTaxonomy* in which the user is a collective rather than an
+    individual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To leverage a taxonomy model within a particular user’s interactions with the
+    taxonomy we will refactor the class *UserInteractionsWithTaxonomy* as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s explain. When instantiating *UserInteractionsWithTaxonomy* we supply another
+    instance of *UserInteractionsWithTaxonomy* which will be used as the taxonomy
+    model, as depicted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the example above, all user restaurant models share the same (generic) restaurant
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any *act* on any of the user restaurant models, even one in the future, will
+    perform the same action on the shared restaurant model as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To implement this cleanly, we renamed the previous version of *act* to *act_on_this*
+    so that we can compose the new *act* on top of it. Due to this name change, we
+    also had to make a change to *act_randomly*(.).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then refactored the method *score*(.) so that if the instance has a taxonomy
+    model attached to it, it uses it as well in its scoring.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a lot happening in the refactored version of *score*(.) so let’s elaborate.
+    Considering scoring a particular child against a certain parent in the user-specific
+    model. First, we make a call to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: which gives us *P*(*child*|*parent*, *generic taxonomy model*). Next, we imagine
+    sampling *pcm* visits to parent, of which *pcm***P*(*child*|*parent*, *generic*
+    *taxonomy model*) are expected to end up at *child*. So we add the count of these
+    imagined visits to *child* to the actual visits from the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above paragraph, the expression “visits to a node” is used for illustrative
+    purposes only. In actuality, a visit to a node corresponds to an instance of an
+    *act* on a leaf under that node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see a numeric example. Say *pcm* is 10\. Say *P*(*child*|*parent*, *generic
+    taxonomy model*) equals ⅕. *pc* will be 2 for this child. Were the particular
+    user not to have ever visited the parent, *P*(*child*|*parent*, *user model for
+    this taxonomy*) would equal ⅕, the value of *P*(*child*|*parent*, *generic taxonomy
+    model*). As the user starts visiting *parent*, which children the user visits
+    subsequently will start influencing *P*(*child*|*parent*, *user model for this
+    taxonomy*), possibly moving it away from *P*(*child*|*parent*, *generic taxonomy*
+    *model*) if the user’s behavior deviates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Modeling User Preferences**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider this scenario. A brand new restaurant just opened up. There is no restaurant
+    model for it since there is no history.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A user walks in. Sure, we could randomly sample from the menu using *act_randomly*
+    in the manner described better. Can we do better?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should certainly link the restaurant model instance to every new user who
+    visits the restaurant. This way, at least the restaurant model will learn more
+    rapidly than any one individual. Any menu items that stand out, in the sense of
+    being ordered frequently across users, would get surfaced more quickly. Can we
+    do even better?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say the user has visited other restaurants in the past. If we could model and
+    learn user preferences from these visits, we could potentially apply them to the
+    user’s first visit to this new restaurant. Such as preferences for items with
+    certain words in them, e.g. *curry*, or for certain price ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While in the previous paragraph we used the restaurant cold start problem to
+    motivate modeling user preferences, solving this problem involves complex issues
+    relating to knowledge transfer. This is because the taxonomies of the restaurants
+    the user visited previously may differ from the one of the current restaurant.
+    So we will defer covering this use case to a separate post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, incorporating user preferences into our model can help with future
+    interactions the user has with the same taxonomy as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Such as when there are many leaves. There is a chance the user might simply
+    have missed some good ones. Some restaurants have more than forty items on their
+    menu. In other settings, taxonomies can be even larger. Such as videos available
+    on Netflix, Amazon Prime, or various other streaming video streaming services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Or when the same word appears in multiple items. This applies even to small
+    taxonomies. Imagine visiting a Thai restaurant that has several main dishes that
+    have the word *curry* in them. Say the user ordered one of them. Next time, the
+    user will see other curry items displayed prominently. That makes sense, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bag Of Words**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we are set on modeling user preferences, let’s get started. We will
+    model them as bags of words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A bag of words is a set of word-frequency pairs. An example is { *beer* :10,
+    *wine* :2 }. We can interpret this example as saying that the user prefers beer
+    over wine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While we use the term “word” here, we can define it however we want. For instance,
+    we could take the term “wheat beer” and represent it as “wheat-bear”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll model *BagOfWords* as a class. We’ll represent a bag of words as a hash,
+    i.e. a python *Dict*. The keys are words. The frequencies are their values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How specifically will we use *BagOfWords*? When instantiating *UserInteractionsWithTaxonomy*
+    we will also create a single instance of *BagOfWords* to model the user’s keyword
+    preferences. When a user makes a call to *act* on a leaf, we will add the bag
+    of words of the leaf’s name to the bag of words representing the user’s preferences.
+    For this, the *BagOfWords* class needs to support a method “add” that adds a supplied
+    bag of words to the instance’s bag of words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is our initial version of BagOfWords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is the version of *UserInteractionsWithTaxonomy*, refactored to model user
+    preferences from her interactions on the taxonomy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Using The User Preferences**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we are done with the modeling and training of our first version of
+    user preferences, let’s discuss how we are going to use it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by reviewing the method *score* in *UserInteractionsWithTaxonomy*.
+    It scores a particular child against a given parent. This is done for the purposes
+    of differentiating, for navigation purposes, between the various children of a
+    given parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now suppose we want to enhance the score function to use user preferences in
+    addition to order counts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our current design, user preferences are modeled as a single bag of words
+    maintained in the *UserInteractionsWithTaxonomy* instance. In view of how we intend
+    to use the score function, which is to differentiate between the various children
+    of a parent, it would be more natural if the parent had its own user preferences.
+    This would imply that every internal node in the taxonomy should have its own
+    user preferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This would let us refactor UserInteractionsWithTaxonomy.score as below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We won’t elaborate on the “if it makes sense to score off user likes and not
+    order frequencies” just yet. This needs some discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going from a single user preferences model to node-specific user preferences
+    models may seem daunting at first glance. On further thought, one, this change
+    is not as daunting as it might first appear, and, two, it in fact can make the
+    scoring more accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Elaborating on one, many taxonomies in practice will be small. For example,
+    even a full-service restaurant’s taxonomy may typically only have four internal
+    nodes excluding root: *drinks*, *appetizers*, *entrees*, and *desserts*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Elaborating on two, some words may cut across node boundaries. In a particular
+    restaurant, say the word *salmon* appears in an appetizer’s name as well as in
+    an entree’s name. Say from the order history of a particular user we discern that
+    she likes the salmon appetizer but not the salmon main dish. When she is looking
+    for an appetizer, we should display the salmon appetizer prominently. When she
+    is looking for a main dish, we should not display the salmon main dish prominently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have decided to go ahead with this modeling enhancement, we’ll need
+    to refactor *__init__*() to construct the node-specific *BagOfWords* instances
+    and *act*(.) to update them suitably. Below is the refactored version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**When To Score Off User Preferences Versus Order Frequencies**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s discuss the
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the value of *self*.*counter*[*parent*] is sufficiently large it is better
+    to base the scoring on order frequencies rather than user preferences. This is
+    because actual orders should generally carry higher weight than user preferences.
+    There may be something in a particular item not captured in its name that explains
+    why a user has ordered it frequently. Or avoided it. Perhaps it's taste.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the value of *self*.*counter*[*parent*] is not large enough, we have a
+    couple of options. We could score off the combination of the taxonomy model and
+    the user’s own order history. Or we could score off the user’s preferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In plain English, the options of the previous paragraph may be read as the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Score an item or a category against its parent based on
+  prefs: []
+  type: TYPE_NORMAL
+- en: other people’s experiences at this restaurant with it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the user’s own experiences, possibly combined with those of other users, of
+    ordering items under this parent that share some of the words with this one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s illustrate the two with an example. Imagine a user visiting a certain
+    Thai restaurant for the first time. If the user is aware that a certain main dish
+    is very popular, she might be interested in ordering it. If the user is aware
+    that the main dishes with the word *curry* in them are popular in this restaurant,
+    all such main dishes should score high for this user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Score Method In BagOfWords**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s first remind ourselves of the portion we added in *UserInteractionsWithTaxonomy*.*score*(.)
+    that is of relevance here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: We see that we need to add a method *score*() to *BagOfWords*. A call to *BagOfWords*.*score*(*bag_of_words*)
+    will interpret the object on which it is being invoked as the parent and the bag
+    of words that is being passed to it as a certain child.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are calling this out because there is an inherent asymmetry here. We are
+    not trying to score two bags of words in a symmetric fashion. Rather we are seeking
+    to score how well a particular child’s bag of words fits within its parent’s bag
+    of words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see an example that will explain this, while also giving some specific
+    desiderata for our score function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a restaurant that has a category *beers* with several items under it.
+    Say a particular user has visited the restaurant a couple of times and in each
+    case ordered some light beer. Assume the words *light* and *beer* appear explicitly
+    in these ordered items. The user’s bag of words under *beers* will now contain
+    these two words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say there is an item named *Coors Light* in the beers menu but the user did
+    not order this on an earlier visit. This item should score high because it is
+    a light beer. Even though the user has not yet ordered a beer with the word *Coors*
+    in it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider a second item under beers named *Coors Beer*. It should not score
+    as high as *Coors Light*. Why not? Because the word *beer* is not as informative
+    in the category *beers* as the word *light*. Assuming both words have the same
+    frequencies in the user’s bag of words for the category *beers* in this restaurant,
+    *light* should win out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s work towards a score function that will give us what we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first decision we will make is to score only those words that are common
+    to both the child’s bag of words and the parent’s. For our two examples, these
+    are depicted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our second decision will be to score the words in this intersection independently
+    and additively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our third decision will be to score any single word *w* in this intersection
+    as follows
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*f*(*w*, *child*)*log *P*(*w*|*parent*, *user*)/*P*(*w*|*parent*, *uniform
+    user*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here *f*(*w*, *child*, *user*) is the frequency of *w* in the child’s bag of
+    words for the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*w*|*parent*, *user*) is *f*(*w*, *parent*, *user*)/sum_{*w*’ in *parent*}
+    *f*(*w*’, *parent*, *user*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*w*|*parent*, *uniform user*) is similar except that the user is what we
+    are referring to as a “uniform user”. The uniform user is assumed to be equally
+    likely to order any of the items under *child*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In association rules mining, *P*(*w*|*parent*, *user*)/*P*(*w*|*parent*, *uniform
+    user*) is a version of the so-called lift [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how this works out in our examples. The scores of the words *light*
+    and *beer* for this user are depicted below. To simplify the expressions, the
+    term *parent* is omitted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: log *P*(*light*|*user*)/*P*(*light*|*uniform user*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: log *P*(*beer*|*user*)/*P*(*beer*|*uniform user*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*light*|*user*) and *P*(*beer*|*user*) are ½ each. Say there are more beers
+    on the menu with the word *beer* in them than the word *light*. *P*(*light*|*uniform
+    user*) will probably be significantly smaller than *P*(*beer*|*uniform user*).
+    Consequently, log *P*(*light*|*user*)/*P*(*light*|*uniform user*) will probably
+    be significantly larger than log *P*(*beer*|*user*)/*P*(*beer*|*uniform user*).
+    As desired.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see the score function in its full glory in pseudocode. One important
+    subtlety in the implementation is that the scoring will get distributed over two
+    classes: *BagOfWords* and *UserInteractionsWithTaxonomy*. First, let’s see the
+    actual changes in both classes, then we will explain why this is the case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the refactored *BagOfWords*. We’ll show the new version of
+    the class in full here as the changes are not localized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s bring in the refactored UserInteractionsWithTaxonomy class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Extending The User Likes Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus far, we have modeled user likes as bags of words. In many use cases, there
+    may be additional attributes on the taxonomy’s leaves that may influence a user’s
+    likes. Such as *price*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To go beyond bags of words, it makes sense to model user likes into its own
+    class, *UserLikes*. We’ll also need to refactor *UserInteractionsWithTaxonomy*
+    to use *UserLikes*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started, first, let’s review how *BagOfWords* is used in *UserInteractionsWithTaxonomy*
+    as this is what we will need to generalize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It''s clear we need to make the following changes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s assume these changes have been made.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s discuss the implications for the class *UserLikes*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It needs to support a method *add*(*leaf*) that extracts whatever attributes
+    it needs to, from *leaf*, and adds them to its current user likes model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It needs to support a method *score* to score any given child’s user likes against
+    *self*, i.e. the parent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are almost ready to see the class *UserLikes*. Before doing so, let’s model
+    one additional attribute, as that is why we are building this class in the first
+    place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s go with the price. First, we need to discuss its modeling aspects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Modeling Price Basics**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine visiting a restaurant whose menu is as below. Only some are shown. For
+    the items, only the prices are shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Drinks*: $2, $3, $2, $**8**, $**9**, … *Main dishes*: $8, $9, $**22**, $**28**,
+    $9, $8, …'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ‘…’ is there to convey that in each category there are many more items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The bolded items are the ones a particular user ordered in the past in this
+    restaurant. From this, we can infer that at least in this restaurant this user
+    prefers the relatively more expensive items in each category. (Of course, there
+    may be something else going on, but that’s all we can tell from this data.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This information can be used to display certain items more prominently than
+    others when the user visits this restaurant next. Perhaps presenting them in a
+    different order, as below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Drinks*: $**8**, $**9**, $2, $3, $2, … *Main dishes*: $**22**, $**28**, $8,
+    $9, $9, $8, …'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Modeling Price Details**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can treat prices the same way we treated words in item names. This nicely
+    fits into our current design. Each internal node can thus have its own bag of
+    prices, just like it had its own bag of words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Node-specific bags of prices are even more strongly motivated than node-specific
+    bags of words. This is because prices are even less specific than words, in terms
+    of the categories they predict. It's plausible that a user would not spend $8
+    on a drink but would spend that much on a main dish. Category-specific bags of
+    prices will allow us to model such distinctions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, we’ll model a bag of prices as an instance of *BagOfWords*. It will
+    be adequate for our basic needs. Them being, for each category, we are capturing
+    the prices of the items the user ordered in that category along with their frequencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**UserLikes**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the pseudocode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice *leaf*.*price*.*as_bow*. The “as_bow” is meant to indicate that the price,
+    a scalar, has been expressed as a bag of words with a single key (the price) with
+    a frequency of 1 associated with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**UserLikes.score(.)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Noting that *self* is the parent’s *UserLikes*, the *user_likes* supplied in
+    the parameter to *score*(.) is a particular child’s, and surfacing what’s happening
+    within the two calls to *score*(.) we can express this as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now factor in that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*UserInteractionsWithTaxonomy*.*score_using_user_preferences*(*child*, *parent*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: calls it twice, once as above, and once for a different user who does uniform
+    interactions instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The overall score function may thus be expressed as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try to make sense of this in a scenario that is a slight refinement of
+    one we saw earlier. There is a restaurant with a category *beers*. A particular
+    user has visited this restaurant twice, each time ordering some light beer. (A
+    different one in the two instances.) Assume that the words *light* and *beer*
+    appear explicitly in the names of the beers that were ordered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the refinement. Say the two ordered beers were priced at $5 and $6 respectively.
+    Now consider the following two beers that are also on the beers menu. Neither
+    is included in the two the user previously ordered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above score function will score *Coors Light* higher. This is because while
+    both contain the word light, the second one is priced significantly higher than
+    the ones the user previously ordered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can improve this further by replacing
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: We won’t say any more about this in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we delved into optimizing a user’s browsing of a taxonomy to find
+    items of interest on the leaves. We covered an algorithm that learns from feedback
+    on which items the user acts on. (In the restaurant setting, which items the user
+    actually orders.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The feedback is pushed up the taxonomy so that the internal nodes can benefit
+    from it. This allows such nodes to be displayed more (or less) preferentially,
+    to make it easier for the user to find the items of interest in the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The term “items of interest” includes the items the user has acted on in the
+    past, and items that are similar enough and are worth recommending.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initial model is based on order frequencies aggregated up the taxonomy.
+    Various cold start problems are also addressed by augmenting the model with mechanisms
+    to simulate random acts and to use a taxonomy model continually learned from a
+    collective of users engaging with the taxonomy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initial model is then enhanced to model and use user preferences which may
+    be discerned from the words in the name of an item the user acts on, and its price.
+    Like the initial model, user preferences are mapped onto the taxonomy. This accommodates
+    nuanced learning in the context of the specific taxonomy. Such as
+  prefs: []
+  type: TYPE_NORMAL
+- en: the user will pay $8 for a main dish but not for a drink in this restaurant.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the user likes salmon appetizers but not salmon main dishes in this restaurant.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Throughout this post, the modeling and scoring are built up as python pseudocode.
+    At various junctures, the pseudocode is refactored when needed. In this post,
+    the python pseudocode serves as a language for communicating and discussing ideas.
+    It might also be useful to an interested reader who wants to practice implementing
+    it. The pseudocode is modular enough that it can be implemented incrementally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Vector space model — Wikipedia](https://en.wikipedia.org/wiki/Vector_space_model#:~:text=Vector%20space%20model%20or%20term,retrieval%2C%20indexing%20and%20relevancy%20rankings)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Jaccard index — Wikipedia](https://en.wikipedia.org/wiki/Jaccard_index)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Association rule learning — Wikipedia](https://en.wikipedia.org/wiki/Association_rule_learning#Lift)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Cold start (recommender systems) — Wikipedia](https://en.wikipedia.org/wiki/Cold_start_(recommender_systems)#:~:text=Cold%20start%20is%20a%20potential,not%20yet%20gathered%20sufficient%20information)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

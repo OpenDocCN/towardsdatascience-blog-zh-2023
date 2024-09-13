@@ -1,0 +1,505 @@
+- en: How to Detect Hallucinations in LLMs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/real-time-llm-hallucination-detection-9a68bb292698](https://towardsdatascience.com/real-time-llm-hallucination-detection-9a68bb292698)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Teaching Chatbots to Say “I Don’t Know”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)[![Iulia
+    Brezeanu](../Images/f108eeec620ec9be40778dfaceca4e6c.png)](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------)
+    [Iulia Brezeanu](https://medium.com/@brezeanu.iulia?source=post_page-----9a68bb292698--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a68bb292698--------------------------------)
+    ·10 min read·Dec 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1e0d8fcdb97251e27161a08f711a2c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [visuals](https://unsplash.com/@visuals?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is Evelyn Hartwell?**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Evelyn Hartwell is an American author, speaker, and life coach…
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Evelyn Hartwell is a Canadian ballerina and the founding Artistic Director…
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Evelyn Hartwell is an American actress known for her roles in the…
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: No, Evelyn Hartwell is not a con artist with multiple false identities, living
+    a deceptive triple life with various professions. In fact, she doesn’t exist at
+    all, but the model, instead of telling me that it doesn’t know, starts making
+    facts up. We are dealing with an LLM Hallucination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Long, detailed outputs can seem really convincing, even if fictional. Does it
+    mean that we cannot trust chatbots and have to manually fact-check the outputs
+    every time? Fortunately, there could be ways to make chatbots less likely to say
+    fabricated things with the right safeguards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8715346e238a15d9203a36d4b79d5ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: text-davinci-003 prompt completion on a fictional person. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the outputs above, I set a higher temperature of 0.7\. I am allowing the
+    LLM to change the structure of its sentences in order not to have identical text
+    for each generation. The differences between outputs should be just semantic,
+    not factual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This simple idea allowed for introducing a new sample-based hallucination detection
+    mechanism. If the LLM’s outputs to the same prompt contradict each other, they
+    will likely be hallucinations. If they are entailing each other, it implies the
+    information is factual. [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this type of evaluation, we only require the text outputs of the LLMs. This
+    is known as black-box evaluation. Also, because we don’t need any external knowledge,
+    is called zero-resource. [5]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sentence embeddings cosine distance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with a very basic way of measuring similarity. We will compute the
+    pairwise cosine similarity between corresponding pairs of embedded sentences.
+    We normalize them because we need to focus only on the vector’s direction, not
+    magnitude. The function below takes as input the originally generated sentence
+    called *output* and a list of 3 sample outputs called *sampled_passages*. All
+    the completions are found in the image at the beginning of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For generating the embeddings, I am using the *all-MiniLM-L6-v2* lightweight
+    model. Embedding a sentence turns it into its vectorial representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We generate embeddings for every output of the LLM; then, we compute the pairwise
+    cos similarity using the *pairwise_cos_sim* function from sentence_transformers.
+    We’ll compare the original response to each new sample response and then do the
+    average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is the intuition behind how the function works with a very simple pair
+    of vectors in a 2D cartesian space. A and B are the original vectors, and Â and
+    B̂ are the normalized ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63fb8aad86273624bbcab08a6d98b86a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pairwise cos similarity computation. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the image above, we can see that the angle between the vectors is approximately
+    30⁰, so they are close to each other. The cosine is approximately 0.87\. The closer
+    the cosine is to 1, the closer the vectors are to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *cos_sim_score* for our embedded outputs has an average value of 0.52.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand how to interpret this number, let’s compare it to the cosine similarity
+    score for some valid outputs where we ask for information about an existing person.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d9e93b1a0ab023cf40360920a25feda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author — text-davinci-003 prompt completion on Nicolas Cage
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pairwise cosine similarity score, in this case, is 0.93\. Looks promising,
+    especially as it’s a very fast method of assessing the similarity between outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ea42b42b117d82bbca2d92ba555ae49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Duration of cosine similarity computation. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SelfCheckGPT- BERTScore
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The BERTScore builds on the pairwise cosine similarity idea we implemented previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf99047f6b68bccf007a88f2335b7aa1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[1]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The default tokenizer for computing the contextual embeddings is RobertaTokenizer.
+    Contextual embeddings differ from static embeddings because they take into account
+    the context around the word. For example, the word “bat” would correspond to different
+    token values depending on whether the context refers to a “flying mammal” or a
+    “baseball bat”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s take an inside look at the *selfcheck_bertscore.predict* function. Instead
+    of passing the full original output as an argument, we split it into individual
+    sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This step is important because the s*elfcheck_bertscore.predict* function computes
+    the BERTScore for each sentence into the original response matched to each sentence
+    from the samples. First, it creates an array with the number of rows equal to
+    the number of sentences in the original output and the number of columns equal
+    to the number of samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The model used for computing the BERTScore between the candidate and reference
+    sentences is RoBERTa large with 17 layers. Our original output has 4 sentences,
+    which I will call r1,r2,r3, and r4\. The first sample has two sentences: c1 and
+    c2\. We compute the F1 BERTScore for each sentence from the original output matched
+    to each sentence from the first sample. Then we do base rescaling with respect
+    to the baseline tensor b = **tensor([0.8315, 0.8315, 0.8312]).** The baseline
+    *b* was computed using 1 million randomly paired sentences from the Common Crawl
+    monolingual datasets. They computed the BERTScore for each pair and averaged it.
+    This represents a lower bound since random pairs have little semantic overlap.
+    [1]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f36695e660baa06c3c12a4d723bbb817.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: F1 BERTScore. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We keep the BERTScore of each sentence from the original response with the most
+    similar sentence from each drawn sample. The logic is that if a piece of information
+    appears across multiple samples generated from the same prompt, there is a good
+    chance that the information is factual. If a statement only appears in one sample
+    and not in any other samples from the same prompt, it is more likely to be a fabrication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s add the maximum similarities in the array for the first sample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we repeat the process for the other two samples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then we compute the mean for each row, giving us the similarity score between
+    each sentence from the original response and each subsequent sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The hallucination score for each sentence is obtained by subtracting from 1
+    each of the values above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc51bc337c55dd83eb0197b028d818d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hallucination Score for **Evelyn Hartwell.** Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing the results with the answers for Nicolas Cage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e5664b0a28cfd118ee2bace1817e2d3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hallucination Score for **Nicolas Cage.** Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seems reasonable; the hallucination score for the valid outputs is low, and
+    the one for the made-up outputs is high. Unfortunately, the process of computing
+    the BERTScore is very time-consuming, which makes it a bad candidate for real-time
+    hallucination detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ee064186184b0e41ebcb423be656ccd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Duration of BERTScore computation. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SelfCheckGPT-NLI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Natural language inference (NLI) involves determining whether a hypothesis logically
+    follows from or contradicts a given premise. The relationship is classified as
+    entailment, contradiction, or neutral. For SelfCheck-NLI, we utilize the DeBERTa-v3-large
+    model that has been fine-tuned on the MNLI dataset to perform NLI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a9282e68753d179435e2a373e8ed2e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: NLI flowchart [5]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are some examples of premise-hypothesis pairs and their labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e008b99d66c2bdb9eff170d4317575e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examples of context — hypothesis pairs [4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the *selfcheck_nli.predict* function, each sentence from the original response
+    is paired with each of the three samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c5a5164130faa7dfc8204aa03f508412.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability of contradiction w.r.t the first sentence and each sample. Image
+    by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we repeat the process for each of the four sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2aacc18868931a0c2d24dd7172452797.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SelfCheck-NLI for **Evelyn Hartwell**. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the model is outputting an extremely high probability of contradiction.
+    Now we compare with the factual outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4c36a43c4dec21c4fb079860a3dd886.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SelfCheck-NLI for **Nicolas Cage**. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is doing a great job! Unfortunately, the NLI check is a bit too long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5886c2dc74d23ebfaa48cabf5959d6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Duration of NLI computation. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SelfCheckGPT-Prompt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Newer methods have started using LLMs themselves to evaluate generated text.
+    Instead of using a formula to calculate a score, we will send the output along
+    with the three samples to gpt-3.5-turbo. The model will decide how consistent
+    the original output is with respect to the other three samples generated. [3]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The self-similarity score returned for Evelyn Hartwell is **0**. Meanwhile,
+    the score for the outputs related to Nicolas Cage is **0.95**. The time needed
+    for getting the score is also pretty low.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1eef89548b1aa1e5636d1108f8ba37d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Duration of LLM self-similarity score computation. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This seems to be the best solution for our case, as we were also expecting from
+    the comparative analysis of the source paper [2]. SelfCheckGPTPrompt significantly
+    outperformed all other methods, with NLI being the second-best performing method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f282730302c98cb10856ad56ad442574.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hallucination detection evaluation results [6]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The evaluation dataset was created by generating synthetic Wikipedia articles
+    using the WikiBio dataset and GPT-3\. To avoid obscure concepts, 238 article topics
+    were randomly sampled from the top 20% of the longest articles. GPT-3 was prompted
+    to generate the first paragraphs in a Wikipedia style for each concept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4572558b7d2959e4c8f9fae771d003b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evaluation dataset creation [5]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, these generated passages were manually annotated for factuality at the
+    sentence level. Each sentence was labeled as major inaccurate, minor inaccurate,
+    or accurate based on predefined guidelines. In total, 1908 sentences were annotated,
+    with around 40% major inaccurate, 33% minor inaccurate, and 27% accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To assess annotator agreement, 201 sentences had dual annotations. If the annotators
+    agreed, that label was used; otherwise, the worst-case label was chosen. Inter-annotator
+    agreement measured by Cohen’s kappa was 0.595 when selecting between accurate,
+    minor inaccurate, and major inaccurate and 0.748 when minor/major inaccuracies
+    were combined into one label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The evaluation metric, AUC-PR, refers to the area under the precision-recall
+    curve, which is a metric used to evaluate classification models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real-time hallucination detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a final application, let’s build a Streamlit app for real-time hallucination
+    detection. As mentioned before, the best metric is the LLM self-similarity score.
+    We will use a threshold of 0.5 to decide whether to display the generated output
+    or a disclaimer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can visualize the final result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed68b9f6c037cb4a2683cd121470d830.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Streamlit app demo. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The results are very promising! Hallucination detection in chatbots has been
+    a long-discussed quality problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What makes the techniques outlined here so exciting is the novel approach of
+    using an LLM to evaluate the outputs of other LLMs. Specifically done by generating
+    multiple responses to the same prompt and comparing their consistency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is still more work to be done, but rather than relying on human evaluation
+    or hand-crafted rules, it seems to be a good direction to let the models themselves
+    catch the inconsistencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: . . .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article, join* [***Text Generation***](https://textgeneration.substack.com/)
+    *— our newsletter has two weekly posts with the latest insights on Generative
+    AI and Large Language Models.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can find the full code for this project on* [*GitHub*](https://github.com/partycia/real-time-hallucination-detection.git)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can also find me on* [*LinkedIn*](https://www.linkedin.com/in/ibrezeanu/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: . . .
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[BERTSCORE: EVALUATING TEXT GENERATION WITH BERT](https://arxiv.org/abs/1904.09675)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[SELFCHECKGPT: Zero-Resource Black-Box Hallucination Detection for Generative
+    Large Language Models](https://arxiv.org/abs/2303.08896)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://learn.deeplearning.ai/quality-safety-llm-applications](https://learn.deeplearning.ai/quality-safety-llm-applications)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A Broad-Coverage Challenge Corpus for'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sentence Understanding through Inference](https://aclanthology.org/N18-1101)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://drive.google.com/file/d/13LUBPUm4y1nlKigZxXHn7Cl2lw5KuGbc/view](https://drive.google.com/file/d/13LUBPUm4y1nlKigZxXHn7Cl2lw5KuGbc/view)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://drive.google.com/file/d/1EzQ3MdmrF0gM-83UV2OQ6_QR1RuvhJ9h/view](https://drive.google.com/file/d/1EzQ3MdmrF0gM-83UV2OQ6_QR1RuvhJ9h/view)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

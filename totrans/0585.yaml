@@ -1,0 +1,529 @@
+- en: Create a Python Package with Super- Fast Rust Code in 3 Steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/create-a-python-package-with-super-fast-rust-code-in-3-steps-a27389629beb](https://towardsdatascience.com/create-a-python-package-with-super-fast-rust-code-in-3-steps-a27389629beb)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Extend you Python code with a package containing Rust code for a >150x performance
+    increase!*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikehuls.medium.com/?source=post_page-----a27389629beb--------------------------------)[![Mike
+    Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----a27389629beb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a27389629beb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a27389629beb--------------------------------)
+    [Mike Huls](https://mikehuls.medium.com/?source=post_page-----a27389629beb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a27389629beb--------------------------------)
+    ·9 min read·Feb 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed219a4972a58651e9682cc108017a96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This Python is getting a bit Rusty! (image by Dall-e 2!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Python is a pretty easy language to pick up and it’s super quick to write some
+    code in, compared to some other languages. All this ease-of-use comes with a downside:
+    speed is sacrificed. Sometimes Python is just too slow!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem we’ll re-write a bit of our Python-code in Rust and import
+    this code, as a Python package, into our original project. We end up with a super-fast
+    Python package that we can import and use like any other package. As a bonus we’ll
+    multi-process our Rusty Python package and end up with a function that is roughly
+    150x faster. Let’s code!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A quick summary of what we’re going to do in this article. We’ll tackle the
+    problem in 6 steps (of which step 2, 3 and 4 are devoted to actually writing the
+    package):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examining our slow function; why is it slow?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Preparing our project
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We re-write this function in Rust
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compile the Rust code and put it in a Python package
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Import the Python package into our project
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Benchmarking the Python function vs the Rust one
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’ll use a Python package called `maturin`. This package will compile our Rust
+    code and convert into a package. The result will be like any other Python package
+    that we can import and use (like `pandas`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/image-analysis-for-beginners-destroying-duck-hunt-with-opencv-e19a27fd8b6?source=post_page-----a27389629beb--------------------------------)
+    [## Destroying Duck Hunt with OpenCV — image analysis for beginners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write code that will beat every Duck Hunt high score
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/image-analysis-for-beginners-destroying-duck-hunt-with-opencv-e19a27fd8b6?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Examining our slow function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It’s first important that we understand why our function is slow. Let’s imagine
+    that our project requires a function that counts the number of primes between
+    two numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Please note that:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The number of prime-checks isn’t really necessary for this function but it allows
+    us to compare Python vs Rust in a later part of this article.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Python code and Rust code in this article are far from optimized for finding
+    primes. The important thing is to demonstrate that we can optimize small chunks
+    of Python with Rust and that we can compare the performance of these functions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'If you insert `primecounter_py(10, 20)` it returns `4` (11, 13, 17, and 19
+    are primes) and the number of prime-checks the function has performed. These small
+    ranges are executed very quickly but when we use larger ranges you’ll see that
+    performance starts to suffer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You see that as our input-size increases ten-fold; the duration increases much
+    more. In other words: the larger a range becomes; the slower it gets (relatively).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/keep-your-code-secure-by-using-environment-variables-and-env-files-4688a70ea286?source=post_page-----a27389629beb--------------------------------)
+    [## Keep your code secure by using environment variables and env files'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Securely load a file containing all of our app’s required, confidential data
+    like passwords, tokens, etc
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/keep-your-code-secure-by-using-environment-variables-and-env-files-4688a70ea286?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is the primecounter_py function slow?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Code can be slow for many reasons. It can be I/O-based like waiting for an API,
+    hardware-related or based on the design of Python as a language. In this article
+    it’s the last case. The way Python is designed and how it handles variables e.g.
+    make it very **easy to use** but you suffer a **small speed penalty** that becomes
+    apparent when you have to perform a lot of calculations. On the bright side; **this
+    function is very suitable for optimization with Rust**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in what Python’s limitations are, I recommend reading
+    the article below. It explains the cause and potential solutions for slowness
+    due to how Python is designed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/why-is-python-so-slow-and-how-to-speed-it-up-485b5a84154e?source=post_page-----a27389629beb--------------------------------)
+    [## Why Python is so slow and how to speed it up'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take a look under the hood to see where Python’s bottlenecks lie
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/why-is-python-so-slow-and-how-to-speed-it-up-485b5a84154e?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is concurrency the problem?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Doing multiple things simultaneously can solve a lot of speed problems. In our
+    case we could opt for using multiple processes to divide all tasks over multiple
+    cores in stead of the default 1\. Still we go for the optimization in Rust since
+    we can also multi-process the faster function as you’ll see at the end of this
+    article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many cases that involve a lot of I/O can be optimized by [**using threads**](https://mikehuls.medium.com/multi-tasking-in-python-speed-up-your-program-10x-by-executing-things-simultaneously-4b4fc7ee71e)
+    (like waiting for an API)? Check out [**this article**](https://mikehuls.medium.com/advanced-multi-tasking-in-python-applying-and-benchmarking-threadpools-and-processpools-90452e0f7d40)
+    or the one below on how to put multiple CPUs to work to increase execution speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/applying-python-multiprocessing-in-2-lines-of-code-3ced521bac8f?source=post_page-----a27389629beb--------------------------------)
+    [## Applying Python multiprocessing in 2 lines of code'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When and how to use multiple cores to execute many times faster
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/applying-python-multiprocessing-in-2-lines-of-code-3ced521bac8f?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Preparing our project
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is the part where we install dependencies and create all files and folders
+    we need to write Rust and compile it into a package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/thread-your-python-program-with-two-lines-of-code-3b474407dbb8?source=post_page-----a27389629beb--------------------------------)
+    [## Thread Your Python Program with Two Lines of Code'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speed up your program by doing multiple things simultaneously
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/thread-your-python-program-with-two-lines-of-code-3b474407dbb8?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**a. Create a venv**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a virtual environment and activate it. Then install `maturin`; this
+    package will help us convert out Rust code to a Python package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[](/virtual-environments-for-absolute-beginners-what-is-it-and-how-to-create-one-examples-a48da8982d4b?source=post_page-----a27389629beb--------------------------------)
+    [## Virtual environments for absolute beginners — what is it and how to create
+    one (+ examples)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A deep dive into Python virtual environments, pip and avoiding entangled dependencies
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/virtual-environments-for-absolute-beginners-what-is-it-and-how-to-create-one-examples-a48da8982d4b?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**b. Rust files and folders**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll create a directory called `my_rust_module` that will contain our rust
+    code and `cd` into that directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**c. Initializing maturin**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Then we call `maturin init`. It shows you some options. Choose `pyo3`. Maturin
+    now creates some folders and files. Your project should look like this now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The most important one is `/my_rust_module/src/lib.rs`. This file will contains
+    our Rust code that we’re about to turn into a Python package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice that `maturin` also created a `Cargo.toml`. This is the configuration
+    of our project. It also contains all of our dependencies (like `requirements.txt`).
+    In my case I’ve edited it to look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[](/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e?source=post_page-----a27389629beb--------------------------------)
+    [## Create a fast auto-documented, maintainable and easy-to-use Python API in
+    5 lines of code with…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perfect for (unexperienced) developers who just need a complete, working, fast
+    and secure API
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Re-writing the function in Rust
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We are now ready to recreate our Python function in Rust. We won’t dive too
+    deep in the Rust syntax but focus more on the way we can make the Rust code work
+    with Python. We’ll first create a pure-Rust function and then put it in a package
+    that we can `import` and use in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’ve never seen Rust code then the code below maybe a little confusing.
+    The most important thing is that the `primecounter` function below is pure Rust;
+    it has nothing to do with Python. Open `/my_rust_module/src/lib.rs` and give it
+    the following content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s run through the most important things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `primecounter` function is pure Rust
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The `primecounter` function is decorated with `#[pyfunction]`. This indicates
+    that we want to transform it into a Python function
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the last few lines we build a pymodule. The `my_rust_module` function packages
+    the Rust code into a Python module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----a27389629beb--------------------------------)
+    [## Args vs kwargs: which is the fastest way to call a function in Python?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A clear demonstration of the timeit module
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Rust code -> Python package
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This part may seem the hardest but with the help of the `maturin` package it
+    becomes very easy for us. Just call
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`maturin build --release`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This compiles all Rust code and wraps it into a Python package that ends up
+    in this directory: `your_project_dir/my_rust_module/target/wheels`. We install
+    the wheel in the next part.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***For windows users:*** *In the examples below I work in a Debian environment
+    (via Windows WSL). This makes compiling code with Rust a little easier since the
+    compilers we need are already installed. Building on Windows is possible as well
+    but you’ll likely receive a message like* `*Microsoft Visual C++ 14.0 or greater
+    is required*`*. This means you don’t have a compiler. You can solve this by installing
+    C++ build tools that you can download* [*here*](https://visualstudio.microsoft.com/visual-cpp-build-tools)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/sqlalchemy-for-absolute-beginners-22227a287ef3?source=post_page-----a27389629beb--------------------------------)
+    [## SQLAlchemy for absolute beginners'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a database engine and execute SQL from Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/sqlalchemy-for-absolute-beginners-22227a287ef3?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Importing our Rusty Python package
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can directly `pip install` the wheel we’ve created in the previous part:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then it’s just a matter of importing our module and using the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[](/write-your-own-c-extension-to-speed-up-python-x100-626bb9d166e7?source=post_page-----a27389629beb--------------------------------)
+    [## Write Your Own C-extension to Speed Up Python by 100x'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to write, compile, package and import your own, superfast C-module into
+    Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/write-your-own-c-extension-to-speed-up-python-x100-626bb9d166e7?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Benchmarking Rust vs Python function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s check out our functions compare. We’ll call both the Python and Rust
+    version of our `primecounter` function and time them. We also call the function
+    with multiple arguments. There are the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both our Python and Rust function return the result and the count of the numbers
+    they have evaluated. In the overview above you see that **Rust outperforms Python
+    by 27x** when it comes to these evaluations per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/febf60ff08b194f5a6e56d0cfde97bfe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Counting primes in Rust is a lot faster than in Python (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The graph above provides a very clear difference in execution time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----a27389629beb--------------------------------)
+    [## Run Code after Your Program Exits with Python’s AtExit'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Register cleanup functions that run after your script ends or errors
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '7\. Bonus: multiprocessing for even more speed'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Of course you can multi-process this new Python package! With the code below
+    we divide all numbers that we need to evaluate over all of our cores:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try find all primes between 0 and 100K again. With our current algorithm
+    this means that we have to perform almost half a billion checks. As you see in
+    the overview below Rust finishes these in 0.88 seconds. With multiprocessing the
+    process finishes in 0.16 seconds; **5.5 times faster**, clocking in at **2.8 billion**
+    calculations per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compared to our original (single process) Python function we’ve increased the
+    number of calculations per second from 18.8M to 2.8 billion. This means that our
+    function is now roughly **150x faster**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/secure-your-docker-images-with-docker-secrets-f2b92ec398a0?source=post_page-----a27389629beb--------------------------------)
+    [## Secure Your Docker Images with Docker Secrets'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add docker secrets to prevent your docker image from leaking passwords
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/secure-your-docker-images-with-docker-secrets-f2b92ec398a0?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we’ve seen in this article, it’s not all that difficult to extend Python
+    with Rust. If you know when and how to apply this technique you can really improve
+    the execution speed of your program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope this article was as clear as I hope it to be but if this is not the
+    case please let me know what I can do to clarify further. In the meantime, check
+    out my [other articles](https://mikehuls.com/articles?tags=python) on all kinds
+    of programming-related topics like these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Git for absolute beginners: understanding Git with the help of a video game](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Create and publish your own Python package](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Coding a Home Intruder System / Motion Detector with Python](https://mikehuls.medium.com/coding-a-home-intruder-system-motion-detector-with-python-22f5ba8bcca0)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Happy coding!
+  prefs: []
+  type: TYPE_NORMAL
+- en: — Mike
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P.S: like what I’m doing?* [*Follow me!*](https://mikehuls.medium.com/membership)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mikehuls.medium.com/membership?source=post_page-----a27389629beb--------------------------------)
+    [## Join Medium with my referral link - Mike Huls'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Mike Huls (and thousands of other writers on Medium).
+    Your membership fee directly supports Mike…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: mikehuls.medium.com](https://mikehuls.medium.com/membership?source=post_page-----a27389629beb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

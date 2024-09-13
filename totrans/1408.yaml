@@ -1,0 +1,335 @@
+- en: Learning Transformers Code First Part 2 — GPT Up Close and Personal
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/learning-transformers-code-first-part-2-gpt-up-close-and-personal-1635b52ae0d7](https://towardsdatascience.com/learning-transformers-code-first-part-2-gpt-up-close-and-personal-1635b52ae0d7)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Digging into Generative Pre-Trained Transformers via nanoGPT
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@oaguy1?source=post_page-----1635b52ae0d7--------------------------------)[![Lily
+    Hughes-Robinson](../Images/b610721a40e274e7fb81418395314ae3.png)](https://medium.com/@oaguy1?source=post_page-----1635b52ae0d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1635b52ae0d7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1635b52ae0d7--------------------------------)
+    [Lily Hughes-Robinson](https://medium.com/@oaguy1?source=post_page-----1635b52ae0d7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1635b52ae0d7--------------------------------)
+    ·13 min read·Jul 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f90478c1b96dad6cd2667bfcf0da1f03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Luca Onniboni](https://unsplash.com/it/@lucaonniboni?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to the second part of my project, where I delve into the intricacies
+    of transformer and GPT-based models using the [TinyStories dataset](https://huggingface.co/datasets/roneneldan/TinyStories)
+    and [nanoGPT](https://github.com/karpathy/nanoGPT/tree/master) all trained on
+    an aging gaming laptop. In the first part, I prepared the dataset for input into
+    a character-level generative model. You can find a link to part one below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/nanogpt-learning-transformers-code-first-part-1-f2044cf5bca0?source=post_page-----1635b52ae0d7--------------------------------)
+    [## Learning Transformers Code First Part 1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 1 of a new series where I endeavor to learn transformers code first using
+    nanoGPT
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/nanogpt-learning-transformers-code-first-part-1-f2044cf5bca0?source=post_page-----1635b52ae0d7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I aim to dissect the GPT model, its components, and its implementation
+    in nanoGPT. I selected nanoGPT due to its straightforward Python implementation
+    of a GPT model, which is approximately 300 lines long, and its similarly digestible
+    training script. With the necessary background knowledge, one could quickly comprehend
+    GPT models from simply reading the source code. To be frank, I lacked this understanding
+    when I first examined the code. Some of the material still eludes me. However,
+    I hope that with all I’ve learned, this explanation will provide a starting point
+    for those wishing to gain an intuitive understanding of how GPT-style models function
+    internally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: n preparation for this article, I read various papers. Initially, I assumed
+    that simply reading the seminal work “[Attention is All You Need](https://arxiv.org/abs/1706.03762)”
+    would suffice to bring my understanding up to speed. This was a naive assumption.
+    While it’s true that this paper introduced the transformer model, it was subsequent
+    papers that adapted it for more advanced tasks such as text generation. “AIAYN”
+    was merely an introduction to a broader topic. Undeterred, I recalled an article
+    on HackerNews that provided a reading list to fully understand LLMs. After a quick
+    search, I found the article [here](https://sebastianraschka.com/blog/2023/llm-reading-list.html).
+    I didn’t read everything in sequence, but I intend to revisit this reading list
+    to continue my learning journey after completing this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that said, let’s dive in. To comprehend GPT models in detail, we must start
+    with the transformer. The transformer employs a self-attention mechanism known
+    as scaled dot-product attention. The following explanation is derived from this
+    [insightful article on scaled dot-product attention,](https://peterbloem.nl/blog/transformers)
+    which I recommend for a more in-depth understanding. Essentially, for every element
+    of an input sequence (the *i-th* element), we want to multiply the input sequence
+    by a weighted average of all the elements in the sequence with the *i-th* element.
+    These weights are calculated via taking the dot-product of the vector at the *i-th*
+    element with the entire input vector and then applying a softmax to it so the
+    weights are values between 0 and 1\. In the original “Attention is All You Need”
+    paper, these inputs are named **query (**the entire sequence**), key** (the vector
+    at the *i-th* element) and the **value** (also the whole sequence). The weights
+    passed to the attention mechanism are initialized to random values and learned
+    as more passes occur within a neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: nanoGPT implements scaled dot-product attention and extends it to multi-head
+    attention, meaning multiple attention operations occurring at once. It also implements
+    it as a `torch.nn.Module`, which allows it to be composed with other network layers
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s dissect this code further, starting with the constructor. First, we verify
+    that the number of attention heads (`n_heads`) divides the dimensionality of the
+    embedding (`n_embed`) evenly. This is crucial because when the embedding is divided
+    into sections for each head, we want to cover all of the embedding space without
+    any gaps. Next, we initialize two Linear layers, `c_att` and `c_proj`: `c_att`
+    is the layer that holds all our working space for the matrices that compose of
+    a scaled dot-product attention calculation while `c_proj` stores the finally result
+    of the calculations. The embedding dimension is tripled in `c_att` because we
+    need to include space for the three major components of attention: **query**,
+    **key**, and **value**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also have two dropout layers, `attn_dropout`and `resid_dropout`. The dropout
+    layers randomly nullify elements of the input matrix based on a given probability.
+    According to the [PyTorch docs](https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout),
+    this serves the purpose of reducing overfitting for the model. The value in `config.dropout`
+    is the probability that a given sample will be dropped during a dropout layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We finalize the constructor by verifying if the user has access to PyTorch 2.0,
+    which boasts an optimized version of the scaled dot-product attention. If available,
+    the class utilizes it; otherwise we set up a bias mask. This mask is a component
+    of the optional masking feature of the attention mechanism. The [torch.tril](https://pytorch.org/docs/stable/generated/torch.tril.html)
+    method yields a matrix with its upper triangular section converted to zeros. When
+    combined with the torch.ones method, it effectively generates a mask of 1s and
+    0s that the attention mechanism uses to produce anticipated outputs for a given
+    sampled input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we delve into the `forward` method of the class, where the attention
+    algorithm is applied. Initially, we determine the sizes of our input matrix and
+    divide it into three dimensions: **B**atch size, **T**ime (or number of samples),
+    **C**orpus (or embedding size). nanoGPT employs a batched learning process, which
+    we will explore in greater detail when examining the transformer model that utilizes
+    this attention layer. For now, it’s sufficient to understand that we are dealing
+    with the data in batches. We then feed the input `x` into the linear transformation
+    layer `c_attn` which expands the dimensionality from `n_embed` to three times
+    `n_embed`. The output of that transformation is split it into our `q`, `k`, `v`
+    variables which are our inputs to the attention algorithm. Subsequently, the `view`
+    method is utilized to reorganize the data in each of these variables into the
+    format expected by the PyTorch `scaled_dot_product_attention` function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the optimized function isn’t available, the code defaults to a manual implementation
+    of scaled dot-product attention. It begins by taking the dot product of the `q`
+    and `k` matrices, with `k` transposed to fit the dot product function, and the
+    result is scaled by the square root of the size of `k`. We then mask the scaled
+    output using the previously created bias buffer, replacing the 0s with negative
+    infinity. Next, a [softmax function](https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html)
+    is applied to the `att` matrix, converting the negative infinities back to 0s
+    and ensuring all other values are scaled between 0 and 1\. We then apply a dropout
+    layer to avoid overfitting before getting the dot-product of the `att` matrix
+    and `v`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless of the scaled dot-product implementation used, the multi-head output
+    is reorganized side by side before passing it through a final dropout layer and
+    then returning the result. This is the complete implementation of the attention
+    layer in less than 50 lines of Python/PyTorch. If you don’t fully comprehend the
+    above code, I recommend spending some time reviewing it before proceeding with
+    the rest of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we delve into the GPT module, which integrates everything, we require
+    two more building blocks. The first is a simple multi-layer perceptron (MLP) —
+    referred to in the “Attention is All You Need” paper as a feed-forward network
+    — and the attention block, which combines the attention layer with an MLP to complete
+    the basic transformer architecture represented in the paper. Both are implemented
+    in the following snippet from nanoGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The MLP layer, despite its apparent simplicity in terms of code lines, adds
+    an extra layer of complexity to the model. Essentially, the Linear layers link
+    each input layer with each element of the output layer, using a linear transformation
+    to transfer the values between them. In the aforementioned code, we start with
+    the embedding size, `n_embed`, as the number of parameters before quadrupling
+    it in the output. The quadrupling here is arbitrary; the purpose of the MLP module
+    is to enhance the network’s computation by adding more nodes. As long as the dimensionality
+    increase at the beginning of the MLP and decrease at the end of the MLP is equivalent,
+    yielding the same initial input/final output dimension, then the scaling number
+    is merely another hyper-parameter. Another crucial element to consider is the
+    activation function. This MLP implementation consists of two linear layers connected
+    with the GELU activation function. The original paper uses a ReLU function, but
+    nanoGPT employs GELU to ensure compatibility with GPT2 model checkpoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we examine the Block module. This module finalizes our transformer block
+    as outlined in the “Attention” paper. Essentially, it channels the input through
+    a normalization layer before passing it to the attention layer, then adds the
+    result back to the input. The output of this addition is normalized once more
+    before being transferred to the MLP, and then added back to itself. This process
+    implements the decoder side of the transformer as described in the “Attention”
+    paper. For text generation, it’s common to use only a decoder, as it doesn’t need
+    to condition the decoder’s output on anything other than the input sequence. The
+    transformer was initially designed for machine translation, which needs to account
+    for both the input token encoding and the output token encoding. However, with
+    text generation, only a single token encoding is used, eliminating the need for
+    cross-attention via an encoder. Andrej Karpathy, the author of nanoGPT, provides
+    a comprehensive explanation of this [in his video](https://youtu.be/kCc8FmEb1nY?t=6161)
+    linked in the first article in this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we reach the main component: the GPT model. The majority of the approximately
+    300-line file is dedicated to the GPT module. It manages beneficial features such
+    as model fine-tuning and utilities designed for model training (the topic of the
+    next article in this series). Therefore, I present a simplified version of what
+    is available in the nanoGPT repository below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s begin with the constructor of the class. The different layers are assembled
+    into a PyTorch ModuleDict, which provides some structure. We start with two Embedding
+    layers: one for token embedding and one for positional embedding. The `nn.Embedding`
+    module is designed to be sparsely populated with values, optimizing it storage
+    capabilities over other layer modules. Following this, we have a dropout layer,
+    succeeded by `n_layer` number of Block modules that form our attention layers,
+    and then another single dropout layer. The `lm_head` Linear layer takes the output
+    from the attention Blocks and reduces it to the vocab size, acting as our main
+    output for the GPT, apart from the loss value.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the layers are defined, additional setup is required before we can begin
+    training the module. Here, Andrej links the weights of the positional encoding
+    to those of the output layer. According to [the paper linked in the code comments](https://paperswithcode.com/method/weight-tying),
+    this is done to reduce the model’s final parameters while also improving its performance.
+    The constructor also initializes the model’s weights. As these weights will be
+    learned during training, they are initialized to Gaussian distribution of random
+    numbers and the module biases are set to 0\. Finally, a modification from the
+    [GPT-2 paper](https://www.semanticscholar.org/paper/Language-Models-are-Unsupervised-Multitask-Learners-Radford-Wu/9405cc0d6169988371b2755e573cc28650d14dfe)
+    is utilized where the weights of any residual layers are scaled by square root
+    of the number of layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When feeding forward through the network, **b**atch size and the number of samples
+    (here `t`) are pulled from the input size. We then create memory on the training
+    device for what will become the **pos**itional embedding. Next, we embed the input
+    tokens into a token embedding later `wte`. Following this, the positional embedding
+    is calculated on the `wpe` layer. These embeddings are added together before being
+    passed through a dropout layer. The result is then passed through each of the
+    `n_layer` blocks and normalized. The final result is passed to the Linear layer
+    `lm_head` which reduces the embedded weights into a probability score for each
+    token in a vocab.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When a loss is being calculated (e.g., during training), we calculate the difference
+    between the predicted token and the actual token using cross-entropy. If not,
+    loss is `None`. Both the loss and the token probabilities are returned as part
+    of the feed forward function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike the previous modules, the GPT module has additional methods. The most
+    relevant to us is the generate function, which will be familiar to anyone who
+    has used a generative model before. Given a set of input tokens `idx`, a number
+    of `max_new_tokens` and a `temperature`, it generates `max_new_tokens` many tokens.
+    Let’s delve into how it accomplishes this. First it trims the input tokens to
+    fit within the `block_size` (others call this context length), if necessary, sampling
+    from the end of the input first. Next, the tokens are fed to the network and the
+    output is scaled for the inputted `temperature`. The higher the temperature, the
+    more creative and likely to hallucinate the model is. Higher temperatures also
+    result in less predictable output. Next, a softmax is applied to convert the model
+    output weights into probabilities between 0 and 1\. A sampling function is used
+    to select the next token from the probabilities, and that token is added to the
+    input vector that gets fed back into the GPT model for the next character.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for your patience in reading this comprehensive article. While examining
+    annotated source code is a valuable method for understanding the function of a
+    code segment, there’s no replacement for personally manipulating various parts
+    and parameters of the code. In line with this, I’m providing a link to the complete
+    `model.py` source code from the nanoGPT repository
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/karpathy/nanoGPT/blob/master/model.py?source=post_page-----1635b52ae0d7--------------------------------)
+    [## nanoGPT/model.py at master · karpathy/nanoGPT'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simplest, fastest repository for training/finetuning medium-sized GPTs.
+    - nanoGPT/model.py at master ·…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/karpathy/nanoGPT/blob/master/model.py?source=post_page-----1635b52ae0d7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the upcoming article, we’ll explore the `train.py` script of nanoGPT and
+    train a character-level model on the TinyStories dataset. Follow me on Medium
+    to ensure you don’t miss out!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I utilized a vast array of resources to create this article, many of which have
+    already been linked in this and the previous article. However, I would be neglecting
+    my duty if I didn’t share these resources with you for further exploration of
+    any topic or for alternative explanations of the concepts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Let’s Build GPT: from scratch, in code, spelled out](https://www.youtube.com/watch?v=kCc8FmEb1nY)
+    — YouTube'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[LLM Reading List](https://sebastianraschka.com/blog/2023/llm-reading-list.html)
+    — Blog'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[“Attention is All You Need”](https://arxiv.org/pdf/1706.03762.pdf?) — Paper'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[“Language Models are Unsupervised Multitask Learners”](https://www.semanticscholar.org/paper/Language-Models-are-Unsupervised-Multitask-Learners-Radford-Wu/9405cc0d6169988371b2755e573cc28650d14dfe)
+    — GPT-2 Paper'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multi-Layer Perceptrons Explained and Illustrated](/multi-layer-perceptrons-8d76972afa2b)
+    — Medium'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Weight Tying](https://paperswithcode.com/method/weight-tying) — Papers With
+    Code'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Illustrated Guide to Transformers Neural Network: A step by step explanation](https://www.youtube.com/watch?v=4Bdc55j80l8)
+    — YouTube'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Edited using GPT-4 and a custom LangChain script.*'
+  prefs: []
+  type: TYPE_NORMAL

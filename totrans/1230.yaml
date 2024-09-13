@@ -1,0 +1,419 @@
+- en: How to Properly Deploy ML Models as Flask APIs on Amazon ECS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-properly-deploy-ml-models-as-flask-apis-on-amazon-ecs-98428f9a0ecf](https://towardsdatascience.com/how-to-properly-deploy-ml-models-as-flask-apis-on-amazon-ecs-98428f9a0ecf)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deploy XGBoost models on Amazon ECS to recommend perfect puppies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nikola.kuzmic945?source=post_page-----98428f9a0ecf--------------------------------)[![Nikola
+    Kuzmic](../Images/b6be2a8e377bc450ced5260a79a1f4bb.png)](https://medium.com/@nikola.kuzmic945?source=post_page-----98428f9a0ecf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98428f9a0ecf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98428f9a0ecf--------------------------------)
+    [Nikola Kuzmic](https://medium.com/@nikola.kuzmic945?source=post_page-----98428f9a0ecf--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98428f9a0ecf--------------------------------)
+    ·8 min read·Mar 16, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d488dd1778ca6099a3740b2e610a8a63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Carissa Weiser](https://unsplash.com/@carissaweiser?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the wild success of ChatGPT it is becoming apparent just how much AI technology
+    will impact our lives. However, unless those amazing ML models are made available
+    for everyone to use and deployed properly to address high user demand, they will
+    fail to create any positive impact on the world. Hence, why it is so important
+    to be able to not only develop AI solutions, but also know how to deploy them
+    properly. Not to mention that this skillset will make you vastly more valuable
+    on the marketplace and open career opportunities to take on the lucrative roles
+    of ML Engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’re going to deploy an **XGBoost** model as a **Flask API** using
+    the **Gunicorn** application server on Amazon Elastic Container Service**.** The
+    model will recommend aDachshund or a German Shepherd puppy based on how big someone’s
+    home is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc2a92633d6bb52863eea43d0f470682.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author, Sources: [1–2]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉 Game Plan
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Train an XGBoost model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Build a simple Gunicorn-Flask API to make recommendations
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Build a Docker Image for the API
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Deploy the Docker Container on Amazon ECS
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Entire Source Code Github Repo: [link](https://github.com/kuzmicni/flask-on-ecs)🧑‍💻'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploying ML Models on Cloud
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is often the case that we need to deploy our locally trained ML models to
+    production for everyone on the internet to use. This approach requires first wrapping
+    the ML model into an API and then Dockerizing it. AWS has built a specialized
+    tool called Elastic Container Service (ECS) which removes the headache of managing
+    compute environments like EC2s and enables us to simply deploy our Docker Containers
+    using a serverless tool called **Fargate**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note about Web vs Application Servers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the traditional world of web development, it is common practice to have
+    a Web Server, such as NGINX, handle enormous traffic from clients and interact
+    with the backend applications (APIs) which serve dynamic content. A Web Server
+    can be thought of as a waiter in a restaurant where he/she receives and processes
+    orders from customers. Similarly, a web server receives and processes requests
+    from web clients (such as web browsers). The waiter then communicates with the
+    kitchen to have the order prepared and delivers the finished meal to the customer.
+    In the same way, a web server communicates with the backend application to process
+    the request and sends the response back to the web client. The setup would typically
+    be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3113e0d3262d2d67c619c31913ef2db8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web Servers are awesome as they are able to distribute client requests to multiple
+    backend applications and improve performance, security and scalability. However,
+    in our case, since we’ll be deploying the Flask API on AWS, there are cloud-native
+    Load Balancers which can handle traffic routing to the backend APIs and also enable
+    us to enforce SSL encryption. Hence, including NGINX would be somewhat redundant.
+    Having only a Gunicorn application server is sufficient for the majority of ML
+    model deployment cases, given you intend to use AWS Load Balancers. Ok but…
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is WSGI & Gunicorn?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**WSGI** (Web Server Gateway Interface) is simply a convention or a **set of
+    rules** that need to be used when a web server communicates with a web application.
+    **Gunicorn** (Green Unicorn) is one such **Application Server** which follows
+    WSGI rules and handles client request when sending them to the Python Flask applications.
+    Flask itself provides a WSGI Werkzeug’s development server for initial development,
+    but if we want to deploy the API in production, then likely our Flask application
+    needs to handle multiple requests at a time, hence why we need Gunicorn.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typical Cloud Architecture for Real-time APIs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Running APIs in cloud is greatly enhanced by the Application Load Balancers
+    (ALBs) as they can typically serve the purpose of NGINX and route traffic to our
+    backend applications. This tutorial will only focus on deploying the **Flask API
+    on ECS** and we can cover ALBs in a future post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b2f52668a668d49376f4ea002d06a9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alright, enough of background, let’s build & deploy some APIs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '👉 Step 1: Train an XGBoost model'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Train an XGBoost model to predict either a Dachshund (Wiener Dog) or a German
+    Shepherd based on house area and save the model as a pickle file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To run it inside VS Code, let’s create a separate Python 3.8 environment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then Restart VS Code and in Jupyter Notebook -> Select '**py38demo**' as the
+    Kernel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Train & pickle the XGBoost model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3dc22e313eb54d85806635d6a98169b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, we were able to train the model, tested it on a 300 & 600 ft2
+    homes, and saved the XGBoost model as a **pickle** (.pkl) file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '👉 Step 2: Build a simple Gunicorn-Flask API'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s build a very simple Flask API which serves our XGBoost model predictions.
+    We have a simple helper function which translates 0/1 model predictions into ‘wiener
+    dog’/‘german shepherd’ outputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To run the API, in terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In a separate terminal, test it out by sending a POST request:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'How I ran it locally on my Mac:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f73f9a77c74818c53bcbb1581b96dd5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our API is working great but you can see we get a warning that this is a Development
+    Server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ea674183a38197dd0514885ed2aca3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s stop our API, and use Gunicorn production-grade server instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Going back to our VS Code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a5f26cfb620603f0ccfbae2869d69ed3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we’re ready to Dockerize the API! 📦
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉 3\. Build a Docker Image for the API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Below is a **Dockerfile** which uses a python3.8 base image. We need the 3.8
+    version since we used that version locally to train our XGBoost model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: since I am building the image on a Mac, I need to specify'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '- -platform linux/amd64'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: for it to be compatible with the ECS Fargate Linux environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s how we build & run the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: we bind our host (i.e. laptop’s) port 80 to docker container’s port 80:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s quickly test it again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c387e865a0efd17425aaf980c0b1daa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now that we know our API is working inside a Docker Container, it’s time to
+    push it to AWS! 🌤️
+  prefs: []
+  type: TYPE_NORMAL
+- en: '👉 Step 4: Deploy the Docker Container on Amazon ECS'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This section may look complicated at first, but actually is quite simple if
+    we break the process into 6 simple steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48d378716110eaaf9830785bc81ba3e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**i) Push the Docker image to ECR**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s create an ECR repo called **demo** where we can push the Docker image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/052bc48fc29df4f521e507c1ce4522c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then we can use the Push Commands provided by the ECR:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Assumption: you have configured AWS CLI on your local machine and setup an
+    IAM user with the right permission to interact with the ECR. You can find more
+    info at this [link](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: After running the above 3 commands, we can see our image is there on ECR 🎉
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d986a7d46f60dccfb5000753d6c4285.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Copy & Paste the Image URI** somewhere as we’ll need it in the next couple
+    of steps.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**ii) Create an IAM Execution Role**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need to create an Execution Role so that our ECS task which will run the
+    container has the access to pull images from the ECR. We’ll name it: **simpleRole**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/baa3344183dc1d1c70b2124b4fd2f84e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**iii) Create a Security Group**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Security Group is needed to allow anyone on the internet to send requests to
+    our API. In the real world you may want to constrain this to a specific set of
+    IPs but we’ll open it for everyone and call it: **simpleSG**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b03a4f6fdaa10334799b8dd0fc1e057b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**iv) Create an ECS Cluster**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This step is straightforward and only takes couple seconds. We’ll call it:
+    **flaskCluster**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e86f7cfaede8933a5bacb1fb73dbbc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: while our cluster is being provisioned, let’s create a Task Definition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**v) Create a Task Definition**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Task Definition, as the name implies is a set of instructions related to which
+    image to run, port to open, and how much virtual CPU and memory we want to allocate.
+    We’ll call it: **demoTask**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/713bffc8c5e6f1cd4fdd219169bb96af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**vi) Run the Task**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s run our **demoTask** on **flaskCluster,** with the **simpleSG** from ***step
+    iii)***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f46cd2d6ea10f104037ae766e2a28ad7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Time to test out our deployed API from the **Public IP** address! 🥁
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d95cf31e132277c595c0d4eb4d33366c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It’s working! 🥳
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see we are able to get a perfect puppy recommendation by sending
+    a POST request to the **Public IP** provided by ECS. 🔥
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading, hope you found this useful for getting started with Flask,
+    Gunicorn, Docker and ECS!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want more useful articles on ML Engineering?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/@nikola.kuzmic945/subscribe) *to
+    get notified when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Become a Medium member to read more stories from me and thousands of other
+    writers. You can support me by using my* [*referral link*](https://medium.com/@nikola.kuzmic945/membership)
+    *when you sign up. I’ll receive a commission at no extra cost to you.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Dachshund Image: [Link](https://www.wisdompanel.com/en-us/dog-breeds/dachshund)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] German Shepherd Image: [Link](https://www.lovetoknowpets.com/dogs/german-shepherd)'
+  prefs: []
+  type: TYPE_NORMAL

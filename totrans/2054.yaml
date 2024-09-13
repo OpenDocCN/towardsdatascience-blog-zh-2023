@@ -1,0 +1,463 @@
+- en: 'The Power of Retrieval Augmented Generation: A Comparison between Base and
+    RAG LLMs with Llama2'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-power-of-retrieval-augmented-generation-a-comparison-between-base-and-rag-llms-with-llama2-368865762c0d](https://towardsdatascience.com/the-power-of-retrieval-augmented-generation-a-comparison-between-base-and-rag-llms-with-llama2-368865762c0d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into tailoring pre-trained LLMs for custom use cases using a RAG
+    approach, featuring LangChain and Hugging Face integration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisroque?source=post_page-----368865762c0d--------------------------------)[![Luís
+    Roque](../Images/e281d470b403375ba3c6f521b1ccf915.png)](https://medium.com/@luisroque?source=post_page-----368865762c0d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----368865762c0d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----368865762c0d--------------------------------)
+    [Luís Roque](https://medium.com/@luisroque?source=post_page-----368865762c0d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----368865762c0d--------------------------------)
+    ·12 min read·Nov 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with Rafael Guedes.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since the release of ChatGPT in November of 2022, Large Language Models (LLMs)
+    have been the hot topic in the AI community for their capabilities in understanding
+    and generating human-like text, pushing the boundaries of what was previously
+    possible in natural language processing (NLP).
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLMs have been shown to be versatile by tackling different use cases in various
+    industries since they are not limited to a specific task. They can be adapted
+    to several domains, making them attractive for organizations and the research
+    community. Several applications have been explored using LLMs such as content
+    generation, chatbots, code generation, creative writing, virtual assistants, and
+    many more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another characteristic that makes LLMs so attractive is the fact that there
+    are open-source options. Companies like Meta made their pre-trained LLM (Llama2
+    🦙) available in repositories like Hugging Face 🤗. Are these pre-trained LLMs good
+    enough for each company’s specific use case? Certainly not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Organizations could train an LLM from scratch with their own data. But the
+    vast majority of them (almost all of them) wouldn’t have either the data or the
+    computing capacity required for the task. It requires datasets with trillions
+    of tokens, thousands of GPUs, and several months. Another option is to use a pre-trained
+    LLM and tailor it for a specific use case. There are two main approaches to follow:
+    fine-tuning and **RAGs (Retrieval Augmented Generation)**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will compare the performance of an isolated pre-trained
+    Llama2 with a pre-trained LLama2 integrated in a RAG system to answer questions
+    about the latest news regarding OpenAI. We will start by explaining how RAGs work
+    and the architecture of their sub-modules (the retriever and the generator). We
+    finish with a step-by-step implementation of how we can build a RAG system for
+    any use case using LangChain **🦜️** and Hugging Face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/684645ae6f864ac647968b569236e55b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Llamas are getting more powerful with the RAG approach (image by
+    author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the code is available on our [Github](https://github.com/zaai-ai/large-language-models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Retrieval Augmented Generation (RAG)?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Retrieval Augmented Generation (RAG) is a technique that combines a retriever
+    (a non-parametric memory like vector databases or feature store) and a generator
+    (a parametric memory like a pre-trained *seq2seq* transformer). They are used
+    to improve the prediction quality of an LLM [1]. It uses the retriever during
+    inference time to build a richer prompt by adding context/knowledge based on the
+    most relevant documents for the user query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The advantages of this kind of architecture over the traditional LLM are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can easily update its knowledge by replacing or adding more documents/information
+    to the non-parametric memory. Thus, it does not require retraining the model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It provides explainability over predictions because it allows the user to check
+    which documents were retrieved to provide context, something we cannot get from
+    traditional LLMs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It reduces the well-known problem of *‘hallucinations’* by providing more accurate
+    and up-to-date information through the documents provided by the retriever.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/547b6b71f7ad85370f0aaab3c1299483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Schematic view of how Retrieval Augmented Generation (RAG) can be
+    set up (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retriever — what is it and how it works?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Retrievers were developed to solve the problem of Question-Answering (QA), where
+    we expect a system to answer questions like *“What is Retrieval Augmented Generation?”.*
+    It does it by accessing a database of documents that contain information about
+    the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The database is populated by splitting our documents into *passages* of equal
+    lengths, where each passage is represented as a sequence of tokens. Given a question,
+    the system needs to span the database to find *‘the passage’* that can better
+    answer the question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For these systems to work in several domains, their databases need to be populated
+    with millions or billions of documents. Therefore, to be able to span the database
+    searching for the right *passage,* the **retriever** needs to be very efficient
+    in selecting a set of candidate *passages.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dense Passage Retriever (DPR)** [2] is the retriever used by the authors
+    in [1]. Its goal is to index millions of passages into a low-dimensional and continuous
+    space to efficiently retrieve the top *k* passages that are the most relevant
+    for a specific question.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DPR uses two **Dense Encoders:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Passage Encoder** converts each passage into a d-dimensional vector and
+    indexes them using **FAISS** [3]. FAISS is an open-source library for similarity
+    search of dense vectors which can be applied to billions of vectors.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The **Question Encoder** converts the input question to a d-dimensional vector
+    and then uses **FAISS** to retrieve the **k** passages that have the closest vector
+    to the question vector. The similarity between vectors can be computed by using
+    the dot product between them.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The architecture for the encoder used by DPR is a BERT [4] network which converts
+    the input into a high dimensional vector. However, we can use any architecture
+    as long as it fits our use case.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/a52940dd39b60aefb3c1047fbbc1dd37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Overview of the RAG process with a pre-trained retriever that combines
+    a query encoder, document index, and a pre-trained generator (seq2seq model) to
+    predict the output in a free-text form ([source](https://arxiv.org/pdf/2005.11401.pdf)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generator — what is it and how does it work?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The generator is an LLM responsible for generating text given a certain input,
+    well known as a prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LLMs are transformer models which are composed mainly of 2 types of layers
+    [5]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **fully connected feed-forward network (FFN)** maps one embedding vector to
+    a new embedding vector through linear and non-linear transformations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The **attention layer** aims to select which parts of the input embedding are
+    more useful for the task at hand, producing a new embedding vector.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'BART [6] was the LLM chosen by the authors in [1] for the Generator, which
+    is a sequence-to-sequence model with the following architecture [7]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **encoder** receives the input embedding and produces a 512-dimensional
+    vector as output for the decoder through its six layers with two sub-layers (multi-head
+    self-attention mechanism and FFN).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **decoder** follows the same logic as the encoder with six layers and two
+    sub-layers for the previously generated outputs. It has an additional 3rd sub-layer,
+    which performs multi-head attention over the output of the encoder.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The decoder output is then passed to a linear layer followed by a softmax layer
+    that will predict the likelihood of the next word.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As mentioned in the previous section, BART is not required to be used as the
+    generator. With the advancements in this field, mainly since November of 2022
+    with the release of chatGPT, we can use any architecture that fits our needs.
+    For example, one can use open-source approaches like [Llama](https://medium.com/towards-data-science/leveraging-llama-2-features-in-real-world-applications-building-scalable-chatbots-with-fastapi-406f1cbeb935)2
+    or [Falcon](https://medium.com/towards-data-science/harnessing-the-falcon-40b-model-the-most-powerful-open-source-llm-f70010bc8a10).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3730669abcb2a77ffae2369dfc0fcba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: The general architecture of a transformer. It only differs from BART’s
+    architecture on the activation functions, which are GeLUs rather than ReLUs ([source](https://arxiv.org/pdf/1706.03762.pdf)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to implement a RAG using LangChain 🦜️ and HuggingFace 🤗?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This section describes how you can create your RAG using LangChain. LangChain
+    is a framework to easily develop applications powered by LLMs, while HuggingFace
+    is a platform that provides open-source LLMs and datasets for research and commercial
+    usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, and as stated in the introduction, we created an RAG where the
+    generator is a Llama2 model to compare the quality of its output with a base Llama2\.
+    We will make Llama2 answer the question *“What happened to the CEO of OpenAI?”.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process starts with loading a dataset of news from HuggingFace ([cnn_dailymail](https://huggingface.co/datasets/cnn_dailymail)
+    — apache 2.0 license) and supplementing it with more recent news about OpenAI,
+    based on Luis’s latest posts on X/Twitter regarding the subject, including the
+    resignation of its CEO. We then preprocess it by creating a list of ***documents***
+    (the expected format from LangChain) to fill our vector database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we are ready to create the 2 modules for our RAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retriever
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the retriever, we have two sub-modules: the encoder and the retriever.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **encoder** converts the passages into a d-dimensional embedding vector.
+    For that, we import `HuggingFaceEmbeddings` from `langchain.embeddings` and we
+    select the model we want to use to create the embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we have chosen `sentence-transformers/all-MiniLM-l6-v2` because
+    it creates 384-dimensional vectors with good quality to calculate the similarity
+    between them. It is memory efficient and fast. You can check more details about
+    this and other models [here](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The **retriever** splits the documents into passages of a certain length using
+    `CharacterTextSplitter` from `langchain.text_splitter` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we chose a length of 1000\. We started with 100, as stated in the
+    paper [1], but through some preliminary experiments, we found out that 1000 gives
+    better results in our use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then use the **encoder** to convert the passages into embeddings. Finally,
+    we can store them in a vector store such as `FAISS` from `langchain.vectorstores`
+    . From those, we can later retrieve the top *k* documents more similar to the
+    question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Generator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned previously, the LLM for text generation is Llama2\. It uses *quantization,*
+    a technique to reduce the precision of how the weights are represented to minimize
+    the memory required to use the model. Notice that since no [free lunches exist](https://en.wikipedia.org/wiki/No_free_lunch_theorem),
+    we are trading off memory size with accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This process brings advantages like the possibility of running LLMs with less
+    resources but, also, disadvantages such as a reduction in performance due to *quantization.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we have our LLM, it is time to set the **Prompt Template.** Prompt Engineering
+    is relevant when interacting with LLMs since it can significantly impact its output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we find a prompt that produces the desired output for the use case, we
+    can create a template. LangChain offers a simple solution to create a **Prompt
+    Template**. We start by defining the structure of the prompt and adding the dynamic
+    variables in a dictionary format based on the user’s query. In our case, the `{context}`
+    is given by the retriever and the user’s `{question}`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have defined our LLM and Prompt Template, we create an `LLMChain`
+    from `langchain.chains` . It allows us to combine multiple components to create
+    a coherent application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we can create a chain that takes the user’s question and the context,
+    formats it with a Prompt Template, and then passes the formatted response to the
+    LLM to get a response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are now ready to use our model and compare it with a base Llama2 model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Results: Base Llama2 vs RAG Llama2'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: “What happened to the CEO of OpenAI?”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Considering the question, *“What happened to the CEO of OpenAI?”* Our goal is
+    to show that without fine-tuning an LLM and using an RAG system, we can easily
+    improve the prompt with relevant information which will make the LLM be more accurate
+    and more updated in its answer. On the contrary, we expect the Base Llama2 to
+    provide an accurate answer but is outdated since its training data did not contain
+    information from last week.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Base Llama2:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI is a non-profit artificial intelligence research organization based in
+    San Francisco, California, that focuses on developing friendly AI and ensuring
+    its safe use. The CEO of OpenAI is Sam Altman, who has been at the helm since
+    2010 when he co-founded the company with Elon Musk, Greg Brockman, Ilya Sutskever,
+    and Vince Conitzer. In terms of recent news, there haven’t been any major developments
+    regarding the CEO or OpenAI specifically, but it is known that OpenAI has recently
+    expanded its team by hiring an additional 15 employees to work on various projects
+    related to AI, including the development of new models and tools for machine learning.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**RAG Llama2:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sam Altman stepped down from his role as CEO of OpenAI on November 20th, 2023\.
+    He was replaced by Mira Murati who assumed the position of interim CEO. However,
+    Sam Altman returned to the company a few days later as CEO with a new initial
+    board consisting of Bret Taylor (Chair), Larry Summers and Adam D’Angelo.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As we can see from the examples above, the RAG Llama managed to provide an answer
+    with updated information without any additional fine-tuning process which would
+    be expensive and time-consuming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: RAGs opened the possibility of deploying LLMs faster and in a more affordable
+    way for organizations than fine-tuning LLMs for every single use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we saw in our use case, adding just twelve documents about the scandal regarding
+    OpenAI and its CEO from last week to the set of 10k news that we fetched from
+    HuggingFace was enough. Our retriever was able to create enough context for our
+    generator to produce a more accurate and updated answer about the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it comes to accessing external information RAGs are a very good option
+    because they augment LLMs capabilities by retrieving relevant information from
+    knowledge sources before generating a response. Nevertheless, when it comes to
+    adjusting the LLM behavior to tailor its responses for a specific writing style
+    with uncommon words or expressions, a combination of both might be more suitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Serial entrepreneur and leader in the AI space. I develop AI products for businesses
+    and invest in AI-focused startups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Founder @ ZAAI](http://zaai.ai) | [LinkedIn](https://www.linkedin.com/in/luisbrasroque/)
+    | [X/Twitter](https://x.com/luisbrasroque)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir
+    Karpukhin, Naman Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel,
+    Sebastian Riedel, Douwe Kiela. Retrieval-Augmented Generation for Knowledge-Intensive
+    NLP Tasks. arXiv:2005.11401, 2021'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Vladimir Karpukhin, Barlas Oguz, Sewon Min, Ledell Wu, Sergey Edunov, Danqi
+    Chen, and Wen-tau Yih. Dense passage retrieval for open-domain question answering.arXiv:2004.04906,
+    2020'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Jeff Johnson, Matthijs Douze, and Hervé Jégou. Billion-scale similarity
+    search with GPUs. arXiv:1702.08734, 2017'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019\.
+    BERT: Pre-training of deep bidirectional transformers for language understanding.
+    arXiv:1810.04805, 2019'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Michael R. Douglas. Large Language Models. arXiv:2307.05782, 2023.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Mike Lewis, Yinhan Liu, Naman Goyal, Marjan Ghazvininejad, Abdelrahman
+    Mohamed, Omer Levy, Ves Stoyanov, Luke Zettlemoyer. BART: Denoising Sequence-to-Sequence
+    Pre-training for Natural Language Generation, Translation, and Comprehension.
+    arXiv:1910.13461, 2019'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+    Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need. arXiv:1706.03762,
+    2017.'
+  prefs: []
+  type: TYPE_NORMAL

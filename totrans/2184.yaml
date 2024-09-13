@@ -1,0 +1,769 @@
+- en: Understanding Group Sequential Testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/understanding-group-sequential-testing-befb35cec07a](https://towardsdatascience.com/understanding-group-sequential-testing-befb35cec07a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[CAUSAL DATA SCIENCE](https://towardsdatascience.com/tagged/causal-data-science)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*How to run valid experiments, with peeking and early stopping.*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@matteo.courthoud?source=post_page-----befb35cec07a--------------------------------)[![Matteo
+    Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----befb35cec07a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----befb35cec07a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----befb35cec07a--------------------------------)
+    [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----befb35cec07a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----befb35cec07a--------------------------------)
+    ·15 min read·Dec 26, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/36e109332a0572fb79582557617c167a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cover, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A/B tests are the golden standard of causal inference because they allow us
+    to make valid causal statements under minimal assumptions, thanks to **randomization**.
+    In fact, by randomly assigning a **treatment** (a drug, ad, product, …), we can
+    compare the **outcome** of interest (a disease, firm revenue, customer satisfaction,
+    …) across **subjects** (patients, users, customers, …) and attribute the average
+    difference in outcomes to the causal effect of the treatment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The implementation of an A/B test is usually not instantaneous, especially in
+    online settings. Often users are treated **live** or in **batches**. In these
+    settings, one can look at the data before the data collection is completed, one
+    or multiple times. This phenomenon is called **peeking**. While looking is not
+    problematic in itself, using standard testing procedures when peeking can lead
+    to **misleading conclusions**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **solution** to peeking is to adjust the testing procedure accordingly.
+    The most famous and traditional approach is the so-called **Sequential Probability
+    Ratio Test (SPRT)**, which dates back to the Second World War. If you want to
+    know more about the test and its fascinating history, I wrote a blog post about
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/experiments-peeking-and-optimal-stopping-954506cec665?source=post_page-----befb35cec07a--------------------------------)
+    [## Experiments, Peeking, and Optimal Stopping'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edit description
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/experiments-peeking-and-optimal-stopping-954506cec665?source=post_page-----befb35cec07a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main **advantage** of the Sequential Probability Ratio Test (SPRT) is that
+    it guarantees the smallest possible sample size, given a target confidence level
+    and power. However, the **main problem** with the SPRT is that it might continue
+    indefinitely. This is a non-irrelevant problem in an applied setting with deadlines
+    and budget constraints. In this article, we will explore an **alternative method**
+    that allows *any* amount of intermediate peeks at the data, at *any* point of
+    the data collection: **Group Sequential Testing**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with some simulated **data**. To keep the code as light as possible,
+    I will abstract away from the experimental setting, and directly work with data
+    coming out of a **normal distribution**. However, we can think of it as the distribution
+    of the average treatment effect in a standard A/B test. The normal distribution
+    is an asymptotic approximation based on the [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before generating the data, I import the relevant libraries and my plotting
+    theme from [src.theme](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/theme.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s assume the true data-generating process is indeed a normal distribution
+    with **mean** *μ=1* and **standard deviation** *σ=5.644*. In the context of an
+    A/B test, we can think of this as a positive average treatment effect with a standard
+    deviation more than 5 times larger than the effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We would like to build a two-sided test with *95%* confidence and *80%* power.
+    Therefore our target false positive error rate will be *α=0.05* and our target
+    false negative error rate will be *β=0.2*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now compute the required sample size for the experiment, under the assumption
+    of an average treatment effect of *1* and a standard deviation of *5.664*. Since
+    we have abstracted from the two-group comparison, the formula for the power calculation
+    is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a84ad104e8ee6429d4a21bbef05c74f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Power calculation formula, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *zs* are the quantiles of a standard normal distribution, evaluated at
+    *1-α/2* and *1-β*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We need *N=1000* observations to achieve our target confidence level of *95%*
+    and power of *80%*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now draw the simulated data. Since we will often compare the results
+    across different simulations, we draw *K=10,000* sequences of *N=1,000* data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are now ready to investigate peeking and group sequential testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Peeking
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What happens if we **peek** at the data, **before the end** of the experiment?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s suppose for example that we have a look at the data every *50* observations,
+    starting at *100*. One reason could be that the data arrives in batches, or that
+    we peek every day as soon as we start working.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looking at the data of course is not a problem *per-se*. However, we might be
+    tempted to **draw conclusions**, given what we observe. Suppose that our *naive*
+    experimentation platform continuously reports the latest average, standard deviation,
+    and confidence interval, where the confidence interval is computed as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ecf095cfadb01e71cd486fc17c6546b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confidence intervals without peeking, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *n* is the number of samples, *μ̂ₙ* is the estimated sample average after
+    *n* samples, *σ̂ₙ* is the estimated standard deviation after *n* samples, *α*
+    is the significance level, and *z* is the *1-α/2* quantile of a standard normal
+    distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Suppose that we decide to **stop the experiment** as soon as we get one significant
+    result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s compute the confidence intervals that we would observe at each peeking
+    point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: What do these averages and confidence intervals look like over time? In the
+    figure below, I plot the cumulative average over the data collection, together
+    with the confidence intervals at each peeking time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a28e268c352f63b885af3d674c44a5eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cumulative average effect and peeking confidence intervals, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, the first seven times we look at the data the confidence intervals
+    cross the zero line and hence we do not reject the null hypothesis of zero mean.
+    I have highlighted these confidence intervals in orange. However, at the eighth
+    look at the data, at *450* observations, the confidence interval does not cross
+    the zero line and hence we **reject the null hypothesis** of no effect and stop
+    the experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem of this procedure is very similar to **multiple hypothesis testing**:
+    we are building the confidence intervals for a single look at the data and therefore
+    a *single* decision, but instead, we are making *multiple* decisions. In fact,
+    we have *decided* not to stop the experiment seven times before reaching *450*
+    observations and we have stopped it at *450*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What are the **consequences** of peeking and early stopping? Let’s have a look
+    at what would happen if we were to repeat this experiment multiple times. We will
+    now plot the confidence intervals for *100* different simulations at three different
+    points in time: after *200*, *400,* and *600* observations are collected. Note
+    that these correspond to the *3rd*, *7th,* and *11th* peek at the data, respectively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first thing that we are going to inspect is **coverage**: do the confidence
+    intervals actually *cover* the true treatment effect, as they are supposed to?
+    I highlight the confidence intervals that don’t.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/96e0f2fe7643f67710163ef7b347a4b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Coverage over 100 simulations with naive testing, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It seems that our coverage is fine at each point in time. We have, respectively,
+    *2*, *6*, and *2* simulations out of *100* in which the interval does not cover
+    the true treatment effect, *μ=1*. This is expected since our confidence level
+    is *5%* and therefore we expect *on average* that *5* intervals out of *100* do
+    not cover the true treatment effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we investigate **power**: the ability of our estimator to detect an effect
+    when there is indeed one. Remember that power is always *relative* to the effect
+    size. However, we did our power calculations using the true effect so we expect
+    the experiment to have the expected power of *80%*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that, since we are peeking, we reject the null hypothesis and stop the
+    experiment *as soon as* one test is significant. Therefore, in our case, power
+    at a specific point in time is the probability of rejecting the null hypothesis
+    with that test or *any* of the previous ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3436e43ad2b5d1db8e8e92498f3a112b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Power over 100 simulations with naive testing, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, at *200* observations we already reject the null hypothesis of
+    no effect (*μ=0*) in *72* simulations out of *100*, close to the target power
+    of *80%*. However, at *400* observations we reject the null hypothesis in well
+    over *80* simulations over *100*, suggesting that we could have run the experiment
+    for a shorter amount of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It seems that so far everything is going great: our intervals cover the true
+    effect and reject the null hypothesis even faster than expected. Let’s check this
+    for all the peeking stages and over *10,000* simulations. Let’s also check a third
+    metric: the **false positive** error rate. In order to compute that, we change
+    the null hypothesis to *μ=1* and check how often we reject it. Again, since we
+    are peeking multiple times, what counts is the rejection rate at a specific peeking
+    stage or *any* of the previous ones.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure below, I plot coverage, power, and false rejection rates over
+    *10,000* simulations at each peeking stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5a3d2ad3f6003a6f7f33751348ab0762.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimator performance with naive testing over 10,000 simulations, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coverage seems to be on target. Power is above *80%* starting at around *250*
+    observations, confirming our previous insight. However, the false rejection rate
+    is way higher than the target of *5%*. This means that when the null hypothesis
+    is true, we reject it more often than we should.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last thing we want to check is whether the experiment is indeed shorter
+    on average, and by how much. Let’s compute the **average experiment length**,
+    in terms of the number of observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: On average we need just *177* observations to reach a conclusion! However, because
+    of the high false rejection rate, these might be the **wrong conclusions**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do to solve this issue? We need to build confidence intervals that
+    take into account that we are doing multiple tests in sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alpha Corrections
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will explore a first set of corrections that modify the
+    *α* value used to compute the confidence intervals in order to take into account
+    peeking and early stopping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bonferroni Correction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the peeking problem is similar to multiple hypothesis testing, we can
+    start by applying the same solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The simplest way to account for multiple hypothesis testing is the so-called
+    [**Bonferroni correction**](https://en.wikipedia.org/wiki/Bonferroni_correction).
+    The idea is simple: decrease the significance level *α* proportionally to the
+    number of looks. In particular, instead of using the same *α* for each look, we
+    use'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c287adce0da3778a73fcef6023831aa4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bonferroni’s α correction, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *P* is the number of times we plan to peek.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'How does Bonferroni correction perform in terms of **coverage**? Let’s plot
+    the confidence intervals for three peeking stages: after *200*, *400*, and *600*
+    observations are collected.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/30c8a1a50d6d9dd53a843462b2c0ac5b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Coverage over 100 simulations with Bonferroni correction, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coverage looks great! Only once at *n=200* one interval did not cover the true
+    value *μ=1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this might appear comforting at first, it should actually raise an eyebrow.
+    In fact, with a significance level *α=0.05* we expect a coverage of *95%*. A higher
+    coverage will most likely come at the expense of **power**. Let’s have a look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c042febc1465b9db49bb60fe3cdd6dcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Power over 100 simulations with Bonferroni correction, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The test is underpowered at *200* observations, while it is very close to the
+    target power of *80%* at *400* observations. At *600* observations we have almost
+    100% power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s plot coverage, power, and false positive rate for each peeking stage over
+    *K=10,000* simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3a3bd13d292271b633125f5490d495a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimator performance with Bonferroni correction over 10,000 simulations, image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coverage is great, power is above target starting at around *450* observations,
+    and the false rejection rate is always below the target of *5%*. What about the
+    average experiment length?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: The average experiment length is *317* observations, higher than the naive testing
+    procedure, but still sensibly lower than the *1000* observations required without
+    peeking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It seems that everything looks good, maybe even **too good**. Indeed, there
+    might be room for improvement. Given such high coverage and low false rejection
+    rate, the results suggest that we could have shorter confidence intervals and
+    hence higher power and lower experiment length, without dropping below *95%* coverage
+    or above *5%* false rejection rate. How?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bonferroni correction has **two drawbacks**. First, it was **not designed
+    for sequential testing**, but rather for multiple-hypothesis testing. Second,
+    even for multiple hypothesis testing, it is known to be very **conservative**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Corrections
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A first version of **Bonferroni’s correction for sequential testing** was [Pocock
+    (1977)](https://www.jstor.org/stable/2335684). The idea was to take into account
+    the **sequential** nature of testing which generates a very specific correlation
+    structure between the test statistics. Thanks to this insight, Pocock was able
+    to use a corrected *α* value that was in between the naive *α* and Bonferroni’s
+    *α/P*. A larger *α* than Benferroni implies higher power while keeping high coverage
+    and a low false positive rate. The values are found through a numeric algorithm
+    that takes as input the significance level *α* and the total number of peeks *P*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem with Pocock correction was that it did not fully exploit the sequential
+    nature of the testing, since the confidence intervals were constant over time.
+    [O’Brien, and Fleming (1979)](https://www.jstor.org/stable/2530245) proposed to
+    use **time-varying** *α* corrections. Their idea was to adapt the width of the
+    confidence interval not only to the significance level *α* and the total number
+    of peeks *P*, but also the individual peek *p*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the main drawback of all these procedures is that they require to **plan**
+    the number of peeks in advance. This is often *not practical*, since peeking is
+    an inherently spontaneous process, that comes from either the size of the data
+    batch, pressure from management, or simply the experimenter’s curiosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do when peeking is **not planned** in advance?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Group Sequential Testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Lan, DeMets (1983)](https://www.jstor.org/stable/2336502) noticed that the
+    important thing in peeking is not *how much* you peek, but rather *when* you peek.
+    The main idea of **Group Sequential Testing (GST)** is to allow for peeking at
+    any point in time and correct the significance level for the peeking point in
+    time in the data collection process, *t = n/N*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The moving part of group sequential testing is the so-called **alpha spending
+    function** that determines how to correct the significance level *α*, given peeking
+    time *t*. In the rest of the article, we are going to review two alpha spending
+    functions that approximate the corrections of [Pocock (1977)](https://www.jstor.org/stable/2335684)
+    and [O’Brien and Fleming (1979)](https://www.jstor.org/stable/2530245), respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GST Pocock Approximation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first alpha-spending function is an approximation of [Pocock (1977)](https://www.jstor.org/stable/2335684)
+    and it is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46ac994f14048165af6ab5bd9c36da45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pocock’s α spending function for group sequential testing, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that as the share of observations *t=n/N* reaches the full sample (*t=1*),
+    Pocock’s correction converges to the original significance level *α*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see how group sequential testing using Pocock’s alpha spending function
+    works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d411728a393bad4f796aa3e21f137177.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimator performance with Pococks’s GST over 10,000 simulations, image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we noted before, coverage converges to the target coverage and the number
+    of observations increases. The experiment seems also to be better powered than
+    using Bonferroni’s correction, but the false rejection rate increases above the
+    target of *5%* if the experiment runs too long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about the average experiment length?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: The average experiment length is indeed lower than Boferroni, with an average
+    of *229* observations instead of *317*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GST O’Brien & Fleming Approximation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The second alpha-spending function is an approximation of [O’Brien, Fleming
+    (1979)](https://www.jstor.org/stable/2530245) and is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/150e368ddfcf6a29dde4676960f56b68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: O’Brien and Fleming’s α spending function for group sequential testing, image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: where **Φ** is the cumulative distribution function (CDF) of a standard normal
+    distribution, and *ρ* is a free parameter that is usually defaulted to *ρ=1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see how group sequential testing using O’Brien and Fleming approximation
+    performs over *K=10,000* simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ac4f34809cc78583f2b0044b6946f1c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimator performance with O’Brien and Flaming’s GST over 10,000 simulations,
+    image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It seems that the O’Brien and Fleming approximation is more conservative than
+    Pocock’s, with higher coverage and lower power, but keeping the false rejection
+    rate closer to the *5%* target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: The average experiment length is actually higher than Boferroni, with an average
+    of *414* observations instead of *317*. However, it can be lowered by decreasing
+    the parameter *ρ* in the correction formula. Let’s use for example *ρ=0.5* which
+    corresponds to [Wang, Tsiatis (1987)](https://www.jstor.org/stable/2531959) correction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Indeed, with a lower *ρ,* we have decreased the average experiment length from
+    *414* to *303* observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alpha Spending Trade-off
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before concluding, it is worth having a look at the peeking trade-offs. We have
+    introduced a method that allows us to do valid inference while peeking any number
+    of times, whenever we feel like. But **should we peek**? And, if so, **how much**?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the figure below, I plot the testing performance using group sequential testing
+    with Pocock’s approximation, when we **increase the peeking frequency** from *50*
+    to *10* observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/03f9db324688a150d7ff42419f683a56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimator performance with GST every 10 observations over 10,000 simulations,
+    image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, coverage is basically unaffected, while power and false rejections
+    have increased. The average experiment length has also decreased from *229* to
+    *188* observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: What if instead we **reduced the peeking frequency**? In the figure below, I
+    plot the results when peeking every 200 observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7f7d1feeb1007f086e40eeb7e5b658fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimator performance with GST every 200 observations over 10,000 simulations,
+    image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the figure, we see the opposite result: power and false rejections have
+    decreased. On the other hand, we now need on average *311* observations to reach
+    a conclusion instead of *229*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have explored **group sequential testing**, a procedure
+    to do valid inference when peeking during an A/B test, any number of times, and
+    at any point during the experiment. We have also seen how peeking does not come
+    for free. The main **trade-off** is that the more we peek, the earlier we can
+    stop an experiment but also the higher the false rejection rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are at least a couple of topics that I have not mentioned in the article,
+    not to make it too long. The first one is **bias**. Sequential tests can easily
+    introduce bias since early stopping could be due to either a low variance or a
+    large effect. Because of the second, sequential tests can often lead to the *overestimation*
+    of treatment effects. This phenomenon is often called the *winner’s curse* and
+    typically occurs when the study is underpowered, which is happens at the early
+    peeking stages. One solution is to design a **beta spending** function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second topic that I didn’t cover is what is called **stopping for futility**.
+    In the examples of this article, we stopped experiments early if we got a statistically
+    significant estimate. However, peeking can also inform a different stopping rule:
+    stopping because it becomes extremely unlikely that continuing the test can produce
+    significant results.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One last topic I have not covered is how to do **power analysis** with sequential
+    testing. In the example above, we ran the power analysis at the very beginning
+    assuming no peeking. However, given that we knew we would have peeked, we could
+    have anticipated the need for a smaller sample. A closely related topic is **optimal
+    peeking**. Once you decide to peek, when should you do it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Lakens, Pahlke, Wassmer (2021). [Group Sequential Designs: A Tutorial](https://osf.io/preprints/psyarxiv/x4azm)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lan, DeMets (1983). [Discrete Sequential Boundaries for Clinical Trials](https://academic.oup.com/biomet/article-abstract/70/3/659/247777)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spotify (2023). [Choosing a Sequential Testing Framework](https://engineering.atspotify.com/2023/03/choosing-sequential-testing-framework-comparisons-and-discussions/)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Related Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Experiments, Peeking, and Optimal Stopping](/954506cec665)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can find the original Jupyter Notebook here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/group_sequential_testing.ipynb?source=post_page-----befb35cec07a--------------------------------)
+    [## Blog-Posts/notebooks/group_sequential_testing.ipynb at main · matteocourthoud/Blog-Posts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code and notebooks for my Medium blog posts. Contribute to matteocourthoud/Blog-Posts
+    development by creating an…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/group_sequential_testing.ipynb?source=post_page-----befb35cec07a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*I really appreciate it!* 🤗 *If you liked the post and want to see more, consider*
+    [***following me***](https://medium.com/@matteo.courthoud)*. I post once a week
+    on topics related to causal inference and data analysis. I try to keep my posts
+    simple but precise, always providing code, examples, and simulations.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Also, a small* ***disclaimer****: I write to learn, so mistakes are the norm,
+    even though I try my best. Please, when you spot them, let me know. I also appreciate
+    suggestions on new topics!*'
+  prefs: []
+  type: TYPE_NORMAL

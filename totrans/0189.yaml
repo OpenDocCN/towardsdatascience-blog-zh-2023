@@ -1,0 +1,2010 @@
+- en: A Deep Dive into Autoencoders and Their Relationship to PCA and SVD
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a](https://towardsdatascience.com/a-deep-dive-into-autoencoders-and-their-relationship-to-pca-and-svd-97e37c81898a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An in-depth exploration of autoencoders and dimensionality reduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)[![Reza
+    Bagheri](../Images/7c5a7dc9e6e31048ce31c8d49055987c.png)](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------)
+    [Reza Bagheri](https://reza-bagheri79.medium.com/?source=post_page-----97e37c81898a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----97e37c81898a--------------------------------)
+    ·46 min read·Jun 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2dacc0a1ecbcd18de0a94b4ba484e25.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: An autoencoder is a type of neural network that learns to reconstruct its input.
+    It consists of an encoder network that compresses the input data into a low-dimensional
+    space and a decoder network that reconstructs the input data from that space.
+    The encoder and decoder are trained jointly to minimize the reconstruction error
+    between the input data and its reconstruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoencoders can be used for various tasks such as data compression, denoising,
+    feature extraction, anomaly detection, and generative modeling. They have applications
+    in a wide range of fields such as computer vision, natural language processing,
+    and speech recognition. Autoencoders can be also used for dimensionality reduction.
+    In fact, one of the main purposes of autoencoders is to learn a compressed representation
+    of the input data, which can be used as a form of dimensionality reduction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will discuss the underlying math behind autoencoders and
+    will see how they can do dimensionality reduction. We also look at the relationship
+    between an autoencoder, principal component analysis (PCA), and singular value
+    decomposition (SVD). We will also show how to implement both linear and non-linear
+    autoencoders in Pytorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Autoencoder architecture**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 1 shows the architecture of an autoencoder. As mentioned before an autoencoder
+    learns to reconstruct its input data, hence the size of the input and output layers
+    is always the same (*n*). Since the autoencoder learns its own input, it does
+    not require labeled data for training. Hence it is an unsupervised learning algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what is the point of learning the same input data? As you see, the hidden
+    layers in this architecture are shaped in the form of a double-sided funnel in
+    which the number of neurons in each layer decreases as we move from the first
+    hidden layer to a layer that is referred to as the *bottleneck layer*. This layer
+    has the minimum number of neurons. After the bottleneck layer, the number of neurons
+    increases once more until reaching the output layer, where it equals the number
+    of neurons in the input layer. It is important to note that the number of neurons
+    in the bottleneck layer is less than *n*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4907f5017e45106718d028137958095e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1 (image was generated using [https://alexlenail.me/NN-SVG/](https://alexlenail.me/NN-SVG/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a neural network, each layer learns an abstract representation of the input
+    space, so the bottleneck layer is indeed a bottleneck for the information that
+    transfers between the input and output layers. This layer learns the most compact
+    representation of the input data compared to other layers and also learns to extract
+    the most important features of the input data. These new features (also called
+    *latent variables*) are the result of the transformation of the input data points
+    into a continuous lower-dimensional space. In fact, the latent variables can describe
+    or explain the input data in a simpler way. The output of the neurons in the bottleneck
+    layer represents the values of these latent variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The presence of a bottleneck layer is the key feature of this architecture.
+    If all the layers in the network had the same number of neurons, the network could
+    easily learn to memorize the input data values by passing them all along the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An autoencoder can be divided into two networks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Encoder network: It starts from the input layer and ends at the bottleneck
+    layer. It transforms the high-dimensional input data into the low-dimensional
+    space formed by the latent variables. The output of the neurons in the bottleneck
+    layer represents the values of these latent variables.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Decode network: It starts after the bottleneck layer and ends at the output
+    layer. It receives the values of the low dimensional latent variables from the
+    bottleneck layer and reconstructs the original high dimensional input data from
+    them.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In this article, we are going to discuss the similarity between autoencoders
+    and PCA. In order to comprehend PCA, we need some concepts from linear algebra.
+    So, we first review linear algebra.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Linear algebra review: Basis, dimension, and rank**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A set of vectors {***v***₁, ***v***₂, …, ***v_****n*} form a *basis* for the
+    vector space *V*, if they are linearly independent and span *V*. If a set of vectors
+    is linearly independent, then no vector in the set can be written as a linear
+    combination of the other vectors. A set of vectors {***v***₁, ***v***₂, …, ***v_****n*}
+    *span* a vector space if every other vector in that space can be written as a
+    linear combination of this set. So, any vector ***x*** in *V* can be written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db318fb0276021f90b866bc053913712.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where *a*₁, *a*₂, …, *a_n* are some constants. The vector space *V* can have
+    many different vector bases, but each basis always has the same number of vectors.
+    The number of vectors in a basis of a vector space is called the *dimension* of
+    that vector space. A basis {***v***₁, ***v***₂, …, ***v_****n*} is *orthonormal*
+    when all the vectors are normalized (the length of a normalized vector is 1) and
+    orthogonal (mutually perpendicular). In Euclidean space R², the vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aba4a7dc633c5c17110785ce2f863767.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: form an orthonormal basis which is called the *standard basis*. They are linearly
+    independent and span any vectors in R². Since the basis has only two vectors,
+    the dimension of R² is 2\. If we have another pair of vectors that are linearly
+    independent and span R², that pair can also be a basis for R². For example
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15b0927abd9a5b6c792696ae2e0b57d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'is also a basis but is not an orthonormal basis since the vectors are not orthogonal.
+    More generally we can define the standard basis for R^*n* as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5011ff5e783449a9fbeba3f9dbc0ea6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where in ***e****ᵢ* the *i*th element is one and all the other elements are
+    zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let the set of vectors *B*={***v***₁, ***v***₂, …, ***v_****n*} form a basis
+    for a vector space, then we can write any vector ***x*** in that space in terms
+    of the basis vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf613598f4dcc27482a05a11e50d7c0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Hence the coordinates of ***x*** relative to this basis *B* can be written
+    as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4af591b9909d5d6388181efcfe4b2b5b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In fact, when we define a vector in R² like
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c34ab85e5a4a3a9b4bd00d1fef939b37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'the elements of this vector are its coordinate relative to the standard basis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6feba6ba63ed5ead1d5eae1a14a57c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can easily find the coordinates of a vector relative to another basis. Suppose
+    that we have the vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db318fb0276021f90b866bc053913712.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where *B*={***v***₁, ***v***₂, …, ***v_****n*} is a basis. Now we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a6f82324a4c29dfedfd1fff32421c02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here *P_****B*** is called the *change-of-coordinate matrix*, and its columns
+    are the vectors in basis *B*. Hence if we have the coordinates of ***x*** relative
+    to the basis *B*, we can calculate its coordinates relative to the standard basis
+    using Equation 1\. Figure 2 shows an example. Here the *B*={***v***₁, ***v***₂}
+    is a basis for R². The vector ***x*** is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/532801f6aef630fb00b44fcaa8a66c86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the coordinates of ***x*** relative to *B* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23faa3c12fc93d93f8eac85e09dfb754.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0e0376e15b3434662492f52dc0bd565.png)![](../Images/e162172c918a6b69b0bd05fd42c8d37c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The *column space* of matrix ***A*** (also written as *Col* ***A***) is the
+    set of all linear combinations of the columns of ***A.*** Suppose that we denote
+    the columns of the matrix ***A*** by vectors ***a***₁*,* ***a***₂*, …* ***a_****n*.Now
+    for any vector like ***u***, ***Au*** can be written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90092a0420df92cf83227923f87e8451.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence, ***Au*** is a linear combination of the columns of ***A***, and the column
+    space of ***A*** is the set of vectors that can be written as ***Au***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The *row space* of a matrix ***A*** is the set of all linear combinations of
+    the rows of ***A****.* Suppose that we denote the rows of matrix ***A*** by vectors
+    ***a***₁*ᵀ,* ***a***₂*ᵀ, …* ***a_m***ᵀ:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/511b37c1e3dd944d0b35cda3431a7215.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The row space of ***A*** is the set of all vectors that can be written as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3dadba71b02602c9ff99a4a89f08a76e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of basis vectors of *Col* ***A*** or the dimension of *Col* ***A***
+    is called the *rank* of ***A***. The rank of ***A*** is also the maximum number
+    of linearly independent columns of ***A***. It can be also shown that the rank
+    of a matrix ***A*** is equal to the dimension of its row space, and similarly,
+    it is equal to the maximum number of linearly independent rows of ***A***. Hence,
+    the rank of a matrix cannot exceed the number of its rows or columns. For example,
+    for an *m*×*n* matrix,thentherank cannot be greater than *min*(*m*, *n*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**PCA: a review**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principal component analysis (PCA) is a linear technique. It finds the directions
+    in the data that capture the most variation and then projects the data onto a
+    lower-dimensional subspace spanned by these directions. PCA is a widely used method
+    for reducing the dimensionality of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PCA transforms the data into a new orthogonal coordinate system. This coordinate
+    system is chosen such that the variance of the projected data points onto the
+    first coordinate axis (called the *first principal component*) is maximized. The
+    variance of the projected data points onto the second coordinate axis (called
+    the *second principal component*) is maximized amongst all possible directions
+    orthogonal to the first principal component, and more generally, the variance
+    of the projected data points onto each coordinate axis is maximized amongst all
+    possible directions orthogonal to the previous principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that we have a dataset with *n* features and *m* data points or observations.
+    We can use the *m*×*n* matrix
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc1fb90e7351c571c80cb2c965c7bbc0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: to represent this dataset, and we call it the *design matrix*. Hence each row
+    of ***X*** represents a data point, and each column represents a feature. We can
+    also write ***X*** as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fde5b00c82eb7f34ca0f0dcdf5784cf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where each column vector
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a72a2e1746940e875e7ac28760e9db48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: represents an observation (or data point) in this dataset. Hence, we can think
+    of our dataset as a set of *m* vectors in R^*n*. Figure 3 shows an example for
+    *n*=2\. Here we can plot each observation as a vector (or simply a point) in R².
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/540fe5a0703eceb257a050e9b05f84e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let ***u*** be a unit vector, so we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8722f77d7f569a2133cb4f2c2cb4ffbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The scalar projection of each data point ***x****ᵢ* onto the vector ***u***
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1654984871834e088c00938210f0f952.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 shows an example for *n*=2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/027ece092c781babe4bc9a0817829d18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We denote the mean of each column of ***X*** by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/25eb7d0a8b84a7ff9a9330bc5c8b0063.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then the mean of the dataset can is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/422418c453d73783aa4d2d885870fde6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And we can also write it as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9411fd8c91233df7d47dba76e21021e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now the variance of these projected data points is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d93b0dc5f5774ad6402d7df482912cca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Equation 1 can be simplified further. The term
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f85decc86bbf3fc7fff666709bdcd059.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: is a scalar (since the result of a is a scalar quantity). Besides, we know that
+    the transpose of a scalar quantity is equal to itself. So, we can have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6341d8b4cfedea591b32884141ca8350.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence the variance of the scalar projection of data points in ***X*** onto the
+    vector ***u*** can be written as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a88c83520a48d9dc6260ddc81d7363c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/887cc3c1ec0efd9c12837d65b16b6c4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: is called the *covariance matrix* (Figure 5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f171668a215c6391e2fb65e940551868.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By simplifying Equation 5, it can be shown that the covariance matrix can be
+    written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b76dc95b2513e57ce0a0698969700db8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3248a08844ca898b822eaba23cb6674a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here *xᵢ*,*ₖ* is the (*i*, *k*) element of the design matrix ***X*** (or simply
+    the *k*th element of the vector ***x****ᵢ*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a dataset with *n* features, the covariance matrix is an *n*×*n* matrix.
+    In addition based on the definition of *Sᵢ*,*ⱼ* in Equation 6 we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd83b0d5fd5802a8ce940981b60dded5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, its (*i*, *j*) element is equal to its (*j*, *i*) element which means that
+    the covariance matrix is a symmetric matrix and is equal to its transpose:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b87633cc808fb26dfe5e3b711a7b13c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we find the vector ***u***₁ that maximizes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd08d75370f655c15fcd079acd0d3ff2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since ***u***₁ is a normalized vector, we add this constraint to the optimization
+    problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f321e5ecb2216372fcff949fee64f154.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can solve this optimization problem by adding the Lagrange multiplier *λ*₁
+    and maximize
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/766d1bb6ffa1658bee11a6f5c045403f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To do that, we set the derivative of this term with respect to ***u***₁ equal
+    to zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f99e5827faa23cec7a2e0f0588de77fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d29b71d631f11881e01bfa08d8480ac4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This means that ***u***₁ is an eigenvector of the covariance matrix ***S***,
+    and *λ*₁ is its corresponding eigenvalue. We call the eigenvector ***u***₁ the
+    first *principal component*. Next, we want to find the unit vector ***u***₂ that
+    maximizes ***u***₂ᵀ***Su***₂ amongst all possible directions orthogonal to the
+    first principal component. So, we need to find the vector ***u***₂ that maximizes
+    ***u***₂*ᵀ****Su***₂ with these constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3039d4fa2822fd4d3b7b1bb0c8c3e00.png)![](../Images/a4032df1626261724645ff5f3e98e062.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It can be shown that ***u***₂ is the solution of this equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e587a287535f41ea34777ccdfd6430a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So we conclude that ***u***₂ is also an eigenvector of ***S***, and *λ*₂ is
+    its corresponding eigenvalue (proof is given in the appendix). More generally,
+    we want to find the unit vector ***u****ᵢ* that maximizes ***u****ᵢᵀ****Su****ᵢ*
+    amongst all possible directions orthogonal to the previous principal components
+    ***u***₁…***u_****i*-1\. Hence, we need to find the vector ***u****ᵢ* that maximizes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/278b15c978542f6ee4700b08847045c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with these constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c53a1113e808d0bd90ad22f90a4bece1.png)![](../Images/6560b5efee8d1c3c3d95b35f0eef3164.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again it can be shown that ***u****ᵢ* is the solution to this equation
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b494b69d5107c9b88a7a642cd40fe0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Hence ***u****ᵢ* is an eigenvector of ***S***, and *λᵢ* is its corresponding
+    eigenvalue (proof is given in the appendix). The vector ***u****ᵢ* is called the
+    *i*th principal component. If we multiply the previous equation by ***u****ⱼ*ᵀwe
+    get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0d5bf7cbc1f6b08e842935eadb4fd5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence, we conclude that the variance of the scalar projection of the data points
+    in ***X*** onto the eigenvector ***u****ᵢ* is equal to its corresponding eigenvalue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we have a dataset with *n* features, the covariance matrix will be an *n*×*n*
+    symmetric matrix. Here each data point can be represented by a vector in R^*n*
+    (***x****ᵢ*). As mentioned before, the elements of a vector in R^*n* give its
+    coordinates relative to the standard basis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be shown that an *n*×*n* symmetric matrix has *n* real eigenvalues, and
+    *n* linearly independent and orthogonal corresponding eigenvectors (spectral theorem).
+    These *n* orthogonal eigenvectors are the principal components of this dataset.
+    It can be shown that a set of *n* orthogonal vectors can form a basis for *R^n*.
+    So, these principal components form an orthogonal basis and can be used to define
+    a new coordinate system for the data points (Figure 6).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can easily calculate the coordinates of each data point ***x****ᵢ* relative
+    to this new coordinate system. Let *B*={***v***₁, ***v***₂, …, ***v_****n*} be
+    the set of the principal components. We first write ***x****ᵢ* in terms of the
+    basis vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58877e06237f1b6ba7fa58406fb555c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now if we multiply both sides of this equation by ***v****ᵢᵀ* we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c184280a7f4314af45ee3b0c942e440.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since we have an orthogonal basis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23fd9936ef40e5d49304bff8a44316d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, it follows that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d53da74f67ce7a9f40edd6c3cb25dadc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since the dot product is commutative, we can also write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b34900c0ff768f400ee756513f39c41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Hence, the coordinates of ***x****ᵢ* relative to *B* are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c8a81a42068a2cf2ad932bc17687112.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and the design matrix can be written as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/292866b1f22920a345aa921f44ea684e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: in the new coordinate system. Here each row represents a data point (observation)
+    in the new coordinate system. Figure 6 shows an example for *n*=2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4dd6cac6f24eb2d68468cbf0690050f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The variance of the scalar projection of data points onto each eigenvector (principal
+    component) is equal to its corresponding eigenvalue. The first principal component
+    has the greatest eigenvalue (variance). The second principal component has the
+    second greatest eigenvalue and so on. Now we can choose the first *d* principal
+    components and project the original data points on the subspace spanned by them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, we transform the original data points (with *n* features) to these projected
+    data points that belong to a *d*-dimensional subspace. In this way, we reduce
+    the dimensionality of the original dataset from *n* to *d* while maximizing the
+    variance of the projected data. Now the first *d* columns of the matrix in Equation
+    9 give the coordinates of the projected data points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/378ef9b400c36f6f6987fcbd0d6d0deb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7 gives an example of this transformation. The original dataset has
+    3 features (*n*=3) and we reduce its dimensionality to *d*=2 by projecting the
+    data points on the plane formed by the first two principal components (***v***₁,
+    ***v***₂). The coordinates of each data point ***x****ᵢ* in the subspace spanned
+    by ***v***₁ and ***v***₂ are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/188092dd8e69f772385f8e4391487248.png)![](../Images/8f8509c9df30f70be8dde9cd08953bad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is usual to *center* the dataset around zero before the PCA analysis. To
+    do that we first create the design matrix ***X*** that represents our dataset
+    (Equation 2). Then we create a new matrix ***Y*** by subtracting the mean of each
+    column from the elements in that column
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24e96abb3bbcca8d75d8878acebc6497.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The matrix ***Y*** represents the centered dataset. In this new matrix, the
+    mean of each column is zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/022b51899c9497d6e7fa1aafb522612e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, the mean of the dataset is also zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/806a53877eb163ea345cb632f785cd39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now suppose that we start with a centered design matrix ***X*** and want to
+    calculate its covariance matrix. Hence, the mean of each column of ***X*** is
+    zero. From Equation 6 we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f91326b63332fb300aa99087bb2951cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where [***X***]_*k*,*j* denotes the (*k*, *j*) element of the matrix ***X***.
+    By using the definition of matrix multiplication, we get
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b11bfdeeaafd7ee26e5c9dcaf91f5744.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Please note that this equation is only valid when the design matrix (***X***)
+    is centered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The relation between PCA and singular value decomposition (SVD)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose that ***A*** is an *m*×*n* matrix. Then ***A****ᵀ****A*** will be a
+    square *n*×*n* matrix, and it can be easily shown that it is a symmetric matrix.
+    Since ***A****ᵀ****A*** is symmetric, it has *n* real eigenvalues and *n* linear
+    independent and orthogonal eigenvectors (spectral theorem). We call these eigenvectors
+    ***v***₁, ***v***₂, …, ***v_****n* and we assume they are normalized. It can be
+    shown the eigenvalues of ***A****ᵀ****A*** are all positive.Now assume that we
+    label them in decreasing order, so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b653a829442c2fe625796d745402f2a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let ***v***₁, ***v***₂, …, ***v_****n* be the eigenvectors of ***A****ᵀ****A***
+    corresponding to these eigenvalues. We define the *singular value* of the matrix
+    ***A*** (denoted by *σᵢ*) as the square root of *λᵢ*. So we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff02620b0ea15a6a74fb51d8587c2a97.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now suppose that the rank of ***A*** is *r*.Thenit can be shown thatthe number
+    of the nonzero eigenvalues of ***A****ᵀ****A*** or the number of nonzero singular
+    values of ***A*** is *r:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/143d9c3615dfd4d0585e04fcdff0c9be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now the singular value decomposition (SVD) of ***A*** can be written as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fbd608f5637d92e23176f9ddb0660c50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here ***V*** is an *n×n* matrix and its columns are ***v****ᵢ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ba305e512e8d72055941aac9e8a6a4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***Σ*** is an *m*×*n* diagonal matrix, and all the elements of ***Σ*** are
+    zero except the first *r* diagonal elements which are equal to the singular values
+    of ***A***. We define the matrix ***U*** as'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3e04330a9b43747a5052a8c263f43a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We define ***u***₁ *to* ***u_****r* as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/725763b1db2caf57b49bc415976051bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can easily show that these vectors are orthogonal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3978641faa43dfb1eb106c4bb938252b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here we used the fact that ***v_****j* is an eigenvector of ***A****ᵀ****A***
+    and these eigenvectors are orthogonal. Since these vectors are orthogonal, they
+    are also linearly independent. The other ***u****ᵢ* vectors (*r<i≤m*) are defined
+    in a way that ***u***₁, ***u***₂, *…****u****_m* form a basis for an *m*-dimensional
+    vector space (***R^****m)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let ***X*** be a centered design matrix, and its SVD decomposition is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45893a365216f8687be4a61093e2df13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As mentioned before, ***v***₁, ***v***₂, …, ***v_****n* arethe eigenvectors
+    of ***X****ᵀ****X*** and the singular values are the square root of their corresponding
+    eigenvalues. Hence, we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48ff2947d2be0fb1975b5b1bfd2cccf0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we can divide both sides of the previous equation by *m* (where *m* is the
+    number of data points) and use Equation 10, to get
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c15bc382793ef750e30828f1b43f4d9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence, it follows that ***v****ᵢ* is the eigenvector of the covariance matrix
+    and its corresponding eigenvalue is the square of its corresponding singular value
+    divided by *m*. So, the matrix ***V*** in the SVD equation gives the principal
+    components of ***X,*** and using the singular values in ***Σ***, we can easily
+    calculate the eigenvalues. In summary, we can use SVD to do PCA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what else we can get from the SVD equation. We can simplify ***UΣ***
+    in Equation 12 using Equations 3 and 11:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6e5bee059cbe2770e7184e384ef8511.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparing with Equation 9, we conclude that the *i*th row of ***UΣ*** gives
+    the coordinates of the data point ***x****ᵢ* relative to the basis defined by
+    the principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now suppose that in Equation 12, we only keep the first *k* columns of ***U***,
+    the first *k* rows of ***V***, and the first *k* rows and columns of ***Σ***.
+    If we multiply them together, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4dbed1e1d397ef36fee631b4a2e0afe4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Please note that ***X****ₖ* is still an *m*×*n* matrix. If we multiply ***X****ₖ*
+    by the vector *b* which has *n* elements, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e21e89f86125daf2b55e20688ee43d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where [***Cb***]*ᵢ* is the *i*th element of the vector ***Cb***. Since ***u***₁,
+    ***u***₂, …, ***u****ₖ* are linearly independent vectors (remember that they form
+    a basis, so they should be linearly independent) and they span ***X****ₖ****b***,we
+    conclude that they form a basis for ***X****ₖ****b***. This basis has *k* vectors,
+    so the dimension of the column space of ***X****ₖ* is k. Hence ***X****ₖ* is a
+    rank-*k* matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But what does ***X****ₖ* represent? Using Equation 13 we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2e3b0efa44486b437999d136176e6c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, the *i*th row of ***X****ₖ* is the transpose of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd908a370b8d3585568465ace026a906.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'which is the vector projection of the data point ***x****ᵢ* on the subspace
+    spanned by the principal components ***v***₁, ***v***₂, … ***v****ₖ*. Remember
+    that ***v***₁, ***v***₂, … ***v_****n* is a basis for our original dataset. In
+    addition, the coordinates of ***x****ᵢ* relative to this basis are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83a7881c292c9664ba48d9a5a68b9498.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Hence, using Equation 1, we can write ***x****ᵢ* as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ec4d7f941048378697084d99b930b04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we can decompose ***x****ᵢ* into two vectors. One is in the subspace defined
+    by vectors defined by ***v***₁, ***v***₂, … ***v****ₖ,* and the in the subspace
+    defined by the remaining vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a717a39ffb75adaf876cce9dbdeb5ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first vector is the result of the projection of ***x****ᵢ* onto the subspace
+    defined by vectors defined by ***v***₁, ***v***₂, … ***v****ₖ* and is equal to***x̃****ᵢ.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that each row of the design matrix ***X*** represents one of the original
+    data points. Similarly, each row of ***X****ₖ* represents the same data point
+    projected on the subspace spanned by the principal components ***v***₁, ***v***₂,
+    … ***v****ₖ* (Figure 8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/611c8e23b710a72bc5afd26eec12fc31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can calculate the distance between the original data point (***x****ᵢ*)
+    and the projected data point (***x̃****ᵢ*). The square of the distance between
+    the vectors ***x****ᵢ* and *x̃ᵢ* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/905c89fec77def9e1672fdc68c8b2811.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And if we add the square of the distances for all the data points, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81d5352479dd7bafd9075b0536cbff71.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The Frobenius norm of an *m*×*n* matrix ***C*** is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6cad328dbf3f941728bd5567e308bf1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since vectors ***x****ᵢ* and ***x̃****ᵢ* are the transpose of the rows of matrices
+    ***X*** and ***X****ₖ*, we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09324c163ac9fd6f16a27fab93350e3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence the Frobenius norm of ***X***-***X****ₖ* is proportional to the sum of
+    the square of the distances between the original data points and the projected
+    data points (Figure 9), and as the projected data points get closer to the original
+    data points || ***X***-***X****ₖ* ||_*F* decreases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12d5b906b1d56e135a990293b0bb12bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want the projected points to be a good approximation of the original data
+    points, so we want ***X****ₖ* to give the lowest value for ***X***-***X****ₖ*
+    among all the rank-*k* matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose that we have the *m*×*n* matrix ***X*** with rank =*r* and the singular
+    values of ***X*** are sorted, so we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3ec7a72e61d91be3bbfd91796432947.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It can be shown that ***X****ₖ* minimizes the Frobenius norm of ***X***-***A***among
+    all the *m*×*n* matrices ***A*** that have a rank of *k*. Mathematically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8a35344f08fbc667dc89e8e9250e38d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***X****ₖ* is the closest matrix to ***X*** among all the rank-*k* matrices
+    and can be considered as the best rank-*k* approximation of the design matrix
+    ***X***. This also means that the projected data points represented by ***X****ₖ*
+    are the rank-*k* best approximation (in terms of the total error) for the original
+    data points represented by ***X***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can try to write the previous equation in a different format. Suppose
+    that ***Z*** is an *m*×*k* and ***W*** is a *k*×*n* matrix. We can show that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e3d088cd09f112d82971634ff31071e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So finding a rank-*k* matrix ***A*** that minimizes ||***X***-***A***||_*F*
+    is equivalent to finding the matrices ***Z*** and ***W*** that minimize ||***X***-***ZW***||_*F*
+    (proof is given in the appendix). Therefore, we can write
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/68062afc6044b6b2b97b0d59a57cd8be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where ***Z******(**an*m*×*k* matrix**)**and ***W**** (a *k*×*n* matrix) are
+    the solutions to the minimization problem and we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe87575101ce799d0a2a4670fc20d711.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now based on Equations 13 and 14 we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a81721d1659060c1046f7bbe16074ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, if we solve the minimization problem in Equation 18 using SVD, we get the
+    following values for ***Z**** and ***W****:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d4732d15e6efd52c2d5193abb75cdd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/737d7836d4dd78fb820bc97e83b1ef9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The rows of ***W**** give the transpose of the principal components and the
+    rows of ***Z**** give the transpose of the coordinates of each projected data
+    point relative to the basis formed by these principal components. It is important
+    to note that the principal components form an orthonormal basis (so the principal
+    components are both normalized and orthogonal). In fact, we can assume that PCA
+    only looks for a matrix ***W*** in which the rows form an orthonormal set. We
+    know that when two vectors are orthogonal, their inner product is zero, so we
+    can say that PCA (or SVD) solves the minimization problem
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed824011dba0506e4e91eb96bc23170a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with this constraint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2010d212356df33524845684a4065c3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where ***Z*** and ***W*** are *m*×*k* and *k*×*n* matrices. In addition, if
+    ***Z****are ***W**** are the solutions to the minimization problem then we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fa2fe8a2c73fb62a2e832d2f4496c97.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This formulation is very important since it allows us to establish a connection
+    between PCA and autoencoders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The relation between PCA and autoencoders**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with an autoencoder which only has three layers and is shown in Figure
+    10\. This network has *n* input features denoted by *x*₁…*x_n* and *n* neurons
+    at the output layer. The outputs of the network are denoted by *x^*₁…*x^_n*. The
+    hidden layer has *k* neurons (where *k*<*n*) and the outputs of the hidden layer
+    are denoted by *z*₁…*zₖ*. The matrices ***W^***[1] and ***W^***[2] contain the
+    weights of the hidden layer and output layer respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb4da49a74bf4d860aade53b7a261851.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d5705a4a14d59a9895717a0ebf61b53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: represents the weight for the input *j*th input (coming from the *j*th neuron
+    in layer *l*-1) of the *i*th neuron in layer *l* (Figure 11). Here we assume that
+    for the hidden *l*=1, and for the output layer *l*=2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/65947050c4fea7c4ce5d13f9d325969f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hence the weights of the hidden layer are given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83dfe42f7a7be7e122be9c825b95e777.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the *i*th row of this matrix gives all the weights of the *i*th neuron
+    in the hidden layer. Similarly, the weights of the output layer are given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56d04d8a1865ed2a982c479f9fc47190.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Each neuron has an activation function. We can calculate the output of a neuron
+    in the hidden layer (activation of that neuron) using the weight matrix ***W^***[1]
+    and input features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be59678a64fe58bbd5932904528473d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Where *bᵢ*^[1] is the bias for the *i*th neuron, and *g^*[1] is the activation
+    function of the neurons in layer 1\. We can write this equation in vectorized
+    form as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49e5878cdf4fde3b10e9af434a218edd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where ***b*** is the vector of biases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/856de7aeb3d175f99f9f0a0cad8df56a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'and ***x*** is the vector of input features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e9d70a3cde486a3c677d0d63e293a26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, we can write the output of the *i*th neuron in the output layer
+    as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/caba3c1cc8acffa518f1562bdc2ca89a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And in the vectorized form, it becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f3e1ca2f0386c6ae1417cc6b69e236b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now suppose that we use the following design matrix as a training dataset to
+    train this network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/102d9c1989fffb688deed2146a811664.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence the training dataset has *m* observations (examples) and *n* features.
+    Remember that the *i*th observation is represented by the vector
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a72a2e1746940e875e7ac28760e9db48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we feed this vector into the network, the output of the network is denoted
+    by this vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f89d6b7d3a2633ca974cef6928096aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We also need to make the following assumptions to make sure that the autoencoder
+    mimics PCA:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1-The training dataset is centered, so the mean of each column of ***X*** is
+    zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58a30a9a00cf4eca4e2c7c8cf5e4a89a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '2-The activation of functions of the hidden and output layer is linear and
+    the bias of all neurons is zero. This means that we are using a linear encoder
+    and decoder in this network. Hence, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7a85cf23b8490b901dca850ba990b23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '3-We use the quadratic loss function to train this network. Hence the cost
+    function is the mean squared error (MSE) and is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01e8dd9cb447ce0c92498f999b8ec1f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now we can show that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63545cbdfcbc8291f5d52a47c4b7a9c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where ***Z*** is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8050e399e609f7ab6f1ed1c4f24b4c75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The proof is given in the appendix. Here the *i*th row of ***Z*** gives the
+    output of the hidden layer when the *i*th observation is fed into the network.
+    Hence minimizing the cost function of this network is the same as minimizing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24ec93b6748632ed86cadeb764d4caa4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where we define the matrix ***W*** as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b59158741e371db665d931bf3cff17cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Please note that each row of ***W***^[2]is a column of ***W***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We know that if we multiply a function with a positive multiplier, its minimum
+    does not change. So, we can remove the multiplier 1/(2*m*) when we minimize the
+    cost function. Hence by training this network, we are solving this minimization
+    problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ccd9f3f42aede7a1eb82f57de3006ff2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where ***Z*** and ***W*** are *m*×*k* and *k*×*n* matrices. If we compare this
+    equation with Equation 20, we see that it is the same minimization problem of
+    PCA. Hence the solution should be the same as that of Equation 20:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e5ebe99fe7fd2781001281dbe68c25d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, we have an important difference here. The constraint of Equation 21
+    is not applied here. So here is the question. Are the optimum values of ***Z***
+    and ***W*** found by the autoencoder the same as those of PCA? Should the rows
+    of ***W**** always form an orthogonal set?
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s expand the previous equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc3ed899728203115fdd29dfa14b03d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We know that the *i*th row of ***X****ₖ* is the transpose of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd908a370b8d3585568465ace026a906.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: which is the vector projection of the data point ***x****ᵢ* on the subspace
+    spanned by the principal components ***v***₁, ***v***₂, … ***v****ₖ*. Hence, ***x̃****ᵢ*
+    belongs to a *k*-dimensional subspace. The vectors ***w***₁, ***w***₂, … ***w****ₖ*
+    should be linearly independent. Otherwise, the rank of ***W**** will be less than
+    *k* (remember that the rank of ***W**** is equal to the maximum number of linearly
+    independent rows of ***W****), and based on Equation A.3 the rank of ***X****ₖ*
+    will be less than *k*. It can be shown that a set of *k* linearly independent
+    vectors form a basis for a *k*-dimensional subspace. Hence, we conclude that the
+    vectors ***w***₁, ***w***₂, … ***w****ₖ* also form a basis for the same subspace
+    spanned by the principal components. We can now use Equation 24 to write *i*th
+    row of ***X****ₖ* in terms of the vectors ***w***₁, ***w***₂, … ***w****ₖ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40b2efbe3ad938905d36a9e1d0ba3365.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This means that the *i*th row of ***Z**** simply gives the coordinates of ***x̃****ᵢ*
+    relative to the basis formed by the vectors ***w***₁, ***w***₂, … ***w****ₖ*.
+    Figure 12 shows an example of *k*=2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53f5c77da04bb7960484954ff71792f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary, the matrices ***Z**** and ***W**** found by the autoencoder can
+    generate the same subspace spanned by the principal components. We also get the
+    same projected data points of PCA since:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4c6afe30370b94f94e96e5dae1a361a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, these matrices define a new basis for that subspace. Unlike the principal
+    components found by PCA, the vectors of this new basis are not necessarily orthogonal.
+    The rows of ***W**** give the transpose of the vectors of the new basis and the
+    rows of ***Z**** give the transpose of the coordinates of each data point relative
+    to that basis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we conclude that a linear autoencoder cannot find the principal component,
+    but it can find the subspace spanned by them using a different basis. There is
+    one exception here.. Suppose that we only want to keep the first principal component
+    ***v***₁. So we want to reduce the dimensionality of the original dataset from
+    *n* to 1\. In this case, the sunspace is just a straight line spanned by the first
+    principal component. A linear autoencoder will also find the same line with a
+    different basis vector ***w***₁. This basis vector is not necessarily normalized
+    and might have the opposite direction of ***v***₁, but it is still on the same
+    line (subspace). This is demonstrated in Figure 13\. Now, if we normalize ***w***₁,
+    we get the first principal component of the dataset. So in such a case, a linear
+    autoencoder is able to the first principal component indirectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f85ad79cdd64767fceae0572aef5e0f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far, we have discussed the theory underlying autoencoders and PCA. Now let’s
+    see an example in Python. In the next section, we will create an autoencoder using
+    Pytorch and compare it with PCA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Case study: PCA vs autoencoder**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first need to create a dataset. Listing 1 creates a simple dataset with 3
+    features. The first two features (*x*₁ and *x*₂) have a 2d multivariate normal
+    distribution and the 3rd feature (*x*₃) is equal to half of *x*₂. This dataset
+    is stored in the array `X` which plays the role of the design matrix. We also
+    center the design matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Listing 2 creates a 3d plot of this dataset, and the result is shown in Figure
+    14.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bb3727796e4dbb6040fdcc8418487e49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 14
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you see this dataset is defined on the plane represented by *x*₃= *x*₁/2\.
+    Now we start the PCA analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can easily get the principal components (eigenvectors of `X`) using the `components_`
+    field. It returns an array in which each row represents one of the principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can also see their corresponding eigenvalues using the `explained_variance_`
+    field. Remember that the variance of the scalar projection of data points onto
+    the eigenvector ***u****ᵢ* is equal to its corresponding eigenvalue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Please note that the eigenvalues are sorted in descending order. So the first
+    row of `pca.components_` gives the first principal component. Listing 3 plots
+    the principal components besides the data points (Figure 15).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/35703b15aeb523219b54ca9ca4d2dd3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 15
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please also note that the 3rd eigenvalue is almost zero. That is because the
+    dataset lies on a 2d plane (*x*₃= *x*₁/2), and as Figure 15 shows it has no variance
+    along ***v***₃. We can use the `transform()` method to get the coordinates of
+    each data point relative to the new coordinate system defined by the principal
+    components. Each row of the array returned by `transform()` gives the coordinates
+    of one of the data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can choose the first 2 principal components and project the original
+    data points on the subspace spanned by them. So, we transform the original data
+    points (with *3* features) to these projected data points that belong to a 2-dimensional
+    subspace. To do that we only need to drop the 3rd column of the array returned
+    by `pca.transform(X)`. This means that we reduce the dimensionality of the original
+    dataset from 3 to 2 while maximizing the variance of the projected data. Listing
+    5 plots this 2d dataset, and the result is shown in Figure 16.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c01c51bb119d4559c5986b30bad9652a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 16
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could also get the same results using SVD. Listing 6 uses the `svd()` function
+    in `numpy` to do the singular value decomposition of `X`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: This function returns the matrices ***U*** and ***V****ᵀ* and the diagonal elements
+    of ***Σ*** (remember that the other elements of ***Σ*** are zero). Please note
+    that the rows of ***V****ᵀ* give the same principal componentsreturned by`pca.omponents_`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now to get ***X****ₖ* we only keep the first 2 columns of ***U*** and ***V***
+    and the first 2 rows and columns of ***Σ*** (Equation 14). If we multiply them
+    together, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f12fe9fc2937245f6bbb379a1046fba5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Listing 7 calculates this matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Each row of ***Z****=***U***₂***Σ***₂ gives the coordinates of one of the projected
+    data points relative to the basis formed by the first 2 principal components.
+    Listing 8 calculates ***Z****=***U***₂***Σ***₂. Please note that it gives the
+    first two columns of `pca.transform(X)` given in Listing 4\. So PCA and SVD both
+    find the same subspace and the same projected data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we create an autoencoder and train it with this data set to later compare
+    it with PCA. Figure 17 shows the network architecture. The bottleneck layer has
+    two neurons since we want to project the data points on a 2-dimensional subspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39c23c90c07acfa7a7f19f410b812e9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 17 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Listing 9 defines this architecture in Pytorch. The neurons in all the layers
+    have a linear activation function and a zero bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use the MSE cost function and Adam optimizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use the design matrix defined in Listing 1 to train this model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we train it for 3000 epochs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Pytorch tensor `encoded` stores the output of the hidden layer (*z*₁, *z*₂),
+    and the tensor `decoded` stores the output of the autoencoder (*x^*₁, *x^*₂, *x^*₃).
+    We first convert them into `numpy` arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As mentioned before the linear autoencoder with a centered dataset and MSE
+    cost function solves the following minimization problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ccd9f3f42aede7a1eb82f57de3006ff2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b59158741e371db665d931bf3cff17cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And ***Z*** contains the output of the bottleneck layer for all the examples
+    in the training dataset. We also saw that the solution to this minimization is
+    given by Equation 23\. So, in this case, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1363e42e9de39bbe00d2eb313140c105.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once we train the autoencoder, we can retrieve the matrices ***Z**** and ***W****.
+    The array `encoded` gives the matrix ***Z****:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Listing 12 retrieves the matrix ***W^***[2]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And to get ***W**** we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Each row of ***W**** represents one of the basis vectors (***w****ᵢ*), and
+    since the bottleneck layer has two neurons, we end up with two basis vectors (***w***₁,
+    ***w***₂). We can easily see that ***w***₁ and ***w***₂ don’t form an orthogonal
+    basis since their inner product is not zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can easily calculate ***X***₂ using Equation 25:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Please note that this array and the array `X2` which was calculated using SVD
+    in Listing 7, are the same (there is a small difference between them due to numerical
+    errors). As mentioned before, each row of ***Z**** gives the coordinates of the
+    projected data points (***x̃****ᵢ*) relative to the basis formed by the vectors
+    ***w***₁ and ***w***₂.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Listing 13 plots the dataset, its principal components ***v***₁ and ***v***₂,
+    and the new basis vectors ***w***₁ and ***w***₂ in two different views. The result
+    is shown in Figure 18\. Please note that the data points and basis vectors all
+    lie on the same plane. Please note that training the autoencoder starts with the
+    random initialization of weights, so if we don’t use a random seed in Listing
+    9, the vectors ***w***₁ and ***w***₂ will be different, however, they always lie
+    on the same plane of the principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8a6d11464ab866194541fb7bba9f5f90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 18
+  prefs: []
+  type: TYPE_NORMAL
+- en: Listing 14 plots the rows of ***Z**** and the result is shown in Figure 19\.
+    These rows represent the encoded data points. It is important to note that if
+    we compare this plot with that of Figure 16, they look different. We know that
+    both the autoencoder and PCA give the same projected data points (same ***X***₂),
+    but when we plot these projected data points in a 2d space, they look different.
+    Why?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1a770b9390508713ff7e9ca6228fc3a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 19
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason is that we have a different basis for each plot. In Figure 16, we
+    have the coordinates of the projected data points relative to the orthogonal basis
+    formed by ***v***₁ and ***v***₂. However, in Figure 19, the coordinates of the
+    projected data points are relative to the ***w***₁ and ***w***₂ which are not
+    orthogonal. So if we try to plot them using an orthogonal coordinate system (like
+    that of Figure 19), we get a distorted plot. This is also demonstrated in Figure
+    20.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3b87b6cb798566db5bc8e33f7989684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 20 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To have the correct plot of the rows ***Z****, we first need to find the coordinates
+    of the vectors ***w***₁ and ***w***₂ relative to the orthogonal basis formed by
+    *V*={***v***₁, ***v***₂}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa056c59839d139f9b4ba80e437de752.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We know that the transpose of each row of ***Z**** gives the coordinates of
+    a projected data point relative to the basis formed by *W*={***w***₁, ***w***₂}.
+    So, we can use Equation 1 to get the coordinates of the same data point relative
+    to the orthogonal basis *V*={***v***₁, ***v***₂}
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/110809ceba18fe4ae932cbb1ff41e2ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09cf621b1347be64ff1914f7ffeff0f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: is the change-of-coordinate matrix. Listing 15 uses these equations to plot
+    the rows of ***Z**** relative to the orthogonal basis *V*={***v***₁, ***v***₂}.
+    The result is shown in Figure 21, and now it exactly looks like the plot of Figure
+    15 which was generated using SVD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bac576768ae1cf36b53e8f563fa5ae06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 21
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 22 demonstrates the different components of the linear autoencoder that
+    was created in this case study and the geometrical interpretation of their values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ef3b78d6db73668380803a24adb3e72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 22 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Non-linear autoencoders**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though an autoencoder is not able to find the principal components of a dataset,
+    it is still a much more powerful tool for dimensionality reduction compared to
+    PCA. In this section, we will discuss non-linear autoencoders, and we will see
+    an example in which PCA fails, but a non-linear autoencoder can still do the dimensionality
+    reduction. One problem with PCA is that assumes that the maximum variances of
+    the projected data points are along the principal components. In other words,
+    it assumes that they are all along straight lines, and in many real applications,
+    this is not true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see an example. Listing 16 generates a random circular dataset called
+    `X_circ` and plots it in Figure 23\. The dataset has 70 data points. `X_circ`
+    is a 2d array and each row of that represents one of the data points (observations).
+    We also assign a color to each data point. The color is not used for modeling
+    and we only add it to keep the order of the data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/219dc78e8859d1e9871c74043d178f09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 23
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we use PCA to find the principal components of this dataset. Listing 17
+    finds the principal components and plots them in Figure 24.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/39d64ba714ef6579fb254914868573f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 24
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this data set the maximum variance is along a circle not a straight line.
+    However, PCA still assumes that the maximum variance of the projected data points
+    is along the vector ***v***₁ (the first principal component). Listing 18 calculates
+    the coordinates of the projected data points onto ***v***₁ and plots them in Figure
+    25.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/cd0aac564886e2796b0a02bc789183d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 25
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you see the projected data points have lost their order and the colors are
+    mixed. Now we train a non-linear autoencoder on this dataset. Figure 26 shows
+    its architecture. The network has two input features and two neurons in the output
+    layer. There are 5 hidden layers, and the number of neurons in the hidden layers
+    is 64, 32, 1, 32, and 64 respectively. So, the bottleneck layer has only one neuron
+    which means that we want to reduce the dimension of the training dataset from
+    2 to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bf3d46caca9032700030cf969bfff87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 26 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing that you may have noticed is that the number of neurons in the first
+    hidden layer increases. Hence only the hidden layers have a double-sided funnel
+    shape. That is because we only have two input features, so we need to add more
+    neurons in the first hidden layer to have enough neurons for training the network.
+    Listing 19 defines the autoencoder network in Pytorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you see all the hidden layers have a non-linear RELU activation function
+    now. We still use the MSE cost function and the Adam optimizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use `X_circ` as the training dataset, but we use `MinMaxScaler()` to scale
+    all the features into the range [0,1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we train the model with 5000 epochs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we plot the values of the single neuron in the bottleneck layer (encoded
+    data) for all the observations in the training dataset. Remember that we assigned
+    a color to each data point in the training dataset. Now we use the same color
+    for the encoded data points. This plot is shown in Figure 27, and now compared
+    to the projected data point generated by PCA (Figure 25), most of the projected
+    data points have the right order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/6611990f4a83bffc3c87bad4886073bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 27
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is because the non-linear autoencoder doesn’t project the original data
+    points on a straight line anymore. The autoencoder tries to find a curve (also
+    called the non-linear manifold) along which the projected data points have the
+    highest variance and projects the input data points on them (Figure 28). This
+    example clearly shows the advantage of an autoencoder over PCA. PCA is a linear
+    transformation, so it is not suitable for a dataset having non-linear correlations.
+    On the other hand, we may employ non-linear activation functions in autoencoders.
+    This enables us to do non-linear dimensionality reduction using an autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34a292b1dc7cad5b90725425df4b7fea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 28 (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we discussed the math behind PCA, SVD, and autoencoders. PCA
+    finds a new orthogonal coordinate system for the data set. Each axis of this coordinate
+    system is called a principal component. The principal components are chosen such
+    that the variance of the projected data points onto each coordinate axis is maximized
+    amongst all possible directions orthogonal to the principal components already
+    considered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A linear autoencoder and PCA have some similarities. We saw that an autoencoder
+    with centered input features, linear activations, and an MSE cost function can
+    find the same subspace spanned by the principal components. We also get the same
+    projected data points of PCA. However, it cannot find the principal components
+    themselves. In fact, the basis that it returns is not even necessarily orthogonal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, autoencoders are more flexible than PCA. One problem with
+    PCA is that it assumes that the maximum variance of the projected data points
+    is along a line represented by the principal components. Hence, if the maximum
+    variance is along a non-linear curve, PCA cannot find it. However, an autoencoder
+    with non-linear activation functions can find a non-linear manifold and project
+    the data point onto it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I hope that you enjoyed reading this article. Please let me know if you have
+    any questions or suggestions. All the Code Listings in this article are available
+    for download as a Jupyter Notebook from GitHub at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/reza-bagheri/autoencoders_pca](https://github.com/reza-bagheri/autoencoders_pca)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Appendix**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The equations for finding the principal components:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the second principal component, we need to find the vector ***u***₂ that
+    maximizes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bab1a7eedb631b5c728c8f54fca3ef1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with these constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4032df1626261724645ff5f3e98e062.png)![](../Images/d3039d4fa2822fd4d3b7b1bb0c8c3e00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This means that we need to maximize
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ce90bfaf336958a06c89c60d7ec6975.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with respect to ***u***₂. To find the maximum point we write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4069bb91b9700131e7ef10ff11f7316.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'By multiplying this equation by ***u***₁*ᵀ* we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf7b3ce6aa46e648b541157d5e8ae603.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now using Equation 7 and the fact that the covariance matrix is a symmetric
+    matrix we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce7f051bcc787a15d2e924b4085e3a05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'By substituting this equation into the previous one we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/149daa3593107f1e2d1894bf0a6e9bc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now using the orthogonality constraint and the fact that ***u***₁ is normalized
+    we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56ee3a3ac5e248a3a55b66373d5c45ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using this equation and Equation A.1, it follows that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/85b5ee0e10bcb9284087af49b7f8baab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e587a287535f41ea34777ccdfd6430a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We also need to find the vector ***u****ᵢ* that maximizes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/278b15c978542f6ee4700b08847045c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with these constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c53a1113e808d0bd90ad22f90a4bece1.png)![](../Images/6560b5efee8d1c3c3d95b35f0eef3164.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is equivalent to maximizing
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d465b68f027230d8ba3bbd270cc579d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'with respect to ***u****ᵢ*. To find the maximum point, we set the derivative
+    of this term with respect to ***u****ᵢ* equal to zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b327a4913bcf8541bb87d7566c6fd09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'By multiplying this equation by ***u****ₖᵀ* (where 1≤*k*≤*i*-1)we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99172139f7ce3363576a68b7c3c95ce3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We know that the previous principal components are the eigenvectors of ***S***,
+    and ***S*** is a symmetric matrix. So, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7766332b79d69f429dfe68da240817e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And using the orthogonality constraints we conclude that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75ba0689243cb07b3282018b7cba0d33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By substituting this equation into equation A.2, it follows that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c031dc5dbae280e6fb5027aca6393b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence ***u****ᵢ* is an eigenvector of ***S***, and *λᵢ* is its corresponding
+    eigenvalue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Proof of Equation 17**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose that we have the *m*×*n* matrix ***X*** with rank =*r* and the singular
+    values of ***X*** are sorted, so we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3ec7a72e61d91be3bbfd91796432947.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We want to show that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/141434731cbea5b51d5c2fa4dd2e1c74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where ***A*** is an *m*×*n* matrix with rank=*k,* and ***Z*** and ***W*** are
+    *m*×*k* and *k*×*n* matrices. We know that *k*<*n*. In addition, in a design matrix,
+    we usually have *m*>*n*. Hence *k* is less than both *m* and *n*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We know that the rank of a matrix cannot exceed the number of its rows or columns.
+    So, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/057732fb756e5c0ea14bb9c5d4984eaa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It can be also shown that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d8e56808a99aa467c0cd40f65493371.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, it follows that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2fb6cefcc9abf66e11e920f1058e25a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Hence the rank of ***ZW*** cannot exceed *k*. In addition, we will show that
+    the matrix ***ZW*** that minimizes ||***X***-***ZW***||_*F* cannot have a rank
+    less than *k*. Suppose that ***Z****are ***W**** are two matrices so that ***Z*******W****is
+    a rank-*k* matrix that minimizes ||***X***-***ZW***||_*F* among all rank-*k* matrices.
+    Then according to Equation 16:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc21d93ce1cf6104db6fb24e64a47a77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, let ***Z*****and ***W***** be two matrices so that ***Z********W*****
+    is a rank-*m* matrix (*m*<*k*) that minimizes ||***X***-***Z********W*****||_*F*
+    among all rank-*m* matrices and. We have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09c08fc7e8fc229f0784382661d6190a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is clear that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7515e451ad7c54685ae9724368b24839.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hence
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29ab8bb917b89d0ee0a94ceb6eea4ccd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: which means that a rank-*k* matrix always gives a lower value for ||***X***-***Z
+    W***||_*F*. Hence we conclude that the rank of ***ZW*** cannot be less than *k*.
+    Hence, the optimum value of ***ZW*** that minimizes ||***X***-***Z W***||_*F*
+    should be a rank-*k* matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The cost function of linear autoencoder**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to show that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63545cbdfcbc8291f5d52a47c4b7a9c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To prove it, we first calculate the matrix ***X***-***Z*(*W^***[2])*ᵀ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45f7ee04a58b8a4302f9fb4f1b11355a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'But according to Equation 22, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b765e48d83add0e0232f67d5f36f8473.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Hence for the *k*th observation, we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/937757446daa5f2aca063b6141dcb6cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'By substituting this equation into Equation A.4, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9522bcc450ee41fa0bb78340d5dbbfd2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And finally using Equation 15 we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2565eae516b2383d79b259ec15d42f0.png)'
+  prefs: []
+  type: TYPE_IMG

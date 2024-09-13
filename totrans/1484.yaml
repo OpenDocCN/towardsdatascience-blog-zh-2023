@@ -1,0 +1,767 @@
+- en: 'Mastering ExternalTaskSensor in Apache Airflow: How to Calculate Execution
+    Delta'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mastering-externaltasksensor-in-apache-airflow-how-to-calculate-execution-delta-425093323758](https://towardsdatascience.com/mastering-externaltasksensor-in-apache-airflow-how-to-calculate-execution-delta-425093323758)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: External Task Sensors stop bad data from trickling downstream in a data pipeline.
+    Leverage them to create a reliable data infrastructure.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)[![Casey
+    Cheng](../Images/92174e223d1436b326ec42622ceefdd6.png)](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)[](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)
+    [Casey Cheng](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)
+    ·15 min read·May 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6325cbd704ec069b44ecc8ece0402ada.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: External Task Sensors are like gatekeepers — they stop bad data from trickling
+    downstream. [Image](https://www.freepik.com/free-photo/arrangement-financial-crisis-with-wooden-pieces_11433457.htm#query=domino%20effect%20stop&position=46&from_view=keyword&track=ais)
+    by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Orchestrating a data pipeline is a delicate endeavor. In a data pipeline, we
+    can have thousands of tasks running simultaneously and they are often dependent
+    on one another. If we’re not careful, a single point of failure can have a domino-like
+    effect that trickles downstream and mess up the whole pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Airflow introduced the External Task Sensor to put an end to these issues.
+    While it is an extremely powerful feature, it also comes with some degree of complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this introductory piece, I hope to untangle some of the confusion surrounding
+    the External Task Sensor and show how we can use it to enhance the reliability
+    of our data pipelines — making sense of sensors!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Why do we need External Task Sensor?](#6513)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[What does External Task Sensor do?](#a2d1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How do we create an External Task Sensor?](#a476)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[What are Execution Delta and Execution Date Function?](#bdab)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: – [How to calculate Execution Delta?](#6c71)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: – [How to calculate Execution Date Function?](#cb9b)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[How do we fit External Task Sensor into our DAGs?](#dd35)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bonus: Concept of Dates in Airflow](#159c)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why do we need External Task Sensor?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Meet Jamie, a rookie chef at Airflow Bakery. She’s new. Her only responsibility
+    is to make a new batch of cookie dough every hour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13fdb464679bc75b3f7af3cccdc5793a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Jamie’s responsibilities as shown in a “DAG” format. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    icon by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And then we have Gordon Damnsie, the cookie master. Gordon takes the dough from
+    Jamie and turns them into award-winning cookies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5d53c21d5515b7fbdc85e71c416702c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gordon’s responsibilities as shown in a “DAG” format. [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    icon by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One fine day, Gordon swoops in to grab the freshest dough he can find and bakes
+    cookies. But when he takes a bite, yuck! “Bad” would’ve been an understatement.
+    Gordon quickly discovers the root cause was the stale dough, which was left over
+    from a week ago.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gordon, visibly frustrated, tosses the cookies into the bin. After he composes
+    himself, he slowly turns to Jamie and asks, “Why is the dough not fresh?”
+  prefs: []
+  type: TYPE_NORMAL
+- en: “I had to stop making them, Chef. There was a problem with the raw ingredients,”
+    Jamie replies, trying to stay calm in the face of Gordon’s anger. Unfortunately,
+    the bad cookies had already been served to clients and they no longer trust the
+    food quality of the bakery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This slight detour is a cautionary tale on the importance of validating the
+    freshness of data sources. In the story, Gordon’s success is dependent on Jamie,
+    but they are working independently without communicating with each other. They
+    “trust” that the other person will do their job flawlessly. But as any data practitioner
+    will know, everything that can go wrong *will* go wrong in a data pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, Gordon should check with Jamie whether she made dough recently. Once
+    he has confirmed, it means that the dough is fresh so he can proceed to bake his
+    cookies. Otherwise, stop baking and figure out what went wrong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You see, what Gordon needs… is an *external task sensor*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does External Task Sensor do?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An external task sensor checks whether other people completed their assigned
+    task. It ***senses*** the completion of an ***external task***, hence the name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of Airflow, Jamie and Gordon are DAGs. They have specific tasks
+    that they need to complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we add an External Task Sensor, it becomes the middleman that coordinates
+    between the two independent DAGs. The sensor will check on Jamie at a specific
+    time to see if she has completed her task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If Jamie successfully completes her task, the sensor will inform Gordon so that
+    he can carry on with his downstream tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87d7f0dc1e3861d1c0cf946493ac62c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The external task sensor — check_dough() returns as a success after verifying
+    that make_dough() ran successfully. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    and [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    icons by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If Jamie fails to complete her task, the sensor stops Gordon from doing any
+    tasks that have a dependency on the failed task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47b6b5e65941e627db1483c61e3fe57f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The external task sensor — check_dough() returns as a fail after verifying that
+    make_dough() did not run successfully. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    and [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    icons by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having this additional layer of validation essentially stops stale data from
+    trickling further downstream and polluting the rest of our pipeline with dirty,
+    inaccurate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we create External Task Sensor?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Airflow makes it very easy to create an External Task Sensor — just import
+    them. The syntax will look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s what they mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`**dag**` is the current DAG object. Since Gordon is the one who wants to check
+    whether Jamie made dough, this should point to Gordon’s DAG.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**task_id**` is the unique name for this External Task Sensor.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**external_dag_id**` is the name of the DAG you want to check. In this case,
+    Jamie’s DAG.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**external_task_id**` is the name of the specific task you want to check.
+    Ideally, we should always specify this. Otherwise, the sensor will check for the
+    completion of the *entire DAG* instead of just one specific task. In other words,
+    Gordon will do nothing until Jamie finishes chopping onions, washing dishes, and
+    restocking the pantry, even though we only want to know whether she made dough.
+    Or worse, if any one of these irrelevant tasks fails, the sensor will unnecessarily
+    pause the entire pipeline.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**email**` is the list of people you want Airflow to notify when the External
+    Task Sensor fails. Keep in mind that for this to work, you need to have the SMTP
+    settings properly configured in the Airflow configuration file.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**execution_delta**` is arguably the most confusing part about External Task
+    Sensors but also the most important. So, I’m dedicating an entire section to it
+    [below](#bdab). Keep scrolling!'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**execution_date_fn**` and execution delta are very similar. We can only use
+    one of them at a time. Sometimes it’s easier to use this rather than execution
+    delta. I’m also giving this its own section [below](#bdab).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**timeout**` limits how long a sensor can stay alive. When we create a sensor,
+    it consumes resources by occupying one worker slot. If the target task never completes,
+    these sensors will keep checking indefinitely while hogging the worker slot. Over
+    time, we can run into a [Sensor Deadlock](https://marclamberti.com/blog/airflow-sensors/#The_Deadlock),
+    where all worker slots become occupied by useless sensors and no tasks can run
+    anymore. Therefore, it’s best practice to set a maximum time limit for the checks.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**poke_interval**` is the duration before the sensor checks again if the previous
+    check fails. The rationale is that we don’t want the sensor to check excessively
+    like a madman, as it adds unnecessary loads to the server. On the flip side, checking
+    too infrequently means the sensor will wait longer than necessary, delaying the
+    pipeline. The trick is to find the sweet spot based on the expected run time of
+    the external task.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`**mode**`is how we want the sensor to behave. It can be set to “poke” or “reschedule”.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When set to “poke”, the sensor goes to sleep on failure and wakes up on the
+    next poke interval to try again. It’s like being on standby mode. The sensor will
+    be more reactive, but since it’s on standby, the worker slot remains occupied
+    throughout the whole process.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: When set to “reschedule”, the sensor will check once. If the check fails, the
+    sensor will schedule another check at a later time but terminates itself for now,
+    freeing up the worker slot. Airflow recommends using “reschedule” if the poke
+    interval is greater than 60 seconds.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Alright, that’s just about every parameter we need to know about External Task
+    Sensor. Granted that this list is not exhaustive, knowing these 10 parameters
+    will be more than enough for us to set up our External Task Sensor properly for
+    virtually all use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For completeness' sake, I’ll include [Airflow's official documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/external_task/index.html)
+    for those who are eager to explore it in more detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are Execution Delta and Execution Date Function?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the section above, I’ve glossed over these two parameters because they are
+    arguably the most notorious, annoying, and confusing part of external task sensors.
+    But I think it’s time we tackle them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what are `execution_delta` and `execution_date_fn`?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building on our analogy, `external_task_id` tells the sensor to check if Jamie
+    completed the `make_dough()` task. But she makes a lot of dough — once every hour.
+    Are we checking if she baked in the past hour, yesterday, or last week?
+  prefs: []
+  type: TYPE_NORMAL
+- en: This ambiguity confuses External Task Sensors and that’s why Airflow came up
+    with two ways for us to communicate this information. Both `execution_delta` and
+    `execution_date_fn` are meant to tell sensors the specific time of the task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`execution_delta` expresses time on a *relative* basis, e.g.: “Did Jamie bake
+    30 minutes ago?” It accepts a `datetime.timedelta` object as its argument, e.g:
+    `datetime.timedelta(minutes=30)`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`execution_date_fn` expresses time on an *absolute* basis, e.g.: “Did Jamie
+    bake on the 3rd May 2023 at 4.30 pm?” It accepts a callable Python function as
+    its argument. This function should return the *execution date* of the task that
+    we want to check on, e.g: `datetime.datetime(year=2023,month=5,day=3,hour=4,minute=30)`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since both of them convey the same information, **Airflow only allows us to
+    use one or the other, but not both at the same time**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I generally use `execution_delta` as the de-facto choice. But, there are scenarios
+    where it’s too complicated to calculate the `execution_delta`. In that case, I’d
+    use `execution_date_fn` instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to calculate execution_delta?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The word, `execution_delta`, is short for *delta* (a.k.a difference)of *execution
+    dates* (a.k.a the previous runtime of our tasks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f81154e7de3aecf803d0e49f60526b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The formula for execution_delta. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’d like to highlight the keyword here — “previous”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some of you may be wondering… Why does Airflow want the time difference of previous
+    runs, but not the current runs? This used to confuse the crap out of me when I
+    first started using Airflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Turns out there is a perfectly good reason. However, I don’t want to derail
+    from the topic at hand so I will include it in the later section ([here](#159c)).
+    For now, let’s just accept the formula as-is and see how we would apply this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose that Jamie makes dough every hour (e.g: 13:00 pm, 14:00 pm, 15:00 pm,
+    …). Gordon also makes cookies every hour, but he makes them at the 30th minute
+    of every hour (e.g: 13:30 pm, 14:30 pm, 15:30 pm, …).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At 14:30 pm sharp, Gordon gets ready to bake his cookie. Before he starts, he
+    would need to check if Jamie made fresh dough recently. The latest run for `make_dough()`
+    would be 14:00 pm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b636f935d6ebb4104aa91f6ac3e89276.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This time series shows the task dependencies between Jamie and Gordon. Gordon
+    always checks whether Jamie completed her task half an hour ago. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    and [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    icons by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that both Gordon and Jamie’s tasks are scheduled hourly, their execution
+    date (a.k.a previous runs) for the 14:30 pm run would be…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gordon’s execution date = 14:30 pm — 1 hour = 13:30 pm
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Jamie’s execution date = 14:00 pm — 1 hour = 13:00 pm
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can plug these values into the formula, and voilà!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12d7bc1785b7cdc9a8a26a449c7a7bf2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The `execution_delta` comes out to be `datetime.timedelta(minute=30) for one
+    specific run`. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can do the same calculation for different runs of the tasks to get their
+    respective `execution_delta`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/737ce6ba54a829924e72fa42439efd98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When calculating execution delta, it’s helpful to lay them out in a format like
+    this. We want to calculate the execution deltas for multiple runs, not just one,
+    in order to make sure they’re all the same! Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this (cherry-picked) example, all of the `execution_delta` turns out to be
+    exactly the same. We can pass this to our External Task Sensor and everything
+    will work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: But-!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `execution_delta` *can* be different sometimes. This usually happens when
+    the schedule intervals of the two dags are different (e.g.: daily vs weekly, daily
+    vs monthly, …).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, let’s say that Jamie makes her dough *weekly* on Sunday at 14:00
+    pm, but Gordon makes his cookies *daily* at 14:30 pm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49521d0576017cd2b11926d4c783e8ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The arrow between Jamie’s task and Gordon’s sensor represents the execution
+    delta. The execution delta gets longer over the week until it resets again on
+    Sunday. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999) and [Chef
+    (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we do the same calculations, you will see that the execution deltas differ
+    for every run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7017f1f0bc8e39608c9b438209c6172c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that execution deltas can vary for different runs. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This becomes a problem because `execution_delta` only accepts a single `datetime`
+    object as its argument. We can’t input a different value of `execution_delta`
+    for every run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In cases like this, we need `execution_date_fn`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to calculate Execution Date Function?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `execution_date_fn` is just a regular Python function. As with all Python
+    functions, it takes some argument(s) and returns some output(s). But the beauty
+    of using a function is the ability to return a different output based on the function’s
+    inputs and logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of `execution_date_fn`, Airflow passes the **current task’s execution
+    date** as an argument and expects the function to return the **external task’s**
+    **execution date***.* Note that these execution dates need to be **expressed in
+    UTC time**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Based on our earlier case study, our `execution_date_fn` would need to do the
+    following…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/165565eba9b9431153c3b7cecbc6b585.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My Airflow is configured to local time (GMT+8), so I need to deduct 8 hours
+    to get the UTC time. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One naive way could be hardcoding every single run, until the end of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: This works but it is definitely not the most efficient way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A better approach is to look for consistent patterns and use that to programmatically
+    derive the outputs. Usually, a good place to look for patterns is the `execution_delta`,
+    since it contains the relationship between the execution dates (we talked about
+    this [here](#6c71)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, we can also look at `datetime` attributes, such as the day of
+    the week. If we really think about it, our External Task Sensor will always be
+    pointing to a Sunday because Jamie only makes dough on Sunday. As we move through
+    the week, Gordon’s task date will be further and further away from this Sunday
+    until it resets again the next Sunday. Then, it repeats.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49521d0576017cd2b11926d4c783e8ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is showing the time difference between the current runs for simplicity's
+    sake. Execution_date_fn looks at previous runs, but we will see the same patterns
+    there too. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999) and [Chef
+    (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    icons by Freepik.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This suggests that **day of the week** can also be helpful in coming up with
+    our `execution_date_fn`. So let’s add the day of the week to our table. I’ll be
+    labeling Monday as 1 and Sunday as 7 as per the [ISO 8601](https://www.timeanddate.com/date/week-numbers.html#:~:text=The%20most%20common%20is%20the,and%20confusion%20when%20communicating%20internationally.)
+    standard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce44b091c9f31b9dac79fd58cb22956b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The numbers in brackets are the week of day, where Monday is 1 and Sunday is
+    7\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By labeling them, it becomes immediately clear that…
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `execution_delta` starts from 6 on a Saturday.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `execution_delta` increases by 1 every day, up to a maximum of 12 every
+    Friday.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `execution_delta` then resets back to a 6 on a Saturday.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can re-create that relationship in a Python function and assign this `execution_date_fn`
+    to our External Task Sensor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: There we have it — our very own `execution_date_fn`. With a bit of creativity,
+    `execution_date_fn` can cater to *any* scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we fit External Task Sensor into our DAGs?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Up until this point, we’ve covered everything you need to know to get started
+    with External Task Sensor. In this section, I thought it’d be nice to collate
+    all of the things we’ve learned to see how the pieces fit together in our data
+    pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, we’ll be creating Jamie DAG, in a file called `jamie_dag.py`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we’ll be creating Gordon DAG, in another file called `gordon_dag.py`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that External Task Sensor is in `gordon_dag.py` and not `jamie_dag.py`
+    since we want Gordon to be checking on Jamie, not the other way around. Gordon’s
+    DAG would be the current DAG and Jamie the external DAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And… there we have it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve created our very first External Task Sensor, `check_dough_fresness`. This
+    sensor will poke Jamie’s `make_new_dough()` returns either Success or Fail. If
+    it fails, `bake_cookies()` and `make_money()` will not run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bonus: Concept of Dates in Airflow'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dates in Apache Airflow are confusing because there are so many date-related
+    terminologies, such as `start_date`, `end_date`, `schedule_interval`, `execution_date`,
+    etc. It’s a mess, really. But let’s try and figure it out with a story.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that our boss wants to know the sales performance of his company. He
+    wants this data to be refreshed *every day* at *12 midnight* for the next *6 months.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we write a complicated SQL query that generates the sales performance
+    data. It takes *6 hours* to run the query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`task_start` is the start time of a task.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`task_end` is the end time of a task.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`task_duration` is the time it takes to run the task.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/77cc87def5c5b24335fa1b2be7b0b8bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A single task. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every day, we will need to run this task at 12 midnight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be480214c92910c701041c74585487e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A single task, scheduled at 12am and runs for 6 hours. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To automate this query, we create an Airflow DAG and specify the `start_date`
+    and `end_date`. Airflow will execute the DAG as long as today’s date falls within
+    this period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8927e14501927829996d0a2e6730ac9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An Airflow DAG. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we put the task into the Airflow DAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need this data refreshed once a day at 12 midnight. So, we set the `schedule_interval`
+    to `"0 0 * * *"`, which is the [CRON](https://crontab.guru/#0_0_*_*_*) equivalent
+    of daily at 12 midnight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `schedule_interval` essentially adds a delay between each consecutive schedule,
+    telling Airflow only run the task at a specific time, since we don’t want the
+    task to re-run again as soon as it finishes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`interval_start` refers to the start time of a particular schedule interval.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`interval_end` refers to the end time of a particular schedule interval.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/56b9d7e428899aabb7fe43f6896889b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that interval_start and interval_end can overlap. The interval_end of the
+    previous schedule interval will be the same as the interval_start of the next
+    schedule interval. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here comes the most mind-blowing part — although seemingly counterintuitive,
+    Airflow Scheduler triggers a DAG run at the ***end*** of its schedule interval,
+    rather than at the beginning of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that Airflow will not do anything in the first-ever schedule interval.
+    Our query will run for the first time on 2nd Jan 2023 at 12 am.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/edad1a82094c5e1395626e6ac885a9a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The colored bars are like data. All the “yellow” data only gets summarized on
+    2nd Jan. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is because Airflow is originally created as an ETL tool. It’s built on
+    the idea that data from a period of time gets summarised at the *end* of the interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if we wanted to know the sales of cookies for the 1st of January,
+    we wouldn’t create a sales report on the 1st of January at 1 pm because the day
+    hasn’t ended yet and the sales number would be incomplete. Instead, we would only
+    process the data when the clock strikes 12 midnight. Today, we will be processing
+    yesterday’s data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is this important?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are summarizing the previous run’s data, the sales report we are producing
+    on the 2nd of Jan describes the 1st of Jan sales, not the 2nd of Jan sales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For that reason, Airflow finds it more meaningful to refer to this run as the
+    1st of Jan run even though it’s executed on the 2nd. To better differentiate the
+    dates, Airflow gives a special name to the beginning of a schedule interval—`execution_date`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f06b3ef75c125c2c44c27293b40ff896.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although we run the “yellow” task on 2nd Jan, its execution date is actually
+    1st Jan. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is why we always take the difference of the “previous” run when we calculate
+    `execution_delta` because it is the delta of the `execution_dates`, which is essentially
+    the “previous” run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concluding Remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: External Task Sensors are like gatekeepers. They stop bad data from going downstream
+    by making sure that tasks are executed in a specific order and that the necessary
+    dependencies are met before proceeding with subsequent tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For those who have never used External Task Sensors before, I hope the article
+    was able to convey its importance and convince you to start using them. For those
+    who have been using them, I hope some of the insights here are able to help deepen
+    your understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for your time, and have a great day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Enjoyed the article? Consider becoming a* [*Medium member*](https://casey-cheng.medium.com/membership)
+    *to get full access to every story and support content creators like me.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@casey-cheng/membership?source=post_page-----425093323758--------------------------------)
+    [## Join Medium with my referral link - Casey Cheng'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Casey Cheng (and thousands of other writers on Medium).
+    Your membership fee directly supports…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@casey-cheng/membership?source=post_page-----425093323758--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,919 @@
+- en: Gradient Boosting from Theory to Practice (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050](https://towardsdatascience.com/gradient-boosting-from-theory-to-practice-part-1-940b2c9d8050)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Understand the math behind the popular gradient boosting algorithm and how to
+    use it in practice
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)[![Dr.
+    Roi Yehoshua](../Images/905a512ffc8879069403a87dbcbeb4db.png)](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)[](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------)
+    [Dr. Roi Yehoshua](https://medium.com/@roiyeho?source=post_page-----940b2c9d8050--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----940b2c9d8050--------------------------------)
+    ·19 min read·Jul 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24fe276d9c34eff1399a9e28bbbe6c98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jens Lelie](https://unsplash.com/@madebyjens?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/u0vgcIOQG08?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient boosting is a widely used machine learning technique that is based
+    on a combination of **boosting** and **gradient descent**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boosting is an [ensemble method](https://medium.com/towards-artificial-intelligence/introduction-to-ensemble-methods-226a5a421687)
+    that combines multiple weak learners (or base learners) to create a strong predictive
+    model. The base models are trained sequentially, where each model focuses on correcting
+    the errors made by the previous models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In **gradient boosting**, each base model is trained to predict the negative
+    gradients of the loss function with respect to the predictions of the previous
+    models. As a result, adding the newly trained base learner to the ensemble makes
+    a step in the steepest descent direction towards the minimum of the loss. This
+    process is similar to gradient descent, but it operates in the function space
+    rather than the parameter space. Therefore, it is known as **functional gradient
+    descent.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the weak learners are [decision trees](https://medium.com/@roiyeho/decision-trees-part-1-da4e613d2369),
+    the resulting method is known as **gradient-boosted decision trees** (GBDT) or
+    **gradient boosting machine** (GBM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient boosting is one of the best algorithms that exist today for dealing
+    with structured (tabular) data, and provides state-of-the-art results on many
+    standard classification benchmarks. Alongside deep learning, it is one of the
+    most commonly used algorithms in Kaggle competitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradient boosting algorithm was originally developed by Jerome Freidman
+    in 2001 [1]. Since then, it has evolved into a family of algorithms that includes
+    XGBoost, CatBoost and LightGBM. These variants of the algorithm incorporate various
+    enhancements that further improve the performance and scalability of gradient
+    boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article covers in depth the theory and implementation of gradient boosting.
+    In the first part of the article we will focus on the theoretical concepts of
+    gradient boosting, present the algorithm in pseudocode, and demonstrate its usage
+    on a small numerical example. In the [second part](/gradient-boosting-from-theory-to-practice-part-2-25c8b7ca566b),
+    we will explore the classes in Scikit-Learn that implement gradient boosting,
+    and use them to solve different regression and classification tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuitive Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a reminder, in [supervised machine learning](https://medium.com/@roiyeho/introduction-to-supervised-machine-learning-313730eb5aa2)
+    problems, we are given a training set of *n* labeled samples: *D* = {(**x**₁,
+    *y*₁), (**x**₂, *y*₂), … , (**x***ₙ, yₙ*)}, where **x***ᵢ* is a *m*-dimensional
+    vector that contains the features of sample *i*, and *yᵢ* represents the label
+    of that sample. Our goal is to build a model whose predictions are as close as
+    possible to the true labels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our initial discussion, we will assume that the learning problem is a regression
+    problem, i.e., the targets *yᵢ* are continuous values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The basic idea of gradient boosting is to build an ensemble of weak models,
+    where each model is trained to predict the residuals of the previous model. This
+    process can be described as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fit a base model *h*₁(**x**) to the given labels *y*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set the initial ensemble to *F*₁(**x**) = *h*₁(**x**).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fit a base model *h*₂(**x**) to the residuals *y* − *F*₁(**x**).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Combine the two models into a new ensemble: *F*₂(**x**) = *h*₁(**x**) + *h*₂(**x**).
+    The predictions of *F*₂(**x**) should be closer to the targets than *F*₁(**x**).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fit a base model *h*₃(**x**) to the residuals *y* − *F*₂(**x**).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Combine the three models into a new ensemble: *F*₃(**x**) = *h*₁(**x**) + *h*₂(**x**)
+    + *h*₃(**x**). The predictions of *F*₃(**x**) should be closer to the targets
+    than *F*₂(**x**).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Continue this process for *M* steps.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Return *F*ₘ(**x**) as the final hypothesis.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can demonstrate this process in Python by manually building a sequence of
+    regression trees, where each tree is trained to predict the residuals of the previous
+    trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s first generate some noisy quadratic training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ac1b75586f81cf18ffd9070201568fae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The training data
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our base learners will be decision trees with maximum depth of 2\. The first
+    decision tree *h*₁ is fit to the given data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first ensemble *F*₁ consists of this single tree, and its *R*² score on
+    the training set is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The second tree *h*₂ is fitted to the residual errors made by the first tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*h*₂ is added to the ensemble to create the second ensemble *F*₂. We can use
+    *F*₂ to make predictions by simply adding up the predictions of both trees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, a third tree *h*₃ is fitted to the residuals of the second ensemble
+    *F*₂, and then added to the ensemble:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the *R*² score of the model gradually increases as we add more trees
+    to the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s plot the residuals and the ensemble’s predictions after every iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/455b3f8898987bccc3b27c35ff280fc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The base learners and the ensemble after each boosting iteration
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the ensemble’s predictions gradually improve as more trees are
+    added to the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The generalization of gradient boosting to other types of problems (e.g., classification
+    problems) and other loss functions follows from the observation that the residuals
+    *hₘ*(**x***ᵢ*) are proportional to the negative gradients of the squared loss
+    function with respect to *Fₘ*₋₁(**x***ᵢ*):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea7a34294581ed5b91f8c0ba8de7fd5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Therefore, we can generalize this technique to any differentiable loss function
+    by using the negative gradients of the loss function instead of the residuals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gradient Boosting Algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will now derive the general gradient boosting algorithm for any differentiable
+    loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Boosting approximates the true mapping from the features to the labels *y*
+    = *f*(**x**) using an **additive expansion** (ensemble) of the form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47ad176295cdd5cd2f8169f5bfa1f5a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *hₘ*(**x**) are base learners from some class *H* (usually decision trees
+    of a fixed size), and *M* is the number of learners.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given a loss function *L*(*y*, *F*(**x**)), our goal is to find an approximation
+    *F*(**x**) that minimizes the total loss on the training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/540abe44b692b785270dd4f79572703a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The objective function *J* includes functions as parameters (the functions *hₘ*),
+    thus it cannot be optimized using traditional optimization methods such as gradient
+    descent. Instead, the model is trained in an additive manner, by adding one base
+    learner at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start from a model *F*₀ of a constant function that minimizes the objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5feb064623ac2dffdf1bac92a97177eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For example, if the loss function is squared loss (used in regression problems),
+    *F*₀(**x**) would simply be the mean of the target values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we incrementally expand the model in a greedy fashion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45be628c78c5f0eb51d14eff1fef9cdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where the newly added base learner *hₘ* is fitted to minimize the expected
+    loss of the ensemble *Fₘ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d351924b182a411b349e8d50e65b1a51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Finding the best function *hₘ* for an arbitrary loss function *L* is computationally
+    infeasible, since it would require us to enumerate all the possible functions
+    in *H* and pick the best one. Instead, we use an iterative approach: in every
+    iteration we choose a base learner *hₘ* that points in the negative gradient direction
+    of the loss function. As a result, adding *hₘ* to the ensemble will get us one
+    step closer to the minimum loss.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This process is similar to gradient descent, but it operates in the function
+    space rather than the parameter space, since in every iteration we move to a different
+    function in the hypothesis space *H*, rather than making a step in the parameter
+    space of a specific function *h*. This allows *h* to be a non-parametric machine
+    learning model, such as a decision tree. This process is known as **functional
+    gradient descent**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In functional gradient descent, our parameters are the values of *F*(**x**)
+    at the points **x**₁, …, **x***ₙ*, and we seek to minimize *L*(*yᵢ*, *F*(**x***ᵢ*))
+    at each individual **x***ᵢ*. The best steepest-descent direction of the loss function
+    at every point **x***ᵢ* is its negative gradient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4859908d828725534ddb62898b098c3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*gₘ*(**x***ᵢ*) is the derivative of the loss with respect to its second parameter,
+    evaluated at *Fₘ*₋₁(**x***ᵢ*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, the vector
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30adf0bd11c6ee886b8ce8979fbc0450.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: gives the best steepest-descent direction in the *n*-dimensional data space
+    at *Fₘ*₋₁(**x***ᵢ*). However, this gradient is defined only at the data points
+    **x**₁, …, **x***ₙ*, and cannot be generalized to other **x**-values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the continuous case, where *H* is the set of arbitrary differentiable functions
+    on *R*, we could have simply chosen a function *hₘ* ∈ *H* where *hₘ*(**x***ᵢ*)
+    = -*gₘ*(**x***ᵢ*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the discrete case (i.e., when the set *H* is finite), we choose *hₘ* as a
+    function in *H* that is closest to *gₘ*(**x***ᵢ*) at the data points **x***ᵢ*,
+    i.e., *hₘ* that is most parallel to the vector -**g***ₘ* in *Rⁿ*. This function
+    can be obtained by fitting a base learner *hₘ* to a training set {(**x***ᵢ*, *ỹᵢₘ*)},
+    with the labels
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d94bbd5ac3da9e3b37f0102e19fac144.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These labels are called **pseudo-residuals**. In other words, in every boosting
+    iteration, we are fitting a base learner to predict the negative gradients of
+    the loss function with respect to the ensemble’s predictions from the previous
+    iteration. Note that this approach is heuristic, and does not necessarily yield
+    an exact solution to the optimization problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The complete pseudocode of the algorithm is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d67e219b24f67a0d5e59d650158df663.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient Tree Boosting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Gradient tree boosting is a specialization of the gradient boosting algorithm
+    to the case where the base learners *h*(**x**) are regression trees (see [this
+    article](https://medium.com/@roiyeho/decision-trees-part-2-72adc626cca7) for more
+    details on regression trees).
+  prefs: []
+  type: TYPE_NORMAL
+- en: At each iteration *m*, a regression tree *hₘ*(**x**) is fit to the pseudo-residuals,
+    i.e., we build a tree to predict the pseudo-residuals given our data points. The
+    tree is built in a top-down greedy fashion using mean squared error as the splitting
+    criterion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The question is which label the tree should assign to a given leaf node? Using
+    the mean value of the samples in that leaf works well for regression problems,
+    but not for other types of problems. Thus, we need to find a general way to assign
+    an output value for each leaf node, which will minimize the expected loss of the
+    model for any differentiable loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let *Jₘ* be the number of the leaves in the tree. The tree partitions the input
+    space into *Jₘ* disjoint regions: *R*₁*ₘ*, …, *Rⱼₘ*, and predicts a constant value'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*γⱼₘ* in each one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff242667cdcc9bf23a9efca071394d24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where 1(⋅) is the indicator function, which has the value 1 if its argument
+    is true, and 0 otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our goal is to find the coefficient *γⱼₘ* in each regionthat will minimize
+    the total loss induced by the points that belong to that region:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b7071f1bb910bac9a4afb16ff5e966e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: i.e., we are trying to find the optimal constant update in each leaf node’s
+    region to be added to the predictions of the previous ensemble *Fₘ*₋₁(**x**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, let’s find the optimal *γ* for the case of least-squares regression.
+    In this case, our objective is to minimize the following sum of squared losses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78787d1de042f04d20fa9306aa87806f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now take the derivative of *E* with respect to *γ* and set it to 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b3cc8d72f473e324d36445c6ab0baa6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'That is, the optimal *γ* is simply the mean of the residuals in the *j*th leaf
+    node at the *m*th iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/952e96b8746219e740d2d08c9def4872.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The case of classification will be discussed later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we find the optimal output values for the leaf nodes, the current approximation
+    *Fₘ*₋₁(**x**) is separately updated in each corresponding region:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/36244622093967fe59686439db3d9fea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Regularization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Compared to standard decision trees, gradient-boosted trees are fairly robust
+    to overfitting. Nevertheless, there are several commonly used regularization techniques
+    that help to control the complexity of gradient-boosted trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we can use the same regularization techniques that we have in standard
+    decision trees, such as limiting the depth of the tree, the number of leaves,
+    or the minimum number of samples required to split a node. We can also use post-pruning
+    techniques to remove branches from the tree that fail to reduce the loss by a
+    predefined threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, we can control the number of boosting iterations (i.e., the number of
+    trees in the ensemble). Increasing the number of trees reduces the ensemble’s
+    error on the training set, but may also lead to overfitting. The optimal number
+    of trees is typically found by **early stopping**, i.e., the algorithm is terminated
+    once the score on the validation set does not improve for a specified number of
+    iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lastly, Friedman [1, 2] has suggested the following regularization techniques,
+    which are more specific to gradient-boosted trees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shrinkage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Shrinkage [1] scales the contribution of each base learner by a constant factor
+    *ν*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d71c451e5c83348dff4e840a915e1cd2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The parameter *ν* (0 < *ν* ≤ 1) is called the **learning rate**, as it controls
+    the step size of the gradient descent procedure. Similar to a learning rate in
+    stochastic optimization, shrinkage reduces the impact of each individual learner
+    and leaves room for future learners to improve the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirically, it has been found that using small learning rates (e.g., *ν* ≤
+    0.1) can significantly improve the model’s generalization ability. However, smaller
+    learning rates also require more boosting iterations in order to maintain the
+    same training error, thereby increasing the computational time during both training
+    and prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic Gradient Boosting (Subsampling)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a follow-up paper [2], Friedman proposed stochastic gradient boosting, which
+    combines gradient boosting with bagging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In each iteration, a base learner is trained only on a fraction (typically 0.5)
+    of the training set, drawn at random without replacement. This subsampling procedure
+    introduces randomness into the algorithm and helps prevent the model from overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like in bagging, subsampling also allows us to use the **out-of-bag samples**
+    (samples that were not involved in building the next base learner) in order to
+    evaluate the performance of the model, instead of having an independent validation
+    data set. Out-of-bag estimates often underestimate the real performance of the
+    model, thus they are used only if cross-validation takes too much time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another strategy to reduce the variance of the model is to randomly sample the
+    features considered for split in each node of the tree (similar to [random forests](https://medium.com/@roiyeho/random-forests-98892261dc49)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The pseudocode for gradient tree boosting with shrinkage is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88f1a968d909e91ea603e9bdabfe6557.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient Tree Boosting for Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The same algorithm of gradient tree boosting can also be used for classification
+    tasks. However, since the sum of the trees *Fₘ*(**x**) can be any continuous value,
+    it needs to be mapped into a probability (a value between 0 and 1). This mapping
+    depends on the type of the classification problem (binary or multiclass).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that gradient-boosted trees are always regression trees, even when they
+    are used for classification problems (since they are built to approximate the
+    negative gradient of the loss function).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In binary classification problems, we use the sigmoid function
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*σ*(*x*) to model the probability that a samplebelongs to the positive class
+    (similar to [logistic regression](/mastering-logistic-regression-3e502686f0ae)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39268c31dc0bde71291ea09129a8d3b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This means that *F*(**x**) represents the predicted log odds, i.e., the logarithm
+    of the odds ratio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a3729ce994a9b3229a21dda25a152af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The initial model *F*₀(**x**) is given by the log odds of the positive class
+    in the training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2bda3209feab1b1adf9494b6da77ff5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As in logistic regression, we use the binary log loss as our loss function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98132ed9ab141e05c3c69bee9cc0a714.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *pᵢ* = *σ*(*Fₘ*₋₁(**x***ᵢ*)) represents the predicted probability of the
+    previous ensemble that sample **x***ᵢ* belongs to the positive class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can compute the gradient of this loss with respect to *Fₘ*₋₁(**x***ᵢ*) using
+    the chain rule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9561eca5d0715f13ed7ca6f5d20871c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We used here the fact that the derivative of the sigmoid function is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1411a40fa9e3a455aebcbd3d2f812eed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the pseudo-residual at point **x***ᵢ* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/525cbe9573acd7778eb95619a0264329.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: i.e., the pseudo-residual is simply the actual label of **x***ᵢ* minus the predicted
+    probability of the previous ensemble that this sample belongs to the positive
+    class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With regression trees as base learners, we need to find the optimal output
+    values *γⱼₘ* for each leaf node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b7071f1bb910bac9a4afb16ff5e966e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There is no closed-form solution to this optimization problem (note that *γ*
+    is added to the log-odds and not to the class probabilities directly). Therefore,
+    we approximate the solution by performing a single [Newton-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method)
+    step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, Newton’s method tries to find the minimum of a twice-differentiable
+    function *f*: *R* → *R*, by building a sequence {*xₖ*} from an initial guess *x*₀
+    ∈ *R* . This sequence is constructed from the second-order Taylor approximations
+    of *f* around the elements *xₖ*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second-order Taylor expansion of *f* around *xₖ* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2615913639b06f046cc532536d97653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The next element in the sequence *xₖ*₊₁ is chosen as to minimize this quadratic
+    expansion in *t*. The minimum can be found by setting the derivative of this expansion
+    to 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ceb6e19b1685d180a4b2e7a81440433.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, the minimum is achieved for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52831f103e73813a29ea6a78a83a0328.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, Newton’s method performs the following iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96d5000d99ad41012a8672d83183e139.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, we can write the second-order Taylor expansion of the loss function
+    around the point *Fₘ*₋₁(**x**):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1104c9fbe6ccde1b3078c4976b9d14a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Taking the derivative of this expression with respect to *γ* yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/898f07d29f774881cdc93f3ae5839df8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the derivative of the total loss induced by the samples in region
+    *Rⱼₘ* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26a5c2b6186b1b6da89af07159ba0f3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Equating this derivative to 0 gives us the optimal output value for region
+    *Rⱼₘ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/05f74825042062c846dd2e23066a39ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The numerator of this expression is simply the sum of the derivatives of the
+    loss function at the data points in region *Rⱼₘ* (their pseudo-residuals), while
+    the denominator is the sum of the second derivatives of the loss functions at
+    the same points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have already found the first derivative of log loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdd69f086611167b53389e8e4a949b85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now need to find its second derivative. This derivative can be simply computed
+    by taking the derivative of the first derivative of log loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50fafdac041811747a968c7f925a4319.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, we can write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4a697ffaafd24438cffd86a915808a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example on a Toy Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Assume that we are given the following data set for a binary classification
+    problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3df833b109806ce842ad43e94ff9654c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The goal is to predict whether a customer will buy a given product based on
+    three attributes: the customer’s age, level of income (Low, Medium or High) and
+    level of education (High School or College).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem we are going to use an ensemble of gradient-boosted trees
+    with a maximum depth of 2, and a learning rate of *ν* = 0.5 (we use a relatively
+    large learning rate for illustration purposes). The trees will use only binary
+    splits (as in the CART algorithm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we initialize the model with a constant value, which is the log odds
+    of the positive class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb0f4011e1d4fd5f1642eb2576aa5ea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we calculate the pseudo-residuals. For the log loss function, these are
+    simply the actual labels minus the predicted labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0555ee74c12ec1f262d619314eb4596b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We now fit a regression tree to the pseudo-residuals. We start by finding the
+    best split for the root node. In regression trees, at every node we select a split
+    that yields the highest reduction in the variance of the values stored at that
+    node (the pseudo-residuals in our case).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The mean of the residuals at the root node is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c5db46b3b7066cae94a3808c12593f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the variance is just the average of their squared values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e68ad71774b324dc455ade707396e320.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We will now compute the reduction in the variance that can be achieved by every
+    possible split in every feature. We start from the two categorical attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3447126bfe32ffce2feceac9f925a3b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For the Age attribute, we sort the pseudo-residuals by age, and then consider
+    each middle point between two consecutive ages as a candidate split point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/718d82d33035c763fb495a3b19303453.png)![](../Images/1be8c7031639b81454ff3b0294b1e305.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The split that provides the highest reduction in the variance is Age < 26.5\.
+    Therefore, the first level of the tree looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7daf3de86887a338c791c91d8578a0c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The variance of the residuals in the left child node is 0, thus there is no
+    need to split it anymore. We now need to find the best split for the right child
+    node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s compute the variance of the residuals at the right child node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/258c8b005b4e6d0cfb84578fd8895911.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now consider all the possible splits for the four samples that belong to
+    the right child node (samples 2, 4, 5, 6):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5f531f790353825965e50e52c51dff6.png)![](../Images/2b430ac37bd6e672942faec5fc82134c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this case we have multiple candidate splits that lead to the maximum reduction
+    in the variance (0.0835). Let’s choose arbitrarily the split Income = Medium.
+    The resulting regression tree is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71b1ebf486276d2455c0ffe9f8b88956.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Next, we compute the optimal output values for the leaf nodes (the *γ* coefficients).
+    Note that since this is our first tree, the most recent predicted probability
+    for all the samples is *p* = *σ*(*F*₀(**x**)) = 0.667.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output value for the leftmost leaf is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6258dffe26d55b3831cd1ab053eba23a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, the output values for the other two leaves are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75487212d4914567c66e4a5b04da5181.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, we get the following predictions from the first regression tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c5b36ebb4529862dfd3d75dbcde5651.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now scale these predictions by the learning rate and add them to the predictions
+    of the previous iteration. We then use the new predictions to calculate the pseudo-residuals
+    for the next iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35d5b827208151720ea9b95c5bad688a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now fit another regression tree to the pseudo-residuals. Following the same
+    process as in the previous iteration, we get the following tree (verify that this
+    is indeed the resulting tree!):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f18406a47649634c2bff10e0170f3918.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we compute the output values for the leaf nodes. Note that this time
+    the most recent predicted probabilities *p* = *σ*(*F*₁(**x**)) are not the same
+    for all the samples. Going from the leftmost leaf node to the rightmost node we
+    obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea12814f97da1b337aedd758766b8e07.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, we get the following predictions from the second tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fbb691c185c3ac4c11a64de5a0e7c5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We now scale these predictions by the learning rate and add them to the predictions
+    of the previous model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de73779f8804c46f5729db19b0b621e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that after three iterations, our ensemble correctly classifies all
+    the samples in the training set. Hurray!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see how we can use this ensemble to make predictions on new samples.
+    Assume that we have a new customer with the following attributes: Age = 33, Income
+    = Medium, Education = High School.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first need to find to which terminal region this sample belongs in each tree
+    of the ensemble. In the first tree, the sample belongs to region *R*₂₁ (since
+    [Age < 26.5] is false and [Income = Medium] is true), and in the second tree it
+    belongs to region *R*₂₂ (since [Education = High School] is true and [Age < 30]
+    is false).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, the predicted log odds that this customer will buy the product is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9bc2cf6f1757f546668224a6f5cb03a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the predicted probability is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e29c0872690c2e8cd85aa8e0d2d7b976.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since *p* < 0.5, our prediction is that this customer will not buy the product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiclass Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In multiclass classification problems, *K* trees (for *K* classes) are built
+    at each of the *M* iterations. The probability that **x***ᵢ* belongs to class
+    *k* is modeled as the softmax of the *Fₘ,ₖ*(**x***ᵢ*) values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/064140faf34afefde187d62bee9ac2f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The initial model in this case is given by the prior probability of each class,
+    and the loss function is the cross-entropy loss. The derivation of the coefficients
+    *γⱼₘ* in this case is left as an exercise to the reader.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Notes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You can find the code examples of this article on my github: [https://github.com/roiyeho/medium/tree/main/gradient_boosting](https://github.com/roiyeho/medium/tree/main/gradient_boosting)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second part of this article can be found [here](/gradient-boosting-from-theory-to-practice-part-2-25c8b7ca566b).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Friedman, J.H. (2001). [Greedy function approximation: A gradient boosting
+    machine](https://doi.org/10.1214/aos/1013203451). Annals of Statistics, 29, 1189–1232.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Friedman, J.H. (2002). [Stochastic gradient boosting](https://statweb.stanford.edu/~jhf/ftp/stobst.pdf).
+    Computational Statistics & Data Analysis, 38, 367–378.'
+  prefs: []
+  type: TYPE_NORMAL

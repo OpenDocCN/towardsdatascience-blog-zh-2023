@@ -1,0 +1,1004 @@
+- en: 'Operator Learning via Physics-Informed DeepONet: Let’s Implement It From Scratch'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887](https://towardsdatascience.com/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep dive into the DeepONets, physics-informed neural networks, and physics-informed
+    DeepONets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)
+    ·23 min read·Jul 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e58768fda61ec2f49710623f6f30cdc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. ODE/PDEs are widely used to describe the system processes. In many
+    scenarios, those ODE/PDEs accept a function (e.g., the forcing function u(t))
+    as input and output another function (e.g., s(t)). Traditionally, numerical solvers
+    are used to connect the input and output. More recently, **neural operators**
+    are developed to address the same problem but with much higher efficiency. (Image
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ordinary and partial differential equations (ODEs/PDEs) are the backbone of
+    many disciplines in science and engineering, from physics and biology to economics
+    and climate science. They are fundamental tools used to describe physical systems
+    and processes, capturing the continuous change of quantities over time and space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yet, a unique trait of many of these equations is that they don’t just take
+    single values as inputs, they take functions. For example, consider the case of
+    predicting vibrations in a building due to an earthquake. The shaking of the ground,
+    which varies over time, can be represented as a function that acts as the input
+    to the differential equation describing the building’s motion. Similarly, in the
+    case of sound waves propagating in a concert hall, the sound waves produced by
+    a musical instrument can be an input function with varying volume and pitch over
+    time. These varying input functions fundamentally influence the resulting output
+    functions — the building’s vibrations and the acoustic field in the hall, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Traditionally, these ODEs/PDEs are tackled using numerical solvers like finite
+    difference or finite element methods. However, these methods come with a bottleneck:
+    for every new input function, the solver must be run all over again. This process
+    can be computationally intensive and slow, particularly for intricate systems
+    or high-dimensional inputs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To address this challenge, a novel framework was introduced by [Lu et al.](https://arxiv.org/abs/1910.03193)
+    in 2019: the **Deep Operator Network**, or **DeepONet**. DeepONets aim to learn
+    the **operator** that maps input functions to output functions, essentially learning
+    to predict the output of these ODEs/PDEs for any given input function without
+    having to re-run a numerical solver each time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But DeepONets, though powerful, inherited the common problems faced by data-driven
+    methods: How can we ensure that the predictions of the network are in line with
+    the known laws of physics encapsulated in the governing equations?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter **physics-informed learning**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Physics-informed learning is a rapidly evolving branch of machine learning that
+    combines physical principles with data science to enhance the modeling and understanding
+    of complex physical systems. It involves leveraging domain-specific knowledge
+    and physical laws to guide the learning process and improve the accuracy, generalization,
+    and interpretability of machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Under this framework, in 2021, [Wang et al.](https://arxiv.org/abs/2103.10974)
+    introduced a new variant of DeepONets: the **Physics-Informed DeepONet.** This
+    innovative approach builds on the foundation of DeepONets by incorporating our
+    understanding of physical laws into the learning process. We’re no longer just
+    asking our model to learn from data; we’re guiding it with principles derived
+    from centuries of scientific inquiry.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This seems to be quite a promising approach! But how should we implement it
+    in practice? That’s precisely what we’re going to explore today 🤗
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog, we’ll discuss the theory behind Physics-Informed DeepONet, and
+    walk through how to implement it from scratch. We’ll also put our developed model
+    into action and demonstrate its power through a hands-on case study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are also interested in using physics-informed DeepONet to solve inverse
+    problems, feel free to check out my new blog here: [Solving Inverse Problems With
+    Physics-Informed DeepONet: A Practical Guide With Code Implementation](/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Table of Content**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [1\. Case study](#8d5d)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [2\. Physics-informed DeepONet](#ef0e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '∘ [2.1 DeepONet: An overview](#5221)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [2.2 Physics-informed Neural Networks (PINNs)](#eda1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [2.3 Physics-informed DeepONet](#0fe9)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [3\. Implementation of Physics-informed DeepONet](#8657)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3.1 Define the Architecture](#4f1e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3.2 Define ODE loss](#524a)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3.3 Define gradient descent step](#8cf2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [4\. Data Generation and Organization](#0096)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.1 Generation of u(·) profiles](#f5af)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.2 Generation of Dataset](#5751)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4.3 Dataset Organization](#51a4)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [5\. Training Physics-informed DeepONet](#9df7)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [6\. Results Discussion](#9dbe)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [7\. Take-away](#ed8c)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Reference](#3c52)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Case study
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s ground our discussion in a concrete example. In this blog, we will reproduce
+    the first case study considered in [Wang et al.](https://arxiv.org/abs/2103.10974)’s
+    original paper, i.e., an initial value problem described by the following ordinary
+    differential equation (ODE):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: with an initial condition s(0) = 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this equation, u(*t*) is the input function that varies over time, and s(*t*)
+    is the state of the system at time *t* that we are interested in predicting. In
+    a physical scenario, u(*t*) could represent a force applied to a system, and s(*t*)
+    might represent the system's response, like its displacement or velocity, depending
+    on the context. **Our goal here is to learn the mapping between the forcing term
+    u(*t*) and the ODE solution s(*t*).**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Traditional numerical methods such as Euler’s method or Runge-Kutta methods
+    can solve this equation effectively. However, notice that the forcing term u(*t*)
+    can take various profiles, as shown by the following figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d8e59e7ea3b0943a06cc633a209a04a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Example profiles of u(t). (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, every time u(*t*) changes, we would need to re-run the entire
+    simulation to get the corresponding s(*t*) (as shown in Figure 3), which can be
+    computationally intensive and inefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ce7ea3610ea7a93e9691b5640a150a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Corresponding profiles of s(t). They are calculated by using the
+    RK45 algorithm to solve the ODE. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how can we address this type of problem more efficiently?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Physics-informed DeepONet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned in the introduction, the physics-informed DeepONet constitutes
+    a promising solution to our target problem. In this section, we’ll break down
+    its fundamental concepts to make them more comprehensible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll first discuss the principles underpinning the original DeepONet. Following
+    that, we’ll explore the concept of physics-informed neural networks and how it
+    brings an added dimension to the problem-solving table. Finally, we’ll demonstrate
+    how we can seamlessly integrate these two ideas to construct the physics-informed
+    DeepONets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2.1 DeepONet: An overview'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: DeepONet, short for Deep Operator Network, represents a new frontier in deep
+    learning. Unlike traditional machine learning methods that map a set of input
+    values to output values, DeepONet is designed to map entire functions to other
+    functions. This makes DeepONet particularly powerful when dealing with problems
+    that naturally involve functional inputs and outputs. So how exactly it achieves
+    that goal?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To formulate what we want to achieve symbolically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ab62e562bcb715899129c87ad34411b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Our goal is to train a neural network to approximate the operator
+    that maps the forcing term u(·) to the target output s(·), which are both a function
+    of t. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the left, we have the *operator* G that maps from an input function u(·)
+    to an output function s(·). On the right, we would like to use a neural network
+    to *approximate* the operatorG. Once this can be achieved, we could use the trained
+    neural network to perform a fast calculation of s(·) given any u(·).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the current case study, both the input function u(·) and the output function
+    s(·) take time coordinate *t* as the sole argument. Therefore, the “input” and
+    “output” of the neural network we aim to build should look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1388bbbd27f57b93e2790a6bdad90f3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. The input and output for the neural network model we aim to train.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Essentially, our neural network should accept the **entire profile** of u(*t*)
+    as the first input, as well as a specific time instance *t* as the second input*.*
+    Subsequently, it should output the target output function s(·) evaluated at time
+    instance *t,* i.e., s(*t*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To better understand this setup, we recognize that the value of s(*t*) firstly
+    depends on the profile of s(·), which in turn depends on u(·), and secondly depends
+    on at which time instance the s(·) is evaluated. This is also why time coordinate
+    *t* is necessary to be among the inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two questions we need to clear at the moment: first of all, how should
+    we input a continuous profile of u(·) to the network? And secondly, how should
+    we concatenate the two inputs, i.e., *t* and u(·).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ How should we input a *continuous* profile of u(·)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well, we don’t actually. A straightforward solution is to represent the function
+    u(·) discretely. More specifically, we simply evaluate u(·) values at sufficient
+    but finite many locations and subsequently feed those discrete u(·) values into
+    the neural network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae58b8b3d7bc0cd4b59923193cc0cea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. The u(·) profile is discretized before being fed into the neural
+    network. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those locations are referred to as **sensors** in the original DeepONet paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ How should we concatenate the input *t* and u(·)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: At first sight, we might want to concatenate them directly at the input layer.
+    However, it turns out that this naive approach will not only put a constraint
+    on what types of neural networks we can use, but also lead to suboptimal prediction
+    accuracy in practice. There is a better way though. Time to introduce **DeepONet**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a nutshell, DeepONet proposed a new network architecture for performing
+    operator learning: it consists of two main components: **a branch network** and
+    **a trunk network**. The branch network takes the discrete function values as
+    inputs and transforms them into a feature vector. Meanwhile, the trunk network
+    takes the coordinate(s) (in our current case study, the coordinate is just *t*.
+    For PDEs, it will include both temporal and spatial coordinates) and also converts
+    it/them into a feature vector with the same dimensions. These two feature vectors
+    are then merged by a dot product, and the end result is used as the prediction
+    of s(·) evaluated at the input coordinate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a38b151038114d79d87742355a9461fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. A DeepONet consists of a **branch net** to handle the input function
+    u(·) and a **trunk net** to handle the temporal/spatial coordinates. The outputs
+    of two nets have the same dimensions and are merged via a dot product. Optionally,
+    a bias term can be added after the dot product to further improve the model's
+    expressibility. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the original DeepONet paper, the authors stated that this “divide-and-conquer”
+    strategy, exemplified in separate “branch” and “trunk” networks, is inspired by
+    the *universal approximation theorem for operator*, and serves to introduce a
+    strong inductive bias specifically for operator learning. This is also the key
+    point that makes DeepONet an effective solution, as claimed by the authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are curious to learn more about theoritical basis of DeepONet, please
+    refer to Appendix A in the original paper.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: One of the main strengths of DeepONet is its efficiency. Once trained, a DeepONet
+    can infer the output function for a new input function in real-time, without the
+    need for further training, as long as the new input function is within the range
+    of input functions it was trained on. This makes DeepONet a powerful tool in applications
+    that require real-time inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another notable strength of DeepONet lies in its flexibility and versatility.
+    While the most common choice for the trunk and branch networks might be fully-connected
+    layers, the DeepONet framework permits a high level of architecture customization.
+    Depending on the characteristics of the input function u(·) and the coordinates,
+    a variety of neural network architectures such as CNN, RNN, etc. can also be employed.
+    This adaptability makes DeepONet a highly versatile tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, despite these strengths, the limitations of DeepONet are also prominent:
+    as a purely data-driven method, DeepONet cannot guarantee that its predictions
+    will follow prior knowledge or governing equations that describe the physical
+    system under consideration. Consequently, DeepONet may not generalize well, especially
+    when faced with input functions that lie outside the distribution of its training
+    data, referred to as *out-of-distribution* (OOD) inputs. A common remedy for that
+    is simply preparing a large amount of data for training, which might not always
+    be feasible in practice, especially in scientific and engineering fields where
+    data collection can be expensive or time-consuming.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how should we address these limitations? Time to talk about *physics-informed
+    learning*, and more specifically, *physics-informed neural networks* (PINNs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Physics-informed Neural Networks (PINNs)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In traditional machine learning models, we rely primarily on data to learn the
+    underlying patterns. However, in many scientific and engineering fields, governing
+    equations (ODE/PDEs) that captured our prior knowledge about the dynamical system
+    are available, and they present another source of information we can leverage
+    besides the observed data. This additional knowledge source, if incorporated correctly,
+    could potentially improve the model’s performance and generalization ability,
+    especially when dealing with limited or noisy data. This is where **physics-informed
+    learning** comes into play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we merge the concept of physics-informed learning and neural networks,
+    we would then arrive at **physics-informed neural networks** (PINNs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: PINNs are a type of neural network where the network is trained to not only
+    fit the data but also respect the known physical laws described by differential
+    equations. This is achieved by introducing a **ODE/PDE loss**, which measures
+    the degree of violation of the governing differential equations. This way, we
+    inject the physical laws into the network training process and make it *physically
+    informed*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/12cd012d9a10794979e59e1e28cfddaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. The loss function of a physics-informed neural network includes a
+    contribution term of PDE loss, which effectively measures if the predicted solution
+    satisfies the governing differential equation. Note that the derivative of the
+    output with respect to the inputs can be easily calculated thanks to **automatic
+    differentiation**. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though PINNs have proven to be effective in many applications, they are not
+    without limitations. PINNs are typically trained for specific input parameters
+    (e.g., boundary and initial conditions, external forcing, etc.). Consequently,
+    whenever the input parameters have changed, we would need to retrain the PINN.
+    Therefore, they are not particularly effective for real-time inference under different
+    operating conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Still remember which method is specifically designed for handling varying input
+    parameters? That’s right, it’s the DeepONet! Time to combine the idea of physical-informed
+    learning with DeepONet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 Physics-informed DeepONet
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main idea behind the *Physics-informed DeepONet* is to combine the strengths
+    of both DeepONets and PINNs. Just like a DeepONet, a Physics-informed DeepONet
+    is capable of taking a function as an input and producing a function as an output.
+    This makes it highly efficient for real-time inference of new input functions,
+    without the need for retraining.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, like a PINN, a Physics-informed DeepONet incorporates known
+    physical laws into its learning process. These laws are introduced as additional
+    constraints in the loss function during training. This approach allows the model
+    to make physically consistent predictions, even when dealing with limited or noisy
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we achieve this integration? Similar to the PINNs, we add an extra loss
+    contribution to measure how well the predictions of the model adhere to the known
+    differential equation. By optimizing this loss function, the model learns to make
+    predictions that are both data-consistent (if measurement data is provided during
+    training) and physics-consistent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd4998e3fb37d406d81d4671f96e3588.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. Physics-informed DeepONet uses DeepONet as the backbone architecture
+    while leveraging the concept of physics-informed learning to train the model.
+    This way, the trained physics-informed DeepONet is both data and physics-consistent.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary, the Physics-informed DeepONet is a powerful tool that combines
+    the best of both worlds: the efficiency of the DeepONet and the accuracy of physics-informed
+    learning. It represents a promising approach to solving complex problems in fields
+    where both real-time inference and physical consistency are crucial.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will start working on our case study and turn theory
+    into actual code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Implementation of Physics-informed DeepONet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we will walk through how to define a Physics-informed DeepONet
+    model to address our target case study. We will implement it in TensorFlow. Let’s
+    start with importing the necessary libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3.1 Define the Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As discussed previously, physics-informed DeepONet shares the same architecture
+    as the original DeepONet. The following function defines the architecture for
+    DeepONet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We assume that both the trunk and branch networks are fully connected networks,
+    with 3 hidden layers, each containing 50 neurons and with tanh activation function.
+    This architecture is chosen based on preliminary tests and should serve as a good
+    starting point for this problem. Nevertheless, it is straightforward to replace
+    it with other architectures (e.g., CNN, RNN, etc.) and other layer hyperparameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The outputs of trunk and branch networks are merged via a dot product. As suggested
+    in the [original DeepONet paper](https://arxiv.org/abs/1910.03193), we add a bias
+    term to improve the prediction accuracy. The `BiasLayer()` is a custom-defined
+    class to achieve that goal:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3.2 Define ODE loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we define a function to compute the ODE loss. Recall that our target
+    ODE is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, we can define the function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used `tf.GradientTape()` to calculate the gradient of s(·) with respect to
+    *t*. Note that in TensorFlow, `tf.GradientTape()` is used as a context manager,
+    and any operations executed within the tape’s context will be recorded by the
+    tape. Here, we explicitly watch the variable *t*.As a result,TensorFlow will automatically
+    track all operations that involve *t*,which in this case, it’s a forward running
+    of the DeepONet model. Afterward, we use tape’s `gradient()` method to calculate
+    the gradient of s(·) with respect to *t*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We included an extra input argument `u_t`, which denotes the value of the input
+    function u(·) evaluated at *t*. This constitutes the right-hand-side term of our
+    target ODE, and it is needed for calculating the ODE residual loss.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We used `@tf.function` decorator to convert the regular Python function we just
+    defined into a TensorFlow graph. It is useful to do that as gradient calculation
+    can be quite expensive and executing it in Graph mode can significantly accelerate
+    the computations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 3.3 Define gradient descent step
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we define the function to compile the total loss function and calculate
+    the gradients of total loss with respect to the network model parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We only consider two loss terms: the loss associated with the initial condition
+    `IC_loss`, and the ODE residual loss `ODE_loss`. The `IC_loss` is calculated by
+    comparing the model-predicted s(*t*=0) with the known initial value of 0, and
+    the `ODE_loss` is calculated by calling our previously defined `ODE_residual_calculator`
+    function. Data loss can also be calculated and added to the total loss if the
+    measured s(*t*) values are available (not implemented in the code above).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In general, the total loss is a weighted sum of `IC_loss` and `ODE_loss`, where
+    the weights control how much emphasis or priority is given to that individual
+    loss terms during the training process. In our case study, it is sufficient to
+    simply set both `IC_weight` and `ODE_weight` as 1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Similar to how we compute the `ODE_loss`, we also adopted `tf.GradientTape()`
+    as the context manager to calculate the gradients. However, here we calculate
+    the gradients of the total loss with respect to the network model parameters,
+    which are necessary to perform gradient descent.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Before we proceed, let’s quickly summarize what we have developed so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ We can initialize a DeepONet model with `create_model()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ We can calculate ODE residuals to assess how well the model predictions
+    stick to the governing ODE. This is achieved with `ODE_residual_calculator` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3️⃣ We can calculate the total loss as well as its gradients with respect to
+    the network model parameters with `train_step`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the preparation work is half done 🚀 In the next section, we will discuss
+    data generation and data organization issues (the strange `X[:, :1]`in the code
+    above will hopefully become clear then). After that, we can finally train the
+    model and see how it performs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Data Generation and Organization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we discuss the generation of synthetic data and how to organize
+    it for training the Physics-informed DeepONet model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4.1 Generation of u(·) profiles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The data used for training, validation, and testing will be synthetically generated.
+    The rationale behind this approach is twofold: it’s not only convenient but also
+    allows for full control over the data’s characteristics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of our case study, we will generate the input function `u(·)`using
+    a zero-mean **Gaussian Process**, with a radial basis function (RBF) kernel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Gaussian Process is a powerful mathematical framework commonly used in machine
+    learning to model functions. The RBF kernel is a popular choice for capturing
+    the similarity between input points. By using the RBF kernel within the Gaussian
+    Process, we ensure that the generated synthetic data exhibits a smooth and continuous
+    pattern, which is often desirable in various applications. To learn more about
+    Gaussian Process, feel free to checkout my previous [blog](https://medium.com/towards-data-science/implement-a-gaussian-process-from-scratch-2a074a470bce).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In scikit-learn, this can be achieved in just a few lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use `length_scale`to control the shape of the generated function. For a RBF
+    kernel, the Figure 11 shows the u(·) profile given different kernel length scales.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Recall that we need to discretize u(·) before feeding it to the DeepONet. This
+    is done by specifying a`X_sample` variable, which allocates 100 uniformly distributed
+    points within our interested temporal domain.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In scikit-learn, the `GaussianProcessRegressor` object exposes a `sample_y`
+    method to allow drawing random samples from the Gaussian process with the length-scale-specified
+    kernel. Note that we didn’t call `.fit()` before using the `GaussianProcessRegressor`
+    object, which is unlike what we normally do with other scikit-learn regressors.
+    This is intentional as we want `GaussianProcessRegressor` to use the **exact**
+    `length_scale` we provided. If you call `.fit()` , the `length_scale`will be optimized
+    to another value to better fit whatever data is given.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The output `u_sample` is a matrix with a dimension of sample_num * 100\. Each
+    row of `u_sample`represents one profile of u(·), which consists of 100 discrete
+    values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/c2ac5842757f39f116035a152bcba09c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11\. Synthetic u(·) profiles under different kernel length scales. (Image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4.2 Generation of Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we have generated the u(·) profiles, let’s focus on how to get the dataset
+    organized such that it can be fed into the DeepONet model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that the DeepONet model we developed in the last section requires 3
+    inputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the time coordinate *t*, which is a scalar between 0 and 1 (let’s not consider
+    batch size for the moment);
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the profile of u(·), which is a vector that consists of u(·) values evaluated
+    at pre-defined, fixed time coordinates between 0 and 1;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the value of u(*t*), which is again a scalar. This u(*t*) value is used for
+    calculating the ODE loss at time coordinate *t*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Therefore, we can formulate a single sample like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e06a941b6ccf75fa9eea11abc4f72ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, for each u(·) profile (marked as green in the above illustration),
+    we should consider multiple *t*’s (and the corresponding u(*t*)’s) to evaluate
+    the ODE loss to better impose the physical constraints. In theory, *t* can take
+    any value within the considered temporal domain (i.e., between 0 and 1 for our
+    case study). However, to simplify things, we will just consider *t* at the same
+    temporal locations where u(·) profile is discretized. As a result, our updated
+    dataset will be like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c89b66eaa705cd09390e8d33454a29a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that the above discussion only considers a single u(·) profile. If we
+    take into account all the u(·) profiles, our final dataset would look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/965b81f6b516c9f31326541d2de87f7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where N stands for the number of u(·) profiles. Now with that in mind, let’s
+    see some code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code above, we add one option of computing the corresponding s(·) for
+    a given u(·) profile. **Although we won’t use s(·) values in training, we would
+    still need them for testing the model performance.** The calculation of s(·) is
+    achieved by using `scipy.integrate.solve_ivp`, which is an ODE solver from SciPy
+    that is specifically designed to solve initial value problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can generate the training, validation, and testing dataset. Note that
+    for this case study, we will use a length scale of 0.4 to generate the u(·) profiles
+    and train the physics-informed DeepONet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4.3 Dataset Organization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, we convert the NumPy array into the TensorFlow dataset objects to facilitate
+    data ingestion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code above, we create two distinct datasets: one for evaluating the
+    ODE loss (`train_ds`), and the other for evaluating the initial condition loss
+    (`ini_ds`). We have also pre-calculated the mean and variance values for *t* and
+    u(·). Those values will be used to standardize the inputs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for data generation and organization. Next up, we will kick off the
+    model training and see how it performs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Training Physics-informed DeepONet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a first step, let’s create a custom class to track loss evolutions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we define the main training/validation logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s a rather long chunk of code, but it should be self-explanatory as we have
+    already covered all the important pieces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To visualize the training performance, we can plot the loss convergence curves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The training results look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/847a256dd8a4e962b37c4816d044ab61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12\. Loss convergence plot. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition, we can also see how the prediction accuracy for one specific target
+    s(·) evolves during the training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the beginning of the training, we can see a visible discrepancy between the
+    model prediction and ground truth. However, toward the end of the training, the
+    predicted s(·) converged to the ground truth. This indicates that our physics-informed
+    DeepONet learns properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Results Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once the training is completed, we can reload the saved weights and assess the
+    performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we randomly picked three u(·) profiles from the testing dataset and compare
+    the corresponding s(·) predicted by our physics-informed DeepONet as well as calculated
+    by the numerical ODE solver. We can see that the predictions and ground truth
+    are almost indistinguishable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f153e6df9a94a771c940ed219fafc0da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 13\. Three u(·) profiles are randomly selected from the testing dataset,
+    which are shown on the upper row. The lower row displays the corresponding s(·)
+    profiles. We can see that the results predicted by the physics-informed DeepONet
+    are indistinguishable from the ground truth, which is calculated by numerical
+    ODE solvers. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results are quite incredible, considering the fact that we didn’t even
+    use any observational data of s(·) (except the initial condition) to train the
+    DeepONet. This shows that the governing ODE itself has provided sufficient “supervision”
+    signal for the model to make accurate predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another interesting thing to assess is the so-called “out-of-distribution” prediction
+    capability. Since we enforced the governing equation when training the DeepONet,
+    we can expect the trained physics-informed DeepONet to still be able to make decent
+    predictions when the u(·) profiles lie outside the distribution of the training
+    u(·)’s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test that, we can generate u(·) profiles using a different length scale.
+    The following results showed three u(·) profiles generated with a length scale
+    of 0.6, as well as the predicted s(·)’s. These results are quite nice, considering
+    that the physics-informed DeepONet is trained with a length scale of 0.4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8366942ba5deba3bcf17ad845f2af6ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 14\. The trained physics-informed DeepONet displayed a certain level
+    of out-of-distribution prediction capability. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if we keep reducing the length scale to 0.2, we would notice that visible
+    discrepancies start to appear. This indicates that there is a limit on the generalization
+    capability of the trained physics-informed DeepONet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9632515eaf22aa6a345dbb0c574bbf0e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 15\. There is a limit on how far can physics-informed DeepONet generalize.
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Smaller length scales in general lead to more complex u(·) profiles, which would
+    be quite different than the u(·) profiles used for training. This could explain
+    why the trained model encountered challenges in making accurate predictions in
+    smaller length-scale regions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15e2cac7a0a905f565b4bfc01a6d2102.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 16\. It’s challenging for our trained model to generalize to smaller
+    length-scale regions, as the u(·) profiles are more complex and distinct from
+    the training data. (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, we could say that the developed physics-informed DeepONet can properly
+    learn the system dynamics and map from input function to output function given
+    only the ODE constraints. In addition, physics-informed DeepONet displays a certain
+    level of capability to handle “out-of-distribution” predictions, indicating that
+    training the model to align with the governing ODE improves the model’s generalization
+    capability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Take-away
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve come a long way on our exploration of Physics-Informed DeepONet. From
+    understanding the fundamental concepts of DeepONet and physics-informed learning,
+    to seeing them in action through code implementation, we’ve covered a lot about
+    this powerful method of solving differential equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are a few key take-aways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ **DeepONet** is a powerful framework to perform operator learning, thanks
+    to its novel architecture of branch and trunk networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2️⃣ **Physics-Informed Learning** explicitly incorporates governing differential
+    equations of the dynamical system into the learning process, thus possessing the
+    potential of improving the model’s interpretability and generalization ability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3️⃣ **Physics-Informed DeepONet** combines the strengths of DeepONet and physics-informed
+    learning, and presents itself as a promising tool for learning functional mappings
+    while adhering to the associated governing equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hope you have enjoyed this deep dive into Physics-Informed DeepONet. Next up,
+    we will shift our gears toward solving inverse problems with physics-informed
+    DeepONet. Stay tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you find my content useful, you could buy me a coffee [here](https://www.buymeacoffee.com/Shuaiguo09f)
+    🤗 Thank you very much for your support!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the companion notebook with full code [here](https://github.com/ShuaiGuo16/PI-DeepONet/tree/main)
+    *💻*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'If you are also interested in using physics-informed DeepONet to solve inverse
+    problems, feel free to check out my new blog here: [Solving Inverse Problems With
+    Physics-Informed DeepONet: A Practical Guide With Code Implementation](/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'If you would like to keep up to date with the best practices of physics-informed
+    learning, please take a look at the design pattern series I am currently running:
+    [Unraveling the Design Pattern of Physics-Informed Neural Networks](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can also subscribe to my [newsletter](https://shuaiguo.medium.com/subscribe)
+    or follow me on [Medium](https://shuaiguo.medium.com/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Lu et al., DeepONet: Learning nonlinear operators for identifying differential
+    equations based on the universal approximation theorem of operators. arXiv, 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Wang et al., Learning the solution operator of parametric partial differential
+    equations with physics-informed DeepOnets. arXiv, 2021.'
+  prefs: []
+  type: TYPE_NORMAL

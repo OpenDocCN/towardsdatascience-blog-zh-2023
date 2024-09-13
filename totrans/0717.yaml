@@ -1,0 +1,329 @@
+- en: Deploying LLMs On Amazon SageMaker With DJL Serving
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-llms-on-amazon-sagemaker-with-djl-serving-8220e3cfad0c](https://towardsdatascience.com/deploying-llms-on-amazon-sagemaker-with-djl-serving-8220e3cfad0c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deploy BART on Amazon SageMaker Real-Time Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ram-vegiraju.medium.com/?source=post_page-----8220e3cfad0c--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----8220e3cfad0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8220e3cfad0c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8220e3cfad0c--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----8220e3cfad0c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8220e3cfad0c--------------------------------)
+    ·8 min read·Jun 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27d3d2701b592cc5346c24eb2c67afe6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from [Unsplash](https://unsplash.com/photos/CejqWHRRXUQ)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) and Generative AI continue to take over the Machine
+    Learning and general tech space in 2023\. With the LLM expansion has come an influx
+    of new models that continue to improve at a stunning rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the accuracy and performance of these models are incredible, they have
+    their own set of challenges in terms of hosting these models. Without model hosting,
+    it is hard to recognize the value that these LLMs provide in real-world applications.
+    What are the specific challenges with LLM hosting and performance tuning?
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we load these larger models that are scaling up to past 100s of GBs
+    in size?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How can we properly apply model partitioning techniques to efficiently utilize
+    hardware while not compromising on model accuracy?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How can we fit these models on a singular GPU or multiple?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These are all challenging questions that are addressed and abstracted out through
+    a model server known as [DJL Serving](http://djl.ai/serving/). DJL Serving is
+    a high performance universal solution that integrates directly with various model
+    partitioning frameworks such as the following: [HuggingFace Accelerate](https://huggingface.co/docs/accelerate/index),
+    [DeepSpeed](https://github.com/microsoft/DeepSpeed), and [FasterTransformers](https://github.com/NVIDIA/FasterTransformer).
+    With DJL Serving you can configure your serving stack to utilize these partitioning
+    frameworks to optimize inference at scale across multiple GPUs with these larger
+    models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In today’s article in specific we explore one of the smaller language models
+    in [BART](https://huggingface.co/facebook/bart-large) for Feature Extraction.
+    We will showcase how you can use DJL Serving to configure your serving stack and
+    host a [HuggingFace Model](https://huggingface.co/) of your choice. This example
+    can serve as a template to build upon and utilize the model partitioning frameworks
+    aforementioned. We will then take our DJL specific code and integrate it with
+    SageMaker to create a [Real-Time Endpoint](https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html)
+    that you can use for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NOTE**: For those of you new to AWS, make sure you make an account at the
+    following [link](https://aws.amazon.com/console/) if you want to follow along.
+    The article also assumes an intermediate understanding of SageMaker Deployment,
+    I would suggest following this [article](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
+    for understanding Deployment/Inference more in depth.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a Model Server? What Model Servers Does Amazon SageMaker Support?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Model Servers](https://thenewstack.io/model-server-the-critical-building-block-of-mlops/)
+    at a very basic premise are “inference as a service”. We need an easy way to expose
+    our models via an API, but these model servers take care of the grunt work behind
+    the scenes. These model servers load and unload our model artifacts and provide
+    the runtime environment for your ML models that you are hosting. These model servers
+    can also be tuned depending on what they expose to the user. For example, TensorFlow
+    Serving gives the choice of [gRPC vs REST](https://medium.com/@avidaneran/tensorflow-serving-rest-vs-grpc-e8cef9d4ff62)
+    for your API calls.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Amazon SageMaker integrates with a variety of these different model servers
+    that are also exposed via the different [Deep Learning Containers](https://github.com/aws/deep-learning-containers/blob/master/available_images.md)
+    that AWS provides. Some of these model servers include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[TensorFlow Serving](https://www.tensorflow.org/tfx/guide/serving)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[TorchServe](https://pytorch.org/serve/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multi-Model Server (MMS)](https://github.com/awslabs/multi-model-server)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Triton Inference Server](https://github.com/triton-inference-server/server)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[DJL Serving](https://github.com/deepjavalibrary/djl-serving)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For this specific example we will utilize DJL Serving as it is tailored for
+    Large Language Model Hosting with it’s different model partitioning frameworks
+    it has enabled. That does not mean the server is limited to LLMs, you can also
+    utilize it for other models as long as you are properly configuring the environment
+    to install and load up any other dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a very high level overview depending on the model server that you are using
+    the way you bake and shape your artifacts that you provide the server is the only
+    difference along with whatever model frameworks and environments they support
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DJL Serving vs JumpStart
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In my previous [article](/deploying-cohere-language-models-on-amazon-sagemaker-23a3f79639b1)
+    we explored how we could deploy [Cohere’s Language Models](https://cohere.com/)
+    via [SageMaker JumpStart](https://awstip.com/automl-beyond-with-sagemaker-jumpstart-9962ffc4bcd1).
+    Why not use SageMaker JumpStart in this case? At the moment not all LLMs are supported
+    by SageMaker JumpStart. In the case that there’s a specific LLM that JumpStart
+    does not support it makes sense to use DJL Serving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other major use case for DJL Serving is when it comes to customization and
+    performance optimization. With JumpStart you are constrained to the model offering
+    and whatever limitations exist with the container that’s already been pre-baked
+    for you. With DJL there is more code work at a container level but you can apply
+    performance optimization techniques of your choice with the different partitioning
+    frameworks that exist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DJL Serving Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this code example we will be utilizing a ml.c5.9xlarge [SageMaker Classic
+    Notebook Instance](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html) with
+    a conda_amazonei_pytorch_latest_p37 kernel for development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we can get to DJL Serving Setup we can quickly explore the BART model
+    itself. This model can be found in the HuggingFace Model Hub and can be utilized
+    for a variety of tasks such as Feature Extraction and Summarization. The following
+    code snippet is how you can utilize the BART Tokenizer and Model for a sample
+    inference locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can map this model to DJL Serving with a few specific files. First we
+    define a serving.properties file which essentially defines the configuration for
+    your model deployment. In this case we specify a few parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Engine**: We are utilizing Python for the DJL Engine, the other options here
+    are also DeepSpeed, FasterTransformers, and Accelerate.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Model_ID**: For the HuggingFace Hub each model has a model_id that can be
+    used as an identifier, we can feed this into our model script for model loading.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Task**: For HuggingFace specific models you can include a task as many of
+    these models can support various language tasks, in this case we specify Feature
+    Extraction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Other configurations you can specify for DJL include: tensor_parallel degree,
+    minimum and maximum workers on a per model basis. For an extensive list of properties
+    you can configure please refer to the following [documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference-configuration.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next files we provide are our actual model artifact and a requirements.txt
+    for any additional libraries you will utilize in your inference script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case we have no model artifacts as we will directly load the model from
+    the HuggingFace Hub in our inference script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our Inference Script (model.py) we can create a class that captures both
+    model loading and inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our initialize method will parse our serving.properties file and load the BART
+    Model and Tokenizer from the HuggingFace Model Hub. The properties object essentially
+    contains everything you have defined in the serving.properties file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then define an inference method which accepts a string input and tokenizes
+    the text for the BART Model inference that we can copy from the local inference
+    example above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then instantiate this class and capture all of this in the “handle” method.
+    By default for DJL Serving this is the method that the handler parses for in the
+    inference script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have all the necessary artifacts on the DJL Serving side and can configure
+    these files to fit the SageMaker constructs to create a Real-Time Endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SageMaker Endpoint Creation & Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For creating a SageMaker Endpoint the process is very similar to that of other
+    Model Servers such as MMS. We need two artifacts to create a SageMaker Model Entity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'model.tar.gz: This will contain our DJL specific files and we organize these
+    in a format that the model server expects.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Container Image](https://aws.plainenglish.io/how-to-retrieve-amazon-sagemaker-deep-learning-images-ff4a5866299e):
+    SageMaker Inference always expects a container, in this case we use the DJL Deepseed
+    image provided and maintained by AWS.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can create our model tarball, upload it to S3 and then retrieve our image
+    to get the artifacts ready for Inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then utilize the [Boto3 SDK](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html)
+    to conduct our [Model](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_model.html),
+    [Endpoint Configuration](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_endpoint_config.html),
+    and [Endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_endpoint.html)
+    creation. The only change from the usual three API calls is that in the Endpoint
+    Configuration API call we specify [Model Download Timeout](https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference-hosting.html)
+    and [Container Health Check Timeout](https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference-hosting.html)
+    parameters to higher numbers as we are dealing with a larger model in this case.
+    We also utilize a g5 family instance for the additional GPU compute power. For
+    most LLMs, GPUs are mandatory to be able to host models at this size and scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the endpoint has been created we can perform a sample inference utilizing
+    the [invoke_endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime/client/invoke_endpoint.html)
+    API call and you should see a numpy array returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additional Resources & Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RamVegiraju/SageMaker-Deployment/tree/master/LLM-Hosting/DJL-Serving/BART?source=post_page-----8220e3cfad0c--------------------------------)
+    [## SageMaker-Deployment/LLM-Hosting/DJL-Serving/BART at master · RamVegiraju/SageMaker-Deployment'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RamVegiraju/SageMaker-Deployment/tree/master/LLM-Hosting/DJL-Serving/BART?source=post_page-----8220e3cfad0c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the code for the entire example at the link above. LLM Hosting
+    is still a growing space with many challenges that DJL Serving can help simplify.
+    Paired with the hardware and optimizations SageMaker provides this can help enhance
+    your inference performance for LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always feel free to leave any feedback or questions around the article. Thank
+    you for reading and stay tuned for more content in the LLM space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
+    *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
+    If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,491 @@
+- en: A step-by-step guide to Row and Columns Access policies in BigQuery
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-step-by-step-guide-to-row-and-columns-access-policies-in-bigquery-6b0f6fe0b19f](https://towardsdatascience.com/a-step-by-step-guide-to-row-and-columns-access-policies-in-bigquery-6b0f6fe0b19f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Google’s Datawarehouse offers amazing ways to restrict access to the information
+    contained in tables and views, on both vertical and horizontal dimensions, let’s
+    discover how to set this up.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[![Pierre-Louis
+    Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)
+    [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)
+    ·7 min read·Jan 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/726d73195957ee54f18bfda9b8bf529a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo from [Martin Olsen](https://unsplash.com/@martinols3n) on [Unsplash](https://unsplash.com/photos/szfPB4X-FWk)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Managing a data warehouse implies that multiple users, with different roles
+    and rights, should be able to query the data they are looking for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might decide to build one specific table for each role but this would be
+    time and resource-consuming, not to mention the difficulties to maintain this
+    system over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this tutorial, we will create an “EMPLOYEES” table, containing various levels
+    of information, from the “Country” where the employee is located… to his/her salary…
+    and consider 3 roles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/03aacdca9a85d7f58da7ffedc6af0a45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the 3 roles — Image by Author created with [www.freepik.com](http://www.freepik.com)
+    sources
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Human Resources**: they should access all data for their daily work, without
+    any restrictions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data Scientists**: they might only access some selected and anonymized columns
+    for modeling purposes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data Citizen**: most of the columns should be hidden from them and only allowing
+    to create high-level queries and analysis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating a new project in Google Cloud Platform
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I will assume that you already have a GCP account. If not, you can easily open
+    one and get $300 of credits for 30 days. If you already have one, this exemple
+    will cost you close to nothing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should start by creating a new project to isolate your work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Click on the project selector in the top left and then “New Project”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Make sure you can create projects under an organization (like your company)
+    otherwise, you will not be able to enforce some of the policies**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab13ed827771aeadf5d54d5f0a57bc37.png)![](../Images/c7be03ab945951b569bc6e431efd9d1f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating a new project linked with an organization in GCP — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: The project created here is “****row-columns-policies****”.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a fake employees information table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/a05d542ccdcc3acb4be036508c26b22d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “salaries.csv“ content displayed with BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have created and uploaded a fake table available here on my [GoogleDrive](https://drive.google.com/file/d/1YHKOPR92SmiO1ujm3qDKRDLcpxkq_Npg/view?usp=share_link),
+    containing, for each of the 8600 employees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**First Name**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Last Name**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Department**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Country**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Email**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Salary**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Currency**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Salary Positioning**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Last Performance Evaluation**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Seniority**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Commute Time**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s jump on “BigQuery”, click on “**Add Data**”, and “**Local Storage**”,
+    keeping in mind two important points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A table must be stored in a dataset: we will create one called “EMPLOYEES”
+    (see second screenshot). **You should pay attention to the region you select:
+    you will have to use the same when defining policies.**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As the scheme of the CSV file is straightforward, we can choose the “Auto-Detect”
+    Scheme option to relieve us from declaring each column’s type individually.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/1c7c11e6722a9e96e8111479d7a60d25.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating a new table in BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51fa8306e2f242344a2c96bbb374046b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating a new dataset in BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our “SALARIES” table is now properly built (1st screenshot below) and a simple
+    SQL query (2nd screenshot) will reveal the corresponding data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0846e1b8b4b7a064a9edf445ca047501.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: EMPLOYEES table scheme in BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5076c50d9efe6ce01061a68a9b7a654b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SQL exploration result in BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a “tag policy” taxonomy to restrict access
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'From BigQuery menu, let’s switch to “**Policy tags**” (if asked, enable the
+    “**Google Cloud Data Catalog**” and/or “**BigQuery Data Policy**” APIs):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1572494b4a8f5048976a360c69a1c5a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After clicking on “**Create Taxonomy**”, we define three levels of employee
+    information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**High** (critical information like Salary)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Medium** (like “Last Performance” or “Salary Positioning”) that can be helpful
+    for Data Scientists in their modeling tasks.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Identification** (information that establishes a direct connection with an
+    employee)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '+ two sub-levels:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Identification > Names**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Identification > Email**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Note: the two sub-tags below the “Identification” tag (Names & Emails) will
+    allow us to use different masking strategies later on.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02032dfbf21992d80501dc13aaf4f975.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating a new taxonomy in BigQuery/Dataplex — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: As stated before, make sure you are using the same region as the one
+    you chose for the dataset.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the taxonomy is created, the **most crucial part is to enable it** and
+    you might be facing an issue if your project is not related to an organization
+    (see [Google related documentation](https://cloud.google.com/resource-manager/docs/creating-managing-organization)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1416226c36660e65d02a52c1d5ddad5e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Enforcing a taxonomy in BigQuery/Dataplex — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying Tag policies to the table columns
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Tags policies can be applied through the “Dataplex” section of GCP. The search
+    engine will help you to identify the “SALARIES” table quickly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c6d78abdbf4be5fe5f7da38f9afbb83.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Searching a table in Dataplex — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thanks to the “SCHEMA AND COLUMN TAGS”, we can easily assign a policy tag to
+    some of the sensitive columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7814f52c2bb4f8ed8d92dfd524a3c65d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Applying policy tags in Dataplex — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding a “viewer” principal to the project
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/439de62570b783adee18b171ff03fd86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the 3 roles — Image by Author created with [www.freepik.com](http://www.freepik.com)
+    sources
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume that a Data Citizen wants to access to this project and conduct
+    a high-level analysis regarding the employees’ spread in countries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We go back to the IAM section of the project and add a principal with a “Viewer”
+    role:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6cf4433a38c081d579c5e027b5fa6c33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Assigning a “Viewer” role in Google IAM — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once connected, this principal will immediately get warnings from BigQuery
+    telling him/her that access to some columns will be restricted:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28bb02c4f207718b8f04ea88a7fd8169.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reviewing SALARIES table with a “viewer” role in BigQuery— Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Indeed, as we have the minimum rights, only 3 columns are visible in the preview
+    section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fff750869a78a6e211415c745d47307.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Previewing SALARIES table with a “viewer” role in BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But it still allows us to conduct the analysis we want to perform and get a
+    breakdown of the number of employees, per country and department:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/364645f2cc26126b0f38753c220fe94f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SQL query on SALARIES table with a “viewer” role in BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining a “Masked Reader” role and the corresponding masking strategies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e4a9b7ef1c80fca88d6fcf1d97a103ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the 3 roles — Image by Author created with [www.freepik.com](http://www.freepik.com)
+    sources
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s assume that Human Resources asked a Data Scientist to perform some
+    statistical analysis regarding the employees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: She needs to access some of the columns but not necessarily in their original
+    form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by assigning the “**Masked Reader**” role to this new principal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ef308d69ab58af88a242b17ed38ad28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Assigning a “Masked Reader” role in Google IAM — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And then define different masking strategies to transform each column according
+    to our needs. For ex.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**First** and **Last names** should be converted to **NULL**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Emails** should be “**hashed**” to keep a unique identifier but impossible
+    to link with the original employees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Salary** should be converted to “**0**” ([default masking strategy for integers](https://cloud.google.com/bigquery/docs/column-data-masking-intro#masking_options))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/f3fc4e3233d49ecb11f28930a75f76e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Steps to define a Masking Rule in Google BigQuery— Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d515649596a93a98a99f6cd1806002a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A set of Masking Rules in Google BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we need to grant access to the “Medium” labeled information and add
+    this new principal as an authorized viewer of this category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/caa3b05bb67a88f395f25caec7e696f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adding a principal as a viewer of a masking policy in Google BigQuery — Image
+    from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As expected, the result of the below SQL query — when connected as a Data Scientist
+    with the “Masked Reader” role — will properly implement the rules defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e675552af026653f55b63112b93214cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of masking policies on Masked Reader role in Google BigQuery — Image
+    from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding a row policy to the table access management
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now let’s assume that, as an HR Global Manager, we need to grant access to the
+    table to the local Canadian HR… without disclosing figures from other countries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can set row-level security, assigned to this user:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It’s like automatically extending any query executed by this principal with
+    the “ WHERE Country = ‘Canada’ ” statement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/747d57586f8af2aa2d2c7971b379f8fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Result of row-level security in Google BigQuery — Image from Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is a very nice way to reduce the information available on one or multiple
+    dimensions!
+  prefs: []
+  type: TYPE_NORMAL
+- en: And this last example closes the different use cases I wanted to explore in
+    this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a reminder, “Columns Masking” and “Row-Level” policies offer a great way
+    to filter the data, directly in your Data platform. Only one table is managed
+    in the Data Warehouse, allowing different solutions and/or users to query it seamlessly,
+    without compromising secrecy rules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🍒 Cherry on the cake, these functionalities are free so there is absolutely
+    no reason not to leverage them!
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, I tried to identify all required steps but do not hesitate to revert
+    to me should there be any missing instructions in my tutorial!
+  prefs: []
+  type: TYPE_NORMAL
+- en: (thanks to our Lead Data Engineer, Ilyes Touzene, for proof-reading me!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And do not hesitate to browse through my other contributions on Medium:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----6b0f6fe0b19f--------------------------------)
+    [## Pierre-Louis Bescond’s articles on Medium'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Science, Machine Learning and Innovation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pl-bescond.medium.com](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----6b0f6fe0b19f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

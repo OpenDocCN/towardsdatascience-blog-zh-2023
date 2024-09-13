@@ -1,0 +1,1480 @@
+- en: How to Improve Clustering Accuracy with Bayesian Gaussian Mixture Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-improve-clustering-accuracy-with-bayesian-gaussian-mixture-models-2ef8bb2d603f](https://towardsdatascience.com/how-to-improve-clustering-accuracy-with-bayesian-gaussian-mixture-models-2ef8bb2d603f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Clustering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A more advanced clustering technique for real world data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)[![Mike
+    Clayton](../Images/2d37746b13b7d2ff1c6515893914da97.png)](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)
+    [Mike Clayton](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)
+    ·27 min read·Feb 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4dfa3e01cd737d3436bde521a650137a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Tima Miroshnichenko](https://www.pexels.com/photo/mixture-of-paint-on-palette-5034000/)
+    from [Pexels](https://www.pexels.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In the real world you will often find that data follows a certain probability
+    distribution. Whether it is a Gaussian (or normal) distribution, Weibull distribution,
+    Poisson distribution, exponential distribution etc., will depend on the specific
+    data.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Being aware of which distribution describes your data, or likely best describes
+    your data, allows you to take advantage of that fact, and improve your inference
+    and/or predictions.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article will look at how leveraging knowledge of an underlying probability
+    distribution of a dataset can improve the fit of a bog standard K-Means clustering
+    model, and even allow for automatic selection of the number of appropriate clusters,
+    directly from the underlying data.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A lot of the headline grabbing machine / deep learning techniques tend to involve
+    ***supervised*** machine / deep learning i.e. the data has been labelled, and
+    the models are given the correct answers to learn from. The trained model is then
+    applied to future data to make predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is all very useful, but the reality is that data is constantly being produced
+    by businesses and people around the world, and the majority of it is not labelled.
+    It is actually quite expensive and time consuming to label data in the vast majority
+    of cases. This is where ***unsupervised*** learning comes in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: …data is constantly being produced by businesses and people around the world,
+    and the majority of it is not labelled.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Finding the best way to infer meaning from unlabelled data is a very important
+    pursuit for many businesses. It allows the unearthing of potentially unknown,
+    or less obvious, trends or groupings. It is then possible to assign resources,
+    target specific groups of customers, or just instigate additional research and
+    development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further to this, a large majority of the time, the data involves people or natural
+    processes in one form or other. Natural processes, and the behaviour of people
+    are, more often than not, captured and described well by a Gaussian distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this in mind, this article will take a look into how a Gaussian distribution,
+    in the form of both a Gaussian Mixture Model (GMM) and a Bayesian Gaussian Mixture
+    Model (BGMM), can be utilised to improve the clustering accuracy of a dataset
+    that represents ‘natural processes’ encountered in real world datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a comparison and base for judgement, the ubiquitous K-Means clustering algorithm
+    will be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plan
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/563f971fc8b592a6744b15fcb3a0e363.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Christina Morillo](https://www.pexels.com/photo/man-standing-infront-of-white-board-1181345/)
+    from [Pexels](https://www.pexels.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will cover quite a lot of ground, and also incorporate examples
+    from a comprehensive Jupyter notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This section should give you some guidance on what is covered and where to skip
+    to should you need access to specific information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially the article will cover the “what” and “why” questions in regard to
+    the use of Gaussian Mixture Models in general.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As there are two readily available implementations of Gaussian Mixture Models
+    within the scikit-learn library, a discussion of the key differences between a
+    plain [Gaussian Mixture Model](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html)
+    and [Bayesian Gaussian Mixture Model](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html#sklearn.mixture.BayesianGaussianMixture)
+    will follow.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The article will then dive into using Gaussian Mixture Models to cluster a real
+    world multi-featured dataset. All examples will be implemented using K-Means,
+    a plain Gaussian Mixture Model and a Bayesian Gaussian Mixture Model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There will then be two additional sections primarily focused on clearer visualisation
+    of the algorithms. Complexity of the data will be reduced by a) using a two component
+    principle component analysis (PCA) and b) analysing only two features from the
+    dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Note:*** *the dataset chosen is in fact labelled. This has been done deliberately
+    so that the performance of the clustering can be compared to the 100% correct
+    and known primary clustering.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Explanations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/9a2591d5a3de758c76a2b5a4140b25c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Polina Zimmerman](https://www.pexels.com/photo/notes-on-board-3782142/)
+    from [Pexels](https://www.pexels.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we cover the “what” and “why” type questions before getting stuck into
+    the data to see it all in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get started, it is worth noting that there will be no discussion of
+    what a Gaussian / Normal distribution is, or even what K-Means clustering is.
+    There are plenty of great resources out there, and there just isn’t the space
+    to cover it in this article. Therefore, a basic understanding of those concepts
+    is assumed from this point on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *the phrases “Gaussian distribution” and “Normal distribution”
+    mean one and the same thing, and will be used interchangeably throughout this
+    article.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a Gaussian Mixture Model?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In simple terms, the algorithm assumes that the data you provide it can be approximated
+    with an unspecified mixture of different Gaussian distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm will try to extract and separate this mixture of Gaussian distributions
+    and pass them back to you as separate clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it really.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So in essence, it is like K-Means clustering, but it has the added advantage
+    of being able to apply additional statistical constraints on the data. This gives
+    more flexibility to the shape of the clusters it can capture. In addition, it
+    allows closely spaced, or slightly conjoined, clusters to be separated more precisely,
+    as the algorithm has access to the statistical probabilities generated by the
+    assumed Gaussian distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a visual sense, if the analysis is restricted to two or three dimensions,
+    the K-Means algorithm pins down cluster centres and applies a ‘circular’ or ‘spherical’
+    distribution around those centres.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if the underlying data is Gaussian it is perfectly possible, and even
+    expected, that the distribution will be elongated to some extent due to the tails
+    of a Gaussian distribution. This would be the equivalent of an ‘ellipse’ or ‘ellipsoid’
+    in terms of shape. These elongated ‘ellipse’ or ‘ellipsoid’ type shapes are something
+    K-Means cannot model accurately, but the Gaussian Mixture Models can.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other side of the coin, if you pass the Gaussian Mixture Models data
+    that is definitely nowhere near Gaussian, the algorithm will still assume it is
+    Gaussian. You will therefore likely end up with, at best, something that is no
+    better than K-Means.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Side note:*** *the Gaussian Mixture Model and Bayesian Gaussian Mixture
+    Model can use the K-Means clustering algorithm to generate some of the initial
+    parameters of the model (it is in fact the default setting in scikit-learn).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which begs the question…
+  prefs: []
+  type: TYPE_NORMAL
+- en: What type of data could Gaussian Mixture Models be used for?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Natural processes are usually a good place to start. The reason for this is
+    mainly due to the Central Limit Theorem (CLT):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In probability theory, the **central limit theorem** (**CLT**) establishes that,
+    in many situations, when independent random variables are summed up, their properly
+    normalized sum tends toward a normal distribution even if the original variables
+    themselves are not normally distributed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[-wikipedia.org](https://en.wikipedia.org/wiki/Central_limit_theorem)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In very simple terms, what this essentially means with natural processes is
+    that although the particular variable (a humans height for example) is caused
+    by many factors that may, or may not, be normally distributed (diet, lifestyle,
+    environment, genes etc.) the normalised sum of those parts (the human height)
+    will be (approximately) normally distributed. That is why we tend to see natural
+    processes appearing to be normally distributed so regularly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3e28ba209ef19938dd728233aaa7674.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Ivan Samkov](https://www.pexels.com/photo/person-holding-black-pen-and-an-x-ray-4989192/)
+    from [Pexels](https://www.pexels.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As such, there are a surprisingly large amount of real world instances where
+    it is necessary to deal with Gaussian distributions, making Gaussian Mixture Models
+    a very useful tool if it used in the appropriate setting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Customer behaviour** — this could be in terms of purchases made, amounts
+    spent, attention span, churn etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Human characteristics** — height, weight, shoe size, IQ (or educational performance)
+    etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Natural phenomena** — recognition of patterns / groups in the medical field
+    (cancers, diseases, genes etc.) or other scientific fields'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are obviously many other examples, and other situations where a Gaussian
+    distribution may arise for other reasons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There may of course be cases where you cannot discern the underlying structure
+    of the data, and this will of course warrant investigation, but is also one of
+    the reasons why domain experts can be so important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why use a Gaussian Mixture Model?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main reason is that if you are fairly confident that your data is Gaussian
+    (or more precisely a mixture of Gaussian data) then you will give yourself a much
+    better chance of separating out real clusters with much more accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm not only looks for basic clusters, but also considers the most
+    appropriate shape, or distribution, of each cluster. This allows for tightly spaced,
+    or even slightly conjoined, clusters to be separated out more accurately and easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, where there are cases that the separation is not clear (or maybe
+    just for more in depth analysis) it is possible to produce, and analyse, the probability
+    that each data point belongs to each cluster. This gives you a better understanding
+    of what are core reliable data points, and those that are perhaps marginal, or
+    unclear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With Bayesian Gaussian Mixture models it is also possible to let the algorithm
+    infer from the data the most appropriate number of clusters. Rather than having
+    to rely on the [elbow method](https://en.wikipedia.org/wiki/Elbow_method_(clustering))
+    or produce [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
+    / [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) curves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does a Gaussian Mixture Model work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is basically using an iterative updating process to gradually optimise the
+    fit of a number of Gaussian distributions to the data. I suppose in a similar
+    way to gradient decent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check the fit — adjust — check the fit again — adjust…and repeat until converged.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In this case the algorithm is called the [expectation-maximisation](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)
+    (EM) algorithm. More specifically this is what happens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the input parameters to the model is the number of clusters, so this
+    is a known quantity. For example, if two clusters are set, then an initial set
+    of two Gaussian distributions will have their parameters assigned. The parameters
+    could be assigned by a K-Means analysis (the default in scikit-learn), or just
+    randomly. The parameters could even be specified specifically for every data point,
+    if you have a very specific case. Now on to the iteration…
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Expectation** — now there are two Gaussian distributions that are defined
+    with specific parameters. The algorithm first assigns each data point to one of
+    the two Gaussian distributions. It does this based on the **probability** that
+    it fits into that particular distribution, compared to the other.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Maximisation** — once all the points are assigned, the parameters of each
+    Gaussian distribution are adjusted slightly to better fit the data as a whole,
+    based on the information generated from the previous step.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: repeat steps 2 and 3 until convergence.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The above is overly simplified, and I haven’t detailed the exact mathematical
+    mechanism (or equations) that are optimised at each point in time. However, it
+    should give you at least a conceptual understanding of how the algorithm operates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As ever, there are plenty of mathematics heavy articles out there explaining
+    in much more detail the exact mechanisms should that interest you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the difference between a normal Gaussian Mixture Model and a Bayesian
+    Gaussian Mixture Model?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I’m going to start by saying that, to explain the additional processes used
+    by the Bayesian Gaussian Mixture Model over and above the standard Gaussian Mixture
+    Model is actually quite involved. It requires an understanding of a few different,
+    and complicated, mathematical concepts at the same time, and there certainly isn’t
+    space in this article to do it justice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What I will aim to do here is point you in the right direction, and outline
+    the advantages and disadvantages. You will also gather further information as
+    you pass through the rest of the article while the dataset is analysed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Practical Differences***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The standout difference is that the standard Gaussian Mixture Model uses the
+    [expectation-maximisation](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)
+    (EM) algorithm, whereas the Bayesian Gaussian Mixture Model uses variational inference
+    (VI).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, variational inference is not mathematically straight forward,
+    but if you want to get your hands dirty I suggest [this excellent article](https://jonathan-hui.medium.com/machine-learning-variational-inference-273d8e6480bb)
+    by [Jonathan Hui](https://medium.com/u/bd51f1a63813?source=post_page-----2ef8bb2d603f--------------------------------).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main take-aways are these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: variational inference is an extension of the expectation-maximisation algorithm.
+    Both aim to find Gaussian distributions within your data (in this instance at
+    least)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Models require more input parameters to be provided,
+    which is potentially more involved / cumbersome
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: variational inference inherently has a form of regularisation built in
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: variational inference is less likely to generate ‘unstable’ or ‘marginal’ solutions
+    to the problem. This makes it more likely that the algorithm will tend towards
+    a solidly backed ‘real’ solution. Or as s[cikit-learn’s documentation](https://scikit-learn.org/stable/modules/mixture.html)
+    puts it “*due to the incorporation of prior information, variational solutions
+    have less pathological special cases than expectation-maximization solutions.*”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Models can directly estimate the most appropriate
+    amount of clusters for the input data (no elbow methods required!)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '…so to summarise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variational inference is a more advanced **extension** to the idea behind expectation-maximisation.
+    It should in theory be more accurate and more resistant to messy data or outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Resources and further reading***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a start I would point you to the excellent overview provided in the literature
+    for scikit-learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://scikit-learn.org/stable/modules/mixture.html?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## 2.1\. Gaussian mixture models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: sklearn.mixture is a package which enables one to learn Gaussian Mixture Models
+    (diagonal, spherical, tied and full…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: scikit-learn.org](https://scikit-learn.org/stable/modules/mixture.html?source=post_page-----2ef8bb2d603f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For further reading, some relevant subjects to look up are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expectation-Maximisation (EM)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Variational Inference (VI)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The Dirichlet distribution and Dirichlet process
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now for some real data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/f0fb3cecf09aa609211f0dbf9bd5ffc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Cup of Couple](https://www.pexels.com/photo/a-glass-of-red-wine-on-a-wooden-bench-8473214/)
+    from [Pexels](https://www.pexels.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Discussion and theory are great, but I often find exploring a real implementation
+    can clarify a great deal. With that in mind, the following sections will make
+    a comparison of the performance of each of the following clustering methods on
+    a real world dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-Means (the baseline)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Gaussian Mixture Model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [real world dataset](https://archive-beta.ics.uci.edu/dataset/109/wine)¹
+    that will be used describes the chemical composition of three different varieties
+    of wine from the same region of Italy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This dataset is labelled, so although all the clustering analysis that follows
+    will not use the labels in the analysis, it will allow a comparison to a known
+    correct answer. The three methods of clustering can therefore be compared fairly
+    and without bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, the dataset meets the criterion of being a “natural” dataset, which
+    should be a good fit for the Gaussian methods that are the intended test target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To ease the ability to load the data I have made the raw data available in
+    CSV format in my GitHub repository:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/thetestspecimen/notebooks/tree/main/datasets/wine?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## notebooks/datasets/wine at main · thetestspecimen/notebooks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These data are the results of a chemical analysis of wines grown in the same
+    region in Italy but derived from three…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/thetestspecimen/notebooks/tree/main/datasets/wine?source=post_page-----2ef8bb2d603f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference Notebooks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the analysis that follows has been made available in a comprehensive Jupyter
+    notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The raw notebook can be found here for your local environment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## notebooks/bayesian_gaussian_mixture_model.ipynb at main · thetestspecimen/notebooks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb?source=post_page-----2ef8bb2d603f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '…or get kickstarted in either Deepnote or Colab if you want an online solution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/23c9a383e533919051f0579081cff99b.png)](https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2Fthetestspecimen%2Fnotebooks%2Fblob%2Fmain%2Fbayesian_gaussian_mixture_model.ipynb)[![](../Images/f8d7c9abab0134f402cd7732c7eaff36.png)](https://colab.research.google.com/github/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are some functions that are used within the notebooks that require certain
+    libraries to be reasonably up to date (specifically scikit-learn and matplotlib),
+    so the following sections will describe what is needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Environment Setup — Local or Deepnote
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Whether using a local environment, or Deepnote, all that is needed is to ensure
+    that the appropriate version of scikit-learn and matplotlib is available. The
+    easiest way to achieve this is to add it to your “requirements.txt” file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Deepnote you can create a file called “requirements.txt” in the files section
+    in the right pane, and add the lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: (more recent versions are also ok).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Environment Setup — Colab
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As there is no access to something like a “requirements.txt” file in Colab
+    you will need to explicitly install the correct versions of scikit-learn and matplotlib.
+    To do this run the following code in a blank cell to install the appropriate versions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: (more recent versions are also ok).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then refresh the web page before trying to run any code, so the libraries are
+    properly loaded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Exploration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before running the actual clustering it might be worth just getting a rough
+    overview of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are 13 features and 178 examples for each feature (no missing or null
+    data):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: …so a nice clean numerical dataset to get started with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only thing that really needs changing is the scale. The range of numbers
+    within each of the features varies quite a bit, so a simple [MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
+    will be applied to the features so that they all sit between 0 and 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As previously mentioned, it would be ideal if the data was at least approximately
+    Gaussian to allow the Gaussian Mixture Model to work effectively. So how does
+    it look?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7327b5fe92d14d1d0251d64d5cc27bb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature data distribution — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now some of those look quite Gaussian (e.g. alkalinity of ash), but the reality
+    is most do not. Is this a problem? Well not necessarily, as what really exists
+    in a lot of cases is a ***mixture***of Gaussian distributions (or approximate
+    Gaussian distributions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The whole point of the Gaussian Mixture Model is that it can find and separate
+    out the individual Gaussian distributions from a mixture of more than one Gaussian
+    distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a real clustering problem you would not be able to achieve this next step,
+    as you wouldn’t know the real clustering of the data. However, just for illustration
+    purposes it is possible (as we know the labels) to plot each individual ‘real’
+    clusters distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2957b6337e73e1ea1f40b78374d2196b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature data distribution by label — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can now see the real clusters are in most cases approximately Gaussian.
+    This is not the case across the board, but it will never be the case with real
+    data. As expected, due to the data being based on “natural” data we are indeed
+    dealing with approximately Gaussian data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This very basic investigation of the distribution of the raw data illustrates
+    the importance of being aware of the type of data you are dealing with, and which
+    tools would be best suited to the analysis. This is also a good case for the importance
+    of domain experts, where appropriate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature relations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Finally, a few examples of how some of the variables are distributed in relation
+    to each other (if you want a more comprehensive plot please take a look at the
+    Jupyter notebook):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e3285596aa5d60f468bf2d77eaf594e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of the distribution of data between components — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen from the scatter plots above, some features show reasonable separation.
+    However, there is also quite a lot of mixing with some features, and more so on
+    the periphery of each cluster. The shape (circular, elongated etc.) also varies
+    quite widely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e1cc2074a9677a86fae0bae305924800.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Artem Podrez](https://www.pexels.com/photo/a-chemist-analyzing-chemicals-on-test-tubes-in-a-laboratory-8532827/)
+    from [Pexels](https://www.pexels.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As mentioned earlier, there will be three different algorithms compared:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-Means (the baseline)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Gaussian Mixture Model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'There will also be three phases to the exploration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of the raw data analysed at once
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All of the data analysed after reducing complexity / features with a Principle
+    Component Analysis (PCA)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: An analysis using just two features (mainly to allow easier illustration than
+    using the full dataset)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Analysis 1 — the full dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To keep the comparison consistent, and reduce the complexity of this article
+    I am going to skip a thorough investigation into how many components is the correct
+    number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, just for completeness you should be aware that a crucial step in performing
+    any clustering is gaining an understanding of the appropriate amount of clusters
+    to use. Some common examples of how to achieve this are the [elbow method](https://en.wikipedia.org/wiki/Elbow_method_(clustering)),
+    the [Bayesian Information Criterion (BIC)](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
+    and the [Akaike information criterion](https://en.wikipedia.org/wiki/Akaike_information_criterion).
+    As an example here are the BIC and AIC for the whole raw dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42cda83eb5b83991b996464814d58c50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The BIC and AIC curves for this dataset — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The BIC would suggest two components is appropriate, but I’m not going to go
+    further into this result for now. However, it will come up in discussion later
+    in the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Three clusters will be assumed from now on for consistency and ease of comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get stuck in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-Means
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/1245574f17b17241104524497823a9f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: K-Means confustion matrix — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well that is a fairly impressive result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all data taken together there is apparently very good separation between
+    clusters 1 and 3\. However, as cluster 2 generally sits between clusters 1 and
+    3 (refer back to the four example scatter plots in the previous section) it would
+    appear that the points on the periphery of cluster 2 are being wrongly assigned
+    to clusters 1 and 3 (i.e. the boundaries between those clusters are likely incorrectly
+    defined).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see if this improves with a Gaussian Mixture Model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gaussian Mixture Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/fc2196ef094c37b1773bb0e7c45bbad8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gaussian Mixture Model confusion matrix — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: An improvement. The Gaussian Mixture Model has managed to pick up three extra
+    points and assign them correctly to cluster 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although that doesn’t seem like a big deal, it is worth bearing in mind that
+    the dataset is quite small, and using a more comprehensive dataset would likely
+    yield a more impressive number of points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before producing the result, and as this is the main focus of the article,
+    I think it is worth taking a little time to explain some of the relevant parameters
+    that can be specified:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**n_components** — this is the number of clusters that you want the algorithm
+    to consider. However, the algorithm may return, or prefer, less clusters than
+    set here, which is one of the main advantages of this algorithm (we will see this
+    in action soon)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**covariance_type** — there are four options here *full*, *tied*, *diag* and
+    *spherical*. The most ‘accurate’ and typically preferred is *full*. This parameter
+    essentially decides the limitation of the distribution fit shape, a great illustration
+    is provided [here](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html#sphx-glr-auto-examples-mixture-plot-gmm-covariances-py).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**weight_concentration_prior_type** — this can either be *dirichlet_process*
+    (infinite mixture model) or d*irichlet_distribution* (finite mixture model). In
+    general, it is better to opt for the Dirichlet process as it is less sensitive
+    to parameter changes, and does not tend to divide natural clusters into unnecessary
+    sub-components as the Dirichlet distribution can sometimes do.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**weight_concentration_prior** — specifying a low value (e.g. 0.01) will cause
+    the model to set a larger number of components to zero leaving just a few components
+    remaining with significant value. High values (e.g. 100000) will tend to allow
+    a larger number of components to remain active with relevant values i.e. less
+    components will be set to zero.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As there are quite a lot of extra parameters it may be wise to perform cross
+    validation analysis in some cases. For example, in this initial run covariance_type
+    will be set to ‘diag’ rather than ‘full’ as the suggested cluster number is more
+    convincing. I suspect in this specific case this is due to a combination of a
+    smaller dataset, and a large number of features causing the ‘full’ covariance
+    type to over-fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is now possible to review what the algorithm has decided in terms of relevant
+    clusters. This is possible by extracting the weights from the fitted model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A bit more clearly in graph form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17cad7c7d61780fedb0aac10ae7bda39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Gaussian Mixture Model group weights — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be honest, not very convincing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is clear that there are three clusters ahead of the rest, but this is only
+    intuitive because the answer is known. The truth is it is not very clear. So why
+    is this?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main reason is likely due to a combination of lack of data, and a high number
+    of features (at least compared to the amount of data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lack of data will cause items such as outliers to have a much larger effect
+    on the overall distribution, but also reduce the models ability to generate a
+    distribution in the first place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the sections that follow we will look at a way to potentially combat this,
+    and also at analysing a smaller selection of features to see what result we get
+    in those circumstances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, as we know the correct number of components is three we will push on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/498a7e4d4b5f3b24923485b83caa147a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Gaussian Mixture Model confusion matrix — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Almost perfect clustering. Only two points remain incorrectly assigned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take a quick look at an overall comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/753353ed02cca979e6d5d3d84d5e99e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accuracy comparison of the different clustering methods — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As can be seen from the accuracy results, there is a gradual improvement from
+    one method to the next. This goes to show that understanding the structure of
+    the underlying data is important, as it allows a more accurate representation
+    of the patterns within the raw data, in our case Gaussian distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even within the realm of Gaussian Mixture Models, it is also clear (at least
+    in this case) that the use of variational inference in the Bayesian Gaussian Mixture
+    Model can yield more accurate results than expectation-maximisation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of this was expected, but it is interesting to see nonetheless.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualisation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To give a general overview of what exactly the Gaussian algorithms are doing,
+    I have plotted the feature “alcohol” against each of the other features, and also
+    included the confidence ellipses of the Bayesian Gaussian Mixture Model on each
+    plot for each of the three clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** *the algorithm used to draw the confidence ellipses is adapted
+    from* [*this algorithm*](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm.html)
+    *provided in the scikit-learn documentation.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a66fef771997685b32ef8fdb07c49b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although this is interesting to look at, and does do a good job of showing how
+    the algorithm can account for the various shapes of the clusters (i.e. round,
+    of more elongated ellipses) it doesn’t allow any sort of understanding as to what
+    factors may have influenced the outcome.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is mainly due to the fact that there are too many dimensions to deal with
+    (i.e. too many features) in terms of representing the output as something interpretable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Better visualisation and further investigation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It would be interesting to visualise and compare the distributions produced
+    by the various methods in a clear and concise way, so that it is possible to see
+    exactly what is going on under the hood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, due to the large amount of features (and therefore dimensions) the
+    model is processing, it is not possible to represent what is going on in a simple
+    2D graph, as has just been illustrated in the previous section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this in mind the aim of the next two sections of this article is to simplify
+    the analysis by reducing the dimensions. The following two sections of this article
+    will therefore look into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the use of a two component Principle Component Analysis (PCA). This will allow
+    all of the thirteen features to be distilled into two features, whilst keeping
+    the ***majority*** of the important information embedded in the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: specifically using only two features to run the analysis.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Both of these investigations will allow a direct visualisation of the clusters
+    as there are only two components, and therefore it is then possible to plot them
+    on a standard 2D graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, these approaches will potentially make it easier to use the Bayesian
+    Gaussian Mixture Model’s automatic cluster selection more effectively, as the
+    amount of features in relation to the number of examples is more in balance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis 2 — Principle Component Analysis (PCA)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: By running a two component Principle Component Analysis (PCA) the 13 features
+    can be compressed down to 2 components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main aims for this section are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gain insights into the data distribution from the reduced complexity afforded
+    by the PCA before analysis.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Review the automatic component selection generated by the Baysian Gaussian Mixture
+    Model from the PCA dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the Bayesian Gaussian Mixture Model on the two PCA components, and review
+    the clustering result in 2D graph form.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The result of the PCA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/51c1da959333213c5eaca7385b619c4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The two components of the PCA on all the data with distributions (colours are
+    real label clusters) — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result of the PCA is interesting for quite a few reasons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, the distribution of the primary PCA component (and to some degree the
+    secondary PCA component) is very close to a Gaussian distribution for all three
+    components. Mirroring what we have discovered from the data investigation earlier
+    in the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remembering for a second that the PCA is a distillation of all of the features,
+    it is interesting to see that there is good separation between the three real
+    clusters. This means there is a very good possibility that a clustering algorithm
+    that targets the data well (regardless of the PCA) has the potential to achieve
+    a good and accurate separation of the clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the clusters are close enough, that if the clustering algorithm does
+    not represent the distribution, or shape, of the clusters correctly, there is
+    no guarantee that the boundary between the clusters will be found accurately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the distribution of cluster 1 is quite clearly elongated along
+    the y-axis. Any algorithm would need to mimic this elongated shape to represent
+    that particular cluster correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Automatic Clusters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the initial analysis the automatic estimation of the correct number of clusters
+    was a little ambiguous. Now that the data complexity has been reduced let’s see
+    if there is any improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Again, the inputs request 8 components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/437868a7c7cd34a4e34812c293cae83d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The weights of each of the 8 requested clusters — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: …and there we are. A very clear indication that even though the model was set
+    up to consider up to 8 clusters, the algorithm clearly thinks that the actual
+    appropriate number of clusters is 3\. Which we of course know to be correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This goes some way to indicate that for the Bayesian Gaussian Mixture Model
+    to work effectively, in terms of automatic cluster selection, it is necessary
+    to consider whether the dataset is large enough to generate a reasonable and definitive
+    result if the number of clusters is not already known.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For completeness let’s see how the clustering for the Bayesian Gaussian Mixture
+    Model of the PCA went.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9b0c1bff6bc78e738c7554e48f4efde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Gaussian Mixture Model (PCA) confusion matrix — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A definite accuracy drop when compared to using the raw data. This is of course
+    expected. By running a PCA we are definitely losing data, there is no avoiding
+    that, and in this case it is enough to introduce an additional 5 misassigned data
+    points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at this visually in a little more detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/796ddef9ed81b7c82c0acd49d35e9b1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Gaussian Mixing of a two component PCA (mismatched points ringed red)
+    — Mismatched points from original analysis of all data ringed in blue — Image
+    by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The graph above has a lot going on, so let’s break this down:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the coloured dots are the clusters that the PCA data was assigned to by the
+    algorithm.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the large shaded ellipses are the confidence ellipses, which essentially state
+    the shape of the underlying distribution generated by the algorithm (co-variances).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the red circles are the data points that have been misassigned by the Bayesian
+    Gaussian Mixing Model from the PCA analysis.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the blue circles are the data points that were misassigned by the Bayesian Gaussian
+    Mixing Model in the original analysis that used all of the raw data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What is particularly interesting is that by running the PCA analysis, and likely
+    due to the inherent loss of data, it forces some data points to be shifted well
+    within the clusters / confidence ellipses that are generated (look at the orange
+    point labelled with text, and dot circled blue within the green confidence ellipsoid).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of the blue circled green point it helped, it is an improvement
+    over the original ‘all raw data’ analysis. However, it is quite clear the orange
+    point that is misassigned would never be correctly assigned, as it too well embedded
+    within the orange cluster, when in fact it should be in the green cluster. However,
+    the original analysis correctly assigned this data point to the green cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PCA Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this particular case, it was useful with a smaller dataset to run a PCA to
+    help the Bayesian Gaussian Mixture Model fix on an appropriate number of clusters.
+    Even as an aid in getting a good visual grasp of how the dataset is distributed,
+    it is potentially very useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it would not be an optimal solution to use the data generated by the
+    PCA as a final input into the analysis. It is clear that the data shift / loss
+    is sufficient enough as to potentially make some data points permanently wrongly
+    assigned, and the overall accuracy is also reduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis 3 — Fewer features
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To take a closer look at the differences between the three clustering algorithms
+    two specific features will be extracted, and the clustering algorithms run on
+    only those features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advantage of this in terms of reviewing the methods, is that it becomes
+    possible to visualise what is going on a 2D-plane (i.e. a normal 2D graph).
+  prefs: []
+  type: TYPE_NORMAL
+- en: An added bonus, is that the available data has much less information than the
+    whole dataset. This both reduces the discrepancy between the small number of samples
+    and the number of features, whilst also forcing the clustering algorithms to work
+    much harder to achieve an appropriate fit due to the reduced information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A closer look at the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/5f8ed9534f61d43a3cbab46607faced8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Colour intensity vs OD280/OD315 of diluted wines (raw data with labels) — Image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason for picking this pair (colour intensity and OD280/OD315 of diluted
+    wines) is due to the challenges the dataset throws up for the different clustering
+    algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see there are two clusters that are fairly intermingled (1 & 2).
+    In addition, clusters 2 & 3 have quite elongated distributions compared to cluster
+    1, which is more rounded, or circular.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In theory, the Gaussian mixing methods should fair quite a bit better than K-Means
+    as they have the ability to accurately mould their distribution characteristics
+    to the elongated distributions, whereas K-Means cannot, as it is limited to a
+    circular representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, from the KDE plots at each side of the graph it is possible to
+    see that the data distribution is reasonably Gaussian as we have confirmed a few
+    times before in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-Means — Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/9c36810830ac0f34a12dffa3c045ce4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix for the K-Means - Reduced features — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gaussian Mixture Model — Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/a03a45755258f45732976454846c20e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix for the Gaussian Mixture Model — Reduced features — Image by
+    author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Model — Component selection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before diving straight into the results, as the Bayesian Gaussian Mixture Model
+    has the ability to auto-select the appropriate number of components we will again
+    ‘request’ 8 components and see what the model suggests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a20ad9ed4481170344df5ff3cb58d8f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Component selection for the Bayesian Gaussian Mixture Model with two features
+    only — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As previously seen with the reduced complexity of the PCA analysis, the model
+    has found it much easier to distinguish the 3 clusters that are known to exist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This would fairly conclusively confirm that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: it is necessary to have sufficient data samples to ensure that the model can
+    stand a decent chance of offering the correct suggestion for number of clusters.
+    This is likely due to the need to have enough data to properly represent the underlying
+    distribution. In this case Gaussian.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: a potential way to combat lack of samples is to in some way simplify or generalise
+    the data to try and extract the appropriate number of clusters, and then revert
+    to the full dataset for a final full clustering analysis
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Bayesian Gaussian Mixture Model — Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/1b7904fef6da253611770b634d724c61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix for the Bayesian Gaussian Mixture Model — Reduced features
+    — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final results comparison
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/6de741d5d4023807dcda878d84a6807e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The accuracy of each clustering method for features colour intensity and OD280/OD315
+    of diluted wines — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, the accuracy is a lot lower than when using the full dataset. However,
+    regardless of this fact, there are some stark differences between the accuracy
+    of the various methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s dig a little deeper by comparing everything side-by-side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5a4729c50f0f7fc725ad35a7efe9763.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A comparison of the assignment of clusters for each of the three clustering
+    methods — Cluster 1 (red) / Cluster 2 (orange/green) / Cluster 3 (grey/blue) —
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first thing to note is that the real labels show that there is a certain
+    amount of fairly deep mixing / crossover between the clusters in some instances,
+    so 100% accuracy is out of the question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reference for the following discussion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cluster 1 — Red
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cluster 2 — Orange/Green
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cluster 3 — Grey/Blue
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***K-means***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-means does a reasonable job of splitting out the clusters, but due to the
+    fact that the distributions must ultimately be limited to a circular shape, there
+    was never any hope of accurately capturing clusters 2 or 3 precisely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, as cluster 3 is quite well separated from the other two, the elongated
+    shape is less of a hindrance. A circular representation of the lower cluster is
+    actually sufficient, and gives a comparable representation to the Gaussian methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When considering clusters 1 and 2 the K-Means method fails to sufficiently represent
+    the data. It has an inherent inability to properly represent the elliptical shape
+    of cluster 2\. This causes cluster 2 to be ‘squashed’ down in between clusters
+    1 and 3 as the real extension upwards cannot be sufficiently described by the
+    K-Mean algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Gaussian Mixture Model***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The basic Gaussian Mixture Model is only a slight improvement in this case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As discussed in the previous section for K-Means, even though the distribution
+    of cluster 3 is better suited to an elliptical rather than circular distribution,
+    it is of no advantage in this particular scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, when looking at the representation of cluster 1 and 2, which are significantly
+    more intertwined, the ability of the Gaussian Mixture Model to represent the underlying
+    elliptical distribution (i.e. better capturing the underlying tails of the Gaussian
+    distribution) of cluster 2 more accurately, results in a slight increase in accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Bayesian Gaussian Mixture Model***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a start, the more than 10% improvement in accuracy of the Bayesian Gaussian
+    Mixture Model compared to the other methods is certainly impressive as a lone
+    statistic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On review of the confidence ellipsoids it becomes clear why this is the case.
+    Cluster 2 has been represented both in terms of shape, tilt and size just about
+    as perfectly as it could be. This has allowed for a very accurate representation
+    of the real clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the exact reasons for this will always be slightly opaque, it is most
+    definitely down to the differences between the expectation-maximisation algorithm
+    used by the standard Gaussian Mixture Model, and the variational inference used
+    by the Bayesian Gaussian Mixture Model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As discussed earlier in the article, the main differences are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the in built regularisation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: less tendency for variational inference to generate ‘marginally correct’ solutions
+    to the problem
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is quite clear that the use of Gaussian Mixture Models can help to elevate
+    the accuracy of the clustering of data that is likely to have Gaussian distributions
+    as it’s underpinning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is particularly relevant and useful for natural processes, including human
+    processes, which make this analytical approach relevant to a large number of industries,
+    across a wide variety of fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, the introduction of variational inference in the Bayesian Gaussian
+    Mixture Model can, with very little difference in overhead, return further improved
+    accuracy in clustering. There is even the, not so insignificant bonus, of the
+    algorithm having the ability to suggest the appropriate amount of clusters for
+    the underlying data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article has provided you with a decent insight into what Gaussian
+    Mixing Models and Bayesian Gaussian Mixture Models are, and whether they may help
+    with data you are working with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They really are a powerful tool if used appropriately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you found this article interesting or useful, remember to follow me, or [sign
+    up for my newsletter](https://medium.com/@maclayton/subscribe) for more content
+    like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you haven’t already, you could also consider [subscribing to Medium](https://medium.com/@maclayton/membership).
+    Your membership fee directly supports, not just me, but other writers you read
+    too. You’ll also get full unrestricted access to every story on Medium.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using my referral link to sign up will grant me a small kickback with zero effect
+    on your membership, so thank you if you choose to do so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@maclayton/membership?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## Join Medium with my referral link - Mike Clayton'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Mike Clayton (and thousands of other writers on Medium).
+    Your membership fee directly supports…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@maclayton/membership?source=post_page-----2ef8bb2d603f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Riccardo Leardi, [Wine](https://archive-beta.ics.uci.edu/dataset/109/wine)
+    (1991), UC Irvine Machine Learning Repository, License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode)'
+  prefs: []
+  type: TYPE_NORMAL

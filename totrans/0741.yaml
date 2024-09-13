@@ -1,0 +1,381 @@
+- en: Direction Improves Graph Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/direction-improves-graph-learning-170e797e94fe](https://towardsdatascience.com/direction-improves-graph-learning-170e797e94fe)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: GNNs on Directed Graphs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How a wise use of direction when doing message passing on heterophilic graphs
+    can result in very significant gains.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://michael-bronstein.medium.com/?source=post_page-----170e797e94fe--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----170e797e94fe--------------------------------)[](https://towardsdatascience.com/?source=post_page-----170e797e94fe--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----170e797e94fe--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----170e797e94fe--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----170e797e94fe--------------------------------)
+    ·10 min read·Jun 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Graph Neural Networks (GNNs) are highly effective at modelling relational
+    data. However, current GNN models frequently assume the input graph to be undirected,
+    overlooking the inherent directionality of many real-world graphs, such as social,
+    transportation, transaction, and citation networks. In this blog post, we explore
+    the impact of edge directionality in the context of heterophilic graphs and outline
+    Dir-GNN, a novel message-passing scheme for directed graphs allowing a separate
+    aggregation of incoming and outgoing edges. Despite its simplicity, this scheme
+    significantly improves performance on multiple real-world heterophilic directed
+    graphs.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f963a2136e394c365df0a6f3421821bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Based on Shutterstock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post was co-authored with* [*Emanuele Rossi*](https://emanuelerossi.co.uk/)
+    *and is based on the paper E. Rossi et al., “*[*Edge Directionality Improves Learning
+    on Heterophilic Graphs*](https://arxiv.org/abs/2305.10498)*” (2023) arXiv:2305.10498,
+    a collaboration with* [*Bertrand Charpentier*](https://twitter.com/Bertrand_Charp)*,*
+    [*Francesco Di Giovanni*](https://twitter.com/Francesco_dgv)*,* [*Fabrizio Frasca*](https://twitter.com/ffabffrasca)
+    *and* [*Stephan Günnemann*](https://twitter.com/guennemann) *[1]. The code for
+    the paper can be found* [*here*](https://github.com/emalgorithm/directed-graph-neural-network)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many interesting real-world graphs, encountered in modelling social, transportation,
+    financial transactions, or academic citation networks, are *directed*. The direction
+    of the edges often conveys crucial insights, otherwise lost if one considers only
+    the connectivity pattern of the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, most Graph Neural Networks (GNNs) that have made remarkable strides
+    in a variety of graph ML applications, operate under the assumption that the input
+    graph is *undirected*. Making the input graph undirected has become so prevalent
+    over the years that PyTorch-Geometric, one of the most popular GNN libraries,
+    includes a general utility function that automatically makes graphs undirected
+    when loading datasets [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: This inclination towards undirected graphs comes from two “primordial sins”
+    of GNNs. First, undirected graphs have symmetric Laplacians with orthogonal eigenvectors
+    offering a natural generalisation of the Fourier transform, on which early spectral
+    GNNs relied to function properly. Second, early datasets used to benchmark GNNs
+    were predominantly *homophilic* graphs [3], such as Cora and Pubmed [4]. On such
+    datasets disregarding the direction by converting the directed graph into an undirected
+    one appears to be advantageous, early evidence whereof has helped cement the “undirected”
+    paradigm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/802b62d61a82b5ffdcc4969b8f64763d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Direction is largely useless in homophilic graphs (left), an observation that
+    has led to the majority of current GNNs disregarding this information. In contrast,
+    in the heterophilic setting (right), the use of direction can bring large gains
+    (10% to 15%) if used correctly, as proposed in our Dir-GNN framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We challenge this *status quo* in our recent paper [5], showing that directionality
+    can bring extensive gains in heterophilic settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Measuring Homophily in Directed Graphs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The homophily of a graph is typically measured as the fraction of neighbours
+    with the same label as the node itself, averaged across all nodes (*node homophily*).
+    For directed graphs, we propose the *weighted node homophily*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: h(S) = 1/*n* Σ*ᵤ* ( Σ*ᵥ* *sᵤᵥ* * **I**[*yᵤ* = *yᵥ*] ) / Σ*ᵥ* *sᵤᵥ*
+  prefs: []
+  type: TYPE_NORMAL
+- en: where **I** denotes the indicator function, *n* is the number of nodes, and
+    **S** is a general adjacency matrix, which can be picked up as 𝐀or𝐀ᵀ, or as higher-order
+    matrices, such as 𝐀𝐀ᵀor 𝐀² for directed graphs, or as the symmetric matrix 𝐀ᵤ=
+    (𝐀+ 𝐀ᵀ) / 2 and its higher-order counterpart 𝐀ᵤ², if the graph is considered as
+    undirected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even when 1-hop neighbours are heterophilic [6], the situation may change when
+    going to farther nodes. Compared to the undirected case, there are four distinct
+    2-hops in directed graphs represented by the matrices 𝐀²,(𝐀ᵀ)², 𝐀𝐀ᵀ, and𝐀ᵀ𝐀, which
+    can manifest different levels of (weighted) homophily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that GNNs operate through multiple-hop aggregations, they can leverage
+    the homophily of any 2-hop (or even further hops) of a graph. To have a comprehensive
+    metric capturing the maximum homophily a GNN can leverage in principle, we introduce
+    the notion of *effective homophily*, defined as the maximum weighted node homophily
+    at any hop of the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirically, we observe that the effective homophily of directed homophilic
+    datasets is left unchanged when making the graph undirected. In heterophilic graphs,
+    in contrast, this conversion decreases the effective homophily by almost 30% on
+    average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e93a90887fc2f2557d348a6e429f3db4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We compare the weighted homophily of both directed and undirected diffusion
+    matrices for a variety of both homophilic and heterophilic datasets. The effective
+    homophily of the directed graph *(h*⁽ᵉᶠᶠ⁾) is much larger than that of the undirected
+    graph (*h*⁽ᵉᶠᶠ⁾*)* for heterophilic datasets, suggesting a potential gain from
+    using directionality effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de78f679d34fcfba9897ef76104c451b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In synthetic experiments, we again observe that the effective homophily of directed
+    [stochastic block model](https://en.wikipedia.org/wiki/Stochastic_block_model)
+    graphs is consistently higher compared to their undirected counterparts. Interestingly,
+    this gap widens for graphs that are less homophilic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Toy Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In particular, we observe that 𝐀𝐀ᵀ and𝐀ᵀ𝐀consistently appear to be the “most
+    homophilic matrices” for heterophilic graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To provide an intuition about why this is the case, imagine we are trying to
+    predict the publication year of a specific academic paper, for instance, the Kipf
+    & Welling 2016 GCN paper, given the directed citation network and the year of
+    publication of the other papers. Consider two different kinds of 2-hop relationships:
+    one where we look at papers cited by the papers that our paper of interest *v*
+    cites (represented by the *v*th row of the matrix 𝐀²), and another where we look
+    at papers that cite the same sources as our paper (represented by (𝐀𝐀ᵀ)*ᵥ*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first case (𝐀²), let us start from the GCN paper and follow its citations
+    twice. We land on a paper by Frasconi *et al.* from 1998\. This older paper does
+    not give us much helpful information about when our GCN paper was published because
+    it is too far in the past.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ffd5785667b110be7ad4ce35249372c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Toy example of a directed citation network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the second case (𝐀𝐀ᵀ), we begin with the GCN paper, follow a citation, and
+    then come back to a paper that cites the same source, like the 2017 GAT paper.
+    This paper is much closer to our GCN paper’s publication year and thus provides
+    a better clue. More generally, nodes that share more references, like in our second
+    example, will have higher scores in 𝐀𝐀ᵀ, and thus contribute more to our final
+    prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, consider an undirected 2-hop relationship (𝐀ᵤ²), which is just the average
+    of the four possible 2-hop matrices. This includes our first type (like Frasconi
+    et al.), which was not very helpful. Therefore, the highly useful 𝐀𝐀ᵀ matrix gets
+    diluted by less informative matrices, like 𝐀², leading to a less homophilic operator,
+    resulting in a less reliable predictor overall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While we have used a citation network in our example, this intuition applies
+    more broadly. In a social network, for instance, an influencer’s characteristics
+    are more likely to resemble those of users who share many followers with them,
+    represented by 𝐀ᵀ𝐀. Similarly, in a transaction network, two accounts sending
+    money to the same set of accounts (captured by 𝐀𝐀ᵀ), are likely to exhibit similar
+    behaviour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Dir-GNN: Directed Graph Neural Network'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In order to leverage directionality effectively, we propose the *Directed Graph
+    Neural Network* (Dir-GNN) framework, which extends MPNNs to directed graphs by
+    performing separate aggregations over the in- and out-neighbours of a node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**m***ᵤ*⁽ᵏ⁾ᵢₙ = AGGᵢₙ({{**x***ᵥ*⁽ᵏ⁻¹⁾, **x***ᵤ*⁽ᵏ⁻¹⁾) : (*u*,*v*) ∈ E }})'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**m***ᵤ*⁽ᵏ⁾ₒᵤₜ = AGGₒᵤₜ({{**x***ᵥ*⁽ᵏ⁻¹⁾, **x***ᵤ*⁽ᵏ⁻¹⁾) : (*v*,*u*) ∈ E }})'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**x***ᵤ*⁽ᵏ⁾ = COM(**x***ᵤ*⁽ᵏ⁻¹⁾, **m***ᵤ*⁽ᵏ⁾ᵢₙ, **m***ᵤ*⁽ᵏ⁾ₒᵤₜ)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the aggregation maps AGGᵢₙ and AGGₒᵤₜ, as well as the combination maps
+    COM are learnable (usually a small neural network). Importantly, AGGᵢₙ and AGGₒᵤₜ
+    can have independent sets of parameters to allow for different aggregations over
+    in- and out-edges [7].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interestingly, this procedural pattern resembles the one implemented by a natural
+    extension of the classical Weisefiler-Lehman graph isomorphism test (1-WL) to
+    directed graphs [8]. This connection is instrumental: in terms of discriminative
+    power, we show that Dir-GNN is *strictly more powerful* than standard MPNNs, which
+    either convert the graph to undirected or propagate messages only in the direction
+    of the edges.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our framework is also flexible: it is easy to define directed counterparts
+    of specific architectures such as GCN, GraphSAGE or GAT. For example, we can define
+    Dir-GCN as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 𝐗⁽ᵏ⁾ = σ(𝐒ₒᵤₜ𝐗⁽ᵏ⁻¹⁾𝐖ₒᵤₜ⁽ᵏ⁾ + (𝐒ₒᵤₜ)ᵀ𝐗⁽ᵏ⁻¹⁾𝐖ᵢₙ⁽ᵏ⁾)
+  prefs: []
+  type: TYPE_NORMAL
+- en: where 𝐒ₒᵤₜ= **D**ₒᵤₜ⁻¹ᐟ² 𝐀 **D**ᵢₙ⁻¹ᐟ² and **D**ᵢₙ and **D**ₒᵤₜ represent the
+    diagonal in- and out-degree matrices, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also show that Dir-GNN, when iteratively applied over multiple layers, leads
+    to more homophilic aggregations. Unlike other models, Dir-GNN can access the four
+    2-hop matrices 𝐀²,(𝐀ᵀ)², 𝐀𝐀ᵀ and𝐀ᵀ𝐀 and learn to weigh them differently. In contrast,
+    a model operating on the undirected graph has only access to 𝐀ᵤ², while models
+    propagating information exclusively along in- or out-edges are limited to (𝐀ᵀ)²
+    and 𝐀² respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dir-GNN, thanks to its separate aggregation of the two directions, is therefore
+    the only model operating on 𝐀𝐀ᵀ and𝐀ᵀ𝐀, which we have shown to be the most homophilic
+    matrices and therefore the most reliable predictor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We first compared GraphSAGE and its directed extension (Dir-SAGE) on a synthetic
+    task requiring directionality information. The results confirm that only Dir-SAGE(in+out),
+    with access to both in- and out-edges, is able to almost perfectly solve the task.
+    The model acting on the undirected version of the graph performs no better than
+    chance, while the models acting on only in- or out-edges perform similarly obtaining
+    around 75% accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61df1d1dc8d2c047317f8b4a9fdff250.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When examining the performance of GraphSAGE and its Dir- extensions on a synthetic
+    task requiring directionality information, only Dir-SAGE (in+out), which utilises
+    information from both directions, is capable of solving the task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We further validated our approach with an ablation study comparing GCN, GraphSAGE
+    and GAT base models with their Dir- extensions. On heterophilic datasets, using
+    directionality brings exceptionally large gains (10% to 20% absolute) in accuracy
+    across all three base GNN models. Moreover, Dir-GNN beats state-of-the-art models
+    designed especially for heterophilic graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results suggest that, when present, using the edge direction can significantly
+    improve learning on heterophilic graphs. In contrast, discarding it is so harmful
+    that not even complex architectures can make up for this loss of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/960453d1168ece3d3bc3cf0e774e1312.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New state-of-the-art results on heterophilic graphs, by using direction wisely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, on homophilic datasets using directionality leaves the performance
+    unchanged (or even slightly hurts). This is in line with our findings that using
+    directionality as in our framework generally increases the effective homophily
+    of heterophilic datasets, while leaving it almost unchanged for homophilic datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, our paper showcases the benefit of leveraging directionality
+    in GNNs, particularly in the case of heterophilic graphs. We hope that these findings
+    will instigate a paradigm shift, elevating direction as a first-class citizen
+    in GNNs. In short, **think twice before making your graph undirected!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] The title of this post, “Direction improves graph learning,” is an intentional
+    play on a previous work J. Gasteiger, S. Weissenberger, and S. Günnemann, [Diffusion
+    improves graph learning](https://proceedings.neurips.cc/paper_files/paper/2019/file/23c894276a2c5a16470e6a31f4618d73-Paper.pdf)
+    (2019), *NeurIPS* by one of the authors, which showed that a diffusion-based graph
+    rewiring scheme (DIGL) improves the performance of GNNs in homophilic settings.
+    Here, we focus on the *heterophilic* case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [This Pytorch-Geometric routine](https://github.com/pyg-team/pytorch_geometric/blob/66b17806b1f4a2008e8be766064d9ef9a883ff03/torch_geometric/io/npz.py#L26)
+    is used to load datasets stored in an npz format. It makes some directed datasets,
+    such as [Cora-ML](https://github.com/pyg-team/pytorch_geometric/blob/6fa2ee7bfef32311df73ca78266c18c4449a7382/torch_geometric/datasets/citation_full.py#L99)
+    and [Citeseer-Full](https://github.com/pyg-team/pytorch_geometric/blob/6fa2ee7bfef32311df73ca78266c18c4449a7382/torch_geometric/datasets/citation_full.py#L99),
+    automatically undirected without any option to get the directed version instead.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] *Homophily* refers to the assumption that nodes with similar properties
+    (typically labels and sometimes features) tend to be connected. In homophilic
+    graphs, the neighbourhood of a node looks like a node itself, often allowing to
+    predict the property of a node from a simple aggregation (e.g., averaging) of
+    the neighbours. Graphs violating this assumption are called *heterophilic*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] The Cora dataset was introduced by [Andrew McCallum](https://people.cs.umass.edu/~mccallum/data.html)
+    in the late 1990s and is for GNNs what the MNIST Digits dataset is for CNNs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] E. Rossi et al., “[Edge Directionality Improves Learning on Heterophilic
+    Graphs](https://arxiv.org/abs/2305.10498)” (2023) *arXiv*:2305.10498.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Heterophily is not necessarily bad *per se*. Consider for example the following
+    toy directed graph with three classes (blue, orange, green):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ab1835f1dea39d99e6cf03f99d23ecb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Looking at the *compatibility matrices* for different adjacency matrices (position
+    *ij* in the compatibility matrix captures the fraction of edges from nodes with
+    label *i* to nodes with label *j*, weighted according to the given adjacency matrix).
+    Homophilic adjacency matrices have more mass in the diagonal of their compatibility,
+    as it contains edges between nodes with the same label. While in our example both
+    the directed (𝐀) and undirected (𝐀ᵤ) 1-hops are maximally heterophilic, the directed
+    2-hops (𝐀𝐀ᵀ and𝐀ᵀ𝐀) are more homophilic than the undirected 2-hop (𝐀ᵤ²).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] It is important to note that we are not the first to deal with directed
+    graphs and to propose separate aggregation of in- and out-neighbours. However,
+    our contribution is providing a more comprehensive treatment of directed graphs,
+    which includes a general framework (Dir-GNN), overarching empirical evidence for
+    the benefit of directionality, particularly in the context of heterophily, and
+    a starting point to analyse the expressiveness of models for directed graphs.
+    See the “Related Work” section in our paper [5] for a more thorough overview of
+    related previous works.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] While several extensions of the [WL test](https://medium.com/towards-data-science/expressive-power-of-graph-neural-networks-and-the-weisefeiler-lehman-test-b883db3c7c49)
+    on directed graphs have been proposed, the variant discussed by M. Grohe, K. Kersting,
+    M. Mladenov, and P. Schweitzer, [Color refinement and its applications](https://www.lics.rwth-aachen.de/global/show_document.asp?id=aaaaaaaaabbtcqu),
+    in “An Introduction to Lifted Probabilistic Inference” (2021), *MIT Press*, treats
+    in- and out-neighbours separately.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*We are grateful to Christopher Morris and Chaitanya K. Joshi for insightful
+    discussions and for pointing us to related works. For additional articles about
+    deep learning on graphs, see Michael’s* [*other posts*](https://towardsdatascience.com/graph-deep-learning/home)
+    *in Towards Data Science,* [*subscribe*](https://michael-bronstein.medium.com/subscribe)
+    *to his posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
+    get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
+    or follow him on* [*Twitter*](https://twitter.com/mmbronstein)*.*'
+  prefs: []
+  type: TYPE_NORMAL

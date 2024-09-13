@@ -1,0 +1,432 @@
+- en: 3D Generative Modeling with DeepSDF
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/3d-generative-modeling-with-deepsdf-2cd06f1ec9b3](https://towardsdatascience.com/3d-generative-modeling-with-deepsdf-2cd06f1ec9b3)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Simple neural networks can capture complex 3D geometries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wolfecameron.medium.com/?source=post_page-----2cd06f1ec9b3--------------------------------)[![Cameron
+    R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----2cd06f1ec9b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2cd06f1ec9b3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2cd06f1ec9b3--------------------------------)
+    [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----2cd06f1ec9b3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2cd06f1ec9b3--------------------------------)
+    ·10 min read·Jan 30, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf966799f188a362f2dfb88b1ea03ac4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Photo by [Milad Fakurian](https://unsplash.com/@fakurian?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/3D-shape?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prior research in computer graphics and 3D computer vision has proposed numerous
+    approaches for representing 3D shapes. Such methods are useful for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: storing memory-efficient representations of known shapes
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: generating new shapes
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: fixing/reconstructing shapes based on limited or noisy data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Beyond classical approaches, deep learning — or, more specifically, generative
+    neural networks — can be used to represent 3D shapes. To do this, we can train
+    a neural network to output a representation of a 3D shape, allowing representations
+    for a variety of shapes to be indirectly stored within the weights of the neural
+    network. Then, we can query this neural network to produce new shapes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Within this post, we will study one of such methods, called DeepSDF [1], that
+    uses a simple, feed-forward neural network to learn signed distance function (SDF)
+    representations for a variety of 3D shapes. The basic idea is simple: instead
+    of directly encoding a geometry (e.g., via a mesh), we train a generative neural
+    network to output this geometry. Then, we can perform inference to *(i)* obtain
+    the direct encoding of a (potentially new) 3D shape or *(ii)* fix/reconstruct
+    a 3D shape from noisy data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a58e91d767aa16f117af0e79fa99b2ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into how DeepSDF works, there are a few background concepts that
+    we will need to understand. First, we’ll talk a bit about how 3D shapes are usually
+    represented, as well as how a signed distance function (SDF) can be used to represent
+    a 3D shape. Then, we’ll talk about feed-forward neural networks, an incredibly
+    simple deep learning architecture that is used heavily by research in 3D modeling
+    of shapes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Representing 3D shapes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When considering how to store a 3D shape in a computer, we have three options:
+    a point cloud, mesh, or voxels. Each of these representations have different benefits
+    and limitations, but they are all valid methods of directly representing a 3D
+    shape. Let’s get a basic idea of how they work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Point cloud.** Point clouds are pretty easy to understand. As we might infer
+    from the name, they just store a group of points with `[x, y, z]` coordinates
+    in space, and these points are used to represent an underlying geometry. Point
+    clouds are useful because they closely match the type of data we would get from
+    sensors like LiDAR or depth-sensing cameras. But, point clouds do not provide
+    a [watertight](https://davidstutz.de/a-formal-definition-of-watertight-meshes/)
+    surface (i.e., a shape with one, closed surface).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Mesh.** One 3D representation that can provide a watertight surface is a
+    mesh. Meshes are 3D shape representations based upon collections of vertices,
+    edges, and faces that describe an underlying shape. Put simply, a mesh is just
+    a list of polygons (e.g., triangles) that, when stitched together, form a 3D geometry.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Voxel-based representation.** Voxels are just pixels with volume. Instead
+    of a pixel in a 2D image, we have a voxel (i.e., a cube) in 3D space. To represent
+    a 3D shape with voxels, we can:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Divide a section of 3D space into discrete voxels
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Identify whether each voxel is filled or not
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using this simple technique, we can construct a voxel-based 3D object. To get
+    a more accurate representation, we can just increase the number of voxels that
+    we use, forming a finer discretization of 3D space. See below for an illustration
+    of the difference between point clouds, meshes, and voxels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b32481e536dce4eebfaf04aebb7df3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [3])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Signed distance functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Directly storing a 3D shape using a point cloud, mesh, or voxels requires a
+    lot of memory. Instead, we will usually want to store an indirect representation
+    of the shape that’s more efficient. One approach for this would be to use a signed
+    distance function (SDF).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given a spatial `[x, y, z]` point as input, SDFs will output the distance from
+    that point to the nearest surface of the underlying object being represented.
+    The sign of the SDF’s output indicates whether that spatial point is inside (negative)
+    or outside (positive) of the object’s surface. See the equation below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b5e3604c4a47b01bcbe0f35908fcf33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can identify the surface of a 3D object by finding the locations at which
+    the SDF is equal to zero, indicating that a given point is at the boundary of
+    the object. After finding this surface using the SDF, we can generate a mesh by
+    using algorithms like [Marching Cubes](https://graphics.stanford.edu/~mdfisher/MarchingCubes.html#:~:text=Marching%20cubes%20is%20a%20simple,a%20region%20of%20the%20function.).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why is this useful?** At a high level, SDFs allow us to store a function
+    instead of a direct representation of the 3D shape. This function is likely more
+    efficient to store, and we can use is to recover a mesh representation anyways!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feed-forward neural networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many highly-accurate methods for modeling 3D shapes are based upon feed-forward
+    network architectures. Such an architecture takes a vector as input and applies
+    the same two transformations within each of the network’s layers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear transformation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Non-linear activation function
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Though the dimension of our input is fixed, two aspects of the network architecture
+    are free for us to choose: the hidden dimension and the number of layers. Variables
+    like this that we, as practitioners, are expected to set are called *hyperparameters*.
+    The correct setting of these hyperparameters depends upon the problem and/or application
+    we are trying to solve.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The code.** There is not much complexity to feed-forward networks. We can
+    implement them easily in PyTorch as shown below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[DeepSDF: Learning Continuous Signed Distance Functions for Shape Representation](https://arxiv.org/abs/1901.05103)
+    [1]'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/0e5feb52af5461139cd125a5957fc1b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior research in computer graphics and 3D computer vision has proposed numerous
+    classical approaches for representing 3D shapes and geometries. In [1], authors
+    propose a deep learning-based approach, called DeepSDF, that uses a neural network
+    to learn a continuous SDF for a broad class of shapes. Put simply, this means
+    that we can encode a SDF-based representation of multiple different types of 3D
+    shapes using a single, feed-forward neural network, allowing such shapes to be
+    represented, interpolated or even completed from partial data; see above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea behind DeepSDF is simple: we want to use a neural network to perform
+    [regression](/regression-explained-in-simple-terms-dccbcad96f61) directly on the
+    values of an SDF. To do this, we train this model over point samples from the
+    SDF (i.e., individual `[x, y, z]` points with an associated SDF value). If we
+    train a network in this way, then we can easily predict the SDF values of query
+    positions, as well as recover a shape’s surface by finding the points at which
+    the SDF is equal to zero.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How do we represent the shape?** More specifically, consider a single shape,
+    from which we sample a fixed number of 3D point samples with SDF values. We should
+    note here that taking more point samples would allow the shape to be represented
+    with higher-precision, but this comes at the cost of increased compute costs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c63a942a3eea71aab66db0185441de8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (created by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the equation above, `x` is a vector containing `[x, y, z]` coordinates, while
+    `s` is the SDF value associated with these coordinates for a given shape.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training the neural network.** From here, we can directly train a feed-forward
+    neural network to produce the SDF value `s` given `x` as input by training over
+    these sample pairs using an [L1 regression loss](https://amitshekhar.me/blog/l1-and-l2-loss-functions).
+    Then, the resulting model can output accurate SDF values to represent the underlying
+    shape; see the left subfigure below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7ed73dccc5f8ffdc416ec8d50c8ae21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: The limitation of such a model is that it only represents a single shape. Ideally,
+    we would want to model a variety of shapes with a single neural network. To accomplish
+    this, we can associate a latent vector (i.e., “Code” in the figure above) with
+    each shape. This is a low-dimensional vector that is unique to each shape that
+    is stored within our neural network. This latent vector can be added as an input
+    to the neural network to inform the network that it is producing output for a
+    particular shape. This simple trick allows us to represent multiple shapes within
+    a single model (this saves a lot of memory!); see the right subfigure above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final question we might be asking is: *how do we obtain this latent vector
+    for each shape?* In [1], the authors do this by proposing an auto-decoder architecture
+    that *(i)* adds the latent vector to the model’s input and *(ii)* learns the best
+    latent vector for each shape via gradient descent during training; see below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/172277acb3e98f3e0d6fef31677e0969.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, latent vectors are learned via an [autoencoder architecture](https://www.jeremyjordan.me/autoencoders/),
+    but this requires the addition of an extra encoder module that incurs extra computational
+    expense. The authors in [1] propose the auto-decoder approach to avoid this extra
+    compute. The difference between these approaches is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Producing a shape.** To perform inference with DeepSDF, we must:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start with a sparse/incomplete set of SDF value samples
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Determine the best possible latent vector from these samples
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform inference with our trained neural network over a bunch of different
+    points in 3D space to determine SDF values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: From here, we can visualize the shape represented by DeepSDF with algorithms
+    like [Marching Cubes](https://graphics.stanford.edu/~mdfisher/MarchingCubes.html#:~:text=Marching%20cubes%20is%20a%20simple,a%20region%20of%20the%20function.)
+    that discretize 3D space and extract an actual 3D geometry based on these SDF
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The data.** DeepSDF is trained and evaluated using the synthetic [ShapeNet](https://shapenet.org/)
+    dataset. In particular, its performance is measured across four tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Representing shapes in the training set
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Reconstructing unseen (test) shapes
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Completing partial shapes
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sampling new shapes from the latent space
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For the first three tasks, we see that DeepSDF tends to outperform baseline
+    methodologies consistently, revealing that it can represent complex shapes with
+    high accuracy and even recover shapes from incomplete samples quite well. This
+    is quite remarkable given that we are storing numerous 3D shapes within a single,
+    memory-efficient neural network; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0666b62f1f67ddd8099f8ca004ac4727.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also interpolate the embedding space of a DeepSDF model to produce coherent
+    results. This allows us to do things like find the average shape between a truck
+    and car; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e586b80d8563ced0ec97ee57faf7b65e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: From these results, we can see that interpolation between latent vectors yields
+    a smooth transition between shapes, revealing that the continuous SDFs embedded
+    by DeepSDF are meaningful! Common features of shapes — such as truck beds or arms
+    of chairs — are captured within the representation leveraged by DeepSDF. This
+    is quite remarkable for such a simple, feed-forward network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: DeepSDF is a feed-forward, generative neural network that we can use to represent
+    and manipulate 3D shapes. Using this model, we can easily perform tasks like generate
+    the mesh representation of a shape, recover an underlying shape from incomplete
+    or noisy data, and even generate a new shape that is an interpolation of known
+    geometries. The benefits and limitations of DeepSDF are outlined below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Lots of compression.** To store 3D geometries in a computer, we can use mesh
+    or voxel representations. To avoid the memory overhead of directly storing shapes
+    like this, we can use a generative models like DeepSDF. With such an approach,
+    we no longer need the direct mesh encoding of a geometry. Instead, we can use
+    DeepSDF — a small neural network that is easy to store — to accurately generate
+    meshes for a variety of shapes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fixing a broken geometry.** Given partial or noisy representation of an underlying
+    shape, DeepSDF can be used to recover an accurate mesh; see below. In comparison,
+    most prior methods cannot perform such a task — they require access to a full
+    3D shape representation that matches the type of data used to train the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5627bfd09e800a63e867ecb8013928b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpolating the latent space.** Deep SDF can represent a lot of different
+    shapes and embed their properties into a low-dimensional latent space. Plus, experiments
+    show that this latent space is meaningful and has good coverage. Practically,
+    this means that we can take latent vectors (i.e., vector representations of different
+    objects), [linearly interpolate](https://en.wikipedia.org/wiki/Linear_interpolation)
+    between them, and produce a valid, novel shape. We can easily use this to generate
+    new shapes that have a variety of interesting properties.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Limitations.** DeepSDF is great, but it always requires access to a (possibly
+    noisy or incomplete) 3D geometry to run inference. Plus, searching for the best
+    possible latent vector (i.e., this must always be done before performing inference
+    due to the auto-decoder approach) is computationally expensive. In this way, the
+    inference abilities of DeepSDF are somewhat limited. To summarize, the approach
+    is slow and cannot generate new shapes from scratch, which leaves room for improvement
+    in future work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing remarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thanks so much for reading this article. I am [Cameron R. Wolfe](https://cameronrwolfe.me/),
+    a research scientist at [Alegion](https://www.alegion.com/) and PhD student at
+    Rice University studying the empirical and theoretical foundations of deep learning.
+    You can also check out my [other writings](https://medium.com/@wolfecameron) on
+    medium! If you liked it, please follow me on [twitter](https://twitter.com/cwolferesearch)
+    or subscribe to my [Deep (Learning) Focus newsletter](https://cameronrwolfe.substack.com/),
+    where I write series of understandable overviews on important deep learning topics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bibliography
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Park, Jeong Joon, et al. “Deepsdf: Learning continuous signed distance
+    functions for shape representation.” *Proceedings of the IEEE/CVF conference on
+    computer vision and pattern recognition*. 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Mildenhall, Ben, et al. “Nerf: Representing scenes as neural radiance fields
+    for view synthesis.” *Communications of the ACM* 65.1 (2021): 99–106.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Hoang, Long, et al. “A deep learning method for 3D object classification
+    using the wave kernel signature and a center point of the 3D-triangle mesh.” *Electronics*
+    8.10 (2019): 1196.'
+  prefs: []
+  type: TYPE_NORMAL

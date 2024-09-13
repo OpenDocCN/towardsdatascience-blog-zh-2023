@@ -1,0 +1,237 @@
+- en: Monocular Depth Estimation to Predict Surface Reliefs of Mars
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/monocular-depth-estimation-to-predict-surface-reliefs-of-mars-1b50aed3361a](https://towardsdatascience.com/monocular-depth-estimation-to-predict-surface-reliefs-of-mars-1b50aed3361a)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A different application of monocular depth estimation models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mattiagatti.medium.com/?source=post_page-----1b50aed3361a--------------------------------)[![Mattia
+    Gatti](../Images/9d5aeb356ff01ed9e4ead66c18994595.png)](https://mattiagatti.medium.com/?source=post_page-----1b50aed3361a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1b50aed3361a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1b50aed3361a--------------------------------)
+    [Mattia Gatti](https://mattiagatti.medium.com/?source=post_page-----1b50aed3361a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1b50aed3361a--------------------------------)
+    ·5 min read·Sep 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2e0288d571818e893578b3268a36a16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [NASA](https://unsplash.com/@nasa?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Several approaches to estimating surface elevation from a single image have
+    been discussed in the literature. In a previous [article](/generate-a-3d-mesh-from-an-image-with-python-12210c73e5cc),
+    I discussed how it is possible to predict the depth of a single 2D image using
+    a monocular estimation model. However, when the input to the model is an image
+    of a particular surface, the prediction represents a Digital Elevation Model (DEM).
+    In my first research paper I showed how a DEM of the surface of Mars can be obtained
+    from 2D greyscale images using deep learning approaches. To better understand
+    the idea I’m going to propose, I suggest you first to try the demo of the project
+    [here](https://huggingface.co/spaces/mattiagatti/mars_dtm_estimation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As discussed in more detail in another [story](/the-ultimate-beginners-guide-to-geospatial-raster-data-feb7673f6db0),
+    the DEM of a surface is a grid of elevation values where each cell stores the
+    elevation of a particular point on the surface:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41059f8b3822f57ceff36a4448ebd9af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Graphic visualization of a DEM. [NSIDC](https://commons.wikimedia.org/wiki/File:Digital_elevation_model_(DEM)_of_the_Mt._Everest_region_-_50090548573.png),
+    [CC BY 2.0](https://creativecommons.org/licenses/by/2.0), via Wikimedia Commons
+  prefs: []
+  type: TYPE_NORMAL
+- en: DEMs are usually represented graphically using color maps. In the image above,
+    the highest points are red and the lowest points are purple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the other hand, monocular depth estimation models are used to estimate the
+    distance of each pixel of an image from the camera (even the camera of a satellite)
+    that took the image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67951727978d275cd717678c504bdc73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Depth prediction of a bedroom. Input image from [NYU-Depth V2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is that a satellite image of a surface can be fed into a monocular
+    depth estimation model. In this way, it’s possible to predict the DEM of that
+    surface, because each point of the output represents a distance (depth), and elevations
+    of the surface can be derived by using depths (more on this later).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method discussed in this article can be used for other surfaces as well,
+    and not just for Mars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: UAHiRISE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The High-Resolution Imaging Science Experiment (HiRISE) is a camera on board
+    the Mars Reconnaissance Orbiter (a spacecraft that provides support for missions
+    to Mars). HiRISE took a large number of grayscale images of the Martian surface,
+    and each image is associated with a DTM. [UAHiRISE](https://www.uahirise.org)
+    is the University of Arizona website where all these resources are available.
+    These files are geographical rasters, if you want more information about working
+    with this file format, see my other [article](https://medium.com/towards-data-science/the-ultimate-beginners-guide-to-geospatial-raster-data-feb7673f6db0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b9083bc1cbda720699421a1ca887107.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A satellite imagery of the Mars surface with the associated DTM. Image from
+    [UAHiRISE](https://www.uahirise.org/dtm/ESP_019147_2395).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A web scrapper was used to download all the greyscale images with their associated
+    DTMs (code below). However, these files are too large in resolution to be used
+    as input to a neural network. Thus, they had to be split into smaller patches
+    (I discussed this procedure in another [article](https://levelup.gitconnected.com/how-to-split-an-image-into-patches-with-python-e1cf42cf4f77)).
+    The final dataset consisted of 150,000 patches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To train the model, a set of tiles of the Martian surface was used with the
+    corresponding depth. However, each tile of the original DTM had to be scaled.
+    Absolute elevations were converted to relative depths. This means that if a ground
+    truth had values in the range [-3500, -2500] they were scaled to [0, 1000] where
+    0 is the closest point and 1000 is the farthest. This had to be done because a
+    monocular depth estimation model can’t directly predict absolute elevation values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An example of a training sample is represented by the image below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae30c7588927001fe379be77d69fb830.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: One of the training samples. Dataset made of images and DTMs from [UAHiRISE](https://www.uahirise.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reddish colours are the closest points and the bluish colours are the furthest.
+    However, the distance of a point is inversely proportional to its elevation, i.e.
+    reddish colours have a higher elevation than blueish colours. After predicting
+    depths, all points are converted to elevations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset is about 1TB in size and it’s available on [Kaggle](https://www.kaggle.com/datasets/mattiagatti/uahirise-mars-dtm-estimation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After an analysis of all the available architectures for monocular depth estimation,
+    the GLPN¹ model was chosen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8171e7e02724d0340c88fd3eaf17df17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GLPN architecture. Image from the [official paper](https://arxiv.org/abs/2201.07436).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The architecture uses a hierarchical transformer encoder to obtain global information
+    at different resolutions from the H × W × 3 input (RGB image). Then a decoder
+    restore the bottleneck feature into the size of H × W × 1 (the output depth map).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model was almost ready for use in the experiment, except for the input layer.
+    Most of the images released by UAHiRISE are greyscale. Therefore, the input layer
+    was modified to take 1-channel (greyscale) images instead of 3-channel (RGB) images.
+    The ImageNet pre-trained for the encoder was still used, but without loading the
+    weights for the input layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final result
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After training the model, it’s ready to predict DTM. The following is an example
+    of prediction made by the final model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a8e591cc3540ab9de6de87b0c206b86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Input grayscale image. Tile from a [UAHiRISE](https://www.uahirise.org) image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48109a6b9ad24d590f4d88fcfcd43bb3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Predicted DTM with relative elevations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9ac0273db5772f1f02d7c22ad42cfe8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3D model of the DTM. Image made by using [this generator](https://imagetostl.com/convert/file/stl/to/gif).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4e04f815be0b7c47f5dc0bdb89c389c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3D model of the DTM. Image made by using [this generator](https://imagetostl.com/convert/file/stl/to/gif).
+  prefs: []
+  type: TYPE_NORMAL
+- en: After calculating the metrics for all the test samples, the results showed a
+    mean absolute error of *10.3 meters*, which can be a good value or not depending
+    on the scenario. However, the main obstacle to getting good results is that all
+    the images used were greyscale and thus had less information than RGB or multispectral
+    images. You can find all the metrics in the README of my repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concluding remarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While I was working on this research, someone suggested predicting heights directly
+    rather than predicting depths. However, experiments showed better results by predicting
+    depths and then converting them to heights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A demo of the project is available [here](https://huggingface.co/spaces/mattiagatti/mars_dtm_estimation)
+    where you can predict a DTM and also obtain a 3D model. All the code is available
+    in my [repository](https://gitlab.com/mattiagatti/hirise-monocular-depth-estimation.git)
+    along with all the resources to preparing the dataset and training the model.
+    You can also use my pre-trained model directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea of this project can be applied to other scenarios where you want to
+    predict a DTM from satellite images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading, I hope you have found this useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the Author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Doyeon K., Woonghyun K., Pyungwhan A., Donggyu J., Sehwan C., Junmo K.,
+    [Global-Local Path Networks for Monocular Depth Estimation with Vertical CutDepth](https://arxiv.org/abs/2201.07436)
+    (2022)'
+  prefs: []
+  type: TYPE_NORMAL

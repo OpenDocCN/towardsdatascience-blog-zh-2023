@@ -1,0 +1,614 @@
+- en: 'Finding Temporal Patterns in Twitter Posts: Exploratory Data Analysis with
+    Python (Part 2)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-part-2-8eec19431c23](https://towardsdatascience.com/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-part-2-8eec19431c23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Users behavior analysis with Python and Pandas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----8eec19431c23--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----8eec19431c23--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8eec19431c23--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8eec19431c23--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----8eec19431c23--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8eec19431c23--------------------------------)
+    ·15 min read·Jun 12, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8cd91f7aa34d2b4468cca5c4eda1c113.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: User timelines example, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [first part](/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-8aac618c8699)
+    of this article, I analyzed the timestamps of about 70,000 Twitter posts and got
+    some interesting results; for example, it was possible to detect bots or users
+    posting messages from clone accounts. But I was not able to get accurate message
+    time; at least for a free account, the Twitter API response does not have a time
+    zone, and all messages have UTC time. Millions of people are using social networks
+    nowadays, and analysis of users' behavior is not only interesting but may also
+    be important for sociological or psychological studies. For example, it can be
+    interesting to figure out if people are posting more messages in the evening,
+    at night, or during the day, but without having a proper time, it is impossible
+    to know. Finally, I was able to find a workaround that works well, even with the
+    limitations of a free API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will show the full workflow, from collecting the data to
+    the analysis using Python and Pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our data processing flow will consist of several steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collecting the data using the [Tweepy library](https://github.com/tweepy/tweepy).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Loading the data and getting basic insights.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data transformation. We will group data by user and find specific metrics useful
+    for analysis.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Analyzing the results.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Collecting the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As was written in the previous part, we cannot get a proper timezone for Twitter
+    messages; all messages returned by the Twitter API have the UTC time. As a workaround,
+    I decided to test three approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I tried to get **all messages** using the “*” mask and analyze the “location”
+    field of every message. Not every user specified the location on Twitter, but
+    a pretty large number did. The idea was good, but practically, it did not work.
+    Twitter is a large social network; it generates a huge amount of data, and collecting
+    all tweets even for a week is unrealistic. The number of thousands of messages
+    per second is not only too large for processing on an ordinary PC, but it will
+    also be beyond the limitations of the free Twitter developer account.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can use a **city name** as a request; for example, I can search all tweets
+    with the hashtag “#Berlin”. Then it would be easy to filter users who have “Germany”
+    as a location, and for Germany, we know the time zone. This idea works, but the
+    problem is that the results may be biased. For example, messages with the hashtag
+    “#Berlin” may be posted by people interested in politics or by sports fans. But
+    in general, this approach is interesting; with different search queries, it may
+    be possible to reach different types of audiences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, I’ve found a solution that works well for me. I decided to get **all**
+    **messages in a specific language** by specifying the “*” mask and a language
+    code. This obviously will not work for English, but there are many countries in
+    the world that are geographically small enough to easily determine the time zone
+    of their citizens. I selected the Dutch language because the number of Dutch speakers
+    in the world is not so big; this language is mostly used in the Netherlands and
+    in Belgium, and both countries have the same time zone. Some people may live abroad,
+    and there are also native Dutch speakers in Suriname and Curaçao, but those numbers
+    are not that big.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collecting the data itself is straightforward. The code was already used in
+    [the first part](/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-8aac618c8699);
+    I only specified “*” as a query mask and “nl” as a language code. A free Twitter
+    API has a 7-day limitation for getting historical data. But practically, it turned
+    out that the pagination has a limit of about 100,000 messages. Is it a lot? Actually,
+    not. Most people probably never realize how many messages are posted on social
+    media. There are only about 25 million Dutch-speaking people in the world. And
+    100,000 is the number of messages that these people are posting on Twitter within
+    only 3 hours! Practically, I needed to run the code at least every 2 hours to
+    get all the tweets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Collecting the data every two hours is not a problem; it can be easily done
+    in the cloud, but as a free solution, I just took my Raspberry Pi:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce6a9db86f97e75932f04bdbce1a7f9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Raspberry Pi 4, Image source [https://en.wikipedia.org/wiki/Raspberry_Pi](https://en.wikipedia.org/wiki/Raspberry_Pi)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Raspberry Pi is a small credit-card-size Linux computer with 1–8 GB of RAM
+    and a 1–2 GHz CPU. Those specs are absolutely enough for our task, and it is also
+    nice that the Raspberry Pi has no coolers, produces no noise, and has only 2–5
+    W of power consumption. So, it’s a perfect choice to run a code for a week or
+    two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I slightly modified the Python script so it could make requests every 2 hours,
+    and I also added a timestamp to the name of each CSV file. After doing the SSH
+    login into the Raspberry Pi, I could run this script in the background by using
+    the Linux “nohup” command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: By default, “nohup” saves the console output to the “*nohup.out*” file. This
+    file can be large, so I use forwarding to “/dev/null” to prevent this. Another
+    solution like Cron can also be used, but this simple command is enough for this
+    task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The process is running in the background, so we see nothing on the screen,
+    but we can watch the log in realtime by using the “tail” command (here “20230601220000”
+    is the name of the current file):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Getting tweets in the console looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dca1a1a12cdf242222e3245ed9d81f8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Collecting Twitter messages, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When needed, we can copy new logs from the Raspberry Pi by using the “scp”
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, “/home/pi/Documents/…” is a remote path on the Raspberry Pi, and “.” is
+    the current folder on a desktop PC, where CSV files should be copied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my case, I kept the Raspberry Pi running for about 10 days, which was enough
+    to collect some data. But in general, the longer, the better. During the data
+    preparation for the previous part of the article, I saw enough users who were
+    making Twitter posts only once per week; obviously, longer intervals will be needed
+    to see patterns in those users’ behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Loading the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The Python script was getting new Twitter messages every 2 hours, and as an
+    output, a lot of CSV files were generated. We can load all files in Pandas and
+    combine them into one dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code is straightforward. I load each file into the dataframe, then I combine
+    all the data frames using *pd.concat*. The time intervals overlap each other;
+    to avoid having duplicate records, I use the *drop_duplicates* method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what kind of data we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0981303a124e6ad914fe40eda96318d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataframe with all messages, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The text and message ids are actually not important; for the analysis, we will
+    need only the “created_at” field. To make further processing easier, let’s extract
+    the date, time, and hour of the day as separate columns. We can also add a timezone
+    offset to all records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16d4de6f0f53c8fcb21d846588615476.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataframe with added columns, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data load is ready. Let’s see what the data looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. General Insights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This article aims to analyze the patterns in the “time” domain. As a warm-up,
+    let’s see **all messages on a single timeline**. To draw all the graphs in the
+    article, I will be using the [Bokeh](https://github.com/bokeh/bokeh) library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this method,I group all messages by date and time. The timestamps I created
+    before have the “HH:MM” format. The number of messages per minute is not a convenient
+    metric, so I divided all values by 60 to get the number of messages per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/221349f61742428091900f8c39724dba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All Twitter messages, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code had been running for about 10 days on the Raspberry Pi. As a result,
+    6,487,433 Twitter messages made by 1,515,139 unique users were collected. But
+    in the image, we can see some problems. Some intervals are missing; probably there
+    was no Internet access at this time. Another day is partially missing, and I don’t
+    know what caused this issue; probably a free Twitter account has the lowest priority
+    compared to all other requests. Anyway, we cannot complain about the free API,
+    and my goal was to collect the data at least for a week, and I have enough information
+    for that. I can just delete the corrupted intervals at the end:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By the way, another point on the timeline caught my attention; the peak happened
+    on the 4th of June when the number of messages per second literally doubled. I
+    became curious about what it was. We can easily filter the dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f91a351212c228bd5fe0c4f462058fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tweets posted during the peak interval, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It turned out that popular football player Zlatan Ibrahimovic from AC Milan
+    announced his retirement at the age of 41, and this message caused a lot of Twitter
+    reposts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b7a70f4110ac34b53cb3cae2b9e62897.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Twitter messages timeline, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, the duration of the peak was about an hour; maybe it could be
+    longer, but it was late; according to the timeline, the announcement was made
+    at 23:35.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But let’s return to Pandas. For further time analysis, let’s create two helper
+    methods to draw all **messages, grouped by the time of the day**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will allow us to see all messages on a single 24-hour timeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The optional “df_filtered” parameter will be used later. The result looks like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b876abd01eff3f41c1e26763f72816c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages per day, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can clearly see a day/night difference, so my assumption that most of the
+    messages in Dutch were made from the same time zone was correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also draw a **timeline for a single user**. I already used this method
+    in the previous part. For the convenience of readers who may use this article
+    as a tutorial, I’ll place the code here as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e671c39ad58bc5bf519c90c0a3905841.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Messages timeline for a single user, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Data transformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the previous step, we got a “raw” dataframe of messages made by all users.
+    We are going to find daily patterns, so as input data, let’s get the number of
+    messages grouped by an hour and calculated for each user:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11c64fca0b1a07aacd864c18fec3938c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As a reminder, I was using 7-day data. In this example, we can see that during
+    this interval, the user posted 4 messages at 7 a.m., 1 message at 8 a.m., 3 messages
+    at 5 p.m., and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For analysis, I decided to use three metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The total number of “busy hours” per day when the user was making Twitter posts
+    (in the last example, the number is 5).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The total number of messages per user (in the last example, the number is 20).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An array of 24 numbers, representing the number of messages grouped by hour.
+    As an important step, I will also normalize the array sum to 100%.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The output will be a new dataframe, grouped by user names. This method does
+    all the calculations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66cc746a60ef45237a293e93f2c79d9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data metrics, grouped by user, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have a dataframe with all the metrics, and we’re ready to have some fun
+    with this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the last step, we transformed a “raw” dataframe with all Twitter messages
+    into the data, grouped by user. This dataframe is actually much more useful. As
+    a warm-up, let’s start with something simple. Let’s get the **number of messages**
+    **per user**. The dataframe is already sorted, and we can easily see the “Top
+    5” of users who posted the maximum number of messages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0cb79b187e76b2b18c111c4bdf9daa26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Metrics dataframe, grouped by user, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s also **find percentiles**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is interesting. This data was collected within 7 days. There are
+    1,198,067 unique users in the dataframe who posted at least one message during
+    this period. And the 90th percentile is only 4, which means that 90% of all users
+    posted only 4 messages during this week. A big difference, compared to the top
+    users, who posted more than 5000 tweets! But as was discussed in the first part,
+    some of the “top users” are probably bots. Well, we can easily verify this by
+    using the **number of messages per hour**. I already have a number of messages,
+    grouped by hour and normalized to 100%. Let’s find users who are posting messages
+    continuously, without any delays. To do this, we only need to filter users who
+    were posting 100/24 = 4% of their messages every hour:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The number may not be exactly 4%, so I used 2..5% as a filter range. As a result,
+    28 “users” were found who were posting the same number of messages every hour:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74660a9de6e7c408f3b61eda66d67302.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Users”, posting messages with equal intervals, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous part, I had already detected some bots using the clustering
+    algorithm. Here we can see that even with a much more simple approach, we can
+    get similar results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go to a more fun part and **group users by their activity time**. Because
+    the total amount of messages per hour is normalized to 100%, it''s possible to
+    make pretty complex requests. For example, let’s add new columns “morning”, “day”,
+    “evening”, and “night”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the analysis, I will use only those users who posted more than 10 messages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of course, 10 is not a statistically significant number. This is only a proof
+    of concept, and for real research, collecting data at longer intervals is recommended.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Anyway, the results are interesting. For example, we can find **users who posted
+    most of their** **messages in the morning**, using only one line of code. We can
+    also get all these messages and draw them on the timeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ab28c9f870705a57d781925b53f674f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Users posting tweets in the morning, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interestingly, this number is only about 3%. As a comparison, 46% of active
+    users send more than 50% of their **messages during the day**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19e0eec4bb497452b59a1b5e4af24421.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Users posting tweets during the day, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can make other requests; for example, let’s find users who are making **80%
+    of their messages in the evening**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62cebcc5864fc080a9ec447d7c450db8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Users posting tweets in the evening, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also display the timeline of some users to verify the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbfe34c9683b5f414b2b55b76e69ca7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Timeline of selected users, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results can be interesting; for example, the user “rhod***” was posting almost
+    all the messages at the same time after 19.00.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, I must repeat that these results are not final. I analyzed only more
+    or less active users who posted more than 10 tweets within a week. But a significant
+    number of users posted fewer messages, and to gather more insights about them,
+    data should be collected within several weeks or even months.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we were able to get all Twitter messages posted in a specific
+    language — in our example, Dutch. This language is mostly used in the Netherlands
+    and Belgium, which are located close to each other. This allows us to know the
+    user’s timezone, which, alas, I was not able to obtain from the Twitter API, at
+    least using the free account. By doing an analysis of message timestamps, we can
+    get a lot of interesting information; for example, it is possible to find out
+    if more users are active in the morning, during working hours, or in the evening.
+    Finding temporal patterns in users’ behavior can be useful for psychology, cultural
+    anthropology, or even medicine. Millions of people are using social networks,
+    and it is interesting to know how it affects our lives, the rhythm of work, or
+    sleep. And as was shown in the article, analyzing this behavior can be done using
+    simple requests, which are actually not more difficult than school math.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It was also interesting to see how much data social networks can store. I suppose
+    most people never think about how many messages are posted. Even for a relatively
+    small Dutch-speaking community (about 25 million native speakers in the world),
+    more than 10 tweets per second can be generated. For this article, 6,487,433 Twitter
+    messages from 1,515,139 users were analyzed, and these were only messages posted
+    within 10 days! For larger countries like Germany, getting all the messages will
+    probably be beyond the limitations of a free Twitter development account. In that
+    case, it may be possible to combine different request queries with filtering by
+    user location.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anyway, social networks are an interesting source of information *about us*,
+    and I wish readers good luck with their own experiments. Those who are interested
+    are also welcome to read the [first part](/finding-temporal-patterns-in-twitter-posts-exploratory-data-analysis-with-python-8aac618c8699)
+    about using the K-Means algorithm for clustering Twitter users. And as another
+    approach, the [NLP analysis](/what-people-write-about-climate-twitter-data-clustering-in-python-2fbbd2b95906)
+    of Twitter posts was also explained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

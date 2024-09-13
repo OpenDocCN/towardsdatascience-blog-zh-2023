@@ -1,0 +1,957 @@
+- en: Image Registration for Medical Datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/image-registration-for-medical-datasets-ee605ff8eb2e](https://towardsdatascience.com/image-registration-for-medical-datasets-ee605ff8eb2e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From SimpleElastix to Spatial Transformer Networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://charlieoneill.medium.com/?source=post_page-----ee605ff8eb2e--------------------------------)[![Charlie
+    O''Neill](../Images/17aa117fc5787f93ff1f547b919786c8.png)](https://charlieoneill.medium.com/?source=post_page-----ee605ff8eb2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee605ff8eb2e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee605ff8eb2e--------------------------------)
+    [Charlie O''Neill](https://charlieoneill.medium.com/?source=post_page-----ee605ff8eb2e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee605ff8eb2e--------------------------------)
+    ·31 min read·Feb 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec059b4593a0bbe23845d204100454c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Michael Dziedzic](https://unsplash.com/@lazycreekimages?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Image registration is a fundamental task in image processing that involves aligning
+    two or more images to a common coordinate system. By doing so, corresponding pixels
+    in the images represent homologous points in the real world, enabling comparison
+    and analysis of the images. One common application of image registration is in
+    medical imaging, where multiple scans or images of the same patient are taken
+    over time, with variations due to differences in time, position, or other factors.
+    Registering these images can reveal subtle changes or patterns that may be indicative
+    of disease progression or treatment efficacy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image registration involves finding a spatial transformation that maps points
+    in one image to corresponding points in the other image(s), so that the images
+    can be superimposed on each other. The spatial transformation is typically parameterised
+    by a set of control points, which are used to warp one image to match the other.
+    The quality of the registration is measured by a similarity metric, which quantifies
+    the degree of correspondence between the images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In recent years, there has been a growing interest in medical image registration
+    due to the availability of advanced imaging modalities, increasing computing power,
+    and the need for more accurate and efficient analysis of medical images. Image
+    registration has become a prerequisite for a wide range of medical image analysis
+    tasks, including segmentation of anatomical structures, computer-aided diagnosis,
+    monitoring of disease progression, surgical intervention, and treatment planning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite the significant amount of research that has focused on developing image
+    registration algorithms, there has been relatively little attention paid to the
+    accessibility, interoperability, and extensibility of these algorithms. Scientific
+    source code is often not published, is difficult to use because it has not been
+    written with other researchers in mind, or lacks proper documentation. This has
+    limited the adoption and use of image registration algorithms, hindering scientific
+    advancement and reproducibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address these challenges, several open-source libraries for medical image
+    registration have been developed, with SimpleElastix being one of the most popular.
+    SimpleElastix is an extension of SimpleITK, an open-source library for medical
+    image analysis, that allows users to configure and run the Elastix registration
+    algorithm entirely in Python, Java, R, Octave, Ruby, Lua, Tcl, and C#. SimpleElastix
+    offers a simple parameter interface, modular architecture, and a range of transforms,
+    metrics, and optimizers, making it easy to use and computationally efficient.
+    It also provides a range of features such as stochastic sampling, multi-threading,
+    and code optimization to make registration run faster without sacrificing robustness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, I’ll explore the process of image registration using SimpleElastix, focusing
+    on the specific example of registering fundus images from geographic atrophy patients.
+    I’ll also provide a step-by-step guide to implementing this registration process,
+    along with an exploration of other techniques such as optical flow and spatial
+    transformer networks. Hopefully, this will give you a better understanding of
+    the importance of image registration in medical imaging and the tools available
+    to implement it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The task is taking fundus images (photographs of the inner surface of an eye)
+    from geographic atrophy patients (a type of eye disease) and registering these
+    images *inter-patient* i.e. images from the same patient are only registered to
+    that patient. For context, geographic atrophy (GA) is characterised by the loss
+    of retinal pigment epithelium cells, which are responsible for supporting and
+    nourishing the photoreceptor cells in the macula, the central part of the retina
+    that is responsible for sharp, detailed vision. The loss of RPE cells results
+    in the formation of one or more areas of atrophy, or “holes,” in the macula, which
+    can cause central vision loss and affect a person’s ability to perform everyday
+    tasks such as reading, driving, and recognising faces. You’ll notice these areas
+    of atrophy in the fundus images below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can get the images to follow along with the code from [this Kaggle dataset](https://www.kaggle.com/datasets/andrewmvd/fundus-image-registration).
+    First, we need to import the appropriate modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, let’s write a function to handle retrieving the images. Since we only
+    want to register fundus images to the same eye, we specify which patient and which
+    laterality we want to load in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When evaluating our registration algorithm, our evaluation metric will be some
+    function that computes the distance between the registered images and the template
+    image. We want to be able to track a few of these metrics. Some common ones include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*L1 loss*, also known as mean absolute error, measures the average magnitude
+    of the element-wise differences between two images. It is robust to outliers and
+    gives equal weight to all pixels, making it a good choice for image registration.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*RMSE*, or root mean square error, is the square root of the mean of the squared
+    differences between two images. It gives more weight to larger differences, making
+    it sensitive to outliers. RMSE is commonly used in image registration to measure
+    the overall difference between two images.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Normalised cross-correlation* is a measure of the similarity between two images,
+    taking into account their intensities. It is normalised to ensure that the result
+    is between -1 and 1, where 1 indicates a perfect match. Normalised cross-correlation
+    is often used in image registration to assess the quality of the registration,
+    especially when dealing with images with different intensities.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Similarity* is a measure of the overlap between two images, taking into account
+    both the intensities and spatial information. Common similarity metrics used in
+    image registration include mutual information, normalised mutual information,
+    and the Jensen-Shannon divergence. These metrics provide a measure of the information
+    shared between two images, making them well suited for assessing the quality of
+    image registration.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The following function takes a list of registered images, as well as the template
+    image, and calculates the above metrics for each image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Given these losses, it’s probably a good idea to have some sort of function
+    that shows us the best and worst registered images, based on the loss. This is
+    somewhat similar to viewing individual examples from a confusion matrix in a classification
+    task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It’s probably a good idea to write a summary function which will show the aggregate
+    improvement our registration has achieved:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we’ll write a thin wrapper for any registration algorithm to allow
+    us to easily apply and evaluate it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Exploratory data analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s get some images and see what we’re dealing with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: A good idea is probably to examine which of the images are most different from
+    the template image. We can recycle the functions from above to do this. Let’s
+    just calculate the losses between the un-registered images and the template, and
+    then look at the most dissimilar ones (highest losses).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2264d3da9d9869fae59fa27f5499ceb4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For comparison, here is the template image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/49c1777f2a850576776e2d5e97990d1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the optimal template image
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Obviously, choosing the first fundus image as the *fixed* or “template” image
+    may not be ideal. What if the first image is poor quality, or rotated, or in general
+    very different from the majority of images to be registered? This will lead to
+    poor results, large affine transformations and high “dead” image areas. Hence,
+    we need some way to pick a template image. There are a few different ideas for
+    how we might do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the cumulative L2 distance between each image and all other images
+    in the dataset, and pick the one with the lowest result. This represents the image
+    that is “closest” to all the other images.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Repeat the process from above, but this time create a histogram of cumulative
+    L2 distances. Pick the *k* best images, take the average, and use this as a template.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s begin with the first idea. This function loops over each image, calculating
+    aggregate L2 distance with all other images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s have a look at the four images with the lowest total RMSEs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/92c7b613ccec8e2171747547cda6f71f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s try the second method. First, let’s have a look at the histogram
+    of total RMSEs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/73b5d1b50d1ae2549515021ab3d74784.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could probably take the best 15 images (all with RMSEs below 10):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1babcc32348a92c057f0b98d4233267e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously, the more images we use to take the average of, the blurrier the final
+    image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/fbcd06c810c5224433123aef3f4131f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s pick the best 8 images, and make that our template image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here are the actual workhorses of the project: the registration algorithms
+    themselves.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rigid
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Rigid registration is a fundamental technique in medical image analysis that
+    involves aligning two or more images by applying translations, rotations, and
+    scalings. It is a process of transforming images in a way that preserves the distance
+    between corresponding points in the images. The aim of rigid registration is to
+    find the best transformation that minimizes the difference between the images
+    while maintaining the anatomical consistency of the underlying structures. Rigid
+    registration has several applications, including image fusion, image-guided surgery,
+    and longitudinal studies, and serves as a critical preprocessing step for more
+    advanced registration techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e432a3126646f040006f0d3a7102bf3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our metrics are worse compared to the original images. Let’s see what’s actually
+    happening:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e6c0abfdc49aa06d24b87226ebf999ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interesting. So the metrics are generally worse, but it appears this way because
+    the metrics are comparing large black areas on shifted images. We should probably
+    include the same metrics as above, but exclude completely black pixels from the
+    comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ee749aa5f979e01d84d008d9bc3f4e37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Not really much better. The only metric where it is definitely better is SSIM
+    excluding black pixels. A theory about why this might be the case is that by excluding
+    black pixels, we are also excluding the retina, which is already very well aligned
+    with the majority of images, and hence “dampens” the metrics for the well-aligned
+    images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optical flow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Optical flow is a fundamental technique in computer vision that estimates the
+    motion of objects between two consecutive frames of a video sequence. It is based
+    on the assumption that the pixel intensities of an object remain constant across
+    frames, and that the apparent motion of the object is solely due to its real motion.
+    The optical flow can be represented as a 2D vector field (u,v) that assigns a
+    velocity vector to each pixel in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The optical flow field can be computed by solving a system of equations that
+    relates the image brightness change to the motion of the pixels. These equations
+    can be solved using various methods, such as Lucas-Kanade, Horn-Schunck, or Farneback,
+    each with its own advantages and limitations. Once the optical flow field is computed,
+    it can be used to register images by warping one image to align with the other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optical flow has a wide range of applications, including object tracking, motion
+    analysis, video stabilization, and video compression. However, optical flow estimation
+    is sensitive to image noise, occlusions, and large displacements, which can lead
+    to errors and inaccuracies in the motion estimation. Ongoing research is focused
+    on improving the accuracy, robustness, and efficiency of optical flow methods
+    to enhance their applicability in real-world scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s have a look at how this works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/cd5341247222200f7a7c65400b0d9d2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above code demonstrates image registration using optical flow. First, the
+    code loads a sequence of images and a template. Then, the images are converted
+    to grayscale, and the optical flow between the first image and the template is
+    computed using the TVL1 algorithm. The resulting optical flow vectors are used
+    to register the template to the first image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do this, the code generates a grid of row and column coordinates for the
+    template image and applies the optical flow vectors to the row and column coordinates
+    to obtain the corresponding locations in the first image. These transformed coordinates
+    are then used to warp the template image to the first image using a spline-based
+    image warping function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code then generates RGB images to display the unregistered sequence, the
+    registered sequence, and the target image (i.e., the first image). The unregistered
+    sequence is an RGB image with the first and template images overlaid. The registered
+    sequence is an RGB image with the warped template image and the first image overlaid.
+    The target image is an RGB image with only the first image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the code displays the three RGB images using Matplotlib subplots. The
+    first subplot shows the unregistered sequence, the second subplot shows the registered
+    sequence, and the third subplot shows the target image. The resulting plot provides
+    a visual comparison of the unregistered and registered sequences, highlighting
+    the effectiveness of the optical flow-based registration method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The estimated vector field (u,v) can also be displayed with a quiver plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/14eaf5a71a12c8c204fac88fe94655b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s implement the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/160f0414e4834a5f76a065549093e58e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Significantly better performance! Let’s visualise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/86fd18f3a7b1f9cde4a2e8233f62ae87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It seems like the optical flow is “cheating” somewhat on the harder images by
+    just completely deforming them. Let’s see if we can improve on this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SimpleElastix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: SimpleElastix is an open-source, multi-platform software library that provides
+    a simple interface for performing medical image registration. Image registration
+    is the process of aligning two or more images by finding a spatial mapping between
+    them. SimpleElastix offers a wide range of pre-implemented registration components,
+    including transforms, similarity metrics, and optimizers, which can be easily
+    combined to create a registration pipeline. The library supports various types
+    of registration, including rigid, affine, non-rigid, and groupwise registration,
+    and allows users to register images in different modalities, such as MRI, CT,
+    PET, and microscopy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the key advantages of SimpleElastix is its ease of use. It provides a
+    user-friendly, high-level interface that requires minimal coding knowledge and
+    can be used through a Python or C++ interface. Additionally, the library includes
+    advanced features such as multi-resolution optimization, regularization, and spatial
+    constraints, which enhance the accuracy and robustness of the registration. SimpleElastix
+    is widely used in medical imaging research and clinical practice and has been
+    validated in numerous studies. It is a valuable tool for a wide range of applications,
+    including image-guided surgery, longitudinal studies, and image analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rigid registration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As discussed above, a rigid transformation is capable of aligning objects that
+    are related by translation and rotation. For example, when aligning images of
+    a patient’s bones, a rigid transformation is often sufficient to align these structures.
+    It is advantageous to use a simple transformation when possible, as this reduces
+    the number of possible solutions and minimizes the risk of non-rigid local minima
+    that could compromise the accuracy of the registration results. This approach
+    can be seen as a means of incorporating domain expertise into the registration
+    process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at a single registered image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0c99e80aef332c70925809d155164f07.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s use the architecture above to apply and validate the rigid registration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Visualise the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/de6eed7e789d0563df80a39fef1c0c4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And finally, let’s examine the metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/efe4730b919c596f0f8fb8661bb88397.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Whilst L1 losses are similar, the rigid registration with `SimpleElastix` drastically
+    improves the NCC and structural similarity loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Affine registration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Very similar to rigid registration, the affine transform allows us to shear
+    and scale in addition to rotation and translation. Often, affine registration
+    is used as an initial preprocessing step before non-rigid transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a0a1b4358b559c526cf973f74d2ba166.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/74fe54e3ec38b81d43bed4eace85e327.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Slightly better than rigid transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Non-rigid registration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Non-rigid registration techniques are able to align images that require localised
+    deformations, making them more suitable for accommodating the anatomical, physiological,
+    and pathological variations between patients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To parameterise a free-form deformation (FFD) field, B-splines are commonly
+    employed. The registration of FFD fields is much more complex than that of simpler
+    transformations. The increased dimensionality of the parameter space makes it
+    challenging to solve the problem, and as such, a multi-resolution approach is
+    recommended. Starting with an affine initialisation can also be helpful to make
+    the registration easier. In SimpleElastix, implementing a multi-resolution approach
+    is straightforward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code below runs multi-resolution affine initialisation and then applies
+    a B-spline non-rigid registration transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5a18457634cf154be8b20903c704db92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e6fff40254972ccbca4d97d3804927d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So SSIM is slightly worse than affine, but NCC is definitely better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Groupwise registration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Groupwise registration methods are used in medical imaging to address the uncertainties
+    associated with registering one image to a chosen reference frame. Instead, all
+    images in a population are simultaneously registered to a mean frame of reference
+    that is at the center of the population. This approach uses a 3D or 4D B-spline
+    deformation model and a similarity metric that minimizes intensity variance while
+    ensuring that the average deformation across images is zero. The method can also
+    incorporate temporal smoothness of the deformations and a cyclic transform in
+    the time dimension, which is useful in cases where the anatomical motion has a
+    cyclic nature, such as in cardiac or respiratory motion. By using this method,
+    bias towards a specific reference frame is eliminated, resulting in more accurate
+    and unbiased registration of the images. However, this method is too computationally
+    intensive without parallel processing, and so is not covered here for the sake
+    of efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2D Voxelmorph with Spatial Transformer Network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Spatial Transformer Network (STN) is a neural network architecture that
+    can learn to spatially transform images in order to improve the performance of
+    downstream tasks. In particular, the STN is capable of learning to automatically
+    crop, rotate, scale, and skew input images in a way that is optimal for the task
+    at hand. This is achieved by learning to estimate a set of affine transformation
+    parameters for each input image, which can be used to warp the image into a new
+    configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the code below, the STN is implemented as a module within a larger neural
+    network, which consists of several convolutional layers and fully connected layers.
+    The STN consists of two components: a localisation network, and a regressor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The localisation network is a set of convolutional layers that are used to extract
+    a set of features from the input image. These features are then fed into the regressor,
+    which is a set of fully connected layers that are used to estimate the affine
+    transformation parameters. In the provided code, the regressor consists of two
+    linear layers with ReLU activation functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The STN module also includes a `stn` method, which takes an input image as input
+    and applies the learned affine transformation to the image using bilinear interpolation.
+    The `stn` method is called within the forward method of the larger neural network,
+    which is used to make predictions on the transformed input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, the STN module provides a powerful tool for learning to perform spatial
+    transformations on input images, which can be used to improve the performance
+    of a wide range of image processing and computer vision tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We’re also going to try a different differentiable loss that may be better
+    suited to image registration than the previous metrics. The given code defines
+    a custom loss function called voxelmorph loss, used for 2D image registration.
+    The loss function consists of two components: a reconstruction loss and a smoothness
+    penalty.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reconstruction loss measures the dissimilarity between the source image
+    and the target image. It is computed as the mean absolute difference between the
+    two images, weighted by the target weight. The source and target images are the
+    input images to the registration network, with the source image being transformed
+    to align with the target image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The smoothness penalty encourages smooth transformations by penalizing spatially
+    varying deformations between the source and target images. The penalty is computed
+    by taking the mean absolute difference of the gradients of the target image in
+    the x and y directions, weighted by the smoothness weight. This penalty term helps
+    to avoid sharp changes in the deformation field, which can lead to overfitting
+    and poor generalization to new images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The overall voxelmorph loss is the sum of the reconstruction loss and the smoothness
+    penalty. The loss is optimized using a gradient-based optimizer during training
+    to improve the accuracy of the registration network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Voxelmorph loss is a widely used loss function in medical image registration
+    due to its ability to handle large deformations, multi-modal images, and inter-subject
+    variability. It is particularly useful for deformable registration of images,
+    where the goal is to align images with significant shape variations. The smoothness
+    penalty term in the loss function helps to regularise the deformation field and
+    improve the accuracy of the registration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code below defines a PyTorch dataset class, called `FundusDataset`, that
+    is used to load and preprocess training images for use in a neural network. The
+    dataset class takes a list of training images and a target image as input and
+    returns an image and its corresponding target image for use during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s write a brief training loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we define a Python function, called `convert_image_np`, that converts
+    a PyTorch tensor to a numpy image. The function takes the PyTorch tensor as input,
+    and applies a standard normalisation procedure by subtracting a mean value and
+    dividing by a standard deviation value. The resulting numpy image is then clipped
+    to lie between 0 and 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code then defines a function, called `visualize_stn`, that is used to visualize
+    the output of a spatial transformer network (STN) layer during training. The resulting
+    input and transformed numpy images are plotted side-by-side using the subplots()
+    function from the matplotlib library. The plot shows the input images on the left
+    and the corresponding transformed images on the right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8bcbb2a1adad260829ba71b4475343d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly, the network has moved the images somewhat, but struggles with the fundus
+    images that are too far removed from the template image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Supersizing registration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For completeness, I include a few things here that I tried to get the STN to
+    work better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image augmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I had a hunch that image augmentation can improve the performance of an STN
+    in learning image registration transforms by increasing the diversity and quantity
+    of training data. STNs rely on large amounts of training data to learn the complex
+    spatial transformations between images. However, obtaining a sufficiently large
+    and diverse dataset of medical images can be challenging due to factors such as
+    limited patient data and variability in imaging modalities. In addition to this,
+    I only have limited data per patient, so training an STN is only feasible for
+    a lot of patients combined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image augmentation offers a solution to this problem by generating synthetic
+    training data by applying a variety of image transformations to existing images.
+    This increases the size and diversity of the training dataset, and enables the
+    STN to learn more robust and generalisable registration transforms. Image augmentation
+    can also help the STN to learn transformations that are invariant to certain imaging
+    conditions such as changes in illumination, contrast, and noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common image augmentation techniques include random rotations, translations,
+    scaling, and flipping, as well as more complex transformations such as elastic
+    deformations and intensity changes. These transformations are applied randomly
+    during training to generate a wide range of transformed images that are similar
+    to the original images. The augmented images are then used to train the STN, which
+    improves its ability to generalise to new images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: You could then apply this function to the images list and pass in the extended
+    dataset for training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clustering models with k-nearest neighbours
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The below code is an implementation of k-means clustering on a set of images
+    stored as NumPy arrays. The aim of the code is to find the optimal number of clusters
+    that best represent the set of images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code begins by converting the list of images to a 2D NumPy array and then
+    reshaping the array to a 2D shape. This is done to create a dataset that can be
+    fed into the k-means clustering algorithm. The k-means algorithm is then run for
+    a range of values of k, where k is the number of clusters to be generated. For
+    each value of k, the algorithm is run, and the within-cluster sum of squares (WCSS)
+    is calculated. The WCSS is a measure of how spread out the data points are within
+    each cluster, and it is used to evaluate the quality of the clustering. The WCSS
+    value is stored in a list, and the loop is repeated for all values of k.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the WCSS values are calculated, an elbow plot is generated to visualize
+    the relationship between the number of clusters and the WCSS value. The elbow
+    plot shows a curve that descends and reaches an elbow point where the rate of
+    decrease in WCSS value starts to level off. The optimal number of clusters is
+    chosen as the value at which the curve starts to level off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8b45025890e19cca686dd4c80693149f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From this plot, an optimal number of clusters is probably three. Let’s use
+    this to group our images:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e552ba78a2b8af5ba8500e956f30fa22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This looks good. Let’s create a new list for each cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Doesn’t really help. This also goes against the overall idea of an STN, which
+    is that it uses the convolutional layers to determine which transforms to apply
+    to which images i.e. some images will require significantly higher weights in
+    the transform than others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In conclusion, the evaluation of medical image registration techniques indicates
+    that while modern approaches such as Spatial Transformer Networks (STNs) offer
+    promising results, they require a substantial investment to achieve the desired
+    outcomes. In comparison, traditional techniques like SimpleElastix prove to be
+    more effective and efficient. Despite implementing various strategies to enhance
+    the STN’s performance, the model failed to learn sufficient weights to shift the
+    target, demonstrating the need for alternative loss functions. One such approach
+    could involve ignoring black pixels resulting from affine transforms. Additionally,
+    pointwise registration, which utilizes biological markers such as the retina or
+    blood vessels to guide the registration process, could prove more beneficial for
+    specific applications. Therefore, further research is necessary to determine the
+    most appropriate registration approach, based on the specific problem and available
+    resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The data is from the Kaggle *Retina Fundus Image Registration Dataset*, which
+    is licensed under the Attribution 4.0 International (CC BY 4.0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kaggle: [Retina Fundus Image Registration](https://www.kaggle.com/datasets/andrewmvd/fundus-image-registration)
+    Dataset'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Jaderberg, M., Simonyan, K., & Zisserman, A. (2015). Spatial transformer networks.
+    *Advances in neural information processing systems*, *28*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hill, D. L., Batchelor, P. G., Holden, M., & Hawkes, D. J. (2001). Medical image
+    registration. *Physics in medicine & biology*, *46*(3), R1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Brown, L. G. (1992). A survey of image registration techniques. *ACM computing
+    surveys (CSUR)*, *24*(4), 325–376.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Lee, M. C., Oktay, O., Schuh, A., Schaap, M., & Glocker, B. (2019). Image-and-spatial
+    transformer networks for structure-guided image registration. In *Medical Image
+    Computing and Computer Assisted Intervention–MICCAI 2019: 22nd International Conference,
+    Shenzhen, China, October 13–17, 2019, Proceedings, Part II 22* (pp. 337–345).
+    Springer International Publishing.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Pytorch: [Spatial Transformer Networks Tutorial](https://pytorch.org/tutorials/intermediate/spatial_transformer_tutorial.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

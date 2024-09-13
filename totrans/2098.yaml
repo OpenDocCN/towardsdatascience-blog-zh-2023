@@ -1,0 +1,361 @@
+- en: 'TiDE: the ‘embarrassingly’ simple MLP that beats Transformers'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tide-the-embarrassingly-simple-mlp-that-beats-transformers-7db77d588079](https://towardsdatascience.com/tide-the-embarrassingly-simple-mlp-that-beats-transformers-7db77d588079)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deep exploration of TiDE, its implementation using Darts and a real life use
+    case comparison with DeepAR and TFT (a Transformer architecture)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rjguedes?source=post_page-----7db77d588079--------------------------------)[![Rafael
+    Guedes](../Images/b3d000b3bce0113d2b2727e84db04870.png)](https://medium.com/@rjguedes?source=post_page-----7db77d588079--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7db77d588079--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7db77d588079--------------------------------)
+    [Rafael Guedes](https://medium.com/@rjguedes?source=post_page-----7db77d588079--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7db77d588079--------------------------------)
+    ·9 min read·Dec 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: As industries continue to evolve, the importance of an accurate forecasting
+    becomes a non-negotiable asset whether you work in e-commerce, healthcare, retail
+    or even in agriculture. The importance of being able to foresee what comes next
+    and plan accordingly to overcome future challenges is what can make you ahead
+    of competition and thrive in an economy where margins are tight and the customers
+    are more demanding than ever.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformer architectures have been the hot topic in AI for the past few years,
+    specially due to their success in Natural Language Processing (NLP) being one
+    of the most successful use cases the chatGPT that took the attention of everyone
+    regardless if you were an AI enthusiastic or not. But NLP is not the only subject
+    where Transformers have been shown to outperform the state-of-the-art solutions,
+    in Computer Vision as well with Stable Diffusion and its variants.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But can Transformers outperform state-of-the-art models in time series? Although
+    many efforts have been made to develop Transformers for time series forecasting,
+    it seems that for long term horizons, simple linear models can outperform several
+    Transformer based approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article I explore TiDE, a simple deep learning model which is able to
+    beat Transformer architectures in long term forecasting. I also provide a step-by-step
+    implementation of TiDE to forecast weekly sales in a dataset from Walmart using
+    Darts a forecasting library for Python. And finally, I compare the performance
+    of TiDE, DeepAR and TFT in a real life use case from my company.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/626ec398068535678f10ad555c839ffa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: TiDE a new forecasting model that is ‘embarrassingly’ simple MLP
+    to beat Transformers ([source](https://unsplash.com/photos/landscape-photo-of-seashore-ZhsYjreGsSE))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the code is available on [Github](https://github.com/rjguedes8/TiDE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time-series Dense Encoder Model (TiDE)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: TiDE is a novel time-series encoder-decoder model that has shown to outperform
+    state-of-the-art Transformer models in long-time horizon forecast [1]. It is a
+    multivariate time-series model that is able to use static covariates (e.g. brand
+    of a product) and dynamic covariates (e.g. price of a product) which can be known
+    or unknown for the forecast horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike the complex architecture of Transformers, TiDE is based on a simple Encoder-Decoder
+    architecture with only Multi-Layer Perceptron (MLP) and without any Attention
+    layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **Encoder** is responsible for mapping the past and the covariates of a
+    time-series into a dense representation of features through two key steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Feature Projection** which reduces the dimensionality of the dynamic covariates
+    for the whole look-back and the horizon. and;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Dense Encoder** which receives the output of the Feature Projection concatenated
+    with static covariates and the past of the time-series and maps them into an embedding.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The **Decoder** receives the embedding from the encoder and converts it into
+    future predictions through two operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dense Decoder** which maps the embedding into a vector per time-step in the
+    horizon; and'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Temporal Decoder** which combines the output of the Dense Decoder with the
+    projected features of that time-step to produce the predictions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **Residual Connection** linearly maps the look-back to a vector with the
+    size of the horizon which is added to the output of the Temporal Decoder to produce
+    the final predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19529d8caa00d1eacc12ba8367f9189b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: TiDE architecture ([source](https://arxiv.org/pdf/2304.08424.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to use TiDE in practice
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This section covers a step by step implementation of TiDE using a weekly sales
+    dataset from Walmart available on [kaggle](https://www.kaggle.com/datasets/aslanahmedov/walmart-sales-forecast/data?select=train.csv)
+    (License CC0: Public Domain) and resorting to a package called Darts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Darts is a Python library for forecasting and anomaly detection [2] that contains
+    several models such as naive models to serve as baseline, traditional models like
+    ARIMA or Holt-Winters, deep learning models like TiDE or TFT or tree based models
+    like LightGBM or Random Forest. It also supports both univariate and multivariate
+    models and some of them offer probabilistic forecasting solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training dataset has 2 years and 8 months of weekly sales and 5 columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Store* — store number and one of the static covariates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Dept* — department number and the other static covariates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Date* — the temporal index of the time series which is weekly and it will
+    be used to extract dynamic covariates like the week number and the month'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Weekly_Sales* — the target variable'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*IsHoliday* — another dynamic covariate that identifies if there is a holiday
+    in a certain week'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The test dataset has the same columns except for the target (***Weekly_Sales****)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by importing the libraries we need and defining some global variables
+    like the date column, target column, static covariates, the frequency of our series
+    and the scaler to use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The default scaler is MinMax Scaler, but we can use any we want from scikit-learn
+    as long as it has `fit()`, `transform()` and `inverse_transform()` methods. The
+    same happens for the transformer which by default is Label Encoder from scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After that, we load our training dataset and we convert the pandas data frame
+    into TimeSeries which is the expected format from Darts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I did not performed an EDA since my goal is just to show you how to implement
+    it, but I noticed some negative values which might indicate returns. Nevertheless,
+    I considered them as errors and I replaced them with 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I also used the argument `fill_missing_dates` to add missing weeks and I filled
+    those dates also with 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also load our test dataset so that we define what is our forecast horizon
+    and what are the holidays in the forecast horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After that, for each series in the training set we create dynamic covariates
+    (week, month and a binary column that idenitfies the presence of a holiday in
+    a specific week):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, that we have all the data ready we just need to scale our data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we are ready to make predictions!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we will predict for the next 38 weeks the weekly sales for the
+    same series that we trained with, however you can also forecast for time series
+    that are not part of your training set as long as they have the same static covariates.
+    For that, you have to repeat the same process of data preparation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we have an example of the forecast for Store 1 and Dept 1, where we can
+    see that the model was able to forecast a spike in the week of Black Friday and
+    Thanksgiving from 2012 due to the three dynamic covariates that we had (week,
+    month and the binary column which identifies a holiday in a certain week). We
+    can also see that there are several spikes across the year that comes probably
+    from discounts or marketing campaigns that can be handled by dynamic covariates
+    to improve our forecast and that data is also available on kaggle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2d585f533cb93ed6e3f4d3cf249e02e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Forecast result for Store 1 and Department 1 (image made by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: TiDE vs DeepAR and TiDE vs TFT in a real life use case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In my company, we deployed, in the end of 2022, a new forecasting model which
+    aimed to predict the volume of orders of 264 time series for the next 16 weeks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model that beat the one in production at that time was DeepAR, a deep learning
+    architecture available in the Python library GluonTS [3]. Like TiDE, DeepAR allows
+    the use of static and dynamic covariates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although DeepAR was providing us good results, it suffered from a problem on
+    longer horizons (+8 weeks) that we called *‘Exploding Predictions’.* From one
+    week to the other, with just one more week of data, the model would make a total
+    different forecast from the previous week with volumes higher than normal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, we came up with mechanisms to control this and change one particular
+    hyper parameter (context length, that DeepAR is really sensitive to) to avoid
+    this kind of situations, but lately it has been shown to not be enough and we
+    had to closely monitor every week the results and change other hyper parameters
+    to come up with a reasonable forecast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we decided to start a new round of research to find a model that is more
+    stable and reliable and it was when we found TiDE. We optimised TiDE in terms
+    of hyper parameters, which dynamic and static covariates to use, which series
+    would go to training and which would not, etc. And we compared both optimised
+    models, DeepAR and TiDE, in 26 different cut off dates for a entire year of data
+    from July 2022 to July 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results showed that TiDE was not just better than DeepAR in the short and
+    long term (as you can see in Figure 4) but it did not suffer from the initial
+    problem we wanted to solve of *‘Exploding Predictions’.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21367689ffd66f6b2cde6f28259487f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: Comparison between DeepAR and TiDE for a real use case. The metric
+    used for comparison was MSE, however it is not seen in the y axis for confidential
+    purposes (image made by the author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: During our model research we also compared TiDE with TFT [4], a Transformer
+    architecture to verify what the authors in [1] stated about TiDE beating Transformer
+    architectures in long term forecasting. And, as we can see from Figure 5, TiDE
+    was able to beat TFT, specially in the long term (6+ weeks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/76fd9954ac8aec86b18cdfbfda0d967e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Comparison between TFT and TiDE for a real use case (image made by
+    the author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Transformer architectures will be the foundation for the next big revolution
+    in the history of humanity. Although they are amazing for NLP and Computer Vision,
+    they cannot outperform simpler models on long term forecasting as stated by the
+    authors in [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article we compared TFT, a Transformer architecture, and DeepAR with
+    TiDE, and we verified that, for our use case, TiDE was able to beat both models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, if Transformer architectures were robust enough for long term
+    forecasting, why would Google develop a new non Transformer time series model?
+    TSMixer [5] is the latest model developed by Google for time series that beats
+    transformers (including TFT) in M5 competition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, simpler models seem to be better for forecasting but let’s see what
+    the future holds in this subject and if Transformers can be improved to provide
+    better results on the long term!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Keep in touch:** [LinkedIn](https://www.linkedin.com/in/rafaelguedes97/),
+    [Medium](https://medium.com/@rjguedes97)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Abhimanyu Das, Weihao Kong, Andrew Leach, Shaan Mathur, Rajat Sen, Rose
+    Yu. Long-term Forecasting with TiDE: Time-series Dense Encoder. arXiv:2304.08424,
+    2023'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Julien Herzen, Francesco Lässig, Samuele Giuliano Piazzetta, Thomas Neuer,
+    Léo Tafti, Guillaume Raille, Tomas Van Pottelbergh, Marek Pasieka, Andrzej Skrodzki,
+    Nicolas Huguenin, Maxime Dumonal, Jan Kościsz, Dennis Bader, Frédérick Gusset,
+    Mounir Benheddi, Camila Williamson, Michal Kosinski, Matej Petrik, Gaël Grosch.
+    Darts: User-Friendly Modern Machine Learning for Time Series, 2022'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Alexander Alexandrov, Konstantinos Benidis, Michael Bohlke-Schneider, Valentin
+    Flunkert, Jan Gasthaus, Tim Januschowski, Danielle C. Maddix, Syama Rangapuram,
+    David Salinas, Jasper Schulz, Lorenzo Stella, Ali Caner Türkmen, Yuyang Wang.
+    GluonTS: Probabilistic Time Series Models in Python. arXiv:1906.05264, 2019'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Bryan Lim, Sercan O. Arik, Nicolas Loeff, Tomas Pfister. Temporal Fusion
+    Transformers for Interpretable Multi-horizon Time Series Forecasting. arXiv:1912.09363,
+    2019'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Si-An Chen, Chun-Liang Li, Nate Yoder, Sercan O. Arik, Tomas Pfister. TSMixer:
+    An All-MLP Architecture for Time Series Forecasting. arXiv:2303.06053, 2023'
+  prefs: []
+  type: TYPE_NORMAL

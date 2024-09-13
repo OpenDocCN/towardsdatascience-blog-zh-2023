@@ -1,0 +1,345 @@
+- en: Measuring The Speed of New Pandas 2.0 Against Polars and Datatable — Still Not
+    Good Enough
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/measuring-the-speed-of-new-pandas-2-0-against-polars-and-datatable-still-not-good-enough-e44dc78f6585](https://towardsdatascience.com/measuring-the-speed-of-new-pandas-2-0-against-polars-and-datatable-still-not-good-enough-e44dc78f6585)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Even though the new PyArrow backend for Pandas is bringing exciting features,
+    it still looks disappointing in terms of speed.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ibexorigin.medium.com/?source=post_page-----e44dc78f6585--------------------------------)[![Bex
+    T.](../Images/516496f32596e8ad56bf07f178a643c6.png)](https://ibexorigin.medium.com/?source=post_page-----e44dc78f6585--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e44dc78f6585--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e44dc78f6585--------------------------------)
+    [Bex T.](https://ibexorigin.medium.com/?source=post_page-----e44dc78f6585--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e44dc78f6585--------------------------------)
+    ·7 min read·Mar 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/741230d22d003ff7576c9b047ca76d76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author via Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: People have been complaining about Pandas' speed ever since they tried reading
+    their first gigabyte-sized dataset with `read_csv` and realized they had to wait
+    for - *gasp* - five seconds. And yes, I was one of those complainers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Five seconds might not sound a lot, but when loading the dataset itself takes
+    that much runtime, it usually means subsequent operations will take as long. And
+    since spee is one of the most essential things in quick, dirty data exploration,
+    you can get *very* frustrated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this reason, folks at PyData recently announced the planned release of Pandas
+    2.0 with the freshly minted PyArrow backend. For those totally unaware, PyArrow,
+    on its own, is a nifty little library designed for high-performance, memory-efficient
+    manipulation of arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'People sincerely hope the new backend will bring considerable speed-ups over
+    the vanilla Pandas. This article will test that glimmer of hope by comparing the
+    PyArrow backend against two of the fastest DataFrame libraries: Datatable and
+    Polars.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Haven't people already done this?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is the point of doing this benchmark when H20 currently runs the popular
+    [**Database-like Ops Benchmark**](https://h2oai.github.io/db-benchmark/) that
+    measures the computation speed of almost 15 libraries on three data manipulation
+    operations over three different dataset sizes? My benchmark couldn't possibly
+    be as complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, for one, the benchmark didn't include Pandas with the PyArrow backend
+    and was last updated in 2021, which was ages ago.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Secondly, the benchmark was run on a monster of a machine with 40 CPU cores
+    hopped up on 128 GB RAM and 20 GB GPU to boot ([cuDF](https://github.com/rapidsai/cudf),
+    anyone?). The general populace doesn't usually have access to such machines, so
+    it is important to see the differences between the libraries on everyday devices
+    like mine. It features a modest CPU with a dozen cores and 32 gigs of RAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, I advocate for total transparency in the process, so I will explain
+    the benchmark code in detail and present it as a GitHub Gist to run on your own
+    machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installation and setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We start by installing the RC (release candidate) of Pandas 2.0 along with the
+    latest versions of PyArrow, Datatable, and Polars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I created a synthetic dataset with NumPy and Faker libraries to simulate typical
+    features in a census dataset and saved it in CSV and Parquet formats. Here are
+    the paths to the files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Check out [this GitHub gist](https://gist.github.com/BexTuychiev/92a1fbbed96fa52cec47fe2cd725cf3e)
+    to see the code that generated the data.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: There are 50 million rows of seven features, clocking up the file size to about
+    2.5 GBs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmark results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before showing the code, let''s see the good stuff — the benchmark results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e45560dbd6baf259a966f20b883c57c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Right off the bat, we can see that PyArrow Pandas comes in last (or second to
+    last in `groupby`) across all categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please, don't mistake the nonexistent bars in reading and writing parquet categories
+    for 0 runtimes. Those operations aren't supported in Datatable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other categories, Datatable and Polars share the top spot, with Polars having
+    a slight edge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing to CSVs has always been a slow process for Pandas, and I guess a new
+    backend isn't enough to change that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Should you switch?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So, time for the million-dollar question — should you switch to the faster Polars
+    or Datatable?
+  prefs: []
+  type: TYPE_NORMAL
+- en: And the answer is the *I-so-hate* "it depends." Are you willing to sacrifice
+    Pandas' almost two-decade maturity and, let's admit it, stupidly easy and familiar
+    syntax for superior speed?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In that case, keep in mind that the time you spend learning the syntax of a
+    new library may balance out its performance gains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, if all you do is work with massive datasets, learning either of these fast
+    libraries may be well worth the effort in the long run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you decide to stick with Pandas, give [the Enhancing Performance](https://pandas.pydata.org/docs/user_guide/enhancingperf.html)
+    page of the Pandas user guide a thorough, attentive read. It outlines some tips
+    and tricks to add extra fuel to the Pandas engine without resorting to third-party
+    libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, if you are stuck with a large CSV file and still want to use Pandas,
+    you should memorize the following code snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: It reads the file with the speed of Datatable, and the conversion to a Pandas
+    DataFrame is almost instantaneous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmark code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: OK, let's finally see the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first thing to do after importing the libraries is to define a DataFrame
+    to store the benchmark results. This will make things much easier during plotting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: It has three columns, one for the task name, another for the library name, and
+    another for storing the runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we define a `timer` decorator that performs the following tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Measures the runtime of the decorated function.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Extracts the function's name and the value of its `library` parameter.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Stores the runtime, function name, and library name into the passed results
+    DataFrame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The idea is to define a single general function like `read_csv` that reads
+    CSV files with either of the three libraries, which can be controlled with a parameter
+    like `library`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how we are decorating the function with `timer(results_df)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We define functions for the rest of the tasks in a similar way (see the function
+    bodies from [the Gist](https://gist.github.com/BexTuychiev/dba8d1f876e1d601f530c0e8b16d5a85)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we run the functions for each of the libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: To escape memory errors, I avoided loops and ran the benchmark in a Jupyter
+    Notebook three times, changing the `l` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we create the figure of the benchmark with the following simple bar chart
+    in lovely Seaborn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2e45560dbd6baf259a966f20b883c57c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Things are changing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For years now, Pandas have stood on the shoulders of NumPy as it boomed in popularity.
+    NumPy was kind enough to lend its features for fast computations and array manipulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this approach was limited because of NumPy's terrible support for text and
+    missing values. Pandas couldn't use native Python data types like lists and dictionaries
+    because that would be a laughing stock on a massive scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, Pandas has been moving away from NumPy on the sly for a few years now. For
+    example, it introduced PyArrow datatypes for strings in 2020 already. It has been
+    using extensions written in other languages, such as C++ and Rust, for other complex
+    data types like dates with time zones or categoricals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, Pandas 2.0 has a fully-fledged backend to support all data types with Apache
+    Arrow's PyArrow implementation. Apart from the apparent speed improvements, it
+    provides much better support for missing values, interoperability, and a wider
+    range of data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, even though the backend will still be slower than other DataFrame libraries,
+    I am eagerly awaiting its official release. Thank you for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are a few pages to learn more about Pandas 2.0 and the PyArrow backend:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://datapythonista.me/blog/pandas-20-and-the-arrow-revolution-part-i](https://datapythonista.me/blog/pandas-20-and-the-arrow-revolution-part-i)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://levelup.gitconnected.com/welcoming-pandas-2-0-194094e4275b](https://levelup.gitconnected.com/welcoming-pandas-2-0-194094e4275b)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://pandas.pydata.org/docs/dev/whatsnew/v2.0.0.html](https://pandas.pydata.org/docs/dev/whatsnew/v2.0.0.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Loved this article and, let’s face it, its bizarre writing style? Imagine having
+    access to dozens more just like it, all written by a brilliant, charming, witty
+    author (that’s me, by the way :).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For only 4.99$ membership, you will get access to not just my stories, but a
+    treasure trove of knowledge from the best and brightest minds on Medium. And if
+    you use [my referral link](https://ibexorigin.medium.com/membership), you will
+    earn my supernova of gratitude and a virtual high-five for supporting my work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://ibexorigin.medium.com/membership?source=post_page-----e44dc78f6585--------------------------------)
+    [## Join Medium with my referral link — Bex T.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get exclusive access to all my ⚡premium⚡ content and all over Medium without
+    limits. Support my work by buying me a…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: ibexorigin.medium.com](https://ibexorigin.medium.com/membership?source=post_page-----e44dc78f6585--------------------------------)
+    ![](../Images/a01b5e4fb641db5f35b8172a4388e821.png)
+  prefs: []
+  type: TYPE_NORMAL

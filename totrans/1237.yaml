@@ -1,0 +1,412 @@
+- en: How to Set Up a Simple ETL Pipeline with AWS Lambda for Data Science
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-setup-a-simple-etl-pipeline-with-aws-lambda-for-data-science-89e5b96c7017](https://towardsdatascience.com/how-to-setup-a-simple-etl-pipeline-with-aws-lambda-for-data-science-89e5b96c7017)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to setup a simple ETL pipeline with AWS Lambda that can be triggered via
+    an API Endpoint or Schedule and write the results to an S3 Bucket for ingestion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)[![Brian
+    Roepke](../Images/0b7ef72cbfc9acda69fde14127d65dcf.png)](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)
+    [Brian Roepke](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)
+    ·10 min read·Feb 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4c63b13a67b5fb8d990da76038c2922d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Rod Long](https://unsplash.com/@rodlong?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction to ETL with AWS Lambda**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When it comes time to build an ETL pipeline, many options exist. You can use
+    a tool like [Astronomer](https://www.dataknowsall.com/astrointro.html) or [Prefect](http://prefect.io)
+    for Orchestration, but you will also need somewhere to run the compute. With this,
+    you have a few options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Virtual Machine (VM) like AWS EC2
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Container services like AWS ECS or AWS Fargate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Apache Spark like AWS EMR (Elastic Map Reduce)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Serverless Computing like AWS Lambda
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each of these has its advantages. If you’re looking for simplicity in setup,
+    maintenance, and cost, you can run *simple* jobs with **AWS Lambdas** or Serverless
+    Computing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice I said **simple**. AWS Lambdas are not meant for compute-intensive or
+    long-running jobs. They’re suitable for executing small amounts of code that take
+    minutes versus hours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are AWS Lambda and Serverless Computing?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A Lambda function in AWS is a piece of code that is executed in response to
+    an event. The event can be a request to an API endpoint, a file being uploaded
+    to an S3 bucket, or a scheduled event. The code is executed, and the results are
+    returned. Here is a great description of how it works from [AWS](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Lambda runs your function only when needed and scales automatically, from
+    a few daily requests to thousands per second. You pay only for the computing time
+    you consume-there is no charge when your code is not running. For more information,
+    see AWS Lambda Pricing.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Lambda function is a wonderful way to think about ETL for smaller jobs that
+    need to run frequently. Such as on a trigger, like an API call, or nightly on
+    a schedule. It also allows you to orchestrate multiple Lambda functions to create
+    a more complex ETL pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s dive into creating our first Lambda function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating Your Lamba Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From the AWS Console, navigate to the Lambda service. Press the **Create Function**
+    button to get started. You will be prompted to select a blueprint. For this example,
+    we will select **Author from scratch**. Give your name an appropriate name and
+    select **Python 3.9** as the runtime. Select the **architecture** you prefer or
+    typically develop locally; this makes it easier to upload new libraries compatible
+    with your Lambda function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3bb76b7513536e40e6ed71cb2c960e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can create a **new role** or choose an **existing** one. We’ll cover that
+    in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lamba Role
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A critical part of creating a Lambda function is the **role**. The **role**
+    allows the function to access other AWS services. For this example, we will need
+    to give the function access to the **Lambda** and **S3**. I also gave access to
+    **VPC**, but that’s not necessary for this setup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a good practice to create a new role to help you isolate only the permissions
+    needed for this function. Or, if you will create multiple lambda functions for
+    ETL use cases, consider a more generic naming like **Lamba-ETL-Role**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f751f6647a33da08e6473c902418741a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set Your Function’s Timeout
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next is configuring the function’s timeout. Depending on how long the function
+    will take to execute, you can increase it to 15 minutes. For this example, we
+    will set it to **1 minute**. You could see in your CloudWatch logs if the timeout
+    was reached.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Click on the **Configuration** tab, and under **General Configuration**, set
+    the timeout to 1 minute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83666ef72182247457a2c4f8dd360832.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the Parameters and Secrets Extension
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next — this isn’t 100% necessary, but it’s a great practice when you want to
+    ensure that you’re handling sensitive data safely and not exposing it in your
+    code. In the past, I’ve written about how to use [Environment Variables](https://www.dataknowsall.com/envvar.html)
+    to do this locally; however, in AWS, we’ll use the **Parameters and Secrets Extension**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **Parameters and Secrets Extension** allows you to store sensitive data
+    in the AWS Secrets Manager and access it in your Lambda function, a great way
+    to store API keys, database credentials, etc. You can also use it to store non-sensitive
+    data like configuration settings. You can read up more on this functionality here:
+    [Configure the Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_lambda.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start by adding a Layer to our Lambda function, allowing us to access
+    the extension. From the **Code** tab, scroll to the bottom and click on **Add
+    a Layer**. Select **AWS Layers** and then choose **AWS-Parameters-and-Secrets-Lambda-Extension-Arm64**
+    and the latest version of that layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1755e481b7d646c541c3d98fa692f7bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Next, we need to add code to help us access the secrets. I’ve added this to
+    a small function that will look up my **API Key** for [The Movie Database](https://www.themoviedb.org)
+    (TMDB) and return it. You can see the full code below. TMDB is a great API for
+    getting movie and TV show information, and it’s free to use for non-commercial
+    purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown below, we’ll create a `headers` variable with the JSON object. We'll
+    then pass that into our API call to the **secrets_extension_endpoint** as shown.
+    The response will be a JSON object with the secret string. We'll then parse that
+    string and return the API key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where my code says **<< your secrets ARN >>**, you’ll need to replace that with
+    the **ARN** of your secret. You can find that in the **AWS Secrets Manager console**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** *You will need to go back and modify your role to allow access to
+    the secret you created. You can find instructions on how to do that in the* [*AWS
+    Documentation*](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html)*.
+    Follow the example in the section “Example Read one secret (attach to an identity)”.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Add Support for Pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next, our example and many other ETL use cases will require using Pandas. We’ll
+    need to add a layer to our Lambda function to support this. From the **Code**
+    tab, scroll to the bottom and click on **Add a Layer**. Select **Custom Layers**
+    and then choose **AWSSDKPandas-Python39-Arm64** and the latest layer version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After enabling this layer, you can `import pandas` in your code *without* having
+    to upload the package to your lambda function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49f83a45d6eaf60fd4ab379101971ce8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing Files to an S3 Bucket
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One very powerful workflow with modern Data Warehouses / Platforms is the ability
+    to work directly with JSON data. We’ll take advantage of this by outputting data
+    to **JSON files** in an **S3 bucket**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll create a function that will take a **DataFrame** and write it to a **JSON
+    file** in an S3 bucket. We’ll use the `boto3` library to do this. We'll create
+    a JSON string using Pandas `to_json` method, encode it as `utf-8`, and then write
+    it to the S3 bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We call this function when we’re ready to output our DataFrame to S3 with a
+    few parameters such as the **DataFrame** itself, the **type** of data we’re writing,
+    and the **IMDB ID** of the movie or TV show. The type is here for convenience
+    so we can write different data types with a single function while creating a unique
+    file name for each movie lookup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploying Your Lambda Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are multiple ways to deploy your function, and the easiest is to use the
+    AWS Console and upload a zip file. However, adding a little bit of automation
+    here will simplify your life when making changes to your code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step you’ll need to do is set up the AWS CLI. You can find instructions
+    on how to do that in the AWS Documentation [Getting started with the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+    You’ll want to **create a new IAM user** with the appropriate permissions to write
+    to the Lambda service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, I wrote a simple `bash` script that I can call from my local terminal,
+    which does all the work needed. One very important step is to zip up your python
+    libraries at the correct level and package them with the zip file. The script
+    shows you the process of changing to the `sites-packages` directory and zipping
+    the contents of the libraries you want to keep. Explicitly name the libraries
+    you want here so you don't end up uploading unnecessary files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** *This also assumes that I’ve created a local virtual environment
+    and have my function code local. I prefer to build my Lambdas this way so that
+    I can version control everything in GitHub*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: After your function successfully deploys, you can head back to the console and
+    see your code and the supplied packages. Notice the structure. The packages are
+    in folders at the root level, allowing them to be imported like any other package
+    as if you were developing locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/073915b939a6f2ebac762a90686aef91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trigger the Lambda Function with an API Endpoint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As the final step to our function, we will trigger it with an API Endpoint using
+    the AWS API Gateway and pass the function parameters as a query string, an ultra-powerful
+    way to trigger specific events to fire for the exact data you want to process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Navigate to the **Configuration** tab and click the **Add Trigger** button.
+    Scroll to API Gateway and select the option for **Create New API**. Additionally,
+    select the option for **HTTP API** and set the security to **Open**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a619d3d507c03121f3ca6507ef93e9b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the endpoint is created, you will have a URL with which you can trigger
+    your Lambda. We’ll pass a list of IDs as a query string parameter allowing us
+    to pass multiple IDs to the function and process them all at once. Triggering
+    your API with query string parameters is a very powerful way to process data in
+    bulk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We construct the URL as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now, in our function, we can access the list of query string parameters
+    via the event object that is part of all Lambda functions. We’ll access it through
+    the `multiValueQueryStringParameters` key. And then, using the name of the query
+    string parameter, we want to access, in this case, `ids`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Monitoring the Lambda Function with CloudWatch When Using an API Gateway
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: By default, you will get CloudWatch monitoring for your function. I’ve run into
+    a few errors where I needed extended logging. You must add the following to your
+    **Log Format** for the API Gateway Stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Read the full instructions here [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-troubleshooting-lambda.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91b4314c168e0b8f4d803543ffd062db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Function Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will put this all together for the finale into our `lambda_handler` function.
+    We retrieve the IDs from the Query string, then call our function, `get_tmdb_api_key,`
+    to get the API key from the Secrets Store. Finally, we loop through our IDs and
+    build a data frame, writing it to S3 with the function `write_to_s3`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Orchestrating and Processing the Data in your Warehouse
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The final step is to trigger the API Endpoint in a workflow and then process
+    the data in your warehouse. An example of how JSON works with snowflake can be
+    found in my article [Getting Started with Snowflake and the Rise of ELT Workflows
+    in the Cloud](https://www.dataknowsall.com/snowflakestart.html), and I’ll cover
+    orchestration in a future article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the full code for this project on [GitHub](https://github.com/broepke/LambdaTMDB)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When building ETL pipelines, you have many options to choose from when it comes
+    to computing. For simple jobs, an AWS Lambda function can be a wonderful way to
+    enrich your data or process quickly and efficiently. We started by showing you
+    how to create a Lambda, including setting up the role to run it. Then we covered
+    several recommendations, such as leveraging the Parameters and Secrets Extension
+    to safely store information such as API keys. Then we look at how you can automate
+    deployment using the AWS CLI. Finally, we triggered the function with an API Gateway
+    and monitored it with CloudWatch. I hope this article shows how wonderful Lambdas
+    can be and how you can add Lambda to your ETL toolbelt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you enjoy reading stories like these and want to support me as a writer,
+    consider signing up to become a Medium member. It’s $5 a month, with unlimited
+    access to thousands of articles. If you sign up using* [*my link*](https://medium.com/@broepke/membership)*,
+    I’ll earn a small commission at no extra cost.*'
+  prefs: []
+  type: TYPE_NORMAL

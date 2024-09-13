@@ -1,0 +1,496 @@
+- en: Natural Audio Data Augmentation Using Spotify’s Pedalboard
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce](https://towardsdatascience.com/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: With ready-to-use Python code & presets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)[![Max
+    Hilsdorf](../Images/01da76c553e43d5ed6b6849bdbfd00da.png)](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------)
+    [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----212ea59d39ce--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----212ea59d39ce--------------------------------)
+    ·10 min read·Jan 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66165831ed554a6df7e20476f30856b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image adapted from [**戸山 神奈**](https://unsplash.com/de/fotos/Qi32ATTSwp4)**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a data scientist, working with audio data is often quite a struggle. One
+    common problem is the **lack of data** to build effective models for tasks like
+    voice recognition, music recommendation, and speech-to-text. Often, **audio data
+    is sensitive**, portraying a human voice or copyright-protected music. Finally,
+    audio data is high-dimensional and usually requires **huge computational resources**,
+    compared to other data types. Hence, it is crucial to make the best of the data
+    you have. Audio data augmentation is a great method to achieve that!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fundamentals of (Audio) Data Augmentation**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Introduction to Spotify Pedalboard**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Best Practices for Audio Data Augmentation**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Advanced Uses With Ready-to-Use Code & Presets**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Data Augmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data Augmentation is the process of slightly modifying some or all examples
+    in a dataset to increase the total amount of training data. If done right, augmenting
+    a dataset can effectively **prevent overfitting**. This means that your machine
+    learning models will likely produce more **generalizable results** even with a
+    rather small amount of data. Data augmentation is generally applied solely to
+    the training data because the validation and test metrics would be invalid if
+    augmentations were mixed in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most important thing to consider is that an augmented example must still
+    be similar enough to the original example to be considered *“of the same class”*.
+    This is what we call a **natural** or **in-distribution** augmentation. Here is
+    an example from image recognition, where data augmentation is widely applied:
+    If you rotate and shift the image of a cat, you can generate a variety of modified
+    images that are technically “different” images but still clearly cats.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbe4e9f8c7c42e2e577986d15a3e75c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Shifting and rotating an image of a cat for Data Augmentation Inspired by an
+    [introductory article by Suki Lau](/image-augmentation-for-deep-learning-histogram-equalization-a71387f609b2).
+    Cat image by [Alexander London](https://unsplash.com/de/@alxndr_london).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If your augmented example looks somewhat like an example the model might encounter
+    “in the real world” when it is deployed, you are good to go.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This rule of thumb is useful, but what does this mean for audio data?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Audio Data Augmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I have a good message for you: in machine learning, audio data is often represented
+    as an image, e.g. as a spectrogram. How different can it be from the cat example,
+    then? Well, here is also a bad message: Neither shifting nor rotating these images
+    is of any use. Just look at the image below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1446c31b26e934e466c8536b4902453.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Rotation and shifting applied to a spectrogram. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You do not need any expertise in signal processing to tell that the shifted
+    and rotated spectrogram is **NOT a natural augmentation**. Your model with never
+    see a shifted/rotated spectrogram in “real life” so you should not train it with
+    those.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are three types of audio data augmentation that are somewhat widely adopted:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After transforming audio to an image representation, use **masking** to “hide”
+    some parts of the image from the model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If your audio files are longer than what you want to use as model input, you
+    could draw **multiple snippets** from a single audio file.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply signal modifications like **audio effects** to your examples to alter
+    them slightly.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Out of these three, I consider **the third option to be best** at reliably producing
+    natural augmentations for all kinds of audio data. However, it requires lots of
+    effort and careful thought to do it right. That is why I made this the topic of
+    this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whether it is speech or music, sound files can typically be edited with audio
+    effects like compressors, equalizers, or reverbs. In fact, this is the bread and
+    butter of any sound engineer. The great thing is that these effects are so inherent
+    to the data we are working with that they are **especially viable for data augmentation**.
+    If I increase the overall reverb on a rock song, it is still a rock song, but
+    the resulting spectrogram may look noticeably different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pedalboard**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/a341d460ac2c0639fa68841ca29af36b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A guitar pedal board. Image by [Frankie Lopez](https://unsplash.com/de/fotos/NEmRMr0e2TQ).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pedalboard was released relatively recently in September 2021 with an [introductory
+    article](https://engineering.atspotify.com/2021/09/07/introducing-pedalboard-spotifys-audio-effects-library-for-python/)
+    and a [github repository](https://github.com/spotify/pedalboard). The term “pedalboard”
+    comes from electrical guitarists, who tend to use multiple guitar effects like
+    distortion or reverb in the form of foot pedals, usually chained together to a
+    pedalboard. While pedalboard was clearly built for musical applications, it is
+    also great for speech augmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can simply run this in your terminal to install pedalboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: To work with Pedalboard’s effects, you need to load an audio file into Python
+    as an array representation of its waveform. “librosa” and “soundfile” are especially
+    useful for this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In order for librosa to work properly, you will also need to download and install
+    [**FFmpeg**](https://www.ffmpeg.org/download.html)and [add it to your PATH environment
+    variables](https://www.java.com/en/download/help/path.html)**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load Audio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To load an audio file, just use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '“librosa.load” returns the waveform array and the audio sample rate. We are
+    going to use the following short music example throughout this article to demonstrate
+    the capabilities of pedalboard:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a snippet from a short funky instrumental that I produced a good while
+    ago. You can download the audio file directly from [SoundCloud](https://soundcloud.com/user-726858933/spotify_pedalboard_base_example)
+    if you want to follow along.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply a Single Pedal
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we import “Pedalboard” and “Reverb” from the pedalboard library. Even
+    if we just want to apply one effect, we need to instantiate a “Pedalboard” first
+    and then append our effect to it. As an effect, we will be using a reverb effect
+    with the default pedalboard settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are many ways to export audio waveforms to .mp3 or .wav files. Here is
+    one common way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is what our example sounds like after applying the standard reverb:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is easy to hear that, although the reverb is already quite strong, we have
+    kept the relevant musical parameters and the overall expression of the track intact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What if we want a different kind of reverb? Pedalboard allows us to use custom
+    parameters for each effect pedal. For instance, this is how you can create a reverb
+    that is more dominant than the one we used before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you listen to the example below, you will notice that the reverb effect is
+    so dominant that it overshadows the underlying music. This is an example of an
+    unnatural augmentation, at least for most use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply Multiple Pedals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many more effects we could use and combine into an effect chain. A
+    **PitchShift** moves the whole audio to a higher or lower pitch, for instance,
+    two semitones up. A **Compressor** pushes the louder parts of a signal down so
+    that the sound is less dynamic and more intense. On top of that, let us add a
+    reverb with custom parameters, again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is what the resulting audio sounds like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have we already gone too far with the effects? That is, of course, to be discussed
+    in the context of the machine learning task. If I want to detect the key of a
+    song, we should obviously not shift the pitch if we want to keep the same pitch
+    label for the track. If, however, we try to detect the genre of a track, it is
+    still clearly recognizable as a — badly produced — funk track.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems and Best Practices
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/f110f15816f8b01db31b4e4bcabf0c01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image adapted from [Olia Danilevich](https://www.pexels.com/de-de/@olia-danilevich/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, it should be clear to see that pedalboard is great for natural
+    audio data augmentation. However, in a real-world use case, there are a few more
+    things to consider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Good” Presets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we want to keep our augmentations natural, we need to find a preset (or multiple
+    presets) that allows us to **reliably create natural augmentations** for all examples
+    in our dataset. For example, adding more distortion to a heavy metal track may
+    be a viable option, but is a classical music piece with distorted violins really
+    natural?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Augmentation Variety**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Of course, we can use the same effect chain for all the examples we want to
+    augment. However, introducing some randomness into the effect chain for each example
+    has two big advantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can create multiple augmentations of the same example and they will be different.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The model learns to deal with a more diverse range of effects, which can increase
+    its robustness.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using random effect chains while maintaining naturalness in the augmentations
+    is the **key challenge** here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Speed**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we want to process thousands of audio examples, we need to think about an
+    efficient implementation. Surely, we could augment each file and store the augmented
+    examples as audio files. However, are we really interested in keeping our augmentations
+    stored somewhere? If not, we could compute the augmentations within our data processing
+    script or pipeline. For instance, if we want to compute mel spectrograms for each
+    audio example, we could
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the audio into a numpy array.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Roll a random pedalboard and apply it to the array.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute mel spectrograms for both, the original audio and the augmented example.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Store both mel spectrograms in the training dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This way, **no time is wasted** on exporting and loading audio files that we
+    will never use again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pedalboard Augmentation GitHub Repository**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/8311940d5036f2487186e16ad333f4e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To help you get started with audio augmentation, I wrote some code and published
+    it in [this github repository](https://github.com/MaxHilsdorf/pedalboard_audio_augmentation).
+    The repository includes
+  prefs: []
+  type: TYPE_NORMAL
+- en: an audio augmentation module that implements **random, natural effect chains**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: example scripts for applying these random, natural augmentations to individual
+    files or as part of a mel spectrogram feature extraction pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: some example audio files from the GTZAN dataset which you can use to play around
+    with augmentations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While I cannot cover the details of the code in this post, I still want to show
+    you how it can be used to apply a random effect chain to a single audio file.
+    For further guidance, check out the “README.md” file in the repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Building a Random Effect Chain**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we add the path to the audio augmentation module (“code/audio_augmentation.py”
+    in the repo) to our sys.path and import the relevant functionalities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we define an effect chain by specifying the effects we want to use in
+    the correct order. Also, we assign a probability value to each pedal that states
+    how likely the pedal is to be activated for each pedalboard roll. If you want
+    all of your pedals to be applied every time, set all probabilities to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we define a fallback effect chain. This one is needed in case none of
+    the pedals pass the random roll, i.e. no effect is selected. In this case, the
+    module will use this fallback effect chain as a default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Rolling the Pedalboard
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To “roll” our pedalboard, we can use this code which applied the “roll_pedal”
+    function from the augmentation module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the “pedal_dict” was imported from the augmentation module. It holds
+    information on the parameter ranges and applies a random setting to each pedal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying the Random Pedalboard
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, finally, we can load our audio file and apply the random pedalboard to
+    it using the “process_track” function from the augmentation module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us listen to what this code would do with our example track!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This one has a slight chorus effect as well as some minor distortion applied
+    to it. It sounds noticeably different from the original one but is still very
+    close to it. While we are at it, let us try another random augmentation roll!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we have a compressor, a low-pass filter, a high-pass filter, and a pitch
+    shift applied to the signal. This time, the difference is much more noticeable.
+    Yet, the naturalness of the track is maintained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we
+  prefs: []
+  type: TYPE_NORMAL
+- en: learned what data augmentation is and why it is used.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: discussed why natural augmentation is so important.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: saw that audio data augmentation is different from augmenting other data types.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: got hands-on experience applying the pedalboard library to audio signals.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: outlined best practices for audio data augmentations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: had a first look at a prebuilt pedalboard-based audio augmentation module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**I hope you learned something new and found this post useful!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in other forms of audio data augmentation, check out [this
+    article](/music-genre-classification-using-a-divide-conquer-crnn-2ff1cf49859f)
+    I wrote on music genre classification using a “divide & conquer” method.
+  prefs: []
+  type: TYPE_NORMAL

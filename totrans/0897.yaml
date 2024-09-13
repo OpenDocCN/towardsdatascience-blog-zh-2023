@@ -1,0 +1,284 @@
+- en: Fine-tune MPT-7B on Amazon SageMaker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fine-tune-mpt-7b-on-amazon-sagemaker-1e68e71051fa](https://towardsdatascience.com/fine-tune-mpt-7b-on-amazon-sagemaker-1e68e71051fa)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/2f5691f2830e17d1af6c907a144f4567.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jeffery Ho](https://unsplash.com/@jefferyho?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to prepare a dataset and create a training job to fine-tune MPT-7B
+    on Amazon SageMaker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@joao.pereira.abt?source=post_page-----1e68e71051fa--------------------------------)[![João
+    Pereira](../Images/2946b185eb134ddfaa71cf5af5e3cda6.png)](https://medium.com/@joao.pereira.abt?source=post_page-----1e68e71051fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1e68e71051fa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1e68e71051fa--------------------------------)
+    [João Pereira](https://medium.com/@joao.pereira.abt?source=post_page-----1e68e71051fa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1e68e71051fa--------------------------------)
+    ·9 min read·Jun 20, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: New large language models (LLMs) are being announced every week, each trying
+    to beat its predecessor and take over the evaluation leaderboards. One of the
+    latest models out there is [MPT-7B](https://www.mosaicml.com/blog/mpt-7b) that
+    was released by MosaicML. Unlike other models of its kind, this 7-billion-parameter
+    model is open-source and licensed for commercial use ([Apache 2.0 license](https://github.com/mosaicml/llm-foundry/blob/main/LICENSE))
+    🚀.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Foundation models like MPT-7B are pre-trained on datasets with trillions of
+    tokens (100 tokens ~ 75 words) crawled from the web and, when prompted well, they
+    can produce impressive outputs. However, to truly unlock the value of large language
+    models in real-world applications, smart prompt-engineering might not be enough
+    to make them work for your use case and, therefore, fine-tuning a foundation model
+    on a domain-specific dataset is required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLMs have billions of parameters and, consequently, fine-tuning such large models
+    is challenging. Good news is that fine-tuning is much cheaper and faster as compared
+    to pre-training the foundation model given that 1) the domain-specific datasets
+    are "small" and 2) fine-tuning requires only a few passes over the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Here is what we will learn in this article:***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to create and structure a dataset for fine-tuning a large language model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is and how to configure a distributed training job with fully sharded data
+    parallel.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to define a 😊 HuggingFace estimator.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to launch a training job in Amazon SageMaker that fine-tunes MPT-7B.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1\. Install dependencies and set S3 paths
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's start by installing the [SageMaker Python SDK](https://github.com/aws/sagemaker-python-sdk)
+    and a few other packages. This SDK makes it possible to train and deploy machine
+    learning models on AWS with a few lines of Python code. The code below is available
+    in the `[sagemaker_finetuning.ipynb](https://github.com/jpcpereira/sagemaker-fine-tune-mpt-7b/blob/main/sagemaker_finetuning.ipynb)`notebook
+    in Github. Run the notebook in SageMaker Studio, a SageMaker notebook instance,
+    or in your laptop after [authenticating to an AWS account](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next step is to define the paths where the data will be saved in S3 and create
+    a SageMaker session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Build a fine-tuning dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will create a dummy dataset to demonstrate how to fine-tune MPT-7B. Since
+    training models of this size on a complete dataset takes long and is costly, it
+    is a good idea to first test & debug the training job on a small dataset and second
+    scale training to the complete dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Format dataset as a list of dictionaries** — The dataset should be formatted
+    as a list of dictionaries, where each example has a key-value structure, *e.g.*,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `prompt` is the input given to the model (*e.g.*, a question). The `response`
+    is the output that the model is trained to predict (*e.g.*, the answer to the
+    question in the `prompt`). The raw prompt is often preprocessed to fit in a prompt
+    template that helps the model to generate better outputs. Note that the model
+    is trained for causal language modelling, so you can think of it as a "document
+    completer". It is a good idea to design the prompt template in such a way that
+    the model thinks that it is completing a document. Andrej Karpathy explains well
+    this mechanism in his talk [*State of GPT*](https://youtu.be/bZQun8Y4L2A).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Upload the training and test data to S3** — Once the training and test sets
+    are ready and formatted as a list of dictionaries, we upload them to S3 as JSON
+    lines using the utility function below:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. SageMaker Training job
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With the datasets available in S3, we will now create a training job in Amazon
+    SageMaker. For that, we have to create an entry point script, modify the configuration
+    file specifying the training settings, and define an HuggingFace estimator. We
+    will (re-)use the training script from [LLM Foundry](https://github.com/mosaicml/llm-foundry)
+    and [Composer](https://github.com/mosaicml/composer) library’s CLI launcher that
+    sets up the distributed training environment. Both of these packages are maintained
+    by [MosaicML](https://www.mosaicml.com/), the company behind MPT-7B. The working
+    folder should be structured like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will now dive deep into each of these files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Create a configuration file** `[**finetuning_config.yaml**](https://github.com/jpcpereira/sagemaker-fine-tune-mpt-7b/blob/main/finetuning_config.yaml)`—
+    The template provided in the [LLM Foundry](https://github.com/mosaicml/llm-foundry)
+    repository is a good starting point, specifically the `[mpt-7b-dolly-sft.yaml](https://github.com/mosaicml/llm-foundry/blob/main/scripts/train/yamls/finetune/mpt-7b_dolly_sft.yaml)`
+    file. However, depending on your dataset size and training instance, you might
+    have to adjust some of these configurations, such as the batch size. I have modified
+    the file to fine-tune the model in SageMaker (check `[finetuning_config.yaml](https://github.com/jpcpereira/sagemaker-fine-tune-mpt-7b/blob/main/finetuning_config.yaml)`).
+    The parameters that you should pay attention to are the following:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The`max_seq_length` indicates the maximum number of tokens of the input (remember
+    that 100 tokens ~ 75 words). The training and test data will be loaded using the
+    😊 [Datasets](https://huggingface.co/docs/datasets/index) library from the `/opt/ml/input/data/{train,
+    test}` directory inside the container associated with the training job. Check
+    out the [SageMaker Training Storage Folders](https://docs.aws.amazon.com/sagemaker/latest/dg/model-train-storage.html)’
+    documentation to understand how the container directories are structured. The
+    `max_duration` specifies the number of epochs for fine-tuning. Two to three epochs
+    is typically a good choice. `eval_interval` indicates how often the model will
+    be evaluated on the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The distributed training strategy is Fully Sharded Data Parallel (FSDP), which
+    enables efficient training of large models like MPT-7B. Unlike the traditional
+    data parallel strategy, which keeps a copy of the model in each GPU, FSDP shards
+    model parameters, optimizer states, and gradients across data parallel workers.
+    If you want to learn more about FSDP, check this insightful [PyTorch intro post](https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/).
+    FSDP is integrated in [Composer](https://github.com/mosaicml/composer), the distributed
+    training library used by [LLM Foundry](https://github.com/mosaicml/llm-foundry).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`save_folder` determines where the model checkpoint (`.pt` file) is saved.
+    We set it to the temporary folder `/tmp/checkpoints`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Create the entry point script** `[**launcher.sh**](https://github.com/jpcpereira/sagemaker-fine-tune-mpt-7b/blob/main/launcher.sh)`—
+    A bash script is used as entry point. The bash script clones the LLM Foundry repository,
+    installs requirements, and, more importantly, runs the training script using Composer
+    library''s distributed launcher. Note that, typically, training jobs in SageMaker
+    run the training script using a command like `python train.py`. However, it is
+    possible to pass a bash script as entry point, which provides more flexibility
+    in our scenario. Finally, we convert the model checkpoint saved to `/tmp/checkpoints`
+    to the HuggingFace model format and save the final artifacts into `/opt/ml/model/`.
+    SageMaker will compress all files in this directory, create a tarball `model.tar.gz`,
+    and upload it to S3\. The tarball is useful for inference.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Define 😊 HuggingFace Estimator** — The Estimator sets the Docker container
+    used to run the training job. We will use an image with PyTorch 2.0.0 and Python
+    3.10\. The bash script and the configuration file are automatically uploaded to
+    S3 and made available inside the container (handled by the SageMaker Python SDK).
+    We set the training instance to`[g5.48xlarge](https://aws.amazon.com/ec2/instance-types/g5/)`
+    that has 8x NVIDIA A10G GPUs. The `[p4d.24xlarge](https://aws.amazon.com/ec2/instance-types/p4/)`
+    is also a good choice. Even though it is more expensive, it is equipped with 8x
+    NVIDIA A100 GPUs. We also indicate the metrics to track on the training and test
+    sets (Cross Entropy and Perplexity). The values of these metrics are captured
+    via Regex expressions and sent to Amazon CloudWatch.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: ⚠️ Make sure to request the respective quotas for SageMaker Training, along
+    with [Warm Pools](https://docs.aws.amazon.com/sagemaker/latest/dg/train-warm-pools.html)’
+    quota in case you are making use of this cool feature. If you plan to run many
+    jobs in SageMaker, take a look at [SageMaker Saving Plans](https://aws.amazon.com/savingsplans/ml-pricing/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Launch the training job 🚀** — We have all set to start the training job on
+    Amazon SageMaker:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The training time will depend on the size of your dataset. With our dummy dataset,
+    training takes roughly **20min** to complete. Once the model is trained and converted
+    to 😊 HuggingFace format, SageMaker will upload the model tarball (`model.tar.gz`)
+    to the S3 `output_path`. I found that in practice the uploading step takes rather
+    long (>1h), which might be due to the size of the model artifacts to compress
+    (~25GB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I showed how you can prepare a dataset and create a training
+    job in SageMaker to fine-tune MPT-7B for your use case. The implementation leverages
+    the training script from [LLM Foundry](https://github.com/mosaicml/llm-foundry)
+    and uses [Composer](https://github.com/mosaicml/composer) library’s distributed
+    training launcher. Once you have fine-tuned your model and want to deploy it,
+    I recommend to check out the [blog posts by Philipp Schmid](https://www.philschmid.de/);
+    there are plenty of examples on how to deploy LLMs in SageMaker. Have fun with
+    your fine-tuned MPT-7B model! 🎉
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All the code used in this article is available in Github:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/jpcpereira/sagemaker-fine-tune-mpt-7b?source=post_page-----1e68e71051fa--------------------------------)
+    [## GitHub - jpcpereira/sagemaker-fine-tune-mpt-7b'
+  prefs: []
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/jpcpereira/sagemaker-fine-tune-mpt-7b?source=post_page-----1e68e71051fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: — João Pereira
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thank you for reading. Hope this article helps you getting started with fine-tuning
+    large language models like MPT-7B in Amazon SageMaker. If you would like to read
+    my future articles, please* [*follow me*](https://medium.com/@joao.pereira.abt/subscribe)*.
+    Feedback is highly appreciated! Leave a comment below if you have any questions
+    or reach out to me directly* [***by email***](mailto:mail@joao-pereira.pt) *or
+    in* [***LinkedIn***](https://www.linkedin.com/in/jpcpereira/)*.*'
+  prefs: []
+  type: TYPE_NORMAL

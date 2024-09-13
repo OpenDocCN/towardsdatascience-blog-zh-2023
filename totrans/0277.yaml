@@ -1,0 +1,380 @@
+- en: How to Skip Tasks in Airflow DAGs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/airflow-skip-task-a5a6ab319378](https://towardsdatascience.com/airflow-skip-task-a5a6ab319378)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Skipping tasks in Airflow DAGs based on specific conditions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[![Giorgos
+    Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)
+    [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)
+    ·9 min read·Feb 8, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/881b8b4f1e7bf014f76b61f5f78e7900.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Hello I’m Nik](https://unsplash.com/@helloimnik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/l4ADb9OVqTY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, I was attempting to add a new task in an existing Airflow DAG that
+    would only run on specific days of the week. However, I was surprised to find
+    that skipping tasks in Airflow isn’t as straightforward as I anticipated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will demonstrate how to skip tasks in Airflow DAGs, specifically
+    focusing on the use of `AirflowSkipException` when working with `PythonOperator`
+    or Operators that inherit from built-in operators (such as `TriggerDagRunOperator`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, I will discuss the use of `BranchPythonOperator` and `ShortCircuitOperator`
+    and how then can potentially be used to decide when a tasks needs to be skipped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
+    [## How to Run Airflow Locally With Docker'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A step by step guide for running Airflow with Docker on your local machine
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s assume we have an Airlflow DAG consisting of three tasks
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35643715c6392e0bb7ec4e3b925a78b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Example DAG consisting of three `` `PythonOperator` ta ``sks — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Skipping PythonOperator tasks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most intuitive way to skip tasks created via `PythonOperator` is to raise
+    `[AirflowSkipException](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/exceptions/index.html#airflow.exceptions.AirflowSkipException)`.
+    This means `python_callable` function that gets executed via `PythonOperator`
+    needs to implement the logic that decides when to raise exception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s return to the example DAG we previously discussed and consider a scenario
+    where task `task_b` must only run on Mondays of every week of the year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If DagRun’s start date is not a Monday, then `task_b` will be skipped and appear
+    in pink colour (that denotes skipped tasks as per the legend on the UI).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f85a539d002cd7a8e4b5d91b1a484b86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Skip condition is met, and trigger_rule for task_c is set to `none_failed`
+    — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to pay attention to the `'none_failed'` value provided to `trigger_rule`
+    keyword argument of `third_task`. If we skip this configuration, then `task_c`
+    will also be skipped whenever `task_b` is also skipped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f599ccae951ef14922a5e1b87f00e0c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'task_c is also skipped given that trigger_rule will get the default `all_success`
+    value — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By default, `trigger_rule` is set to `all_success` which means that a task will
+    be executed only if all of the upstream tasks are not skipped and are successful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If the DagRun’s start date is a Monday, then `task_b` will be executed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4dd4c9ee164db3dd8798a7b42d045061.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Skip condition is not met — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Skipping built-in Operator tasks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s assume we have another DAG consisting of three tasks, including a
+    `TriggerDagRunOperator` that is used to trigger another DAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b660db5918493144b89bc94292256ca7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A DAG consisting of TriggerDagRunOperator — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now things are a bit more complicated if you are looking into skipping tasks
+    created using built-in operators (or even custom ones that inherit from built-in
+    operators). To do so, there are essentially a few different options we can consider.
+    In this section, I’m going to provide all of them and it’s up to you to pick the
+    one that best suits your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **first option** we have is `**BranchPythonOperator**` that is used to create
+    a branching logic such that the DAG can take certain direction based on some conditional
+    logic. Once again, let’s assume that `trigger_other_dag` — that essentially uses
+    a `TriggerDagRunOperator` to trigger another Airflow DAG — needs to be executed
+    only on Mondays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can choose when to skip a task using a `BranchPythonOperator` with two branches
+    and a callable that underlying branching logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s go ahead and create the Airlfow Tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/72bf570f1e7fa047ad8771b799638547.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using `BranchPythonOperator` to decide when to skip a task — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that branch operators cannot have empty paths and thus we’ve had to create
+    a dummy task using `DummyOperator` and corresponds to skipping task. Whenever
+    the trigger task needs to be skipped, then `skip` operator will be executed (not
+    really..) instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c010dafdb0c733246ca58229cb35cc59.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Skip `trigger_other_dag` task— Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **second option** we have is to use `**ShortCircuitOperator**` in order
+    to implement a conditional logic to decide when to skip a particular task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ShortCircuitOperator is derived from the PythonOperator and evaluates the
+    result of a `python_callable`. If the returned result is `False` or a falsy value,
+    the pipeline will be short-circuited. Downstream tasks will be marked with a state
+    of “skipped” based on the short-circuiting mode configured. If the returned result
+    is `True` or a truthy value, downstream tasks proceed as normal and an `XCom`
+    of the returned result is pushed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: — [Airflow Docs](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html#airflow.operators.python.ShortCircuitOperator)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c211d468d0bb01050768e0204e7bb0dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Skipping Airflow tasks uisng ShortCircuitOperator — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now if `is_monday()` evaluates to False Airflow will skip all downstream tasks.
+    However, this is the default behaviour which means that if we want just one task
+    to be skipped we also need to provide `ignore_downstream_trigger_rules=False`
+    when creating an instance of `ShortCircuitOperator`. This configuration will then
+    take into account the corresponding trigger rules for downstream tasks and decide
+    which should still be skipped or executed (note the trigger rule in our last task
+    `task_c`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a0019eb7973e345834537ba5520efa4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If `is_monday` ShortCircuitOperator returns False, then skip only — Source:
+    Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the result from `python_callable` is `True` then downstream tasks will also
+    be executed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c74272f54778254e95ab149bb9087bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If `is_monday` ShortCircuitOperator returns True, then all downstream tasks
+    will be executed — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, the **third option** involves the **implementation of a sub-class that
+    inherits** from a built-in operator, such as `TriggerDagRunOperator`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following custom operator inhertis from the built-in `TriggerDagRunOperator`
+    and takes an additional callable argument that will be used to decide whether
+    an `AirflowSkipException` will be raised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: If the result of `conditional_checker_callable` returns `True`, then the operator
+    will be executed otherwise it will be skipped. Now the full code for our DAG becomes
+    as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f15d6eb6466a31efaff165a2d9dd0ead.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Creating a custom operator that is capable of being skipped. Note that for
+    this option, no additional tasks are required— Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now if the condition results in `False`, the task created using our custom operator
+    will be skipped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a364b09dd2dca0a6fcbfb849626d7504.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Skipping the task if the condition is False — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Likewise, if the condition is `True` the task will be executed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9bd6057b500b13d64e51b8d8acd1f909.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Executing the task if the condition is True — Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that for this particular option, we don’t need to create additional tasks
+    like we did in the two previous examples with `BranchPythonOperator` and `ShortCircuitOperator`
+    which is something I personally like given that it declutters our DAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that a similar behaviour can be achived by inheriting functionality from
+    `SkipMixin` Mixin Airlflow class. For more information, feel free to take a look
+    at the documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Personally, I do like the last approach as it’s a bit more clear when it comes
+    to the DAG visualisation on the Airflow UI and at the same time, by creating a
+    sub-class from a built-in operator to implement skipping logic, you can re-use
+    it for other DAGs as well. But this comes down to the specific use-case and any
+    preference you may have, so feel free to choose the approach that best suits your
+    needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Skipping tasks while authoring Airflow DAGs is a very common requirement that
+    lets Engineers orchestrate tasks in a more dynamic and sophisticated way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we demonstrate many different options when it comes to implementing
+    logic that requires conditional execution of certain Airflow tasks. More specifically,
+    we demonstrated how you can implement such functionality when using `PythonOperator`
+    by raising `AirflowSkipException`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, we also demonstrated a few different approaches when it comes to
+    skipping tasks created using built-in Operators, other than the `PythonOperator`.
+    Based on your specific use-case it’s up to you to decide which approach to take.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though skipping tasks is a common requirement, it doesn’t seem that Airflow
+    has a built-in feature to perform conditional runs within a specific DAG. I would
+    expect that a feature allowing developers to specify trigger conditions in specific
+    tasks would be available, but I am pretty sure that sooner or later this functionality
+    will be implemented and packed into a future Airflow version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👉 [**Become a member**](https://gmyrianthous.medium.com/membership) **and read
+    every story on Medium. Your membership fee directly supports me and other writers
+    you read. You’ll also get full access to every story on Medium.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://gmyrianthous.medium.com/membership?source=post_page-----a5a6ab319378--------------------------------)
+    [## Join Medium with my referral link — Giorgos Myrianthous'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: gmyrianthous.medium.com](https://gmyrianthous.medium.com/membership?source=post_page-----a5a6ab319378--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 👇**Related articles you may also like** 👇
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/etl-vs-elt-68e221d78719?source=post_page-----a5a6ab319378--------------------------------)
+    [## ETL vs ELT: What’s the Difference?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A comparison between ETL and ELT in the context of Data Engineering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/etl-vs-elt-68e221d78719?source=post_page-----a5a6ab319378--------------------------------)
+    [](/dbt-55b35c974533?source=post_page-----a5a6ab319378--------------------------------)
+    [## What is dbt (data build tool)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A gentle introduction to dbt that is taking over the data world
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/dbt-55b35c974533?source=post_page-----a5a6ab319378--------------------------------)
+    [](/apache-airflow-architecture-496b9cb28288?source=post_page-----a5a6ab319378--------------------------------)
+    [## Apache Airflow Architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: A deep dive into Apache Airflow architecture and how it orchestrates workflows
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/apache-airflow-architecture-496b9cb28288?source=post_page-----a5a6ab319378--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

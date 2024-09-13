@@ -1,0 +1,251 @@
+- en: Should I Really Eat That Mushroom?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/should-i-really-eat-that-mushroom-9edeaa69d934](https://towardsdatascience.com/should-i-really-eat-that-mushroom-9edeaa69d934)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Classifying edible and poisonous mushrooms with CatBoost gradient boosted decision
+    trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@caroline.arnold_63207?source=post_page-----9edeaa69d934--------------------------------)[![Caroline
+    Arnold](../Images/2560e106ba9deda7889c7d253792d814.png)](https://medium.com/@caroline.arnold_63207?source=post_page-----9edeaa69d934--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9edeaa69d934--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9edeaa69d934--------------------------------)
+    [Caroline Arnold](https://medium.com/@caroline.arnold_63207?source=post_page-----9edeaa69d934--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9edeaa69d934--------------------------------)
+    ·6 min read·Aug 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most educational and real-world datasets contain *categorical features*. Today
+    we will cover gradient boosted decision trees from the [CatBoost](https://catboost.ai)
+    library, which provides native support for categorical data. We will use a dataset
+    of mushrooms that are either edible or poisonous. The mushrooms are described
+    by categorical features such as their color, odor, and shape, and the question
+    we want to answer is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is it safe to eat this mushroom — based on its categorical features?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As you can see, the stakes are high. We want to make sure that we get the machine
+    learning model right so that our mushroom omelet does not end in a disaster. **As
+    a bonus, at the end we will provide a feature importance ranking that tells you
+    *which categorical feature* is the strongest predictor of mushroom safety.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cdc72d1005c4c8a46835b140da5f21e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Andrew Ridley](https://unsplash.com/@aridley88?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing the mushroom dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The mushroom dataset is available here: [https://archive.ics.uci.edu/dataset/73/mushroom](https://archive.ics.uci.edu/dataset/73/mushroom)
+    [1]. For clarity of presentation, we create a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)
+    from the original cryptic short-form variables and annotate it with proper column
+    names and long-form variables. We use pandas’ `replace` function with long-form
+    variables taken from the dataset description. The target variable can only take
+    *True* and *False* values — the dataset creators played it safe and classified
+    questionable mushrooms as inedible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After checking the dataset for missing values, we find that only one column
+    — `stalk_root` — is affected. We drop this column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exploration of the dataset reveals that the data is fairly balanced: Of the
+    8124 mushrooms, 4208 are edible and 3916 are poisonous. We divide the dataframe
+    into the target variable, `is_edible`, and the remaining mushroom features. Then,
+    we split the dataset into training and test data by stratifying on the target
+    variable. This ensures that the distribution of classes is comparable in both
+    splits.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The CatBoost library
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[CatBoost](https://catboost.ai/en/docs/) is an open source machine learning
+    package for gradient boosting decision trees. The CatBoost Python package can
+    be obtained by [following the installation instructions](https://catboost.ai/en/docs/concepts/python-installation).
+    The most important components for us are the `catboost.Pool`, which organizes
+    the dataset and specifies categorical and numerical features, and our model, the
+    `catboost.CatBoostClassifier` . Categorical features can be difficult to handle
+    with machine learning algorithms. They must be encoded into numerical values before
+    they can be used for training. Each categorical value is associated with a number,
+    e.g. for mushroom colors,`brown->0, black->1, yellow->2, ...` . **CatBoost can
+    automatically handle categorical input variables, which saves us from adding**
+    [**one-hot encoding**](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html#sklearn.preprocessing.OneHotEncoder)
+    **to the procedure. Not only is this convenient, but CatBoost algorithms are also
+    optimized to train fast with categorical variables.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9ccfa30ef98feeaa0672670601b8ba4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Haithem Ferdi](https://unsplash.com/@haithemfrd_off?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient-boosted decision trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Decision trees are well-established machine learning algorithms that classify
+    samples into different categories based on the value of their features. [A single
+    decision tree is prone to overfitting.](/decision-trees-and-random-forests-df0c3123f991)
+    Therefore, ensembles of decision trees are typically used to achieve better performance.
+    In gradient boosted decision trees, the ensemble of trees is constructed by iteratively
+    updating the tree. Each iteration of the tree provides a small improvement over
+    the previous iterations by training on the *residuals* left by applying the previous
+    tree. The process stops when the loss converges, i.e., when adding more trees
+    does not add value, or when the fixed number of total trees is reached. For a
+    more detailed introduction to gradient-boosted devision trees, see the recommended
+    blog posts at the bottom of this page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classifying mushrooms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the mushroom dataset, all features are categorical and are specified accordingly
+    in the `Pool`. We construct a `Pool` for both splits, training and testing. The
+    target variable is cast to numeric values, as this integrates better with the
+    loss routines of the `CatBoostClassifier` . The classifier itself is specified
+    in a format similar to scikit-learn. There are many attributes that can be changed,
+    including the learning rate, the total number of trees, and the regularization
+    of the tree. The loss function is `log-loss` , since we are dealing with binary
+    classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Log-loss or cross-entropy function for predictions with binary target class.
+    The actual values y are compared to the probabilites p provided by the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We define the dataset and the model in the code box below. For comparison, we
+    train a single decision tree and a full gradient boosted decision tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we are ready to evaluate the performance of the classifier on the test data.
+    Eating poisonous mushrooms can cause serious health problems, so we are interested
+    in reducing false positives. We calculate the *precision metric*, which is the
+    fraction of the number of mushrooms that are *actually edible* by the number of
+    mushrooms that are *predicted to be edible*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The single decision tree gives a precision of 97%, which is quite good for a
+    classification algorithm. But with gradient boosted trees, we can improve precision
+    to 100%, and there are no poisonous mushrooms that are mislabeled as edible in
+    the test dataset. The confusion matrix shows that the gradient boosted decision
+    tree provides optimal performance on the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60d9f5dcb042bc0944ace08142073c87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Confusion matrix for the single decision tree (left) and the gradient boosted
+    decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is great, but we may not have all day to determine 22 features for each
+    mushroom we want to eat. So what is the most important feature to determine whether
+    a mushroom is edible?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To answer this question, we use the built-in model attribute `feature_importances_`
+    to derive a feature importance ranking for the gradient boosted tree classifier.
+    As it turns out, **odor** dominates the feature importance ranking, followed by
+    **spore** **print color** and **population**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b3141240daddb3f8c64b2e366ef45b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature importance ranking for the mushroom dataset, obtained from a trained
+    CatBoostClassifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A closer look at the possible odor values reveals that this feature itself is
+    already a good predictor of whether a mushroom will be a tasty addition to your
+    meal or end your day in hospital. All mushrooms in this dataset that smell of
+    *anise* or *almond* are edible. Mushrooms without odor are mostly edible. You
+    should stay away from *fishy, spicy, pungent, foul, creosote,* and *musty* mushrooms
+    — which to be honest do not sound tasty in the first place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/342280e37604d4a5a860543fce141109.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Odor feature in the mushroom dataset analyzed in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have presented the mushroom dataset, which contains samples of edible and
+    poisonous mushrooms described only by categorical variables. We introduced the
+    catboost package, which works well with categorical data and provides gradient
+    boosted decision trees. A model was trained to classify the mushrooms accordingly
+    and achieved satisfactory performance. Odor is the strongest predictor of mushroom
+    safety. We hope you enjoyed this blog post, and take no responsibility for the
+    application of the model to real mushrooms :-) .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4c3717d6a8fcbe8bfb9ba972d530879.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Zhen H](https://unsplash.com/@zhenh2424?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[https://towardsdatascience.com/decision-trees-and-random-forests-df0c3123f991](/decision-trees-and-random-forests-df0c3123f991)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://towardsdatascience.com/machine-learning-part-18-boosting-algorithms-gradient-boosting-in-python-ef5ae6965be4](/machine-learning-part-18-boosting-algorithms-gradient-boosting-in-python-ef5ae6965be4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://medium.com/swlh/essential-embeds-for-mediums-technical-writers-c09a4dda7ae4](https://medium.com/swlh/essential-embeds-for-mediums-technical-writers-c09a4dda7ae4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://catboost.ai/en/docs/](https://catboost.ai/en/docs/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset reference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Mushroom. UCI Machine Learning Repository (1987). [https://doi.org/10.24432/C5959T.](https://doi.org/10.24432/C5959T.)
+    This dataset is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode)
+    (CC BY 4.0) license.'
+  prefs: []
+  type: TYPE_NORMAL

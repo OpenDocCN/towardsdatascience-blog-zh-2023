@@ -1,0 +1,500 @@
+- en: 'Cutout, Mixup, and Cutmix: Implementing Modern Image Augmentations in PyTorch'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/cutout-mixup-and-cutmix-implementing-modern-image-augmentations-in-pytorch-a9d7db3074ad](https://towardsdatascience.com/cutout-mixup-and-cutmix-implementing-modern-image-augmentations-in-pytorch-a9d7db3074ad)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data augmentation techniques for Computer Vision implemented in Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie?source=post_page-----a9d7db3074ad--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----a9d7db3074ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a9d7db3074ad--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a9d7db3074ad--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----a9d7db3074ad--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a9d7db3074ad--------------------------------)
+    ·9 min read·Apr 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c2cd9a7e9619a0232564ae5df5fe0b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutmix image augmentation (Background image drawn by the author, artificial
+    photograph of statue generated with DALLE)
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s almost guaranteed that applying data augmentations will improve the performance
+    of your neural network. Augmentations are a regularization technique that artificially
+    expands your training data and helps your Deep Learning model generalize better.
+    Thus, image augmentations can improve the model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image augmentations can improve the model performance
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Classical image augmentation techniques for convolutional neural networks in
+    computer vision are scaling, cropping, flipping, or rotating an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a recent article about [intermediate Deep Learning techniques](/intermediate-deep-learning-with-transfer-learning-f1aba5a814f),
+    we learned that the most effective image augmentation techniques aside from the
+    classical ones are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Cutout](#a4b0) [2]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Mixup](#c805) [4]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Cutmix](#8a53) [3]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ce29c82e0d40ffe0118468fcd443604c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Data Augmentation Techniques: Mixup, Cutout, Cutmix'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will briefly describe the above image augmentations and their implementations
+    in Python for the PyTorch Deep Learning framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This tutorial will use a toy example of a “vanilla” image classification problem.
+    The task is to classify images of tulips and roses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24714a2fbc65e76b46ab0b87b1a2b4cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Toy dataset [1] for image classification: Roses or tulips.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Insert your data here!* — To follow along in this article, your dataset should
+    look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b43b29fe87f67bc2974bd7044861e9b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Toy dataset [1] for image classification. Insert your data here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyTorch (version 1.11.0), OpenCV (version 4.5.4), and `albumentations` (version
+    1.3.0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The PyTorch `Dataset` loads an image with OpenCV.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The PyTorch `DataLoader` then partitions the dataset into batches of 8 images
+    each for this example. The basic image transformation resizes the images to 256
+    by 256 pixels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Below you can see the training code for a vanilla image classification problem.
+    All distracting code parts are omitted to simplify the code and only bring attention
+    to the relevant parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we have a binary classification problem, we will be using `nn.CrossEntropyLoss()`.
+    This is noteworthy because we will be implementing a custom loss function later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Cutout
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Cutout [2] was introduced in a paper called “Improved regularization of convolutional
+    neural networks with cutout.” by DeVries & Taylor in 2017.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brief description
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The core idea behind Cutout image augmentation is to randomly remove a square
+    region of pixels in an input image during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ccd607604f875ab08a0e3e444605ff77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutout image augmentation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cutout can prevent overfitting by forcing the model to learn more robust features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Strengths:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Easy to implement (see [implementation of Cutout](#36ba))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can remove noise, e.g., background
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Weaknesses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can remove important features, especially in sparse images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementation in Python with PyTorch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Luckily, Cutout is available in [Albumentations](https://albumentations.ai/docs/),
+    an image augmentation library. You can use the `CoarseDropout` class (a `Cutout`
+    class was available in earlier library versions but has been deprecated).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The returned sample batch looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d24c9c5d9a7dbbdbe30b9407018014a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutout image augmentation applied to sample batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Mixup [4] was introduced in a paper called “mixup: Beyond empirical risk minimization”
+    by Zhang, Cisse, Dauphin, & Lopez-Paz also in 2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brief description
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The core idea behind Mixup image augmentation is to mix a random pair of input
+    images and their labels during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/05b9840f200b24f205e3c1a8f480ac0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mixup image augmentation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixup can prevent overfitting by creating more **diverse** training samples
+    and thus forcing the model to learn more generalizable features invariant to small
+    changes in the images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Strengths:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relatively easy to implement (see [implementation of Mixup](#02e8))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Increases diversity in the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Weaknesses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can create blurred images, especially for images with complex textures
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementation in Python with PyTorch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You must implement a `mixup()` function to apply Mixup image augmentation to
+    your Deep Learning training pipeline. The following code is taken initially from
+    [this Kaggle Notebook by Riad](https://www.kaggle.com/code/riadalmadani/fastai-effb0-base-model-birdclef2023)
+    and modified for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `mixup()` function applies Mixup to a full batch. The pairs are generated
+    by shuffling the batch and selecting one image from the original batch and one
+    from the shuffled batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In addition to the function that augments the images and labels, we must modify
+    the loss function with a custom `mixup_criterion()` function. This function returns
+    the loss for the two labels according to the `lam`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `mixup()` and `mixup_criterion()` functions, are not applied in the PyTorch
+    `Dataset` but in the training code as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the augmentation is applied to the full batch, we will also add a variable
+    `p_mixup` that controls the portion of batches that will be augmented. E.g. `p_mixup
+    = 0.5` would apply Mixup augmentation to 50 % of batches in an epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The returned sample batch looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4436f8f8b5fb5384fb5d05486c1ee739.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mixup image augmentation applied to sample batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cutmix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Cutmix [3] was introduced in a paper called “Cutmix: Regularization strategy
+    to train strong classifiers with localizable features.” by Yun, Han, Oh, Chun,
+    Choe & Yoo in 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brief description
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The core idea behind cutmix image augmentation is to randomly select a pair
+    of input images during training, cut a random patch of pixels from the first image
+    and paste it to the second image, and then mix their labels proportionally to
+    the area of the patch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15012b33bde276cdcc559a2ba44032a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutmix image augmentation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cutmix can prevent overfitting by forcing the model to learn more robust and
+    discriminative features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cutmix combines the strength and weaknesses of [Cutout](#a4b0) and [Mixup](#c805):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Strengths:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relatively easy to implement (see [implementation of Cutmix](#00b8))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Increases diversity in the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Weaknesses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can create unrealistic images due to unnatural compositions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can remove important features, especially in sparse images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementation in Python with PyTorch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The implementation for Cutmix is similar to the [implementation of Mixup](#02e8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, you will also need a custom function `cutmix()` that applies the image
+    augmentation. The following code is taken initially from [this Kaggle Notebook
+    by Riad](https://www.kaggle.com/code/riadalmadani/fastai-effb0-base-model-birdclef2023)
+    and modified for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The rest is the same as for [Mixup](#02e8):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define a `cutmix_criterion()` functions to handle the custom loss (see the implementation
+    of `mixup_criterion()`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define a variable `p_cutmix` to control the portion of batches that will be
+    augmented (see `p_mixup`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply `cutmix()` and `cutmix_criterion()` in accordance to `p_cutmix` in the
+    training code (see the [implementation of Mixup](#02e8))
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The returned sample batch looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9537f35e4ece1973dca502b3c16f9de2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutmix image augmentation applied to sample batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This article has summarized three modern effective data augmentation techniques
+    for computer vision:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Cutout](#a4b0) [2]: randomly remove a square region of pixels in an input
+    image'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Mixup](#c805) [4]: mix a random pair of input images and their labels'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Cutmix](#8a53) [3]: randomly select a pair of input images, cut a random patch
+    of pixels from the first image and paste it to the second image, and then mix
+    their labels proportionally to the area of the patch.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ce29c82e0d40ffe0118468fcd443604c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Data Augmentation Techniques: Mixup, Cutout, Cutmix (Image by the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While Cutout applies the augmentation to a single image, Mixup and Cutmix create
+    a new image from a pair of input images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All of the discussed image augmentation techniques are easy to relatively easy
+    to implement: For Cutout, the [Albumentations](https://albumentations.ai/docs/)
+    library already has an implementation available out of the box. For Mixup and
+    Cutmix the implementations are relatively simple and require the implementation
+    of an augmentation function and a custom loss function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enjoyed This Story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
+    when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----a9d7db3074ad--------------------------------)
+    [## Get an email whenever Leonie Monigatti publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
+    a Medium account if you don’t already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----a9d7db3074ad--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
+    and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] The used image dataset was created by the author by collecting eight images
+    from [Unsplash.com](https://unsplash.com/de). The dataset is publicly available
+    on [Kaggle](https://www.kaggle.com/datasets/iamleonie/roses-or-tulips), and the
+    image sources are attributed in the dataset description. Since images on Unsplash
+    are available for commercial use and the collection of the eight photographs does
+    not replicate a similar or competing service to Unsplash, the dataset is licensed
+    under CC BY-SA 4.0'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/datasets/iamleonie/roses-or-tulips?source=post_page-----a9d7db3074ad--------------------------------)
+    [## Roses or Tulips'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy dataset containing only 8 images (4 tulips and 4 roses) taken from Unsplash.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/datasets/iamleonie/roses-or-tulips?source=post_page-----a9d7db3074ad--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If not otherwise stated, all images are created by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Literature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[2] DeVries, T., & Taylor, G. W. (2017). Improved regularization of convolutional
+    neural networks with cutout. *arXiv preprint arXiv:1708.04552*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Yun, S., Han, D., Oh, S. J., Chun, S., Choe, J., & Yoo, Y. (2019). Cutmix:
+    Regularization strategy to train strong classifiers with localizable features.
+    In *Proceedings of the IEEE/CVF international conference on computer vision* (pp.
+    6023–6032).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Zhang, H., Cisse, M., Dauphin, Y. N., & Lopez-Paz, D. (2017) mixup: Beyond
+    empirical risk minimization. arXiv preprint arXiv:1710.09412.'
+  prefs: []
+  type: TYPE_NORMAL

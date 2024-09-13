@@ -1,0 +1,954 @@
+- en: LoRA — Intuitively and Exhaustively Explained
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/lora-intuitively-and-exhaustively-explained-e944a6bff46b](https://towardsdatascience.com/lora-intuitively-and-exhaustively-explained-e944a6bff46b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Natural Language Processing | Machine Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Exploring the modern wave of machine learning with cutting edge fine tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1?source=post_page-----e944a6bff46b--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----e944a6bff46b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e944a6bff46b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e944a6bff46b--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----e944a6bff46b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e944a6bff46b--------------------------------)
+    ·18 min read·Nov 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea13e6af7448529f375da8c5e914e006.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Lora The Tuner” By Daniel Warfield using MidJourney. All images by the author
+    unless otherwise specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine tuning is the process of tailoring a machine learning model to a specific
+    application, which can be vital in achieving consistent and high quality performance.
+    In this article we’ll discuss “Low-Rank Adaptation” (LoRA), one of the most popular
+    fine tuning strategies. First we’ll cover the theory, then we’ll use LoRA to fine
+    tune a language model, improving its question answering abilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88f897196d79cc9be45b43f42a722cb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The results of fine tuning. Before fine tuning the output is gibberish, the
+    model repeats the question and a bogus answers repeatedly. After fine tuning the
+    output is clear, concise, and accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Who is this useful for?** Anyone interested in learning state of the art
+    machine learning approaches. We’ll be focusing on language modeling in this article,
+    but LoRA is a popular choice in many machine learning applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How advanced is this post?** This article should be approachable to novice
+    data scientists and enthusiasts, but contains topics which are critical in advanced
+    applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-requisites:** While not required, a solid working understanding of large
+    language models (LLMs) would probably be useful. Feel free to refer to my article
+    on transformers, a common form of language model, for more information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----e944a6bff46b--------------------------------)
+    [## Transformers — Intuitively and Exhaustively Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exploring the modern wave of machine learning: taking apart the transformer
+    step by step'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----e944a6bff46b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You’ll also probably want to have an idea of what a gradient is. I also have
+    an article on that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/what-are-gradients-and-why-do-they-explode-add23264d24b?source=post_page-----e944a6bff46b--------------------------------)
+    [## What Are Gradients, and Why Do They Explode?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By reading this post you will have a firm understanding of the most important
+    concept in deep learning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/what-are-gradients-and-why-do-they-explode-add23264d24b?source=post_page-----e944a6bff46b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you don’t feel confident on either of these topics you can still get a lot
+    from this article, but they exist if you get confused.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What, and Why, is Fine Tuning?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As the state of the art of machine learning has evolved, expectations of model
+    performance have increased; requiring more complex machine learning approaches
+    to match the demand for heightened performance. In the earlier days of machine
+    learning it was feasible to build a model and train it in a single pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f38a87df35c70af383c252be5c3a7263.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training, in its simplest sense. You take an untrained model, give it data,
+    and get a performant model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is still a popular strategy for simple problems, but for more complex problems
+    it can be useful to think of training as two parts; “pre-training” then “fine
+    tuning”. The general idea is to do an initial training pass on a bulk dataset
+    and to then refine the model on a tailored dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eae0e38b25446fe393550adca71bc765.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pre Training and Fine Tuning, a refinement of the typical single-shot training
+    strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This “pre-training” then “fine tuning” strategy can allow data scientists to
+    leverage multiple forms of data and use large pre-trained models for specific
+    tasks. As a result, pre-training then fine tuning is a common and incredibly powerful
+    paradigm. It comes with a few difficulties, though, which we’ll discuss in the
+    following section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Difficulties with Fine Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The most basic form of fine tuning is to use the same exact process you used
+    to pre-train a model to then fine tune that model on new data. You might train
+    a model on a huge corpus of general text data, for instance, then fine tune that
+    model using the same training strategy on a more specific dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eae0e38b25446fe393550adca71bc765.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In it’s simplest form, pre-training and fine tuning are proceduraly identical.
+    You pre-train a model on one set of data, then fine tune on another set of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This strategy can be expensive. LLMs are absolutely massive, to fine tune using
+    this strategy you would need enough memory to store not only the entire model,
+    but also gradients for every parameter in the entire model (gradients being the
+    thing that lets the model know what direction to tweak its parameters). Both the
+    parameters and the gradients need to live on a GPU, which is why training LLMs
+    requires so much GPU memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a448ee196ed4fdcbceb751d6aabc73e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Back propagation, which is the strategy used in training machine learning models.
+    Machine learning models are “differentiable”, which means you can calculate “gradients”,
+    which can tell you how a small change to a certain parameter will impact model
+    output. We generate a prediction, calculate gradients, calculate how wrong the
+    prediction is, then use the gradients to improve the parameters of the model.
+    Both pre-training and fine tuning employ back propagation, which requires the
+    computation of a gradient for ever learnable parameter in the model. This means,
+    if you have a 100 billion parameter model, you need to store 100 billion gradients
+    as well. This cycle is done repeatedly, perhaps billions of times, to train a
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of the issue of storing gradients, it’s common to save “checkpoints”,
+    which are copies of the model at a particular state throughout the training process.
+    This is a great strategy, allowing one to experiment with the model at different
+    phases of the fine-tuning process, but it means we need to store numerous full-size
+    copies of the model. Falcon 180B, a popular modern LLM, requires around 360GB
+    in storage. If we wanted to store a checkpoint of the model ten times throughout
+    the fine-tuning process it would consume 3.6 terabytes of storage, which is a
+    lot. Perhaps even more importantly, it takes time to save such a large amount
+    of data. The data typically has to come off the GPU, into RAM, then onto storage;
+    potentially adding significant delay to the fine-tuning process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LoRA can help us deal with these issues and more. Less GPU Memory usage, smaller
+    file sizes, faster fine-tuning times, the list goes on and on. In a practical
+    sense one can generally consider LoRA a direct upgrade of the traditional style
+    of fine-tuning. We’ll cover exactly how LoRA works and how it can achieve such
+    a remarkable improvements in the following sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LoRA in a Nutshell
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '“Low-Rank Adaptation” (LoRA) is a form of “parameter efficient fine tuning”
+    (PEFT), which allows one to fine tune a large model using a small number of learnable
+    parameters. LoRA employs a few concepts which, when used together, massively improve
+    fine tuning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can think of fine tuning as learning changes to parameters, instead of adjusting
+    parameters themselves.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can try to compress those changes into a smaller representation by removing
+    duplicate information.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can “load” our changes by simply adding them to the pre-trained parameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Don’t worry if that’s confusing; in the following sections we’ll go over these
+    ideas step by step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1) Fine Tuning as Parameter Changes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we previously discussed, the most basic approach to fine tuning consists
+    of iteratively updating parameters. Just like normal model training, you have
+    the model make an inference, then update the parameters of the model based on
+    how wrong that inference was.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a448ee196ed4fdcbceb751d6aabc73e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Recall the back propagation diagram previously discussed. This is the basic
+    form of fine tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LoRA thinks of this slightly differently. Instead of thinking of fine tuning
+    as learning better parameters, you can think of fine tuning as learning parameter
+    changes. You can freeze the model parameters, exactly how they are, and learn
+    the changes to those parameters necessary to make the model perform better at
+    the fine tuned task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is done very similarly to training; you have the model make an inference,
+    then update based on how wrong the inference was. However, instead of updating
+    the model parameters, you update the change in the model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d1c4548035490a428d0a9549a5f9254b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In LoRA we freeze the model parameters, and create a new set of values which
+    describes the change in those parameters. We then learn the parameter changes
+    necessary to perform better on the fine tuning task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might be thinking this is a bit of a silly abstraction. The whole point
+    of LoRA is that we want to make fine tuning smaller and faster, how does adding
+    more data and extra steps allow us to do that? In the next section we’ll discuss
+    exactly that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2) Parameter Change Compression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For the sake of illustration many represent dense networks as a series of weighted
+    connections. Each input gets multiplied by some weight, and then added together
+    to create outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/abb14b4b1f2a4074d288a20a84c0aeb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of a dense network as a list of neurons connected by weights.
+    The value of a particular neuron would be the sum of all inputs multiplied by
+    the inputs respective weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a completely accurate visualization from a conceptual perspective, but
+    under the hood this actually happens via matrix multiplication. A matrix of values,
+    called a weight matrix, gets multiplied by a vector of inputs to create the vector
+    of outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec97bb13a3ee76c3aec028567378d9bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of matrix multiplication. [Source](https://en.wikipedia.org/wiki/Matrix_multiplication#/media/File:Matrix_multiplication_diagram_2.svg)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To give you an idea of how matrix multiplication works. In the example above
+    the red dot is equal to a₁₁•b₁₂ + a₁₂•b₂₂. As you can see, this combination of
+    multiplication and addition is very similar to that found in the neuron example.
+    If we create the correctly shaped matices, matrix multiplication ends up shaking
+    out exactly identically to the concept of weighted connections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e209e6a8f4ccf37c5172622475043c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thinking of a dense network as weighted connections on the left, and as matrix
+    multiplication on the right. On the right hand side diagram, the vector on the
+    left would be the input, the matrix in the center would be the weight matrix,
+    and the vector on the right would be the output. Only a portion of values are
+    included for readability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the perspective of LoRA, understanding that weights are actually a matrix
+    is incredibly important, as a matrix has certain properties which we can be leveraged
+    to condense information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix Property 1) Linear Independence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can think of a matrix, which is a two dimensional array of values, as either
+    rows or columns of vectors. For now let’s just think of matrices as rows of vectors.
+    Say we have a matrix consisting of two vectors which look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ef49f62e375e874e64ba7bbcd69c7a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A matrix consisting of two vectors, represented as rows in the matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these vectors point in different directions. You can’t squash and stretch
+    one vector to be equal to the other vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a9d31bad32542015e594d707e794946.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each row as a matrix, plotted as a vector. No matter how the blue vector gets
+    squashed or stretched, it will never point in the same direction as the red vector,
+    and vice versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s add a third vector into the mix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67cd87845c2c930313d0319d04fd0e5e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vectors `A` and `B`are pointing in the same exact direction, while vector `C`
+    is pointing in a different direction. As a result, no matter how you squash and
+    stretch either `A`or `B`, they can never be used to describe `C`. Therefore, `C`
+    is linearly independent from `A`and `B`. However, you can stretch `A` to equal
+    `B` , and vice versa, so `A` and `B` are linearly dependent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's say `A` and `B` pointed in slightly different directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9531adc7177a666feaa82cea38828a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now `A` and `B` can be used together (With some squashing and stretching) to
+    describe `C` , and likewise `A` and `B` can be described by the other vectors.
+    In this situation we would say none of the vectors are linearly independent, because
+    all vectors can be described with other vectors in the matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb9a3b70424742ff0a0dfe754902fc88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using A and B to describe C. B’s magnitude can be multiplied by a negative number
+    to flip it’s magnitude, the added to A.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conceptually speaking, linearly independent vectors can be thought of as containing
+    different information, while linearly dependent vectors contain some duplicate
+    information between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix Property 2) Rank
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The idea of rank is to quantify the amount of linear independence within a
+    matrix. I’ll skip the nitty gritty details and get straight to the point: We can
+    break a matrix down into some number of linearly independent vectors; This form
+    of the matrix is called “reduced row echelon form”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c4ba81672157aced67c5768d471cbbc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A matrix (left) and that same matrix in reduced row echelon form (right). in
+    the RREF matrix you can see that there are four linearly independent vectors (rows).
+    Each of these vectors can be used in combination to describe all vectors in the
+    input matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By breaking the matrix down into this form (I won’t describe how because this
+    is only useful to us conceptually), you can count how many linearly independent
+    vectors can be used to describe the original matrix. The number of linearly independent
+    vectors is the “rank” of the matrix. The rank of the RREF matrix above would be
+    four, as there are four linearly independent vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A little note I’ll drop in here: regardless of if you consider a matrix in
+    terms of rows of vectors or columns of vectors, the rank is always the same. This
+    is a mathy little detail which isn’t super important, but does have conceptual
+    implications for the next section.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix Property 3) Matrix Factors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So, matrices can contain some level of “duplicate information” in the form of
+    linear dependence. We can exploit this idea using factorization to represent a
+    large matrix in terms of two smaller matrices. Similarly to how a large number
+    can be represented as the multiplication of two smaller numbers, a matrix can
+    be thought of as the multiplication of two smaller matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5221bbcd2d03d7997c44e075a2b36960.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The two vectors on the right, when multiplied together, are equivalent to the
+    matrix on the left. Even though they have the same value, the vectors on the left
+    occupy 40% of the size that the matrix on the right occupies. The larger the matrix
+    becomes, the more factors have a tendency to save on space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have a large matrix, with a significant degree of linear dependence (and
+    thus a low rank), you can express that matrix as a factor of two comparatively
+    small matrices. This idea of factorization is what allows LoRA to occupy such
+    a small memory footprint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Core Idea Behind LoRA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: LoRA thinks of tuning not as adjusting parameters, but as learning parameter
+    changes. With LoRA we don’t learn the parameter changes directly, however; we
+    learn the factors of the parameter change matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c1c8d573808ae5aeb587611e83083cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram of LoRA, from the [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf).
+    matrices A and B are trained to find optimal changes to the pretrained weights.
+    We’ll talk about “r” in a future section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This idea of learning factors of the change matrix relies on the core assumption
+    that weight matrices within a large language model have a lot of linear dependence,
+    as a result of having significantly more parameters than is theoretically required.
+    Over parameterization has been shown to be beneficial in pre-training (which is
+    why modern machine learning models are so large). The idea behind LoRA is that,
+    once you’ve learned the general task with pre-training, you can do fine tuning
+    with significantly less information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: learned over-parametrized models in fact reside on a low intrinsic dimension.
+    We hypothesize that the change in weights during model adaptation also has a low
+    “intrinsic rank”, leading to our proposed Low-Rank Adaptation (LoRA) approach.
+    LoRA allows us to train some dense layers in a neural network indirectly by optimizing
+    rank decomposition matrices of the dense layers’ change during adaptation instead,
+    while keeping the pre-trained weights frozen — [The LoRA Paper](https://arxiv.org/pdf/2106.09685.pdf)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This results in a significantly smaller amount of parameters being trained which
+    means an overall faster and more storage and memory efficient fine tuning process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-Tuning Flow with LoRA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we understand how the pieces of LoRA generally work, let’s put it all
+    together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, first, we freeze the model parameters. We’ll be using these parameters to
+    make inferences, but we won’t update them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/805a248157862c4a47b8eb05be022483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We create two matrices. These are sized in such a way that, when they’re multiplied
+    together, they’ll be the same size as the weight matrices of the model we’re fine
+    tuning. In a large model, with multiple weight matrices, you would create one
+    of these pairs for each weight matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/360179d813e340fbe00f3c7a84d80582.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: the LoRA paper refferes to these matrices as matrix “A” and “B”. Together, these
+    matices represent the leranable parameters during LoRA fine tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We calculate the change matrix
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d33e12aa69588e985f2589cbaa8e00d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Then we pass our input through both the frozen weights and the change matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7cf1aea3b66b42543777fd4945aa481a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We calculate a loss based on the combination of both outputs then we update
+    matrix A and B based on the loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5fa3f569c4a109c504078a33dd5e305.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note, while the change matrix is displayed here for illustrative purposes, in
+    reality it’s computed on the fly and never stored, which is why LoRA has such
+    a small memory footprint. In reality, only the Model Parameters, the matrices
+    A and B, and the gradients of A and B are stored during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do this operation until we’ve optimized the factors of the change matrix
+    for our fine tuning task. The backpropagation step to update the matrices A and
+    B is much faster than the process to update the full set of model parameters,
+    on account of A and B being significantly smaller. This is why, despite more operations
+    in the training process, LoRA is still typically faster than traditional fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we ultimately want to make inferences with this fine tuned model, we can
+    simply compute the change matrix, and add the changes to the weights. This means
+    the LoRA does not change the inference time of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ba5cbdd78ac0b0fd793703503f74f80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A cool little note, we can even multiply the change matrix by a scaling factor,
+    allowing us to control the level of impact tha change matrix has on the model.
+    In theory, we could use a bit of this LoRA and a dash of that LoRA at the same
+    time, an approach which is common in image generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Note on LoRA For Transformers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When researching this article I found a conceptual disconnect which a lot of
+    people didn’t discuss. It’s fine to treat a machine learning model as a big box
+    of weights, but in actuality many models have a complex structure which isn’t
+    very box like. It wasn’t obvious to me how, exactly, this concept of a change
+    matrix applies to the parameters in something like a transformer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3356829911ae5e55d3884270aca500b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The transformer diagram, which I cover in [another article](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb).
+    The “Nx” symbol represents the fact that both the left and right side get repeated
+    numerous times. This is not a clean square of weights, and thus it’s not obvious
+    how LoRA might be applied. Image [source](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on my current understanding, for transformers specifically, there are
+    two things to keep in mind:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically the dense network in a transformer’s multi-headed self attention layer
+    (the one that construct the query, key, and value) is only of depth one. That
+    is, there’s only an input layer and an output layer connected by weights.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These shallow dense networks, which comprise most of the learnable parameters
+    in a transformer, are very very large. There might be over 100,000 input neurons
+    being connected to 100,000 output neurons, meaning a single weight matrix, describing
+    one of these networks, might have 10B parameters. So, even though these networks
+    might be of depth one, they’re super duper wide, and thus the weight matrix describing
+    them is super duper large.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: From the perspective of LoRA on transformer models, these are the chief parameters
+    being optimized; you’re learning factorized changes for each of these incredibly
+    large, yet shallow, dense layers which exist within the model. Each of these shallow
+    dense layers, as previously discussed, has weights which can be represented as
+    a matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Note on LoRA Rank
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LoRA has a hyperparameter, named `r`, which describes the depth of the `A` and
+    `B` matrix used to construct the change matrix discussed previously. Higher `r`
+    values mean larger `A` and `B` matrices, which means they can encode more linearly
+    independent information in the change matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c1c8d573808ae5aeb587611e83083cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram of LoRA, from the [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf).
+    the “r” parameter can be thought of as an “information bottleneck”. Low r values
+    mean A and B can encode less information with a smaller memory footprint. Larger
+    r values mean A and B can encode more information, but with a larger memory footprint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02ca9251cdea02f6b2418273158f8181.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A conceptual diagram of LoRA with an r value equal to 1 and 2\. In both examples
+    the decomposed A and B matrices result in the same sized change matrix, but r=2
+    is able to encode more linearly independent information into the change matrix,
+    due to having more information in the A and B matrices
+  prefs: []
+  type: TYPE_NORMAL
+- en: It turns out the core assumption the LoRA paper makes, that the change to model
+    parameters is of low implicit rank, is a pretty strong assumption. The folks at
+    Microsoft (the publishers of LoRA) tried out a few `r` values and found that even
+    `A` and `B` matrices of rank one perform surprisingly well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b84ee54032aada28f9506edb24441c28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: from the [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generally, in selecting `r`, the advice I’ve heard is the following: When the
+    data is similar to the data used in pre-training, a low `r` value is probably
+    sufficient. When fine tuning on very new tasks, which might require substantial
+    logical changes within the model, a high `r` value may be required.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LoRA in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Considering how much theory we went over you might be expecting a pretty long
+    tutorial, but I have good news! HuggingFace has a module which makes LoRA super
+    duper easy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this example we’ll be fine tuning a pre-trained model for question answering.
+    Let’s go ahead and jump right in. Full code can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/LoRA.ipynb?source=post_page-----e944a6bff46b--------------------------------)
+    [## MLWritingAndResearch/LoRA.ipynb at main · DanielWarfield1/MLWritingAndResearch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notebook Examples used in machine learning writing and research - MLWritingAndResearch/LoRA.ipynb
+    at main ·…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/LoRA.ipynb?source=post_page-----e944a6bff46b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1) Downloading Dependencies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ll be using a few modules which are beyond a simple PyTorch project. This
+    is what they do:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**bitsandbytes:** for representing models using smaller datatypes, saving on
+    memory.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**datasets:** for downloading datasets'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**accelerate:** required dependency for machine learning interoperability for
+    some of the modules'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**loralib:** LoRA implementation'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**peft:** a general “parameter efficient fine tuning” module, our interface
+    for LoRA'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**transformers:** for downloading and using pre-trained transformers from huggingface.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2) Loading Pre-Trained Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll be using BLOOM, an open source and permissively licensed language model.
+    We’ll be using the 560 million parameter version to save on memory, but you could
+    apply this same strategy to larger versions of BLOOM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3) Setting Up LoRA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Configuring LoRA with the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**r:** the rank of the A and B matrices'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**lora_alpha:** this is a pretty controversial parameter. A lot of people have
+    a lot of ideas about it. You can consider it a scaling factor, and by default
+    it should be equal to `r`, as far as I understand.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**target_modules:** the portions of the model we want to optimize with LoRA.
+    the BLOOM module has parameters named `query_key_value` which we want to optimize.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**lora_dropout:** dropout is a technique which hides inputs to suppress the
+    model from overfitting (called regularization). This is a probability of being
+    hidden.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**bias:** neural networks typically have two paramet per connection, a “weight”
+    and a “bias”. We’re only training weights in this example.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**task_type:** not super necessary, used in the superclass `PeftConfig`. Setting
+    to `CAUSAL_LM` because the specific language model we''re using is "causal".'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4) Examining Memory Savings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the big ideas of LoRA is that training contains significantly fewer training
+    parameters, meaning a large savings in terms of memory consumption. Let’s see
+    exactly how much we’re saving in this particular example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f77890c5ac04c09519ce9e0e51c95bdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The results of comparing the trainable parameters in LoRA to the parameters
+    in the original model. In this example, we’re training on just over one tenth
+    of a percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5) Loading Fine Tuning Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll be using the SQUAD dataset to improve our language model’s performance
+    on question answering. The Stanford Question Answering Dataset (SQUAD) is a high
+    quality, commonly used, and permissively licensed dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 6) Re-Structuring Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’re going to be fine tuning the language model on a specific structure of
+    data. The model will expect text in this general form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ll provide to the model the context and question, and the model will be expected
+    to provide an answer to us. So, we’ll be reformatting the data in SQUAD to respect
+    this format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 7) Fine Tuning on SQUAD using LoRA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This code is largly co-opted. In the absence of a rigid validation procedure,
+    the best practice is to just copy a successful tutorial or, better yet, directly
+    from the documentation. If you were to train an actual model for an actual use
+    case, you would probably want to research and potentially optimize some of these
+    parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9438d812f70c7c66b9b131c20d87a0b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The loss (how much error is in the model). In this example we don’t have to
+    look at loss super closely, but it serves as a good metric. In this example we
+    train for 100 steps and, while there’s some random variation in loss across steps,
+    the loss generally goes down throughout the course of training, which is good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8) Checking LoRA Size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s go ahead and save our LoRA optimization
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then check how large the file is in our file system
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/670a2dc01836e53a9128f0062a7c8b3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The BLOOM 560m model, in it’s float 16 datatype, is over 1 gigabyte in total
+    size. With LoRA, and us only needing to save the decomposed matrices, our checkpoint
+    size is a mere 3 megabytes. That’s like compressing the entirety of the game “Plants
+    vs Zombies” down into a single image taken on an iPhone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9) Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, so we have a LoRA fine tuned model, let’s ask it a few questions. First,
+    we’ll define a helper function which will take in a context and question, run
+    predictions, and generate a response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s take a look at a few examples, and see just how much better our fine
+    tuned model is at question answering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example 1)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/88f897196d79cc9be45b43f42a722cb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Example 2)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a6c199e9674737d64bc786ff66865eb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We’re only using a 560M parameter model, so it’s not a surprise that it’s not
+    very good at basic reasoning. asking it what 1+1 was might have been a bit of
+    a stretch, but at least it failed more elegantly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example 3)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f1cbcfc3c285bc7cab772fbaa8e81ed4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, we’re only using a 560M parameter model. That said, the fine-tuned model
+    failed to answer the question significantly more elegantly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And that’s it! We covered the concept of fine tuning, and how LoRA thinks of
+    fine tuning as learning changes in parameters, rather than iteratively learning
+    new parameters. We learned about linear independence and rank, and how the change
+    matrix can be represented by small factors because of how low rank most weight
+    matrices are. We put it all together, went through LoRA step by step, then used
+    the HuggingFace PEFT module to implement LoRA on a question answering task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow For More!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I describe papers and concepts in the ML space, with an emphasis on practical
+    and intuitive explanations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielwarfield1/subscribe?source=post_page-----e944a6bff46b--------------------------------)
+    [## Get an email whenever Daniel Warfield publishes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: High quality data science articles straight to your inbox. Get an email whenever
+    Daniel Warfield publishes. By signing up, you…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@danielwarfield1/subscribe?source=post_page-----e944a6bff46b--------------------------------)
+    ![](../Images/1f6f4c8a07d69cf53e055e0130a85b03.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Never expected, always appreciated. By donating you allow me to allocate more
+    time and resources towards more frequent and higher quality articles. [Link](https://www.buymeacoffee.com/danielwarfield)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Attribution:** All of the resources in this document were created by Daniel
+    Warfield, unless a source is otherwise provided. You can use any resource in this
+    post for your own non-commercial purposes, so long as you reference this article,
+    [https://danielwarfield.dev](https://danielwarfield.dev/), or both. An explicit
+    commercial license may be granted upon request.'
+  prefs: []
+  type: TYPE_NORMAL

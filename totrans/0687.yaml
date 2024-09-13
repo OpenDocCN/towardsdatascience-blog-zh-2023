@@ -1,0 +1,445 @@
+- en: Decoding Strategies in Large Language Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/decoding-strategies-in-large-language-models-9733a8f70539](https://towardsdatascience.com/decoding-strategies-in-large-language-models-9733a8f70539)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Guide to Text Generation From Beam Search to Nucleus Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne?source=post_page-----9733a8f70539--------------------------------)[![Maxime
+    Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----9733a8f70539--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9733a8f70539--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9733a8f70539--------------------------------)
+    [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----9733a8f70539--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9733a8f70539--------------------------------)
+    ·15 min read·Jun 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e3084bd4e009d7fb0c6ec5d7aef4aa6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the fascinating world of large language models (LLMs), much attention is
+    given to model architectures, data processing, and optimization. However, decoding
+    strategies like beam search, which play a crucial role in text generation, are
+    often overlooked. In this article, we will explore how LLMs generate text by delving
+    into the mechanics of greedy search and beam search, as well as sampling techniques
+    with top-k and nucleus sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the conclusion of this article, you’ll not only understand these decoding
+    strategies thoroughly but also be familiar with how to handle important hyperparameters
+    like temperature, num_beams, top_k, and top_p.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for this article can be found on [GitHub](https://github.com/mlabonne/llm-course/blob/main/Decoding_Strategies_in_Large_Language%C2%A0Models.ipynb)
+    and [Google Colab](https://colab.research.google.com/drive/19CJlOS5lI29g-B3dziNn93Enez1yiHk2?usp=sharing)
+    for reference and further exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 📚 Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To kick things off, let’s start with an example. We’ll feed the text “I have
+    a dream” to a GPT-2 model and ask it to generate the next five tokens (words or
+    subwords).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The sentence “I have a dream of being a doctor” appears to have been generated
+    by GPT-2\. However, GPT-2 didn’t *exactly* produce this sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There’s a common misconception that LLMs like GPT-2 **directly produce text**.
+    This isn’t the case. Instead, LLMs calculate logits, which are scores assigned
+    to every possible token in their vocabulary. To simplify, here’s an illustrative
+    breakdown of the process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27050515483e3936d16fe97747ec1884.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tokenizer, [Byte-Pair Encoding](https://en.wikipedia.org/wiki/Byte_pair_encoding)
+    in this instance, translates each token in the input text into a corresponding
+    token ID. Then, GPT-2 uses these token IDs as input and tries to predict the next
+    most likely token. Finally, the model generates logits, which are converted into
+    probabilities using a softmax function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the model assigns a probability of 17% to the token for “of” being
+    the next token after “I have a dream”. This output essentially represents a ranked
+    list of potential next tokens in the sequence. More formally, we denote this probability
+    as *P(of | I have a dream) = 17%*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Autoregressive models like GPT predict the next token in a sequence based on
+    the preceding tokens. Consider a sequence of tokens *w = (w*₁*, w*₂*, …, w*ₜ*)*.
+    The joint probability of this sequence *P(w)* can be broken down as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b65c8dd18074c1330b34b2d9bbb8250.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For each token *wᵢ* in the sequence, *P(wᵢ | w₁, w₂, …, wᵢ₋₁)* represents the
+    conditional probability of *wᵢ* given all the preceding tokens (*w₁, w₂, …, wᵢ₋₁*).
+    GPT-2 calculates this conditional probability for each of the 50,257 tokens in
+    its vocabulary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This leads to the question: how do we use these probabilities to generate text?
+    This is where decoding strategies, such as greedy search and beam search, come
+    into play.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🏃‍♂️ Greedy Search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Greedy search is a decoding method that takes the most probable token at each
+    step as the next token in the sequence. To put it simply, it only retains the
+    most likely token at each stage, discarding all other potential options. Using
+    our example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1**: Input: “I have a dream” → Most likely token: “ of”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Step 2**: Input: “I have a dream of” → Most likely token: “ being”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Step 3**: Input: “I have a dream of being” → Most likely token: “ a”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Step 4**: Input: “I have a dream of being a” → Most likely token: “ doctor”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Step 5**: Input: “I have a dream of being a doctor” → Most likely token:
+    “.”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'While this approach might sound intuitive, it’s important to note that the
+    greedy search is short-sighted: it only considers the most probable token at each
+    step without considering the overall effect on the sequence. This property makes
+    it fast and efficient as it doesn’t need to keep track of multiple sequences,
+    but it also means that it can miss out on better sequences that might have appeared
+    with slightly less probable next tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s illustrate the greedy search implementation using graphviz and networkx.
+    We select the ID with the highest score, compute its log probability (we take
+    the log to simplify calculations), and add it to the tree. We’ll repeat this process
+    for five tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our greedy search generates the same text as the one from the transformers
+    library: “I have a dream of being a doctor.” Let’s visualize the tree we created.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dcb58f405a250824dbd57e3f478bfd51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this graph, the top node stores the input token (thus with a 100% probability),
+    while all other nodes represent generated tokens. Although each token in this
+    sequence was the most likely at the time of prediction, “being” and “doctor” were
+    assigned relatively low probabilities of 9.68% and 2.86%, respectively. This suggests
+    that “of”, our first predicted token, may not have been the most suitable choice
+    as it led to “being”, which is quite unlikely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following section, we’ll explore how beam search can address this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ⚖️ Beam Search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Unlike greedy search, which only considers the next most probable token, beam
+    search takes into account the *n* most likely tokens, where *n* represents the
+    number of beams. This procedure is repeated until a predefined maximum length
+    is reached or an end-of-sequence token appears. At this point, the sequence (or
+    “beam”) with the highest overall score is chosen as the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can adapt the previous function to consider the *n* most probable tokens
+    instead of just one. Here, we’ll maintain the sequence score log *P(w)*, which
+    is the cumulative sum of the log probability of every token in the beam. We normalize
+    this score by the sequence length to prevent bias towards longer sequences (this
+    factor can be adjusted). Once again, we’ll generate five additional tokens to
+    complete the sentence “I have a dream.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function computes the scores for 63 tokens and beams^length = 5² = 25 possible
+    sequences. In our implementation, all the information is stored in the graph.
+    Our next step is to extract the best sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we identify the leaf node with the highest sequence score. Next, we
+    find the shortest path from the root to this leaf. Every node along this path
+    contains a token from the optimal sequence. Here’s how we can implement it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The best sequence seems to be “I have a dream. I have a dream,” which is a common
+    response from GPT-2, even though it may be surprising. To verify this, let’s plot
+    the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this visualization, we’ll display the sequence score for each node, which
+    represents the score of the sequence up to that point. If the function get_best_sequence()
+    is correct, the “dream” node in the sequence “I have a dream. I have a dream”
+    should have the highest score among all the leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/64c8bcbca63a9847c6a66c247c0f25ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Indeed, the “dream” token has the **highest sequence score** with a value of
+    -0.69\. Interestingly, we can see the score of the greedy sequence “I have a dream
+    of being a doctor.” on the left with a value of -1.16.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As expected, the greedy search leads to suboptimal results. But, to be honest,
+    our new outcome is not particularly compelling either. To generate more varied
+    sequences, we’ll implement two sampling algorithms: top-k and nucleus.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🎲 Top-k sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Top-k sampling is a technique that leverages the probability distribution generated
+    by the language model to **select a token randomly from the *k* most likely options**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To illustrate, suppose we have *k = 3* and four tokens: A, B, C, and D, with
+    respective probabilities: *P(A) = 30%*, *P(B) = 15%*, *P(C) = 5%*, and *P(D) =
+    1%*. In top-k sampling, token D is disregarded, and the algorithm will output
+    A 60% of the time, B 30% of the time, and C 10% of the time. This approach ensures
+    that we prioritize the most probable tokens while introducing an element of randomness
+    in the selection process.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another way of introducing randomness is the concept of temperature. The temperature
+    *T* is a parameter that ranges from 0 to 1, which affects the probabilities generated
+    by the softmax function, making the most likely tokens more influential. In practice,
+    it simply consists of dividing the input logits by a value we call temperature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3e030655ba992e2bc09d381d196c363.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here is a chart that demonstrates the impact of temperature on the probabilities
+    generated for a given set of input logits [1.5, -1.8, 0.9, -3.2]. We’ve plotted
+    three different temperature values to observe the differences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e34fa38ca09ebeaece4e1271c26964da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A temperature of 1.0 is equivalent to a default softmax with no temperature
+    at all. On the other hand, a low temperature setting (0.1) significantly alters
+    the probability distribution. This is commonly used in text generation to control
+    the level of “creativity” in the generated output. By adjusting the temperature,
+    we can influence the extent to which the model produces more diverse or predictable
+    responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now implement the top k sampling algorithm. We’ll use it in the beam_search()
+    function by providing the “top_k” argument. To illustrate how the algorithm works,
+    we will also plot the probability distributions for top_k = 20.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/12300ff8d47224b762e26e6519b528f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These plots give a good intuition of how top-k sampling works, with all the
+    potentially selected tokens on the left of the horizontal bar. While the most
+    probable tokens are selected (in red) most of the time, it also allows less likely
+    tokens to be chosen. This offers an interesting tradeoff that can steer a sequence
+    towards a less predictable but more natural-sounding sentence. Now let’s print
+    the text it generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The top-k sampling found a new sequence: “I have a dream job and I want to”,
+    which feels significantly more natural than “I have a dream. I have a dream”.
+    We’re making progress!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how this decision tree differs from the previous one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/29cff567ceb5d77709230d8c84e85d04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see how the nodes differ significantly from the previous iteration,
+    making more diverse choices. Although the sequence score of this new outcome might
+    not be the highest (-1.01 instead of -0.69 previously), it’s important to remember
+    that higher scores do not always lead to more realistic or meaningful sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we’ve introduced top-k sampling, we have to present the other most
+    popular sampling technique: nucleus sampling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🔬 Nucleus sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Nucleus sampling, also known as top-p sampling, takes a different approach from
+    top-k sampling. Rather than selecting the top *k* most probable tokens, nucleus
+    sampling chooses a cutoff value *p* such that the **sum of the probabilities of
+    the selected tokens exceeds *p***. This forms a “nucleus” of tokens from which
+    to randomly choose the next token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, the model examines its top probable tokens in descending order
+    and keeps adding them to the list until the total probability surpasses the threshold
+    *p*. Unlike top-k sampling, the number of tokens included in the nucleus can vary
+    from step to step. This variability often results in a more diverse and creative
+    output, making nucleus sampling popular for tasks such as text generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To implement the nucleus sampling method, we can use the “nucleus” parameter
+    in the beam_search() function. In this example, we’ll set the value of *p* to
+    0.5\. To make it easier, we’ll include a minimum number of tokens equal to the
+    number of beams. We’ll also consider tokens with cumulative probabilities lower
+    than *p*, rather than higher. It’s worth noting that while the details may differ,
+    the core idea of nucleus sampling remains the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/85778461ebdf2816a857f2d25e65eea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this plot, you can see that the number of tokens included in the nucleus
+    (left of the vertical bar) fluctuates a lot. The generated probability distributions
+    vary considerably, leading to the selection of tokens that are not always among
+    the most probable ones. This opens the door to the generation of unique and varied
+    sequences. Now, let’s observe the text it generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The nucleus sampling algorithm produces the sequence: “I have a dream. I’m
+    going to”, which shows a notable enhancement in semantic coherence compared to
+    greedy sampling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To compare the decision paths, let’s visualize the new tree nucleus sampling
+    generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/23ad20ec7404c08df5cf975e2642a24b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As with top-k sampling, this tree is very different from the one generated with
+    greedy sampling, displaying more variety. Both top-k and nucleus sampling offer
+    unique advantages when generating text, enhancing diversity, and introducing creativity
+    into the output. Your choice between the two methods (or even greedy search) will
+    depend on the specific requirements and constraints of your project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have delved deep into various decoding methods used by LLMs,
+    specifically GPT-2\. We started with a simply **greedy search** and its immediate
+    (yet often suboptimal) selection of the most probable next token. Next, we introduced
+    the **beam search** technique, which considers several of the most likely tokens
+    at each step. Although it offers more nuanced results, beam search can sometimes
+    fall short in generating diverse and creative sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To bring more variability into the process, we then moved on to **top-k sampling**
+    and **nucleus sampling**. Top-k sampling diversifies the text generation by randomly
+    selecting among the *k* most probable tokens, while nucleus sampling takes a different
+    path by dynamically forming a nucleus of tokens based on cumulative probability.
+    Each of these methods brings unique strengths and potential drawbacks to the table,
+    and the specific requirements of your project will largely dictate the choice
+    among them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ultimately, understanding these techniques and their trade-offs will equip you
+    to better guide the LLMs towards producing increasingly realistic, nuanced, and
+    compelling textual output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in more technical content around LLMs, you can follow me
+    on Twitter [@maximelabonne](https://twitter.com/maximelabonne).
+  prefs: []
+  type: TYPE_NORMAL

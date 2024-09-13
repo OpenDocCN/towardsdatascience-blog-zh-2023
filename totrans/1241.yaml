@@ -1,0 +1,977 @@
+- en: 'How to Solve the Protein Folding Problem: AlphaFold2'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-solve-the-protein-folding-problem-alphafold2-6c81faba670d](https://towardsdatascience.com/how-to-solve-the-protein-folding-problem-alphafold2-6c81faba670d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A deeper look at AlphaFold2 and its neural architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://universvm.medium.com/?source=post_page-----6c81faba670d--------------------------------)[![Leonardo
+    Castorina](../Images/74ba4ff34c619576da18dbda354f4982.png)](https://universvm.medium.com/?source=post_page-----6c81faba670d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c81faba670d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c81faba670d--------------------------------)
+    [Leonardo Castorina](https://universvm.medium.com/?source=post_page-----6c81faba670d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c81faba670d--------------------------------)
+    ·16 min read·Mar 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/572e0dac09bea160681c694c2b4fb515.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of protein sequence to shape. In white the original protein, in
+    rainbow the AlphaFold predicted protein [blue=highest confidence, red=lowest confidence]
+    (Illustration by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this series of articles, I will go through protein folding and deep learning
+    models such as AlphaFold, OmegaFold, and ESMFold. We will start with AlphaFold2!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Proteins are molecules that perform most of the biochemical functions in living
+    organisms. They are involved in digestion (enzymes), structural processes (keratin
+    — skin), photosynthesis and are also used extensively in the pharmaceutical industry
+    [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 3D structure of the protein is fundamental to its function. Proteins are
+    made up of 20 subunits called amino acids (or residues), each with different properties
+    such as charge, polarity, length, and the number of atoms. Amino acids are formed
+    by a **backbone**, common to all amino acids, and a **side-chain**, unique to
+    each amino acid. They are connected by a peptide bond [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bba2585b3f0247659bbdd5ef71269b05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of a protein polypeptide with four residues. (Illustration by the
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a58223094f9764d6b7763d827e2ef4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of a protein backbone with four residues. (Illustration by the
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Protein contain residues oriented at specific torsion angles called φ and ψ,
+    which give rise to a protein 3D shape.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73f8bf2634b5620c888fa2894b3c79dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of φ and ψ angles. (Illustration by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main problem every biologist faces is obtaining this 3D shape of proteins,
+    usually requires a crystal of the protein and X-Ray Crystallography. Proteins
+    have various properties, for example, membrane proteins tend to be hydrophobic
+    meaning it is hard to identify the conditions at which it crystallizes [2]. Obtaining
+    crystals is therefore a tedious and (arguably) highly random process takes days
+    to years to decades and it can be regarded as more of an art than a science. This
+    means that many biologists may spend the entire duration of their Ph.D. trying
+    to crystallise a protein.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are lucky enough to get a crystal of your protein, you can upload it
+    to the Protein Data Bank, a large dataset of proteins:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.rcsb.org/?source=post_page-----6c81faba670d--------------------------------)
+    [## RCSB PDB: Homepage'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a member of the wwPDB, the RCSB PDB curates and annotates PDB data according
+    to agreed upon standards. The RCSB PDB…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.rcsb.org](https://www.rcsb.org/?source=post_page-----6c81faba670d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This begs the question: can we simulate folding to obtain a 3D structure from
+    a sequence? Short answer: Yes, kind of. Long answer: We can use molecular simulations
+    to try to fold proteins which are often heavy in computational use. Hence, projects
+    like Folding@Home try to distribute the problem over many computers to obtain
+    a dynamics simulation of a protein.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, a competition, Critical Assessment of Protein Structure Prediction (CASP)
+    was made where some 3D structures of proteins would be holdout so that people
+    could test their protein folding models. In 2020, DeepMind participated with AlphaFold2
+    beating the state-of-the-art and obtaining outstanding performances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fb7e39f80c01653aa451b99ad04abb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Median Global Distance Test for the CASP competition from 2008–2020\. A solution
+    of about 90 is considered roughly equivalent to the crystal structure. AlphaFold
+    2 outperformed all the previous models achieving state-of-the-art performance
+    (Illustration by the author, based on [4]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I will go over AlphaFold2, explain its inner workings, and
+    conclude how it has revolutionized my work as a Ph.D. student on Protein Design
+    and Machine Learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we start, I would like to give a shoutout to [OpenFold](https://github.com/aqlaboratory/openfold)
+    by the AQ Laboratory, an open-source implementation of AlphaFold that includes
+    training code through which I double-checked the dimensions of tensors I refer
+    to in this article. Most of this article’s information is in the [Supplementary
+    of the original paper](https://www.nature.com/articles/s41586-021-03819-2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0\. Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s begin with an overview. This is what the overall structure of the model
+    looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/beeef945ce441d24c166bbf5078212dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overview of the AlphaFold Architecture [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Typically, you start with a sequence of amino acids of your protein of interest.
+    Note that a crystal is ***not*** necessary to obtain the sequence of amino acid
+    : this is usually obtained from DNA sequencing (if you know the gene of the protein)
+    or Protein Sequencing. The proteins can be broken to smaller -mers and analysed
+    in mass spectrometry for example.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The aim is to prepare two key pieces of data the **Multiple Sequence Alignment
+    (MSA) representation** and a **pair representation**. For simplicity, I will skip
+    the use of templates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **MSA representation** is obtained by looking for similar sequences in genetic
+    databases. As the picture shows, the sequence may also come from different organisms,
+    e.g., a fish. Here we are trying to get general information about each index position
+    of the protein and understand, in the context of evolution, how the protein has
+    changed in different organisms. Proteins like Rubisco (involved in photosynthesis)
+    are generally highly conserved and therefore have little differences in plants.
+    Others, like the spike protein of a virus, are very variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the **pair representation**, we are trying to infer relationships between
+    the sequence elements. For example, position 54 of the protein may interact with
+    position 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout the network, these representations are updated several times. First,
+    they are embedded to create a representation of the data. Then they pass through
+    the EvoFormer, which extracts information about sequences and pairs, and finally,
+    a structure model which builds the 3D structure of the protein.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Input Embedder
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Algorithm: 3'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/c2f46ce86367689864eac6a954dd9204b2576d3b/openfold/model/embedders.py#L24](https://github.com/aqlaboratory/openfold/blob/c2f46ce86367689864eac6a954dd9204b2576d3b/openfold/model/embedders.py#L24)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The input embedder attempts to create a different representation of the data.
+    For MSA data, AlphaFold uses an arbitrary cluster number rather than the full
+    MSA to reduce the number of possible sequences that go through the transformer,
+    thus decreasing computation. The MSA data input *msa_feat* **(N_clust, N_res,
+    49)** is composed by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*cluster_msa* **(N_clust, N_res, 23)**: a one-hot encoding of the MSA cluster
+    center sequences (20 amino acids + 1 unknown + 1 gap + 1 *masked_msa_token*)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*cluster_profile* **(N_clust, N_res, 23)**: amino acid type distribution for
+    each residue in the MSA (20 amino acids + 1 unknown + 1 gap + 1 *masked_msa_token*)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*cluster_deletion_mean* **(N_clust, N_res, 1)**: average deletions of every
+    residue in every cluster (ranges 0–1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*cluster_deletion_value* **(N_clust, N_res, 1)**: number of deletions in the
+    MSA (ranges 0–1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*cluster_has_deletion* **(N_clust, N_res, 1)**: binary feature indicating whether
+    there are deletions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For pair representations, it encodes each amino acid with a unique index in
+    the sequence with RelPos, which accounts for distance in the sequence. This is
+    represented as a distance matrix of each residue against each other, and the distances
+    clipped to 32, meaning larger distances are capped to 0, meaning the dimension
+    is effectively -32 to 32 + 1 = **65.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the MSA representation and the pair representations go through several
+    independent linear layers and are passed to the EvoFormer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Evoformer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/028293a460f896b0dd328efb9359a97d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of the EvoFormer [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 6'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/evoformer.py#L575](https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/evoformer.py#L575)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are then 48 blocks of the EvoFormer, which uses self-attention to allow
+    the MSA and Pairs representations to communicate. We first look at the MSA to
+    then merge it into the pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1 MSA Stack
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/e6f3d06982a042b813eb04debd64b5a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MSA Stack of EvoFormer. [1] (edited by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is composed of **row-wise gated self-attention with pair bias**, **column-wise
+    gated self-attention**, **transition** and **outer product mean** blocks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.1A Row-Wise Gated Self-Attention with Pair Bias**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/1caf06795f2a0f1c96cd37f9add06450.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Row-Wise Gated Self-Attention with Pair Bias in Evoformer. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 7'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/msa.py#L290](https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/msa.py#L290)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The key point here is to allow MSA and pair representations communicate information
+    with each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, multi-head attention is used to calculate dot-product affinities **(N_res,
+    N_res, N_heads)** from the MSA representation *row*, meaning the amino acids in
+    the sequence will learn “conceptual importance” between pairs. In essence, how
+    important one amino acid is for another amino acid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, the pair representation goes through a linear layer without bias, meaning
+    only a weight parameter will be learned. The linear layer outputs **N_heads**
+    dimensions producing the matrix pair bias matrix **(N_res, N_res, N_heads)**.
+    Remember this matrix was initially capped to 32 maximum distance meaning if an
+    amino acid is more distant than 32 indices, it will have a value of 0
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, we have two matrices of shape **(N_res, N_res, N_heads)** that
+    we can easily add together and softmax to have values between 0 and 1\. An attention
+    block with the added matrices as *Queries* and a row passed through a linear layer
+    as values to obtain the attention weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we calculate the dot product between:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the attention weights and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the Linear + sigmoid of the MSA row as keys (I believe the sigmoid operation
+    here returns a probability-like array ranging from 0–1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**2.1B Column-Wise Gated Self-Attention**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/ac3b99d91110d38e38bff439bc56d145.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Column-Wise Gated Self-Attention in Evoformer. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 8'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/msa.py#L319](https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/msa.py#L319)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The key point here is that MSA is an aligned version of all sequences related
+    to the input sequences. This means that index X will correspond to the same area
+    of the protein for each sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By doing this operation column-wise, we ensure that we have a general understanding
+    of which residues are more likely for each position. This also means the model
+    would be robust should a similar sequence with small differences produce similar
+    3D shapes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.1C MSA Transition**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/674760d15b95e0626fa7e7c90696968a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MSA Transition in Evoformer. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 9'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/evoformer.py#L45](https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/evoformer.py#L45)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is a simple 2-layer MLP that first increases the channel dimensions by
+    a factor of 4 and then reduces it down to the original dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.1D Outer Product Mean**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/80fb65e42778df2a915439bbd3f8b581.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Outer Product Mean in Evoformer.[1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 10'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/outer_product_mean.py#L27](https://github.com/aqlaboratory/openfold/blob/b2d6bff691e0ad860d585ea6709b81b1aba57d2c/openfold/model/outer_product_mean.py#L27)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This operation aims at keeping a continuous flow of information between the
+    MSA and the pair representation. Each column in the MSA is an index position of
+    a protein sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we select index i and j, which we independently send through a linear
+    layer. This linear layer uses c=32, which is lower than c_m.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The outer product is then calculated, averaged, flattened, and again through
+    another linear layer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We now have an updated entry for ij in the pair representation. We repeat this
+    for all the pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Pairs Stack
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/69ad5293cb38f8bd90d81997f7c2db00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pairs Stack of EvoFormer. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our pair representation can technically be interpreted as a distance matrix.
+    Earlier, we saw how each amino acid starts with 32 neighbors. We can therefore
+    build a triangle graph based on three indices of the pair representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, nodes i, j, and k will have edges ij, ik, and jk. Each edge is
+    updated with information from the other two edges of all the triangles it is part
+    of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c87f676eedaae962a2e875acd388fa2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Triangle Multiplicative Update and Triangle Self-Attention. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.2A Triangular Multiplicative Update**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/14d748b403eb188c6ef59ff604b3be47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have two types of updates, one for outgoing edges and one for incoming edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3d2cb985f33e404ea6c08c22b405cf7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Triangular Multiplicative Update. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 11 and 12'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/triangular_multiplicative_update.py#L28](https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/triangular_multiplicative_update.py#L28)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For **outgoing edges**, the full row or pair representations i and j is first
+    independently passed through a linear layer producing a representation of the
+    left edges and right edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we compute the dot product between the corresponding representation for
+    the ij pair and the left and right edges independently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we take the dot product of the left and right edges representations
+    and a final dot product with the ij pair representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For **incoming edges**, the algorithm is very similar but bear in mind that
+    if previously we were considering the edge as ik, we now go in the opposite direction
+    ki. In the OpenFold code, this is implemented simply as a permute function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.2B Triangular Self-Attention**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/9e5b7c80c3e2433ed5980310d199b998.png)![](../Images/7a3e5c06c8fbffb72e53f35bc46bd2d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Triangular Self-Attention. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 13 and 14'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/triangular_attention.py#L31](https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/triangular_attention.py#L31)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This operation aims at updating the pair representation by using self-attention.
+    The main goal is to update the edge with the most relevant edges, ie. which amino
+    acids in the protein are more likely to interact with the current node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With self-attention, we *learn* the best way to update the edge through:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (query-key) Similarity between edges that contain the node of interest. For
+    instance for node i, all edges that share that node (eg. ij, ik).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A third edge (eg. jk) which even if it does not directly connect to node i,
+    is part of the triangle.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This last operation is similar in style to a graph message-passing algorithm,
+    where even if nodes are not directly connected, information from other nodes in
+    the graph is weighted and passed on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.2C Transition Block**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Equivalent to the transition block in the MSA trunk with a 2-Layer MLP where
+    the channel is first expanded by a factor of 4 and then reduced to the original
+    number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of the EvoFormer block is an updated representation of both MSA and
+    pairs (of the same dimensionality).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Structure Module
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/11b5abb19f9cb2dbdb7d2c93d698c4b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Structure Module of AlphaFold. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 20'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/structure_module.py#L515](https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/structure_module.py#L515)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The structure module is the final part of the model and converts the pairs representations
+    and the input sequence representation (corresponds to a row in the MSA representation)
+    into a 3D structure. It consists of 8 layers with shared weights, and the pair
+    representation is used to bias the attention operations in the Invariant Point
+    Attention (IPA) module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The outputs are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Backbone Frames (r, 3x3)**: Frames represent a Euclidean transform for atomic
+    positions to go from a local frame of reference to a global one. Free-floating
+    body representation (blue triangles) composed of N-Cα-C; thus, each residue (r_i)
+    has three sets of (x, y, z) coordinates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**χ** **angles of the sidechains** (r , 3): represents the angle of each rotatable
+    atom of the side chain. The angles define the rotational isomer (rotamer) of a
+    residue; therefore, one can derive the exact position of the atoms. Up to **χ1,
+    χ2, χ3, χ4**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note that **χ** refers to the dihedral angle of each of the rotatable bonds
+    of the side chains. There are shorter amino acids that do not have all four χ
+    angles as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1dbf421f8a19c198e0bf7fa0959eccaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Side-chain angles for Lysine and Tyrosine. Tyrosine is shorter and does not
+    have **χ3, χ4\.** (Illustration by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.1 Invariant Point Attention (IPA)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/8f868b6d1391f860e71b8e5de141cd74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Invariant Point Attention (IPA) of Structure Module. [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithm: 22'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/structure_module.py#L161](https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/structure_module.py#L161)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generally, this type of attention is designed to be invariant to Euclidean transformations
+    such as translations and rotations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first update the single representation with self-attention, as explained
+    in previous sections.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We also feed information about the backbone frames of each residue to produce
+    query points, key points, and value points for the local frame. These are then
+    projected into a global frame where they interact with other residues and then
+    projected back to the local frame.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The word “invariant” refers to the fact that global and local reference points
+    are enforced to be invariant by using squared distances and coordinate transformation
+    in the 3D space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3.2 Predict side chain and backbone torsion angles**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The single representation goes through a couple of MLPs and outputs the torsion
+    angles ω, φ, ψ, χ1, χ2, χ3, χ4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3 Backbone Update**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Algorithm: 23'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'OpenFold: [https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/structure_module.py#L434](https://github.com/aqlaboratory/openfold/blob/f84eb0a113b6b8f9c0bb022ea0796aa90ff016bd/openfold/model/structure_module.py#L434)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are two updates returned by this block: one is the **rotation** represented
+    by a quaternion (1, a, b, c where the first value is fixed to 1 and a, b, and
+    c correspond to the Euler axis predicted by the network) and a **translation**
+    represented by a vector matrix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.4 All Atom Coordinates**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At this point, we have both the **backbone frames** and the **torsion angles**,
+    and we would like to obtain the exact atom coordinates of the amino acid. Amino
+    acids have a very specific structure of atoms, and we have the identity as the
+    input sequence. We, therefore, apply the torsion angles to the atoms of the amino
+    acid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that many times you will find many structural violations in the output
+    of AlphaFold, such as the ones depicted below. This is because the model itself
+    does not enforce physical energy constraints. To alleviate this problem, we run
+    an AMBER relaxation force field to minimize the energy of the protein.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5216d56c7db49314c97407df88cec78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Before AMBER relaxation, Methionine and Triptophan are predicted too close to
+    each other forming an impossible bond. After AMBER relaxation, the rotamers are
+    adjusted to minimize energy and steric clashes. (Illustration by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other Optimisations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The AlphaFold model contains several self-attention layers and large activations
+    due to the sizes of the MSAs. Classical backpropagation is optimized to reduce
+    the number of total computations per node. However, in the case of AlphaFold,
+    it would require more than the available memory in a TPU core (16 GiB). Assuming
+    a protein of 384 residues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e39ac8b417fff4f275a0d363aa0a8b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instead, AlphaFold used gradient checkpointing (also rematerialization). The
+    activations are recomputed and calculated for one layer at the time, thus bringing
+    memory consumption to around 0.4 GiB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This GIF shows what backpropagation usually looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8d6816fa2e7013d2c1219385e99281b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation. (Illustration by the author based on [https://github.com/cybertronai/gradient-checkpointing](https://github.com/cybertronai/gradient-checkpointing))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By checkpointing, we reduce memory usage, though this has the unfortunate side
+    effect of increasing training time by 33%:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/377a827f8ae0d036e482acd1be4fad13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fixing a layer for checkpointing. (Illustration by the author based on: [https://github.com/cybertronai/gradient-checkpointing](https://github.com/cybertronai/gradient-checkpointing))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2fb60fef6b0d8c0864687165827c9803.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fixing a layer for checkpointing. (Illustration by the author based on [https://github.com/cybertronai/gradient-checkpointing](https://github.com/cybertronai/gradient-checkpointing))
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about Designing Proteins? The Inverse Folding Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'What if, rather than a sequence of amino acids, you had the model of a cool
+    protein you designed with a dynamics simulation? Or one that you modeled to bind
+    another protein like a COVID spike protein. Ideally, you would want to predict
+    the sequence necessary to fold to an input 3D shape that may or may not exist
+    in nature (i.e., it could be a completely new protein). Let me introduce you to
+    the world of protein design, which is also my Ph.D. project TIMED (Three-dimensional
+    Inference Method for Efficient Design):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/156deb08ea678962e49380f45319cf81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Inverse Folding Problem (Illustration by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This problem is arguably harder than the folding problem, as multiple sequences
+    can fold to the same shape. This is because there is redundancy in amino acid
+    types, and there are also areas of a protein that are less critical for the actual
+    fold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The input of the model is a cube of gridded, voxelised space (a “Frame”) around
+    each amino acid position of the backbone. The alpha Carbon is centered in the
+    frame, and the frame is rotated so that the Alpha Carbon to Carbon bond lies along
+    the x-axis. Each atom (C, N, O, alpha-C, beta-C) is one-hot-encoded in a different
+    channel, thus producing a 4D array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output of our models is a probability distribution over all amino acids
+    at each position. For instance, at each position the models output a probability
+    over every residue being at that position. For a 100-amino-acid protein will have
+    an output of shape (100, 20) as there are twenty amino acids:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21f8e109482c5a5353c658ed9d3dd1a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction pipeline for TIMED (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The cool aspect about AlphaFold is that we can use it to double-check whether
+    our models work well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/679cf66e35f1e07b75ddd76cfc2e8130.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Folding and Inverse Folding Problem (Illustration by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would like to know more about this model, have a look at my GitHub repository,
+    which also includes a little UI Demo!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92d5b7078415e1e58444f43dabc38af7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'UI Demo of TIMED for solving the Inverse Folding Problem. (Illustration by
+    the author). GitHub: [https://github.com/wells-wood-research/timed-design](https://github.com/wells-wood-research/timed-design)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we saw how AlphaFold (partially) solves a clear problem for
+    biologists, mainly obtaining 3D structures from an amino acid sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We broke down the structure of the model into Input Embedder, EvoFormer, and
+    Structure module. Each of these uses several self-attention layers, including
+    many tricks to optimize the performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AlphaFold works well, but is this it for biology? No. AlphaFold is still computationally
+    very expensive, and there isn’t an easy way to use it (No, Google Colab is not
+    easy — it’s clunky). Several alternatives, like OmegaFold and ESMFold, attempt
+    to solve these problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These models still do not explain *how* a protein folds over time. There are
+    also a lot of challenges that involve designing proteins where inverse folding
+    models can use AlphaFold to double-check that designed proteins fold to a specific
+    shape.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next series of articles, we will look into OmegaFold and ESMFold!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Jumper J, Evans R, Pritzel A, Green T, Figurnov M, Ronneberger O, Tunyasuvunakool
+    K, Bates R, Žídek A, Potapenko A, et al. [Highly accurate protein structure prediction
+    with AlphaFold](https://www.nature.com/articles/s41586-021-03819-2). Nature (2021)
+    DOI: 10.1038/s41586–021–03819–2'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Alberts B. [Molecular biology of the cell](https://www.ncbi.nlm.nih.gov/books/NBK21054/).
+    (2015) Sixth edition. New York, NY: Garland Science, Taylor and Francis Group.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Ahdritz G, Bouatta N, Kadyan S, Xia Q, Gerecke W, O’Donnell TJ, Berenberg
+    D, Fisk I, Zanichelli N, Zhang B, et al. [OpenFold: Retraining AlphaFold2 yields
+    new insights into its learning mechanisms and capacity for generalization](https://www.biorxiv.org/content/10.1101/2022.11.20.517210v1.full)
+    (2022) Bioinformatics. DOI: 10.1101/2022.11.20.517210'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Callaway E. [“It will change everything”: DeepMind’s AI makes gigantic
+    leap in solving protein structures](https://www.nature.com/articles/d41586-020-03348-4)
+    (2020). Nature 588(7837):203–204\. DOI: 10.1038/d41586–020–03348–4'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further Reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The original AlphaFold Paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.nature.com/articles/s41586-021-03819-2?source=post_page-----6c81faba670d--------------------------------)
+    [## Highly accurate protein structure prediction with AlphaFold - Nature'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proteins are essential to life, and understanding their structure can facilitate
+    a mechanistic understanding of their…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.nature.com](https://www.nature.com/articles/s41586-021-03819-2?source=post_page-----6c81faba670d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'OpenFold Paper and Code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.biorxiv.org/content/10.1101/2022.11.20.517210v2?source=post_page-----6c81faba670d--------------------------------)
+    [## OpenFold: Retraining AlphaFold2 yields new insights into its learning mechanisms
+    and capacity for…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: AlphaFold2 revolutionized structural biology with the ability to predict protein
+    structures with exceptionally high…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'www.biorxiv.org](https://www.biorxiv.org/content/10.1101/2022.11.20.517210v2?source=post_page-----6c81faba670d--------------------------------)
+    [](https://github.com/aqlaboratory/openfold?source=post_page-----6c81faba670d--------------------------------)
+    [## GitHub - aqlaboratory/openfold: Trainable, memory-efficient, and GPU-friendly
+    PyTorch reproduction…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure: Comparison of OpenFold and AlphaFold2 predictions to the experimental
+    structure of PDB 7KDX, chain B. A…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/aqlaboratory/openfold?source=post_page-----6c81faba670d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another well-written article on AlphaFold:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://dauparas.github.io/post/af2/?source=post_page-----6c81faba670d--------------------------------)
+    [## AlphaFold 2 & Equivariance | Justas Dauparas'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fabian Fuchs & Justas Dauparas A few weeks ago, in the latest CASP competition
+    for protein structure prediction (…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: dauparas.github.io](https://dauparas.github.io/post/af2/?source=post_page-----6c81faba670d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On Protein (sequence) Design:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/wells-wood-research/timed-design?source=post_page-----6c81faba670d--------------------------------)
+    [## GitHub - wells-wood-research/timed-design: Protein Sequence Design with Deep
+    Learning and Tooling…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: timed-design is a library to use protein sequence design models and analyse
+    predictions. We feature retrained Keras…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'github.com](https://github.com/wells-wood-research/timed-design?source=post_page-----6c81faba670d--------------------------------)
+    [](https://academic.oup.com/bioinformatics/article/39/1/btad027/6986968?source=post_page-----6c81faba670d--------------------------------)
+    [## PDBench: evaluating computational methods for protein-sequence design'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of protein design is to create novel amino acid sequences with useful
+    properties and functions. An important…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: academic.oup.com](https://academic.oup.com/bioinformatics/article/39/1/btad027/6986968?source=post_page-----6c81faba670d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the Author
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](https://pub.towardsai.net/latent-diffusion-explained-simply-with-pok%C3%A9mon-3ebe15a3a019?source=post_page-----6c81faba670d--------------------------------)
+    [## Latent Diffusion Explained Simply (with Pokémon)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Text to Image, Image to Image and Inpainting — the Latent Diffusion revolution
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pub.towardsai.net](https://pub.towardsai.net/latent-diffusion-explained-simply-with-pok%C3%A9mon-3ebe15a3a019?source=post_page-----6c81faba670d--------------------------------)
+    [](https://betterhumans.pub/obsidian-tutorial-for-academic-writing-87b038060522?source=post_page-----6c81faba670d--------------------------------)
+    [## Obsidian Tutorial for Academic Writing
+  prefs: []
+  type: TYPE_NORMAL
+- en: Practical writing Tips for Manuscript Writing, Posters, and exporting citations
+    to Word, PDF, and Latex.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterhumans.pub](https://betterhumans.pub/obsidian-tutorial-for-academic-writing-87b038060522?source=post_page-----6c81faba670d--------------------------------)
+    [](https://betterhumans.pub/how-to-boost-your-productivity-for-scientific-research-using-obsidian-fe85c98c63c8?source=post_page-----6c81faba670d--------------------------------)
+    [## How to Boost Your Productivity for Scientific Research Using Obsidian
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tools and workflows for managing your zettelkasten, projects, reading lists,
+    notes, and inspiration during your PhD.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterhumans.pub](https://betterhumans.pub/how-to-boost-your-productivity-for-scientific-research-using-obsidian-fe85c98c63c8?source=post_page-----6c81faba670d--------------------------------)
+    [](https://betterhumans.pub/20-macos-apps-to-boost-your-productivity-74accb372c9c?source=post_page-----6c81faba670d--------------------------------)
+    [## 20+ MacOS Apps to Boost Your Productivity
+  prefs: []
+  type: TYPE_NORMAL
+- en: A collection of 20+ apps to significantly boost your productivity on MacOS
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterhumans.pub](https://betterhumans.pub/20-macos-apps-to-boost-your-productivity-74accb372c9c?source=post_page-----6c81faba670d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

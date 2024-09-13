@@ -1,0 +1,359 @@
+- en: Introducing KeyLLM — Keyword Extraction with LLMs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/introducing-keyllm-keyword-extraction-with-llms-39924b504813](https://towardsdatascience.com/introducing-keyllm-keyword-extraction-with-llms-39924b504813)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Use KeyLLM, KeyBERT, and Mistral 7B to extract keywords
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@maartengrootendorst?source=post_page-----39924b504813--------------------------------)[![Maarten
+    Grootendorst](../Images/58e24b9cf7e10ff1cd5ffd75a32d1a26.png)](https://medium.com/@maartengrootendorst?source=post_page-----39924b504813--------------------------------)[](https://towardsdatascience.com/?source=post_page-----39924b504813--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----39924b504813--------------------------------)
+    [Maarten Grootendorst](https://medium.com/@maartengrootendorst?source=post_page-----39924b504813--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----39924b504813--------------------------------)
+    ·9 min read·Oct 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47514c37ae551ce79a535285a4d4488a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Large Language Models (LLMs) are becoming smaller, faster, and more efficient.
+    Up to the point where I started to consider them for iterative tasks, like keyword
+    extraction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having created [KeyBERT](https://github.com/MaartenGr/KeyBERT), I felt that
+    it was time to extend the package to also include LLMs. They are quite powerful
+    and I wanted to prepare the package for when these models can be run on smaller
+    GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As such, introducing `[KeyLLM](https://maartengr.github.io/KeyBERT/guides/keyllm.html)`,
+    an extension to KeyBERT that allows you to use any LLM to extract, create, or
+    even fine-tune the keywords!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, we will go through keyword extraction with `[KeyLLM](https://maartengr.github.io/KeyBERT/guides/keyllm.html)`
+    using the recently released Mistral 7B model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will start by installing a number of packages that we are going to use throughout
+    this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are installing `sentence-transformers` from its main branch since it has
+    a fix for community detection which we will use in the last few use cases. We
+    do the same for `transformers` since it does not yet support the Mistral architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also follow along with the [**Google Colab Notebook**](https://colab.research.google.com/drive/1A1lbPnBhtxL9jR7vFcm7Z0F0aJdEl-zj?usp=sharing)
+    to make sure everything works as intended.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🤖 Loading the Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In previous tutorials, we demonstrated how we could quantize the original model’s
+    weight to make it run without running into memory problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over the course of the last few months, [TheBloke](https://huggingface.co/TheBloke)
+    has been working hard on doing the quantization for hundreds of models for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way, we can download the model directly which will speed things up quite
+    a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start with loading the model itself. We will offload 50 layers to the
+    GPU. This will reduce RAM usage and use VRAM instead. If you are running into
+    memory errors, reducing this parameter (`gpu_layers`) might help!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: After having loaded the model itself, we want to create a 🤗 Transformers pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main benefit of doing so is that these pipelines are found in many tutorials
+    and are often used in packages as a backend. Thus far, `ctransformers` is not
+    yet natively supported as much as `transformers`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading the Mistral tokenizer with `ctransformers` is not yet possible as the
+    model is quite new. Instead, we use the tokenizer from the original repository
+    instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 📄 Prompt Engineering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s see if this works with a very basic example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Perfect! It can handle a very basic question. For the purpose of keyword extraction,
+    let’s explore whether it can handle a bit more complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: It does great! However, if we want the structure of the output to stay consistent
+    regardless of the input text we will have to give the LLM an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where more advanced prompt engineering comes in. As with most Large
+    Language Models, Mistral 7B expects a certain prompt format. This is tremendously
+    helpful when we want to show what a “correct” interaction looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The prompt template is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed736ed8bd3f7f90ec3b71a5fe87d324.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Based on that template, let’s create a template for keyword extraction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It needs to have two components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Example prompt` - This will be used to show the LLM what a “good” output looks
+    like'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Keyword prompt` - This will be used to ask the LLM to extract the keywords'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The first component, the `example_prompt`, will simply be an example of correctly
+    extracting the keywords in the format that we are interested in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **format** is a key component since it will make sure that the LLM will
+    always output keywords the way we want:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The second component, the `keyword_prompt`, will essentially be a repeat of
+    the `example_prompt` but with two changes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It will not have an output yet. That will be generated by the LLM.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We make use of `KeyBERT`’s **[DOCUMENT]** tag for indicating where the input
+    document will go.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can use the **[DOCUMENT]** to insert a document at a location of your choice.
+    Having this option helps us to change the structure of the prompt if needed without
+    being set on having the prompt at a specific location.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, we combine the two prompts to create our final template:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have our final prompt template, we can start exploring a couple
+    of interesting new features in `KeyBERT` with `KeyLLM`. We will start by exploring
+    `KeyLLM` only using Mistral’s 7B model
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🗝️ Keyword Extraction with `KeyLLM`
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Keyword extraction with vanilla `KeyLLM` couldn’t be more straightforward; we
+    simply ask it to extract keywords from a document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80116740c612fd002adc807f474e5863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This idea of extracting keywords from documents through an LLM is straightforward
+    and allows for easily testing your LLM and its capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using `KeyLLM` is straightforward, we start by loading our LLM through `keybert.llm.TextGeneration`
+    and give it the prompt template that we created before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '🔥 **Tip** 🔥: If you want to use a different LLM, like ChatGPT, you can find
+    a full overview of implemented algorithms [here:](https://maartengr.github.io/KeyBERT/guides/llms.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After preparing our `KeyLLM` instance, it is as simple as running `.extract_keywords`
+    over your documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We get the following keywords:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: These seem like a great set of keywords!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can play around with the prompt to specify the kind of keywords you want
+    extracted, how long they can be, and even in which language they should be returned
+    if your LLM is multi-lingual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🚀 Efficient Keyword Extraction with `KeyLLM`
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Iterating your LLM over thousands of documents is not the most efficient approach!
+    Instead, we can leverage embedding models to make the keyword extraction a bit
+    more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This works as follows. First, we embed all of our documents and convert them
+    to numerical representations. Second, we find out which documents are most similar
+    to one another. We assume that documents that are highly similar will have the
+    same keywords, so there would be no need to extract keywords for all documents.
+    Third, we only extract keywords from 1 document in each cluster and assign the
+    keywords to all documents in the same cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is much more efficient and also quite flexible. The clusters are generated
+    purely based on the similarity between documents, without taking cluster structures
+    into account. In other words, it is essentially finding near-duplicate documents
+    that we expect to have the same set of keywords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eaa53dc36d4b4e0a0d725a0870665841.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To do this with `KeyLLM`, we embed our documents beforehand and pass them to
+    `.extract_keywords`. The threshold indicates how similar documents will minimally
+    need to be in order to be assigned to the same cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasing this value to something like .95 will identify near-identical documents
+    whereas setting it to something like .5 will identify documents about the same
+    topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We get the following keywords:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example, we can see that the first two documents were clustered together
+    and received the same keywords. Instead of passing all three documents to the
+    LLM, we only pass two documents. This can speed things up significantly if you
+    have thousands of documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🏆 Efficient Keyword Extraction with `KeyBERT` & `KeyLLM`
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before, we manually passed the embeddings to `KeyLLM` to essentially do a zero-shot
+    extraction of keywords. We can further extend this example by leveraging `KeyBERT`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since `KeyBERT` generates keywords and embeds the documents, we can leverage
+    that to not only simplify the pipeline but suggest a number of keywords to the
+    LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These suggested keywords can help the LLM decide on the keywords to use. Moreover,
+    it allows for everything within `KeyBERT` to be used with `KeyLLM`!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fbe7f8a1b581d44e8cc90b0aed10af87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This efficient keyword extraction with both `KeyBERT` and `KeyLLM` only requires
+    three lines of code! We create a KeyBERT model and assign it the LLM with the
+    embedding model we previously created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We get the following keywords:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that is it! With `KeyLLM` you are able to use Large Language Models to help
+    create better keywords. We can choose to extract keywords from the text itself
+    or ask the LLM to come up with keywords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By combining `KeyLLM` with `KeyBERT`, we increase its potential by doing some
+    computation and suggestions beforehand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update**: I uploaded a video version to YouTube that goes more in-depth into
+    how to use KeyLLM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you are, like me, passionate about AI and/or Psychology, please feel free
+    to add me on [**LinkedIn**](https://www.linkedin.com/in/mgrootendorst/), follow
+    me on [**Twitter**](https://twitter.com/MaartenGr), or subscribe to my [**Newsletter**](http://maartengrootendorst.substack.com/).
+    You can also find some of my content on my [**Personal Website**](https://maartengrootendorst.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images without a source credit were created by the author — Which means
+    all of them, I like creating my own images ;)*'
+  prefs: []
+  type: TYPE_NORMAL

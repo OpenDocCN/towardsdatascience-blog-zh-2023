@@ -1,0 +1,237 @@
+- en: 'Backfilling Mastery: Elevating Data Engineering Expertise'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/backfilling-mastery-elevating-data-engineering-expertise-a6873fb7ed2e](https://towardsdatascience.com/backfilling-mastery-elevating-data-engineering-expertise-a6873fb7ed2e)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: DATA ENGINEERING
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A go-to guide for data engineers wading through the backfilling maze
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://tamimi-naser.medium.com/?source=post_page-----a6873fb7ed2e--------------------------------)[![Naser
+    Tamimi](../Images/8d43c66ea3c0ef9b49c7d33dbc008c28.png)](https://tamimi-naser.medium.com/?source=post_page-----a6873fb7ed2e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a6873fb7ed2e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a6873fb7ed2e--------------------------------)
+    [Naser Tamimi](https://tamimi-naser.medium.com/?source=post_page-----a6873fb7ed2e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a6873fb7ed2e--------------------------------)
+    ·7 min read·Nov 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca03f6688b8f11402878f079d3beac93.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Backfilling?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Imagine starting a new data pipeline and getting data from a source you’ve never
+    parsed before (e.g. pulling info from an API or an existing hive table). Now,
+    you’re on a mission to make it seem like you collected this data ages ago. That’s
+    one example of what we call data backfilling in data engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But it’s not just about starting a new data pipeline or table. You could have
+    a table that’s been gathering data for a while, and suddenly, you need to change
+    the data (for example due to a new metric definition), or toss in more data from
+    a new data source. Or maybe there’s an awkward gap in your data, and you just
+    want to patch it up. All these situations are examples of data backfilling. The
+    common thread is turning “back” in time and “filling” up your table with some
+    historical data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following figure (Figure 1) shows a straightforward backfilling scenario.
+    In this instance, a daily job retrieves data from two upstream sources (one for
+    platform A and another for platform B). The dataset is structured with the first
+    partition being ‘ds,’ and the second partition (or sub-partitions) representing
+    the platforms. Unfortunately, data for the period from 2023–10–03 to 2023–10–05
+    is absent due to certain issues. To address this gap, a backfilling operation
+    was initiated (the backfilling job started on 2023–10–08).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/775860d0506ae23c029144b6f6afef9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1) A simple backfilling scenario
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backfilling and Restating
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A brief heads-up before proceeding further: within the domain of data engineering,
+    we normally encounter two scenarios: “backfilling” a table or “restating” a table.
+    These processes, while sharing some similarities, have some subtle differences.
+    Backfilling, as a practice, is about populating missing or incomplete data in
+    a dataset. Its application is commonly directed towards updating historical data
+    or rectifying gaps. Conversely, restating a table involves effecting substantial
+    alterations to the content or structure of the table. This transformation is typically
+    undertaken to rectify errors, update data models, or implement significant modifications
+    to the dataset. For the sake of simplicity, acknowledging the subtle differences
+    of these terms, both processes will be referred to as “backfilling” in this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth mentioning that there could be variations in how different engineers
+    refer to these processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s Talk About Design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s dive a bit deeper. You are designing your new table schema and planning
+    out your ETL processes. Definitely give some serious thought to backfilling. So,
+    take a moment to ask yourself: Is my design good to go for both the regular (mostly
+    daily) tasks and handling future backfilling tasks? Can I easily fill in missing
+    data when I need to, or is it going to be a headache with manual steps every time
+    I want to patch things up?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes you need to find a sweet spot in your design. You want things to run
+    smoothly, not just for your everyday data flow but also when you’re trying to
+    fix up any gaps in your dataset. So, a little extra attention to your design now
+    can save you from headaches later on!
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, you might think that if you do a backfill for this table, you need
+    to overwrite the previous data and not append to it. In this case, if you are
+    using Hive tables, maybe Hive partitions can help you achieve this goal more easily.
+    In this case, you can define a partition based on the date (mostly called ‘ds’)
+    and change your ETL to overwrite the partition instead of appending to it. With
+    this schema design, every time you write on your table, the previous partitions
+    (in this case, previous ‘ds’ dates) will be removed and replaced with new data.
+    However, you might foresee that every backfill might only need to affect not the
+    entire ‘ds,’ but part of that. For example, look at Figure 1 and ds=2023–10–05\.
+    In this case, part of the data is loaded successfully and part of that failed.
+    In such cases, you can define a secondary partition (or even tertiary if needed)
+    to support partial backfilling for a specific date in the future. At the same
+    time, you want to keep your number of partitions as low as possible to avoid small
+    partitions (which might cause less efficient data processing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another effective strategy involves writing the newly backfilled data to a distinct
+    partition location rather than overwriting the existing partition location on
+    the disk. This can be achieved by, for instance, introducing a unique runtime_id
+    directory within your partition location path. Subsequently, update the partition
+    location in the Hive metastore from the old path to the new path. This approach
+    enables the retention of previous data (as a precaution) while still facilitating
+    the update of the entire partition. The following folder structure is an example
+    of how we can runtime_id to keep different versions of backfilling under the same
+    table location. Remember, this technique requires that your ETL update partition
+    locations in the Hive metastore database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Also, in addition to your regular (for example, daily) workflow, you might need
+    to develop a ready-to-go backfilling workflow for cases in which you need to backfill
+    the data. For instance, if you are working on Apache Airflow, you can have a daily
+    DAG for your regular scheduled data loading tasks and a separate DAG for backfilling.
+    In this case, if something happens that requires backfilling data quickly, you
+    have a DAG ready to go.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start Backfilling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You carefully crafted your table schema and ETL pipelines, anticipating the
+    need for future backfilling. Now, after days, weeks, or even months, the long-awaited
+    moment for backfilling has arrived. But what steps should you take? Is it as straightforward
+    as running your backfill workflow/DAG for a specified date range, or does it demand
+    more careful consideration before hitting the backfill button?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, the design isn’t the sole challenge to overcome. The backfilling
+    process itself can be quite intricate. Initially, you must ensure that backfilling
+    is feasible. For instance, certain APIs may not support historical data beyond
+    a specific lookback period, while some source tables might not retain data for
+    an extended duration due to privacy constraints. It’s essential to confirm whether
+    backfilling for your specific timeframe is viable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s assume luck is on your side, and data availability poses no issues.
+    The next consideration revolves around your table users. Adding or modifying data,
+    especially historical data, can impact downstream users. A responsible data engineer
+    takes into account the consequences of such actions on product users and demonstrates
+    respect for their experience. In some scenarios, notifying downstream users in
+    advance about the backfilling operation may be necessary for them to obtain the
+    most up-to-date data. Additionally, you may need to assess how changes to a column
+    affect other tables. In an open coding ecosystem, engineers can collaborate to
+    check other projects and data pipelines for verification. If a downstream user
+    relies on a column slated for modification, it’s crucial to evaluate the impact
+    and explore alternatives, such as expanding the table instead of altering column
+    logic. Can you assist them in updating their ETL logic, or should you redirect
+    them to an alternative data source?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In essence, displaying responsibility for what you and your team own is what
+    distinguishes a good engineer from a less effective one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that your backfilling is complete, the next crucial step is validation.
+    Employing some fundamental techniques can expedite the validation process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first, it is crucial to verify the completion of the backfilling process. Occasionally,
+    even when it appears that the backfilling job has been executed and completed
+    successfully, an incorrect parameter may result in no actual updates or data being
+    written to the table. Therefore, prior to validating the backfilled data, it is
+    imperative to confirm the successful execution of the backfilling process. Introducing
+    a specific column in the table that captures the processing timestamp can aid
+    in validating whether the data has been recently updated. Alternatively, checking
+    the `runtime_id` associated with new partition locations is another method. As
+    outlined in the design section, the inclusion of an optional `runtime_id` in the
+    partition path allows for direct examination of the table path. This enables the
+    straightforward identification of whether new `runtime_id` folders have been created
+    after the backfilling operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If your backfilling addressed gaps using a source table, the most straightforward
+    approach is to aggregate metrics from the source table and compare them with your
+    target table. Crafting a query that replicates your ETL logic allows for a comprehensive
+    comparison, albeit it may require a bit of time and effort. However, this query
+    serves a dual purpose, not only aiding in immediate validation but also serving
+    as a valuable tool for future checks. It is advisable to document and store such
+    queries in your ETL documentation for ongoing use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In instances where the backfilling focused solely on certain columns without
+    introducing new rows to the table, an additional validation method involves scrutinizing
+    the unchanged columns in comparison to their previous states. For instance, evaluating
+    the sum of these columns before and after backfilling ensures that no unintended
+    alterations have occurred in the unaffected areas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To sum up, some best backfilling practices in data engineering are introduced
+    in this article. We broke down the differences between backfilling and restating
+    a table. Also the vital role of smart design in handling both regular tasks and
+    backfilling adventures are stressed. We tackled the hurdles of the backfilling
+    process, dealing with issues like data availability and keeping our downstream
+    pals in the loop. Finally, we mentioned that data engineers need to be mindful
+    of how their changes affect downstream users and must act responsibly when backfilling
+    is needed.
+  prefs: []
+  type: TYPE_NORMAL

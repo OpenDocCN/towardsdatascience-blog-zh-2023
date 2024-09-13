@@ -1,0 +1,452 @@
+- en: 'Build a Rest API with Go: Data Analytics for Time Series'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/build-a-rest-api-with-go-data-analytics-for-time-series-8d3f0747665c](https://towardsdatascience.com/build-a-rest-api-with-go-data-analytics-for-time-series-8d3f0747665c)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A step-by-step example of CRUD operations and statistical analysis with Go,
+    Gin, and Gorm.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@davide.burba?source=post_page-----8d3f0747665c--------------------------------)[![Davide
+    Burba](../Images/a1ca3cf59c2b933021fa0d978e1af522.png)](https://medium.com/@davide.burba?source=post_page-----8d3f0747665c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d3f0747665c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d3f0747665c--------------------------------)
+    [Davide Burba](https://medium.com/@davide.burba?source=post_page-----8d3f0747665c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d3f0747665c--------------------------------)
+    ·10 min read·Nov 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6e61301baab7f2a0bed1c777ea8da26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: “Learning Go”, by [Giulia Roggia](https://www.instagram.com/giulia_roggia__/).
+    Used with permission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction](#23c9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Models & Database](#4f5c)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Statistics](#810b)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Handlers](#1043)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Usage](#380a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article illustrates an example of a REST API built in Go to perform CRUD
+    (Create, Read, Update, Delete) operations and compute statistics on time-series
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The full code used in this article is available* [*here*](https://github.com/davide-burba/code-collection/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Why Go?*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Go](https://go.dev/) is a common choice to build a REST API for several reasons.
+    Even though it’s an efficient compiled language, its syntax is simple and readable.
+    It makes it easy to implement concurrent processing. It provides a feature-rich
+    standard library and has a great ecosystem of libraries and tools.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this example, we use two popular Go libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Gin](https://gin-gonic.com/): a web framework providing tools to create web
+    applications.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Gorm](https://gorm.io/): a full-featured ORM (Object-Relational Mapping) to
+    interact with databases.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Folder structure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We create one folder for each “service”. In Go, each folder corresponds to
+    a package, and each file has access to the elements defined in other files in
+    the same package. Here is the folder structure used in the project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Models & Database
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start by defining the ORM models in *models.go* to represent time series
+    data. We use two models, one to identify the series and one to store its values.
+    Each value is linked to a time series via a foreign key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also define two getters for time series values that will come in handy when
+    computing statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In *database.go* we define a function to get a database (we use *SQLite* in
+    the example) and to apply the migrations for creating an SQL table for each model
+    (if not already there).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Statistics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Note: If you are only interested in the CRUD part, you can skip this section.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the computation of statistics is a common task, to promote code reusability
+    we develop it as an “independent” package, which means that it does not depend
+    on the other packages defined in the project. To achieve that, we define a `TsValue`
+    interface: the statistic functions take as input a slice of values, where each
+    value must define the interface methods `GetTime` and `GetValue`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we define one function for each statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Count`: length of the series'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Min`: minimum value (and `Max`, which is analogous)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Mean`: mean of the series'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`StandardDeviation`: standard deviation of the series'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can put the statistics together in one function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the function `ComputeStatistics` computes the statistics sequentially.
+    If the number of values in each series is large, it could become time-consuming.
+    If so, we could use goroutines to compute statistics concurrently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us define a concurrent version `ComputeStatisticsConcurrent`, which performs
+    the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a channel to collect results, a waiting mechanism to sync goroutines,
+    and a map with the statistics to compute.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set a counter for the number of statistics to compute.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Launch a goroutine for each statistic function.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set a special goroutine to close the channel once all the statistics are computed
+    (i.e. the counter reaches zero)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Collect the result from the channel. The collection stops when the channel gets
+    closed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Note**: if you want to test the performance improvement without using large
+    data, you can run a simulation with `time.Sleep` inside each statistic function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handlers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let us now define the endpoints for the REST API. Since:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the endpoint logic depends on the database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we don’t want to use global variables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the endpoint functions must take as input only a pointer to the Gin context,
+    which holds the request information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'we create a database wrapper to assign it the endpoint methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: We define a function to set all the endpoints. Each endpoint specifies a path,
+    and a function taking as input a pointer to the Gin context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Handlers: Series'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by defining the time-series endpoints. Here is the implementation
+    to list all the available time series. The time series are stored in the `tseriesList`
+    slice when calling `DB.Find`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before developing the base CRUD endpoints for `TimeSeries`, let’s define a helper
+    function to get a series ID from a request and perform some checks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now define the basic CRUD operations for `TimeSeries`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Create*: POST a new series.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Read*: GET an existing series.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Update*: PUT an existing series.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Delete:* DELETE a series and its values. To roll back in case of a run-time
+    error, we perform the two operations in a database transaction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Handlers: Values'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now define the endpoints for `TimeSeriesValues`. Since they are similar
+    to the ones we just defined, we only show the implementation of the *Create* method,
+    which differs from the series one since we allow to post multiple values at the
+    same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Handlers: Statistics'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last handler we need to define is to compute statistics for a given series.
+    Given its ID, we query the values and compute the statistics with the `ComputeStatisticsConcurrent`
+    function implemented before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before returning the statistics, we apply the `serializeMap` function to the
+    output. This is done to transform *NaN* values into *nil*, to make the output
+    json-serializable. Note that the type of the output values in the map is the empty
+    interface `interface{}`, which can hold values of any type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Usage
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The last piece of code we need to make the app usable is the `main` function
+    to run the web server. We provide three optional command line arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`db`: Specifies the name of the database file (default: `timeseries.db`)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`proxy`: Sets the trusted proxy for the server (default: `127.0.0.1`)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`port`: Defines the port number for the server to listen on (default: `8080`)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Build
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can now run the API by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initializing a new Go module with `go mod init`. This will generate a *go.mod*
+    file with the module name and the go version.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Keeping track of the dependencies with `go mod tidy`. This will add the project
+    dependencies to the *go.mod* file, and create a *go.sum* file with the checksums
+    for all the dependencies (used to ensure their integrity).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Building the program with `go build` and running the generated executable. This
+    can also be done in one step with `go run main.go`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The *go.mod* and *go.sum* files are already provided in the [project repository](https://github.com/davide-burba/code-collection/tree/main/examples/go-timeseries-api).
+    You can read more about `go` commands [here](https://pkg.go.dev/cmd/go).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also run the API with Docker. In the *Dockerfile* shown below, first,
+    we build the executable with a Go official image, and later we copy it on a minimal
+    image, which results in a tiny ~20Mb output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can build and execute the API with Docker as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Example Usage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once the application is up and running, we can test it by doing API calls. Here
+    below we show an example of usage with `curl`. We create a time series, post its
+    values, compute the statistics, and finally delete it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: A note on learning Go
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This was my first project in Go. Therefore, if you have any sort of feedback
+    it would be very appreciated!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Coming from a Python background, I especially enjoyed Go speed and lightness
+    and found it way easier to learn than C++. Here are some resources that helped
+    me get started:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Official Go Tutorials](https://go.dev/doc/tutorial/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[A Tour of Go](https://go.dev/tour/basics/1): an interactive introduction to
+    Go, also official'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Developing a simple CRUD API with Go, Gin and Gorm](https://cgrant.medium.com/developing-a-simple-crud-api-with-go-gin-and-gorm-df87d98e6ed1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Finding The Best Go Project Structure](https://itnext.io/finding-the-best-go-project-structure-part-1-5290bc1d869d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*The full code used in this article is available* [*here*](https://github.com/davide-burba/code-collection/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Enjoyed this article?* [*Check out my other ones*](https://medium.com/@davide.burba)
+    *and follow me for more!* [*Click here*](https://medium.com/@davide.burba/membership)
+    *to read unlimited articles and support me at no additional cost for you* ❤️'
+  prefs: []
+  type: TYPE_NORMAL

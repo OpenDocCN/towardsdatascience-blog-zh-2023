@@ -1,0 +1,393 @@
+- en: Google Pub/Sub to BigQuery the Simple Way
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/google-pub-sub-to-bigquery-the-simple-way-de116234fb87](https://towardsdatascience.com/google-pub-sub-to-bigquery-the-simple-way-de116234fb87)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A hands-on guide to implementing BigQuery Subscriptions in Pub/Sub for simple
+    message and streaming ingestion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jim-barlow.medium.com/?source=post_page-----de116234fb87--------------------------------)[![Jim
+    Barlow](../Images/1494580717cb92defb17328e4bae1b13.png)](https://jim-barlow.medium.com/?source=post_page-----de116234fb87--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de116234fb87--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----de116234fb87--------------------------------)
+    [Jim Barlow](https://jim-barlow.medium.com/?source=post_page-----de116234fb87--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de116234fb87--------------------------------)
+    ·8 min read·Sep 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b31e6bb2ff00e2b71bba4bbff6d010fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Google’s latest planet-scale data warehouse subscription-based streaming ingestion
+    water-borne military capability: BigSub. In this case, the Pub never made it to
+    General Availability, so you will have to get your pints elsewhere. Photo by [Thomas
+    Haas](https://unsplash.com/@thomashaas?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I have encountered many situations in the past where I wanted to get Pub/Sub
+    messages into a BigQuery table, but I never managed to find a particularly simple
+    way of doing this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You could set up a [dataflow pipeline](https://cloud.google.com/dataflow/docs/tutorials/dataflow-stream-to-bigquery),
+    but this requires additional infrastructure to understand, configure, manage and
+    debug. Plus Dataflow (which is a managed Apache Beam service) is designed for
+    high-throughput streaming, so always seemed like overkill for a simple message
+    logging or monitoring system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And it’s Java. But Python 😀! And Java… 😫!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Sorry, I still get flashbacks from my first attempts to learn to code (last
+    century) in Java. Please do not attempt to use that code snippet … step away from
+    the code snippet.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I then stumbled upon [this](https://medium.com/google-cloud/streaming-from-google-cloud-pub-sub-to-bigquery-without-the-middlemen-327ef24f4d15),
+    which — although promising simplicity — seems to be even more complicated than
+    the previous method (Debezium wtf?)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s also possible to deploy a lightweight Cloud Function to trigger on receipt
+    of a Pub/Sub message and stream or load this into BigQuery, but this still seemed
+    a little too complex for something which felt like it should and could have been
+    native functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And now it is!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The kind folks at Google Cloud [announced](https://cloud.google.com/blog/products/data-analytics/pub-sub-launches-direct-path-to-bigquery-for-streaming-analytics)
+    a direct connection from Pub/Sub to BigQuery a while ago, awesome! However, having
+    tried (and failed) to quickly set up a test a couple of times, I finally had a
+    real-life use-case which required me to get it working for a client.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It turns out that there are a couple of nuances, so this article aims to help
+    you get this up and running as quickly as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Situation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Pub/Sub is an incredibly useful, powerful and scaleable service in the Google
+    Cloud ecosystem, with two core use-cases: streaming and messaging. I will let
+    Google explain this themselves (disappointing spoiler alert: it has nothing to
+    do with a Public House located on a Submarine.):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pub/Sub is used for streaming analytics and data integration pipelines to ingest
+    and distribute data. It’s equally effective as a messaging-oriented middleware
+    for service integration or as a queue to parallelize tasks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Pub/Sub enables you to create systems of event producers and consumers, called
+    **publishers** and **subscribers**. Publishers communicate with subscribers asynchronously
+    by broadcasting events, rather than by synchronous remote procedure calls (RPCs).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Messages are published to a topic, and subscribers to the topic can receive
+    the message and take action accordingly. The Pub(lisher) knows nothing about the
+    Sub(scribers), but when the messages are published, the subscribers can then take
+    actions based on the message contents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Client libraries or [notifications on Cloud Storage Buckets](https://cloud.google.com/storage/docs/pubsub-notifications)
+    make it simple to publish messages containing configurable metadata, and Pub/Sub
+    gets those messages to other Google Cloud destinations to [trigger Cloud Functions](https://cloud.google.com/functions/docs/calling/pubsub)
+    or all manner of different actions, limited only by your imagination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And now we can get this data natively into BigQuery (apparently trivially),
+    so I jumped at the opportunity to get this working in minutes! Except it turned
+    out to not be that simple. But I got it done, so I wanted to write this article
+    to help anybody else who needs to get this set up with minimal fuss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So where to start? Let’s start with the [docs](https://cloud.google.com/pubsub/docs/bigquery).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A BigQuery subscription writes messages to an existing BigQuery table as they
+    are received. You’re not required to configure a subscriber client separately.
+    Use the Google Cloud console, the Google Cloud CLI, the client libraries, or the
+    Pub/Sub API to create, update, list, detach, or delete a BigQuery subscription.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Sweet. Let’s go.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an alternative for simple data ingestion pipelines that often use Dataflow
+    to write to BigQuery, the BigQuery subscription has the following advantages:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Simple deployment.** You can set up a BigQuery subscription through a single
+    workflow in the console, Google Cloud CLI, client library, or Pub/Sub API.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Offers low costs.** Removes the additional cost and latency of similar Pub/Sub
+    pipelines that include Dataflow jobs. This cost optimization is useful for messaging
+    systems that do not require additional processing before storage.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Minimizes monitoring.** BigQuery subscriptions are part of the multi-tenant
+    Pub/Sub service and do not require you to run separate monitoring jobs.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Sound’s good! Keep going… to the [schema section](https://cloud.google.com/pubsub/docs/bigquery#properties_subscription).
+    I must confess reading this a few times and being a little baffled by what I actually
+    needed to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Managing schemas can be quite complex in normal environments, and it seemed
+    that in this case I would need to create a BigQuery table with a schema which
+    mirrored the inbound JSON exactly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use topic schema.** This option lets Pub/Sub use the [schema of the Pub/Sub
+    topic](https://cloud.google.com/pubsub/docs/admin#schemas) to which the subscription
+    is attached. In addition, Pub/Sub writes the fields in messages to the corresponding
+    columns in the BigQuery table. When you use this option, remember to check the
+    following additional requirements:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The fields in the topic schema and the BigQuery schema must have the same names
+    and their types must be compatible with each other.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Oh shit. Real-life inbound data can be pretty complex. It can be nested, containing
+    arrays and potentially hundreds of fields. JSON and BigQuery structures map pretty
+    cleanly (array = `ARRAY`, object = `STRUCT`) but it is not a simple task to generate
+    an empty BigQuery table which maps exactly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But there is an alternative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you do not select the **Use topic schema** option, ensure that the BigQuery
+    table has a column called `data` of type `BYTES` or `STRING`. Pub/Sub writes the
+    message to this BigQuery column.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: OK, this seems like it might be a viable approach. Let’s just get the data into
+    BigQuery and deal with decoding the `JSON` later. In fact, I tend to prefer this
+    architecture as any non-compliant data will still be received and we can try and
+    figure out how to decode it downstream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The same goes for evolving schemas. The beauty of ingesting raw `JSON` into
+    BigQuery is that — as it is simply text — it is an extremely robust ingestion
+    point. We can then use the recently-expanded [JSON functions in BigQuery](https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions)
+    to perform all sorts of magic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Downstream transformations are also more robust: attempting to select a column
+    which does not exist in normal SQL will cause a query to error, however attempting
+    to extract the equivalent non-existent field from a JSON object will simply return
+    a NULL. This, when properly handled, results in a more robust flow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Inbound Table Creation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, on to creating the inbound table into which we will ingest the raw JSON
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can create tables in the UI, but it’s actually very simple to do this via
+    [DDL](https://cloud.google.com/bigquery/docs/reference/standard-sql/data-definition-language)
+    in the BigQuery console (and quicker for me to type than taking screenshots 😀),
+    and then when you inevitably get it wrong the first time it’s a lot less frustrating
+    to just change a parameter (or add a missing character) and hit run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The table schema is actually in the section of the docs which explains how to
+    [write metadata](https://cloud.google.com/pubsub/docs/create-bigquery-subscription#write-metadata),
+    which is almost always a good idea for additional context and debugging support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The DDL to create the table (with all possible fields), is then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Table Partitioning**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partitioning is nearly always a good idea (and sometimes an essential approach)
+    for tables in BigQuery as it physically segregates the data into different partitions,
+    which can then be queried directly without requiring expensive full-table-scans.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of different [options](https://cloud.google.com/bigquery/docs/reference/standard-sql/data-definition-language#partition_expression)
+    for table partitioning, however it should be noted that there is currently a [limit
+    of 4000 partitions](https://cloud.google.com/bigquery/docs/partitioned-tables#ingestion_time)
+    so daily partitioning will max out after nearly 11 years but hourly partitioning
+    will max out after less than 24 weeks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One side note here, sometimes it *is* necessary to use hourly partitioning due
+    to the volume of streaming data (e.g. we have implemented this to consume [EventStream
+    data from Tealium](https://tealium.com/integrations/google-cloud-pub-sub/)). In
+    this case it was necessary to deploy additional architecture to back up historic
+    data to Google Cloud Storage and set a [partition expiration](https://cloud.google.com/bigquery/docs/managing-partitioned-tables#partition-expiration)
+    on the inbound table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One more side note: for brevity I am omitting details on the testing steps
+    we took to get this process running reliably. Such is the beauty of learning from
+    the experience of others: you can skip the tedious parts and go directly to the
+    answer!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Setting up Pub/Sub Topic**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now for the actual setup of the Pub/Sub topic and the BigQuery Subscription,
+    which should be a pretty quick process. Head to [Pub/Sub in the Cloud Console](https://console.cloud.google.com/cloudpubsub/topic/)
+    and click the `[+] CREATE TOPIC` button. You have quite a lot of naming freedom
+    here, so I tend to give it exactly the same name as the destination `dataset_id`
+    without the `project_id` (i.e. `dataset_id.table_name`). Uncheck the `Add a default
+    subscription` box (as we are going to create a BigQuery Subscription next) and
+    click `CREATE`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Setting up Pub/Sub Subscription**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the topic is set up, now onto the Subscription.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Click on the topic you have just created, and you should see a bottom section
+    with a number of tabs, of which `SUBSCRIPTIONS` is selected by default. Click
+    `CREATE SUBSCRIPTIONS` in this section and name the Subscription (you can actually
+    name the subscription identically as the Topic, with which I have never experienced
+    problems).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the `Delivery Type` section, check the radio button next to `Write to BigQuery`,
+    and select the `project_id`, `dataset_id` and `table_name` of the table created
+    previously. Check the `Write Metadata` check box (we like metadata) and — in the
+    interests of simplicity — leave the other options as the default settings. It
+    does recommend that BigQuery subscriptions should enable dead lettering, but this
+    requires an additional topic so we do not in this case. Also since we are not
+    depending on using the topic schema we are much less likely to encounter failed
+    messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Done!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oh, wait. Hang on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Permissions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In all likelihood you will now see an error message preventing you from successfully
+    creating the subscription.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is actually pretty simple to deal with, but you have a couple of options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most secure option, compliant with the principle of [least privilege](https://cloud.google.com/iam/docs/using-iam-securely#least_privilege),
+    is the creation of a [custom role](https://console.cloud.google.com/iam-admin/roles)
+    with the precise permissions required (`bigquery.tables.get`, `bigquery.tables.updateData`)
+    and then assigning this role to the service account.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, since this is a Google Cloud Service Account which is never used for
+    anything else on my project I am happy to give it a simpler, more permissive role.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Either way, copy the service account email in the message, go to the inbound
+    table, click `SHARE` and `ADD PRINCIPAL`. Copy the service account email into
+    the `New Principals` field. Add either the `BigQuery Data Editor` role or the
+    optional custom role created to the assigned roles and `SAVE`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hopefully this will complete successfully and you will have a fully functional,
+    simple, serverless data ingestion flow from any arbitrary Pub/Sub topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well done!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Next Steps**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that your ingestion flow is operating properly, I need to go and do some
+    actual work so I will leave you to test it with some real Pub/Sub messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the easiest things to use is to set up a Pub/Sub Notification on a BigQuery
+    Scheduled Query and then run it a few times. You will see the table populating
+    with a row for each run, with the `JSON` data in the `data` and `attributes` columns
+    containing all of the useful data about each run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My next article will explain the optimal setup to decode the `JSON` payloads
+    into BigQuery data types, so that you can start using and visualising the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember to follow me if you want to receive this second instalment (hopefully
+    next week)!
+  prefs: []
+  type: TYPE_NORMAL

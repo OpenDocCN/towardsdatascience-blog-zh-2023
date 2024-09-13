@@ -1,0 +1,268 @@
+- en: Generating Knowledge Graphs with Wikipedia
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/generating-knowledge-graphs-with-wikipedia-ec17030a40f6](https://towardsdatascience.com/generating-knowledge-graphs-with-wikipedia-ec17030a40f6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Python Guide to Quickly Generate Knowledge Graphs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)[![Jye
+    Sawtell-Rickson](../Images/e16c2b5020d24331812a4f35e9bd7890.png)](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------)
+    [Jye Sawtell-Rickson](https://jyesr.medium.com/?source=post_page-----ec17030a40f6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec17030a40f6--------------------------------)
+    ·5 min read·Jan 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/946ca13307226697062b4dccf607ae8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [DeepMind](https://unsplash.com/@deepmind?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/LIlsk-UFVxk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Knowledge graphs enable us to comprehend how different points of knowledge relate,
+    giving us an extensive understanding of a field or topic. These graphs help us
+    to discern how individual pieces of knowledge come together to form the larger
+    picture. Clearly, constructing and visualising knowledge graphs can be an effective
+    approach to many fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we describe a process to generate new knowledge graphs by
+    leveraging the largest publicly available graph that deals with human knowledge:
+    Wikipedia. We will fully automate the generation process with Python, allowing
+    us to create a scalable approach to generating knowledge graphs for any field
+    of interest.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’d like to follow along, the end-to-end notebook is available [here in
+    Google Colab](https://colab.research.google.com/drive/1iKsJtRY-7gX_pGAHT2Cu3e75b3LztU63?usp=sharing).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Our approach will be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🔌 Use the Wikipedia API to download information associated with a term
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 🔁 Iterate over many terms to build a knowledge base
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 🔝 Rank terms based on their ‘importance’
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 🌐 Visualise the knowledge graph using the networkx library
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you’d like to read along with the code, you can find it [here in Google Colab](https://colab.research.google.com/drive/1iKsJtRY-7gX_pGAHT2Cu3e75b3LztU63?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Wikipedia API
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Wikipedia makes all of its knowledge available via an API. On top of that, there
+    is a [great Python package](https://github.com/goldsmith/Wikipedia) which makes
+    it possible to scan the website with ease. With this package, we can scan a wikipedia
+    page based on a search term, as shown in the example below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can read more about the package in [this article](/wikipedia-api-for-python-241cfae09f1c).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The page object contains all the information we need to walk the graph and
+    understand the relationship between various terms. The key properties to note
+    with the object are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**links**: the outbound links that the page makes to other pages no Wikipedia'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**content**: the actual content of the page'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**summary**: they key content, shown at the top of the page.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An example from the Data science page is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Wikipedia website is massive, with 7M English articles ([Wikipedia, 2022](https://en.wikipedia.org/wiki/Wikipedia:Size_of_Wikipedia)),
+    which means that scanning every single page would be costly, and would cover many
+    irrelevant pages to the subject of interest. Therefore, we need to develop an
+    algorithm that allows us to search only those relevant pages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Searching Wikipedia
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The search algorithm should start at the point of interest and then explore
+    out from there, making sure to stay close to the point of interest but also making
+    sure to capture the most important pages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithm we’ll follow is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Start with a list of terms that cover the area of interest**. For example,
+    for a knowledge graph for “data science” we might choose “data science”, “machine
+    learning” and “artificial intelligence”.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Get the Wikipedia page from the terms on the list using the Wikipedia API**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Find all outbound links on the page, and calculate a weight for them**. Weight
+    can be based on how often the term appears, how close to the start of the document,
+    or if it’s included in the summary.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Add the new links to the list of terms**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Find the most important term from the remaining terms and get the page for
+    that term**. We can define importance with the number of times the term has been
+    referenced in other terms, along with the weights of those references.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Repeat steps 3–5 until sufficient depth has been reached**. For the examples
+    that follow, this was on the order of hundreds of terms.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With this, we can begin to build up a local graph of the entire Wikipedia database
+    which focuses around the subject we care about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These terms can then be presented in a list of terms, ordered based on their
+    importance. An example of this for “data science” is seen below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba3caac80a80630e00b4d50eb4981c3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top terms in the “data science” knowledge graph, ranked by importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A list is helpful to work through, but we’ve got a lot more data here we could
+    utilise, so let’s explore network plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating Network Plots
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With a network defined, we can begin to visualise it. Given the graphical nature
+    of the data, it’s best viewed as a graph. For this, we can use the handy package
+    networkx. Networkx is a Python package for the creation, manipulation, and study
+    of the structure, dynamics, and functions of complex networks ([Networkx, 2022](https://www.notion.so/fbd0d31f1fdb4f4289f673e0885189ec)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Networkx builds on top of basic graph theory to construct graphs. An example
+    plotting script is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: To plot the networks, we’ll have to use some more complex functions than what
+    is shown in this example. In particular, we will use weighted nodes and weighted
+    edges, based on the importance of individual terms and their connections, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plots for “data science”, “physics” and “biology” are shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/abe4f6902a92c8b64d2d0db5e1e71b54.png)![](../Images/18630da9acd6f7ef5e4ca67c8b3a944c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Knowledge graphs for the terms “data science” (left) and “physics” (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92a7e51449005848242b954119adec1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A knowledge graph for the term “biology”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking at the field of Biology, we see an interesting graph. I’m no biologist,
+    but this seems pretty accurate! Some points of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The term **animal** is closely placed next to biology and has a similar importance,
+    which makes sense given biology is the study of living organisms.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'On the left side we see a cluster of cell related biology: **amoeba**, **cell
+    wall**, **meiosis**, and **bacteria**. The networkx algorithm is grouping various
+    related terms together due to their strong links. In this way, the knowledge graph
+    can be suggestive of terms to study together.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given the strong link between biology and its environment, we see the field
+    of **geology** showing up through terms such as **earth** and **stratigraphy**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As one might expect from recent events, we see that issues around **climate**,
+    **climate change** and **time** are elevated as important topics. This might not
+    be the case if this was a knowledge graph from 20 years ago.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have the seemingly out-of-scope terms of **1**, **number** and **isbn** showing
+    up. This is likely due to some weird references within Wikipedia, which should
+    be removed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Making Education Easier
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here we’ve presented a methodology for going from an area of interest to a full-blown
+    knowledge graph. It allows us to get a list of terms ranked by importance, as
+    well as a visualisation of how these all fit together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In that way, these graphs can be useful for education and learning a new area.
+    This is true for personal study, but can also be true for tuition and broader
+    education where curricula often leave gaps in knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reminder: the end-to-end notebook is available [here in Google Colab](https://colab.research.google.com/drive/1iKsJtRY-7gX_pGAHT2Cu3e75b3LztU63?usp=sharing)
+    so please feel free to try this out for yourself and let me know what you find!'
+  prefs: []
+  type: TYPE_NORMAL

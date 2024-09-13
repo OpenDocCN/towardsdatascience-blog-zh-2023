@@ -1,0 +1,284 @@
+- en: Dynamic Conformal Intervals for any Time Series Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dynamic-conformal-intervals-for-any-time-series-model-d1638aa48527](https://towardsdatascience.com/dynamic-conformal-intervals-for-any-time-series-model-d1638aa48527)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Apply and dynamically expand an interval using backtesting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikekeith52.medium.com/?source=post_page-----d1638aa48527--------------------------------)[![Michael
+    Keith](../Images/4ebd39b25a1faae3586eb25ec83d3e91.png)](https://mikekeith52.medium.com/?source=post_page-----d1638aa48527--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d1638aa48527--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d1638aa48527--------------------------------)
+    [Michael Keith](https://mikekeith52.medium.com/?source=post_page-----d1638aa48527--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d1638aa48527--------------------------------)
+    ·8 min read·Apr 17, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0838f13c2dd273cf20f2025a6148207.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Léonard Cotte](https://unsplash.com/@ettocl?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on the purpose of generating a forecast, evaluating accurate confidence
+    intervals can be a crucial task. Most classic econometric models, built upon assumptions
+    about distributions of predictions and residuals, have a way to do this built
+    in. When moving to machine learning to do time series, such as with XGBoost or
+    recurrent neural networks, it can be more complicated. A popular technique is
+    conformal intervals — a method of quantifying uncertainty that makes no assumptions
+    about prediction distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Conformal Interval
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The simplest implementation of this method is to train a model and hold out
+    a test set. If this test set is at least 20 observations (assuming we want 95%
+    certainty), we can build an interval by placing a plus/minus value on any point
+    prediction that represents the 95th percentile of the test-set residual absolute
+    values. We then refit the model on the entire series and apply this plus/minus
+    to all point predictions over the unknown horizon. This can be thought of as a
+    naive conformal interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Scalecast](https://github.com/mikekeith52/scalecast) is a forecasting library
+    in Python that works well if you want to transform a series before applying an
+    optimized machine or deep learning model on the time series, then easily revert
+    the results. While other libraries offer flexible and dynamic intervals for ML
+    models, I’m not sure they are built to effectively handle data that needs to be
+    transformed and then reverted, especially with differencing. Please correct me
+    if I’m wrong.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I made scalecast specifically for this purpose. Transforming and reverting series
+    is ridiculously easy with the package, including options to use [cross validation
+    to find optimal transformation combinations](https://scalecast-examples.readthedocs.io/en/latest/transforming/medium_code.html#Function-to-Automatically-Find-Optimal-Transformation).
+    However, applying a confidence interval, any interval, at a differenced level
+    becomes complicated to map onto the series’ original level. If you simply undifference
+    the interval the same way you would the point predictions, it will more-than-likely
+    be unrealistically wide. A suggestion to avoid this is to use models that don’t
+    require stationary data — ARIMA, exponential smoothing, and others. But that’s
+    no fun if you really want to compare ML models and your data is not stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution around this that scalecast uses is the naive conformal interval
+    described above. If a series first, second, or seasonal difference is taken and
+    then reverted, re-calculating test-set residuals and applying percentile functions
+    on them is simple. I evaluated the efficacy of this interval using a measure called
+    MSIS in a [past post](https://medium.com/towards-data-science/easy-distribution-free-conformal-intervals-for-time-series-665137e4d907).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: But, this could be better. In time series, it is intuitive to believe that an
+    interval will expand further out for a point prediction that is further away temporally
+    from a baseline truth, once errors accumulate. It is easier to predict what I
+    will do tomorrow than it is a month from now. That intuitive concept is built
+    into econometric methods but absent from the naive interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could try to reconcile this problem in several ways, one of them being [conformalized
+    quantile regression](https://arxiv.org/abs/1905.03222), such as utilized by [Neural
+    Prophet](https://neuralprophet.com/code/forecaster.html). That may make its way
+    to scalecast one day. But the method I will overview here involves using backtesting
+    and applying percentiles depending on residuals from each backtest iteration.
+    As opposed to employing assumptions, the method grounds everything in some observed,
+    empirical truth — a true relationship between the implemented model and the time
+    series it is being implemented on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backtested Conformal Interval
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To do this, we need to split our data into several training and test sets. Each
+    test set will need to be the same length as our desired forecast horizon and the
+    number of splits should equal at least one divided by alpha, where alpha is one
+    minus the desired confidence level. Again, this would come out to 20 iterations
+    for intervals of 95% certainty. Considering we need to iterate through the entire
+    length of our forecast horizon 20 or more times, shorter series may run out of
+    observations before this process finishes. A way to mitigate this is if we allow
+    test sets to overlap. As long as test sets are at least one observation different
+    from one another and no data leaks from any of the training sets, it should be
+    okay. This may bias the interval towards more recent observations, but the option
+    can be left open to add more space between training sets if the series contains
+    enough observations to do so. The process I explained is referred to as backtesting,
+    but it can also be thought of as modified time-series cross validation, which
+    is a common way to facilitate more accurate conformal intervals. Scalecast makes
+    the process of obtaining this interval easy through pipelines and three utility
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build Full Model Pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First we build a pipeline. Assuming we want differenced data and to forecast
+    with the XGBoost model, the pipeline can be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is important to note that this framework can also be applied to deep learning
+    models, classic econometric models, RNNs, and even naive models. For any model
+    you want to apply on time series, this will work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we `fit_predict()` the pipeline, generating 24 future observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Backtest Pipeline and Build Residual Matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, we do the backtest. For 95% intervals, this means at least 20 train/test
+    splits iteratively moving backward through the most recent observations. This
+    is the most computationally expensive part of the process, depending on how many
+    models we want to send through our pipeline (we can place more by expanding the
+    `forecaster()` function), if we want to optimize each model’s hyperparameters,
+    and if we want to use multivariate processes, it can take a while. On my Macbook,
+    this simple pipeline takes a little over a minute to backtest with 20 iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The backtest results from this function can be multipurpose. We can use them
+    to report average errors from our model(s), we can use them to glean insight about
+    many out-of-sample predictions, or we can use them to generate intervals. To generate
+    intervals, we do:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This creates one matrix for each evaluated model with a row that represents
+    each backtest iteration and a column for each forecast step. The value in each
+    cell is a prediction error (residual).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a22a4e7061ab75241cb885dea3f1b280.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying a column-wise percentile function, we can generate plus/minus values
+    to find the 95th percentile of the absolute residuals along each forecast step.
+    On average, this should be a larger value the further out the forecast goes. In
+    our example, the plus/minus is 15 for step 1, 16 for step 4, and 46 for step 24
+    (the last step). Not all values are progressively larger than the last, but they
+    generally are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f36e78cbb17f5d8e6f3e79be8587c894.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Construct Backtested Intervals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We then overwrite the stale naive intervals with the new dynamic ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Voila! We have an assumption-free and dynamic conformal interval built for our
+    time series model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How much better is this interval than the default? Using [MSIS](https://scalecast.readthedocs.io/en/latest/Forecaster/Util.html#src.scalecast.util.metrics.msis),
+    a measure not many know about or use, we can score each obtained interval before
+    and after this process. We can also use the coverage rate from each interval (the
+    percent of actual observations fell within the interval). We’ve set aside a separate
+    slice of the data, which overlaps with none of our previously evaluated test sets,
+    for just this purpose. The naive interval looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d81ab6dba30729ab44037cc203d4eefc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This ended up being an accurate forecast with a tight interval. It contained
+    100% of the actual observations and scored an MSIS of 4.03\. From my limited usage
+    of MSIS, I think anything under 5 is usually pretty good. We apply the dynamic
+    interval and get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e60be2eb6b1348a93c817e6902295b27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is good. We have an expanding interval that is tighter on average than
+    the default interval. The MSIS score improved slightly to 3.92\. The bad news:
+    3 out of the 24 test-set observations fall out of this new interval’s range for
+    a coverage score of 87.5%. For a 95% interval, that may not be ideal.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Of course, this is just one example so we should be careful about drawing too
+    broad conclusions. I do feel confident that the backtested interval will almost
+    always expand out, which makes it more intuitive than the default interval. It
+    probably on average is more accurate as well. It just costs more computational
+    power to obtain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition to gaining new intervals, we also obtained backtest information.
+    Over 20 iterations, we observed the following error metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/456f04d77caf1d852be5e3aae2b0f3e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can feel better about reporting these than the errors from just one test
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for following along! If you like this content, it would mean a lot
+    to me if you gave [scalecast](https://github.com/mikekeith52/scalecast) a star
+    on GitHub and check out the [full notebook](https://scalecast-examples.readthedocs.io/en/latest/misc/cis-bt/cis-bt.html)
+    that accompanies this article. The data used is publicly available through [FRED](https://fred.stlouisfed.org/series/HOUSTNSA).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/mikekeith52/scalecast?source=post_page-----d1638aa48527--------------------------------)
+    [## GitHub - mikekeith52/scalecast: The practitioner''s forecasting library'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Scalecast helps you forecast time series. Here is how to initiate its main
+    object: Uniform ML modeling (with models…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/mikekeith52/scalecast?source=post_page-----d1638aa48527--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

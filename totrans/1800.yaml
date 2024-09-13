@@ -1,0 +1,731 @@
+- en: Running Python Wheel Tasks in Custom Docker Containers in Databricks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79](https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A step-by-step tutorial to build and run Python Wheel Tasks on custom Docker
+    images in Databricks (feat. Poetry and Typer CLI)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Johannes
+    Schmidt](../Images/e0cacf7ff37f339a9bf8bd33c7c83a4d.png)](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)
+    [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)
+    ·13 min read·Jun 29, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb9e8f76720dd5326d06b7b8b62a10ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Lluvia Morales](https://unsplash.com/@hi_lluvia?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data engineers design and build pipelines to run ETL workloads so that data
+    can be used downstream to solve business problems. In Databricks, for such a pipeline,
+    you usually start off by creating a **cluster**, a **notebook/script**, and write
+    some **Spark** code. Once you have a working prototype, you make it production-ready
+    so that your code can be executed as a Databricks job, for example using the REST
+    API. For Databricks, this means that there usually needs to be a Python notebook/script
+    on the Databricks file system already OR a remote Git repository is connected
+    to the workspace*. But what if you don’t want to do either of those? There is
+    another way to run a Python script as a Databricks job without uploading any file
+    to the Databricks workspace or [connecting to a remote Git repository](https://docs.databricks.com/repos/index.html):
+    **Python wheel tasks** with declared entrypoints and **Databricks Container Services**
+    allow you to start job runs that will use Docker images from a container registry.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hence, this tutorial will show you how to do exactly that: run **Python jobs**
+    (Python wheel tasks) in **custom Docker images** in Databricks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**either a* [*syncing process uploads the Git files to the Databricks workspace*](https://docs.databricks.com/repos/repos-setup.html)
+    *before code execution or the remote* [*git ref notebook/script is provided for
+    job runs*](https://docs.databricks.com/workflows/jobs/how-to/use-repos.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why would you want to do this?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You might have a “build, ship and run anywhere” philosophy, so you may not be
+    satisfied with the conventional way of using DataBricks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let me explain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Databricks suggests some [CI/CD techniques](https://docs.databricks.com/dev-tools/index-ci-cd.html#dev-tools-ci-cd)
+    for it’s platform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuous integration and continuous delivery/continuous deployment (CI/CD)
+    refers to the process of developing and delivering software in short, frequent
+    cycles through the use of automation pipelines.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Typically, a commit to the deafult branch or a release starts a pipeline for
+    linting, testing etc. and ulitmately results in an action that interacts with
+    Databricks. This can be a REST API call to trigger a job run in which the notebook/script
+    is specified OR a deployment package is deployed to a target environment, in the
+    case of Databricks, this can be the workspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The first option** usually needs Databricks to be connected to the remote
+    Git repository to be able to use a remote Git ref, for example, a specific notebook
+    in main branch of a Github repository to trigger the a job run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The second option** uploads files to its workspace but does not necessarily
+    need Databricks to be connected to the remote Git repository. A visual summary
+    for this workflow option is shown [here](https://docs.databricks.com/dev-tools/index-ci-cd.html#dev-tools-ci-cd).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where a *deployment package* can be a notebook, a library, a workflow etc. The
+    Databricks CLI or the REST API is commonly used to deploy packages to the Databricks
+    workspace. In essence, an automation pipeline syncs the changes in the remote
+    git repository with the Databricks workspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My goal for this blog post is to explore a different CI/CD workflow, one in
+    which there is no interaction with Databricks (decoupling the code from the Databricks
+    workspace). The workflow suggested, just creates a **Docker image** and pushes
+    it to a container registry and leaves the execution of job runs up to the service.
+    This can be anything, a web app, function, a cron job or [Apache Airflow](https://docs.databricks.com/workflows/jobs/how-to/use-airflow-with-jobs.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please bear in mind that doing it like this is not for all use cases but I think
+    some workloads (e.g. ETL) can benefit from it. Use common sense to decide what
+    fits best to you. Nonetheless, it’s worth to explore the options a platform such
+    as Databricks offers. So let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TLDR
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Databricks (standard tier*) will be provisionied on **Azure****. A single Python
+    **wheel** file with defined entrypoints and dependencies will be created using
+    **Poetry**. The wheel file will be installed in a Databricks compatible **Docker
+    image** that is pushed to a container registry. Job runs will be created and triggered
+    with the Databricks workspace UI portal and REST API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Provisioning the Azure Databricks Workspace with Standard tier should not
+    incur any costs*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***alternatives include* *AWS or GCP*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prerequisites
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Poetry
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Docker
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Azure or AWS Account
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Container registry (e.g. DockerHub, ACR, ECR)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Structure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Apache Spark & Databricks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provisioning Databricks on Azure
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enable Databricks Container Services
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a Personal Access Token (PAT)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Options to execute jobs runs (Python)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a Python wheel with entrypoints (feat. Poetry & Typer CLI)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build a Databricks compatible Docker image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create and trigger a job run (UI)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create and trigger a job run (REST API)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Apache Spark & Databricks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the introduction, I already talked about Databricks and mentioned a common
+    use case for data enigneers. But if you need a short definition on what Apache
+    Spark and Databricks is, here you go:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Spark** is an open-source engine for processing large-scale data. By distributing
+    the data and the computation to multiple nodes in a cluster, it achieves parallelism
+    and scalability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Databricks** is a cloud-based platform that leverages Spark to run various
+    data-related tasks, such as data processing, data analysis, machine learning,
+    and AI workloads.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Provisionig Databricks on Azure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is assumed that you have an **Azure account** and a **subscription** at this
+    point, if not, [create a free Azure account](https://azure.microsoft.com/en-us/free/search/),
+    or just follow along.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s provision the Databricks resource (workspace) on Azure. No costs should
+    occur at this stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We create a resource group in which we will provision the Databricks resource:
+    *databricks-job-run-rg*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/932daac23bd6403b40ea28dc4601e5fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating a resource group — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Within this resource group, we can create the **Azure Databricks workspace**
+    and give it a name: *databricks-job-run*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b327c704135def5f72622ba5c60c47e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Create an Azure Databricks workspace — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the pricing tier, select **Standard***. You can leave the rest as suggested.
+    *Managed Resource Group name* can be left empty.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Please note that only with Premium, we will have proper Role based access
+    control (RBAC) capabilites. But for the sake of this tutorial, we don’t need it.
+    We will use a Personal Access Token (PAT) that allows us to create and trigger
+    job runs using the Databricks REST API.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After the deployment, our resource group now contains the Azure Databricks
+    workspace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3dd5e8a82d83850c9b9141cf87a10f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Azure Databricks Service in the resource group — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we can launch the workspace,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3fafa0e099e83f6acd89bff2a9c40638.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Launch Databricks Workspace from the Azure Portal — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'which will open a friendly user interface (UI) like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6fef7a1040be04a9e69abc770183ab1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Databricks UI — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far so good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enable Databricks Container Services
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Databricks does not allow custom Databricks Docker images by default, we must
+    enable this feature first. The steps for this are described [here](https://docs.databricks.com/administration-guide/clusters/container-services.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the *Admin Settings* (drop-down menu at the top right corner), we must enable
+    the *Container Services* field:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/624f48f032a76bf2664e61b3dd0ad257.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workspace settings — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also make sure *Personal Access Token* is enabled, we will create one in the
+    next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a Personal Access Token (PAT)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the *User Settings* (drop-down menu at the top right corner), a button allows
+    us to generate a new token:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46deed62e705a38b7af0122a78c19431.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Create a PAT — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Store this token somewhere safe as this can be used for secure authentication
+    to the [Databricks API](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth).
+    We’re going to need it later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please note: We use a PAT, because the standard tier does not come with RBAC
+    capabilites. For this, we would need to upgrade to Premium.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Options to execute jobs runs (Python)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we create a **Python wheel** for a Databricks job, I’d like to focus
+    on the options that we have to create and run [Databricks jobs](https://docs.databricks.com/workflows/jobs/create-run-jobs.html)
+    (Python). There are different ways to execute scripts in a cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a task in the *Workflows/Jobs* or *Workflows/Job* runs pane, reveals
+    our options. Alternatively, we find out about them reading the [docs](https://docs.databricks.com/workflows/jobs/create-run-jobs.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/793b9be34643999ff8dca378a4d367f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Options to run scripts (Python) in Databricks jobs — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As mentioned earlier, we can basically specify **2** types of sources from
+    where the job gets the notebook/script to be executed: The **Databricks Workspace**
+    OR a **remote Git repository***. For **Python wheels**, we can’t select the source,
+    but instead we must enter the *Package name* and the *Entry Point*. The wheel
+    package should exist either on a the DBFS (Databricks File System) or an index
+    such as PyPi. I think the [tutorial in the docs](https://docs.databricks.com/workflows/jobs/how-to/use-python-wheels-in-workflows.html)
+    does a poor job of explaining the source options (May 2023), or maybe I’m just
+    unable to find this information. But there’s a neat blog post that shows how to
+    do it: [How to deploy you Python project to Databricks](https://godatadriven.com/blog/how-to-deploy-your-python-project-on-databricks/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anyway, it’s not really mentioned (even though it makes sense) that if you provide
+    a **custom docker image** that has your Python wheel task already installed, you
+    can also specify it and it will be executed. And that’s what we’re going to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**For Python scripts, there is also the option: DBFS (Databricks File System)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a Python wheel with entrypoints (feat. Poetry & *Typer CLI*)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I’ve setup a project with **Poetry*** in *src* *layout*, that contains the
+    code and commands to build a wheel. You can find the full code here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/johschmidt42/databricks-python-wheel-job-run](https://github.com/johschmidt42/databricks-python-wheel-job-run)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the *pyproject.toml*, these scripts are defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And within the two packages *dbscript1* and *dbscript2*, we find some code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: src/dbscript1/script.py
+  prefs: []
+  type: TYPE_NORMAL
+- en: and
+  prefs: []
+  type: TYPE_NORMAL
+- en: src/dbscript2/__main__.py
+  prefs: []
+  type: TYPE_NORMAL
+- en: They pretty much do the same thing. The only noticeble difference between them
+    is that *script1’s* name is just “script” and the other’s name is “__main__”.
+    You will see the impact of this difference in a bit. Both scripts use the `typer`**
+    library to create a command-line interface (CLI) for the `script1` or `script2`
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the `script1` or `script2` function is called with an argument (required),
+    it prints the name of the current file (`__file__`) and the value of the passed
+    in `argument` parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From these files, we can use `Poetry` to create a package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: which will create a *wheel* in the *dist* directory
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can use `pip` to install this *wheel* into a virtual environment to see
+    what will happen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we restart the shell (bash, zsh etc.), we now have two new functions that
+    we can call:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Both can be used as functions, such as [black](https://github.com/psf/black)
+    or [isort](https://pypi.org/project/isort/):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here comes the benfit of naming the entrypoint function “__main__”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: compared to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you’re baffled how both scripts can be executed as functions in the shell,
+    just take a look into your venv’s bin directory: *.venv/bin*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The codes looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are called **consol_scripts entry points**. You can read up about them
+    in the [Python documention](https://packaging.python.org/en/latest/specifications/entry-points/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Poetry is a dependency, environment & package manager*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Typer is wrapper that is based on the popular Python lib click. It allows
+    us to build CLIs from only Python type hints!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build a Databricks compatible Docker image
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We now have a Python wheel file that comes with two console script entry points
+    when installed. Let’s containerize it with docker:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dockerfile
+  prefs: []
+  type: TYPE_NORMAL
+- en: This Dockerfile defines a **multi-stage** build for our Python application.
+    The Stages are seperated by `#----#` in the Dockefile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first stage is the **base image** that uses **Databricks Runtime Python
+    12.2-LTS*** as the base image and sets the working directory to `/app`. It also
+    updates pip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We can also build our own base image, as long as we have certain libraries
+    installed:* [*Build your own Docker base*](https://learn.microsoft.com/en-us/azure/databricks/clusters/custom-containers#option-2-build-your-own-docker-base)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second stage is the **builder image** that installs Poetry, copies the application
+    files (including `pyproject.toml`, `poetry.lock`, and `README.md`) and builds
+    a wheel using Poetry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The third stage is the **production image** that copies the wheel from the build
+    stage and installs it using pip (We don’t want Poetry in our production image!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can build a docker container from this with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When going inside (bash), we can execute our **console_script** as we did before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or we do this in one line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Please note, that the docker entrypoint is /bin/bash, as this shell contains
+    the dbscript1 and dbscript2 in the $PATH variable.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This docker image can be now pushed to a **container registry** of our choice.
+    This can be e.g. DockerHub, ACR, ECR etc. In my case, I choose Azure Container
+    Registry (ACR), because the Databricks workspace is on Azure as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To push the image I run these commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create and trigger a Dabricks job run (UI)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the Databricks workspace (UI), we can create a job (*Workflows tab*) and
+    define a new cluster for it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1619505fcfbaba40e4d631d0b6f9bb7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Create a new Databricks cluster — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, I create the smallest available single node cluster, the **Standard_F4**
+    that consums **0,5 DBU/h**. In the *Advanced* *options* section, we can specify
+    the Docker settings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45c9cc2cbb8265acb424d5a8bdfc0947.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Use your own Docker container — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: So that the cluster can pull the image from the container registry. We provide
+    a container registry **username** and **password** but we could also use the “Default
+    authentication” method (e.g. Azure).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the jobs UI, we can then create a job:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd42d81f6f854f8b97dfd18c2b28590a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Job creation — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: where we define the **package name** and **entry point**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please note, in the UI, we create a job first and then trigger it for a job
+    run. The REST API allows us to create and trigger a **one-time job run** with
+    one call only! We’ll see this in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the *Job runs* tab, we can see the status of our job run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46e129ca0ff7f724d367089cf41d0838.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pending job run — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a matter of minutes, the cluster was ready and ran our console script in
+    the docker image of our choice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b0508c3b1a7cbcf4427e85faf941da7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Succeeded job run — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can get the logs (stdout, stderr) by clicking on the run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49a61b0d7c548c549b35c21e19884c37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of the job run — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fantastic!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create and trigger a job run (REST API)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A service such as an Azure Function cannot use the UI to initiate job runs.
+    Instead, it has to use the Databricks REST API (Jobs API 2.1). We could use [Airflow’s
+    Databricks Connectors](https://docs.databricks.com/workflows/jobs/how-to/use-airflow-with-jobs.html)
+    to do this, but writing some Python code that sends a single request to the REST
+    API is probably faster to set up. So let’s to write some Python code that allows
+    us to create and trigger job runs. I will enclose this code in a class called
+    **Databricks service**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The script has two components: a `SecretsConfig` class and a `DatabricksService`
+    class.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `SecretsConfig` class is used read and store config settings and secrets
+    such as Databricks URL, Databricks Personal Access Token (PAT)*, Azure Container
+    Registry (ACR) username and password. These are the same basic parameters that
+    we had to specify using the UI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If you have Databricks deployed with the Premium Tier, you don’t need to
+    use the PAT, but can get yourself a token with OAuth.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `DatabricksService` class is used to interact with the Databricks API.
+    It allows to create and trigger a **one-time job run** using an existing cluster
+    or a new cluster. The API documentation can be found in the [jobs API 2.1](https://docs.databricks.com/api/azure/workspace/jobs/submit).
+    The service itself has only two variations of the same call to this *submit* endpoint:
+    The `create_job_run_on_existing_cluster()` method is used to create a job run
+    on an existing cluster, while the `create_job_run_on_new_cluster()` method is
+    used to create a job run on a new cluster.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s briefly examine the `create_job_run_on_new_cluster()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method takes several arguments, such as *image_url*, *package_name*, *entrypoint*
+    etc and calls the *submit* endpoint to create and start a job run on a new cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `python_wheel_task_payload` dictionary is used to specify the package name
+    and entry point of the Python package to use. The positional and named arguments
+    are also specified in this dictionary if they are provided.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `cluster` dictionary is used to specify the cluster settings for the new
+    cluster. The settings include the number of workers, Spark version, runtime engine,
+    node type ID, and driver node type ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having that, we now need some code to call the Databricks REST API using our
+    DatabricksService:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example script to create a job run using the Databricks REST API Jobs2.1
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After running the script, we observe that we get a status code 200 back and
+    our job run completes successfully after a while:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5113f8578b89d9ce196ea3f834ac02a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Succeeded job run (called through the REST API) — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And we see the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/59b59f16aad562de70be1ad9688beb39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Job run output — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Easy!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we wanted to use an identity to access resources in Azure, we’d provide the
+    credentials of a service principal as **environment variables** when calling the
+    submit endpoint (new cluster!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Running Python jobs in custom Docker images in Databricks is not only possible
+    but also practical and efficient. It gives you more flexibility, control, and
+    portability over your code and workflows. You can use this technique to run any
+    Python script (or any other code) as a Databricks job without uploading any file
+    to the Databricks workspace or connecting to a remote Git repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this short tutorial, you’ve learned how to create **Python wheel tasks**
+    in **custom Docker images** and trigger job runs with the Databricks UI or the
+    REST API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do you think of this workflow? How do you run your Python jobs in Databricks?
+    Let me know in the comments.
+  prefs: []
+  type: TYPE_NORMAL

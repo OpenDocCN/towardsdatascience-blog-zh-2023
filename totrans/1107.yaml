@@ -1,0 +1,537 @@
+- en: How to Automate PySpark Pipelines on AWS EMR With Airflow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-automate-pyspark-pipelines-on-aws-emr-with-airflow-a0cbd94c4516](https://towardsdatascience.com/how-to-automate-pyspark-pipelines-on-aws-emr-with-airflow-a0cbd94c4516)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimising big data workflows orchestration.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://anbento4.medium.com/?source=post_page-----a0cbd94c4516--------------------------------)[![Antonello
+    Benedetto](../Images/bf802bb46dce03dd3bd4e17c1dffe5b7.png)](https://anbento4.medium.com/?source=post_page-----a0cbd94c4516--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0cbd94c4516--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0cbd94c4516--------------------------------)
+    [Antonello Benedetto](https://anbento4.medium.com/?source=post_page-----a0cbd94c4516--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0cbd94c4516--------------------------------)
+    ·8 min read·Aug 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d92446cdf5a73adbbd00d940c246dee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo By [Tom Fisk](https://www.pexels.com/photo/trees-near-ocean-2246950/)
+    On [Pexels](https://www.pexels.com/@tomfisk/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: On-Demand Courses | Recommended
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*A few of my readers have contacted me asking for on-demand courses to help
+    you* ***BECOME*** *a solid* ***Data Engineer****. These are 3 great resources
+    I would recommend:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Data Engineering Nano-Degree (UDACITY)**](https://imp.i115008.net/zaX10r)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Data Streaming With Apache Kafka & Apache Spark Nano-Degree** **(UDACITY)**](https://imp.i115008.net/zaX10r)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Spark And Python For Big Data With PySpark (UDEMY)**](https://click.linksynergy.com/deeplink?id=533LxfDBSaM&mid=39197&murl=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Fspark-and-python-for-big-data-with-pyspark%2F)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Not a Medium member yet?*** *Consider signing up with my* [*referral link*](https://anbento4.medium.com/membership)
+    *to gain access to everything Medium has to offer for as little as $5 a month!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the dynamic landscape of data engineering and analytics, building scalable
+    and automated pipelines is paramount.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Spark enthusiasts who have been working with Airflow for a while might be wondering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to execute a Spark job on a remote cluster using Airflow?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to automate Spark pipelines with AWS EMR and Airflow?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In this tutorial we are going to integrate these two technologies by showing
+    how to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Configure and fetch essential parameters from the Airflow UI.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create auxiliary functions to automatically generate the preferred `spark-submit`
+    command.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Airflow’s `EmrAddStepsOperator()` method to build a task that submits and
+    executes a PySpark job to EMR
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Airflow’s `EmrStepSensor()` method to monitor the script execution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The code used in this tutorial is available on [GitHub.](https://github.com/anbento0490/projects/tree/main/airflow_emr_spark)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prerequisites
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'An [AWS account](https://aws.amazon.com/) with a S3 bucket and EMR cluster
+    configured **on the same region (** in this case `eu-north-1`**).** The EMR cluster
+    should be available and in `WAITING` state. In our case it has been named `emr-cluster-tutorial`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fa41a5326a1368fdd721eab8322a0987.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo By the Author (Personal EMR Cluster)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some mock `balances` data already available in the `S3` bucket under the `src/balances`
+    folder. Data can be generated and written to the location using the [data producer](https://github.com/anbento0490/projects/blob/main/airflow_emr_spark/dags/assets/data_producer.ipynb)
+    script.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The required `JARs` should already downloaded from Maven and available in the
+    `S3` bucket.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Docker installed and running on the local machine with 4-6 GB of allocated memory.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The goal is to write some mock data in `parquet` format to a `S3`a bucket and
+    then build a `DAG` that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fetches required configuration from Airflow UI;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Uploads a `pyspark` script to the same `S3`a bucket;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Submits a spark job that executes the script just uploaded;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Monitors the execution state via a sensor until it succeeds or fails.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cb0937a803dbb8aab7666d9aba107508.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo By The Author ([https://app.diagrams.net/](https://app.diagrams.net/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: Configuration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Clone repository
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first step is to clone the [repository](https://github.com/anbento0490/projects/tree/main)
+    in your desired local folder and display the folder structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `airflow_emr_spark` folder structure looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `docker-compose.yml` and `Dockerfile.airflow` files are needed to run the
+    Airflow service in local and then visualise / execute the `DAG`;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `orchestration` folder hosts the `DAG` itself named `submit_spark_job_to_emr.py`;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `computation` folder includes the `.py` executable that will be submitted
+    to the `EMR` cluster;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lastly, the `assets` folder includes a copy of the required configuration in
+    `JSON` format as well as the `data_producer` notebook.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/576805ef306cc6b546746d8e8c2bee6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Folder Structure (Tree)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run Airflow On Docker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make sure `docker` is running in local, then while in `airflow_emr_spark`
+    folder we execute `docker compose up -d`. This command will spin Apache Airflow
+    in our container:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4fa8d3976b70f3852f763ee7307e9c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot from Author’s Terminal
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we navigate to [**localhost:8091**](http://localhost:8091/home) and when
+    requested for credential, we should simply type `admin` twice. Ad this point the
+    `DAG` should be already parsed and look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ae030d73168254a63c6f1a7ff40d444.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From Airflow Running On Docker
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before exploring the `DAG` code, there are two remaining actions while in Airflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Navigate to the `Variables` section and create a new variable named `dag_params`
+    copying and pasting the content of the `dags/assets/dag_params.json` file. Of
+    course, the `bucket_name` should be updated to match the `S3` bucket available
+    in our AWS account.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/85d32219e5d74342494bb1e9941f6eba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The **dag_params** Variable In AF UI
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Navigate to the `Connections` section and create a new `Amazon Web Services`
+    connection named `aws_default` that will be used to interact with both `S3` and
+    `EMR` cluster via Airflow. The connection parameters should be pasted into the
+    `Extra` section in this form:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/15e40305b44c74a5a85d438ea97a35b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The **aws_default** Connection In AF UI
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tasks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A preliminary step implemented as part of the `submit_spark_job_to_emr.py` DAG
+    is to retrieve configuration from the `dag_params` variable previously saved in
+    Airflow UI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a variable does not exist, the `DAG` will default to the `dag_params.json`
+    available in the folder (`default_json`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since this tutorial also shows how to make specific `JARS` available to the
+    `EMR` cluster, at the beginning we also define a `jar_string` variable to be submitted
+    as an argument, later on, while adding a step. However, if no `JARS` are required,
+    this variable (*as well* as `spark_jars_conf` *and* `spark_jars_conf_value`*in*
+    `dag_params`) can be omitted:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b0d75dca561f72f9bc037f4760af39e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We should acknowledge that this is not an efficient way to import variables
+    in Airflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is because the `Variable.get()` method is called outside of a task, meaning
+    that variables are imported *every time* the `airflow scheduler` parses the `dags`
+    folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, for learning purposes, this is easier to implement and not a big deal
+    when there is only one pipeline involved. However, in production, we should make
+    sure to follow [these](https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code)
+    best practices instead, that in summary suggest to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Import variables as part of a task and only when needed*;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Exchange variable among tasks using* `XCOMS`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `DAG` includes four tasks. Let’s describe what they are doing one by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fetch Cluster ID
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first task in order is `fetch_cluster_id`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What this task is doing is to run the `fetch_cluster_id()` python function
+    that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: fetches (*by name*) and returns the `CLUSTER_ID` (*required later on to add
+    an EMR step*) and expects for the `cluster_state` to be `WAITING` or `RUNNING`.
+    In our case, we passed `"emr-cluster-tutorial"` to the `get_cluster_id_by_name`
+    method → in order to work well the `region_name` specified in the connection has
+    to match with the region where the `EMR` cluster has been created.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Displays the value of the imported variables for visibility (***suggestion**:
+    *in production, this function should be modified to fetch all the attributes in
+    the first place, to avoid inefficient top-level imports*).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2f67301ca715bc5e062f1ac41ec9c873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Upload Script To S3
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We use the following task to upload the `read_and_write_back_to_s3.py` executable
+    from the local `computation/src/python_scripts` folder to the the designated `s3://bucket_name/src/`
+    folder, that will be then submitted to the `EMR` cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The function `upload_script_to_s3` creates a `S3Hook` between Airflow and AWS
+    using the `aws_default` connection and makes the script available at the preferred
+    `S3` path:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/378ac533bd4a22047e1ff124f78c4c71.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Execute PySpark Script
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that the python script is available into the `s3` bucket, it’s time to add
+    a step to `EMR` using the `EmrAddStepsOperator()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, the `execute_pyspark_script` takes advantage of the auxiliary function
+    below, to deploy a spark application to `EMR` in `client` mode (*however in production*
+    `cluster` *mode* [*should be preferred*](https://stackoverflow.com/questions/41124428/spark-yarn-cluster-vs-client-how-to-choose-which-one-to-use)
+    *instead*) together with a number of other (**optional* ) `spark_conf` parameters
+    fetched from `dag_params`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c118f04a777da9afce44131d98e05109.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In practice, the `execute_pyspark_script` task instructs `EMR` to execute the
+    `read_and_write_back_to_s3.py` script (*on the* `CLUSTER_ID` *fetched by the first
+    task and pulled via* `XCOMS`) and also makes a number of parameters available
+    to the cluster, in the order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Global parameters like a `jar_strings` or `packages` → need to be passed as
+    arguments before the python script itself (*despite being optional*);
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The function parameter `s3_input`→ specifies the input `balances` dataset `S3`
+    path to be passed to the python script;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The function parameter `s3_output` → specifies the `S3` path where to store
+    the output dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Monitor Execution With Sensor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Last but not least, the `execute_pyspark_script_sensor` task runs an `EmrStepSensor()`
+    that periodically *pokes* the cluster itself to verify the health of the application
+    and the state of the execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It specifically requires two parameters: `JOB_FLOW_ID == CLUSTER_ID` and `STEP_ID`
+    that we can both fetch via `XCOMS`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The python executable includes a simple `process_data_and_write_to_s3()` function
+    that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: reads data in `parquet` format from the `s3_input` path to a PySpark SQL view;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: filters the initial dataset, by taking advantage of the SQL API and saves the
+    results to a `df_filtered` DF;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: eventually writes the filtered dataset (*again in* `parquet` *format*) to the
+    `s3_output` path.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/07b7b60f2b0750373b8ae1d852a7d89e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can now trigger the `DAG` and wait until it is executed successfully:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e6ea7f4f0a449da8829baec7e319586.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Airflow DAG Graph
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Navigating to the `EMR` cluster `Steps` section, we should be able to verify
+    that the script execution is indeed completed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/526d4ca4746a172fc2a744cf13aaf920.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: AWS EMR **Steps** Section
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, by selecting the `stout` logs, we should visualise a message similar
+    to the following, that tells us that a DF with `~2.5M` rows (*filtered from initial*
+    `10M`) has been written to the the `tgt/balances/` folder:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Indeed, checking in the `bucket_name/tgt/balances/` folder, we should find
+    one or more `parquet` files including data related to `Company_A` (*as specified
+    in the filter*):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e8798a2a8a45f1426bf90917afc18b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Content of **tgt/balances** folder
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this tutorial we learnt how automate PySpark pipelines using Apache Airflow
+    and AWS EMR in combination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The assumption here, is that **the EMR cluster is always on, in an idle state,
+    waiting for a step to be added**. This is not uncommon in a professional environment
+    or easily achievable by setting a personal AWS account.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another common practice is to fetch configuration directly from AF UI and use
+    auxiliary functions to generate more articulated submit-commands that can be updated
+    by editing configuration on demand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ours was a straightforward PySpark script, but we can of course imagine of expanding
+    the example to cover much more complex use-cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we have completed our work, let’s remember to stop Airflow service on
+    docker with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Getting Started With Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-gs.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How To Submit spark Jobs To EMR Cluster From Airflow](https://www.startdataengineering.com/post/how-to-submit-spark-jobs-to-emr-cluster-from-airflow/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Airflow Best Practices While Creating DAGs](https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Spark Yarn Cluster vs Client — How To Choose Which One To Use?](https://stackoverflow.com/questions/41124428/spark-yarn-cluster-vs-client-how-to-choose-which-one-to-use)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

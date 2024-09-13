@@ -1,0 +1,295 @@
+- en: How to Automatically Extract and Label Data Points on a Seaborn KDE Plot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-automatically-extract-and-label-data-points-on-a-seaborn-kde-plot-52a576238301](https://towardsdatascience.com/how-to-automatically-extract-and-label-data-points-on-a-seaborn-kde-plot-52a576238301)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@lee_vaughan?source=post_page-----52a576238301--------------------------------)[![Lee
+    Vaughan](../Images/9f6b90bb76102f438ab0b9a4a62ffa3f.png)](https://medium.com/@lee_vaughan?source=post_page-----52a576238301--------------------------------)[](https://towardsdatascience.com/?source=post_page-----52a576238301--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----52a576238301--------------------------------)
+    [Lee Vaughan](https://medium.com/@lee_vaughan?source=post_page-----52a576238301--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----52a576238301--------------------------------)
+    ·8 min read·Sep 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cdbbc4c1c1002109c7b24d9cd28ea6c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DALL·E 2023— An impressionist painting of an undulating mountain range with
+    brightly colored circles along the ridgeline (all remaining images by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A *Kernel Density Estimate plot* is a method — similar to a histogram — for
+    visualizing the distribution of data points. While a histogram *bins and counts*
+    observations, a KDE plot *smooths* the observations using a Gaussian kernel. As
+    alternatives to histograms, KDEs are arguably more attractive, easier to compare
+    in the same figure, and better at accentuating patterns in data distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb84d573c206ec87f791d6343da9abf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A histogram versus a KDE plot
+  prefs: []
+  type: TYPE_NORMAL
+- en: Annotating statistical measures like the mean, median, or mode on KDEs makes
+    them more meaningful. While adding lines for these measures is *easy*, making
+    them look clean and uncluttered is not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/365149b556f136d9ae8847a26388cdf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Marker lines added with the easy method (left) vs. with the harder but more
+    attractive method (right)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this *Quick Success Data Science* project, we’ll use US Census and Congressional
+    datasets to programmatically annotate multiple KDE plots with *median values*.
+    This approach will ensure that the plot annotation *automatically* adjusts for
+    updates to the datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more details on KDE plots, see my previous article [here](https://medium.com/towards-data-science/when-are-songwriters-most-successful-9fdf90708e77).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Because the United States has [*Age of Candidacy* laws](https://en.wikipedia.org/wiki/Age_of_candidacy),
+    the birthdays of members of Congress are part of the public record. For convenience,
+    I’ve already compiled a CSV file of the names of the current members of Congress,
+    along with their birthdays, branch of government, and party, and stored it in
+    this [Gist](https://gist.github.com/rlvaugh/35069885b74ca52a63aab217863440e0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the US population, we’ll use the Census Bureau’s [*Monthly Postcensal Civilian
+    Population*](https://www.census.gov/data/tables/time-series/demo/popest/2020s-national-detail.html)
+    table for July 2023\. As with the previous dataset, this is public information
+    that I’ve saved to a CSV file in this [Gist](https://gist.github.com/rlvaugh/51bcfe65693183da26c38a41402f9094).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing Libraries
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For this project, we’ll need to install seaborn for plotting and pandas for
+    data analysis. You can install these libraries as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With conda: `conda install pandas seaborn`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With pip: `pip install pandas seaborn`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following code was written in JuptyerLab and is described *by cell*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importing Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The secret to extracting values from seaborn KDE plots is to import the matplotlib
+    `[Line2D](https://matplotlib.org/stable/api/_as_gen/matplotlib.lines.Line2D.html)`
+    class, which gives us access to the coordinates of the points along the curve.
+    In addition, we'll use matplotlib `[patches](https://matplotlib.org/stable/api/_as_gen/matplotlib.patches.Patch.html)`
+    to plot rectangles delineating the legal age limits for serving in the House and
+    the Senate. A `patch` is a matplotlib `artist` object with a *face color* and
+    an *edge color*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading the Congressional Dataset and Calculating Ages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the Congressional dataset and calculates each member’s
+    age as of 8/25/2023\. It first converts this reference date, along with the DataFrame’s
+    “Birthday” column, to `datetime` format using pandas’ `to_datetime()` method.
+    It then uses these "date aware" formats to generate an "Age" column by subtracting
+    the two values, extracting the number of days, and then converting the days to
+    years by dividing by 365.25.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7b1fbe1b24f243cb2f262d4ae828b8fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loading the Population Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we load the population data as a pandas DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a676cbc9bce9cf989040bd312832e0b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finding the Median Age of the US Population
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s a fun problem. How do you find the median age of the US population? That
+    is, how do you relate the median population value to an age?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The key is to plot the population’s *cumulative distribution* against *age*.
+    Since you must be 25 years old or older to serve in Congress, we’ll first filter
+    the DataFrame to those ages. Here’s the concept:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96c53fc6c818547e4929ca4631776f70.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finding the median age for the US population > 24 years old using a cumulative
+    distribution plot
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And here’s the commented code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Making a Simple Stacked KDE Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we annotate the plot, let’s see what we get “out of the box,” so to speak.
+    We’ll layer multiple KDE plots in the same figure. These will include one for
+    the House of Representatives, one for the Senate, and one for the US population
+    over the age of 24.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8a339ce721ecc41304e8d77de4c0c43c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simple layered KDE plot
+  prefs: []
+  type: TYPE_NORMAL
+- en: An important parameter for the `kdeplot()` method is `common_norm`, which stands
+    for "common normalization."
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to seaborn’s [documentation](https://seaborn.pydata.org/generated/seaborn.kdeplot.html),
+    “When `common_norm` is set to `True`, all the KDE curves will be normalized together
+    using the same scale. This can be useful when you want to compare the overall
+    distribution shapes of different groups. It’s particularly helpful when you have
+    multiple groups with different sample sizes or different ranges of values, as
+    it ensures that the curves are directly comparable in terms of their shapes.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Note that, in this case, the normalization is only applied to the House and
+    Senate curves, as the population data is plotted separately from a different DataFrame.
+    This is because we need to *weigh* the ages by their population value, as our
+    population dataset doesn’t include a distinct age value for each individual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the Median Age Values for the House and Senate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While attractive, the previous plot makes the reader work too hard. The x-axis
+    needs more resolution, and it would be nice to know where the mean or median value
+    falls on the curves. Since both houses of Congress include a few very old members
+    that can skew the mean, we’ll focus on the median value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we’ll need to find the median values for each branch (we found the population
+    median previously). And since we want to programmatically find the plot coordinates
+    for the annotations, we’ll make a *separate* DataFrame for each *branch*. This
+    will make it easier to extract the curve data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Plotting and Annotating the KDE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following commented code draws and annotates the plot. Our goal here is
+    to find the (x, y) coordinates for the median values on the curves so that we
+    can programmatically provide these coordinates when drawing lines and posting
+    text. This makes the code adaptable to any changes in the input data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how do we do this? Well, when seaborn makes a KDE plot, it returns a matplotlib
+    `[axes](https://matplotlib.org/stable/api/axes_api.html)` object. This type of
+    object has a `[get_lines()](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.get_lines.html)`
+    method that returns a *list of lines* contained by that object. These lines are
+    `[Line2D](https://matplotlib.org/stable/api/_as_gen/matplotlib.lines.Line2D.html)`
+    objects that have a `get_data()` method that returns the line data as (x, y) pairs.
+    Because these coordinates may not include the exact values we want, we'll use
+    NumPy's `[interp()](https://numpy.org/doc/stable/reference/generated/numpy.interp.html)`
+    method to interpolate the values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0fb799e6652aa4882838b4fa936a49fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The annotated KDE plots
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous code, we plotted the population KDE *outside* the loop as the
+    age data had to be weighted by its population value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also *manually* annotated the colored rectangles and text for the age limits
+    as the programmatic solution is not very appealing. “Hardwiring” these annotations
+    is acceptable as this information is *fixed* and won’t change with changes to
+    the input data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this project, we programmatically extracted the (x, y) coordinates of points
+    along a KDE curve and used them to annotate a plot. The result was a much cleaner-looking
+    plot where vertical marker lines terminate when they intersect the curve, and
+    text annotations begin at that intersection point. This makes the code much more
+    flexible, as these annotations will automatically update with any changes to the
+    input data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also used a *cumulative distribution* to find the median value of a pandas
+    DataFrame column that corresponds to the median value of a related column. We
+    had to do this as our age-versus-population input data was binned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thanks for reading and please follow me for more *Quick Success Data Science*
+    projects in the future.
+  prefs: []
+  type: TYPE_NORMAL

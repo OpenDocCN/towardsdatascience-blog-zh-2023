@@ -1,0 +1,473 @@
+- en: Tracking Python’s Session Memory Using Tracemem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tracking-pythons-session-memory-using-tracemem-30f00c3f347](https://towardsdatascience.com/tracking-pythons-session-memory-using-tracemem-30f00c3f347)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PYTHON PROGRAMMING
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Tracemem is a lightweight library to help you track the full memory of Python
+    sessions.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)[![Marcin
+    Kozak](../Images/d7faf62e48ed81dab5d8ad92819fff54.png)](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------)
+    [Marcin Kozak](https://medium.com/@nyggus?source=post_page-----30f00c3f347--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30f00c3f347--------------------------------)
+    ·9 min read·Dec 11, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6648173ce353664cef3a6ada910ce9e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tracemem is a session memory tracker in Python. Photo by [Ronan Furuta](https://unsplash.com/@ronan18?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Tracemem` is a lightweight Python profiling tool that allows you to measure
+    the full memory usage of a Python session at a particular moment and to track
+    subsequent changes. This can be used to debug code for memory issues or simply
+    to log memory usage. `Tracemem`’s feature set is very limited, thanks to which
+    it’s a very lightweight tool, with a minimal impact on the session’s memory. Nevertheless,
+    like any memory-profiling tool, it can significantly impact program execution
+    time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the hood, the package is a wrapper around `pympler.asizeof.asizeof()`,
+    a `[pympler](https://pypi.org/project/Pympler/)` function that measures memory
+    usage by a Python session. This means that `tracemem` offers a simple API to track
+    and assess session memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This simplicity comes at a cost. You cannot use this tool to measure memory
+    usage of a particular function, object or code snippet. If your needs are bigger
+    than just assessing session memory, you can use other tools, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`[pympler](https://pypi.org/project/Pympler/)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[memory_profiler](https://pypi.org/project/memory-profiler/)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[perftester](https://pypi.org/project/perftester/)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[memray](https://pypi.org/project/memray/)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'And of course, there are typical Python profilers, about which you can read
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://docs.python.org/3/library/profile.html?source=post_page-----30f00c3f347--------------------------------)
+    [## The Python Profilers'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Source code: Lib/profile.py and Lib/pstats.py Introduction to the profilers:
+    cProfile and profile provide deterministic…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.python.org](https://docs.python.org/3/library/profile.html?source=post_page-----30f00c3f347--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While I usually rely on the built-in `[cProfile](https://docs.python.org/3/library/profile.html#module-cProfile)`
+    Python profiler, the `[line profiler](https://pypi.org/project/line-profiler/)`
+    package offers a powerful tool for line-by-line profiling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Tracemem`’s API is somewhat atypical for Python, but this was a deliberate
+    decision made to keep the tool as simple and lightweight as possible. This unusual
+    API also stems from the fact that `tracemem` is a profiling tool, typically used
+    for debugging. Therefore, the different approach to syntax (or rather, imports)
+    shouldn’t pose any major issues.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article dives into the fundamentals of `tracemem` and demonstrates how
+    to utilize it to monitor the overall memory consumption of a Python session throughout
+    the program’s execution. For our experiments, we’ll employ Python 3.12 installed
+    in WSL 1 on a (7-year-old) Windows 10 machine with 16GB of RAM. We’ll also conduct
+    two experiments: (1) we’ll replicate the `tracemem`-based checks on Python 3.10,
+    3.11, and 3.12, and (2) we’ll assess whether using this tool noticeably affects
+    program execution time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Disclaimer*: I am the author of the `tracemem` package and of its documentation.
+    Therefore, you may notice slight similarities between this article and the package’s
+    documentation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usage
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`Tracemem` is a profiling tool, so you’ll most likely use it for profiling
+    and debugging. Sometimes, you may also use it for production code, such as logging
+    an app’s memory usage. However, the most common use case is profiling, and this
+    use case heavily influenced the package’s design.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make the tool more user-friendly, `tracemem` objects are available as truly
+    global variables during a Python session, as explained in the following article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/are-globals-in-python-really-global-492f1e4faf9b?source=post_page-----30f00c3f347--------------------------------)
+    [## Are Globals in Python Really Global?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn a hack to make a Python object truly global.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/are-globals-in-python-really-global-492f1e4faf9b?source=post_page-----30f00c3f347--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember that you need use the top-level import of `tracemem`, which imports
+    the whole module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: After this, you can access all its objects from any other module in the session
+    without importing it again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, remember that you can use its objects without the module’s name, which
+    is atypical for *top-level import* but typical for *from-import*. Hence, for example,
+    using `tracemem.MEMPOINT()` won’t work, but `MEMPOINT()` will.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a list of all `tracemem` functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MEMPOINT()`, which creates a memory point in your session'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`MEMORY()`, which prints the memory usage, without creating a memory point'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`MEMPRINT()`, which prints `MEMLOGS`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`tracemem()`, a decorator function that creates a memory point before and after
+    calling the decorated method'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In addition, `tracemem` API contains the following — very important — object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MEMLOGS`, an instance of a `MemLogsList` class, a list-like singleton container
+    that keeps all memory points created during a session'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s analyze the package’s functions one by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MEMPOINT` and MEMLOGS'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main function of tracemem is `MEMPOINT()`. It creates a so-called memory
+    point, which is a measurement point of the memory used by a Python session; the
+    function also adds this memory point to `MEMLOGS`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***A memory point****: A measurement point of the full memory used by a Python
+    session.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The first memory point is created when `tracemem` is imported:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I used the ellipsis in the above doctests, as the memory depends on quite a
+    few elements, and thus will vary from machine to machine. You can read more about
+    doctesting in the following article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/python-documentation-testing-with-doctest-the-easy-way-c024556313ca?source=post_page-----30f00c3f347--------------------------------)
+    [## Python Documentation Testing with doctest: The Easy Way'
+  prefs: []
+  type: TYPE_NORMAL
+- en: doctest allows for documentation, unit and integration testing, and test-driven
+    development.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/python-documentation-testing-with-doctest-the-easy-way-c024556313ca?source=post_page-----30f00c3f347--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The default ID of a memory point is `None`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When you create two memory points with the same ID, say `"my id"`, the second
+    memory point will be assigned a new ID, `"my id-2"`, and so on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can use any object as an ID, but remember that under the hood, its string
+    representation is used instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Memory points contain the memory used by the whole session, in bytes. Look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This shows that such a large dictionary adds a lot to the session memory, and
+    removing it with `del` frees this memory. (Note I skipped the last `doctest` above,
+    as I wanted to show the memories’ values, but they can differ a little from session
+    to session.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As mentioned above, `MEMLOGS` is not a list but a list-like container, an instance
+    of a `tracemem.MemLogsList` class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This class works slightly differently than a regular list. It has only one
+    instance: `MEMLOGS`. Most typical list methods don’t work for it. For instance,
+    `MEMPOINT()` is the only valid way to update `MEMLOGS`. You cannot append anything
+    to it, multiply it, or add it to another list.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The elements of `MEMLOGS` are instances of a `MemLog` named tuple, so you can
+    access its two elements by both indexing and using the attributes’ names, `ID`
+    and `memory`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`MEMLOGS` also has the following attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`.memories`, returning all the reported memories'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`.IDs`, returning all the reported IDs'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`.filter()`, a method to filter `MEMLOGS`, similar to the built-in `filter()`
+    function'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`.map()`, a method to apply a function to all elements of `MEMLOGS`, similar
+    to the build-in `map()` function'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These are far less important attributes of `tracemem`, hence I describe them
+    shortly in the Appendix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MEMPRINT`'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `MEMPRINT()` function prints `MEMLOGS`, first converting memories to MB.
+    It’s a very simple function that offers human-readable elements of `MEMLOGS`.
+    You should use it for printing, but not necessarily for logging, for which you
+    may prefer to use the detailed information in `MEMLOGS`. Let’s see how `MEMPRINT()`
+    works in our session:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`MEMPRINT()` does not return anything; like `print()`, it simply prints the
+    information to the standard output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MEMTRACE decorator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you want to track memory session before and after using a particular function,
+    the easiest way is to use the `MEMTRACE` decorator. It creates *before* and *after*
+    memory points for each call of the decorated function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: MEMORY
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When you just want to see the current memory of the session, without creating
+    a memory point in `MEMLOGS`, use the `MEMORY()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: This function retrieves (not prints) the current session memory usage as an
+    integer value in bytes. As mentioned earlier, it doesn’t impact `MEMLOGS`. This
+    function serves a rather niche purpose, but you might find it useful for occasional
+    tasks, for instance during interactive profiling or debugging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparison of session weight of Python 3.10–3.12
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here, I’d like to compare memory weights of three Python sessions, from Python
+    3.10, 3.11 and 3.12\. `Tracemem` is a perfect tool for this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I understand you might have anticipated some compelling findings in this section.
+    I might have even hinted at it. However, the reality is that the three Python
+    versions exhibit no significant variation in session weight. Disregarding minor
+    discrepancies, I obtained the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, a fresh Python 3.10–3.12 session uses in WSL 1 on a Windows
+    10 machine about `1.1`–`1.2` MB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Tracemem` impacts execution time'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When `tracemem` measures the size of small Python sessions, its impact on program
+    execution time is minor — but still visible. When the session is memory-intensive,
+    this impact can be substantial. I’ll demonstrate this by comparing the performance
+    of the script I used in the previous experiment (let’s call it `code_with_tracemem.py`)
+    to that of its version without `tracemem` (`code_without_tracemem.py`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I ran the both of them in Python 3.12, on the same machine as above, and I
+    used the built-in `time` tool. Here are the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then I ran the same two scripts with `n` of `1000`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, `tracemem` can strongly impact execution time, even for lightweight
+    sessions. This is something to consider if you want to use `tracemem` for purposes
+    other than profiling (e.g., logging). If you’re concerned about this performance
+    tradeoff, remember that it’s a common aspect of memory-profiling tools — or at
+    least all the Python memory-profiling tools I’ve encountered. Profiling memory
+    can be time-consuming, so keep that in mind when using it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`Tracemem` is a lightweight and straightforward tool for basic session-memory
+    profiling. If you just want to track the memory consumption of a session, `tracemem`
+    is a suitable option. However, if you need more comprehensive insights, such as
+    memory usage breakdowns by specific objects or code segments, you should explore
+    more advanced profiling tools like `[pympler](https://pypi.org/project/Pympler/)`,
+    `[memory_profiler](https://pypi.org/project/memory-profiler/)`, `[perftester](https://pypi.org/project/perftester/)`,
+    `[memray](https://pypi.org/project/memray/)`, `[cProfile](https://docs.python.org/3/library/profile.html#module-cProfile)`
+    or `[line profiler](https://pypi.org/project/line-profiler/)`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This appendix shows how to use less important attributes of the `MEMLOGS` object:
+    `.memories`, `.IDs`, `.filter()` and `.map()`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can use the first two in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Like the built-in `filter()` function, the `.filter()` method accepts a predicate
+    used for filtering. This predicate needs to work with `MemLog` elements. Unlike
+    the built-in function, the `MEMLOGS.filter()` method returns a list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can use a `lambda` function as a predicate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Like the `.filter()` method, the `.map()` method returns a list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Thanks for reading. If you enjoyed this article, you may also enjoy other articles
+    I wrote; you will see them [here](https://medium.com/@nyggus). And if you want
+    to join Medium, please use my referral link below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nyggus/membership?source=post_page-----30f00c3f347--------------------------------)
+    [## Join Medium with my referral link - Marcin Kozak'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@nyggus/membership?source=post_page-----30f00c3f347--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

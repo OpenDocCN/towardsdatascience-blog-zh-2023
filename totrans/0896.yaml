@@ -1,0 +1,258 @@
+- en: Fine-tune Better Chat Models with Distilled Identity Preference Optimization
+    (IPO)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fine-tune-better-chat-models-with-distilled-identity-preference-optimization-ipo-99cddc819a48](https://towardsdatascience.com/fine-tune-better-chat-models-with-distilled-identity-preference-optimization-ipo-99cddc819a48)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Mistral 7B aligned with IPO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----99cddc819a48--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----99cddc819a48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----99cddc819a48--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----99cddc819a48--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----99cddc819a48--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----99cddc819a48--------------------------------)
+    ·6 min read·Dec 13, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e762c4828a29a687b5f127b736a29db8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Rishabh Dharmani](https://unsplash.com/@rishabhdharmani?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To become chat models, pre-trained large language models (LLMs) are fine-tuned
+    on large datasets of instructions/questions paired with expected answers. While
+    this simple fine-tuning yields convincing chat models, their answers may still
+    be incoherent, biased, unethical, and unsafe from a human perspective. This is
+    why we usually perform an additional training step to better align the LLM with
+    humans.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This alignment can be done using reinforcement learning with human feedback
+    (RLHF). As demonstrated by OpenAI and the success of ChatGPT, RLHF can yield state-of-the-art
+    chat models. However, RLHF is expensive to run. It requires large datasets annotated
+    by humans and the training of several auxiliary models (reference and reward models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a simpler and cheaper alternative to RLHF, [direct preference optimization
+    (DPO)](https://kaitchup.substack.com/p/fine-tune-your-own-instruct-version) has
+    recently been applied with success to align LLMs, such as Hugging Face’s [Zephyr](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
+    and Intel’s [Neural Chat](https://huggingface.co/Intel/neural-chat-7b-v3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, based on a work by Google DeepMind, we will see that, while
+    RLHF and DPO perform well at aligning LLMs, they are far from optimal given the
+    datasets used for training. DeepMind also demonstrates why DPO is prone to overfitting.
+    I’ll explain, in plain English, how the alternative proposed by DeepMind, the
+    identity policy optimization (IPO) objective, is simpler and better designed to
+    learn from the training data than RLHF and DPO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following sections, I show how to use IPO following a training recipe
+    close to the one used by Hugging Face to train the Zephyr models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have also implemented a notebook demonstrating IPO training for Mistral 7B.
+    You can find it here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Get the notebook (#31)](https://kaitchup.substack.com/p/notebooks)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The paper by DeepMind describing IPO is on arXiv:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[A General Theoretical Paradigm to Understand Learning from Human Preferences](https://arxiv.org/abs/2310.12036)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ΨPO: Generalization of Preference Optimization'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'RLHF and DPO are trained on similar datasets: prompts paired with at least
+    two possible answers rated by humans (or LLMs). The answers are paired so that,
+    in a pair, one answer is rated better than the other. For its alignment, we want
+    the LLM to learn which answer is preferred by humans. This is the “preference
+    optimization”. RLHF learns it with reinforcement learning while DPO learns it
+    with a simple classifier.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, to avoid overfitting, RLHF and DPO training must be regularized. This
+    regularization is achieved with the KL-regularization controlling that the LLM
+    gets better at each training step without drifting too far away from the original
+    (also called reference) non-aligned model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I explained in more detail how the KL regularization works for RLHF in this
+    article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/p/train-instruct-llms-on-your-gpu-with-6a5?source=post_page-----99cddc819a48--------------------------------)
+    [## Train Instruct LLMs On Your GPU with DeepSpeed Chat - Step #3: Reinforcement
+    Learning with Human…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The efficiency of DeepSpeed Chat in action
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/p/train-instruct-llms-on-your-gpu-with-6a5?source=post_page-----99cddc819a48--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without this regularization, the LLM would find a way to generate answers minimizing
+    the training loss while being meaningless, i.e., it would overfit the training
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DeepMind demonstrated that RLHF and DPO are special cases of a more general
+    learning objective: the Ψ preference optimization (ΨPO). *Note: I don’t know how
+    DeepMind pronounces “ΨPO”, but I would guess this is psi-P-O.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One other weakness highlighted by DeepMind, but also well-known by LLM practitioners,
+    is that even with the KL-regularization DPO is prone to overfitting. For instance,
+    Hugging Face in [their technical report on training Zephyr](https://arxiv.org/abs/2310.16944)
+    found that DPO overfits the training data with perfect accuracy after only one
+    training epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A large part of the DeepMind paper is dedicated to demonstrating why this overfitting
+    happens. This is also, in my opinion, the most complicated part of the paper.
+    Let’s try to summarize it in plain English.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'RLHF and DPO are trained on pairs of answers with preference annotations. Usually,
+    in the dataset created for this training, the same answer, or a close one, will
+    always be better than the other one. In this situation, we can say that it is
+    deterministic: the same input will always yield the same output. It seems intuitive
+    but, in practice, humans disagree: Given a pair of answers A and B, one human
+    may find A better than B while another human may find B better than A.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This would happen very often for instance if we want to compare two LLMs performing
+    closely, i.e., generating only slightly different answers. RLHF and DPO are designed
+    to learn from this kind of non-deterministic data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RLHF and DPO assign Elo scores for the rated answers, in other words, they convert
+    pairwise preferences to point-wise estimates. They don’t directly predict which
+    answer is better but instead predict a (complicated) score, in the form of [logit](https://en.wikipedia.org/wiki/Logit)-preferences,
+    for each answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could say that it makes the learning objective unnecessarily more complicated.
+    Indeed, we don’t need point-wise estimates when the training data are deterministic
+    and use only a very small number of answers per prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That is why DeepMind proposes another simpler learning objective: Identity
+    Preference Optimization.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identity Preference Optimization (IPO)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We saw that DPO is prone to overfitting. Nonetheless, DPO has the advantage
+    of being a simple learning objective as it doesn’t need a reward model and doesn’t
+    do reinforcement learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the identity preference optimization (IPO) learning objective, DeepMind
+    proposes an alternative, based on DPO, that doesn’t need a reward model while
+    better exploiting the KL-regularization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like DPO, IPO is a special case of the ΨPO objective. The main difference between
+    IPO and DPO is that IPO directly learns pairwise preferences instead of the logit-preferences,
+    i.e., IPO doesn’t use Elo-scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complete mathematical proof and formulation for IPO are provided in the
+    paper. They also compare DPO and IPO with different coefficients for the KL-regularization
+    (see [Figure 1 of the paper](https://arxiv.org/pdf/2310.12036.pdf)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: They observed that DPO is almost insensitive to the increase in the coefficient
+    of the KL-regularization. On the other hand, IPO is much more impacted by the
+    increasing coefficient. Interestingly, on the IPO curves of Figure 1, we can see
+    that IPO remains able to distinguish the outputs y1, y2, and y3\. It ranks them
+    as y1 > y2 > y3 while DPO considers y1 perfect (nearly 1.0), while y2 and y3 would
+    be equally bad. DPO overfits, IPO doesn’t.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distilled IPO for Mistral 7B
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: IPO is already available in Hugging Face’s TRL to align LLMs. Since IPO is based
+    on DPO, they have directly added it to the [DPOTrainer](https://huggingface.co/docs/trl/main/en/dpo_trainer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I aligned Mistral 7B using (almost) the same recipe, inspired by the Zephyr
+    models, that I used in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/p/a-cheap-zephyr-7b-beta-distilled?source=post_page-----99cddc819a48--------------------------------)
+    [## A Cheap Zephyr 7B Beta: Distilled DPO on Consumer Hardware'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The recipe for training a Zephyr-like model without using A100 GPUs
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/p/a-cheap-zephyr-7b-beta-distilled?source=post_page-----99cddc819a48--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main difference is the use of IPO instead of DPO. The training data, generated
+    and rated by other LLMs, remains the same. This is a distilled IPO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have also made small modifications in the LoRA hyperparameters to use the
+    ones proposed in the [Hugging Face alignment handbook](https://github.com/huggingface/alignment-handbook/blob/main/recipes/zephyr-7b-beta/sft/config_lora.yaml):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, the DPOTrainer can simply be configured to use IPO like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: “loss_type” is simply set to ‘ipo’. The “beta” hyperparameter is the coefficient
+    (tau) of the regularization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also worth noticing that, with DPO, Hugging Face fixed a learning rate
+    of 5e-7 which is very low. DPO overfits very quickly or doesn’t converge with
+    a higher learning rate. On the other hand with IPO, I observed that a higher learning
+    rate can work but that it should be tuned together with the beta (the coefficient
+    of the regularization) to prevent overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As demonstrated by DeepMind, IPO is theoretically better than RLHF and DPO given
+    the training datasets used to align LLMs. IPO directly learns pairwise preferences
+    and better exploits the KL-regularization to avoid overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since IPO preserves the main advantages of DPO while correcting its defects,
+    it should become the new standard learning objective for LLM alignment.
+  prefs: []
+  type: TYPE_NORMAL

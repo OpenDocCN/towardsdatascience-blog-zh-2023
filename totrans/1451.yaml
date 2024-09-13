@@ -1,0 +1,690 @@
+- en: Lucene Inside Out — Dealing With Integer Encoding and Compression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d](https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Delve into PackedInts, VInt, FixedBitSet, and **RoaringDocIdSet (**Roaring Bitmaps)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Peggy
+    Chang](../Images/f59e8d3b97ea7db59fc8cb33f05e835b.png)](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
+    [Peggy Chang](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
+    ·13 min read·Jun 28, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e285f99edf68c33f97c132920235b8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
+    from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Earlier on, we learned about vector compression using [product quantization](https://medium.com/towards-data-science/product-quantization-for-similarity-search-2f1f67c5fddd)
+    for similarity search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
+    [## Product Quantization for Similarity Search'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to compress and fit a humongous set of vectors in memory for similarity
+    search with asymmetric distance computation…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will explore and gain insight into how integers are encoded
+    and compressed in Lucene, the world where the inverted index takes center stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lucene — Brief Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Lucene](https://lucene.apache.org/) is an open-source search engine library
+    written in Java. Created by Doug Cutting in 1999, it is well-known for full-text
+    search and indexing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This open-source software project under [The Apache Software Foundation](https://www.apache.org/)
+    is still in active development after more than two decades. Over the years, it
+    has evolved and grown to become a powerful, fully featured high-performance search
+    engine library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Undeniably, Lucene's success is highly attributed to its strong community and
+    the incredible work contributed by committers. Their participation and collaboration
+    brought Lucene to where it is today. Many popular enterprise search platforms
+    and solutions such as [Solr](https://solr.apache.org/) and [Elasticsearch](https://www.elastic.co/elasticsearch/)
+    are built on top of Lucene.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “For an open source project, 20 years is a long time. Without a doubt, Lucene’s
+    longevity is a testament to the strength and diversity of its community” — [Celebrating
+    20 years of Apache Lucene](https://www.elastic.co/celebrating-lucene)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Inverted Index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The inverted index lies in the heart of Lucene. The inverted index comprises
+    two parts — on the left, we have the terms dictionary, and on the right, we have
+    the postings for each term.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/544e0b0228ea263bff10e7b80847f9f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Terms dictionary and postings lists form the inverted index in Lucene.
+    All images are by the author unless otherwise specified.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Postings are information about the occurrence of a term in a document. The postings
+    list contains Doc IDs of documents in which the term occurs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If defined, it may also include information such as the frequency of the term
+    within the document, and perhaps the positions, character offsets, and payloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Yes, all these are integers, and there are indeed a huge amount of integers
+    to handle in Lucene. As quoted by Adrien Grand [1], a Lucene committer at The
+    Apache Software Foundation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “One of the most important building blocks of a search engine is the ability
+    to efficiently compress and quickly decode sorted lists of integers”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the following sections, we will look into techniques used by Lucene to encode
+    and compress integers, particularly integers from the postings list — Doc IDs
+    and term frequencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Delta Encoding
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start by looking at how Lucene encodes and stores postings data on disk.
+    The list of documents that contain each term is saved in the .doc file. Skip data
+    is also saved in the same file, but it will not be discussed in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First and foremost, as seen in *Figure 1*, the Doc IDs that each term is pointing
+    to are basically a sorted list of integers. For each term, we begin by transforming
+    the list of sorted Doc IDs into Doc Deltas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Through [**delta encoding**](https://en.wikipedia.org/wiki/Delta_encoding),
+    Doc Deltas are obtained by getting the difference between each Doc ID and the
+    previous one, except for the first Doc ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, Doc Deltas are split into fixed blocks of 128 integers. These are referred
+    to as *PackedDocDeltaBlock.* Each of these blocks is then encoded with **PackedInts**,
+    a Lucene implementation of bit packing. The remaining Doc Deltas are encoded with
+    **VInt**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following diagram is a simplified illustration where the block size of a
+    PackedDocDeltaBlock is 4 instead of the actual 128.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/8855a0d77d2bd48b3bc61b331bfec123.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: The encoding process for Doc IDs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you noticed that most of the integers have become smaller after going through
+    delta-encoding?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Smaller integers require fewer bits to represent them, and this is crucial for
+    the next step of encoding with **PackedInts** and **VInt**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PackedInts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In general, bit packing combines multiple values at the bit level into one or
+    more bytes (or one or more long integers*)*. For example, four 2-bit values can
+    be packed into one byte, and eight 16-bit values can be packed into two long integers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With bit packing, the amount of space required to store integers can be reduced
+    significantly.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This is possible because a typical 32-bit `*int*` (the most commonly used integer
+    type) almost always contains leading zeros at the bit level, and bit packing discards
+    them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2777515ba2d86ea51b905136824143d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: An example of packing 4 integers into 1 byte, with each value occupying
+    2 bits. Storage space is reduced from 16 bytes to 1 byte.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [**PackedInts**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/packed/PackedInts.html),
+    data is stored in a way that each value consumes a fixed number of bits between
+    1 and 64, called `bitsPerValue`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following on from the encoding process for Doc IDs, if a data field is defined
+    to include term frequencies (i.e. the field’s index option is set to `IndexOptions.DOCS_AND_FREQS`),
+    then every *PackedDocDeltaBlock* is immediately accompanied by a *PackedFreqBlock*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8272872c17748dea0e2e4bb4bdfd5b98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: *PackedDocDeltaBlock* and *PackedFreqBlock*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the name suggests, *PackedFreqBlock* contains the corresponding frequency
+    of terms occurring in documents in the preceding *PackedDocDeltaBlock*. Unlike
+    Doc IDs, term frequencies do not go through delta encoding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each *PackedDocDeltaBlock* and *PackedFreqBlock* is independently encoded with
+    **PackedInts**. `bitsPerValue` is derived from the number of bits required to
+    represent the largest integer in the block. Despite that, the number of bits per
+    value consumed could end up more than expected. Why and how does this happen?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, it turns out that Lucene may adjust the `bitsPerValue` to obtain compression
+    with the best read-write performance based on a parameter called `acceptableOverheadRatio`.
+    This is the amount of overhead that one is willing to take to trade memory efficiency
+    for fast random reads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7b1bc788312f1df2a0cf0b24ce52565.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: The compression modes in **PackedInts**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Lucene, the [adjustments](https://docs.google.com/spreadsheets/d/1QobWCwUWU51Zv9fe5VQZ-hcrC-Q49xmS/edit?usp=sharing&ouid=106781124935005693725&rtpof=true&sd=true)
+    for `bitsPerValue` are done in a way that the resulting overhead will not exceed
+    the `acceptableOverheadRatio` when `bitsPerValue` is increased to 8, 16, 32, or
+    64\. But why 8, 16, 32, 64, and not other numbers?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of the time, the best read-write performance is realized when the number
+    of bits representing a value is byte-aligned or in multiples of eight (i.e. 8,
+    16, 32, 64). Reading and writing are simplified since there is no co-occupancy
+    of values within a byte.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In other words, the space of one byte, two bytes, four bytes, or eight bytes
+    is dedicated entirely to only one value.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the worst case pertaining to memory efficiency, `bitsPerValue` of 1 is adjusted
+    to 8\. For every legitimate bit that is present, 7 other unused bits are consumed.
+    This produced a memory overhead of 700%. Effectively, 8 bits are consumed per
+    value even when only 1 bit is of use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An `acceptableOverheadRatio` of 7 tends to have the fastest random read access.
+    This is the result when `bitsPerValue` from 1 to 7 is adjusted to 8, `bitsPerValue`
+    from 9 to 15 is adjusted to 16, and so on. The implementation has a varying degree
+    of memory overhead, the highest of which is 700%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2b91d603cfd1e6d181f95198bd302b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: Memory overheads when bits per value are adjusted to 8'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, when `acceptableOverheadRatio` is 0, the `bitsPerValue` is
+    kept as is without adjustment. Data is tightly packed to achieve the best memory
+    efficiency, but random reads may be slow. There is a higher chance that more than
+    one value occupies the space of a byte. Because of this, the bits representing
+    a value could spill over to the next byte.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3a86207a2056509ac19233b4e460d1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: Example of tightly packed data with 6 bits per value. The number
+    of bytes is reduced from 4 to 3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all that said, the default compression mode that Lucene uses for **PackedInts**
+    has an `acceptableOverheadRatio` of 0.25\. This setting ensures that any memory
+    overhead induced will never exceed 25%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: VInt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[**VInt**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/store/DataOutput.html#writeVInt(int))
+    is a type of base-128 compression that generates [variable-length integers](https://en.wikipedia.org/wiki/Variable-length_quantity).
+    Each integer is individually encoded as 1 to 5 bytes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/86c8f20d6eee3505d02b442b4315dfe0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: An example of converting 17000 to **VInt**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To generate **VInt**, the bits are split into chunks of 7, starting from the
+    less significant bits on the right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each chunk of 7 bits going from right to left, another bit is added to form
+    a byte. This bit acts as a continuation flag and constitutes the most significant
+    bit of the byte. The value of this bit is `1` if there is more byte to follow,
+    else it is `0`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this representation, 1 byte is sufficient for small integers ranging from
+    0 to 127\. Most integers would require 3 bytes or less, as 3 bytes in **VInt**
+    is able to represent values between 16,384 and 2,097,151.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Earlier, referring to *Figure 2*, we mentioned that the remaining Doc Deltas
+    are encoded with **VInt**. What happens when term frequencies are indexed?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In that case, Doc Delta now defines both the document number and the frequency.
+    The bits that represent Doc Delta would be shifted one step to the left, such
+    that the least significant bit is now used to mark if the frequency is one or
+    not. If the frequency is one, the least significant bit is `1`, else it is `0`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As documented in the [Lucene90PostingsFormat](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/codecs/lucene90/Lucene90PostingsFormat.html),
+    when Doc Delta is odd, the frequency is one. When Doc Delta is even, the frequency
+    is read as another **VInt**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The illustration below shows how Doc Deltas `7, 10` (for which a term occurs
+    once and three times respectively) are encoded with the sequence `15, 20, 3` in
+    **VInt** when term frequencies are indexed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/53bce2fc2af732bdf71904546f774a4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9: **VInt** encoding with and without term frequencies'
+  prefs: []
+  type: TYPE_NORMAL
+- en: FixedBitSet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In Lucene, [**FixedBitSet**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/FixedBitSet.html)
+    is a bitmap implementation of fixed length to store Doc IDs in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A bitmap is a collection of bits that map to a list of integers. A bit that
+    is set to `1` represents an integer whose value is the index of the bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**FixedBitSet** is internally implemented as a `*long[]*` integer array in
+    Lucene, and as such each integer holds 64 bits. The length of this array (or the
+    number of integers in this array) is determined based on the number of bits that
+    one needs for the bitmap.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, to encode a list of Doc IDs whose largest value is 190, a bitmap
+    comprising at least 191 bits is required to represent bitmap indices from 0 to
+    190\. As a result, an array of length 3 will be allocated, and this array is capable
+    of holding `3*64=192` bits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e434a6faf6b00b5402d39af6f27a27af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10: An example of **FixedBitSet** — The `bitset[]` array contains 3
+    long integers of 64 bits each'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above example, **FixedBitSet** uses 24 bytes to encode a list of 6 integers
+    whose largest value is 190\. This is an example of sparse data, whereby only 6
+    out of 192 bits are set to `1` in the bitset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, there is no saving in memory and the same number of bytes is used if these
+    integers were to be stored using `*int*` type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It shows that **FixedBitSet**, or bitmap in general, is less efficient when
+    the data it is representing is sparse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RoaringDocIdSet (Roaring Bitmaps)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/66f4ea57bd23080f42d2cda2878ee589.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Glen Carrie](https://unsplash.com/fr/@glencarrie?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Lucene, queries are cached with LRU, a caching scheme that evicts the least
+    recently used item to make room for new ones when the cache is full. Caching allows
+    fast access to data that is frequently queried.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not all queries are cached in Lucene though. But for those that are, the cached
+    content contains the Doc ID result set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [LRU query cache](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/search/LRUQueryCache.html)
+    in Lucene uses **RoaringDocIdSet** for sets that have a density that is less than
+    1%. Otherwise, **FixedBitSet** is used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**RoaringDocIdSet**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/RoaringDocIdSet.html)
+    is an implementation inspired by the ideas and design structure from **Roaring
+    Bitmaps.** So what are **Roaring Bitmaps**? As described by [*roaringbitmap.org*](http://roaringbitmap.org/about/),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Roaring bitmaps are compressed bitmaps which tend to outperform conventional
+    compressed bitmaps such as WAH, EWAH or Concise. In some instances, they can be
+    hundreds of times faster and they often offer significantly better compression.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Roaring Bitmaps** works by partitioning data and storing them into different
+    containers. Sparse and dense data containers in **Roaring Bitmaps** are stored
+    differently based on the container’s cardinality. In Lucene’s literature, these
+    containers are known as blocks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In **RoaringDocIdSet,** the block number is identified by the 16 most significant
+    bits. The remaining 16 least significant bits are the value that would be stored
+    in the block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19fe15269ccb81531662b81c6b3199f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11: Examples of Doc IDs in binary format'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the above example, this would result in the first four Doc IDs being stored
+    in *Block 0\.* The next two Doc IDs would be stored in *Block 1*, and the last
+    three Doc IDs would be stored in *Block 4*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f89d4a2460849fc706f8134135baed02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12: The data partitioned into blocks in **RoaringDocIdSet**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way, **RoaringDocIdSet** can accommodate up to `2¹⁶ = 65536` blocks, and
+    each block can store a maximum of 65536 records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how exactly are data in these blocks stored?
+  prefs: []
+  type: TYPE_NORMAL
+- en: With 16 bits (or 2 bytes) per record, a `*short[]*` integer array takes up 128
+    kB for 65536 records. The space required by the array grows linearly with the
+    number of records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversely, a bitmap that can hold 65536 bits takes up only 8 kB. Compared to
+    128 kB, that is a huge difference, a 16 times reduction in space. As a result,
+    one would be inclined to think that using a bitmap is more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf1919f9d8b800ec6cef04ea8a0f59c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 13: Using `short[]` integer array versus bitmap'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But wait, let’s do some analysis and look carefully at the graph again. It can
+    be observed that when the total count of records is under 4096, storing them with
+    a `*short[]*` integer array actually consumes less than 8 kB of space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that is what led to how the storage method is determined for each block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a hybrid data structure, a sparse block containing less than 4096 records
+    is stored using a `*short[]*` integer array, while a dense block with 4096 or
+    more records is stored using a bitmap.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Lucene even improves this further by storing the inverse of the set using a
+    `*short[]*` integer array for superdense blocks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What this means is when the number of records is more than 61440, the inverse
+    of the set, which has less than 4096 values, is stored instead. How brilliant
+    is that!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42073f4aa2cf37f8d8f4a0d8b8a0211a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 14: For superdense blocks, Lucene stores the inverse of the set using
+    a `*short[]*` integer array.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is interesting to see how **RoaringDocIdSet** performed when benchmarked
+    against **FixedBitSet** in this [patch](https://issues.apache.org/jira/browse/LUCENE-7339).
+    From the [graph](http://people.apache.org/~jpountz/doc_id_sets6.html), it can
+    be observed that when the density of the Doc ID set is less than 1%,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '- the memory footprint of **RoaringDocIdSet** can go down to more than 128
+    times smaller than **FixedBitSet**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '- the build time of **RoaringDocIdSet** can go up to approximately 64 times
+    faster than **FixedBitSet**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '- the iteration performance and skip performance of **RoaringDocIdSet** (using
+    `*nextDoc()*`and `*advance()*`) can go up to approximately 90 times faster than
+    **FixedBitSet**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: On the contrary, **FixedBitSet** performed better than **RoaringDocIdSet** when
+    the density of the Doc ID set is above 1%.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Key Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When it comes to compression, there’s no one-size-fits-all method. To approach
+    integer compression, Lucene uses a combination of techniques and strategies in
+    order to obtain the best possible result.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Delta encoding** plays an important role in effectively reducing integer
+    size before moving on to compression with **PackedInts** or **VInt**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What if there is a presence of large values? Data compression quality is compromised
+    since the largest integer in the block determines the number of bits per value
+    to use for **PackedInts**. Splitting Doc Deltas and term frequencies into fixed-size
+    blocks is a smart way to mitigate this issue. The impact is confined only to data
+    within the block, and others stay unaffected.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While bitmaps are ideal for dense integer sets, it is fascinating to see how
+    **RoaringDocIdSet (**an adaptation of **Roaring Bitmaps**) approaches dense and
+    sparse sets in an ingenious way.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A big part of Lucene deals with integers. Hence, integer compression is of utmost
+    importance in reducing storage and memory footprint, as well as shortening transmission
+    time when data is fetched from or written to disk or memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As demonstrated by Lucene, adopting the right strategy for the right use case
+    and thinking outside the box to optimize efficiency with fast access is one of
+    many success factors leading to continuous growth and evolution in the search
+    engine arena.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These implementations can bring significant cost savings on storage, memory,
+    and network bandwidth, along with improvement in performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] A. Grand, [Frame of Reference and Roaring Bitmaps](https://www.elastic.co/blog/frame-of-reference-and-roaring-bitmaps)
+    (2015)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [Celebrating 20 years of Apache Lucene](https://www.elastic.co/celebrating-lucene)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [Roaring bitmaps: A better compressed bitset](https://roaringbitmap.org/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] S. Chambi, D. Lemire, O. Kaser, and R. Godin, [Better bitmap performance
+    with Roaring bitmaps](https://arxiv.org/pdf/1402.6407.pdf) (2016)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] D. Lemire, G. Ssi-Yan-Kai, and O. Kaser, [Consistently faster and smaller
+    compressed bitmaps with Roaring](https://arxiv.org/pdf/1603.06549.pdf) (2018)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] D. Lemire, O. Kaser, N. Kurz, L. Deri, C. O’Hara, F. Saint-Jacques, and
+    G. Ssi-Yan-Kai, [Roaring Bitmaps: Implementation of an Optimized Software Library](https://arxiv.org/pdf/1709.07821.pdf)
+    (2022)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] V. Oberoi, [A primer on Roaring bitmaps: what they are and how they work](https://vikramoberoi.com/a-primer-on-roaring-bitmaps-what-they-are-and-how-they-work/)
+    (2022)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] D. Lemire and L. Boytsov, [Decoding billions of integers per second through
+    vectorization](https://arxiv.org/pdf/1209.2137.pdf) (2021)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Before You Go…**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*🙏* Thank you for reading this post, and I hope you’ve enjoyed learning about
+    integer encoding and compression in Lucene.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*👉* If you like my post, don’t forget to hit [**Follow**](https://peggy1502.medium.com/)
+    and [**Subscribe**](https://peggy1502.medium.com/subscribe) to get notified via
+    email when I publish.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*😃* Optionally, you may also [**sign up**](https://peggy1502.medium.com/membership)
+    for a Medium membership to get full access to every story on Medium.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*📑* Visit this [GitHub repository](https://github.com/peggy1502/Data-Science-Articles/blob/main/README.md)
+    for all the codes and notebooks that I shared in my posts.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*© 2023 All rights reserved.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

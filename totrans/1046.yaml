@@ -1,0 +1,322 @@
+- en: Hierarchical Transformers — part 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hierarchical-transformers-part-2-2616eecacb21](https://towardsdatascience.com/hierarchical-transformers-part-2-2616eecacb21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Hierarchical attention is faster
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)[![Mina
+    Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------)
+    [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2616eecacb21--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2616eecacb21--------------------------------)
+    ·6 min read·Oct 7, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article requires you to have knowledge of standard transformers and how
+    they work. If you are a beginner and you’d like to know about transformers, please
+    take a look at [Transformer for Beginners](https://medium.com/p/4deaf9b199f9/edit)
+    article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Hierarchical Transformer — part 1](https://medium.com/towards-data-science/hierarchical-transformers-54f6d59fa8fc)
+    we defined, what we mean by “hierarchical transformers”, and we reviewed one of
+    prominent work in this domain which was called *Hourglass*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will continue the line of work by looking into another well-known
+    work called *Hierarchical Attention Transformers (HAT).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical Attention Transformer (HAT)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This method was initially proposed for classifying long documents, typically
+    in length of thousands of words. A usecase of this is classifying legal documents
+    or biomedical documents which are typically very long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tokenization and Segmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The **HAT** method works by taking an input document, and tokenizing it using
+    Byte-Pair Encoding (BPE) tokenizer that breaks text into subwords/tokens. This
+    tokenizer is used in many well-known large language models such as BERT, RoBERTA
+    and GPT family.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then it splits the tokenized document into *N* equally-sized chunks; i.e. if
+    *S* denote the input document then *S = [C1, …., CN]* are *N* equally-sized chunks.
+    (Through out this article, we sometimes refer to chunks as segments, but they
+    are the same concept.) Each chunk is a sequence of *k* tokens *Ci = [Wi[cls],
+    Wi1…, Wik-1]* that the first token, *Wi[cls]*, is the *CLS* token which represents
+    the chunk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8e9433b29ed4e664313d30c3955b06e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we see in image above, every chunk is a sequence of k tokens, where the first
+    token is the *CLS* token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model Architecture**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'After tokenizing and segmenting the input sequence, it feeds it to the **HAT**
+    transformer model. The HAT model is an encoder-transformer and consists of two
+    main components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'segment-wise encoder (SWE): this is a shared encoder block that takes in sequence
+    of a segment (aka chunk) and processes the chunk.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'cross-segment encoder (CSE): this is another encoder block that takes is CLS
+    tokens of all segments (aka chunks) and process cross-segment relations.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/cfab73a0c1cf70f783fc88686522180a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image from [[1](https://arxiv.org/abs/2210.05529)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we see in above image, the segment-wise encoder on the left, takes in all
+    k tokens of a segment, process them and outputs updated representation of the
+    tokens. On the left we see the cross-segment encoder takes CLS token embedding
+    of all segments and output an updated representation for them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two components can be used in several different layouts. For example, we
+    can have them in “ad-hoc” layout where a stack L layers of SWE encoders are put
+    first, then two layers of CSE encoders are on top of them. Note that the SWE in
+    each layer share weight. The arrow between one layer of SWEs and the next layer
+    indicate passing embedding between layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73c498ae9fb022b908d5b55984497acf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image from [[1](https://arxiv.org/abs/2210.05529)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another layout is the “interleaved” layer that is as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7859404a727d2444761c021c46d2660a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image from [[1](https://arxiv.org/abs/2210.05529)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The interleaved layout, as we see above, is a stack of paired segment-wise encoder
+    and cross-segment encoders, where cross-segment attention is performed across
+    several layers of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Authors in [1] explore few layout (see the image below) and experimentally they
+    find out the “interleaved” layout outperforms other variants.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b850a831f29ba46cf4607eb6a5b19d88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image from [[1](https://arxiv.org/abs/2210.05529)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full architecture of the model is as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3eb3d63c252fff650b8df34441cbf480.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image from [[1](https://arxiv.org/abs/2210.05529)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The architecture consists of N layers, where each layer is as shown above. Note
+    that stacking them together bring us the “interleaved” architecture. All segment-wise
+    encoders in one layer share weights and they process input segments (chunks) independently
+    and in parallel. Every segment has its own positional embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of *segment-wise encoders* will be updated embeddings of segment
+    tokens. The first token which is the CLS token embedding is added to the segment
+    positional embedding and is passed to the *cross-segment encoder.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cross segment encoder captures relationship between segments and update
+    the CLS embedding of each segments and outputs it. The output of the layer would
+    be the updated embeddings for all tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Positional embeddings**. Note there are two positional embeddings in the
+    architecture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'positional embeddings for tokens of a segment: this is to indicate positions
+    of tokens within a segment. This is only used in *segment-wise encoder*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'positional embeddings for segments: this is to indicate orders of segments
+    and is only used in *cross-segment encoder*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Model Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Authors[1] trained the model in two stage: pre-training and fine-tuning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-training**: since the network is an encoder transformer, it is trained
+    using Masked Language Modeling (MLM) objective, where a fraction (15%) of tokens
+    are masked and language model is supposed to predict them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fine-Tuning**: They used document classification task on few labelled datasets
+    to fine tune the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Different Level of Embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Using this network, we can obtain embeddings at various scales: word, paragraph,
+    document.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Word embeddings or token embeddings are directly accessible via last layer of
+    the model,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Paragraph or segment embeddings are accessible via CLS token embedding of a
+    segment.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Document embedding can be taken by max pooling (or average pooling) of all segment
+    CLS token embeddings. In the paper [1], authors chose max pooling.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'What I really like about this paper is that they consider a thorough evaluation
+    in three levels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1)**upstream evaluation tasks**: these are tasks that aim to pre-train the
+    encoder in generic way. For this task, they take the MLM (masked language modeling)
+    task.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2) **midstream evaluation tasks**: these are tasks that aim to assess quality
+    of learned representations by the pre-trained model. For this evaluation, authors[1]
+    consider few tasks such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'segment order prediction: this is to predict the order of few segments. The
+    input to the model in this task is a shuffled sequence of segments from a document[1],
+    and the goal is to predict the right ordering among them. Since this is a regression
+    problem they use the Mean Absolute Error (MAE) as loss function. Intuitively,
+    this task uses assess the quality of CLS token embeddings.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '3) **downstream evaluation tasks**: where they estimate model’s performance
+    in realistic applications. For this evaluation they considered document classification
+    in the usecase of classifying discharge summaries from US hospitals. To obtain
+    document embedding, they used max pooling on CLS token embeddings of all segments
+    in the document and they used cross entropy as the loss function for classification.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more details, please refer to the paper at [1] .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiment Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many experiment results in the paper, but one notable one is where
+    they compare their model in the interleaved layout with Longformer [2] and BigBird
+    [3] models. Longformer and BigBird are from sparse attention family of methods,
+    they implement an efficient attention mechanism by forcing each token to attend
+    to few tokens in its neighborhood and few global tokens. This is as opposed to
+    standard attention where every token attends to every other token. In this experiment,
+    they show their HAT method beats both Longformer and BigBird.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/122a9ae9347af5715b0d6dd2ab0cbc05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image from [[1](https://arxiv.org/abs/2210.05529)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this post, we looked at another hierarchical transformer architecture called
+    as Hierarchical Attention Transformer (HAT). This is an encoder based model that
+    splits input into segments of equal length. Each segment starts with a CLS token
+    that represents the segment. The model architecture consists of two main components:
+    a segment-wise encoder, and a cross-segment encoder. The first encoder learns
+    representations for individual segments, whereas the second one learns cross-relation
+    between segments. Together they are able to learn representations for various
+    level of hierarchy in the input such as word representation, sentence representation
+    and document representation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have any questions or suggestions, feel free to reach out to me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Email: mina.ghashami@gmail.com'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LinkedIn: [https://www.linkedin.com/in/minaghashami/](https://www.linkedin.com/in/minaghashami/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[An Exploration of Hierarchical Attention Transformers for Efficient Long Document
+    Classification](https://arxiv.org/abs/2210.05529)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Longformer: The Long-Document Transformer](https://arxiv.org/abs/2004.05150)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Big Bird: Transformers for Longer Sequences](https://arxiv.org/abs/2007.14062)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

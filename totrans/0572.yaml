@@ -1,0 +1,404 @@
+- en: Correct Sampling Bias for Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/correct-sampling-bias-for-recommender-systems-d2f6d9fdddec](https://towardsdatascience.com/correct-sampling-bias-for-recommender-systems-d2f6d9fdddec)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What is sampling bias in recommendation, and how to correct them
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)[![Thao
+    Vu](../Images/9d44a2f199cdc9c29da72d9dc4971561.png)](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------)
+    [Thao Vu](https://medium.com/@vuphuongthao9611?source=post_page-----d2f6d9fdddec--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2f6d9fdddec--------------------------------)
+    ·8 min read·Oct 1, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5bbbc4ae0707318b5df926332f23574.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [NordWood Themes](https://unsplash.com/@nordwood?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recommendations are ubiquitous in our digital lives, ranging from e-commerce
+    giants to streaming services. However, hidden beneath every large recommender
+    system lies a challenge that can significantly impact their effectiveness — sampling
+    bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will introduce how sampling bias occurs during training recommendation
+    models and how we can solve this issue in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two-tower Recommendation systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In general, we can formulate the recommendation problem as follows: given **query
+    x** (which can contain user information, context, previously clicked items, etc.***)***,
+    find the set of items ***{y1,.., yk}*** that the userwill likely be interested
+    in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the main challenges for large-scale recommender systems is low-latency
+    requirements. However, user and item pools are vast and dynamic, so scoring every
+    candidate and greedily finding the best one is impossible. Therefore, to meet
+    the latency requirement, recommender systems are generally broken down into 2
+    main stages: retrieval and ranking.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b05b10e53d68e6a6fb6593cfb9be96a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multi-stage recommender systems (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Retrieval is a cheap and efficient way to quickly capture the top item candidates
+    (a few hundred) from the vast candidate pool (millions or billions). Retrieval
+    optimization is mainly about 2 objectives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: During the training phase, we want to encode users and items into embeddings
+    that capture the user's behaviour and preferences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: During the inference, we want to quickly retrieve relevant items through Approximate
+    Nearest Neighbors (ANN).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the first objective, one of the common approaches is the two-tower neural
+    networks. The model gained its popularity for tackling the cold-start problems
+    by incorporating item content features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In detail, queries and items are encoded by corresponding DNN towers so that
+    the relevant (query, item) embeddings stay close to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/89574700e83ee66109c508f826ee5fe1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two-tower neural networks (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be reformated as a multi-class classification problem as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given query **x** and a list of items **(y1, y2,..)**, we output a probability
+    vector with a size equal to the number of items predicting the probability **pi**
+    that the user will interact with item **yi** (~1: yes/~0: no).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For training data, the positive label means the user has clicked/viewed/bought
+    item **yi**. The negative label means that item **yi** has been shown to the user,
+    but the user had no engagement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The pair (x, yi) is passed through their corresponding tower and encoded into
+    **(emb_x, emb_yi)**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The similarity of **emb_x** and **emb_yi** can be measured by the dot product
+    or cosine similarity, named **sim_i.**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The probability of interaction is measured by softmax probability as follows,
+    with Z as the normalized term.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b111de69d55254ab5eee1369c463e8ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Softmax probability (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Folding problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The model goal is to generalize well on our dataset: it should be able to predict
+    the score for (**x*, y***) pairs which don''t appear in the training data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do so, we need to teach the model that, for each query embedding, good item
+    embeddings should be pulled closer, while irrelevant items should be pushed far
+    away. How can the model know about the unrelated items? Based on negative samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the initial ways to build negative training data is to use the items
+    that users viewed but did not click/view/purchase. However, each user only views
+    and engages with a few items, so the feedback is relatively sparse and skewed
+    toward a specific subgroup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we only train the model on (x, y) pairs that appear in our log, the model
+    may learn well to keep queries and matching items close, but it may coincidentally
+    put queries and completely irrelevant items near each other, too. This problem
+    is known as "folding" [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, we need to sample some extra negative data for training to teach
+    the model to keep irrelevant embeddings far away from each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how can we collect these negative data effectively?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In-batch negative and the bias problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The simplest solution is to use in-batch negative, where we use other items
+    in the same batch as negative samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the whole batch of data **(x1, y1), (x2, y2)**,…, **(x_bn, y_bn)**, for
+    each sample **(xi, yi)**, we will use **(xi, yj)** as in-batch negative samples.
+    In the image below, blue lines mean positive samples and red lines mean the in-batch
+    negative samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c32eeed54aeb149b5d9ba37f8592942e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In-batch negative sampling. (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In-batch negative training is an easy and memory-efficient way to reuse the
+    item samples already in the batch rather than sampling and computing new samples
+    from the whole item corpus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it tends to suffer from sampling bias, especially for skewed data distribution.
+    For example, think of the YouTube platform; a few top videos can have billions
+    of views, while most others only have a few hundred views. Those top videos will
+    appear more frequently in training data than others. Therefore, they will be more
+    likely to be used as "in-batch negative" and, hence, be overly penalized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we fix this bias sample problem?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importance sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we need to define what is an ideal and unbiased sampling for our problem.
+    Given the whole item corpus (y1, y2,…., yN), for each positive sample (x, y),
+    we want to tell the model that all other items in the corpus are negative samples.
+    Namely, each item y should be sampled with equal probability p(y) = 1/N.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So ideally, the normalized term Z should be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d74bc2caf808d32b6ee4217883a98978.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Softmax sampling from the item pool (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, that is impossible due to the substantial computation resources required
+    to perform gradient updates on every item. A solution is to use "**importance
+    sampling**" [2]. We still use the in-batch samples but will "correct" its distribution
+    so it mirrors the unbiased sampling distribution above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given an in-batch item set (y1, y2,..,yn) and **q(yi)** is the in-batch sampling
+    probability of **yi**, we will correct **q** as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e2acd53666de63d7df82e9cc4e5ed20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bias sampling correction (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the formula, **ri** acts as a "correction" weight that lets us utilize the
+    in-batch items but still follow the correct uniform distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is the core idea of the bias correction. Next, let's learn how a big tech
+    company, Google, corrects sampling bias for their recommender systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Negative sampling correction in practices
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sampling-Bias-Corrected for Streaming data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this work [1], the authors introduce an algorithm to correct the bias sampling
+    for streaming data. Since recommender systems are moving closer to real-time updates,
+    online training with streaming data is necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd630a0f47e0eccef475a0dd35fd0975.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Online training for recommender system [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, we may need to access the whole training dataset to correct
+    the sampling bias to estimate the distribution of item y, **p(y)**. However, measuring
+    the distribution of streaming data is almost impossible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper proposed to estimate **p(yi)** based on the gap between two consecutive
+    batches that contain item_i **B[h(yi)]**. Intuitively, the smaller the gap, the
+    more popular y is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b4a28741b4cdeb37ea4c76e3cf11abf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample frequency estimation [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the estimation of its popularity, we can decide how much y should be
+    penalized as an in-batch negative. The more popular **y** is, the less impact
+    it should have on the batch loss. Hence, it will be penalized less.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4e3b593b6b340b4f94cf1ac6f8c28f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sampling correction for streaming data (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach does not require fixed item vocabulary and can still produce unbiased
+    estimations. Moreover, it can adapt to online item distribution changes over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To study the strategy impact, the team has experimented with offline evaluation
+    on YouTube video recommendation, where the index of approximately 10M videos is
+    periodically built every few hours. During the 7-day evaluation period, 10% of
+    the data log is held out for evaluation. The approach with sampling correction
+    has achieved significant gains in offline recall metrics compared to plain negative
+    sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73eb3ef0842f03a02236f54ad1ff0589.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Recall@K for retrieving clicked video pages from a 10M video corpus on YouTube.
+    [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encouraged by the positive offline result, the team continued to try the new
+    retrieval methods online. The engagement metric is also remarkably improved, proving
+    the effectiveness of sampling correction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30d245a8e348ea893fe622f70a8a93fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: YouTube live experiment results [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixed negative sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This work [3] takes one step further to solve the bias issue. The paper mentioned
+    another type of bias, "**selection bias, "** where items with no user feedback
+    will never be included in training data. Therefore, the model lacks generalizability
+    to differentiate the long-tail items from others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors proposed that, besides in-batch negative samples, we also sample
+    negative data from the entire item corpus. Therefore, all items have a chance
+    to serve as negative samples. This can be especially helpful for the model to
+    learn about fresh and long-tail items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Besides the in-batch items B, we uniformly sample items from the whole item
+    corpus as an extra negative sample, named B'. The sampling will then be "corrected"
+    similarly to the above approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d981da885c4fcea41b485ad493cd9da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mixed negative sampling [3]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To prove the impact of mixed negative sampling, the team conducted experiments
+    in the Google Play app recommendation. The baseline is compared with 2 negative
+    sampling strategies: in-batch negative only and mixed negative.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to the baseline, both negative-sampling approaches incorporated item
+    contents as features to improve the generability. However, the in-batch negative
+    sampling group performed worse than the baseline in both offline and online evaluations.
+    For this group, the team observed a few irrelevant long-tail apps in the model's
+    recommendations. This supports the hypothesis that in-batch negative suffers from
+    selection bias. Long-tail items were not frequently included in training data
+    and, subsequently, not demoted as they should be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, mixed negative sampling was superior in both offline and online
+    evaluation. Namely, for online abtest, the team focuses on high-quality instalments
+    where users install and use the apps afterwards. The mixed negative sampling group
+    won by a large margin of 1.54%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2330ecb94e7cb867eb991bc040f81e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Recall@K of several models in the Google Play dataset [3]*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90e7a249b14c92940defc634ab4ea47c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Live experiment results of 3 models in Google Play. [3]*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Yi, Xinyang, et al. "Sampling-bias-corrected neural modeling for large
+    corpus item recommendations." *Proceedings of the 13th ACM Conference on Recommender
+    Systems*. 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://en.wikipedia.org/wiki/Importance_sampling](https://en.wikipedia.org/wiki/Importance_sampling)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Yang, Ji, et al. "Mixed negative sampling for learning two-tower neural
+    networks in recommendations." *Companion Proceedings of the Web Conference 2020*.
+    2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Xin, Doris, et al. "Folding: Why good models sometimes make spurious recommendations."
+    *Proceedings of the Eleventh ACM Conference on Recommender Systems*. 2017.'
+  prefs: []
+  type: TYPE_NORMAL

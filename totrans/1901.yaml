@@ -1,0 +1,379 @@
+- en: SQL Riddles to Test Your Wits
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/sql-riddles-to-test-your-wits-8ce31202ae7f](https://towardsdatascience.com/sql-riddles-to-test-your-wits-8ce31202ae7f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Timestamps, dependent filters, and misbehaving left joins
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)[![Matt
+    Sosna](../Images/c3175c0dc62b795a8d0fa57532fb669b.png)](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------)
+    [Matt Sosna](https://mgsosna.medium.com/?source=post_page-----8ce31202ae7f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ce31202ae7f--------------------------------)
+    ·8 min read·Feb 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1fc7bf3a6b50e65020f31e0892a018c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Saffu](https://unsplash.com/@saffu?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQL is a deceptively simple language. Across its many dialects, users can query
+    databases in a syntax similar to English. **What you see is what you get… until
+    you don’t.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every now and then I come across a query that produces a result completely different
+    from what I expected, teaching me little nuances about the language. I’ve compiled
+    three recent head-scratchers in this post, and I’ve arranged them as riddles to
+    make them more interesting. Try to figure out the answer before reading the end
+    of each section!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve also included quick [**common table expressions (CTEs)**](https://learnsql.com/blog/what-is-common-table-expression/)
+    to generate the tables in each example, so you don’t need to try querying your
+    company’s production tables! But to get really comfortable with SQL, I actually
+    recommend creating your own database and tables to play with. Check out [this
+    post](https://medium.com/towards-data-science/intermediate-sql-for-everyone-fe35c541147a)
+    to learn how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that all queries are in Postgres — you may get different results in a different
+    dialect. Finally, an obligatory note that the actual data and topics in each query
+    are just illustrative examples. 🙂
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6561e629797d06859c10d601195dcd0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Akram Huseyn](https://unsplash.com/@akramhuseyn?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Riddle 1: Timestamp Specificity'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Imagine we have a table called `purchases` with purchase IDs, amounts, and
+    times the purchase were made. Let’s say it looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e841213f41d988b969e1bf43b3a2f006.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a CTE, this would look something like this. Note that we need to specify
+    that the `dt` column is a timestamp so it isn’t interpreted as a string. We also
+    only need to specify the data types for one of the rows; the rest are inferred.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now let’s calculate the sum of purchases made on Feb 15\. We can write a query
+    like the one below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We mysteriously receive the following response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f08b7fac27108cd6b6875f91a1d0851e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What happened? There were three purchases made on Feb 15: IDs 1, 2, and 3\.
+    The sum should therefore be $26.97\. Instead, only the first purchase was counted.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you change the filter to `2023-02-16`, no rows are returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Answer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The `dt` column format is a timestamp that includes both date and time. Our
+    `WHERE` filter only specifies the date. Rather than rejecting this query, Postgres
+    automatically reformats the date string to `2023-02-15 00:00:00`. This matches
+    only the first transaction in the table, so we’re therefore taking only the sum
+    of one row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we wanted to select all rows corresponding to Feb 15, we should first cast
+    the timestamp to date.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now get the expected result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/277c9dfd7a79e6c3539c7dcc37eb6ea4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1bcdb45db73942c600750ed2a31e8721.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Womanizer Toys](https://unsplash.com/es/@womanizer?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Riddle 2: Dependent vs. independent filters'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Alright, next riddle. We have a table called `users`, and our goal is to **remove
+    all rows that meet *any one* of three conditions.** In the table below, for example,
+    let’s say that we want to only return tenured and active users, i.e., ones who
+    *have* logged in during the last 28 days, *have* posted before, and are *not*
+    a new account.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b300a25500f94c581ecc23ad3a84da85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, we want our query to only user 8, who has False values for `no_login_l28`,
+    `has_never_posted`, and `is_new_account`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the top of our query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: How should we structure the `WHERE` clause of our query? Think for a minute
+    – **we need to be careful not to return rows where *any* of the columns is** `**False**`**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you’re ready, take a look at the options below. **Two are correct and two
+    are wrong.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 1: Multiple** `**AND NOT**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Option 2: Multiple** `**OR NOT**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Option 3:** `**NOT**` **+ grouped** `**OR**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Option 4:** `**NOT**` **+ grouped** `**AND**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When are conditions in a filter evaluated separately versus together? If they’re
+    evaluated together, can we condense all conditions down to one `True` or `False`
+    value?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Answer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Option 1.** This one tripped me up a bit. A data scientist on my team submitted
+    a PR with this filter, which I was convinced would pull in rows 2–7 because the
+    query would only remove users with `False` values for all three columns. But to
+    my surprise, Option 1 actually works **because the three filters are evaluated
+    independently.** ✅'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 2.** This was the filter I initially thought was correct, since I
+    didn’t realize the filters would be evaluated independently. But this filter will
+    actually return users 2–8, since anyone who has at least one `True` for `no_login_l28`,
+    `has_never_posted`, and `is_new_account` will be allowed through. ❌'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 3.** This was how I initially thought the filter needed to be worded.
+    If a user has `True` for *any* of `no_login_l28`, `has_never_posted`, or `is_new_account`,
+    then lines 3-5 evaluate to `True`, the `NOT` flips this to `False`, and those
+    rows are ultimately excluded. This indeed works, and I find this easier to understand
+    than Option 1, but both are valid. ✅'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Option 4.** This returns the same incorrect result as Option 2\. Lines 3–5
+    evaluate to `True` only for user 1, meaning that when we flip the boolean with
+    `NOT`, all remaining users are pulled through. ❌'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0cf6fb60d6ba852509c672abe8c1bed8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Nick Fewings](https://unsplash.com/@jannerboy62?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Riddle 3: Left joins acting like inner joins'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Take a look at the query below. We have two tables, `customers` and `reviews`.
+    `customers` contains customer IDs and their lifetime dollars spent on the platform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a85750c1c18e374de1a3ddd382f83bb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`reviews` contains information about reviews left by customers: the review
+    ID, customer ID, and whether the review was reported as spam.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a0d8514acf7b406b7693089521e1ddda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the subquery to generate the two CTEs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now let’s say we’re curious about the relationship between a customer’s total
+    spend and the number of non-spam reviews they write. Since not each customer has
+    left a review, we’ll want to left join `reviews` to `customers`. We can structure
+    our query like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Ready? Here’s what comes out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23213b592479c359fab0bb3cb77f951d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wait a minute. Where did users 200, 300, and 400 go? Why were they removed,
+    and how can we bring them back in?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you create a CTE for `reviews` with spam reviews filtered out, *then* join
+    on this CTE, do we get the same result?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Answer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Looking closely, we can see that users 200 and 300 have never left any reviews.
+    400 only has spam reviews, but they were completely removed as well. Since we
+    did a left join, these users should still be in the table and have a 0 for `n_reviews`.
+    Instead, our left join [behaved like an inner join](https://trevorscode.com/why-is-my-left-join-behaving-like-an-inner-join-and-filtering-out-all-the-right-side-rows/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The issue, it turns out, is that `**WHERE**` **clauses are evaluated *after*
+    joins.** Our left join brings in null values for `reported_as_spam` for users
+    200 and 300\. The `WHERE` filter then removes all rows where `reported_as_spam`
+    is True, which removes user 400\. However, this filter also removes null values,
+    so users 200 and 300 are also removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do this properly, we need to pre-filter `reviews` before joining with `customers`.
+    As the hint states, we can create a CTE for `reviews` and perform the filtering
+    there. But more efficiently, [let’s perform the filtering *within* the join](https://mode.com/sql-tutorial/sql-joins-where-vs-on/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can do this by adding `AND NOT r.reported_as_spam` to the `LEFT JOIN` block.
+    See below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we get the expected result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ded0c2dd29a48a3a2fa22f53527f5eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26ff34d90559419122b8dd79bb8cf443.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Laura Chouette](https://unsplash.com/@laurachouette?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This post shared three SQL wrinkles that can lead to unexpected results: timestamp
+    specificity, dependent versus independent filters, and left joins acting like
+    inner joins. I specifically provided simple examples to keep the focus on the
+    syntax, but you’ll likely encounter SQL nuances like these nestled within large,
+    complex queries.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These bugs can be incredibly challenging to identify, especially for queries
+    with many components. Whenever I’m confused by a result, I try to break the query
+    into its pieces and verify each component’s result. But when in doubt, write some
+    simple CTEs with test data and confirm the results do what you expect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Happy querying!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matt
+  prefs: []
+  type: TYPE_NORMAL

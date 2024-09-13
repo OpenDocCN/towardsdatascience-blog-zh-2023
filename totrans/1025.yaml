@@ -1,0 +1,403 @@
+- en: Handling Slowly Changing Dimensions (SCD) using Delta Tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/handling-slowly-changing-dimensions-scd-using-delta-tables-511122022e45](https://towardsdatascience.com/handling-slowly-changing-dimensions-scd-using-delta-tables-511122022e45)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Handling the challenge of slowly changing dimensions using the Delta Framework
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mkukreja1.medium.com/?source=post_page-----511122022e45--------------------------------)[![Manoj
+    Kukreja](../Images/de7c954b505e9749bad47975a3bee80b.png)](https://mkukreja1.medium.com/?source=post_page-----511122022e45--------------------------------)[](https://towardsdatascience.com/?source=post_page-----511122022e45--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----511122022e45--------------------------------)
+    [Manoj Kukreja](https://mkukreja1.medium.com/?source=post_page-----511122022e45--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----511122022e45--------------------------------)
+    ·10 min read·Jan 23, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a long time, the Kimball method has been a standard for dimensional data
+    modeling techniques. As per Kimball “ *The notion of time pervades every corner
+    of the data warehouse*”. What does this mean in the context of data analytics?
+    At a high level, modern analytics can be seen as the aggregation of constantly
+    changing data with the passage of time. The problem is that the constantly changing
+    data not only includes new additions but also changes to previous datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Overall dimensional data modeling groups data into two major categories:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Facts** — This data represents *limitless* data sets that store measurements
+    of entities. It contains data that is essential for quantitative analysis and
+    decision-making. Fact tables frequently have columns that join to other tables
+    (dimensions) for reference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dimensions** — This data represents relatively *limited* data sets that provide
+    descriptive information regarding the measurements performed in the fact tables.
+    In comparison to fact tables, dimensions evolve at a lot slower pace. This is
+    the reason they are commonly referenced as “*slowly changing dimensions*”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kimball’s approach involves the creation of a star schema based on facts and
+    dimensions. Because of the denormalized structure, the star schema is well suited
+    for analytics use cases…no need for complex join conditions. For this reason,
+    for several years, the star schema has been a de facto standard for modeling in
+    traditional data warehouses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45cbf90d8239b735cbe35fd12a284f26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For many years, data handlers have faced the challenge of handling slowly changing
+    dimensions without losing their previous history as well as preserving the relational
+    reference to fact tables. The Kimball method proposes several methods for effectively
+    dealing with slowly changing dimensions or SCD in short. The reality is that once
+    a particular SCD method is chosen it is relatively easy to implement it in a data
+    warehouse. Support for SQL and ACID transactions makes it easy to handle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, implementing the same in the data lake is a different story.
+    There are a couple of reasons for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first problem is **immutability**. As per best practices, data in a data
+    lake should not be changed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Secondly, for several years it was not possible to perform atomic writes in
+    a data lake. This meant you need to rewrite the entire table even if you have
+    a minor edit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The [Delta Lake](https://delta.io/) framework addresses the problems above.
+    Support for ACID (atomicity, consistency, isolation, and durability) transactions
+    now makes it possible to implement SCD with the same ease as a data warehouse.
+    In this article, we will learn how to implement the most common methods for addressing
+    slowly changing dimensions using the Delta Lake framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider an example case scenario below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “A company wants to keep track of the *customer* dimension for changes happening
+    over time. They have requested their data engineering group to suggest a few alternatives.
+    After careful consideration, data engineering has come up with three options to
+    manage the slowly changing dimensions SCD Type 1, SCD Type 2 and SCD Type 3.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Before we move into each option let us try to understand the data structure
+    of the customer dimension. Throughout this article, we will be using the sample
+    datasets below. The dataset below shows some sample customer records. For explaining
+    the different options for dealing with slowly changing dimensions our focus will
+    remain on the customer record highlighted using a red box (customer with name
+    = **Magee Cash**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a48e735e13b0ac803dd6c6eed69f3a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Magee Cash** has recently changed her address. Change record(s) are delivered
+    as [CDC](https://en.wikipedia.org/wiki/Change_data_capture) records to the **OLAP**
+    system. In the context of data engineering, the CDC process aims at capturing
+    incremental data sets from sources and merging them in enterprise data lakes.
+    Following is the change record for **Magee Cash***,* notice that the address differs
+    from the original record above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/141265ab2660807488168394b0d3205a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The core capabilities of Delta Lake make it an extremely suitable platform for
+    building modern data [lakehouse architecture](http://cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf).
+    In the Lakehouse architecture, [Delta Lake](https://delta.io/) can be used for
+    merging change records into a common data layer (silver). Once created the silver
+    layer acts as the foundational data layer for your analytical workloads including
+    BI, data science, machine learning, and artificial intelligence. For this reason,
+    the silver layer is often referred to as the “***single source of truth***”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get back to the core objective of this article. Now that we have a clear
+    understanding of the datasets, we are ready to explore the first SCD method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This type is often referred to as the “**Overwrite**” method. In this method,
+    any changes to dimension data simply override the previous state of data with
+    the same key. Although very simple to implement this method suffers from a major
+    drawback. Due to the overwrite mechanism, you not only lose the previous history
+    of the dimension, but also the state of the fact table that it gets attached to.
+    The before and after image of the customer dimension using the SCD type 1 method
+    is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90ae4c316b621475e5fbad8b223f609c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice how the new home address is simply **overwritten** over the previous
+    address, the history of the previous address is lost. The repercussions of losing
+    history can be severe in cases where a fact table aggregation gets affected by
+    the change in the dimension. In such a case, without the history, it becomes extremely
+    difficult to back-track the reason why the aggregation value got affected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now learn how SCD Type 1 can be implemented using Delta framework. Start
+    by creating the silver layer customer dimension table (***customer_silver_scd1***)
+    using the raw customer data set in the bronze layer of the Lakehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29c1bb1a22abeabbe1eec76fd294a781.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new dataframe using the change record for **Magee Cash***.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52c45cf45a3a01ca1fd3d156f63a2182.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, merge the change of address record into the ***customer_silver_scd1***
+    silver layer dimension table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac5d4cdc744e6321809167fb1e2e0145.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After performing a query on the silver layer dimension table, you will notice
+    the change of address has overridden its previous state. The problem is that the
+    previous state of this record is nowhere to be seen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a scenario where **Magee Cash** may have placed an e-commerce order
+    using the previous version of the address. The product has not been shipped yet,
+    but the address has changed in the meantime. Where should the product be shipped
+    to? The old address or the new one.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/88debfaef69f487c6818021ed1a496b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let me introduce you to a very useful feature in the Delta Lake framewrok. Delta
+    Lake maintains a chronological history of changes including inserts, updates,
+    and deletes. In the example above **version 0** of the table was generated when
+    the ***customer_silver_scd1*** silver layer table was created. Similarly, **version
+    1** of the table was created when we performed the data merge for the change of
+    address record. In addition, Delta Lake tables can easily be restored to any previous
+    version as desired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71516c5b7bc2be675a12b3b06f87e7bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the deficiencies cited above, SCD Type 1 is rarely used in modern data
+    platforms. Therefore, we need a better method(s), one that lets us perform changes
+    to dimensions while preserving the **previous** references for active usages.
+    Overall, simply use SCD Type 1 if your computations *do not* care about the previous
+    state of data or the repercussions that it causes down the line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Also known as an “**Add a New Record**” method. In this method, the change record
+    is added as a new record to the dimension table and marked as “***Current***”
+    or “***Active***”. In addition, the previous version of the record is marked as
+    “***Expired***” or “***Inactive***”. The various versions (current and historical)
+    of a record are tied together using a **surrogate** key. At a table level, SCD
+    Type 2 is implemented by adding a ***StartDate*** and *EndDate* timestamp columns
+    for each row in the dimension table. Additionally, a ***Status*** column is added
+    to mark if the record is ***current*** or***expired*** status. The before and
+    after image of the customer dimension using the SCD Type 2 method is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3dbf275b0967c450b5eebddc4621901.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now learn how SCD Type 2 can be implemented using the delta framework.
+    Start by creating the silver layer customer dimension table (***customer_silver_scd2***)
+    using the raw customer dataset in the bronze layer of the Lakehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33e8e077d10805e83380e4cff16acb64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now **merge** the change of address record into the ***customer_silver_scd2***
+    silver layer dimension table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/94a3136f35d0ea6bc27baca37a8c69f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the previous record got marked as ***Expired*** and an ***enddate***
+    is updated. Also, a new record with the latest address was inserted with the ***startdate***
+    same as the ***enddate*** of the previous record. Using this approach **Magee
+    Cash** will surely be getting her e-commerce order shipped to the correct address.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/308f0c07589a5670279b6a626b53c94c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the SCD Type 2 approach, you can chronologically track the history of
+    changes over time and maintain the references to fact tables in a time chronological
+    manner. I must admit that the implementation is a little tricky compared to SCD
+    Type 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a cautionary note, the application that maintains the dimension table needs
+    to be coded in such a way that the addition of the new record with the *current*
+    version and the *expiry* of the previous version are performed in one single transaction.
+    Also, every query that goes against the dimension table needs to filter *status=****Current***.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: There is a simpler alternative, further we explore yet another method which
+    in some ways is simply an extension of the SCD Type 1 method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCD Type 3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Also known as an “**Add a New Field**” method. For every change, the prior version
+    and the current version are stored as two distinct columns within the same row
+    of the dimension table. SCD Type 3 is relatively easier to implement as compared
+    to SCD Type 2, the history includes only the current and previous versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9efd1f5832c6277db80b8de34b01f534.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now learn how SCD Type 3 can be implemented using the delta framework.
+    Start by creating the silver layer customer dimension table (***customer_silver_scd3***)
+    using the raw customer dataset in the bronze layer of the lakehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14b74ad31ac2a4047f3e779dc4de5f9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that every column in the dimension table maintains a **current** and
+    **previous** state. At the creation time of the dimension table, the current state
+    of the column is populated with the latest data, yet the previous state of the
+    column is left blank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now merge the change of address record into the ***customer_silver_scd3*** silver
+    layer dimension table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6324b016844ac3dc76823465ed0edb90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving ahead to check the state of the record after the delta lake merge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f8ff0e04eb9e23642b3228d1930f206e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the ***address*** field is now populated with the changed record
+    and the previous version of the address has been moved to the ***previous_address***
+    field. Similarly, the ***modifieddate*** field has been updated to maintain a
+    change chronology.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fact that only a limited amount of history is available makes the use case
+    of SCD Type 3 a little on the limited side. But the ease of implementation makes
+    it somewhat desirable. It’s a good trade-off if you hate the limitations of SCD
+    Type 1 and find SCD Type 2 hard to implement and manage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All the code used in this article can be found on the link below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/mkukreja1/blogs/tree/master/scd?source=post_page-----511122022e45--------------------------------)
+    [## blogs/scd at master · mkukreja1/blogs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/mkukreja1/blogs/tree/master/scd?source=post_page-----511122022e45--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many respects, SCD Type 2 is frequently considered the primary technique
+    for implementing slowly changing dimensions. It should be clearly understood that
+    the primary objective of SCD is not to store the history of records over time,
+    instead, it is to maintain an accurate association with the fact tables. Also,
+    in many respects, the slowly changing dimensions require you to update records
+    which in general terms goes against the principles of the immutable nature of
+    the data lake/warehouse. However new advances made by frameworks like Delta Lake
+    have made it possible to implement SCD scenarios with **ease** and **simplicity**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article was helpful. **SC**D is covered as part of the AWS Big Data
+    Analytics course offered by [Datafence Cloud Academy](http://www.datafence.com).
+    The course is taught online by myself on weekends.
+  prefs: []
+  type: TYPE_NORMAL

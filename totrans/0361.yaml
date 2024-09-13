@@ -1,0 +1,241 @@
+- en: Be Careful When Using “NOT IN” in SQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/be-careful-when-using-not-in-in-sql-c692fad3427b](https://towardsdatascience.com/be-careful-when-using-not-in-in-sql-c692fad3427b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: + 3 simple solutions to make sure you’re not caught out
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mattchapmanmsc?source=post_page-----c692fad3427b--------------------------------)[![Matt
+    Chapman](../Images/7511deb8d9ed408ece21031f6614c532.png)](https://medium.com/@mattchapmanmsc?source=post_page-----c692fad3427b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c692fad3427b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c692fad3427b--------------------------------)
+    [Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----c692fad3427b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c692fad3427b--------------------------------)
+    ·5 min read·Dec 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recently, I came across [Benjamin Thürer’s](https://medium.com/@benjamin.thuerer)
+    excellent article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/how-to-avoid-five-common-mistakes-in-google-bigquery-sql-6fafab396d88?source=post_page-----c692fad3427b--------------------------------)
+    [## How to Avoid Five Common Mistakes in Google BigQuery / SQL'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While working with BigQuery for years, I observed 5 issues that are commonly
+    made, even by experienced Data Scientists
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/how-to-avoid-five-common-mistakes-in-google-bigquery-sql-6fafab396d88?source=post_page-----c692fad3427b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: …in which he cautions us about using the `NOT IN` SQL clause in BigQuery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I’ll expand on what he said by providing more examples, remedies
+    and practice questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to understand why the `NOT IN` clause is risky — and what to do
+    about it — read on!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem: NOT IN doesn’t handle NULLs in the way you might expect'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `IN` and `NOT IN` operators provide a logical way to compare arrays. For
+    example, if you write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'BigQuery will return `true`. If you write:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: BigQuery will return `false`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Seems simple, right? But there’s a problem: `IN` and `NOT IN` do weird things
+    when the lookup array contains `NULL` values. The following code, for example,
+    will return `NULL`, not `false`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To see why this matters, take a look at these three tables, each of which contains
+    a list of names:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you wanted to find all the names in `table_1` which are not present in `table_2`,
+    we can use the `NOT IN` clause:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `NOT IN` operator allows us to find the two correct names: “Frankie” and
+    “Ben”. In technical SQL jargon, this operation is known as an “anti semi-join”
+    (it’s a ***semi*** join because we’re not making a full join between `table_1`
+    and `table_2`; we’re only checking for the existence of certain rows in `table_2`,
+    and it’s an ***anti*** semi-join because we’re checking whether `table_2` does
+    NOT contain the rows ([1](https://www.youtube.com/watch?v=9i_Gqv5CfSw))).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, if we tried to use the same logic to select all the names in `table_1`
+    that are not present in `*table_3*` (the table containing a `NULL` value), we’d
+    get this result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Weird, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on how smoothly our first query ran, we might expect the names “Frankie”
+    and “Ben” to be returned. But in BigQuery, we’ll get nothing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In SQL, NULLs are handled differently
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In many SQL dialects including GoogleSQL (which is the default dialect used
+    by BigQuery), the `NOT IN` operator will return `NULL` “if any value on the right
+    hand side is `NULL`” ([2](https://cloud.google.com/bigquery/docs/reference/standard-sql/migrating-from-legacy-sql#not_in_conditions_and_null),
+    [3](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators#in_operators)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the root cause of that behaviour we just observed — the array returned
+    by `(SELECT name FROM table_3)` contains a `NULL` value, so our entire query ends
+    up returning no data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why does this happen?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In SQL, a `NULL` value is treated differently than other (non-null) values like
+    `1`, `5.12`, `true`, or `botswana`. The value of a `NULL` object is not “0” or
+    “False”; it’s considered *unknown* or *undefined*. When we try to make a comparison
+    with an unknown object, the result of that comparison will therefore also be unknown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/c182ff19238bfdba2243d9d6028c5699.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Marcel Eberle](https://unsplash.com/@marcel_eberle) on [Unsplash](https://unsplash.com/photos/black-and-yellow-lamp-post-pCHl_wqfr0M)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckily, there are a few easy fixes for this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Remove `NULL` values from the lookup array
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This one is pretty straightforward: just filter out the `NULL` rows from `table_3`.
+    It’s a little more computationally expensive than the other solutions (below),
+    but it still does the job nicely on smaller tables.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Use a `LEFT JOIN`
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I love this solution — it might seem confusing at first, but you’ll find it
+    very elegant once you get your head around it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we join `table_1` to `table_3` on the `name` column (i.e. the column
+    which they both share). Then, we apply a `WHERE` filter to `table_3` so that only
+    rows with `NULL` are returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Confused? Here’s what would happen if we didn’t include the `name` column from
+    `table_3` and didn’t apply that `WHERE` filter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we apply our `WHERE table_3.name IS NULL` filter, we’re just dropping the
+    first two rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Use `WHERE NOT EXISTS`
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `EXISTS` operator is useful for checking whether a subquery contains any
+    rows. It returns `true` “if the subquery produces one or more rows,” and returns
+    `false` “if the subquery produces zero rows” ([4](https://cloud.google.com/bigquery/docs/reference/standard-sql/subqueries#exists_subquery_concepts)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interestingly, because we’re just checking for the existence of rows in the
+    subquery, it doesn’t matter which columns we `SELECT`; in the example below, for
+    instance, I just select “1”, but I could equally have selected “`true`,” “`5.12`”
+    or “`botswana`”. It doesn’t matter what you choose!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Check your understanding
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Because this is a fiddly concept, I’ve written 4 practice questions which you
+    can use to check your understanding of `IN` and `NOT IN` on my SQL practice site,
+    [the-sql-gym.com](https://the-sql-gym.com/). If you want to reinforce your learning,
+    check them out!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0ee4fb1fbd95c072e3a11ad9abccf00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author from [the-sql-gym.com](https://the-sql-gym.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One more thing —
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I’ve started a free newsletter called [AI in Five](https://aiinfive.substack.com/)
+    where I share 5 bullet points each week on the latest AI news, coding tips and
+    career stories for Data Scientists/Analysts. [Subscribe here](https://aiinfive.substack.com/)
+    if that sounds up your street!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading, and feel free to connect with me on [Twitter](https://twitter.com/matt_chapma)
+    or [LinkedIn](https://www.linkedin.com/in/matt-chapman-ba8488118/)! :-)
+  prefs: []
+  type: TYPE_NORMAL

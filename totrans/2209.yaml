@@ -1,0 +1,479 @@
+- en: Unleashing the Power of Python Asyncio’s Queue
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unleashing-the-power-of-python-asyncios-queue-f76e3188f1c4](https://towardsdatascience.com/unleashing-the-power-of-python-asyncios-queue-f76e3188f1c4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Mastering the producer-consumer pattern with asyncio through real-life examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://qtalen.medium.com/?source=post_page-----f76e3188f1c4--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----f76e3188f1c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f76e3188f1c4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f76e3188f1c4--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----f76e3188f1c4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f76e3188f1c4--------------------------------)
+    ·8 min read·Jun 6, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24745d20075c5ff8f7fcdfc41ffc42b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will explain the API usage and application scenarios of various
+    queues in Python asyncio relaxedly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the end of the article, I will demonstrate the practical usage of `asyncio.Queue`
+    in a classic shopping scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Why do we need asyncio.Queue
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As readers who have read my previous articles know, I love asyncio because it
+    is an almost perfect solution for concurrent programming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in a large-scale, highly concurrent project, a large number of uncontrollable
+    concurrent tasks waiting will occupy system resources, leading to poor performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, it is necessary to control the number of concurrent tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why can’t we use asyncio.Semaphore
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In my previous article on synchronization primitives, I introduced using `Semaphore`
+    locks to control the number of concurrent tasks running simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de?source=post_page-----f76e3188f1c4--------------------------------)
+    [## Mastering Synchronization Primitives in Python Asyncio: A Comprehensive Guide'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Best practices for asyncio.Lock, asyncio.Semaphore, asyncio.Event and asyncio.Condition
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de?source=post_page-----f76e3188f1c4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set the number of `Semaphore` locks first, and the tasks that get the lock will
+    be executed, while those who don’t will wait.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, `asyncio.Semaphore` can only limit the concurrency of tasks accessing
+    a resource through IO; the number of concurrent tasks cannot be limited.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, in this scenario, `asyncio.Semaphore` is not a perfect solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: asyncio.Queue is the way
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using `asyncio.Queue`, we can start a fixed number of concurrent tasks when
+    the program starts, and then pass the data to be processed through the queue to
+    these tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the well-known producer-consumer pattern. At the same time, like the
+    multiprocessing queue, `asyncio.Queue` also serves to pass messages between concurrent
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Magical World of asyncio’s Queue
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Why can `asyncio.Queue` plays such a significant role? In fact, we also encounter
+    similar problems in real life:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6557fc9a9a025003cca9bbacb65160c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Crowds of people in the supermarket. Created by Author, [Canva](https://www.canva.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most typical example is large shopping supermarkets. In such supermarkets,
+    there are always many customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After each customer finishes shopping, they need to check out. Checking out
+    takes some time, which can lead to congestion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A more straightforward solution is to hire more cashiers, preferably one for
+    each customer, for instant checkouts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, this is unrealistic because so many cashiers would mean colossal cost
+    pressure (and resource consumption) for the boss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, a brilliant person came up with a good solution: have customers line up
+    in a queue, and then have a few cashiers check out customers in turn.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/326c7e31717a573d28e9ee72861982ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Customers in the supermarket are lining up. Photo by [Lisanto 李奕良](https://unsplash.com/@lisanto_?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only cost is that customers need to wait a little longer. At the same time,
+    if the queue is too long, the manager can choose to temporarily add a few more
+    cashiers. In this way, the system can flexibly expand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By comparing the customer queue to data entering the queue and cashiers to
+    concurrent tasks, we can see the benefits `asyncio.Queue` brings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is a good implementation of the producer-consumer pattern.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It can control the number of concurrent tasks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Making resource consumption manageable, and the system can also be flexibly
+    expanded.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Adventures of the Producer-Consumer Pattern in asyncio
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is the producer-consumer pattern
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Imagine two types of tasks sharing a queue. Task A produces data and puts it
+    into the queue, while Task B retrieves data from the queue for processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the producer-consumer pattern, where Task A is the producer, and Task
+    B is the consumer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In analogy with a supermarket, customers are producers, cashiers are consumers,
+    and the customer queue represents the queue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why use the producer-consumer pattern
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In high-concurrency programs, producers often generate data quickly, while consumers
+    process data slowly. Thus, producers must wait for consumers to finish processing
+    before continuing to produce data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, consumers process data quickly, while producers generate data slowly.
+    This leads to consumers waiting for producers to generate data before continuing
+    to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To balance between producers and consumers, a queue is needed to store the data
+    produced by the producer. The queue acts as a buffer and decouples the producer
+    and consumer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d47ee0d9373081deb522778bec8b006c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Diagram of Producer-Consumer Pattern. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the Producer-Consumer Pattern with asyncio’s Queue
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now, let’s implement the supermarket shopping scenario mentioned earlier using
+    `asyncio.Queue`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in the code, we first implement the `Customer` and `Product` classes,
+    representing customers and products that need to be checked out. The `Product`
+    class has a `checkout_time` attribute, which represents the time required for
+    checking out the product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After that, we implement a `checkout_customer` method that acts as a consumer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As long as there is data in the queue, this method will continue to loop. During
+    each iteration, it uses a `get` method to retrieve a `Customer` instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is no data in the queue, it will wait.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After retrieving a piece of data (in this case, a `Customer` instance), it iterates
+    through the `products` attribute and uses `asyncio.sleep` to simulate the checkout
+    process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After finishing processing the data, we use `queue.task_done()` to tell the
+    queue that the data has been successfully processed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we implement the `generate_customer` method as a factory method for producing
+    customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first define a product series and the required checkout time for each product.
+    Then, we place 0 to 10 products in each customer’s shopping cart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, we implement the `customer_generation` method as a producer. This
+    method generates several customer instances regularly and puts them in the queue.
+    If the queue is full, the `put` method will wait.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we use the `main` method to initialize the queue, producer, and consumer,
+    and start all concurrent tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f4a8d17480857da09d0da1f14caf26d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The implementation is successful. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, the implementation is successful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing the PriorityQueue
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Why use [asyncio.PriorityQueue](https://docs.python.org/3/library/asyncio-queue.html#priority-queue)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The queue mentioned earlier is a [First-In-First-Out (FIFO) queue](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)),
+    where the first item to enter the queue is the first to be retrieved. This is
+    suitable when all tasks in the queue have the same priority.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, consider the following situation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose there is a queue with tasks waiting in line, each requiring a long processing
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An error log or VIP user access is a high-priority task that needs immediate
+    attention. What should we do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b36cdaeab79425994916e2b5040f5dcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Ethan Hu](https://unsplash.com/@ethanhjy?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where `[asyncio.PriorityQueue](https://docs.python.org/3/library/asyncio-queue.html#priority-queue)`
+    comes into play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Briefly describe asyncio.PriorityQueue’s implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Unlike FIFO queues based on lists, `asyncio.PriorityQueue` is based on heaps.
+    It is built using a binary tree structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may be familiar with binary search trees, which ensure that the most minor
+    node is always the leftmost node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the binary tree in `asyncio.PriorityQueue` ensures that the most minor
+    node is always at the top, so the highest priority node is permanently removed
+    first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c8c8aae9f26e66ab270438bab05f903.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: On the left is the binary tree used by PriorityQueue, and on the right is the
+    binary search tree. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real-world example with asyncio.PriorityQueue
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s illustrate the usage of `asyncio.PriorityQueue` with a real-world scenario
+    that exists in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine we have an order service API. The API takes time for each order to process,
+    but we can’t keep users waiting too long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So when a user places an order, the API first puts the order into a queue, allowing
+    a background task to process it asynchronously while immediately returning a message
+    to the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This API accepts orders from two types of users: regular users and VIP users.
+    It must ensure that VIP user orders are processed with the highest priority.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd2ec610384ccdeca7c3a38496346f69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VIP orders are processed with the highest priority. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To keep the learning curve low for readers, in this example, we will use `aiohttp`
+    to implement the server. The specific code is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we define an enumeration marking the two categories: regular users and
+    VIP users.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we use `dataclass` to define a user's order, which contains the user type
+    and order processing duration. The order duration is not considered in priority
+    sorting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we define the consumer method `process_order_worker`, which retrieves orders
+    from the queue and simulates the order processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t forget to use `queue.task_done()` to tell the queue that we finished processing
+    the order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following that, we implement the order API using `aiohttp`. This API responds
+    to user requests, generates an order object, and places it in the `asyncio.PriorityQueue`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It then immediately returns a response to the user, avoiding user wait time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the program starts, we use `create_order_queue` to initialize the queue
+    and order consumption tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the program ends, we use `destroy_order_queue` to ensure that all orders
+    in the queue are processed and the background tasks are closed correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`queue.join()` will wait for all the data in the queue to be processed. `asyncio.wait_for`
+    sets a timeout of 20 seconds, after which it will no longer wait `queue.join()`
+    to complete.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can test this implementation using PyCharm’s HTTP Request:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a07612eda7364a25f9d308bbf30783ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: API prioritizes orders from VIP users whenever possible. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the two high-priority tasks are processed as expected. Perfect!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I introduced the usage and best practices of `asyncio.Queue`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you need to control the concurrency of a program, I recommend using `asyncio.Queue`
+    to effectively manage resource consumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I introduced the producer-consumer pattern and its benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Balancing between producers and consumers, maximizing resource utilization.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Decoupling the system, allows producers and consumers to scale independently.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, I showed how to use `asyncio.PriorityQueue` to handle scenarios where
+    tasks require prioritization through a real-world example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to space constraints, I could not cover all aspects of `asyncio.Queue`.
+    However, I hope this article provided a solid understanding of the basic concepts
+    and helpful examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Asynchronous programming in Python is a powerful tool, and the producer-consumer
+    pattern with `asyncio.Queue` is a versatile approach to handling concurrency and
+    prioritization in your applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can get more knowledge about Python Concurrency through my list of articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Peng Qian](../Images/fa6bd24b4781f623be8ea40c4e6bdb78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Peng Qian](https://qtalen.medium.com/?source=post_page-----f76e3188f1c4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Concurrency
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[View list](https://qtalen.medium.com/list/python-concurrency-2c979347da3b?source=post_page-----f76e3188f1c4--------------------------------)10
+    stories![Supercharge Your Python Asyncio With Aiomultiprocess: A Comprehensive
+    Guide](../Images/9c366de04067cd0ec1b30d9ce223011b.png)![Unleashing the Power of
+    Python Asyncio’s Queue](../Images/aa5886c47ef891be14eb17f9a2ed3d0d.png)![](../Images/d5b38ed916e599eb0673eb311f95348d.png)[](https://qtalen.medium.com/membership?source=post_page-----f76e3188f1c4--------------------------------)
+    [## Join Medium with my referral link - Peng Qian'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read every story from Peng Qian (and thousands of other writers on Medium).
+    Your membership fee directly supports Peng…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: qtalen.medium.com](https://qtalen.medium.com/membership?source=post_page-----f76e3188f1c4--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article was originally published at: [https://www.dataleadsfuture.com/unleashing-the-power-of-python-asyncios-queue/](https://www.dataleadsfuture.com/unleashing-the-power-of-python-asyncios-queue/)'
+  prefs: []
+  type: TYPE_NORMAL

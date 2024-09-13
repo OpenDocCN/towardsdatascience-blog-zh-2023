@@ -1,0 +1,275 @@
+- en: Boost Your Python Code With Rust Extensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/boost-your-python-code-with-rust-extensions-108afdbd4e13](https://towardsdatascience.com/boost-your-python-code-with-rust-extensions-108afdbd4e13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Increase speed by orders of magnitude and enhance code safety
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@nic-obert?source=post_page-----108afdbd4e13--------------------------------)[![Nicholas
+    Obert](../Images/d70330063c9edc2f63e53f62a78f82ec.png)](https://medium.com/@nic-obert?source=post_page-----108afdbd4e13--------------------------------)[](https://towardsdatascience.com/?source=post_page-----108afdbd4e13--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----108afdbd4e13--------------------------------)
+    [Nicholas Obert](https://medium.com/@nic-obert?source=post_page-----108afdbd4e13--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----108afdbd4e13--------------------------------)
+    ·6 min read·Jul 14, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec001b47bea181b0429a89366a8512e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author, generated using DALLE
+  prefs: []
+  type: TYPE_NORMAL
+- en: As most of you already know, Python is a general-purpose programming language
+    optimized for simplicity and ease of use. While it’s a great tool for light tasks,
+    code execution speed can soon become a major bottleneck in your programs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ll discuss why Python is so slow, when compared to other
+    programming languages. Then, we’ll see how to write a basic Rust extension for
+    Python and compare its performance to a native Python implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Python is slow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we start, I would like to point out that programming languages aren’t
+    inherently fast or slow: their implementations are. If you want to learn about
+    the difference between a language and its implementation, check out this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://betterprogramming.pub/the-fastest-programming-language-myth-65eaaf7e5d1a?source=post_page-----108afdbd4e13--------------------------------)
+    [## The Fastest Programming Language Myth'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A common programming misconception that has to be eradicated
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterprogramming.pub](https://betterprogramming.pub/the-fastest-programming-language-myth-65eaaf7e5d1a?source=post_page-----108afdbd4e13--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, Python is dynamically typed, meaning that variable types are only
+    known at runtime, and not at compile-time. While this design choice allows for
+    more flexible code, the Python interpreter cannot make assumptions about what
+    your variables are and their size. As a result, it cannot make optimizations like
+    a static compiler would.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another design choice that makes Python slower than other alternatives is the
+    infamous GIL. The Global Interpreter Lock is a mutex lock that allows only one
+    thread to execute at any point in time. The GIL was originally meant to guarantee
+    thread safety but has encountered great backlash from developers of multi-threaded
+    applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of that, Python code is executed through a virtual machine instead of
+    running directly on the CPU. This further layer of abstraction adds a significant
+    execution overhead, compared to statically compiled languages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Furthermore, Python objects are internally treated as dictionaries (or hashmaps)
+    and their attributes (properties and methods, accessed via the dot operator) aren’t
+    usually accessed through a memory offset, but rather through a dictionary lookup,
+    which is substantially slower. If you’re interested in learning more, I wrote
+    an article where I dive deeper into how attribute lookup works in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://betterprogramming.pub/optimize-your-python-programs-for-free-with-slots-4ff4e1611d9d?source=post_page-----108afdbd4e13--------------------------------)
+    [## Optimize Your Python Codebases by Almost 3x With __slots__'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improve execution speed and memory usage by adding just one line
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterprogramming.pub](https://betterprogramming.pub/optimize-your-python-programs-for-free-with-slots-4ff4e1611d9d?source=post_page-----108afdbd4e13--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python extensions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now you might ask why Python is so widely used despite its clear performance
+    flaws. Don’t data science and machine learning require high computational power?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get around Python’s speed issue, developers include in their code calls to
+    external optimized functions to do the heavy lifting. These external functions
+    are usually written using statically typed languages such as C and pre-compiled
+    into libraries that can then be imported into your programs. Many of Python’s
+    most popular libraries are written in C, including numpy, TensorFlow, and pandas.
+    They are the perfect tradeoff between the ease of use of a Python interface and
+    the performance of C.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, C code is inherently vulnerable to memory-related bugs and isn’t as
+    developer-friendly as more modern programming languages. This is why I suggest
+    using Rust instead for writing your Python extensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Environment setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To build our Rust extension, we’ll be using `[maturin](https://github.com/PyO3/maturin)`,
+    a zero-configuration tool for building and publishing Rust-based Python packages.
+    We will also use `[PyO3](https://github.com/PyO3/pyo3)` to create native Python
+    modules to be imported in your source code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this tutorial, we’ll write a simple Rust library to calculate the prime
+    factors of a given number. First of all, let’s create a new directory for our
+    project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s create a new Python virtual environment to install `maturin` in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And initialize the `maturin` project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This command will generate a Rust project structure. The files we’ll be interested
+    in are `Cargo.toml` and `src/lib.rs`. The former contains information about the
+    Rust library, while the latter contains the actual Rust source code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing Rust extensions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we’re set up, it’s time to write some Rust. I’ll assume you already
+    have some basic knowledge of Rust, but you should have no problem following along
+    even if you don’t. Open your `src/lib.rs` file and add the following function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function name must match the `lib.name` setting in the `Cargo.toml` file.
+    In this case, `prime_fact` is the name of the Rust package, as specified in the
+    `Cargo.toml`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s now time to add some functionality to our Rust library. Let’s create a
+    function that calculates the prime factors of a given number:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To add the newly created function to the module, update the `prime_fact` module
+    function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And we’re done writing our Rust library. All is left to do is build it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This command will build the Rust package and install it as a Python library
+    in your current virtual environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wish to install the library globally, run the following commands instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remember to exit any virtual environment you may be in if you want to install
+    the package globally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importing from Python and benchmarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To use the newly created library, you just need to import it as a normal Python
+    module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The expected output is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now let’s compare the performance of our Rust implementation with its native
+    Python equivalent:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the truncated output is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Clearly, the Rust implementation outperforms its Python equivalent by orders
+    of magnitude.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For further documentation and examples, check out `[PyO3](https://github.com/PyO3/pyo3)`
+    [on GitHub](https://github.com/PyO3/pyo3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To wrap it up, Rust extensions are a great tool to boost your Python codebases
+    both in terms of execution speed and type safety. Compared to C extensions, they
+    are safer, easier to implement, and more developer-friendly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you enjoyed this article. If you have anything to add, please share your
+    thoughts in a comment. Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’re interested in learning more about how to speed up Python and how
+    object attributes are accessed, I suggest you check out this story below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://betterprogramming.pub/optimize-your-python-programs-for-free-with-slots-4ff4e1611d9d?source=post_page-----108afdbd4e13--------------------------------)
+    [## Optimize Your Python Codebases by Almost 3x With __slots__'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improve execution speed and memory usage by adding just one line
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterprogramming.pub](https://betterprogramming.pub/optimize-your-python-programs-for-free-with-slots-4ff4e1611d9d?source=post_page-----108afdbd4e13--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,384 @@
+- en: Bi-LSTM+Attention for Modeling EHR Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/bi-lstm-attention-for-modeling-ehr-data-5dc7b05d4a10](https://towardsdatascience.com/bi-lstm-attention-for-modeling-ehr-data-5dc7b05d4a10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Essential guide to the diagnosis prediction in healthcare via attention-based
+    Bi-LSTM network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://satyam-kumar.medium.com/?source=post_page-----5dc7b05d4a10--------------------------------)[![Satyam
+    Kumar](../Images/2360baa87ea7a20f41589c5f8d783288.png)](https://satyam-kumar.medium.com/?source=post_page-----5dc7b05d4a10--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dc7b05d4a10--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5dc7b05d4a10--------------------------------)
+    [Satyam Kumar](https://satyam-kumar.medium.com/?source=post_page-----5dc7b05d4a10--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dc7b05d4a10--------------------------------)
+    ·7 min read·Jan 31, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1afe40d7a671e4ddf480d8041a9b0ffc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=6939537)
+    from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=6939537)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting future health information or disease using the Electronic Health
+    Record (EHR) is a key use case for research in the healthcare domain. EHR data
+    consists of diagnosis codes, pharmacy codes, and procedure codes. Modeling and
+    Interpreting the model on EHR data is a tedious task due to the high dimensionality
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will discuss a popular research paper, [DIPOLE](https://arxiv.org/abs/1706.05764),
+    published in June 2019, which uses the Bi-LSTM+Attention network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '1) Limitations of Linear/Tree-based Model:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The previous implementation was a **Random Forest model** with a fixed set of
+    hyperparameters to model the **aggregate member-level** claims/pharmacy/demographics
+    features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of disease prediction, the output depends on the **sequence of events
+    over time**. This time sequence information gets **lost** in the RF model. So
+    the idea is to try time-series model-based event prediction. Candidates can be
+    statistical time series models like **ARIMA**, **Holt-Winters**, or Neural Network-based
+    models like **RNN/LSTMs** or even **transformer-based architectures**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: However, the **long-term dependencies** of the events and information in (irregular)
+    time intervals between events are difficult to capture in an RF model or even
+    in classical time-series models.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Further, the Random Forest was not able to capture the **non-linear associations**
+    & complex relationships between time-ordered events. This is also the case with
+    classical TS models. We can introduce non-linearity by including interaction terms
+    (like quadratic, multiplicative, etc) or using kernels (like in SVM), however,
+    that depends on us knowing the actual non-linear dependencies which in current
+    age real data is very difficult to find out.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As such we move ahead with exploring neural network-based time series models
+    like **RNN/LSTMs** first and later with **transformer architectures**. The above
+    hypothesis about limitations of RF & classical TS models would also be verified
+    later from their evaluation metrics comparison with RNN/LSTM models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2) Why RNN Models?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Claims data includes information related to diagnoses, procedures, and utilization
+    for each member at the claim level. The claim information is time-based and the
+    existing RF model does not utilize the time information of the visits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is to update the RF model with something more suitable for time-series
+    event prediction like RNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e3f508bf43f4025cc53d7c957477c4c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ([Source](https://en.wikipedia.org/wiki/File:LSTM_Cell.svg)), LSTM Unit
+  prefs: []
+  type: TYPE_NORMAL
+- en: The input of each RNN unit is dependent on the output of the previous unit as
+    well as the input sequence at time ‘t’. An RNN unit repeats itself for each event
+    in the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Limitation of the RNN model:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: RNNs have been found to be working well in practice for **short-term dependencies**
+    in data. For example, a model predicts the next word of the incomplete sentence
+    using the existing words. If we are trying to predict the last word in “the clouds
+    are in the sky,” we don’t need any further context — it’s pretty obvious the next
+    word is going to be the sky. In such cases, where the gap between the relevant
+    information and the place where it’s needed is small, RNNs can learn to use past
+    information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But for long sequences, the RNN model **suffers from a vanishing/exploding gradient
+    problem**, which hampers the long-term learning of the events. During backpropagation,
+    the gradient becomes smaller and smaller, and the parameter updates become insignificant
+    for early events which means no real learning is done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RNNs also become slow to train over such long sequence data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatives:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**LSTM** (Long Short Term Memory), and **GRU** (Gated Recurrent Unit) are alternatives
+    or updated versions of the RNN network that are capable to capture the long-term
+    dependency of the sequential events without having the vanishing/exploding gradient
+    problem for most cases. They overcome this problem of RNN by having a selective
+    retention mechanism through multiple weights & biases instead of one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3) Essential guide to LSTM & Bi-LSTM network:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An LSTM unit has 3 gates (Input, Output, and Forget Gate) to protect and control
+    the cell state and add necessary information to the current state. There are 3
+    inputs to an LSTM unit i.e. **previous cell state** (C_(t-1)), **previous unit
+    output** (h_(t-1)), and **input event at the time ‘t’** (x_t). Whereas it has
+    two outputs i.e. **current cell state** (C_t), and **current output** (h_t).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please visit colah’s blog to get an understanding of how an LSTM network works
+    under the hood:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[## Understanding LSTM Networks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Posted on August 27, 2015 Humans don't start their thinking from scratch every
+    second. As you read this essay, you…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: colah.github.io](https://colah.github.io/posts/2015-08-Understanding-LSTMs/?source=post_page-----5dc7b05d4a10--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bi-LSTM Network:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bi-LSTM is a variation of LSTM that flows input in both the direction to preserve
+    future and past information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/febc40c40cef2572207506d386221d57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ([Source](https://en.wikipedia.org/wiki/Bidirectional_recurrent_neural_networks#/media/File:Structural_diagrams_of_unidirectional_and_bidirectional_recurrent_neural_networks.png)),
+    Bi-LSTM Network
+  prefs: []
+  type: TYPE_NORMAL
+- en: The forward LSTM reads the input visit sequence from x_1 to x_t and calculates
+    a sequence of forward hidden states. The backward LSTM reads the visit sequence
+    in the reverse order, i.e., from x_t to x_1, resulting in a sequence of backward
+    hidden states. By concatenating the forward hidden state and the backward one,
+    we can obtain the final latent vector representation as h_i.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bi-LSTM layer is used instead of LSTM layer as:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: to capture the full context of the sequence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: often times things only get clear in hindsight when looking at future
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Drawbacks of Bi-LSTM:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: they are learning left-to-right and right-to-left contexts separately and concatenating
+    them. Thus true context is lost in some sense lost.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: assume each event to be equally time-spaced
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: are sequential in nature so may get slow to train with big data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Transformers can overcome the above drawbacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4) Essential guide to Attention:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The attention mechanism was introduced by [Bahdanau et al. (2014)](https://arxiv.org/abs/1409.0473)
+    paper, to address the bottleneck problem that arises when the decoder would have
+    limited access to the information provided by the input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention models enable the network to **focus on a few particular aspects/events**
+    at a time and ignore the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our implementation, we are adding an attention layer to capture the importance
+    of a visit vector to make any prediction. The larger an attention score corresponding
+    to a visit vector, the more significance it has while making a prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '5) Implementation:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our current Bi-LSTM implementation is inspired by the [DIPOLE paper (June 2017)](https://arxiv.org/pdf/1706.05764.pdf)
+    by Fenglong Ma and the team. The paper employs a Bi-LSTM network to model EHR
+    data and utilizes a simple attention mechanism to interpret the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have discussed below the step-by-step approach to our current implementation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'a) Data:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are using data (Electronic Health Data — EHR) data for Bi-LSTM+Attention
+    modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: This is the same data we were using for Linear/Tree modeling.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As of now, we are restricted to the model only on the diagnosis medical codes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c53e36be38330797f76800aae747855.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by Author), Snapshot of raw EHR data
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'b) Feature Engineering (EHR Data):'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The claims data is line level, we select the first record for each claim to
+    make it to the visit level.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Prepare a diagnosis label encoder for all the unique diagnosis codes in the
+    training data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/48a435c418da78559d8b2e2484819677.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: One hot encode the diagnosis code for each visit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select the last x visits/claims *(hyperparameter)* for each member. If a member
+    does not threshold the number of visits, we pad the remaining visits with a zero
+    vector.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/44a9520fe157fd1a25bcd106dd987a55.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Format the data suitable for LSTM network input `**(Members, Visits, unique
+    medical codes)**`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For a dataset with 1000 members having 5000 unique medical code, and padding
+    the visit to 10, we will have the final training data shape as: (1000, 10, 5000)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/ec4274cc96711f24af76b70e6fe8ba78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LSTM data input format
+  prefs: []
+  type: TYPE_NORMAL
+- en: c) Bi-LSTM + Attention in Keras
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will use `**tf.Keras**` framework to implement the Bi-LSTM + Attention network
+    to model the disease prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Code by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: d) Interpretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In healthcare, the interpretability of the learned representations of medical
+    codes and visits is important. We need to understand the clinical meaning of each
+    dimension of medical code representations and analyze which visits are crucial
+    to the prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the proposed model is based on attention mechanisms, we can find the importance
+    of each visit for prediction by analyzing the attention scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: f) Model Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/768c3117696cdeb6cbd9780f4fa72569.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Image by Author), Model Summary
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Summary:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: DIPOLE implementation uses a Bi-LSTM architecture network, to capture the long-term
+    and short-term dependencies of the historical EHR data. The Attention mechanism
+    can be used to interpret the prediction results, learned medical codes, and visit-level
+    information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to the authors of the paper, DIPOLE can significantly improve performance
+    compared to the traditional state-of-the-art diagnosis prediction approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Understanding LSTM (*August 27, 2015*): [https://colah.github.io/posts/2015-08-Understanding-LSTMs/](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] DIPOLE (*June 19, 2017*): [https://arxiv.org/pdf/1706.05764.pdf](https://arxiv.org/pdf/1706.05764.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Bi-LSTM with Attention implementation (*August 22, 2021*): [https://analyticsindiamag.com/hands-on-guide-to-bi-lstm-with-attention/](https://analyticsindiamag.com/hands-on-guide-to-bi-lstm-with-attention/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank You for Reading
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

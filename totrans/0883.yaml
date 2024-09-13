@@ -1,0 +1,685 @@
+- en: Feature Subset Selection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/feature-subset-selection-6de1f05822b0](https://towardsdatascience.com/feature-subset-selection-6de1f05822b0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A tutorial on feature selection and a recommended strategy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@PadraigC?source=post_page-----6de1f05822b0--------------------------------)[![Pádraig
+    Cunningham](../Images/9521fb3dc64c947edf6adf2ce7b80f0f.png)](https://medium.com/@PadraigC?source=post_page-----6de1f05822b0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6de1f05822b0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6de1f05822b0--------------------------------)
+    [Pádraig Cunningham](https://medium.com/@PadraigC?source=post_page-----6de1f05822b0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6de1f05822b0--------------------------------)
+    ·16 min read·Mar 22, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eea3aed19636e0bc3cd8b85ca6a2f878.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [gokhan polat](https://unsplash.com/@go_pol?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/qyC7DTbWJJk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Feature subset selection is important in supervised machine learning not just
+    because it results in better models but also because of the insight it provides.
+    This is particularly important now with the emphasis on interpretability in machine
+    learning (ML).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The challenge for practitioners is that there is a bewildering array of feature
+    selection methods available. In this post I provide a brief overview of this landscape
+    and propose a strategy that will work in most cases. This strategy uses a *Wrapper*
+    for the final selection process and, where necessary, *permutation importance*
+    as an initial filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In data analysis, objects described using multiple features may sometimes be
+    described using a subset of these features without loss of information. Identifying
+    these feature subsets is termed feature selection, variable selection or feature
+    subset selection and is a key process in data analysis. This post provides a brief
+    overview of feature subset selection (FSS) methods and also proposes a strategy
+    that will work in most scenarios. This post is based on a tutorial paper available
+    on [arXiv](https://arxiv.org/abs/2106.06437) [1]. Python code for the methods
+    presented in that paper is available on [Github](https://github.com/PadraigC/FeatSelTutorial).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Feature selection receives a lot of attention in ML because it can deliver
+    a number of benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Better classifiers:** The obvious benefit of feature selection is that it
+    will improve accuracy because redundant or noisy features can damage accuracy.
+    Perhaps surprisingly, improvements in accuracy can be quite limited because powerful
+    ML techniques are designed to be robust against noise.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Insight:** Perhaps the most enduring benefit of feature selection is the
+    insight it provides. Identifying influential features and features that are not
+    useful teaches us a lot about the data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data Gathering:** In domains where data comes at a cost (e.g. Medical Diagnosis,
+    Manufacturing), identifying a minimal set of features for a classification task
+    can save money.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a07a571945feb8fe693ba775f4a25f66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1\.** An Overview of the feature selection process: There are three
+    main categories, wrappers, filters and ‘embedded’ where feature selection is embedded
+    or is a side-effect of the classification algorithm. In turn, feature selection
+    can be considered a strategy for dimension reduction. Image by author. [1]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main strategies for FSS are summarised in Figure 1\. Other surveys of feature
+    selection [2,3] divide feature selection methods into three categories and we
+    follow the same structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Wrappers** are feature selection methods where the classifier is *wrapped*
+    in the feature selection process (see Figure 2). This wrapping allows classification
+    performance to drive the feature selection process. This has the advantage of
+    tying the feature selection to classifier performance but this comes with a significant
+    computational cost as very many classifier variants will be evaluated during the
+    selection.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Filters** cover methods that use criteria other than classifier performance
+    to guide feature selection. Typically a filter provides a feature ranking and
+    then a selection policy uses this ranking to select a feature subset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Embedded** methods refer to any method where the feature selection *emerges*
+    as a by-product of the classifier training process. For instance, training a decision
+    tree will almost always select a subset of the available features to build a tree.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/f182a50f0fcefda3f1d2924ac29e8a28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2\.** Wrappers versus Filters: (a) With Wrappers the classifier is
+    *wrapped* in the search process. (b) A Filter strategy uses a separate evaluation
+    (e.g. information gain) to score features. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When evaluating the performance of feature selection strategies we typically
+    want to know how things will generalise to unseen data. As a proxy for this we
+    hold back some data for testing (option (b) in Figure 3). If we wish to assess
+    a few different feature selection alternatives as part of the model development
+    then these should be tested within the confines of training data and cross validation
+    is the most effective way to do this (option (c)). It should be remembered that
+    if the objective is to perform feature selection as part of the deployment of
+    an ML system then all the available data can be used for feature selection (option
+    (a) in Figure 3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7244fce563e2fae416d26cade63f3081.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3\.** Evaluation methodology. (a) If an estimation of generalisation
+    accuracy is not required then all data can be used for all aspects of model development.
+    (b) Test data can be held back from training to get an estimate of generalisation
+    accuracy. (c) Cross validation can be used within the training data for Feature
+    Selection. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before proceeding we need to introduce the notation that will be used. Assume
+    we have a dataset ***D*** made up of *n* data samples. **D** = ⟨**X, y**⟩ where
+    **y** are the class labels. The examples are described by a set of features **F**
+    where *p* = |**F**| so there are *n* objects described by *p* features. So **X**
+    has dimension *n*×*p* and **y** is a vector of length *n*. The objective is to
+    identify a subset **S ⊂ F** that captures the important information in the dataset.
+    After feature selection the dataset is reduced to **X′** with dimension *n*×*k*
+    where *k* = |**S**|.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some summary statistics of the datasets used in this tutorial as shown in Table
+    1\. These datasets are available in the [GitHub repository](https://github.com/PadraigC/FeatSelTutorial).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23c35bb1944a25b1e35241c188eecaf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Table 1\.** Summary statistics on the datasets used in this tutorial.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrappers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If |**F**| is small we could in theory try out all possible subsets of features
+    and select the best subset. In this case *‘try out’* would mean training and testing
+    a classifier using the feature subset. This would follow the protocol presented
+    in Figure 3 (c) where cross-validation on the training data would identify a good
+    feature subset and then this could be tested on the test data. However the number
+    of possibilities is 2*ᵖ* so exhaustive search quickly becomes impossible — for
+    instance if *p*=20 there are over 1 million possibilities to consider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nevertheless this is how a Wrapper feature selection strategy works with the
+    important modification that the search can be greedy or stochastic rather than
+    exhaustive. The general idea is shown in Figure 2(a), the classifier is *wrapped*
+    in the feature selection process, i.e. classifiers trained using the feature subsets
+    are used in the search process. The feature subsets will be evaluated using hold-out
+    testing or cross-validation testing on classifiers built using the data. The main
+    search strategies used with Wrappers are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exhaustive Search** evaluates every possible feature subset. If the number
+    of features to be considered is small it will be possible to consider all feature
+    combinations. However, if *p* > 20 there will be millions of feature subsets to
+    be considered and an exhaustive search will not be practical.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Sequential Forward Selection (SFS)** starts with no features selected and
+    all classifiers incorporating a single feature are considered (see Figure 4 (a)).
+    The best of these is selected and then two feature combinations including this
+    feature are evaluated. This process proceeds, adding the winning feature at each
+    step, until no further improvements can be made.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Backward Elimination (BE)** proceeds in the opposite direction to FSS, it
+    starts with all features selected, considers the options with one feature deleted,
+    selects the best of these and continues to eliminate features (see Figure 4 (b)).
+    Again, the process is terminated when no improvements can be made.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stochastic Search** methods such as genetic algorithms or simulated annealing
+    can readily be applied to Wrapper feature selection. Each state can be defined
+    by a feature mask on which crossover and mutation can be performed [4]. Given
+    this convenient representation, the use of a stochastic search for feature selection
+    is quite straightforward although the evaluation of the fitness function (classifier
+    accuracy as measured by cross-validation) is expensive.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/db619842aee75cf4192a11d6a071b205.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4\. F**eature subset selection using wrappers: (a) Sequential Forward
+    Selection (b) Backward Elimination. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our exploration of Wrappers will focus on SFS and BE. These are greedy strategies
+    that explore the search space of possible feature subsets as shown in Figure 4\.
+    SFS starts with an empty set and proceeds forward considering classifiers built
+    on single features. The best of these is selected and then pairs of features incorporating
+    this feature are considered. The process could terminate when the addition of
+    a new feature doesn’t result in any improvement. As the name suggests, Backward
+    Elimination works in the opposite direction. It starts with a full set of features
+    (Figure 4(b)) and eliminates the least useful feature at each step. For both SFS
+    and BE, the feature subsets are evaluated using cross-validation on the training
+    data. The evaluation is done on the Segmentation dataset and the classifier used
+    is *k*-Nearest Neighbor (*k*-NN) as it is quite sensitive to noisy or redundant
+    features. The [Python notebook](https://github.com/PadraigC/FeatSelTutorial/blob/main/FS-Wrappers.ipynb)
+    is available on Github.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both methods have their own advantages and disadvantages as can be seen in Figure
+    5\. SFS is inclined to require less computation as the models being evaluated
+    are smaller, typically a classifier with a small number of features will take
+    less time to train and test. SFS is inclined to select less features (see Figure
+    5(a)); this parsinomy is typically an advantage. On the other hand, because BE
+    starts with larger feature sets, it can do a better job of assessing how features
+    work in combination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The overall results for SFS and BE are shown in Figure 5(b). SFS selects seven
+    features and 11 are selected by BE. Both feature subsets result in improved accuracy
+    on the training data but only the SFS subset results in better accuracy on the
+    test data. Indeed the gap between train and test accuracy for BE is evidence of
+    overfitting — the selection process has fitted too closely to the characteristics
+    of the training data at the cost of generalisation accuracy. Indeed overfitting
+    is recognised to be a problem with Wrapper-based feature selection [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28fb0ddba5092e2558e413e7f8003a5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5.**Feature selection example using wrappers. (a) Accuracy on the
+    training data as Sequential Forward Selection proceeds measured using cross-validation.
+    (b) Accuracy estimates for feature subsets selected by SFS and BE. SFS selects
+    7 features and BE selects 11\. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Figure 2 (a) shows how Wrapper strategies use the classification algorithm in
+    the feature selection process. Figure 2(b) shows that Filter strategies do not
+    use the classifier for feature selection, instead a separate evaluation function
+    is used. The fact that Filters are independent of the classifier is a mixed blessing.
+    It means that Filters can be much faster than Wrappers but the selected features
+    may not be in tune with the inductive bias of the classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A Filter will entail a feature scoring mechanism and then a selection strategy
+    based on these scores. The scoring mechanism needs to quantify how much information
+    the feature has about the outcome. The selection strategy might be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select the top ranked *k* features,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select top 50%,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select features with scores > 50% of the maximum score,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select features with non-zero scores,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A hybrid Filter/Wrapper strategy whereby features are ranked using a filter
+    and then the performance of subsets based on this ranking is evaluated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will now look at three Filter strategies — the Chi-square statistic, information
+    gain and permutation feature importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Chi-square statistic** is a measure of independence between a feature
+    and the class label. If samples are organised into a contingency table as shown
+    in Figure 6, how different are the cell counts to what would be observed by chance?
+    The data in Figure 6(a) suggests that handedness is independent of gender because
+    the proportions are the same. The data in (b) suggests that gender is predictive
+    of handedness.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a62083a93b253bac8176dbda51889728.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 6**: Two contingency tables showing relationships between handedness
+    and gender. If handedness is the class then in (a) it is independent of the gender
+    feature, in (b) there is a dependence. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Chi-square statistic allows us to quantify this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de1fe07c3a2db4b9518dd8af7c6039bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The statistic is a sum over the *m* cells. For each cell we consider the difference
+    between the observed count *Oᵢ* and the expected count *Eᵢ* if the feature and
+    the class were independent. In Figure 6(a) this difference would be zero because
+    the feature and the class are independent. In (b) there would be a difference
+    so the statistic would be positive. In general, the greater the dependence the
+    larger the statistic. If the feature values are numeric rather than categorical
+    then the feature values can be binned to enable the construction of the contingency
+    table [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Information gain** is an alternative information-theoretic measure quantifying
+    the information a feature contains about a class [6]. In Figure 6(b) by knowing
+    the gender we *gain* information about handedness. In a binary classification
+    scenario, let’s assume the probability of a positive and negative outcomes are
+    respectively *p* and *q*. Then the entropy of a dataset based on these proportions
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48fe6c4113e8d4272ea6a34553a1a9b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'then the information gain for any feature *f* in the dataset in terms of the
+    class label is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f120095a1b4aee783e4847f406c65106.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As with the Chi-square statistic, information gain (I-Gain) allows us to rank
+    features for the purpose of feature selection. This is illustrated in Figure 7\.
+    This shows the Segmentation features ranked by both measures. The Python notebook
+    is available at this GitHub <[link](https://github.com/PadraigC/FeatSelTutorial/blob/main/FS-Filters.ipynb)>.
+    The plot shows the scores sorted by I-Gain score. It is clear that the scores
+    are well correlated (Pearson correlation score of 0.86) so feature subsets selected
+    based on these scores should be reasonably similar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4166a86cf90df099f71eb632c3c66cda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 7:** The Segmentation features ranked by I-Gain and the Chi-square
+    statistic. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This does prove to be the case when we look at the performance of classifiers
+    built with feature subsets based on these rankings. In Figure 8 we see the results
+    of a range of top *k* selection policies (*k* = 3, 6, 10, 15). At *k* = 10 both
+    scores select a feature subset that produces accuracy on the test set equivalent
+    to that obtained with the full feature set. The evaluation strategy here conforms
+    to pattern (b) in Figure 3, the feature scoring is done using the training data
+    and then tested on the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bdf277890b8874216e9f2c1d75fca0b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 8:** Accuracy estimates for top-*n* features in the Segmentation dataset
+    selected using I-Gain and the Chi-squared statistic. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Permutation Feature Importance** is based on the principle that if we want
+    to find out how important something is to a process we can break it to see what
+    happens. To score the importance of a feature we can *permute* values for that
+    feature in a test set to see what is the impact on the overall accuracy. If the
+    error increases significantly when a variable is *noised* in this way that variable
+    is important. If the error does not increase that variable is not useful for the
+    classification. The overall process is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fit a classifier on the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate a baseline accuracy
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shuffle feature values and calculate accuracy again
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Measure increase in error against error without shuffling
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This process is typically repeated multiple times (say 10) to get more stable
+    feature importance scores. Permutation importance is used as the first stage in
+    the proposed strategy presented at the end of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Figure 9 we see the permutation importance scores for *k-*NN and Gaussian
+    Naive Bayes on the Segmentation datasets (notebook <[here](https://github.com/PadraigC/FeatSelTutorial/blob/main/FS-Permutation-FI.ipynb)>).
+    We can see that the rankings are reasonably well correlated but by no means the
+    same. This difference is down to the different classifiers ‘preferring’ different
+    features and to an inherent instability is feature selection methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d06f6eb90ddb8013b029f2f5500b3c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 9:** Barcharts showing permutation feature importance scores for k-NN
+    and Gaussian Naive Bayes on the Segmentation dataset. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embedded Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section we cover feature selection methods that *emerge* naturally from
+    the classification algorithm or arise as a side effect of the algorithm. We will
+    see that with Decision Trees and Logistic Regression feature selection can be
+    an integrated part of the model building process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Decision Trees:** The construction of a Decision Tree from a data set will
+    very often entail feature selection as some of the features will not appear in
+    the tree. Features not included in the tree are effectively selected out. We show
+    an example of this on the Penguins dataset in Figure 10.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce2cb3cea5c527fd63cd76405d51a9b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 10:** A decision tree for the Penguins dataset. While the data is
+    described by four features only three are selected. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example the dataset has been divided 50:50 into train and test sets.
+    This tree has been trained on the training data and has 93% accuracy on the test
+    data (see notebook <[here](https://github.com/PadraigC/FeatSelTutorial/blob/main/FS-D-Tree.ipynb)>).
+    This dataset has four features, *flipper length, bill length, bill depth* and
+    *body mass*. It is clear from the tree in Figure 10 that three of the four features
+    are selected, body mass is not selected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This tree has been constructed with the default **scikit-learn** parameters
+    so there is no pruning. It is normal in Decision Tree learning to constrain (i.e.
+    prune) the size of the tree to prevent overfitting. The use of pruning to prevent
+    overfitting will push the feature selection further as even less features will
+    be selected in smaller trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Logistic Regression, Lasso:** In multivariate linear models such as linear
+    regression or logistic regression, feature selection can be achieved as a side
+    effect of regularization. In ML regularization refers to mechanisms designed to
+    simplify models in order to prevent overfitting. Thus regularization can cause
+    features to be deselected. Elastic net and Lasso are popular regularization methods
+    for linear models. Here we will provide an overview of how Lasso works [7] and
+    present examples of Lasso in operation. Starting with the basics, a multivariate
+    regression works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a377cf2d6a71712062b04f5355bae84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The dependent variable *y* is a linear function of the input features; for each
+    feature *xᵢ* the weight of that feature is determined by the corresponding *βᵢ*
+    parameter. For binary classification problems ([0,1] labels) we can use logistic
+    regression where the dependent variable is the log odds that an outcome variable
+    is 1\. If *pr* is the probability that the label is 1 then the odds is *pr/*(*1-pr*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/491e9f5a964900f791588b1b7c9e96c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So logistic regression provides a class probability:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db18a6bfe0d12185e1c2470143ff5f3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Regularization prevents overfitting by limiting model capacity; this is done
+    by limiting the size of weights. The two options are L₁ or L₂ regularization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd8c79366ebbcec200abce46a59a02c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So the *β* parameters in are fitted to the training data subject to these L₁
+    or L₂ constraints. It transpires that when an L₁ regularization is used the weaker
+    weights will go to zero, i.e. those features will be deselected. There is an excellent
+    explanation of *why* this happens in the original Lasso paper by Tibshirani [7].
+  prefs: []
+  type: TYPE_NORMAL
+- en: To demonstrate this on our sample datasets we reduce them to binary classification
+    problems to make the overall process more transparent (notebook <[here](https://github.com/PadraigC/FeatSelTutorial/blob/main/FS-Lasso.ipynb)>).
+    However, feature selection using Lasso also works with multiclass problems. The
+    results are shown in Figures 11 and 12\. Because the datasets have been reduced
+    to just two classes (Cement and Window for Segmentation and Adelie and Chinstrap
+    for Penguins) the accuracies are higher than for the multi-class scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eae114d3108f1be522dbfc10c46526e4.png)![](../Images/67d29af8b5665e7d28fe922bd3f7ba73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 11:** The impact of Lasso on the Penguins (top) Segmentation datasets.
+    Lasso reduces the magnitude of the β parameters; some parameters get reduced to
+    zero. Results for Lasso with the default regularization (C=1) and milder regularization
+    (C=10) are shown. Images by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The extent of the feature reduction with Lasso is controlled by the regularization
+    parameter C. Results are included for two levels of regularization, C=10 and C=1\.
+    C=10 results in less regularization so more features are retained. In both cases
+    the default regularization results in too much feature reduction and generalization
+    accuracy is reduced. For the Penguins dataset just two features are retained while
+    three are retained in the Segmentation dataset (see Figure 15). The milder regularization
+    retains more features resulting in no loss of generalization accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73a5cd608e8d775688ba3d0ef3f3b9d3.png)![](../Images/8f6dbe4c23fc0f282a1b2a9c79d11980.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 12:** The impact of Lasso on train and test accuracy. Results for
+    Lasso with the default regularization (C=1) and milder regularization (C=10) are
+    shown. Images by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proposed Strategy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As stated at the beginning, our proposed strategy will use *Wrapper* for the
+    final selection process and, where necessary, *permutation importance* as an initial
+    filter (GitHub <[link](https://github.com/PadraigC/FeatSelTutorial/blob/main/FS-Permutation%2BWrapper.ipynb)>).
+    The example we present here used the Ionosphere dataset from the UCI repository.
+    This dataset has 34 features so there are over 17 billion possible feature subsets.
+    Even with a greedy search strategy (e.g. SFS or BE), applying a Wrapper to the
+    full feature set would be very computationally expensive. So we use the two step
+    strategy shown in Figure 13; we use permutation importance to reduce the 34 features
+    to a candidate set of 18 and then employ a Wrapper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ad0f9173d58d0e18343a251ce58d5292.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 13\.** The two stage feature selection process. The numbers in green
+    indicate the feature counts in the worked example. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The classifier used in this example is *k-*NN and we hold back 50% of the data
+    for final testing. The scores from the permutation feature importance stage are
+    shown in Figure 14\. We drop the features that don’t have a positive score, leaving
+    us with 18 features to pass to the Wrapper stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/179d1e0adffe3826c0849fe2882319e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 14\.** The feature importance scores coming from the Permutation Importance
+    stage. In theory these should always be zero or greater; in practice, some scores
+    are negative indicating that the results after permuting a feature actually improve
+    by chance. It is probably safe to drop these features. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then run a Wrapper search considering these 18 features, using the training
+    data only. We use backward elimination as described earlier and it selects 16
+    features. In Figure we see accuracy estimates for the three feature sets. The
+    estimates on the training data use cross validation and the hold-out estimate
+    shows accuracy on the 50% held back from the feature selection process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9fc379ddb9b7c007c142f81ecf6f2b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 15\.** Accuracy scores of the three feature sets. Accuracy on the
+    training set (the set used for feature selection) is measured using cross validation.
+    The accuracy on the test set held back from the feature selection process is a
+    simple hold-out measure. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that both feature selection stages produce accuracy improvements on the
+    training data but for the Wrapper stage we see no further improvement on the test
+    data. This is in line with other research that shows that in-depth feature selection
+    effort can result in overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'So that concludes our overview of state-of-the-art feature subset collection
+    methods. One of the challenges is that there are so many alternative methods to
+    choose from; the strategy we propose is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have loads of training data, the two stage strategy presented above will
+    be worth while.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If training data is scarce and there is a risk of overfitting you could stop
+    feature selection after the permutation importance step.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Python implementations (using scikit-learn) for the methods covered here are
+    available in this [GitHub repository](https://github.com/PadraigC/FeatSelTutorial).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Cunningham, P., Kathirgamanathan, B., & Delany, S. J. (2021). Feature Selection
+    Tutorial with Python Examples. *arXiv preprint* [*arXiv:2106.06437*](https://arxiv.org/abs/2106.06437).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Isabelle Guyon and André Elisseeff. (2003) An introduction to variable and feature
+    selection. J*ournal of machine learning research,* 2003.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Luis Carlos Molina Félix, Luis Antonio Belanche Muñoz, and M Àngela Nebot Castells
+    (2002) Feature selection algorithms: a survey and experimental evaluation. In
+    200*2 IEEE International Conference on Data Mining (ICDM 2002) pag*es 306–313.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'John Loughrey and Pádraig Cunningham. Overfitting in wrapper-based feature
+    subset selection: The harder you try the worse it gets. In I*nternational Conference
+    on Innovative Techniques and Applications of Artificial Intelligence,* pages 33–43\.
+    Springer, 2004.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Xin Jin et al. “Machine learning techniques and chi- square feature selection
+    for cancer classification using SAGE gene expression profiles”. In: *International
+    Workshop on Data Mining for Biomedical Applications*. Springer. 2006, pp. 106–115.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'John D Kelleher, Brian Mac Namee, and Aoife D’arcy. *Fundamentals of machine
+    learning for predictive data analytics: algorithms, worked examples, and case
+    studies*. MIT Press, 2020.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Robert Tibshirani. “Regression shrinkage and selection via the lasso”. In:
+    *Journal of the Royal Statistical So- ciety: Series B (Methodological)* 58.1 (1996),
+    pp. 267– 288.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

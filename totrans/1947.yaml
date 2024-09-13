@@ -1,0 +1,610 @@
+- en: 'Survival Analysis: Predict Time-To-Event With Machine Learning (Part I)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46](https://towardsdatascience.com/survival-analysis-predict-time-to-event-with-machine-learning-part-i-ba52f9ab9a46)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/4df3d3f659d7620733d12c7a48b6a04b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Practical Application to Customer Churn Prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)[![Lina
+    Faik](../Images/24a3aa67a2d9dc3e074ceead04ab4cc8.png)](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------)
+    [Lina Faik](https://linafaik.medium.com/?source=post_page-----ba52f9ab9a46--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ba52f9ab9a46--------------------------------)
+    ·11 min read·Feb 9, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting the probability of an event occurring is good, predicting the time
+    remaining before an event occurs is even better!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take the example of customer churn. What if, instead of predicting the probability
+    of a customer leaving the company in the next months, you could predict this probability
+    at several time points over the next months? The benefits of such an approach
+    are immediate. It would allow you to anticipate and prioritize your marketing
+    actions more effectively in time and, ultimately, reduce the churn rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This falls exactly in the field of **survival analysis**, also called time-to-event
+    analysis. It refers to a learning framework and a set of techniques that can be
+    used to estimate the time it takes for an event of interest to occur based on
+    observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The name of survival analysis comes from the typical use case where it was
+    first applied: predicting time to death for clinical research. However, one should
+    not be misled by its name: it is not limited to the medical field, but can be
+    applied to use cases in multiple industries. And with the recent advances in data
+    science, survival analysis has reemerged leaving the world of classical statistics
+    to include more advanced methods in machine learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Objective
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This article focuses on how machine learning can be combined with survival analysis
+    framework to solve use cases such as predicting churn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After reading this article, you will understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is survival analysis all about?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What are the main survival models and how do they work?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How can these models be applied concretely to churn prediction?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*This article is the first part of the series around survival analysis. No
+    prior knowledge is required to understand the article. The experimentations described
+    in the article were carried out using the libraries* [*scikit-survival*](https://scikit-survival.readthedocs.io/en/stable/install.html)
+    *and* [*plotly*](https://plotly.com/)*. You can find the code* [*here*](https://github.com/linafaik08/survival_analysis/)
+    *on GitHub.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1\. What is Survival Analysis About?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 1.1\. Problem statement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At first glance, survival analysis may appear to be just another regression
+    problem since the goal is to predict when an event is likely to occur (a continuous
+    variable). However, the problem has a twist: a part of the training data may be
+    partially observed — it is censored.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To illustrate this, let’s take the example of a company that offers services
+    on a subscription basis. The company wants to predict for each customer that reaches
+    out to the support the probability of unsubscribing over time. During the period
+    in which the data was collected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Customer A did not unsubscribe before the end of the study.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Customers B and D canceled their subscriptions after a few months.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Customer C has decided to restrict access to its data from the platform.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this case, the records of customers A and C are **censored**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/307996ac3538ae114099efe8c77f2243.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1 — Survival analysis data, illustration by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More formally, each observation contains a set of covariates *X = (x_1, …,
+    x_n),* the time *t* when the event occurred, or the censoring time *c>0*. Let’s
+    introduce an event indicator δ∈{0;1}. The observable time y of a right-censored
+    sample is then defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0b6589bae5625aa10d25e7de02d57f94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In our case of churn prediction, the data consists of the customer’s support
+    contact history. Each observation contains information about:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'the interaction: the date, the reason for the call (sign-up/support), and the
+    channel (email/phone).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the customer: age and gender.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'subscription: product, price, billing cycle (monthly/annual), sign-up.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The data was enriched with additional features including the number of times
+    the customer has contacted the company in the past, the duration since the customer
+    subscribed, and cyclical date-related features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1.2\. Use cases
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Survival analysis can be used for a wide range of applications where the goal
+    is to predict the time between two events. Here are few other examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Predictive maintenance:** Forecast when the machine is likely to break down
+    after it has been turned on. Data can be censored if the machines had to stop
+    due to external factors (fire alarms, etc.)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Patient monitoring:** Predict when a patient is likely to be re-hospitalized
+    since their first diagnosis or hospitalization. Data may be censored if the patient
+    has left the geographic scope of the study.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Marketing analytics:** Predict when a prospect might convert since the first
+    call. Data may be censored if the person has died during the observation period.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Economics:** Forecast the time it takes for a laid-off person to find a job.
+    Data may be censored if a person drops out of the study.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. What Are Common Approaches to Tackle Survival Use Cases?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2.1\. Kaplan — Meier estimator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the most simple approaches to this problem is to use the Kaplan-Meier
+    estimator. This is a non-parametric method that focuses on approximating the survival
+    function. Let’s start by discussing the fundamental underlying theories before
+    examining the results of the application case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Survival function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The survival function *S(t)* represents the probability that a subject survives
+    beyond time *t* or, in a similar way, the probability that the duration is at
+    least equal to *t*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e4c312de2de07d2b8c9abb98d82dcafe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *T* is the random lifespan taken from the study population.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*S* starts with 1 at time *t=0* since no subject has yet experienced the event
+    at the beginning. It decreases and tends to 0 as everyone is likely to experience
+    the event of interest at some point.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Kaplan-Meier estimator**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To approximate the survival function, the Kaplan-Meier model breaks the estimation
+    into small steps. For each interval, the probability is computed as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5aa945c9806f01473576d462f31b92d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *n_i* is the number of individuals who are at risk at time point *t_i*
+    and *d_i* the number of individuals that experienced the event at time *t_i*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is a very simple method that does not take into account covariates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be used as a naive baseline.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It can also serve as a data exploration method. In this case, it provides an
+    overview of the survival function for the whole population or helps in comparing
+    certain groups between them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, in our case study, we might compare the estimate depending on the
+    subscription billing cycle. The graph below confirms the intuition that customers
+    with a monthly subscription are more volatile. They tend to churn more often and
+    faster during the first years after their subscription.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6b6ca9cf30dd476c7010aa1d05e729e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2 — Survival function estimated by the Kaplan-Meier model
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2\. Cox proportional hazards model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most widely used estimator is certainly the Cox proportional hazards (Cox
+    PH) model. It is easy to implement, takes covariates into account and provides
+    interpretable results. It is a semi-parametric method that aims at modeling the
+    hazard function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hazard function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hazard function *h(t)* represents the probability of the death event occurring
+    at time *t*, given that the subject did not experience the death event until time
+    *t*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a2253af0247076c26b838d19de21de2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Therefore, the hazard function is useful in finding the periods that are the
+    safest or riskiest with respect to the occurrence of the event.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cox proportional hazards**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'CoxPH models the hazard function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f85f500f2496e4bc0db995cc338105a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model consists of 2 parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**the baseline hazard:** it describes how the risk evolves through time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**the hazard ratio:** it models the effect of the explanatory covariates on
+    the risk.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'With this parametric function, the model relies on a strong proportionality
+    assumption: at a given point in time, the hazard functions for a subject remain
+    proportional with the same ratio with respect to the baseline or to another subject.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if a customer has a risk of churn at an initial observation that
+    is twice as low as another customer, then for all subsequent time observations,
+    the risk of churn remains twice as low.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Application**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The outputs of the model are highly interpretable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At the **instance level**, the model provides for each observation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A** **risk score**: the higher the risk, the more likely the customer is
+    to unsubscribe.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**A** **survival function**: it enables analysts to assess the probability
+    of surviving at least to a point *t* over time. For instance, the graph below
+    shows that customer 2 is most likely to churn in the first few days, while customers
+    1, 3, and 4 are not at risk.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e8e71807318cebf943defbdd46073643.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3 — Survival function of 5 randomly selected clients
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A hazard function:** it serves the same purpose. The chart below confirms
+    the previous conclusion.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2f8080fe3888bedce80b064309dfb3f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4 — Cumulative hazard function of 5 randomly selected clients
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the global level, the model can be explained through its coefficients (see
+    formula above). For a positive coefficient, the higher it is, the stronger the
+    impact on the risk of churn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the graph below shows that the model generally considers contacting
+    assistance for support reasons as a risk factor for churn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d0b3d2a404b7ef0fe194e9369f467f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5— Coefficients obtained by the Cox PH model
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. How Is Machine Learning Leveraged for Survival Analysis?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 3.1\. Machine learning-based survival models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by walking through the fundamentals behind ML models for survival
+    analysis before comparing their performance in our case study around churn prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Survival Forests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Just as standard [Random Forests](https://en.wikipedia.org/wiki/Random_forest),
+    Random Survival Forest consists in training a number of survival trees on various
+    sub-samples (often drawn with replacement) of the dataset and using averaging
+    for more accurate prediction and limited over-fitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main difference lies in the metric used to assess the quality of a split:
+    [log-rank](https://en.wikipedia.org/wiki/Logrank_test) which is typically used
+    when comparing survival curves among two or more groups.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: More information about the model can be found [here](https://scikit-survival.readthedocs.io/en/stable/api/generated/sksurv.ensemble.RandomSurvivalForest.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient Boosting Survival Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Gradient Boosting when applied to survival analysis is also very similar: it
+    consists in combining in an additive manner the predictions of multiple base learners
+    to obtain a powerful overall model. The base learners, also called weak learners,
+    are often very simple models. It differs from Random Forests as the survival trees
+    are not trained independently but sequentially in a greedy stagewise fashion.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model is a very versatile framework: it can optimize many loss functions
+    including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partial likelihood loss of Cox’s proportional hazards model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Squared regression loss
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Inverse probability of censoring weighted least squares error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This loss allows the model to accelerate or decelerate the time to an event
+    by a constant factor. It is known as the Accelerated Failure Time (AFT). It contrasts
+    with the Cox proportional hazards model where only the features influence the
+    hazard function.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: More information about the model can be found [here](https://scikit-survival.readthedocs.io/en/stable/api/generated/sksurv.ensemble.GradientBoostingSurvivalAnalysis.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.3\. Survival Support Vector Machine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Survival Support Vector Machine](https://en.wikipedia.org/wiki/Support_vector_machine)
+    (SVM) can also be extended to survival analysis. It is also a very versatile model
+    as it can account for complex, non-linear relationships between features and survival
+    via the so-called kernel trick.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, its predictions cannot be easily related to the standard quantities
+    of survival analysis, that is, the survival function and the cumulative hazard
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More information about the model can be found [here](https://scikit-survival.readthedocs.io/en/stable/api/generated/sksurv.svm.FastKernelSurvivalSVM.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2\. Comparison
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In order to compare the performance of the models, the initial dataset containing
+    approximately 320,000 observations was divided into two sets: a training set (70%)
+    and a validation set (30%) with the same censoring distribution. The models were
+    trained and fine-tuned using 5-fold cross-validation. They were then evaluated
+    on the validation set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concordance index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The most frequently used evaluation metric is the concordance index, also referred
+    to as the c-index. It measures the capability of the model to provide a reliable
+    ranking of survival times based on individual risk scores. It is computed as the
+    proportion of concordant pairs in a dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More specifically, let’s consider two observations *(i,j)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, to be comparable, the observation with lower time needs to have experienced
+    the event.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second, if comparable, it is concordant if the risk estimated by the survival
+    model is higher for individuals with shorter survival times.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The graph below shows the results of the models on the 5-cross tests and the
+    validation set. Gradient Boosting is the best-performing model with a concordance
+    index of approximately 0.70 for both the 5-cross tests and the validation sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9490f48d1fda5f9094c0ee016124aca4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6— Concordance index of the models
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The concordance index is easy to calculate and interpret. However, it suffers
+    from two major drawbacks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It tends to be too favorable with an increasing amount of censoring. An alternative
+    consists of using the inverse probability of censoring weights. The censoring
+    distribution is obtained from a Kaplan-Meier estimator applied to the training
+    data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is not very useful when the main goal is to measure performance over a specific
+    period of time (e.g. predicting churn in the first year of subscription).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The second drawback can be overcome by using other metrics such as cumulative/dynamic
+    AUC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cumulative/dynamic AUC
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The well-known receiver operating characteristic curve (ROC curve) can be extended
+    to censored survival times. The idea is to consider several points in time. At
+    each point, we consider separately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'the cumulative cases: all individuals who have experienced the event before
+    or at time *t.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the dynamic controls: individuals who will experience an event after time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can then evaluate the model on its ability to distinguish subjects who will
+    experience an event over time (sensitivity) from those who will not (specificity).
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this method, it is possible to evaluate the estimator only on the time
+    points that are most important in the context (e.g. the two first years).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The graph below shows the results of the models on the validation set. Gradient
+    Boosting is again the best-performing model with an average AUC over the 2-year
+    period of around 0.80\. Although Random Forest and Cox PH perform similarly on
+    average, they lag far behind Gradient Boosting over the first few months of subscription.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10a2799a4450fabf9dd857bc982ed51b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7— AUC of models over time on the validation set
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ✔️ Survival analysis refers to a learning framework and a set of techniques
+    that can be used to estimate the time it takes for an event of interest to occur
+    based on observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ It’s more than a simple regression predictive problem as part of the training
+    data may be partially observed — it is censored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ Common machine learning models such as Random Forest, Gradient Boosting or
+    SVM can be extended to survival analysis, resulting in better-performing and still
+    interpretable models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✔️ Combining the survival analysis framework with the predictive power of machine
+    learning can bring significant business value to a wide range of applications,
+    including predictive maintenance, patient monitoring, marketing analytics, economics,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [Introduction to Survival Analysis with scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/00-introduction.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Scikit survival [documentation](https://scikit-survival.readthedocs.io/en/stable/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Wikipedia, [Proportional hazards model](https://en.wikipedia.org/wiki/Proportional_hazards_model)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Wikipedia, [Kendall rank correlation coefficient](https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Laura Löschmann, Daria Smorodina, [Deep Learning for Survival Analysis](https://humboldt-wi.github.io/blog/research/information_systems_1920/group2_survivalanalysis/),
+    Humboldt University, February 2020'
+  prefs: []
+  type: TYPE_NORMAL

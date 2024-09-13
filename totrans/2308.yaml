@@ -1,0 +1,318 @@
+- en: 'vLLM: PagedAttention for 24x Faster LLM Inference'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83](https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A more efficient way to compute Transformer’s attention during inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
+    ·6 min read·Jun 24, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b79c5674eecc1de9d97ae46d9048bff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PagedAttention for a prompt “the cat is sleeping in the kitchen and the dog
+    is”. Key-Value pairs of tensors for attention computation are stored in virtual
+    contiguous blocks mapped to non-contiguous blocks in the GPU memory. — Image by
+    the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Almost all the large language models (LLM) rely on the Transformer neural architecture.
+    While this architecture is praised for its efficiency, it has some well-known
+    computational bottlenecks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During decoding, one of these bottlenecks is in the computation of the attention
+    with pairs of key-value tensors for each token of the input. All these tensors
+    must be stored in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: I won’t explain in this article what is the role of these key-value
+    pairs. It’s one of the most complicated and interesting aspects of the Transformer
+    architecture. If you don’t know about it, I strongly recommend reading* [*The
+    Illustrated Transformer by Jay Alammar*](https://jalammar.github.io/illustrated-transformer/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As LLM accepts longer and longer inputs, e.g., the LLM Claude accepts 100k token-long
+    inputs, the memory consumed by these tensors can become very large.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naively storing all these tensors in memory leads to memory over-reservation
+    and fragmentation. This fragmentation can make memory access very inefficient,
+    especially for long sequences of tokens. As for over-reservation, the system does
+    it to make sure it has allocated enough memory for the tensors, even if it doesn’t
+    consume all of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To alleviate these issues, UC Berkeley proposes PagedAttention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PagedAttention is implemented in [vLLM](https://github.com/vllm-project/vllm)
+    (Apache 2.0 license) which is deployed by LMSYS, an organization for open research
+    founded by students and faculty from UC Berkeley with the help of UCSD and CMU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I explain what PagedAttention is and why it significantly speeds
+    up decoding. I show towards the end of the article how to get started with vLLM
+    to exploit PagedAttention for inference and serving LLMs on your computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PagedAttention for Transformer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Kwon et al. (2023)](https://vllm.ai/) propose PagedAttention.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal is to store key-value tensors more efficiently in the non-contiguous
+    spaces of the GPU VRAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In short, the idea behind PagedAttention is to create contiguous virtual blocks
+    mapped to physical blocks in the GPU memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each block is designed to store key-value pairs’ tensors for a predefined number
+    of tokens. All the blocks are virtually contiguous and mapped to physical non-contiguous
+    blocks, allocated on demand during inference, in the fragmented GPU memory. A
+    simple index table is also created in memory to associate virtual with physical
+    blocks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The kernel of PagedAttention fetches as needed these blocks. This is efficient
+    because the system fetches smaller numbers of key-value tensors due to the limited
+    size of the blocks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take the following prompt for illustration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*the cat is sleeping in the kitchen and the dog is*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have key-value tensors for each token. With PageAttention, we can (arbitrarily)
+    set the block size at 4\. Each block contains 4 key-value tensors, except the
+    last one which contains only 3 key-value tensors. The blocks are virtually contiguous
+    but are not necessarily contiguous in the GPU memory, as illustrated by the figure
+    in the introduction of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the computation of attention, for each query token, the system fetches the
+    block one by one, as illustrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3cd673ef42a553957e10b65d2bca6cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of virtual blocks containing key-value tensors for up to 4 tokens
+    — Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: By fetching key-value tensors by blocks, instead of the entire sequence of tensors,
+    the computation of attention is much faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallel Sampling for Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another advantage of PagedAttention is that the virtual blocks can be shared
+    when sampling during inference. All the sequences generated in parallel via sampling
+    or beam search can use the same virtual blocks, avoiding duplicates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In their experiments, LMSYS observed a 55% reduction in memory usage for beam
+    search decoding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PagedAttention performance reported by LMSYS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before trying it by ourselves, let’s have a look at the performance reported
+    by the authors (UC Berkely/LMSYS) when using PagedAttention implemented in vLLM
+    compared to the text generation inference library developed by Hugging Face.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9af453af09acfb3da2b973d78d51f1a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance of LLaMa models for output completion tasks for the original Hugging
+    Face library (HF), text generation inference library (TGI), and vLLM with PagedAttention
+    (vLLM) — [Plots by UC Berkeley and LMSYS](https://github.com/vllm-project/vllm)
+  prefs: []
+  type: TYPE_NORMAL
+- en: vLLM looks much faster according to these results, especially in the case of
+    multiple output completions. The difference between TGI and vLLM increases with
+    bigger models. This is expected since bigger models require more memory and are
+    thus more impacted by memory fragmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, vLLM is up to 24x faster than the Hugging Face Transformers library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: Actually, I’m also impressed by the improvement from HF to TGI. I didn’t
+    cover TGI yet on my blog but I’ll probably write a guide about it. TGI is used
+    in production at Hugging Face. While it seems much slower than vLLM, TGI has other
+    advantages such as the support for many more models and features.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to set up vLLM on your computer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Note: vLLM doesn’t support CUDA 12 yet. Use a lower version, such as 11.8.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, I will only go through the basics of how to set up and run
+    vLLM on your computer. For more advanced usage, you can have a look at the [vLLM
+    documentation](https://vllm.readthedocs.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As I write this article, [vLLM only supports a few types of models](https://vllm.readthedocs.io/en/latest/models/supported_models.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-2
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GPT-NeoX and Pythia based
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LLaMa based
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OPT based
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can add the support of other models by following [these instructions](https://vllm.readthedocs.io/en/latest/models/adding_model.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the code below, I use Dolly V2 (MIT license). It is a chat model based on
+    [Pythia](https://github.com/EleutherAI/pythia) and trained by [DataBricks](https://www.databricks.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I chose [the smallest version with 3 billion parameters](https://huggingface.co/databricks/dolly-v2-3b).
+    It can run a consumer GPU with 24 GB of VRAM, e.g., an nVidia RTX 3080/3090.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most straightforward way to install vLLM is with pip:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: This should take up to 10 minutes.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But in my case, on both my computer and Google Colab, pip failed to install
+    the vllm library. The authors of vLLM confirm that there is a problem with some
+    nvcc versions and environments. Nonetheless, for most configurations, pip should
+    install vLLM without any problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are in the same situation as me, the workaround is simply to use a Docker
+    image. This one worked for me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: Once in the docker, the authors recommend removing Pytorch before installing
+    vLLM: pip uninstall torch. Then, “pip install vllm” should work.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we can start writing Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first need to import vllm, and then we load the model with vllm. The inference
+    is triggered by llm.generate().
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can also use vLLM for serving LLMs. It works similarly to TGI. It’s also
+    much more simple than [running the NVIDIA Triton inference server that I described
+    in a previous article](/deploy-your-local-gpt-server-with-triton-a825d528aa5d).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You first need to start the server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: The server will listen on port 8000\. Make sure it is available or change
+    it in the vLLM configuration file.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, you can query the server with prompts as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s it! You have a very efficient LLM server running on your computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PagedAttention significantly speeds up inference. It’s another step toward more
+    affordable AI with LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In further experiments, I confirmed that vLLM is especially efficient with batches
+    of prompts. To fully take advantage of vLLM, consider optimizing your batching
+    strategy for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While beam search with large beams may have been prohibitive with standard attention
+    computation, beam search with PagedAttention is faster and more memory efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of my next experiments will be to combine PagedAttention with [QLoRa](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b)
+    to reduce memory usage. It should be straightforward. It would make running LLMs
+    on consumer hardware even more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you like this article and would be interested to read the next ones, the
+    best way to support my work is to become a Medium member using this link:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie/membership?source=post_page-----fdfb1b80f83--------------------------------)
+    [## Join Medium with my referral link - Benjamin Marie'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@bnjmn_marie/membership?source=post_page-----fdfb1b80f83--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you are already a member and want to support this work,* [*just follow
+    me on Medium*](https://medium.com/@bnjmn_marie)*.*'
+  prefs: []
+  type: TYPE_NORMAL

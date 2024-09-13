@@ -1,0 +1,629 @@
+- en: 'T5: Text-to-Text Transformers (Part Two)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/t5-text-to-text-transformers-part-two-837ba23a9eb4](https://towardsdatascience.com/t5-text-to-text-transformers-part-two-837ba23a9eb4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimal transfer learning for large language models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://wolfecameron.medium.com/?source=post_page-----837ba23a9eb4--------------------------------)[![Cameron
+    R. Wolfe, Ph.D.](../Images/52bb88d7cf1105501be2fae5ccbe7a03.png)](https://wolfecameron.medium.com/?source=post_page-----837ba23a9eb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----837ba23a9eb4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----837ba23a9eb4--------------------------------)
+    [Cameron R. Wolfe, Ph.D.](https://wolfecameron.medium.com/?source=post_page-----837ba23a9eb4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----837ba23a9eb4--------------------------------)
+    ·14 min read·Jul 5, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16eb0b06a8e38a4121e6c959124618c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Photo by [Patrick Tomasso](https://unsplash.com/@impatrickt?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/text?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The proposal of [BERT](https://cameronrwolfe.substack.com/p/language-understanding-with-bert)
+    [5] led to the popularization of transfer learning approaches for natural language
+    processing (NLP). Due to the widespread availability of unlabeled text on the
+    internet, we could easily *(i)* pre-train large transformer models over large
+    amounts of raw text and *(ii)* fine-tune these models to accurately solve downstream
+    tasks. This approach was incredibly effective, but its newfound popularity led
+    many alternative methods and modifications to be proposed. With all these new
+    methods becoming available, one could easily begin to wonder: *What are the best
+    practices for transfer learning in NLP?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This question was answered by analysis performed with the unified text-to-text
+    transformer (T5) model. T5 reformulates all tasks (during both pre-training and
+    fine-tuning) with a text-to-text format, meaning that the model receives textual
+    input and produces textual output. Using this unified format, T5 can analyze various
+    different transfer learning settings, allowing many approaches to be compared.
+    In a [previous newsletter](https://cameronrwolfe.substack.com/p/t5-text-to-text-transformers-part),
+    we learned about the format, architecture, and overall approach of the T5 model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this newsletter, we will outline the analysis performed by T5, including
+    an empirical comparison different pre-training objectives, architectures, model/data
+    scales, and training approaches for transfer learning in NLP. Within [1], each
+    of these options are studied one-at-a-time to determine their impact on T5’s performance.
+    By studying this analysis, we arrive at a set of best practices, which (when combined
+    together) produce the state-of-the-art T5 framework that can solve language understanding
+    tasks with incredibly high accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f405573770f7dcd828722a57a401b9aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preliminaries
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We already covered the motivation and basics of the T5 architecture. Check out
+    that post at the link [here](https://cameronrwolfe.substack.com/p/t5-text-to-text-transformers-part).
+    We can quickly cover these ideas here as well. The proposal of [BERT](https://cameronrwolfe.substack.com/p/language-understanding-with-bert)
+    [5] popularized the [transfer learning](https://cameronrwolfe.substack.com/i/108182616/what-is-transfer-learning)
+    paradigm (i.e., pre-training a model over some separate dataset, then fine-tuning
+    on a target dataset) for NLP. However, BERT’s effectiveness led many researchers
+    to focus on this topic and propose various modifications and improvements. The
+    idea of T5 is to *(i)* convert all language tasks into a unified, text-to-text
+    format (see figure below) and *(ii)* study a bunch of different settings for transfer
+    learning in NLP to deduce the techniques that work best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c1579aef03f0f44be25910121043e47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language Modeling vs. Denoising
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Initial transfer learning approaches in NLP leveraged a [causal language modeling](https://cameronrwolfe.substack.com/i/85568430/language-modeling)
+    objective [6] for pre-training. However, denoising (also called [masked language
+    modeling](https://cameronrwolfe.substack.com/i/76273144/training-bert), or MLM)
+    objectives were subsequently shown to perform better [5]. Given a set of textual
+    tokens to be passed as input to some model, MLM operates by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Randomly (uniformly) selecting 15% of the tokens
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replacing 90% of selected tokens with a `[MASK]` token
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replacing 10% of selected tokens with a random token
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Training the model to predict/classify each `[MASK]` token
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The percentage of tokens that are uniformly selected is called the “corruption
+    rate”. Within T5, we will see a few different variants of this denoising objective,
+    but the basic idea remains the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“All of our objectives ingest a sequence of token IDs corresponding to a tokenized
+    span of text from our unlabeled text data set. The token sequence is processed
+    to produce a (corrupted) input sequence and a corresponding target. Then, the
+    model is trained as usual with maximum likelihood to predict the target sequence.”*
+    — from [1]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Benchmarks and Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: T5 attempts to derive a set of best practices for transfer learning in NLP.
+    To determine which techniques work best, however, T5 is evaluated on a variety
+    of different tasks and natural language benchmarks. All of these task are solved
+    using T5’s [text-to-text format](https://cameronrwolfe.substack.com/i/108182616/text-to-text-framework).
+    See Section 2.3 in [1] for a full description of these tasks. A brief summary
+    is provided below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[GLUE](https://gluebenchmark.com/) and [SuperGLUE](https://super.gluebenchmark.com/)
+    [7, 8]: both benchmarks include many different tasks, such as [sentence acceptability
+    judgement](https://nyu-mll.github.io/CoLA/), [sentiment analysis](https://huggingface.co/datasets/sst2),
+    [paraphrasing](https://paperswithcode.com/dataset/mrpc), [sentence similarity](https://paperswithcode.com/sota/semantic-textual-similarity-on-sts-benchmark),
+    [natural language inference (NLI)](https://cims.nyu.edu/~sbowman/multinli/), [coreference
+    resolution](https://paperswithcode.com/sota/natural-language-inference-on-wnli),
+    [sentence completion](https://paperswithcode.com/dataset/copa), [word sense disambiguation](https://pilehvar.github.io/wic/),
+    and [question answering](https://sheng-z.github.io/ReCoRD-explorer/). SuperGLUE
+    is an improved and more difficult benchmark with a similar structure to GLUE.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[CNN + Daily Mail Abstractive Summarization](https://huggingface.co/datasets/cnn_dailymail)
+    [9]: pairs news articles with a short, summarized sequence of text that captures
+    the main highlights of the article.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SQuAD](https://rajpurkar.github.io/SQuAD-explorer/) [10]: a question answering
+    dataset on Wikipedia articles, where the answer to each question is a segment
+    of text from the related article.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Several translation datasets (e.g., English to German, French, and Romanian).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Notably, all tasks in the GLUE and SuperGLUE benchmarks are concatenated together
+    by T5, and fine-tuning is performed over all tasks at once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other Important Ideas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Different Types of Transformer Architectures [[link](https://cameronrwolfe.substack.com/i/108182616/different-transformer-architectures)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Language Modeling Basics [[link](https://cameronrwolfe.substack.com/p/language-models-gpt-and-gpt-2)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Self-Attention [[link](https://twitter.com/cwolferesearch/status/1641932082283700226?s=20)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What do we learn from T5?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As previously mentioned, the experiments in T5 attempt to discover best practices
+    for transfer learning in NLP. To do this, a baseline approach is first proposed,
+    then several aspects of this baseline (e.g., model architecture/size, dataset,
+    and pre-training objective) are changed one-at-a-time to see what works best.
+    This approach mimics a [coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent)
+    strategy. We will first describe the baseline technique, then explain T5’s findings
+    after testing a variety of different transfer learning settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: T5 Baseline Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/1164abd82c0351276b47aebc6c0ff224.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [11])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**the model.** The T5 baseline architecture uses a standard, [encoder-decoder
+    transformer architecture](https://newsletter.artofsaience.com/p/vision-transformers-from-idea-to);
+    see above. Both the encoder and decoder are structured similarly to [BERTBase](https://huggingface.co/bert-base-uncased).
+    Although many modern approaches for NLP use “single stack” transformer architecture
+    (e.g., [encoder-only architecture](https://cameronrwolfe.substack.com/i/76273144/transformer-encoders)
+    for BERT or [decoder-only architecture](https://cameronrwolfe.substack.com/i/85568430/decoder-only-transformers)
+    for most language models), T5 chooses to avoid these architectures. Interestingly,
+    authors in [1] find that the encoder-decoder architecture achieves impressive
+    results on both generative and classification tasks. Encoder-only models are not
+    considered in [1] due to the fact that they are specialized for token/span prediction
+    and don’t solve generative tasks well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c6a34aec0e8b8a501f645c36308a5e95.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to encoder-decoder architectures, decoder-only models are limited because
+    they solely use [causal (or masked) self-attention](https://cameronrwolfe.substack.com/i/108182616/different-transformer-architectures);
+    see above. Masked self-attention only considers preceding tokens when computing
+    the representation for any given token in a sequence. However, there are certain
+    cases in which we would like to perform fully-visible attention over an initial
+    span or prefix of text, then generate output based on this prefix (e.g., translation
+    tasks). Decoder-only models cannot handle such cases, as they perform causal self-attention
+    across the entire input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**training T5.** The T5 model is pre-trained on a total of 34B tokens from
+    the [C4 corpus](https://cameronrwolfe.substack.com/i/108182616/how-is-t-studied).
+    For comparison, BERT is trained over 137B tokens, while RoBERTa is trained over
+    2.2T tokens [5, 12]. Inspired by the MLM objective from BERT, T5 is pre-trained
+    using a slightly modified denoising objective that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Randomly selects 15% of tokens in the input sequence
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replaces all consecutive spans of selected tokens with a single
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: ”sentinel” token
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Gives each sentinel token an ID that is unique to the current input sequence
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Constructs a target using all selected tokens, separated by the sentinel tokens
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Although this task seems a bit complex, we can see an illustration of how it
+    works on a short input sequence below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc6d45fea45d7059ee02c3f765550acc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: By replacing entire spans of masked tokens with a single sentinel token, we
+    reduce the computational cost of pre-training, as we tend to operate over shorter
+    input and target sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**fine-tuning.** After pre-training has been performed, T5 is separately fine-tuned
+    on each downstream task prior to being evaluated. Due to the text-to-text format
+    used by T5, both pre-training and fine-tuning use the same [maximum likelihood
+    objective](https://cameronrwolfe.substack.com/i/85568430/language-modeling)! In
+    other words, we just formulate the correct answer as a textual sequence (during
+    both pre-training and fine-tuning) and train the model to output the correct textual
+    sequence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**how does the baseline perform?** As shown in the table below, the baseline
+    T5 model performs similarly to prior models like BERT, even though these models
+    are not directly comparable (i.e., the baseline T5 model uses 25% of the compute
+    used by BERTBase). Plus, we see that pre-training provides a huge benefit on most
+    tasks. The exception to this rule is translation tasks, where performance is similar
+    both with and without pre-training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd2737cdb0b6a47d562d90be471046cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Searching for a better approach…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After testing the baseline architecture and training approach, authors in [1]
+    modify one aspect of this approach at a time, such as the underlying architecture,
+    pre-training objective, or fine-tuning strategy. By testing these different transfer
+    learning variants, we can find an approach that consistently works best across
+    different language understanding tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4501632abb16a5694ee835b61fef66df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**the architecture.** To study the impact of architecture choice on transfer
+    learning results, we can test different [variants of the transformer architecture](https://cameronrwolfe.substack.com/i/108182616/different-transformer-architectures).
+    The architectures tested in [1] include the normal encoder-decoder architecture,
+    the decoder-only architecture, and a prefix language model, which performs fully-visible
+    attention over a fixed prefix within a sequence then generates output using causal
+    self-attention; see above. The main difference between these architectures is
+    the type of masking used within their self-attention mechanisms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3374e6d2feb1f559969604c21e1685c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: When several different architectures are tested (using both causal language
+    modeling and denoising objectives for pre-training), we see that the encoder-decoder
+    transformer architecture (with a denoising objective) performs the best, leading
+    this architecture to be used in the remainder of experiments. Relative to other
+    models, this encoder-decoder variant has 2P parameters in total but the same computational
+    cost as a decoder-only model with P parameters. To reduce the total number of
+    parameters to P, we can share parameters between the encoder and decoder, which
+    is found to perform quite well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**the pre-training objective.** At first, T5 is trained using three different
+    types of pre-training objectives. The first is a BERT-style MLM objective. The
+    other objectives are a deshuffling [3] strategy (i.e., the model tries to put
+    a shuffled sentence back into the correct order) and a prefix-based language modeling
+    objective [2]. In the latter, the text is separated into two spans, where the
+    first span is passed as input to the encoder and the second span is predicted
+    by the decoder (i.e., recall that we are using an encoder-decoder transformer).
+    The performance of models trained with these objectives is compared below, where
+    we see that denoising objectives clearly outperform other strategies.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66118100ba35a924d0d85038d805a7a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: From here, authors in [1] test several modifications to the BERT-style MLM objective
+    [4], as shown in the table below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/37c7525e991bc22e87aec755725e910b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these variants tend to perform similarly; see below. However, by selecting
+    pre-training objectives that replace entire spans of corrupted tokens with single
+    sentinel tokens and only attempting to predict corrupted tokens within the target,
+    we can minimize the computational cost of pre-training. As such, the baseline
+    strategy of masking entire spans of consecutive tokens is efficient because it
+    produces shorter target sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e84b4d88b27544df2239fd4afbf1c40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Authors in [1] test different corruption rates, finding that the corruption
+    rate doesn’t significantly impact results and that a setting of 15% works well.
+    An alternative pre-training objective that explicitly selects spans of tokens
+    for corruption (i.e., the baseline approach selects tokens uniformly instead of
+    as a span, then combines consecutive tokens together) is also found to perform
+    similarly to the baseline. A schematic of the different pre-training objectives
+    tested in [1] is provided below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d0823916554a44745ff5a6c11a8f1cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many different strategies are studied, but the main takeaways here are *(i)*
+    denoising objectives work best, *(ii)* variants of denoising objectives perform
+    similarly, and *(iii)* strategies that minimize the length of the target are most
+    computationally efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**data and model size.** Finally, the impact of scale on T5 quality is studied.
+    First, T5 is pre-trained with several different datasets, including one that is
+    not filtered, a news-specific dataset, a dataset that mimics [GPT-2’s WebText
+    corpus](https://cameronrwolfe.substack.com/i/85568430/language-models-are-unsupervised-multitask-learners-gpt),
+    and a few variants of the Wikipedia corpus. T5’s performance after being pre-trained
+    on each of these datasets is shown below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c5ee2dd55d190a687d0503720236cbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see here that *(i)* not filtering the pre-training corpus is incredibly detrimental
+    and *(ii)* pre-training on domain-specific corpora can be helpful in some cases.
+    For example, pre-training on the news-based corpus yields the best performance
+    on [ReCoRD](https://sheng-z.github.io/ReCoRD-explorer/), a reading comprehension
+    dataset based on news articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “The main lesson behind these findings is that pre-training on in-domain unlabeled
+    data can improve performance on downstream tasks. This is unsurprising but also
+    unsatisfying if our goal is to pre-train a model that can rapidly adapt to language
+    tasks from arbitrary domains.” *— from [1]*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Going further, T5 is pre-trained using truncated versions of the C4 corpus with
+    varying sizes. From these experiments, we learn that more data is (unsurprisingly)
+    better. Looping through a smaller version of the dataset multiple times during
+    pre-training cause overfitting and damage downstream performance; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dbdc4a5171a4c55177aef1a419b10f0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To scale up the T5 model, authors test the following modifications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`4X` more training iterations (or 4`X` larger batch size)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`2X` more training iterations and 2`X` larger model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`4X` larger model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train an ensemble of 4 encoder-decoder transformers
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here, both pre-training and fine-tuning steps are increased for simplicity.
+    The results of these experiments are shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd40ae8bbd39863009892cf3d60815b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results roughly correspond with what we would expect. Increasing training
+    time (or batch size) improves performance. Combining this with a larger model
+    yields a further benefit compared to increasing training iterations or batch size
+    alone. In other words, *increasing the amount of pre-training data and the model
+    size is complementary in terms of improving performance*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “The bitter lesson of machine learning research argues that general methods
+    that can leverage additional computation ultimately win out against methods that
+    rely on human expertise” *— from [1]*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**other stuff.** T5 is also fine-tuned using different multi-task training
+    strategies. Overall, these models are found to perform slightly worse than those
+    fine-tuned separately for each task. However, strategies do exist to minimize
+    the performance gap between task-specific fine-tuning and multi-task learning.
+    For more information, check out the overview [here](https://www.ruder.io/multi-task/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many fine-tuning approaches for deep neural nets only train a subset of model
+    parameters (e.g., “freeze” early layers and fine-tune only the last few layers
+    in the model). Authors in [1] try several techniques for fine-tuning T5 in this
+    manner (e.g., via [adapter layers](https://medium.com/dair-ai/adapters-a-compact-and-extensible-transfer-learning-method-for-nlp-6d18c2399f62)
+    or gradual unfreezing [6]), but these methods are outperformed by fine-tuning
+    the full model end-to-end; see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1440ddf98e99d73602f1670d655f3113.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (from [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'T5: Putting it all together!'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have gone over the entire experimental analysis from [1], we have
+    a better picture of different options for transfer learning in NLP and what works
+    best! Below, we will go over the main takeaways from this analysis that comprise
+    the official transfer learning framework used by T5\. This approach was found
+    to perform quite well when compared to various alternatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**baseline settings.** First, let’s recall T5’s baseline architecture. It is
+    an encoder-decoder transformer that is trained using the unified [text-to-text
+    format](https://cameronrwolfe.substack.com/i/108182616/text-to-text-framework).
+    After pre-training with a denoising objective, the model is separately fine-tuned
+    on each downstream task before evaluation. Notably, the final T5 model is fine-tuned
+    separately for each task in the GLUE and SuperGLUE benchmarks, as training over
+    all tasks together yields slightly lower performance (assuming we take necessary
+    steps to avoid overfitting).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**pre-training.** Instead of uniformly selecting tokens, the final T5 methodology
+    performs span corruption (i.e., selecting entire spans of tokens for corruption
+    at once) with an average length of three. Still, 15% of tokens are selected for
+    corruption. This objective performs slightly better than the baseline and yields
+    shorter target sequence lengths. Additionally, T5 mixes unsupervised pre-training
+    updates with multi-task, supervised updates. The ratio between the number of unsupervised
+    and supervised updates depends on the size of the model being used (i.e., larger
+    models need more unsupervised updates to avoid overfitting).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**amount of training.** Additional pre-training is helpful to the performance
+    of T5\. Specifically, both increasing the batch size and number of training iterations
+    benefits T5’s performance. As such, the final T5 model is pre-trained over 1T
+    tokens in total. This is much larger than the baseline’s 34B tokens during pre-training
+    but still far short of RoBERTa [12], which is pre-trained on over 2.2T tokens.
+    Pre-training is performed over the generic, filtered C4 dataset, as task-specific
+    pre-training does not yield a consistent benefit across different tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**model scale.** Using larger models is helpful, but sometimes a smaller model
+    may make more sense (e.g., when you have limited compute available for inference).
+    For this reason, five different sizes of T5 models are released with anywhere
+    from 220M to 11B parameters. Thus, T5 is actually a suite of different models!
+    We can gain access to any of these models at the link [here](https://huggingface.co/docs/transformers/model_doc/t5).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing Remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thanks so much for reading this article. I am [Cameron R. Wolfe](https://cameronrwolfe.me/),
+    Director of AI at [Rebuy](https://www.rebuyengine.com/). I study the empirical
+    and theoretical foundations of deep learning. You can also check out my [other
+    writings](https://medium.com/@wolfecameron) on medium! If you liked it, please
+    follow me on [twitter](https://twitter.com/cwolferesearch) or subscribe to my
+    [Deep (Learning) Focus newsletter](https://cameronrwolfe.substack.com/), where
+    I help readers build a deeper understanding of topics in AI research via understandable
+    overviews of popular papers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bibliography
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Raffel, Colin, et al. “Exploring the limits of transfer learning with a
+    unified text-to-text transformer.” *The Journal of Machine Learning Research*
+    21.1 (2020): 5485–5551.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Liu, Peter J., et al. “Generating wikipedia by summarizing long sequences.”
+    *arXiv preprint arXiv:1801.10198* (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Liu, Peter J., Yu-An Chung, and Jie Ren. “Summae: Zero-shot abstractive
+    text summarization using length-agnostic auto-encoders.” *arXiv preprint arXiv:1910.00998*
+    (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Song, Kaitao, et al. “Mass: Masked sequence to sequence pre-training for
+    language generation.” *arXiv preprint arXiv:1905.02450* (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Devlin, Jacob, et al. “Bert: Pre-training of deep bidirectional transformers
+    for language understanding.” *arXiv preprint arXiv:1810.04805* (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Howard, Jeremy, and Sebastian Ruder. “Universal language model fine-tuning
+    for text classification.” *arXiv preprint arXiv:1801.06146* (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Wang, Alex, et al. “GLUE: A multi-task benchmark and analysis platform
+    for natural language understanding.” *arXiv preprint arXiv:1804.07461* (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Wang, Alex, et al. “Superglue: A stickier benchmark for general-purpose
+    language understanding systems.” *Advances in neural information processing systems*
+    32 (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Hermann, Karl Moritz, et al. “Teaching machines to read and comprehend.”
+    *Advances in neural information processing systems* 28 (2015).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Rajpurkar, Pranav, et al. “Squad: 100,000+ questions for machine comprehension
+    of text.” *arXiv preprint arXiv:1606.05250* (2016).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Vaswani, Ashish, et al. “Attention is all you need.” *Advances in neural
+    information processing systems* 30 (2017).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Liu, Yinhan, et al. “Roberta: A robustly optimized bert pretraining approach.”
+    *arXiv preprint arXiv:1907.11692* (2019).'
+  prefs: []
+  type: TYPE_NORMAL

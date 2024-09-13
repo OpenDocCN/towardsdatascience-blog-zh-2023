@@ -1,0 +1,329 @@
+- en: Why You Need to Write DRY Code With Decorators in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/why-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569](https://towardsdatascience.com/why-you-need-to-write-dry-code-with-decorators-in-python-3930ea23f569)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: DATA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using decorators to see what’s happening to your data in a Pandas processing
+    pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)[![Byron
+    Dolon](../Images/9ff32138c7b1913be24cc7ab971752b0.png)](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------)
+    [Byron Dolon](https://byrondolon.medium.com/?source=post_page-----3930ea23f569--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3930ea23f569--------------------------------)
+    ·9 min read·May 19, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0ac300ed86456b49bd3ab5a61fdcd44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Decorations are KEY — Photo by [Adi Goldstein](https://unsplash.com/@adigold1?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DRY code is one of the keys to efficient programming.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DRY stands for “do not repeat yourself”, which is important whether you’re writing
+    code for a personal project or for a large codebase at scale. This means that
+    instead of copying logic from one file to another or even from one function to
+    another, you should embrace the concept of DRY code to create modular solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using decorators in Python can help with this. In short, a decorator allows
+    you to manipulate an existing function and add to its functionality. There are
+    many different scenarios where decorators can come in handy, but in this piece,
+    we’ll take a look at how using decorators can improve a Pandas data processing
+    pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decorators can help us understand what’s going on at each stage of our data
+    processing pipeline, which is helpful when working with data at scale. You can
+    use them to keep track of what’s going on with your data, which can be hard to
+    manage as you apply different transformations to your initial DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to follow along in a notebook of your own. You can download the dataset
+    from Kaggle [here](https://www.kaggle.com/datasets/deepanshuverma0154/sales-dataset-of-ecommerce-electronic-products?resource=download),
+    available free for use under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+    license.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’re going to follow along, make sure you run this to import all the necessary
+    libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: A standard data processing pipeline in Pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into decorators, let’s first take a look at an existing data processing
+    pipeline in Pandas and quickly go over what it does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/cd032fd0329a69e4b232755f8551134b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of initial pipeline — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this pipeline, essentially there''s a “main” function that calls a few other
+    reading and processing functions to output a DataFrame that’s ready to be used
+    to train a machine learning model. This is a simple example with just three pre-processing
+    steps, but you can see how it works mainly by looking at the `process_raw_data`
+    function, which works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read in raw data in chunks using the custom `read_raw_data` function defined
+    to take in the file at specified chunk sizes;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Call the Pandas `pipe` method on the the resulting DataFrame object to employ
+    method chaining, which involves passing our custom data pre-processing functions
+    to the `pipe` method in sequence.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In this case, we have three main things we want to do with our data which are
+    encapsulated in the three functions `split_purchase_address`, `extract_product_pack_information`,
+    and `one_hot_encode_product_columns`. All of these functions in different ways
+    transform the initial DataFrame and allow the raw data to really be usable when
+    moving forwards with machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if it’s a bit difficult like this to see what’s going on at each successive
+    step in the pipeline. Because I wrote the code, I know exactly what’s happening
+    to the DataFrame each time the `pipe` method is called. But if the underlying
+    data changes or if someone else wants to know what’s happening, it would be useful
+    to have some data returned to us in the form of logs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a lot of different ways to implement logs, but let’s take a look at
+    how decorators in Python can help us understand what’s happening with out data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are decorators?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So our goal is to understand what’s going on with our DataFrame as it gets processed
+    in multiple stages of our pipeline. The solution is to put a wrapper layer around
+    the functions we defined that can add extra functionality to return information
+    about our DataFrame and more. Doing this means we need to define decorator functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a more efficient alternative than adding the same kind of log lines
+    to each function. Especially at scale, imagine having to copy paste the same three
+    log messages in a dozen different data processing functions or more scattered
+    over a few different files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s much more efficient to engage in “metaprogramming”, where we instead define
+    decorator functions whose goal is to manipulate existing code. All a decorater
+    function should do ideally is take a function as input and have the function run
+    and return what it would normally, but add some additional functionality on top
+    of the function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining decorators you can use to work with data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Logging execution times of your functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For an initial example of a decorator, let’s start by simply logging the start
+    time of each function and also calculating the time it takes a function to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: There’s a lot to unpack so let’s take a look at what’s going on here. We start
+    by defining our decorator function `log_execution_and_time`. Since a decorator
+    should accept a function as input, we also define a `function` parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we were to use the function without the `functools.wraps` line, we wouldn’t
+    be able to preserve the metadata around the existing function and use it in our
+    logging. Always remember to include this in your decorators, otherwise they won’t
+    behave as you would like. The original function name, for example, wouldn’t be
+    preserved in the wrapper (e.g. the decorator wouldn’t be able to tell that the
+    `read_raw_data` function name was “read_raw_data”). You can see a simple example
+    in the [Python docs](https://docs.python.org/3/library/functools.html#functools.wraps).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we define the wrapper to actually implement the added functionality we
+    want. In this case, we want to track how long it takes the function to run. Doing
+    so is simple: all we need to do is use the `time` library to assign the current
+    time to a `start_time` and `end_time` variables, then take the difference of the
+    two to get the function duration. You’ll see in the middle of us defining those
+    variables, we run the function. The line to do so is the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`result = function(*args, **kwargs)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is just like the syntax we did before with reading raw data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`df = read_raw_data(file_path=FILE_PATH, chunk_size=CHUNK_SIZE)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason both in the `wrapper` and in the `function` we define the `args`
+    and `kwargs` parameters is to allow the functions we pass with the decorators
+    to accept any number of arguments and keyword arguments that are necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this function, we also write some loglines with the `logging.info` syntax.
+    We also use the `function.__name__` to pull the actual name of the function in
+    our logging messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, inside the wrapper function we return the `result` defined earlier,
+    which is the result of the original function’s execution. In the context of our
+    data processing pipelines, this will always be a Pandas DataFrame. In our decorator
+    fuction, we return the `wrapper` function, in which we include our added functionality
+    to the existing function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logging DataFrame metadata
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we know how decorators work, let’s take a look at returning information
+    in our logs about metadata on the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The decorator syntax is the same before. Instead, we return the result of the
+    function first, and then define logging messages afterwards based on ther resulting
+    DataFrame. Here, you can see that you can use a decorator to perform operations
+    on the result of your functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this case, we want to look at three things in the DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Number of rows: `len(result)`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Number of columns: `len(result.columns)`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Memory usage for each column: `result.memory_usage(deep=True)`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here, remember that `result` will always in this case be a Pandas DataFrame,
+    which means that we can call Pandas methods on it. Each of these can be useful
+    to know depending on what function you define to transform your DataFrame does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if you’re adding a new column to a DataFrame, you can verify it
+    was added by checking the number of columns. Also, if you’re just adding an extra
+    column, no rows should be added to the DataFrame, which you can also sanity check
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the memory usage of each column can be useful to monitor over time,
+    to make sure that you’re operating within some pre-defined limits. In our logging
+    decorator for convenience, we work with the output of `result.memory_usage` is
+    a Series with information about each column, so we can loop through this series
+    and return the memory used by each column in an easy-to-read manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding decorators to our pipeline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have our decorators defined, implementing them in our pipeline is
+    really simple. Our initial code from earlier can be modified like this to add
+    the functionality we’ve defined in our decorator functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f1f40f24dc293fe15d0a644125d12a80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output of data processing pipeline with logging decorators — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: All we had to do is add `@log_execution_and_time` and `@log_dataframe_metadata`
+    to the top of our function definitions to implement the decorator functionality.
+    Then when we run the code just the same as before, we additionally get the logging
+    output for each function as it runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, users are able to see what’s going on with the DataFrame as it moves along
+    the processing pipeline. The resulting DataFrame is just the same as before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ce3012a45cf13c849b8e96773ad0eeb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Final DataFrame is unchanged — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s all! This is just a start to the many things you can do with decorators.
+    Other things you can do with to improve your data processing pipeline like more
+    include verbose logging, adding optional parameters to your decorators to make
+    them behave differently for different functions, and even have them edit the result
+    of each DataFrame (like dropping nulls) as needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for taking the time to read this piece! If you enjoy my content I’d love
+    it if you sign up for Medium using my referral link below. This’ll let me get
+    a portion of your monthly subscription AND you’ll get access to some exclusive
+    features only for Medium members. And if you’re already following me, thanks a
+    bunch for your support!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://byrondolon.medium.com/membership?source=post_page-----3930ea23f569--------------------------------)
+    [## Join Medium with my referral link — Byron Dolon'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: byrondolon.medium.com](https://byrondolon.medium.com/membership?source=post_page-----3930ea23f569--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: M**ore by me:** *-* [*5 Practical Tips for Aspiring Data Analysts*](https://byrondolon.medium.com/5-practical-tips-for-aspiring-data-analysts-9917006d4dae?sk=019edbddaca4d313665caafe4b747d26)
+    *-* [*Mastering Ecommerce Data Analysis*](https://python.plainenglish.io/mastering-analysis-for-e-commerce-with-pandas-e4219a87b10c?sk=9aa8fd1024b89e89e4b0904c8d00d242)
+    *-* [*Check for a Substring in a Pandas DataFrame*](/check-for-a-substring-in-a-pandas-dataframe-column-4b949f64852?sk=bfb5bbab11ae45c47bfb316d931c3b56)
+    *-* [*7 Best Repositories on Github to Learn Python*](https://medium.com/towards-data-science/top-7-repositories-on-github-to-learn-python-44a3a7accb44)
+    *-* [*5 (and a half) Lines of Code for Understanding Your Data with Pandas*](/5-and-a-half-lines-of-code-for-understanding-your-data-with-pandas-aedd3bec4c89?sk=7007a1ae248cf7ea4ef5fcd4af7ae72b)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

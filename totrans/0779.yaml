@@ -1,0 +1,319 @@
+- en: Easy Distribution-Free Conformal Intervals for Time Series
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/easy-distribution-free-conformal-intervals-for-time-series-665137e4d907](https://towardsdatascience.com/easy-distribution-free-conformal-intervals-for-time-series-665137e4d907)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using Python and your test set to derive distribution-agnostic intervals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikekeith52.medium.com/?source=post_page-----665137e4d907--------------------------------)[![Michael
+    Keith](../Images/4ebd39b25a1faae3586eb25ec83d3e91.png)](https://mikekeith52.medium.com/?source=post_page-----665137e4d907--------------------------------)[](https://towardsdatascience.com/?source=post_page-----665137e4d907--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----665137e4d907--------------------------------)
+    [Michael Keith](https://mikekeith52.medium.com/?source=post_page-----665137e4d907--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----665137e4d907--------------------------------)
+    ·7 min read·Feb 15, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8430caa524f9400ed30923d829884482.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Gilly](https://unsplash.com/@gillyberlin?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As important as producing a point estimate for forecasting applications is determining
+    how far off the actual value is likely to be from the prediction. Most forecasts
+    are not 100% accurate so having a good sense of the possibilities when dealing
+    with model implementation becomes crucial. For models with underlying functional
+    forms, such as ARIMA, confidence intervals can be determined using the assumed
+    distribution of the residuals and the standard errors of the estimation. These
+    intervals are logical in that they expand the further out from the known last
+    value a forecast goes — as uncertainty accumulates, this becomes represented in
+    a mathematical way that gels with our intuitions. And *if* the model assumptions
+    hold, a 95% confidence interval is guaranteed to contain 95% of the actual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conformal Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: However, when dealing with a machine learning model that has no form that can
+    be represented with a simple equation and assumes no distribution in the underlying
+    data, creating a sound confidence interval becomes more of a challenge. A popular
+    solution to this problem are conformal predictions. The GitHub repository, [Awesome
+    Conformal Prediction](https://github.com/valeman/awesome-conformal-prediction),
+    lists many great resources to dive into this idea more thoroughly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of these resources is a library that offers a conformal estimator that
+    can be wrapped around scikit-learn estimators: [mapie](https://github.com/scikit-learn-contrib/MAPIE).
+    One of the best ways I’ve seen this method applied for time series is with the
+    [tspiral library](https://github.com/cerlymarco/tspiral) overviewed [here](/time-series-forecasting-with-conformal-prediction-intervals-scikit-learn-is-all-you-need-4b68143a027a).
+    However, the mapie conformal prediction can only take you so far if the time series
+    in question has been differenced to achieve stationarity before the scikit-learn
+    estimator is applied. The conformal approach can be applied to the series at the
+    differenced level, but what happens when we want to revert to the original level?
+    If we simply undifference the confidence intervals the same way we undifference
+    the point estimates, the resulting intervals will usually be too wide.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s where [scalecast](https://github.com/mikekeith52/scalecast) can come
+    in. It uses a type of “naive” conformal prediction, where a test set is used to
+    find a percentile range to apply to predictions over an unknown horizon. When
+    the underlying series has been differenced, both the test-set actuals and predictions
+    are undifferenced and a percentile function is applied to the out-of-sample residuals
+    to find the likely coverage of the predictions. It’s not totally scientific —
+    for instance, there is no effort made to correct autocorrelation in the resulting
+    residuals. But I believe it works, and through measuring its effectiveness with
+    an empirical metric, perhaps I can convince you of the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MSIS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Mean Scaled Interval Score was introduced by Gneiting & Raftery in 2007 to
+    measure the effectiveness of confidence intervals. Lower scores are better. Makridakis
+    et. al (2020) used MSIS to evaluate confidence intervals by submissions to the
+    M4 competition. This is what they write about it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following algorithm illustrates how the MSIS is estimated in practice and
+    highlights its logic when it is used for comparing the precisions of the intervals
+    generated by two different forecasting methods:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: • A penalty is calculated for each method at the points at which the future
+    values are outside the specified bounds. This captures the coverage rate of each
+    method.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: • The width of the prediction interval is added to the penalty, if any, to get
+    the interval score (IS). In this respect, the methods of larger intervals are
+    penalized over those of smaller ones, regardless of the coverage rate achieved.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: • The ISs estimated at the individual points are averaged to get the mean interval
+    score (MIS).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: • MIS is scaled by dividing its value by the mean absolute seasonal difference
+    of the series, as is done for the case of the MASE used in M4, in order to make
+    the measure scale-independent.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We can use MSIS to measure the effectiveness of the scalecast intervals on
+    machine learning models and benchmark these models against a more traditional
+    and trusted time series model with an underlying functional form — ARIMA. To make
+    the analysis more comprehensive, we will try three different datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Daily Visitors](https://www.kaggle.com/datasets/bobnau/daily-website-visitors):
+    stationary, large, aggregated at the daily level, and fairly easy to predict'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Housing Starts](https://fred.stlouisfed.org/series/HOUSTNSA): large, monthly,
+    and will be first differenced to achieve stationarity'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Avocados](https://www.kaggle.com/datasets/neuromusic/avocado-prices): small,
+    weekly, and will both first differenced and first seasonally differenced'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All datasets can be shared publicly. You can see the full notebook containing
+    the analysis [here](https://scalecast-examples.readthedocs.io/en/latest/misc/cis/cis.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code Syntax
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The following installations are needed to run the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To be somewhat brief, I will only share the notebook code that uses the Avocados
+    dataset. First, library imports and loading the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s split the data to make sure everything is fairly tested out-of-sample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This dataset is small, and after differencing and using autoregressive terms
+    to make predictions, the amount of observations to work with becomes even smaller.
+    Therefore, we use 20 observations in the test set and the same in a validation
+    set to construct the intervals. Twenty observations is the minimum needed to reliably
+    form 95% confidence intervals, which is what we will be using. Let’s now create
+    a [Forecaster](https://scalecast.readthedocs.io/en/latest/Forecaster/Forecaster.html)
+    object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We apply a first difference, then a first seasonal difference to the data,
+    assuming a 52-period cycle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now automatically select covariates to apply to the forecasts using [auto_Xvar_select()](https://scalecast.readthedocs.io/en/latest/Forecaster/Forecaster.html#src.scalecast.Forecaster.Forecaster.auto_Xvar_select):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By calling the object instance, we see what was selected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this case, it only chose 9 autoregressive terms/series lags. It could have
+    also selected trend and seasonal covariates, but the algorithm didn’t think those
+    would improve the models’ accuracy. The series has already been differenced and
+    seasonally adjusted, so that is not surprising. Now, we choose our machine learning
+    models and evaluate one forecast with each of them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we revert the forecasts to the original series level and plot the
+    results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3a48868e7c2f866058a175813df85d0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the predictions and actuals with the top-performing model, KNN, look fairly
+    well-fit. However, one model on one series doesn’t ever tell the whole story.
+    Let’s look at the results from all applied models on all three of the chosen datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A comparison of MSIS scores on all three time series shows the dispersion of
+    the scores:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec993d5ae6ebdb99d87c90679628b41f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What do these figures actually mean? It’s hard to say. MSIS isn’t a metric
+    many are accustomed to using, so these scores only make sense when benchmarked
+    against more familiar approaches. Using an auto-ARIMA process, we now score the
+    more standard intervals from the [StatsModels package](https://www.statsmodels.org/dev/generated/statsmodels.tsa.arima.model.ARIMA.html)
+    — the type of intervals that have an underlying functional form and assumed distribution.
+    We can also use the same ARIMA models but apply a conformal interval to them to
+    complete our benchmark. The final results look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49e001c8e665a65be249bbf53978821a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see **green** where the scalecast interval outperformed the StatsModel ARIMA
+    interval and **red** otherwise. The good news is we see a lot of green, validating
+    the naive conformal interval approach. It’s not all good, however. The ARIMA models
+    that received a conformal interval did not do as well as the benchmark on the
+    whole. Also, only three of the seven ML models outperformed ARIMA on the Housing
+    Starts dataset. That is all worth looking into further, but at the very least,
+    we can be pleased that using machine learning models on diverse datasets with
+    and without differencing usually performed better than the more classical ARIMA
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This post overviewed conformal intervals applied using the scalecast package.
+    The MSIS interval score was applied to seven machine learning models across three
+    diverse datasets and were then benchmarked against ARIMA. We saw the machine-learning
+    approach outperformed the ARIMA approach in most, but not all, instances. Thank
+    you for following along and be sure to give scalecast a star on GitHub!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/mikekeith52/scalecast?source=post_page-----665137e4d907--------------------------------)
+    [## GitHub - mikekeith52/scalecast: The practitioner''s forecasting library'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalecast is a light-weight time-series forecasting procedure, wrapper, and
+    results container built by and for applied…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/mikekeith52/scalecast?source=post_page-----665137e4d907--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Tilmann Gneiting & Adrian E Raftery (2007) Strictly Proper Scoring Rules, Prediction,
+    and Estimation, Journal of the American Statistical Association, 102:477, 359–378,
+    DOI: [10.1198/016214506000001437](https://doi.org/10.1198/016214506000001437)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Makridakis, Spyros & Spiliotis, Evangelos & Assimakopoulos, Vassilios, 2020\.
+    “[**The M4 Competition: 100,000 time series and 61 forecasting methods**](https://ideas.repec.org/a/eee/intfor/v36y2020i1p54-74.html),”
+    [International Journal of Forecasting](https://ideas.repec.org/s/eee/intfor.html),
+    Elsevier, vol. 36(1), pages 54–74.'
+  prefs: []
+  type: TYPE_NORMAL

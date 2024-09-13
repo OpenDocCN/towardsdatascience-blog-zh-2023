@@ -1,0 +1,304 @@
+- en: Collecting Data with Apache Airflow on a Raspberry Pi
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/collecting-data-with-apache-airflow-on-a-raspberry-pi-0ac3f72e377f](https://towardsdatascience.com/collecting-data-with-apache-airflow-on-a-raspberry-pi-0ac3f72e377f)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Raspberry Pi is All You Need
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://dmitryelj.medium.com/?source=post_page-----0ac3f72e377f--------------------------------)[![Dmitrii
+    Eliuseev](../Images/7c48f0c016930ead59ddb785eaf3e0e6.png)](https://dmitryelj.medium.com/?source=post_page-----0ac3f72e377f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0ac3f72e377f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0ac3f72e377f--------------------------------)
+    [Dmitrii Eliuseev](https://dmitryelj.medium.com/?source=post_page-----0ac3f72e377f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0ac3f72e377f--------------------------------)
+    ·8 min read·Oct 21, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1fdf15ccbedadf88e443d6b5a1fc8a14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Raspberry Pi Zero (model 2021), Image source [Wikipedia](https://en.wikipedia.org/wiki/Raspberry_Pi)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Often, we need to collect some data within a certain period of time. It can
+    be data from the IoT sensor, statistical data from social networks, or something
+    else. As an example, the [YouTube Data API](https://developers.google.com/youtube/v3)
+    allows us to get the number of views and subscribers for any channel at the current
+    moment, but the analytics and historical data are available only to the channel
+    owner. Thus, if we want to get weekly or monthly summaries about these channels,
+    we need to collect this data ourselves. In the case of the IoT sensor, there may
+    be no API at all, and we also need to collect and save data on our own. In this
+    article, I will show how to configure Apache Airflow on a Raspberry Pi, which
+    allows running tasks for a long period of time without involving any cloud provider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously, if you’re working for a large company, you will probably not need
+    a Raspberry Pi. In that case, if you need an extra cloud instance, just create
+    a Jira ticket for your MLOps department ;) But for a pet project or a low-budget
+    startup, it can be an interesting solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Raspberry Pi
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is actually a Raspberry Pi? For those readers who have never been interested
+    in hardware for the last 10 years (the first Raspberry Pi model was introduced
+    in 2012), I can briefly explain that this is a single-board computer running full-fledged
+    Linux. Usually, a Raspberry Pi has a 1GHz, 2–4-core ARM CPU and 1–8 MB of RAM.
+    It is small, cheap, and silent; it has no fans and no disk drive (the OS is running
+    from a Micro SD card). A Raspberry Pi needs only a standard USB power supply;
+    it can be connected via Wi-Fi or Ethernet to a network and run different tasks
+    within months or even years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For my data science pet project, I wanted to collect the YouTube channel statistics
+    within 2 weeks. For a task that requires only 30–60 seconds twice per day, a serverless
+    architecture can be a perfect solution, and we can use something like [Google
+    Cloud Function](https://cloud.google.com/functions?hl=en) for that. But every
+    tutorial from Google started with the phrase “enable billing for your project”.
+    There is free first credit and free quotas provided by Google, but I did not want
+    to have another headache of monitoring how much money I spent and how many requests
+    I made, so I decided to use a [Raspberry Pi](https://en.wikipedia.org/wiki/Raspberry_Pi)
+    for that. It turned out that the Raspberry Pi is an excellent data science tool
+    for collecting data. This $50 single-board computer has only 2W of power consumption;
+    it is small, silent, and can be placed anywhere. Last but not least, I already
+    had a Raspberry Pi at home, so my cost was literally zero. I just plugged a power
+    supply into the socket, and the problem of cloud computing was solved ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are different Raspberry Pi models on the market, and at the time of writing
+    this article, the Raspberry Pi 4 and Raspberry Pi 5 are the most powerful. But
+    for tasks that do not require a lot of requests or “heavy” postprocessing, the
+    earliest models will also do the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Airflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For my pet project, I had a list of 3,000 YouTube channels, and the YouTube
+    Data API limit is 10,000 requests per day. So, I decided to collect data twice
+    per day. If we want to run Python code twice per day, we can use a CRON job or
+    just add `time.sleep(12*60*60)` to the main application loop. But a much more
+    effective and fun way is to use [Apache Airflow](https://airflow.apache.org) for
+    that. Apache Airflow is a professional workflow management platform, and it is
+    also open-source and free to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is easy to install Airflow on a Raspberry Pi using a *pip* command (here,
+    I used Apache Airflow 2.7.1 and Python 3.9):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s generally not recommended to use *sudo* with pip, but on my Raspberry Pi,
+    Python airflow libraries were not found when I started airflow as a service (services
+    are running as root), and using `sudo pip3` was the easiest fix for that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When Apache Airflow is installed, we need to initialize it and create a user:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, the Airflow is installed, but I wanted it to run automatically as a service
+    after the boot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, I created a `/etc/systemd/system/airflow-webserver.service` file to
+    run the Apache Airflow web server as a service:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the same way, I created a `/etc/systemd/system/airflow-scheduler.service`file
+    for an Airflow scheduler:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We also need a `/home/pi/airflow/env` file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can start new services, and Apache Airflow is ready to use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If everything was done correctly, we can make a login to the Apache Airflow
+    web panel (credentials — “airflow”, “airflow”):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80ebada6c41b3cba46938cbe614a3b1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apache Airflow login page, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Airflow DAG
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A DAG (Directed Acyclic Graph) is a core concept of Apache Airflow. Combining
+    different tasks into a graph allows us to organize pretty complex data processing
+    pipelines. A DAG itself is created in the form of a Python file, and it has to
+    be placed in the “dags” folder of Apache Airflow (this path is specified in the
+    `dags_folder` parameter of the “airflow.cfg” file). During the start, or after
+    pressing the “Refresh” button, Apache Airflow imports these Python files and gets
+    all the needed information from them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my case, I created a `process_channels` method located in a `get_statistics.py`
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: (getting the YouTube data itself is out of the scope of this article; it can
+    just be any method we want to run periodically)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A DAG file for running our code in Apache Airflow is simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see, here I made the `create_dag` method, and the most important part
+    is the `schedule_interval` parameter, which is equal to 12 hours. In total, I
+    have 3 tasks in my DAG; they are represented by three almost identical `get_channels_stats_gr1..3`
+    methods. Each task is isolated and will be executed separately by Apache Airflow.
+    I also created a variable `RequestLimit`. A YouTube API is limited to 10,000 requests
+    per day, and during the debugging, it makes sense to make this parameter low.
+    Later, this value can be changed at any time by using the “Variables” control
+    panel of Apache Airflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running the DAG
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our task is ready. We can press the “Refresh” button, and a new DAG will appear
+    in the list and will be executed according to our programmed schedule. As we can
+    see, installing Apache Airflow and creating a DAG is not rocket science, but it
+    still requires some effort. What is it for? Can we just add one line to the CRON
+    job instead? Well, even for a simple task like this, Apache Airflow provides a
+    lot of functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see the task status, the number of completed and failed tasks, the time
+    for the next run, and other parameters:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/7bc63c5d369514c89ce799db9c8924c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apache Airflow DAGs list, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If the task failed, it is easy to click it and see what is going on and when
+    the incident happened:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cddd1aa7a71d6aa8acb0c1d1c622850b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apache Airflow graph view, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I can even click on the failed task and see its crash log. In my case, a crash
+    occurred during the retrieval of YouTube channel data. One of the channels was
+    probably removed or disabled by the owner, and no data was available anymore:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/c2ff793efdaf431bf50a62a2c6827648.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apache Airflow crash log, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I can see a calendar with a pretty detailed log of previous and future tasks:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/7d41ddef5e1420f8432cd094348f5677.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apache Airflow calendar view, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I can also see a duration log that can give some insights about the task execution
+    time:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/f015abdd10f476e8d8454940b90f1b11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apache Airflow duration log, Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, using Apache Airflow is way better in functionality compared to adding a
+    simple CRON job. Last but not least, knowledge of Airflow is also a nice skill
+    that is often required in the industry ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, I installed and configured Apache Airflow and was able to run
+    it on a Raspberry Pi. Apache Airflow is a professional workflow management platform;
+    according to [6sense.com](https://6sense.com/tech/workflow-automation/apache-airflow-market-share),
+    it has 29% of the market share and is used by large companies such as Ubisoft,
+    SEB, or Hitachi. But as we can see, even on a “nano” scale, Apache Airflow can
+    be successfully used on microcomputers like the Raspberry Pi.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Those who are interested in using a Raspberry Pi for data science-related projects
+    are welcome to read my other TDS articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exploratory Analysis of MEMS Sensor Data](/exploratory-analysis-of-mems-sensor-data-bbfc0aa0a887)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[YOLO Object Detection on the Raspberry Pi](/yolo-object-detection-on-the-raspberry-pi-6de3629256fa)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you enjoyed this story, feel free [to subscribe](https://medium.com/@dmitryelj/membership)
+    to Medium, and you will get notifications when my new articles will be published,
+    as well as full access to thousands of stories from other authors. If you want
+    to get the full source code for this and my next posts, feel free to visit my
+    [Patreon page](https://www.patreon.com/deliuseev).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL

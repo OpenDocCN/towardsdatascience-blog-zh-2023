@@ -1,0 +1,502 @@
+- en: Segmenting Text Into Sentences Using NLP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd](https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Feature engineering, statistical model, and learning from feedback**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----35d8ef55c0fd--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----35d8ef55c0fd--------------------------------)
+    ·10 min read·Jan 30, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2d3d765f44d8d3e011a1660ef32353e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Nile](https://pixabay.com/users/nile-598962/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=623167)
+    from [Pixabay](https://pixabay.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In NLP, segmenting a text document into its sentences is a useful basic operation.
+    It is the first step in many NLP tasks that are more elaborate. Such as detecting
+    and correcting errors in the text as it is being written [1], or detecting named
+    entities [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the former, the idea is that common errors don’t cross sentence boundaries.
+    This holds for the latter as well. Named entities also tend not to cross sentence
+    boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In either case, this simplifies the problem considerably. For instance, training
+    and evaluation can work off a corpus of sentences. Even sentences derived from
+    longer documents can be treated independently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will cover the problem of segmenting text into sentences. We
+    will take a “Socratic method” style approach. By this, we mean that we will iteratively
+    build up a heuristic predictor from scratch in a sort of “iterative hypothesis
+    refinement” style. With suitable speculations and questions driving refinements.
+    ChatGPT will be quite helpful during this process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The particular approach we will end up with is similar in spirit to the popular
+    Punkt algorithm [5] for this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let’s be clear upfront that we will start from the raw text. No preprocessing
+    such as tokenizing into words, downcasing words, removing stop words, whatever.
+    All these risk losing some signal for this prediction task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We all know that most sentences end at periods. So our simplest predictor is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The obvious question is, “where does this fail”? Well, for one, the sentence
+    could end in a question mark. Or in an exclamation point. Ok, let’s abstract this
+    rule out a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ll set boundary_marker to {*period* (.), *question-mark* (?), *exclamation
+    point* (!)}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, so now the same question, “where does **this** fail”? Consider Ph.D. We
+    wouldn’t want the first period to be deemed a sentence boundary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuitively, if the period is within a word, we are not at a sentence boundary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So the following rule should work better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Okay, so this filters out false positives involving periods within words and
+    does not seem to lose any recall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While looking at the sentences in this post, we also notice that the first word
+    in the sentence that follows is capitalized. Duh, that’s a basic grammar rule.
+    Well, now it’s also a predictor of sentence boundary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In view of the above, let’s refine our rule further.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: where right_context is “white space followed by a capitalized word”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By adding “by a capitalized word” we have tightened the condition. How does
+    this impact precision and recall?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Precision cannot have dropped. The recall could. Consider the following scenario.
+    The text is short and informal and perhaps hastily written–such as in a text message.
+    We may miss actual sentence boundaries because the first word in a new sentence
+    may not be capitalized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, actually this makes us ponder whether we want a sentence boundary predictor
+    for clean text or for not-necessarily clean text. It seems the complexity of the
+    problem changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Should we want to predict sentence boundaries in not-necessarily clean text,
+    since the recall can drop, we need to ask if the precision increases when we tighten
+    the condition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider this example which I managed to cajole out of ChatGPT when I asked
+    it the question
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: I am not certain that it understood the question, however, I did find an answer
+    buried in its response I could use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The condition “period followed by white space” would flag a sentence boundary
+    immediately after *U.S* which is clearly wrong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Okay, let’s keep going. Onto the next pondering. What if we added a left context
+    to our condition? The new condition would look like
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: On not-necessarily-clean text, it might. We could drop “capitalized word” from
+    the right context. This would help with recall but may reduce precision. We can
+    try to increase precision by adding a left context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I asked ChatGPT this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first few lines in its response are below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Okay, seems like it didn’t quite get my question, possibly because it wasn’t
+    expressed clearly enough. Nonetheless, these answers are useful, even if very
+    limited. Indeed in one-word sentences, these words are good left contexts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This also helped me refine my question to ChatGPT. First, I rephrased my question
+    as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: That didn’t help. Its response was still comprised of one-word sentences, albeit
+    the actual words were good new candidates for being in the left context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The question below
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: generated an interesting and possibly useful response, albeit not quite what
+    I was looking for. So I won’t elaborate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The question below
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: did lead to a more useful response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Nice response! From this, we can surmise that adding a left context can help.
+    This response also gives the following tangible insights that move us forward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replace
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: by a less rigid condition. Something like *left_context* features, *right_context*
+    features, *boundary_marker*. The point is that left_context and right_context
+    expressed in a condition may lead us into a combinatorial explosion. Features
+    can be combined more softly for predictive purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This can be powerful especially if we have a way to leverage supervised learning,
+    that is feedback. The parameters that govern how the collection of features gets
+    used for predicting sentence boundaries then become learnable and may alleviate
+    the need to introduce new features as new scenarios are encountered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leveraging supervised learning in this setting is not as hard as one might imagine.
+    We don’t need to construct a large training set of sentence boundary positives
+    and sentence boundary negatives. Rather we could proceed as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start with an initial condition, say
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: which has a high recall. Posit additional left_context and right_context features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run the initially-configured sentence boundary predictor on one or more sufficiently
+    large documents and output pairs of adjacent predicted sentences in an easily
+    visualizable and labelable format. Even a CSV file will be adequate. Inspect the
+    CSV file and label any false positives you find as such. Even time-boxing this
+    work will likely yield an improved sentence boundary predictor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sure, investing more time in labeling data would likely improve the predictive
+    accuracy further. a rich labeled data set would likely yield even better results.
+    This investment doesn’t need to be done upfront though. It could be incremental.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s discuss specific sensible features to include. These are inspired
+    by our investigations thus far. First, to our examples let’s add a few we found
+    from [5], as these will help with the feature engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1\. The number of words that precede the boundary_marker in the current sentence.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. If the boundary_marker is a period then the number of additional periods
+    in the current token that precedes it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. The part-of-speech of the previous word.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4\. The identity of the word that precedes the boundary_marker.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 5\. The length of the word that precedes the boundary_marker.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 6\. If the boundary_marker is a period then whether it is embedded within a
+    named entity.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Feature 1) combined with feature 4) is obviously useful for one-word sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature 2) is inspired by the example
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: It could help predict that the second period in *U.S.* is not a sentence boundary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature 3) is inspired by ChatGPT’s response involving proper nouns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature 5) when combined with feature 2) may be useful in predicting that a
+    boundary marker is in fact part of the preceding word, meaning it's a false positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature 6) helps with this example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Supervised Statistical Algorithm**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we’ll describe what we think is an effective supervised algorithm of a statistical
+    nature. Tuned to this problem. Relatively straightforward to implement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm will assume we are at a character that is a boundary_marker. It
+    will make a probabilistic inference which we will refer to as equation (1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(this boundary is real|boundary_marker, left context features, right context
+    features)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here boundary_marker means the actual value of the marker: *period*, *question
+    mark*, or *exclamation point*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While we won’t develop this algorithm in full detail, we’d like to call out
+    certain characteristics we have in mind:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we so deem, the contributions of certain features could be specified in advance
+    and not allowed to change. For example, if the character that follows boundary_marker
+    is not a space and we want to be sure this boundary_marker is predicted to be
+    a false positive in this case, we can force eqn (1) to evaluate to zero always.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We do not necessarily want to assume that the features in eqn(1) are conditionally
+    independent given the outcome — the boundary is real or not. For instance, the
+    features could be connected up by a suitable probabilistic graphical model, whose
+    structure is possibly set by the modeler for this particular use case. Or it could
+    be in the spirit of a product-of-experts model in which the “experts” are particular
+    values of features or combinations of features that strongly predict that the
+    boundary marker is a false positive. See [4] for the product-of-experts model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'We can imagine a variant of eqn (1) that is not entirely probabilistic while
+    remaining in the same spirit. Specifically, we can replace eqn(1) with two score
+    functions: *score_true*(*boundary_marker*, *left context* features, *right context*
+    features) and *score_false*(*boundary_marker*, *left context* features, *right
+    context* features). In doing so, we have potentially doubled the number of learnable
+    parameters in the model, which makes it richer.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Learning Illustrated**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s illustrate learning in a concrete setting. We’ll go with a product-of-experts-like
+    formulation as it both makes intuitive sense in our setting and the learning is
+    also convenient to explain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say we want to learn that if the boundary marker is a period and the previous
+    token has additional periods, then we should predict that this boundary marker
+    is not real. For defensive purposes, let’s throw in the previous token’s length
+    as an additional predictor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our hope is that the second ‘.’ in *U.S.* gets flagged as a false positive boundary_marker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s imagine that we formulate this expert as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*boundary_marker* is real| *boundary_marker* is ‘.’, *previous_token’s
+    length*, *number of periods in the previous token*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This models a particular expert who weighs in only when the boundary_marker
+    is a period. In this case, it uses the combination of the previous token’s length
+    and the number of periods in it to decide whether to predict that the boundary_marker
+    is real or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say initially we set the priors so that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*boundary_marker* is real|*boundary_marker* is ‘.’, *l*, *np*) is 1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for various sensible combinations of *l* and *np*. Say the initial algorithm
+    predicts periods such as the second one in *U.S.* as sentence boundaries. Say
+    we provide feedback that these are false positives. If we see enough such examples,
+    we should be able to learn that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*boundary_marker* is real|*boundary_marker* is ‘.’, 3, 1) is near-zero'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We chose *l*=3 and *np*=1 for our illustration because it applies to *U.S.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, imagine a different expert, modeled as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*boundary_marker* is real|the character that follows boundary_marker is
+    not space)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we may set the priors for this to near 1 so initially, for example, the
+    first period in *U.S.* gets predicted as a real sentence boundary. The user then
+    provides feedback to label this as a false positive. This feedback can be used
+    to drive
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P*(*boundary_marker* is real|the character that follows boundary_marker is
+    not space)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: towards zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we covered the problem of segmenting text into sentences. We approached
+    this problem as follows. We iteratively built up a sentence boundary predictor
+    by starting from the most basic rule and refining it from questions and answers.
+    We asked what false positives or false negatives a particular rule would lead
+    to. The answers helped us refine the rule. During this process, we solicited help
+    from ChatGPT in the manner described earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Somewhere along the way, it became clear that we should pivot from hard rules
+    to a feature-based approach. We then developed this approach under a particular
+    probabilistic model, brought in specific features that our earlier investigations
+    had suggested, framed this in a product-of-experts setting, and also discussed
+    learning from feedback in this setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Text Correction Using NLP. Detecting and correcting common errors… | by Arun
+    Jagota | Jan, 2023 | Towards Data Science](/text-correction-using-nlp-b68c7233b86)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Named Entity Recognition in NLP. Real-world use cases, models, methods…](/named-entity-recognition-in-nlp-be09139fa7b8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: ChatGPT
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Geoff Hinton — Products of experts](https://www.cs.toronto.edu/~hinton/absps/icann-99.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[nltk.tokenize.punkt](https://www.nltk.org/_modules/nltk/tokenize/punkt.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
