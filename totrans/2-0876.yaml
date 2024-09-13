@@ -3,16 +3,19 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: AWS SageMaker 中的快速和可扩展超参数调优与交叉验证
 - en: 原文：[https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb](https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb](https://towardsdatascience.com/fast-and-scalable-hyperparameter-tuning-and-cross-validation-in-aws-sagemaker-d2b4095412eb)
 - en: Using SageMaker Managed Warm Pools
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 SageMaker 管理的 Warm Pools
 - en: '[](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[![João
     Pereira](../Images/2946b185eb134ddfaa71cf5af5e3cda6.png)](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
@@ -20,24 +23,34 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[![João
+    Pereira](../Images/2946b185eb134ddfaa71cf5af5e3cda6.png)](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
+    [João Pereira](https://medium.com/@joao.pereira.abt?source=post_page-----d2b4095412eb--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
     ·8 min read·Mar 3, 2023
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d2b4095412eb--------------------------------)
+    ·阅读时间 8 分钟·2023年3月3日
 - en: --
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/125320a8ffef1abf9fcab6a60572290d.png)'
   id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/125320a8ffef1abf9fcab6a60572290d.png)'
 - en: Photo by [SpaceX](https://unsplash.com/@spacex?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [SpaceX](https://unsplash.com/@spacex?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 - en: This article shares a recipe to **speeding up to 60%** yourhyperparameter tuning
     with cross-validation in SageMaker Pipelines leveraging SageMaker Managed Warm
     Pools. By using Warm Pools, the runtime of a Tuning step with 120 sequential jobs
@@ -45,6 +58,8 @@
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文分享了一种配方，以 **提高 60%** 的速度，通过 SageMaker 管道利用 SageMaker 管理的 Warm Pools 进行超参数调优与交叉验证。通过使用
+    Warm Pools，一个包含 120 个顺序作业的调优步骤的运行时间减少了 **从 10 小时到 4 小时**。
 - en: Improving and evaluating the performance of a machine learning model often requires
     a variety of ingredients. Hyperparameter tuning and cross-validation are 2 such
     ingredients. The first finds the best version of a model, while the second estimates
@@ -54,22 +69,26 @@
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 提升和评估机器学习模型的性能通常需要多种因素。超参数调优和交叉验证就是两个这样的因素。前者找到模型的最佳版本，而后者估计模型如何推广到未见数据。这些步骤结合起来，带来了计算挑战，因为它们需要多次训练和验证模型，可能是并行的和/或顺序的。
 - en: '***What this article is about…***'
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '***本文介绍的内容…***'
 - en: What are Warm Pools and how to leverage them to speed-up hyperparameter tuning
     with cross-validation.
   id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 什么是 Warm Pools 以及如何利用它们加速超参数调优与交叉验证。
 - en: How to design a production-grade SageMaker Pipeline that includes Processing,
     Tuning, Training, and Lambda steps.
   id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如何设计一个包含处理、调优、训练和 Lambda 步骤的生产级 SageMaker 流水线。
 - en: 'We will consider [Bayesian optimization](/bayesian-optimization-for-hyperparameter-tuning-how-and-why-655b0ee0b399)
     for hyperparameter tuning that leverages the scores of the hyperparameter combinations
     already tested to choose the hyperparameter set to test in the next round. We
@@ -78,14 +97,17 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将考虑用于超参数调优的[贝叶斯优化](/bayesian-optimization-for-hyperparameter-tuning-how-and-why-655b0ee0b399)，它利用已测试的超参数组合的评分来选择下一轮测试的超参数集。我们将使用[*k*-折交叉验证](https://medium.com/@zstern/k-fold-cross-validation-explained-5aeba90ebb3)来评分每个超参数组合，分割如下：
 - en: '![](../Images/7f98ae8209ab60a0f673cbedde9fd943.png)'
   id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7f98ae8209ab60a0f673cbedde9fd943.png)'
 - en: 𝑘-fold cross-validation strategy.
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 𝑘-fold 交叉验证策略。
 - en: The full dataset is partitioned into 𝑘 validation folds, the model trained on
     𝑘-1 folds, and validated on its corresponding held-out fold. The overall score
     is the average over the individual validation scores obtained for each validation
