@@ -92,6 +92,8 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache Spark 应用程序也不例外。确实可以访问[Spark Web UI](https://spark.apache.org/docs/latest/web-ui.html)并了解我们的应用程序如何运行，但当应用程序数量增加到十倍或一百倍时，排查问题变得困难。这时像[Grafana](https://grafana.com/)这样的可观察性工具就派上用场了。Grafana
+    能够连接到 Prometheus 数据库，Prometheus 通过目标 PrometheusServlet 与我们的应用程序无缝集成。
 - en: 'When configurated, Apache Spark exposes several metrics natively, which are
     detailed [here](https://spark.apache.org/docs/latest/monitoring.html#list-of-available-metrics-providers).
     In Structured Streaming, no metrics are exposed by default unless we set `"spark.sql.streaming.metricsEnabled"
@@ -100,52 +102,64 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 配置后，Apache Spark 原生暴露了几个度量，详细信息见[这里](https://spark.apache.org/docs/latest/monitoring.html#list-of-available-metrics-providers)。在
+    Structured Streaming 中，默认情况下不暴露任何度量，除非我们设置 `"spark.sql.streaming.metricsEnabled"
+    -> "true"`。以下是 Kafka 流作业暴露的度量示例：
 - en: '![](../Images/c6e2a17b134c1fc4bcfee302c98f8781.png)'
   id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c6e2a17b134c1fc4bcfee302c98f8781.png)'
 - en: Default Spark Structured Streaming metrics
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认的 Spark Structured Streaming 度量
 - en: As we can see, these metrics are very generic and do not provide any detailed
     information about our source.
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所见，这些度量非常通用，并未提供关于我们源的详细信息。
 - en: The goal is to be able to expose Kafka Consumer metrics that help us monitor
     how our event consumption is going.
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标是能够暴露 Kafka 消费者度量，帮助我们监控事件消费的情况。
 - en: Defining custom metrics
   id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 定义自定义度量
 - en: 'Metrics should be quantifiable values that provide real-time insights about
     the status or performance of the application. In the scope of this article, we’ll
     be covering the following metrics:'
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 度量应该是可以量化的值，提供关于应用程序状态或性能的实时洞察。在本文的范围内，我们将涵盖以下度量：
 - en: '**Start offsets:** The offsets where the streaming query first started.'
   id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**起始偏移量：** 流查询首次启动的偏移量。'
 - en: '**End offsets:** The last processed offsets by the streaming query. Tracks
     the consumer progress of the query.'
   id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**结束偏移量：** 流查询处理的最后偏移量。跟踪查询的消费者进度。'
 - en: '**Lead offsets:** The latest offsets of the topic the streaming query is consuming.
     Tracks the evolution of the consumed topic.'
   id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**领先偏移量：** 流查询正在消费的主题的最新偏移量。跟踪被消费主题的演变。'
 - en: '**Lag offsets:** The difference between the last processed offsets and the
     lead offsets from the topic. Tracks how far a streaming query is in comparison
     with real-time.'
@@ -153,56 +167,67 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**滞后偏移量：** 最后处理的偏移量与主题的领先偏移量之间的差异。跟踪流查询与实时之间的差距。'
 - en: '**Consumed rate:** The consumed rate of the streaming query topics. It is the
     sum of all the topics subscribed on a streaming query.'
   id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**消耗速率：** 流查询主题的消耗速率。它是所有在流查询中订阅的主题的总和。'
 - en: '**Last record timestamp:** The last message timestamp consumed from each TopicPartition.
     It tracks the latency between the producer and the consumer.'
   id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**最后记录时间戳：** 从每个 TopicPartition 消费的最后消息时间戳。跟踪生产者和消费者之间的延迟。'
 - en: Creating the metric source
   id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建度量源
 - en: The next step, after defining the metrics, is to create the metric source that
     will be responsible for exposing the metrics to Spark’s MetricsSystem.
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一步，在定义度量之后，是创建度量源，负责将度量暴露给 Spark 的 MetricsSystem。
 - en: In order to expose the metrics we need to create a class that extends `Source`.
     What this does is create an executor connection to the driver to pass the metrics
     as part of the heartbeat process.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了暴露度量，我们需要创建一个扩展了 `Source` 的类。这将创建一个执行器连接到驱动程序，将度量作为心跳过程的一部分传递。
 - en: KafkaMetricsSource implementation
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: KafkaMetricsSource 实现
 - en: Make sure to define the gauges as `SettableGauge` in order to be able to update
     them during the execution.
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 确保将仪表定义为 `SettableGauge`，以便在执行过程中能够更新它们。
 - en: After having the source defined all we need to do is instantiate the source
     and register it in Spark’s MetricsSystem.
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在定义源之后，我们只需实例化源并在 Spark 的 MetricsSystem 中注册它。
 - en: A simplified version of source registration
   id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 源注册的简化版本
 - en: 'For the full code of the source implementation, you can check:'
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整的源实现代码可以查看：
 - en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
     [## spark-prometheus-kafka-metrics/KafkaMetricsSource.scala at master ·…'
   id: totrans-33
