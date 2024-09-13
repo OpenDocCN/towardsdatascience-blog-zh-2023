@@ -3,16 +3,19 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 动态重连的延迟消息传递 GNNs
 - en: 原文：[https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2](https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2](https://towardsdatascience.com/dynamically-rewired-delayed-message-passing-gnns-2d5ff18687c2)
 - en: Delayed Message Passing
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 延迟消息传递
 - en: 'Message-passing graph neural networks (MPNNs) tend to suffer from the phenomenon
     of *over-squashing,* causing performance deterioration for tasks relying on long-range
     interactions. This can be largely attributed to message passing only occurring
@@ -29,6 +32,9 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 消息传递图神经网络（MPNNs）往往会受到*过度挤压*现象的影响，这会导致依赖长距离交互的任务性能下降。这在很大程度上归因于消息传递仅在*局部*，即节点的直接邻居之间发生。传统的静态图重连技术通常尝试通过允许远程节点立即通信（在极端情况下，像
+    Transformer 一样使所有节点在每一层都可访问）来对抗这一效果。然而，这会带来计算成本，并且破坏了输入图结构提供的归纳偏置。在这篇文章中，我们描述了两种新机制来克服过度挤压，同时抵消静态重连方法的副作用：*动态重连*和*延迟*消息传递。这些技术可以被纳入任何
+    MPNN，并在长距离任务上比图 Transformer 具有更好的性能。
 - en: '[](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Michael
     Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)
@@ -36,29 +42,40 @@
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----2d5ff18687c2--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)
     ·9 min read·Jun 19, 2023
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d5ff18687c2--------------------------------)
+    ·9 分钟阅读·2023年6月19日
 - en: --
   id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a8144f73a5808c0a411b10b828b6ec09.png)'
   id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a8144f73a5808c0a411b10b828b6ec09.png)'
 - en: 'Image: based on Shutterstock.'
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片：基于 Shutterstock。
 - en: '*This post was co-authored with Francesco Di Giovanni and Ben Gutteridge and
     is based on the paper by B. Gutteridge et al., DRew:* [*Dynamically rewired message
     passing with delay*](https://arxiv.org/pdf/2305.08018.pdf) *(2023), ICML.*'
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这篇文章由 Francesco Di Giovanni 和 Ben Gutteridge 共同撰写，基于 B. Gutteridge 等人的论文，DRew:*
+    [*动态重连的延迟消息传递*](https://arxiv.org/pdf/2305.08018.pdf) *(2023)，ICML。*'
 - en: Classical message-passing graph neural networks (MPNNs) operate by aggregating
     information from 1-hop neighbours of every node. Consequently, learning tasks
     requiring *long-range interactions* (i.e., there exists a node *v* whose representation
@@ -70,25 +87,32 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 经典的消息传递图神经网络（MPNNs）通过从每个节点的 1 跳邻居中聚合信息来操作。因此，要求*长距离交互*（即存在一个节点 *v* 其表示需要考虑在最短路径（测地线）距离
+    *d*(*u*,*v*) = *r* > 1 的某节点 *u* 中包含的信息）的学习任务需要具有多个消息传递层的深度 MPNNs。如果图结构是这样的，使得感受野随跳数指数级扩展
+    [1]，可能需要将过多的消息“挤压”到固定的节点特征向量中——这一现象称为*过度压缩* [2]。
 - en: '![](../Images/69c830c6c70d0657852dd68b8b8e2d8d.png)'
   id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/69c830c6c70d0657852dd68b8b8e2d8d.png)'
 - en: '**Over-squashing**'
   id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**过度压缩**'
 - en: In our previous works [3–4], we formalised over-squashing as the *lack of sensitivity*
     of the MPNN output at a node *u* to the input at an *r*-distant node. This can
     be quantified by a bound on the partial derivative (*Jacobian*) of the form
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们之前的工作中 [3–4]，我们将过度压缩形式化为 MPNN 在节点 *u* 处对输入于 *r* 距离节点的输出的*敏感性缺乏*。这可以通过对形式的偏导数（*雅可比矩阵*）进行界限量化来实现。
 - en: '|∂**x***ᵤ*⁽*ʳ*⁾/∂**x***ᵥ*⁽⁰⁾| < *c* (**A***ʳ*)*ᵤᵥ.*'
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '|∂**x***ᵤ*⁽*ʳ*⁾/∂**x***ᵥ*⁽⁰⁾| < *c* (**A***ʳ*)*ᵤᵥ.*'
 - en: Here *c* is a constant dependent on the MPNN architecture (e.g., Lipschitz regularity
     of the activation function, depth, etc.) and **A** is the normalised adjacency
     matrix of the graph. Over-squashing occurs when the entries of **A***ʳ* decay
@@ -99,6 +123,9 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，*c* 是一个依赖于 MPNN 结构的常数（例如，激活函数的 Lipschitz 正则性、深度等），而**A** 是图的归一化邻接矩阵。当**A***ʳ*
+    的条目随距离 *r* 指数级衰减时，就会发生过度压缩（over-squashing）。实际上，现在已知过度压缩更普遍地是一种现象，可以与图的局部结构（如负曲率
+    [3]）或超越最短路径距离的全局结构（例如，通勤时间或有效电阻 [4, 5]）相关联。
 - en: The powers **A***ʳ* in the above expression reflect the fact that the communication
     between *nodes u and v at distance r* in an MPNN is a sequence of interactions
     between adjacent nodes comprising different paths that connect *u* and *v*. As
@@ -109,11 +136,14 @@
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述表达式中的 **A***ʳ* 的幂反映了 MPNN 中节点 *u* 和 *v* 之间在距离 *r* 处的通信是由不同路径的相邻节点之间的一系列交互组成的。这些路径连接
+    *u* 和 *v*。结果，节点 *u* 和 *v* 仅从 *r* 层开始交换信息，并且延迟等于它们的距离 *r*。过度压缩是由于这些信息在沿着这些路径的中间节点上进行重复消息传递时被“稀释”。
 - en: '**Graph rewiring**'
   id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**图重连**'
 - en: The issue of over-squashing can be addressed by partially decoupling the input
     graph structure from the one used as support for computing messages, a procedure
     known as *graph rewiring* [6]. Typically, rewiring is performed as a pre-processing
@@ -123,6 +153,8 @@
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 解决过度压缩的问题的方法是部分解耦输入图结构和用于计算消息的支持结构，这一过程称为*图重连* [6]。通常，重连是在预处理步骤中执行的，在此步骤中，输入图
+    *G* 被替换为根据某种空间或频谱连通性度量“更友好”的其他图 *G’*。
 - en: The simplest way to achieve this amounts to connecting all nodes within a certain
     distance, thus allowing them to exchange information *directly*. This is the idea
     behind the multi-hop message passing scheme [7]. Graph Transformers [8] take this
@@ -131,6 +163,8 @@
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 实现这一点的最简单方法是连接所有在一定距离内的节点，从而允许它们*直接*交换信息。这就是多跳消息传递方案的想法 [7]。图 Transformer [8]
+    将这一点推向极致，通过一个注意力加权的边连接*所有*节点对。
 - en: This way, the information is no longer “mixed” with that of other nodes along
     the way and over-squashing can be avoided. However, such a rewiring makes the
     graph much denser from the first layer, increasing the computational footprint
@@ -317,10 +351,12 @@
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的论文[10]中，我们提供了𝝼DRew与经典MPNN基准、静态重连和Transformer型架构的广泛比较，使用了固定的参数预算。在Vijay Dwivedi及其合著者最近提出的长期基准（LRGB）[11]上，𝝼DRew在大多数情况下超越了上述所有模型。
 - en: '![](../Images/6dab81c55ebc175e0c273e373a52e3aa.png)'
   id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6dab81c55ebc175e0c273e373a52e3aa.png)'
 - en: Comparison of various classical MPNNs (GCN, GINE, etc.), static graph rewiring
     (MixHop-GCN, DIGL), and graph Transformer-type architectures (Transformer, SAN,
     GraphGPS, including positional Laplacian encoding) with 𝝼DRew-MPNN variants on
@@ -329,6 +365,7 @@
   id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 对比各种经典MPNN（GCN、GINE等）、静态图重连（MixHop-GCN、DIGL）和图Transformer型架构（Transformer、SAN、GraphGPS，包括位置Laplacian编码）与𝝼DRew-MPNN变体在四个长期图基准（LRGB）任务上的表现。绿色、橙色和紫色分别表示最佳、第二佳和第三佳模型。
 - en: 'An ablation study of 𝝼DRew on one of the LRGB tasks reveals another crucial
     contribution of our framework: the ability to tune 𝝼 to suit the task. We observe
     that the more delay used (lower value of 𝝼), the better the performance for large
@@ -341,10 +378,12 @@
   id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 对𝝼DRew在LRGB任务之一上的消融研究揭示了我们框架的另一个重要贡献：调节𝝼以适应任务的能力。我们观察到，使用更多延迟（较低的𝝼值）时，大层数*L*的性能更好，而使用较少延迟（高𝝼值）则确保计算图更快填充，连接的密度在较少层数后更高。因此，在浅层架构（小*L*）中，完全去除延迟（𝝼=∞）的性能更好。相反，在深层架构（大*L*）中，更多延迟（小𝝼）“减缓”了消息传递图的密集化，从而提高了性能。
 - en: '![](../Images/9dcf49a8950930132e945d2eb173f808.png)'
   id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9dcf49a8950930132e945d2eb173f808.png)'
 - en: Performance of 𝝼DRew-MPNNs with different number of layers *L* and different
     delay parameter 𝝼. While dynamic rewiring helps for long-range tasks in all regimes,
     delay significantly improves the performance over deeper models. Our framework
@@ -353,6 +392,7 @@
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同层数*L*和不同延迟参数𝝼的𝝼DRew-MPNNs的性能。虽然动态重连在所有情况下对长程任务都有帮助，但延迟显著改善了深层模型的性能。我们的框架还可以根据应用场景控制计算/内存预算，例如在Transformer计算不可行的情况下。
 - en: Traditional MPNN-type architectures differ in *how* messages are exchanged [12].
     Graph rewiring techniques add an extra level of control of *where* they are sent
     on the graph. Our new approach of dynamic graph rewiring with delayed message
@@ -360,6 +400,7 @@
   id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 传统的MPNN型架构在*消息*交换的方式上存在差异[12]。图重连技术在图上增加了对*消息*发送位置的额外控制。我们新的动态图重连方法与延迟消息传递进一步控制了*消息*交换的*时间*。
 - en: This approach appears to be very powerful, and our work is only a first attempt
     at leveraging the idea of accessing past states in a graph neural network depending
     on “geometric properties” of the underlying data. We hope that this new paradigm
@@ -369,20 +410,24 @@
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法看起来非常强大，我们的工作仅仅是首次尝试利用根据“几何属性”访问图神经网络中过去状态的想法。我们希望这一新范式能引导出更多理论上有原则的框架，并挑战MPNN无法解决长程任务的观点，除非通过增强的二次注意力层。
 - en: '[1] This is typical e.g. in “small-world” graphs such as social networks.'
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 这在“小世界”图（例如社交网络）中很典型。'
 - en: '[2] U. Alon and E. Yahav, On the bottleneck of graph neural networks and its
     practical implications (2021), *ICLR*.'
   id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] U. Alon 和 E. Yahav，《图神经网络瓶颈及其实际应用》（2021），*ICLR*。'
 - en: '[3] J. Topping *et al.*, Understanding over-squashing and bottlenecks on graphs
     via curvature (2022), *ICLR.*'
   id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] J. Topping *等*，《通过曲率理解图上的过度压缩和瓶颈》（2022），*ICLR*。'
 - en: '[4] Commute time is the expected time it takes a random walk to go from node
     *v* to node *u* and back. See F. Di Giovanni *et al.*, [On over-squashing in message
     passing neural networks: The impact of width, depth, and topology](https://arxiv.org/pdf/2302.02941.pdf)
