@@ -1,461 +1,713 @@
 - en: Data Augmentation Techniques for Audio Data in Python
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Python中的音频数据增强技术
 - en: 原文：[https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c](https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c](https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c)
 - en: How to augment audio in waveform (time domain) and as spectrograms (frequency
     domain) with librosa, numpy, and PyTorch
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何使用librosa、numpy和PyTorch在波形（时域）和频谱图（频域）中增强音频
 - en: '[](https://medium.com/@iamleonie?source=post_page-----15505483c63c--------------------------------)[![Leonie
     Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----15505483c63c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15505483c63c--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15505483c63c--------------------------------)
     [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----15505483c63c--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@iamleonie?source=post_page-----15505483c63c--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----15505483c63c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----15505483c63c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----15505483c63c--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----15505483c63c--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15505483c63c--------------------------------)
     ·7 min read·Mar 28, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----15505483c63c--------------------------------)
+    ·7分钟阅读·2023年3月28日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/09de7dc6b33b345123ccb71209ef5b2b.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/09de7dc6b33b345123ccb71209ef5b2b.png)'
 - en: (Image drawn by the author)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片由作者绘制）
 - en: Deep Learning models are data-hungry. If you don’t have a sufficient amount
     of data, generating synthetic data from the available dataset can help improve
     the generalization capabilities of your Deep Learning model. While you might already
     be familiar with data augmentation techniques for images (e.g., flipping an image
     horizontally), data augmentation techniques for audio data are often lesser known.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度学习模型需要大量数据。如果你没有足够的数据，生成合成数据可以帮助提高深度学习模型的泛化能力。尽管你可能已经熟悉图像的数据增强技术（例如，水平翻转图像），但音频数据的数据增强技术往往鲜为人知。
 - en: '[](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----15505483c63c--------------------------------)
     [## Audio Classification with Deep Learning in Python'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----15505483c63c--------------------------------)
+    [## 用深度学习进行音频分类'
 - en: Fine-tuning image models to tackle domain shift and class imbalance with PyTorch
     and torchaudio in audio data
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 微调图像模型以应对领域转移和类别不平衡，使用PyTorch和torchaudio处理音频数据
 - en: towardsdatascience.com](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----15505483c63c--------------------------------)
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/audio-classification-with-deep-learning-in-python-cf752b22ba07?source=post_page-----15505483c63c--------------------------------)
 - en: 'This article will review popular data augmentation techniques for audio data.
     You can apply data augmentations for audio data in the waveform and in the spectrogram:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文将回顾流行的音频数据增强技术。你可以在波形和频谱图中应用音频数据增强：
 - en: '[Audio Data Augmentations for Waveform (Time Domain)](#d071)'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[音频数据增强（波形，时域）](#d071)'
 - en: ∘ [Noise injection](#bd92)
+  id: totrans-14
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [噪声注入](#bd92)
 - en: ∘ [Shifting time](#4f84)
+  id: totrans-15
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [时间偏移](#4f84)
 - en: ∘ [Changing speed](#f531)
+  id: totrans-16
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [改变速度](#f531)
 - en: ∘ [Changing pitch](#76d6)
+  id: totrans-17
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [改变音调](#76d6)
 - en: ∘ [Changing volume (not recommended)](#c212)
+  id: totrans-18
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [改变音量（不推荐）](#c212)
 - en: '[Audio Data Augmentations for Spectrograms (Frequency Domain)](#f7f8)'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[频谱图的音频数据增强（频域）](#f7f8)'
 - en: ∘ [Mixup](#6c42)
+  id: totrans-20
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [混合数据](#6c42)
 - en: ∘ [SpecAugment](#23ca)
+  id: totrans-21
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: ∘ [SpecAugment](#23ca)
 - en: For the data augmentations, we will use `[librosa](https://librosa.org/doc/main/index.html)`,
     which is a popular library for audio processing, and `numpy`.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于数据增强，我们将使用`[librosa](https://librosa.org/doc/main/index.html)`，这是一个流行的音频处理库，以及`numpy`。
 - en: '[PRE0]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: If you are already working with PyTorch, you could also use `torchaudio` as
     an alternative.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你已经在使用PyTorch，你还可以使用`torchaudio`作为替代方案。
 - en: Audio Data Augmentations for Waveform (Time Domain)
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 音频数据增强（波形，时域）
 - en: This section will discuss popular data augmentation techniques you can apply
     to the audio data in the waveform. You can use the `load()` method from the `[librosa](https://librosa.org/doc/main/index.html)`
     library to load the audio file as a waveform.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节将讨论可以应用于波形音频数据的流行数据增强技术。你可以使用`[librosa](https://librosa.org/doc/main/index.html)`库中的`load()`方法将音频文件加载为波形。
 - en: '[PRE1]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/cf21435e81ab505cacb8d357ddf21a01.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cf21435e81ab505cacb8d357ddf21a01.png)'
 - en: Original audio data of the word “stop” in waveform from the “Speech Commands”
     dataset [1] (Image by the author)
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: “Speech Commands”数据集中单词“stop”的原始音频数据（图片来源：作者）
 - en: The following code implementations are referenced from Kaggle Notebooks by [kaerururu](https://www.kaggle.com/kaerunantoka)
     [7] and [CVxTz](https://www.kaggle.com/CVxTz) [5].
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码实现参考自Kaggle笔记本，作者为[kaerururu](https://www.kaggle.com/kaerunantoka) [7]和[CVxTz](https://www.kaggle.com/CVxTz)
+    [5]。
 - en: Noise injection
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 噪音注入
 - en: A popular data augmentation technique is to inject some sort of noise into the
     original audio data.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种流行的数据增强技术是将某种噪音注入到原始音频数据中。
 - en: 'You can choose from many different types of noise:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以选择多种不同类型的噪音：
 - en: White noise
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 白噪音
 - en: '[PRE2]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Colored noise (e.g., pink, brown, etc.)
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 彩色噪音（例如粉色噪音、棕色噪音等）
 - en: '[PRE3]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Background noise
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 背景噪音
 - en: '[PRE4]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Once you have defined the type of noise you want to inject, you add the noise
     to your original waveform audio. Of course, you can use all different types of
     noises for your data augmentations. Below, you can see an example of noise injection
     with white noise.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦定义了你想注入的噪音类型，你可以将噪音添加到原始波形音频中。当然，你可以使用各种不同类型的噪音进行数据增强。下方可以看到白噪音注入的示例。
 - en: '[PRE5]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/9c47320d4a1db694faa565c3ef2b6611.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c47320d4a1db694faa565c3ef2b6611.png)'
 - en: 'Data Augmentation for Audio: White Noise (Image by the author)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 音频数据增强：白噪音（图片来源：作者）
 - en: Shifting time
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间平移
 - en: With the `roll()` function from the `numpy` library, you can shift the audio
     in time.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`numpy`库中的`roll()`函数，你可以在时间上平移音频。
 - en: '[PRE6]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![](../Images/082e112ad5cfff1f02568331ff1d125a.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/082e112ad5cfff1f02568331ff1d125a.png)'
 - en: 'Data Augmentation for Audio: Shifting time (Image by the author)'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 音频数据增强：时间平移（图片来源：作者）
 - en: Note that the audio will wrap around if you don’t have enough trailing silence.
     Depending on your sound type, this data augmentation might not be recommended
     in this case (e.g., human speech).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，如果没有足够的尾部静音，音频将会环绕。根据你的声音类型，这种数据增强在某些情况下（例如人声）可能不推荐使用。
 - en: Changing speed
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 改变速度
 - en: You can also increase (`rate>1`) or decrease (`rate<1`) the speed of the audio
     with the `time_stretch()` method from the `[librosa](https://librosa.org/doc/main/index.html)`
     library.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 你还可以使用`[librosa](https://librosa.org/doc/main/index.html)`库中的`time_stretch()`方法来增加（`rate>1`）或减少（`rate<1`）音频的速度。
 - en: '[PRE7]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/f17f337abe6296ca32c3d88c2c677696.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f17f337abe6296ca32c3d88c2c677696.png)'
 - en: 'Data Augmentation for Audio: Time stretch / changing speed (Image by the author)'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 音频数据增强：时间拉伸/改变速度（图片来源：作者）
 - en: Changing pitch
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 改变音高
 - en: Or you can modify the pitch of the audio with the `pitch_shift()` method from
     the `[librosa](https://librosa.org/doc/main/index.html)` library.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者你可以使用`[librosa](https://librosa.org/doc/main/index.html)`库中的`pitch_shift()`方法来修改音频的音高。
 - en: '[PRE8]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![](../Images/70f8b751d84e8f408be6f6692e0903be.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/70f8b751d84e8f408be6f6692e0903be.png)'
 - en: 'Data Augmentation for Audio: Pitch shift (Image by the author)'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 音频数据增强：音高变换（图片来源：作者）
 - en: Changing volume (not recommended)
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 改变音量（不推荐）
 - en: You could also augment the waveform in terms of volume. However, if you are
     going to convert the waveform into spectrograms later on, **volume augmentation
     will be ineffective** as the amplitude is not considered in the frequency domain.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 你也可以在音量方面增强波形。然而，如果你打算将波形转换为谱图，**音量增强将无效**，因为幅度在频域中不被考虑。
 - en: '[PRE9]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Audio Data Augmentations for Spectrograms (Frequency Domain)
+  id: totrans-63
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 频域的音频数据增强（谱图）
 - en: 'When modeling audio data with a Deep Learning model, it is a popular method
     to convert the audio classification problem into an image classification problem.
     For this, the waveform audio data is converted to a Mel spectrogram. If you need
     a refresher on Mel spectrograms, I recommend the following article:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在用深度学习模型建模音频数据时，将音频分类问题转化为图像分类问题是一种流行的方法。为此，波形音频数据被转换为Mel谱图。如果你需要对Mel谱图有进一步了解，推荐阅读以下文章：
 - en: '[](/audio-deep-learning-made-simple-part-2-why-mel-spectrograms-perform-better-aad889a93505?source=post_page-----15505483c63c--------------------------------)
     [## Audio Deep Learning Made Simple (Part 2): Why Mel Spectrograms perform better'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/audio-deep-learning-made-simple-part-2-why-mel-spectrograms-perform-better-aad889a93505?source=post_page-----15505483c63c--------------------------------)
+    [## 音频深度学习简明教程（第2部分）：为何 Mel 频谱图表现更佳]'
 - en: A Gentle Guide to processing audio in Python. What are Mel Spectrograms and
     how to generate them, in Plain English.
+  id: totrans-66
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 《Python 音频处理指南》：用简单的英语解释什么是 Mel 频谱图以及如何生成它们。
 - en: towardsdatascience.com](/audio-deep-learning-made-simple-part-2-why-mel-spectrograms-perform-better-aad889a93505?source=post_page-----15505483c63c--------------------------------)
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/audio-deep-learning-made-simple-part-2-why-mel-spectrograms-perform-better-aad889a93505?source=post_page-----15505483c63c--------------------------------)'
 - en: You can convert audio in waveform into a Mel spectrogram with the `melspectrogram()`
     and `power_to_db()` methods from the `[librosa](https://librosa.org/doc/main/index.html)`
     library.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以使用`melspectrogram()`和`power_to_db()`方法从`[librosa](https://librosa.org/doc/main/index.html)`库将波形音频转换为
+    Mel 频谱图。
 - en: '[PRE10]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '![](../Images/cf21435e81ab505cacb8d357ddf21a01.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cf21435e81ab505cacb8d357ddf21a01.png)'
 - en: Original audio data of the word “stop” in waveform from the “Speech Commands”
     dataset [1] (Image by the author)
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: “Speech Commands” 数据集中“stop”一词的原始音频数据（波形） [1]（图像作者提供）
 - en: '![](../Images/5e6dbf4ece82dbf01e814922b47b5c9e.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5e6dbf4ece82dbf01e814922b47b5c9e.png)'
 - en: Original audio data of the word “stop” as Mel spectrogram from the “Speech Commands”
     dataset [1] (Image by the author)
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: “Speech Commands” 数据集中“stop”一词的原始音频数据作为 Mel 频谱图 [1]（图像作者提供）
 - en: Although you now have an image classification problem, you must be careful when
     selecting image augmentation techniques for spectrograms. E.g., horizontally flipping
     the spectrogram would substantially change the information contained in the spectrogram
     and thus is not recommended.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管你现在面临的是图像分类问题，但在选择频谱图的图像增强技术时，你必须小心。例如，水平翻转频谱图会实质性改变频谱图中包含的信息，因此不推荐这样做。
 - en: This section will discuss popular data augmentation techniques you can apply
     to the audio data as a Mel spectrogram.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节将讨论你可以应用于 Mel 频谱图的流行数据增强技术。
 - en: The following code implementations are referenced from Kaggle Notebooks by [kaerururu](https://www.kaggle.com/kaerunantoka)
     [7] and [DavidS](https://www.kaggle.com/davids1992) [6].
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码实现参考自 Kaggle Notebooks，由 [kaerururu](https://www.kaggle.com/kaerunantoka)
+    [7] 和 [DavidS](https://www.kaggle.com/davids1992) [6] 提供。
 - en: Mixup
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Mixup
 - en: Simply put, Mixup [4] combines two samples by overlaying them and giving the
     new sample two labels.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单来说，Mixup [4] 通过叠加两个样本并给新样本两个标签来实现样本的合成。
 - en: '[PRE11]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![](../Images/3761f4efb8f2f79422bcd29acd222255.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3761f4efb8f2f79422bcd29acd222255.png)'
 - en: 'Data Augmentation for Spectrogram: Mixup [4] (Image by the author)'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 频谱图的数据增强：Mixup [4]（图像作者提供）
 - en: Alternatively, you could also try other data augmentation techniques used in
     computer vision, like cutmix [3].
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，你也可以尝试计算机视觉中使用的其他数据增强技术，比如 cutmix [3]。
 - en: SpecAugment
+  id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SpecAugment
 - en: SpecAugment [2] is to spectrograms what cutout is to regular images. While cutout
     blocks out random areas in an image, SpecAugment [2] masks random frequencies
     and time periods.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: SpecAugment [2] 对频谱图的作用类似于 cutout 对常规图像的作用。虽然 cutout 会遮挡图像中的随机区域，SpecAugment
+    [2] 会遮罩随机频率和时间段。
 - en: '[PRE12]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '![](../Images/cf7b42d71e651da842088d30b328d256.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cf7b42d71e651da842088d30b328d256.png)'
 - en: 'Data Augmentation for Spectrogram: SpecAugment [2] (Image by the author)'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 频谱图的数据增强：SpecAugment [2]（图像作者提供）
 - en: 'Alternatively, if you are using Pytorch, you could also use the `TimeMasking`
     and `FrequencyMasking` augmentations from `torchaudio`:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，如果你使用的是 Pytorch，你还可以使用 `torchaudio` 中的 `TimeMasking` 和 `FrequencyMasking`
+    增强方法：
 - en: '[PRE13]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Summary
+  id: totrans-90
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'Data augmentations for audio data can be applied to the audio data in the time
     domain (waveform) as well as the frequency domain (Mel spectrogram). To successfully
     apply data augmentations to the audio data in a Deep Learning setting, you have
     to consider the following processing steps:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 音频数据的增强可以应用于时间域（波形）以及频率域（Mel 频谱图）。为了在深度学习环境中成功应用数据增强，你需要考虑以下处理步骤：
 - en: Load audio file as waveform (time domain)
+  id: totrans-92
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将音频文件加载为波形（时间域）
 - en: Apply data augmentation to the waveform
+  id: totrans-93
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将数据增强应用于波形
 - en: Convert audio from waveform to spectrogram (frequency domain)
+  id: totrans-94
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将音频从波形转换为频谱图（频率域）
 - en: Apply data augmentations to the spectrogram
+  id: totrans-95
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将数据增强应用于频谱图
 - en: This article has covered different data augmentation techniques for audio data
     in the waveform. It is important to note that some data augmentation techniques,
     such as augmenting the volume, are ineffective when converting the waveform to
     spectrograms later on because the amplitude is not considered in the frequency
     domain.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文介绍了波形数据的不同数据增强技术。需要注意的是，某些数据增强技术，如增强音量，在将波形转换为谱图时效果不佳，因为频域中不考虑振幅。
 - en: Although you could technically apply all image augmentation techniques to spectrograms,
     not all of them will make sense. E.g., flipping them vertically or horizontally
     would change the meaning of the spectrograms. Additionally, a variant of the popular
     cutout image augmentation tailored for spectrograms masks whole timestamps and
     frequencies.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然理论上你可以将所有图像增强技术应用于谱图，但并非所有技术都是合理的。例如，垂直或水平翻转会改变谱图的意义。此外，一种专为谱图量身定制的流行cutout图像增强变体会遮蔽整个时间戳和频率。
 - en: Enjoyed This Story?
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 喜欢这个故事吗？
 - en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
     when I publish a new story.*'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '[*免费订阅*](https://medium.com/subscribe/@iamleonie) *以便在我发布新故事时收到通知。*'
 - en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----15505483c63c--------------------------------)
     [## Get an email whenever Leonie Monigatti publishes.'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----15505483c63c--------------------------------)
+    [## 每当Leonie Monigatti发布新内容时获取电子邮件。'
 - en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
     a Medium account if you don’t already…
+  id: totrans-101
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 每当Leonie Monigatti发布新内容时获取电子邮件。通过注册，如果你还没有，你将创建一个Medium账户……
 - en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----15505483c63c--------------------------------)
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----15505483c63c--------------------------------)
 - en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
     and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '*在* [*LinkedIn*](https://www.linkedin.com/in/804250ab/)、[*Twitter*](https://twitter.com/helloiamleonie)*和*
+    [*Kaggle*](https://www.kaggle.com/iamleonie)*上找到我！*'
 - en: References
+  id: totrans-104
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: Dataset
+  id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据集
 - en: '[1] Warden P. Speech Commands: A public dataset for single-word speech recognition,
     2017\. Available from [http://download.tensorflow.org/data/speech_commands_v0.01.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.01.tar.gz)'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Warden P. Speech Commands: 用于单词语音识别的公开数据集，2017年。可从 [http://download.tensorflow.org/data/speech_commands_v0.01.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.01.tar.gz)
+    获得'
 - en: 'License: CC-BY-4.0'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 许可：CC-BY-4.0
 - en: Literature
+  id: totrans-108
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 文献
 - en: '[2] Park, D. S., Chan, W., Zhang, Y., Chiu, C. C., Zoph, B., Cubuk, E. D.,
     & Le, Q. V. (2019). Specaugment: A simple data augmentation method for automatic
     speech recognition. *arXiv preprint arXiv:1904.08779*.'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Park, D. S., Chan, W., Zhang, Y., Chiu, C. C., Zoph, B., Cubuk, E. D.,
+    & Le, Q. V. (2019). Specaugment: 一种用于自动语音识别的简单数据增强方法。 *arXiv预印本 arXiv:1904.08779*。'
 - en: '[3] Yun, S., Han, D., Oh, S. J., Chun, S., Choe, J., & Yoo, Y. (2019). Cutmix:
     Regularization strategy to train strong classifiers with localizable features.
     In *Proceedings of the IEEE/CVF international conference on computer vision* (pp.
     6023–6032).'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Yun, S., Han, D., Oh, S. J., Chun, S., Choe, J., & Yoo, Y. (2019). Cutmix:
+    正则化策略以训练具有可定位特征的强分类器。 *IEEE/CVF国际计算机视觉会议论文集*（第6023–6032页）。'
 - en: '[4] Zhang, H., Cisse, M., Dauphin, Y. N., & Lopez-Paz, D. (2017) mixup: Beyond
     empirical risk minimization. arXiv preprint arXiv:1710.09412.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Zhang, H., Cisse, M., Dauphin, Y. N., & Lopez-Paz, D. (2017) mixup: 超越经验风险最小化。arXiv预印本
+    arXiv:1710.09412。'
 - en: Code
+  id: totrans-112
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 代码
 - en: '[5] [CVxTz](https://www.kaggle.com/CVxTz) (2018). [Audio data augmentation](https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook)
     in Kaggle Notebooks (accessed March 24, 2023).'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] [CVxTz](https://www.kaggle.com/CVxTz) (2018). [音频数据增强](https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook)
+    在Kaggle笔记本中（访问日期：2023年3月24日）。'
 - en: '[6] [DavidS](https://www.kaggle.com/davids1992) (2019). [SpecAugment quick
     implementation](https://www.kaggle.com/code/davids1992/specaugment-quick-implementation)
     in Kaggle Notebooks (accessed March 24, 2023).'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] [DavidS](https://www.kaggle.com/davids1992) (2019). [SpecAugment快速实现](https://www.kaggle.com/code/davids1992/specaugment-quick-implementation)
+    在Kaggle笔记本中（访问日期：2023年3月24日）。'
 - en: '[7] [kaerururu](https://www.kaggle.com/kaerunantoka) (2022). [BirdCLEF2022
     : use 2nd label f0](https://www.kaggle.com/code/kaerunantoka/birdclef2022-use-2nd-label-f0)
     in Kaggle Notebooks (accessed March 24, 2023).'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] [kaerururu](https://www.kaggle.com/kaerunantoka) (2022). [BirdCLEF2022：使用第二标签f0](https://www.kaggle.com/code/kaerunantoka/birdclef2022-use-2nd-label-f0)
+    在Kaggle笔记本中（访问日期：2023年3月24日）。'
