@@ -1,38 +1,60 @@
 - en: Bayesian AB Testing
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 贝叶斯AB测试
 - en: 原文：[https://towardsdatascience.com/bayesian-ab-testing-ed45cc8c964d](https://towardsdatascience.com/bayesian-ab-testing-ed45cc8c964d)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/bayesian-ab-testing-ed45cc8c964d](https://towardsdatascience.com/bayesian-ab-testing-ed45cc8c964d)
 - en: '[CAUSAL DATA SCIENCE](https://towardsdatascience.com/tagged/causal-data-science)'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[因果数据科学](https://towardsdatascience.com/tagged/causal-data-science)'
 - en: '*Using and choosing priors in randomized experiments.*'
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*在随机实验中使用和选择先验分布。*'
 - en: '[](https://medium.com/@matteo.courthoud?source=post_page-----ed45cc8c964d--------------------------------)[![Matteo
     Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----ed45cc8c964d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ed45cc8c964d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ed45cc8c964d--------------------------------)
     [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----ed45cc8c964d--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@matteo.courthoud?source=post_page-----ed45cc8c964d--------------------------------)[![Matteo
+    Courthoud](../Images/d873eab35a0cf9fc696658c0bee16b33.png)](https://medium.com/@matteo.courthoud?source=post_page-----ed45cc8c964d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ed45cc8c964d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ed45cc8c964d--------------------------------)
+    [Matteo Courthoud](https://medium.com/@matteo.courthoud?source=post_page-----ed45cc8c964d--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ed45cc8c964d--------------------------------)
     ·11 min read·Jan 10, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ed45cc8c964d--------------------------------)
+    ·11分钟阅读·2023年1月10日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/df5da2cdfb6605d49b3a8df1019335f2.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/df5da2cdfb6605d49b3a8df1019335f2.png)'
 - en: Cover, image by Author
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 封面，作者提供的图片
 - en: Randomized experiments, a.k.a. **AB tests**, are the established standard in
     the industry to estimate causal effects. Randomly assigning the treatment (new
     product, feature, UI, …) to a subset of the population (users, patients, customers,
@@ -42,8 +64,10 @@
     companies like [Duolingo](https://blog.duolingo.com/improving-duolingo-one-experiment-at-a-time/)
     attribute a large chunk of their success to their culture of experimentation at
     scale.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机化实验，即**AB测试**，是行业中估计因果效应的标准方法。通过将处理（新产品、特性、用户界面等）随机分配给人群的一个子集（用户、患者、客户等），我们可以确保平均而言，结果（收入、访问量、点击量等）之间的差异可以归因于处理。像[Booking.com](https://partner.booking.com/en-gb/click-magazine/industry-perspectives/role-experimentation-bookingcom)这样的成熟公司报告称，他们同时运行着成千上万的AB测试。而像[Duolingo](https://blog.duolingo.com/improving-duolingo-one-experiment-at-a-time/)这样的新兴公司将他们成功的很大一部分归因于他们的大规模实验文化。
 - en: 'With so many experiments, one question comes natural: in one specific experiment,
     can you leverage information from previous tests? How? In this post, I will try
     to answer these questions by introducing the **Bayesian approach to AB testing**.
@@ -52,12 +76,16 @@
     the method is particularly sensitive to functional form assumptions, and apparently
     innocuous model choices, like the skewness of the prior distribution, can translate
     into very different estimates.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在如此众多的实验中，一个自然的问题是：在一个特定的实验中，你是否可以利用先前测试的信息？如何做到这一点？在这篇文章中，我将尝试通过介绍**贝叶斯AB测试方法**来回答这些问题。贝叶斯框架非常适合这种任务，因为它自然允许使用新数据来更新现有知识（先验）。然而，该方法对功能形式假设特别敏感，显然无害的模型选择，例如先验分布的偏斜度，可能会导致非常不同的估计结果。
 - en: Search and Infinite Scrolling
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 搜索与无限滚动
 - en: 'For the rest of the article, we are going to use a toy example, loosely inspired
     by [Azavedo et al. (2019)](https://www.aeaweb.org/articles?id=10.1257%2Fpandp.20191003):
     a **search engine** that wants to increase its **ad revenue**, without sacrificing
@@ -66,14 +94,21 @@
     we came up with a new brilliant idea: [infinite scrolling](https://blog.google/products/search/continuous-scrolling-mobile/)!
     Instead of having a discrete sequence of pages, we allow users to keep scrolling
     down if they want to see more results.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的文章中，我们将使用一个玩具示例，该示例大致受到[Azavedo et al. (2019)](https://www.aeaweb.org/articles?id=10.1257%2Fpandp.20191003)的启发：一个**搜索引擎**希望在不牺牲搜索质量的情况下增加其**广告收入**。我们是一家具有成熟实验文化的公司，我们持续测试新想法以改进我们的着陆页。假设我们想出了一个新的绝妙主意：[无限滚动](https://blog.google/products/search/continuous-scrolling-mobile/)!
+    我们允许用户继续向下滚动，以查看更多结果，而不是使用离散的页面序列。
 - en: '![](../Images/06a5e4ee8ea9d5d056790f604188b8c6.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/06a5e4ee8ea9d5d056790f604188b8c6.png)'
 - en: Image, generated by Author using [NightCafé](https://creator.nightcafe.studio/)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片，由作者使用[NightCafé](https://creator.nightcafe.studio/)生成
 - en: 'To understand whether infinite scrolling works, we ran an **AB test**: we randomize
     users into a treatment and a control group and we implement infinite scrolling
     only for users in the treatment group. I import the data-generating process `dgp_infinite_scroll()`
@@ -83,47 +118,63 @@
     use cases. I also import some plotting functions and libraries from `[src.utils](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py)`.
     To include not only code but also data and tables, I use [Deepnote](https://deepnote.com),
     a Jupyter-like web-based collaborative notebook environment.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了理解无限滚动是否有效，我们进行了**AB测试**：我们将用户随机分配到处理组和对照组，并仅对处理组的用户实施无限滚动。我从`[src.dgp](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py)`导入了数据生成过程`dgp_infinite_scroll()`。相对于之前的文章，我生成了一个新的DGP父类，处理随机化和数据生成，而其子类包含具体的用例。我还从`[src.utils](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py)`导入了一些绘图函数和库。为了包含代码、数据和表格，我使用了[Deepnote](https://deepnote.com)，一个类似Jupyter的基于网络的协作笔记本环境。
 - en: We have information on 10.000 website visitors for which we observe the monthly
     `ad_revenue` they generated, whether they were assigned to the treatment group
     and were using the `infinite_scroll`, and also the average monthly `past_revenue`.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有关于10,000名网站访问者的信息，其中我们观察他们生成的每月`ad_revenue`、他们是否被分配到处理组并使用了`infinite_scroll`，以及平均每月的`past_revenue`。
 - en: 'The random treatment assignment makes the **difference-in-means** estimator
     [**unbiased**](https://en.wikipedia.org/wiki/Bias_of_an_estimator): we expect
     the treatment and control group to be comparable on average, so we can causal
     attribute the average observed difference in outcomes to the treatment effect.
     We estimate the treatment effect by linear regression. We can interpret the coefficient
     of `infinite_scroll` as the estimated treatment effect.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机处理分配使得**均值差异**估计量[**无偏**](https://en.wikipedia.org/wiki/Bias_of_an_estimator)：我们期望处理组和对照组在平均上是可比的，因此我们可以将观察到的平均结果差异归因于处理效果。我们通过线性回归估计处理效果。我们可以将`infinite_scroll`的系数解释为估计的处理效果。
 - en: It seems that the `infinite_scroll` was indeed a good idea and it increased
     the average monthly revenue by 0.1524$. Moreover, the effect is significantly
     different from zero at the 1% confidence level.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 看来`infinite_scroll`确实是个好主意，它将平均月收入提高了0.1524美元。此外，该效果在1%置信水平下显著不同于零。
 - en: We could further improve the precision of the estimator by controlling for `past_revenue`
     in the regression. We do not expect a sensible change in the estimated coefficient,
     but the precision should improve (if you want to know more on control variables,
     check my other articles on [CUPED](/understanding-cuped-a822523641af) and [DAGs](/controls-b63dc69e3d8c)).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过在回归中控制`past_revenue`来进一步提高估计量的精度。我们不期望估计系数有显著变化，但精度应该会提高（如果你想了解更多控制变量的内容，可以查看我关于[CUPED](/understanding-cuped-a822523641af)和[DAGs](/controls-b63dc69e3d8c)的其他文章）。
 - en: Indeed, `past_revenue` is highly predictive of current `ad_revenue` and the
     precision of the estimated coefficient for `infinite_scroll` decreases by one-third.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 确实，`past_revenue` 对当前 `ad_revenue` 的预测性很强，而 `infinite_scroll` 的估计系数的精度减少了三分之一。
 - en: So far, everything has been very standard. However, as we said at the beginning,
     suppose this is not the only experiment we ran trying to improve our browser (and
     ultimately ad revenue). The infinite scroll is just one idea among thousands of
     others that we have tested in the past. Is there a way to efficiently use this
     additional **information**?
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，一切都非常标准。然而，正如我们在开始时所说，假设这不是我们尝试改善浏览器（最终目标是广告收入）的唯一实验。无限滚动只是我们过去测试的成千上万种想法中的一种。是否有办法有效利用这些额外的**信息**？
 - en: Bayesian Statistics
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 贝叶斯统计
 - en: 'One of the main advantages of Bayesian statistics over the frequentist approach
     is that it easily allows to incorporate additional information into a model. The
     idea directly follows from the main theorem behind all Bayesian statistics: [**Bayes
@@ -131,330 +182,490 @@
     you to do inference on a model by **inverting the inference problem**: from the
     probability of the model given the data, to the probability of the data given
     the model, a much easier object to deal with.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯统计相比于频率学派方法的主要优点之一是，它可以轻松地将额外信息纳入模型中。这一思想直接来源于所有贝叶斯统计的核心定理：[**贝叶斯定理**](https://en.wikipedia.org/wiki/Bayes'_theorem)。贝叶斯定理允许你通过**反转推理问题**进行模型推断：从给定数据的模型概率，推断数据在给定模型下的概率，这是一种更易处理的对象。
 - en: '![](../Images/4c1b156c8d9cc62e6c9e75c9ef9302fb.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4c1b156c8d9cc62e6c9e75c9ef9302fb.png)'
 - en: Bayes Theorem, image by Author
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯定理，由作者提供的图片
 - en: 'We can split the right-hand side of Bayes Theorem into two components: the
     **prior** and the **likelihood**. The likelihood is the information about the
     model that comes from the data, the prior instead is any additional information
     about the model.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将贝叶斯定理的右侧拆分为两个部分：**先验**和**似然**。似然是来自数据的模型信息，而先验则是关于模型的任何额外信息。
 - en: First of all, let’s map Bayes theorem into our context. What is the data, what
     is the model, and what is our object of interest?
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们将贝叶斯定理映射到我们的背景中。数据是什么，模型是什么，我们的兴趣对象是什么？
 - en: the **data** which consists of our outcome variable `ad_revenue`, *y*, the treatment
     `infinite_scroll`, *D* and the other variables, `past_revenue` and a constant,
     which we jointly denote as *X*
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**数据**由我们的结果变量 `ad_revenue`、*y*、处理变量 `infinite_scroll`、*D* 和其他变量 `past_revenue`
+    以及一个常量组成，我们将这些变量统称为 *X*'
 - en: the **model** is the distribution of `ad_revenue`, given `past_revenue` and
     the `infinite_scroll` feature, *y|D,X*
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**模型**是`ad_revenue` 的分布，给定 `past_revenue` 和 `infinite_scroll` 特征，*y|D,X*'
 - en: our **object of interest** is the posterior *Pr(model | data)*, in particular
     the relationship between `ad_revenue` and `infinite_scroll`
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们的**兴趣对象**是后验概率 *Pr(model | data)*，特别是 `ad_revenue` 和 `infinite_scroll` 之间的关系
 - en: How do we use prior information in the context of AB testing, potentially including
     additional covariates?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何在AB测试的背景下使用先验信息，可能还包括额外的协变量？
 - en: Bayesian Regression
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝叶斯回归
 - en: 'Let’s use a linear model to make it directly comparable with the frequentist
     approach:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们使用线性模型，使其与频率学派方法直接可比：
 - en: '![](../Images/c6956e93d00d1110027196e4e62c76d4.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c6956e93d00d1110027196e4e62c76d4.png)'
 - en: Conditional distribution of y|x, image by Author
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 条件分布 y|x，由作者提供的图片
 - en: 'This is a parametric model with **two sets of parameters**: the linear coefficients
     *β* and *τ*, and the variance of the residuals *σ*. An equivalent, but more Bayesian,
     way to write the model is:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个具有**两组参数**的参数模型：线性系数 *β* 和 *τ*，以及残差的方差 *σ*。一种等效但更具贝叶斯风格的模型表示方式是：
 - en: '![](../Images/e1bcfc54584f23f114c4bd3393d19cff.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e1bcfc54584f23f114c4bd3393d19cff.png)'
 - en: Conditional distribution of y|x, image by Author
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 条件分布 y|x，由作者提供的图片
 - en: where the semi-column separates the data from the model parameters. Differently
     from the frequentist approach, in Bayesian regressions, we do not rely on the
     [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem) to
     approximate the conditional distribution of *y*, but we directly **assume** it
     is normal.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 半冒号将数据与模型参数分开。与频率学派方法不同，在贝叶斯回归中，我们不依赖于[中心极限定理](https://en.wikipedia.org/wiki/Central_limit_theorem)来近似
+    *y* 的条件分布，而是直接**假设**它是正态分布。
 - en: We are interested in doing inference on the model parameters, *β*, *τ*, and
     *σ*. Another **core difference** between the frequentist and the Bayesian approach
     is that the first assumes that the model parameters are fixed and unknown, while
     the latter allows them to be random variables.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们对模型参数 *β*、*τ* 和 *σ* 的推断感兴趣。频率主义方法和贝叶斯方法之间的另一个**核心区别**是，前者假设模型参数是固定且未知的，而后者允许它们是随机变量。
 - en: 'This assumption has a very practical **implication**: you can easily incorporate
     previous information about the model parameters in the form of **prior** distributions.
     As the name says, priors contain information that was available *before* looking
     at the data. This leads to one of the most relevant questions in Bayesian statistics:
     **how do you choose a prior**?'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个假设具有非常实用的**含义**：你可以轻松地以**先验**分布的形式将关于模型参数的先前信息纳入模型。顾名思义，先验包含在查看数据之前可用的信息。这引出了贝叶斯统计中的一个最相关的问题：**如何选择先验**？
 - en: Priors
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 先验
 - en: When choosing a prior, one analytically appealing restriction is to have a prior
     distribution such that the posterior belongs to the same family. These priors
     are called **conjugate priors**. For example, before seeing the data, I assume
     my treatment effect is normally distributed and I would like it to be normally
     distributed also after incorporating the information contained in the data.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择先验时，一个在分析上有吸引力的限制是拥有一个使得后验属于同一家族的先验分布。这些先验被称为**共轭先验**。例如，在看到数据之前，我假设我的处理效应服从正态分布，并希望在结合数据中包含的信息后，它仍然是正态分布的。
 - en: In the case of Bayesian linear regression, the conjugate priors for *β*, *τ*,
     and *σ* are normally and inverse-gamma distributed. Let’s start by blindly using
     a standard normal and inverse gamma distribution as prior.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 在贝叶斯线性回归的情况下，*β*、*τ* 和 *σ* 的共轭先验是正态分布和逆伽马分布。让我们从盲目使用标准正态分布和逆伽马分布作为先验开始。
 - en: '![](../Images/af9184dc16201d5d1baf247a8a6d1e24.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/af9184dc16201d5d1baf247a8a6d1e24.png)'
 - en: Prior distributions, image by Author
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 先验分布，图片由作者提供
 - en: 'We use the probabilistic programming package [PyMC](https://www.pymc.io/projects/docs/en/stable/learn.html)
     to do inference. First, we need to specify the model: the prior distributions
     of the different parameters and the likelihood of the data.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用概率编程包 [PyMC](https://www.pymc.io/projects/docs/en/stable/learn.html) 进行推断。首先，我们需要指定模型：不同参数的先验分布和数据的似然。
 - en: PyMC has an extremely nice function that allows us to visualize the model as
     a graph, `model_to_graphviz`.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: PyMC 具有一个极好的功能，可以将模型可视化为图形，即 `model_to_graphviz`。
 - en: '![](../Images/ea20c0b269460a1e85dede7516f44713.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ea20c0b269460a1e85dede7516f44713.png)'
 - en: Diagram of the model, image by Author
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型示意图，图片由作者提供
 - en: From the graphical representation, we can see the various model components,
     their distributions, and how they interact with each other.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 从图形表示中，我们可以看到各种模型组件，它们的分布，以及它们如何相互作用。
 - en: We are now ready to **compute** the model posterior. How does it work? In short,
     we sample realizations of model parameters, we compute the likelihood of the data
     given those values and derive the corresponding posterior.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在准备**计算**模型后验。它是如何工作的？简而言之，我们对模型参数进行采样，计算给定这些值的数据的似然，并推导出相应的后验。
 - en: The fact that Bayesian inference requires **sampling**, has been historically
     one of the main bottlenecks of Bayesian statistics since it makes it sensibly
     slower than the frequentist approach. However, this is less and less of a problem
     with the increased computational power of model computers.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯推断要求**采样**，这一点历史上一直是贝叶斯统计的主要瓶颈之一，因为这使得贝叶斯统计比频率主义方法明显慢。然而，随着模型计算机计算能力的增加，这不再是一个大问题。
 - en: We are now ready to inspect the results. First, with the `summary()` method,
     we can print a model summary very similar to those produced by the `[statsmodels](https://www.statsmodels.org/dev/index.html)`
     package we used for linear regression.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以检查结果了。首先，通过 `summary()` 方法，我们可以打印一个非常类似于我们用于线性回归的 `[statsmodels](https://www.statsmodels.org/dev/index.html)`
+    包生成的模型摘要。
 - en: The estimated parameters are extremely close to the ones we got with the frequentist
     approach, with an estimated effect of the `infinite_scroll` equal to 0.157.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 估计的参数与我们使用频率主义方法得到的结果非常接近，其中 `infinite_scroll` 的估计效应为 0.157。
 - en: If sampling had the disadvantage of being slow, it has the advantage of being
     very **transparent**. We can directly plot the distribution of the posterior.
     Let’s do it for the treatment effect *τ*. The PyMC function `plot_posterior` plots
     the distribution of the posterior, with a black bar for the Bayesian equivalent
     of a 95% confidence interval.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果抽样的缺点是速度较慢，那么它的优点是**透明**。我们可以直接绘制后验分布。让我们为处理效应*τ*做这件事。PyMC函数`plot_posterior`绘制了后验分布，黑色条表示贝叶斯等效的95%置信区间。
 - en: '![](../Images/4b630dbc9300b7f6e652fde85b82098a.png)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4b630dbc9300b7f6e652fde85b82098a.png)'
 - en: Posterior distribution of *τ̂, image by Author*
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '*τ̂的后验分布，由作者提供的图像*'
 - en: As expected, since we chose conjugate priors, the posterior distribution looks
     gaussian.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如预期的那样，由于我们选择了共轭先验，后验分布看起来是高斯的。
 - en: So far we have chosen the prior without much guidance. However, suppose we had
     access to **past experiments**. How do we incorporate this specific information?
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们在选择先验时没有太多指导。然而，假设我们有**过去实验**的数据。我们如何将这些具体信息纳入其中？
 - en: Past Experiments
+  id: totrans-61
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 过去的实验
 - en: Suppose that the idea of the infinite scroll was just one among a ton of **other
     ideas** that we tried and tested in the past. For each idea, we have the data
     on the corresponding experiment, with the corresponding estimated coefficient.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设无限滚动的想法只是我们过去尝试和测试的**其他想法**中的一个。对于每个想法，我们都有相应实验的数据，以及对应的估计系数。
 - en: We have generated 1000 estimates from past experiments. How do we use this additional
     information?
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从过去的实验中生成了1000个估计值。我们如何利用这些额外的信息？
 - en: Normal Prior
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 正态先验
 - en: The first idea could be to **calibrate** our prior to reflect the data distribution
     in the past. Keeping the normality assumption, we use the estimated average and
     standard deviations of the estimates from past experiments.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个想法是**校准**我们的先验，以反映过去的数据分布。在保持正态性假设的情况下，我们使用过去实验的估计平均值和标准差。
 - en: On average, had practically no effect on `ad_revenue`, with an average effect
     of 0.0009.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 平均而言，几乎对`ad_revenue`没有影响，平均效果为0.0009。
 - en: However, there was sensible variation across experiments, with a standard deviation
     of 0.029.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，实验间存在合理的变异，标准差为0.029。
 - en: Let’s rewrite the model, using the mean and standard deviation of past estimates
     for the prior distribution of *τ*.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们重写模型，使用过去估计值的均值和标准差作为*τ*的先验分布。
 - en: Let’s sample from the model
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从模型中进行抽样
 - en: and plot the sample posterior distribution of the treatment effect parameter
     *τ*.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 并绘制处理效应参数*τ*的样本后验分布。
 - en: '![](../Images/a19a581ccf2c4c38a1b345acc141854d.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a19a581ccf2c4c38a1b345acc141854d.png)'
 - en: Posterior distribution of *τ̂, image by Author*
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '*τ̂的后验分布，由作者提供的图像*'
 - en: 'The estimated coefficient is sensibly smaller: 0.11 instead of the previous
     estimate of 0.16\. Why is it the case?'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 估计系数明显更小：0.11而不是之前的0.16。这是为什么？
 - en: The fact is that the previous coefficient of 0.16 is extremely unlikely, given
     our prior. We can compute the probability of getting the same or a more extreme
     value, given the prior.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际情况是，考虑到我们的先验，之前的0.16系数极不可能。我们可以计算在先验下得到相同或更极端值的概率。
 - en: The probability of this value is virtually zero. Therefore, the estimated coefficient
     has moved towards the prior mean of 0.0009.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个值的概率几乎为零。因此，估计的系数已经朝着0.0009的先验均值移动。
 - en: Student-t Prior
+  id: totrans-76
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Student-t 先验
 - en: So far, we have assumed a normal distribution for all linear coefficients. Is
     it appropriate? Let’s check it visually (check [here](https://medium.com/towards-data-science/how-to-compare-two-or-more-distributions-9b06ee4d30bf)
     for other methods on how to compare distributions), starting from the intercept
     coefficient *β₀*.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们对所有线性系数假设了正态分布。这是否合适？让我们通过视觉检查（查看[这里](https://medium.com/towards-data-science/how-to-compare-two-or-more-distributions-9b06ee4d30bf)了解其他比较分布的方法），从截距系数*β₀*开始。
 - en: '![](../Images/d72e820093e5d420a6ba1a951d44565a.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d72e820093e5d420a6ba1a951d44565a.png)'
 - en: The distribution seems pretty normal. What about the treatment effect parameter
     *τ*?
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布似乎相当正常。处理效应参数*τ*呢？
 - en: '![](../Images/ce7182d1e58d384fac78d4e6f732bef9.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ce7182d1e58d384fac78d4e6f732bef9.png)'
 - en: The distribution is very **heavy-tailed**! While at the center it looks like
     a normal distribution, the tails are much “fatter” and we have a couple of very
     extreme values. Excluding measurement error, this is a setting that happens often
     in the industry, where most ideas have extremely small or null effects, and very
     few ideas are breakthroughs.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 该分布非常**重尾**！虽然在中心看起来像正态分布，但尾部要“肥胖”得多，并且有几个非常极端的值。排除测量误差，这是行业中经常发生的情形，大多数想法效果极小或无效，只有少数想法是突破性的。
 - en: One way to model this distribution is a [student-t](https://en.wikipedia.org/wiki/Student%27s_t-distribution)
     distribution. In particular, we use a t-student with mean 0.0009, variance 0.003,
     and 1.3 degrees of freedom to match the moments of the empirical distributions
     of past estimates.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 模拟这种分布的一种方法是[学生-t分布](https://en.wikipedia.org/wiki/Student%27s_t-distribution)。特别地，我们使用均值为0.0009、方差为0.003、自由度为1.3的t-学生分布，以匹配过去估计的经验分布的矩。
 - en: Let’s sample from the model.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从模型中抽样。
 - en: And plot the sample posterior distribution of the treatment effect parameter
     *τ*.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 并绘制处理效应参数*τ*的样本后验分布。
 - en: '![](../Images/d5ae956118438a68bff16dae1c021816.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5ae956118438a68bff16dae1c021816.png)'
 - en: Posterior distribution of *τ̂, image by Author*
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '*τ̂*的后验分布，作者提供的图像'
 - en: The estimated coefficient is now again similar to the one we got with the standard
     normal prior, 0.11\. However, the estimate is more precise since the confidence
     interval has shrunk from [0.077, 0.016] to [0.065, 0.015].
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 估计的系数现在再次类似于我们使用标准正态先验时得到的值，0.11。然而，估计值更为精确，因为置信区间已从[0.077, 0.016]缩小到[0.065,
+    0.015]。
 - en: What has happened?
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 发生了什么？
 - en: Shrinking
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 收缩
 - en: 'The answer lies in the shape of the different **prior distributions** that
     we have used:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案在于我们使用的不同**先验分布**的形状：
 - en: standard normal, N(0,1)
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 标准正态分布，N(0,1)
 - en: normal with matched moments, N(0, 0.03)
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 匹配矩的正态分布，N(0, 0.03)
 - en: t-student with matched moments, t₁.₃(0, 0.003)
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 匹配矩的t-学生，t₁.₃(0, 0.003)
 - en: Let’s plot all of them together.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们把所有数据一起绘制出来。
 - en: '![](../Images/abdf3ad8eaa441bf847053395335a2ee.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/abdf3ad8eaa441bf847053395335a2ee.png)'
 - en: Different prior distributions, image by Author
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同的先验分布，作者提供的图像
 - en: As we can see, all distributions are centered on zero, but they have very different
     shapes. The standard normal distribution is essentially flat over the [-0.15,
     0.15] interval. Every value has basically the same probability. The last two instead,
     even though they have the same mean and variance, have very different shapes.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所见，所有分布都以零为中心，但形状却大相径庭。标准正态分布在[-0.15, 0.15]区间内基本上是平坦的。每个值的概率几乎相同。最后两个分布虽然均值和方差相同，但形状却大相径庭。
 - en: How does it translate into our estimation? We can plot the implied posterior
     for different estimates, for each prior distribution.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 这如何转化为我们的估计？我们可以为每个先验分布绘制隐含的后验。
 - en: '![](../Images/f07ed12b6145dde8c65e18e4049c650e.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f07ed12b6145dde8c65e18e4049c650e.png)'
 - en: Effect of priors on experiment estimates, image by Author
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 先验对实验估计的影响，作者提供的图像
 - en: 'As we can see, the different priors transform the experimental estimates in
     very different ways. The standard normal prior essentially has no effect on estimates
     in the [-0.15, 0.15] interval. The normal prior with matched moments instead shrinks
@@ -462,26 +673,36 @@
     **non-linear**: it shrinks small estimates towards zero, while it keeps large
     estimates as they are. The dotted grey line marks the effects of the different
     priors, for our experimental estimate *τ̂.*'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所见，不同的先验对实验估计的影响方式截然不同。标准正态先验对[-0.15, 0.15]区间内的估计基本没有影响。匹配矩的正态先验则将每个估计值大约缩小了2/3。t-学生先验的效果则是**非线性的**：它将小的估计值向零收缩，而保持大的估计值不变。虚线灰色标记了不同先验对我们的实验估计*τ̂*的影响。
 - en: '![](../Images/2cd6c0ce346759de9409047ff7f0d924.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2cd6c0ce346759de9409047ff7f0d924.png)'
 - en: Image generated by Author using [NightCafé](https://creator.nightcafe.studio/)
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像由作者使用[NightCafé](https://creator.nightcafe.studio/)生成
 - en: Conclusion
+  id: totrans-104
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article, we have seen how to extend the analysis of AB tests to incorporate
     **information from past experiments**. In particular, we have introduced the Bayesian
     approach to AB testing and we have seen the importance of choosing a prior distribution.
     Given the same mean and variance, assuming a prior distribution with “fat tails”
     (very skewed) implies a stronger shrinkage of small effects and a lower shrinkage
     of large effects.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们已经看到如何扩展 AB 测试的分析以融入**过去实验的信息**。特别是，我们介绍了贝叶斯方法用于 AB 测试，并且我们已经看到选择先验分布的重要性。在相同的均值和方差下，假设具有“胖尾”（非常偏斜）的先验分布意味着小效果的收缩更强，而大效果的收缩则较低。
 - en: 'The **intuition** is the following: a prior distribution with “fat tails” is
     equivalent to assuming that breakthrough ideas are rare but not impossible. This
     has practical **implications** after the experiment, as we have seen in this post,
@@ -491,75 +712,112 @@
     If instead, you think that your ideas are “breakthrough or nothing”, i.e. their
     effects are fat-tailed, it makes more sense to run *small but many* experiments
     since you don’t need a large size to detect large effects.'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '**直觉**如下：具有“胖尾”的先验分布等同于假设突破性想法是稀有但不是不可能的。这在实验之后有实际的**影响**，正如我们在这篇文章中所见，但在实验之前也是如此。事实上，如[Azevedo
+    等人（2020）](https://www.journals.uchicago.edu/doi/full/10.1086/710607)所报告，如果你认为你的想法效果的分布更“正常”，则最佳方案是进行*少量但大的*实验，以便发现较小的效果。如果相反，你认为你的想法是“突破性还是无”，即它们的效果是胖尾的，那么进行*小而多的*实验更有意义，因为你不需要大样本来检测大效果。'
 - en: References
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: 'E. Azevedo, A. Deng, J. Olea, G. Weyl, [Empirical Bayes Estimation of Treatment
     Effects with Many A/B Tests: An Overview](https://www.aeaweb.org/articles?id=10.1257%2Fpandp.20191003)
     (2019). *AEA Papers and Proceedings*.'
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: E. Azevedo, A. Deng, J. Olea, G. Weyl，[用多个 A/B 测试的经验贝叶斯估计治疗效果：概述](https://www.aeaweb.org/articles?id=10.1257%2Fpandp.20191003)（2019）。*AEA
+    论文集。*
 - en: E. Azevedo, A. Deng, J. Olea, J. Rao, G. Weyl, [AB Testing with Fat Tails](https://www.journals.uchicago.edu/doi/full/10.1086/710607)
     (2020). *Journal of Political Economy*.
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: E. Azevedo, A. Deng, J. Olea, J. Rao, G. Weyl，[具有胖尾的 A/B 测试](https://www.journals.uchicago.edu/doi/full/10.1086/710607)（2020）。*政治经济学杂志。*
 - en: A. Deng, [Objective Bayesian Two Sample Hypothesis Testing for Online Controlled
     Experiments](https://dl.acm.org/doi/abs/10.1145/2740908.2742563) (2016). *WWW
     ’15 Companion.*
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: A. Deng，[在线对照实验的**客观贝叶斯两样本假设检验**](https://dl.acm.org/doi/abs/10.1145/2740908.2742563)（2016）。*WWW
+    ’15 会议论文集。*
 - en: Related Articles
+  id: totrans-111
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 相关文章
 - en: '[The Bayesian Bootstrap](https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148)'
+  id: totrans-112
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[贝叶斯自助法](https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148)'
 - en: '[Understanding CUPED](/understanding-cuped-a822523641af)'
+  id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[理解 CUPED](/understanding-cuped-a822523641af)'
 - en: '[DAGs and Control Variables](/controls-b63dc69e3d8c)'
+  id: totrans-114
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[DAGs 和控制变量](/controls-b63dc69e3d8c)'
 - en: Code
+  id: totrans-115
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 代码
 - en: 'You can find the original Jupyter Notebook here:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在这里找到原始的 Jupyter Notebook：
 - en: '[## Blog-Posts/bayes_ab.ipynb at main · matteocourthoud/Blog-Posts'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## Blog-Posts/bayes_ab.ipynb at main · matteocourthoud/Blog-Posts'
 - en: You can't perform that action at this time. You signed in with another tab or
     window. You signed out in another tab or…
+  id: totrans-118
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 你现在无法执行该操作。你在其他标签页或窗口中登录了账户。你已在其他标签页或…
 - en: github.com](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_ab.ipynb?source=post_page-----ed45cc8c964d--------------------------------)
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_ab.ipynb?source=post_page-----ed45cc8c964d--------------------------------)
 - en: Thank you for reading!
+  id: totrans-120
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 感谢阅读！
 - en: '*I really appreciate it!* 🤗 *If you liked the post and would like to see more,
     consider* [***following me***](https://medium.com/@matteo.courthoud)*. I post
     once a week on topics related to causal inference and data analysis. I try to
     keep my posts simple but precise, always providing code, examples, and simulations.*'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '*非常感谢！* 🤗 *如果你喜欢这篇文章并希望查看更多内容，可以考虑* [***关注我***](https://medium.com/@matteo.courthoud)*。我每周发布一次关于因果推断和数据分析的主题。我尽量保持文章简洁而精准，始终提供代码、示例和模拟。*'
 - en: '*Also, a small* ***disclaimer****: I write to learn so mistakes are the norm,
     even though I try my best. Please, when you spot them, let me know. I also appreciate
     suggestions on new topics!*'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '*另外，一个小小的* ***免责声明***：我写作是为了学习，所以错误是常态，尽管我尽力而为。如果你发现错误，请告诉我。我也欢迎对新主题的建议！*'
