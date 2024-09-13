@@ -112,81 +112,98 @@
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从一个仅包含日期变量和感兴趣的数量的时间序列开始。由此，我们将推导出额外的信息，这将使我们能够准确地建模未来结果。这些额外的特征将会受到 Prophet
+    的“启发”。
 - en: We’ll then feed our engineered data into a lightweight model, and let it learn
     how to best forecast into the future. Later on, we’ll dive into the model’s internal
     workings — after all, we’ll need to understand what’s driving our forecasts.
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们将把工程数据输入到一个轻量级模型中，让它学习如何最好地预测未来。之后，我们将深入了解模型的内部工作——毕竟，我们需要了解是什么驱动我们的预测。
 - en: Now that we’ve seen the forest let’s get a close up of the trees, starting with
     a look at our data.
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经看到了全貌，让我们仔细看看数据，从数据开始。
 - en: Data
   id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据
 - en: We’re going to be using real-world data from the UK — in this case, road traffic
     accidents.
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用来自英国的真实数据——在这个案例中，是道路交通事故数据。
 - en: This is the STATS19³ data set produced by the UK government. This data set is
     quite large so to make things a bit more manageable, we’re going to aggregate
     the daily accident count up to a monthly figure.
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是由英国政府提供的 STATS19³ 数据集。由于数据集非常庞大，为了使事情更易于管理，我们将把每日事故数量汇总为月度数据。
 - en: Visualising our time series, we see a downward trend and a strong yearly pattern.
     It could also be argued that these patterns change at some point between 2012
     and 2014.
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过可视化我们的时间序列，我们可以看到一个下降趋势和强烈的年度模式。也可以认为这些模式在2012年至2014年间的某个时点发生了变化。
 - en: '![](../Images/341e08ba1d4b4fa2d786736ed7fea684.png)'
   id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/341e08ba1d4b4fa2d786736ed7fea684.png)'
 - en: Image by author
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: That’s already two kinds of features that we’ll need to create — something to
     capture the overall direction of travel, and something that captures the repeated
     annual pattern (or seasonality).
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 这已经是我们需要创建的两种特征——一种是捕捉整体趋势，另一种是捕捉重复的年度模式（或季节性）。
 - en: Feature engineering
   id: totrans-26
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 特征工程
 - en: We’ll touch on the general ideas that will drive our engineering before moving
     on to its implementation.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在开始实现之前，我们将探讨推动我们工程的一般理念。
 - en: The beauty of Prophet
   id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Prophet 的魅力
 - en: 'Prophet uses a decomposable time series model with three main components combined
     additively (with a little randomness on the side). Mathematically, this is:'
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: Prophet 使用具有三个主要成分的可分解时间序列模型，这些成分是加性组合的（带有一点随机性）。在数学上，这是：
 - en: '![](../Images/dbec65f97390c18984bc7f151b967875.png)'
   id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dbec65f97390c18984bc7f151b967875.png)'
 - en: Image by author
   id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Here *g(t)* is the trend function which models non-periodic changes in the value
     of the time series, *s(t)* represents periodic changes (e.g., weekly and yearly
     seasonality), and *h(t)* represents the effects of holidays which occur on potentially
@@ -195,22 +212,26 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这里 *g(t)* 是趋势函数，用于建模时间序列中非周期性的变化，*s(t)* 代表周期性变化（例如，周度和年度季节性），而 *h(t)* 代表节假日的影响，这些节假日可能会在一个或多个日期上发生不规则的安排。⁴
 - en: 'It’s this decomposable model form that makes Prophet so flexible, and it’s
     this idea that a time series is separable that will guide our feature engineering:
     that is, we’ll generate features that will help us model each one of these components.'
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 正是这种可分解的模型形式使得 Prophet 如此灵活，正是时间序列可以分离的这个理念将指导我们的特征工程：也就是说，我们将生成帮助我们建模每一个这些组件的特征。
 - en: 'Our imitation won’t be a Prophet doppelganger — we’re only taking inspiration
     from it. So we’ll make a couple of changes:'
   id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的模仿不会成为 Prophet 的双胞胎——我们只是从中获得灵感。因此，我们将做一些调整：
 - en: '*g(t)* will also represent step changes or change points in the time series.'
   id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*g(t)* 还将代表时间序列中的步进变化或变更点。'
 - en: We won’t focus too much on the error term (epsilon), other than to remember
     that Prophet uses it to represent “idiosyncratic changes which are not accommodated
     by the model”⁴.
@@ -218,21 +239,26 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们不会过多关注误差项（epsilon），只需记住 Prophet 使用它来表示“模型未能涵盖的个性化变化”⁴。
 - en: '*Aside: if you’re unfamiliar with the components of a time series, this article
     is a good summary:*'
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '*旁白：如果你不熟悉时间序列的组成部分，这篇文章是一个很好的总结：*'
 - en: '[](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6?source=post_page-----52d9df3d930d--------------------------------)
     [## Let’s Do: Time Series Decomposition'
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6?source=post_page-----52d9df3d930d--------------------------------)
+    [## 开始做：时间序列分解]'
 - en: A guide to effectively breaking a time series into its constituent parts
   id: totrans-39
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一个有效地将时间序列分解成其组成部分的指南
 - en: pub.towardsai.net](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6?source=post_page-----52d9df3d930d--------------------------------)
   id: totrans-40
   prefs: []
@@ -389,6 +415,7 @@
   id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 值得一提的是，我只允许变化点出现在每个季度末。除非我们对系列中的变化非常确定，否则设置这些点可能有点像艺术，需要在灵活性和过度反应之间取得平衡；变化点需要足够频繁以捕捉趋势中的真实变化，但又不能过于频繁，以至于开始捕捉噪声。
 - en: In this case quarterly change points have a bit going for them. Firstly, they
     effectively put a minimum time threshold on how long a change has to last before
     it is considered “real” — potentially useful in reducing the model’s propensity
@@ -396,11 +423,13 @@
   id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，季度变化点有一些优势。首先，它们有效地对变化持续多长时间设置了最低时间阈值，才被认为是“真实”的——这对于减少模型将信号误认为噪声的倾向可能很有用。
 - en: In the UK, quarterly changes roughly align with seasonal changes and significant
     calendar changes (e.g. 1 January).
   id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在英国，季度变化大致与季节性变化和重大日历变化（例如 1 月 1 日）对齐。
 - en: 'There are external environment effects to consider too: new registration plates
     are released around March and September of each year, which usually drive a spike
     in new car sales. As new cars are generally safer than old cars, it’s not unreasonable
@@ -409,56 +438,69 @@
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 还需要考虑外部环境因素：每年3月和9月会发布新的注册车牌，这通常会导致新车销量的激增。由于新车通常比旧车更安全，因此可以合理地想象车主构成的变化会对道路交通事故的数量产生影响。
 - en: While it’s probably not too bad a place to start from, we might have to circle
     back later for some fine-tuning.
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这可能是一个不错的起点，但我们可能需要稍后再回来进行一些微调。
 - en: Seasonality
   id: totrans-70
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 季节性
 - en: We refer to regular or periodic effects present in a time series as seasonality.
   id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将时间序列中存在的规则性或周期性效应称为季节性。
 - en: 'Prophet uses Fourier series to represent seasonal effects in the additive model.
     This generalises as the following:'
   id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: Prophet 使用傅里叶级数来表示加性模型中的季节效应。其通用化为如下：
 - en: '![](../Images/764ac5dff3304ab7021489578f0efd4b.png)'
   id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/764ac5dff3304ab7021489578f0efd4b.png)'
 - en: Image by author
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: The Fourier representation essentially implies that all the repetitive effects
     that we see in a time series can be represented by a series of sine and cosine
     waves of varying period.
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 傅里叶表示法本质上意味着我们在时间序列中看到的所有重复效应可以通过一系列不同周期的正弦和余弦波来表示。
 - en: As we’re working with monthly data, we’d expect to see seasonal effects around
     the same time every year; in other words, the *period* of our time series is one
     year, or 12 months. So we’d need to set *P* = 12.
   id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们正在处理月度数据，我们预计每年在相同时间看到季节性效应；换句话说，我们时间序列的 *周期* 是一年，即 12 个月。因此，我们需要将 *P* 设置为
+    12。
 - en: '*N* = 10 and *N* = 3 have been noted to work well for series with yearly and
     weekly seasonality respectively⁴, but we’ll extend *N* to 12 for good measure.'
   id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '*N* = 10 和 *N* = 3 已被证明分别适用于具有年度和周度季节性的系列，但我们将 *N* 扩展到 12 以确保效果。'
 - en: 'Remember that we’re not creating a separate seasonal model, but rather seasonal
     features which our single model can assemble to represent periodic variations.
     With that in mind we create our Prophet-inspired features as follows:'
   id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住，我们不是在创建一个单独的季节性模型，而是创建季节性特征，让我们的单一模型能够组合这些特征以表示周期性变化。考虑到这一点，我们按以下方式创建 Prophet
+    启发的特征：
 - en: '[PRE3]'
   id: totrans-79
   prefs: []
@@ -470,15 +512,18 @@
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这会生成多个不同周期的正弦和余弦波，准备好让模型将它们组合在一起，以捕捉季节性。因此，作为输入特征，它们可能看起来像这样：
 - en: '![](../Images/7da1e50fe657bde47f342d27b4699002.png)'
   id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7da1e50fe657bde47f342d27b4699002.png)'
 - en: '*Aside: note how higher values of n reduce the period — or time needed to complete
     a full cycle — of the sine function.*'
   id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附注：注意较高的 n 值如何减少正弦函数的周期——即完成一个完整周期所需的时间。*'
 - en: Our model will select and scale these functions in various ways so that the
     periodic (or *seasonal*) element of the time series is appropriately accounted
     for… that is, the model will determine the *a* and *b* coefficients in the formula
@@ -486,11 +531,14 @@
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的模型将以各种方式选择和缩放这些函数，以便适当地考虑时间序列的周期性（或 *季节性*）元素……也就是说，模型将确定上述公式中的 *a* 和 *b*
+    系数。
 - en: Holidays
   id: totrans-84
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 节假日
 - en: Holidays and events provide large, somewhat predictable shocks to many business
     time series and often do not follow a periodic pattern, so their effects are not
     well modeled by a smooth cycle.⁴
@@ -629,22 +677,26 @@
   id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过周期特征编码解决这个问题，或者更具体地说，通过转换为极坐标。由于正弦和余弦变换本身都不能提供唯一的编码，我们使用两者的组合。
 - en: The code above doesn’t show any examples of cyclical encoding but it is used
     in my workflow and turns out to be an important feature in the model (see part
     2).
   id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的代码没有显示任何周期编码的示例，但它在我的工作流程中使用，结果在模型中成为一个重要特征（见第2部分）。
 - en: The Prophet features
   id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 先知特征
 - en: Following in a similar vein, our “Prophet features” relied heavily on sine and
     cosine transformations. In reality, these are really Fourier transforms.
   id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 按类似的思路，我们的“先知特征”严重依赖于正弦和余弦变换。实际上，这些实际上是傅里叶变换。
 - en: Eagle-eyed readers may have picked up on how the Prophet features have been
     created. In the original paper, the time dimension has been re-based to a certain
     point and every observation is reflected as being *t* time units after that. We’ve
@@ -653,16 +705,19 @@
   id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 细心的读者可能已经注意到先知特征的创建方式。在原始论文中，时间维度被重新基准化到某一点，每个观察值都被反映为在那之后的 *t* 时间单位。我们没有这样做，而是选择了另一种方法。如果我再次考虑这个问题，可能会考虑这一点。
 - en: 'Lagged features: the elephant in the room'
   id: totrans-110
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 滞后特征：房间里的大象
 - en: So far, I’ve really just glossed over the use of lagged features. Or lack of
     use to be precise.
   id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我实际上只是略过了滞后特征的使用。或者更准确地说，是缺乏使用。
 - en: Using previous values of the target quantity to predict the current or future
     value of the target quantity — i.e. using values that are “lagged” in time — is
     a staple in a lot of really great time series models. And for good reason, as
@@ -670,6 +725,7 @@
   id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用目标量的先前值来预测目标量的当前或未来值——即使用“滞后”的时间值——在许多优秀的时间序列模型中是常见的。这是有充分理由的，因为它们通常是强有力的预测器。
 - en: My reluctance to do so centres on the whole purpose of the model — to be good
     at forecasting. When we forecast with lagged features, we usually have to “walk”
     the lagged features forward and transition from using actual values of the target
@@ -677,6 +733,7 @@
   id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 我不愿这样做的核心在于模型的整体目的——即在预测方面表现良好。当我们使用滞后特征进行预测时，通常必须“推进”滞后特征，并从使用目标的实际值过渡到使用预测值。
 - en: To make that more concrete, consider a model which uses one lagged feature —
     that is, we use the value of the target at time *t — 1* to predict the value of
     the target at time *t*. We’re interested in using the model to forecast 3 steps
@@ -684,12 +741,14 @@
   id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，考虑一个使用一个滞后特征的模型——即，我们使用时间 *t — 1* 的目标值来预测时间 *t* 的目标值。我们希望使用该模型预测未来3步。
 - en: The first forecast (at time *t + 1*) will use the value of the target today.
     Since the target value is known there are no issues here and it’s business as
     usual.
   id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个预测（在时间 *t + 1*）将使用今天目标的值。由于目标值是已知的，所以这里没有问题，一切照常进行。
 - en: Now consider the forecast for time *t + 2*. We need the target value as at time
     *t + 1* in order to use our model. Of course, the *true* target value is unknown
     at this point and so we resort to using the *predicted*target for time *t + 1\.*
@@ -700,12 +759,15 @@
   id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑时间 *t + 2* 的预测。我们需要时间 *t + 1* 的目标值才能使用我们的模型。当然，此时 *真实* 的目标值是未知的，因此我们使用 *预测*
+    的目标值来代替时间 *t + 1*。当涉及到预测时间 *t + 3* 时，我们将时间 *t + 2* 的预测推进，以此类推。从中可以看出，预测误差如何被融入预测中；早期的错误会被累积，因为不准确的预测被推进和重复使用。我不喜欢这样。
 - en: 'There is a secondary benefit from not using lagged features, and that is model
     explainability: we are forced into modelling the target in a different way and
     really have to think about (and model!) the drivers of outcome.'
   id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 不使用滞后特征还有一个附带好处，那就是模型可解释性：我们被迫以不同的方式建模目标，并真正考虑（并建模！）结果的驱动因素。
 - en: Oftentimes this leads to a better conversation with stakeholders, as explaining
     a forecast starts to sound like “long-term trend represents X% and seasonality
     represents Y% of a forecast of Z” rather than “the forecast is B because the value
@@ -713,6 +775,7 @@
   id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 这通常会导致与利益相关者进行更好的对话，因为解释预测开始听起来像是“长期趋势占预测的X%而季节性占预测的Y%”而不是“预测为B是因为前一个预测的值为A”。
 - en: A last note on lagged features before moving on. We aren’t constrained to using
     lagged *target* features, so while we’ve discussed including previous values of
     the target feature we could equally include lagged predictors with similar caveats
@@ -720,21 +783,25 @@
   id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在继续之前，最后提一下滞后特征。我们并不局限于使用滞后的*目标*特征，因此虽然我们讨论了包括目标特征的前期值，我们也可以同样包括滞后的预测变量，且要有类似的警示和要求。
 - en: This isn’t intended to be a blanket put down of the use of lagged features —
     I’m sure there are use cases where it makes perfect sense to do so. The number
     of lags used and length of forecasting window may even mean that this is a non-issue.
   id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 这并不是要全面否定使用滞后特征的做法——我相信在某些用例中这样做完全合理。使用的滞后数量和预测窗口的长度可能甚至意味着这不是问题。
 - en: Change points
   id: totrans-121
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 变更点
 - en: Let’s talk about change points, and the creation thereof.
   id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们讨论变更点及其创建。
 - en: I’ve created change points in a really simplistic way, and I’m sure there are
     many ways to improve my implementation. Prophet arguably does it better by creating
     evenly spaced change points in the first 80% of the data, but then there are a
@@ -742,22 +809,26 @@
   id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 我以一种非常简单的方式创建了变更点，我确信还有许多改进我实现的方法。Prophet可以说做得更好，通过在数据的前80%中创建均匀间隔的变更点，但也有一些需要考虑的事项。
 - en: This reduces the impact of more recent spurious change points on future forecasts
     — that’s a good thing.
   id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 这减少了较近期虚假变更点对未来预测的影响——这是件好事。
 - en: But how many true changes happen on evenly-spaced time intervals? And if changes
     really did happen at that cadence, wouldn’t it be better thought of as some seasonal
     impact? Yes, it’s splitting hairs. Yes, it is important. Fine, I’ll move on.
   id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 但真正的变化有多少发生在均匀间隔的时间点上？如果变化真的以这种节奏发生，那是否更应视为某种季节性影响？是的，这是在挑剔。是的，这很重要。好吧，我继续。
 - en: While we can model historic change points, it’s a bit more difficult to model
     future change points; there are instances where an upcoming change is known.
   id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我们可以对历史变更点进行建模，但对未来变更点的建模要困难一些；有些情况下，未来的变更是已知的。
 - en: For instance, the UK introduced the Civil Liability Act which made changes to
     the personal injury compensation system in England and Wales. If you were to regularly
     model the number and cost of compensation claims for whiplash injuries like I
@@ -767,21 +838,25 @@
   id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，英国推出了《民事责任法》，对英格兰和威尔士的个人伤害赔偿系统进行了修改。如果你像我一样定期建模颈部损伤的赔偿申请数量和成本（工作需要，而非兴趣），2021年6月该法案的实施导致了一个相当严重的步骤变化。但由于事先已知，所以可以采取措施加以考虑。
 - en: These kinds of changes need a case-by-case approach, with pragmatism and common
     sense being front and centre.
   id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 这类变化需要逐案处理，务实和常识应当是首要考虑的。
 - en: Interactions
   id: totrans-129
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 交互作用
 - en: Anyone keeping count of elephants in the room? Here’s another — we haven’t built
     any features which capture the interaction between predictors.
   id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人记录房间里的大象吗？再来一个——我们还没有构建捕捉预测变量之间交互作用的特征。
 - en: Interactions are incredibly useful features which can capture the relationship
     between various predictors. An interaction occurs when an independent variable
     has a different effect on the outcome depending on the values of another independent
@@ -789,6 +864,7 @@
   id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 交互作用是非常有用的特征，可以捕捉各种预测变量之间的关系。当一个自变量对结果的影响取决于另一个自变量的值时，就会发生交互作用⁹。
 - en: In our case one of the more interesting motivations for using interactions would
     be to allow the seasonality to change over time, as we currently assume — and
     model — that the same seasonal effect holds true for more than twenty years. There’s
@@ -797,30 +873,36 @@
   id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的案例中，使用交互作用的一个更有趣的动机是允许季节性随时间变化，因为我们目前假设——并建模——相同的季节性效果在二十多年里仍然有效。虽然没有明显的反证，但我们可以通过将时间与某些特征进行交互，潜在地挖掘更多的预测能力。
 - en: We’ll have to add this to our list of things to do next time.
   id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要将这个添加到下次的待办事项列表中。
 - en: Holidays
   id: totrans-134
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 假期
 - en: Lastly, a quick word on holidays.
   id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，简单说一下假期的情况。
 - en: We touched on some of the headaches that the Easter weekend can give us and
     came up with a simple solution.
   id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们讨论了一些复活节周末可能带来的麻烦，并提出了一个简单的解决方案。
 - en: A real enhancement to the feature engineering would be the incorporation of
     school holidays. These will likely have an impact on the number of road traffic
     accidents, and so would be strong predictors.
   id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 对特征工程的真正改进将是纳入学校假期。这些假期可能会对道路交通事故的数量产生影响，因此将是强有力的预测因素。
 - en: Unfortunately it’s not so easy to do as schools in the UK go on holiday at slightly
     different times for slightly different lengths of time. Perhaps we could get really
     imaginative and create a distribution of school holidays, and allocate that to
@@ -828,76 +910,93 @@
   id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这并不容易，因为英国的学校假期时间略有不同，假期长度也不尽相同。也许我们可以发挥创造力，创建一个学校假期的分布，并将其分配到每个月——这是下次的另一个任务。
 - en: That’s it from me. I hope you enjoyed reading this as much as I enjoyed writing
     it.
   id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这些了。我希望你们阅读这篇文章的乐趣与我写作的乐趣一样多。
 - en: As always, please let me know what you think — I’m really interested to hear
     about your experiences with Prophet or with modelling time series in different
     ways.
   id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 一如既往，请告诉我你的想法——我非常感兴趣了解你在使用Prophet或以不同方式建模时间序列的经历。
 - en: As I mentioned, I’ll be tackling the modelling in a forthcoming article — keep
     your eyes peeled for that.
   id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我提到的，我将在即将发表的文章中处理建模问题——请留意。
 - en: Until next time.
   id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 期待下次见面。
 - en: References and resources
   id: totrans-143
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考资料
 - en: '[GitHub — facebook/prophet: Tool for producing high quality forecasts for time
     series data that has multiple seasonality with linear or non-linear growth.](https://github.com/facebook/prophet)'
   id: totrans-144
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[GitHub — facebook/prophet: 用于生成高质量时间序列数据预测的工具，支持多季节性和线性或非线性增长。](https://github.com/facebook/prophet)'
 - en: '[Vincent Warmerdam: Winning with Simple, even Linear, Models | PyData London
     2018 — YouTube](https://www.youtube.com/watch?v=68ABAU_V8qI&list=WL&index=32&t=2183s)'
   id: totrans-145
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Vincent Warmerdam：用简单甚至线性模型取胜 | PyData London 2018 — YouTube](https://www.youtube.com/watch?v=68ABAU_V8qI&list=WL&index=32&t=2183s)'
 - en: '[https://roadtraffic.dft.gov.uk/downloads](https://roadtraffic.dft.gov.uk/downloads)
     used under the [Open Government Licence (nationalarchives.gov.uk)](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)'
   id: totrans-146
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://roadtraffic.dft.gov.uk/downloads](https://roadtraffic.dft.gov.uk/downloads)
+    依据 [开放政府许可证 (nationalarchives.gov.uk)](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
+    使用'
 - en: '[Forecasting at scale (peerj.com)](https://peerj.com/preprints/3190.pdf)'
   id: totrans-147
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[大规模预测 (peerj.com)](https://peerj.com/preprints/3190.pdf)'
 - en: '[A comprehensive guide to time series decomposition | Towards AI](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6)'
   id: totrans-148
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[时间序列分解的综合指南 | Towards AI](https://pub.towardsai.net/lets-do-time-series-decomposition-d59d6bd4eea6)'
 - en: '[Trend Changepoints | Prophet (facebook.github.io)](https://facebook.github.io/prophet/docs/trend_changepoints.html)'
   id: totrans-149
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[趋势变更点 | Prophet (facebook.github.io)](https://facebook.github.io/prophet/docs/trend_changepoints.html)'
 - en: '[Civil-liability-act-2018-Q-and-A.docx (live.com)](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F5c62d226ed915d04538f124f%2FCivil-liability-act-2018-Q-and-A.docx%23%3A%7E%3Atext%3DThe%2520Civil%2520Liability%2520Act%25202018%2520makes%2520important%2520changes%2520to%2520the%2Cinjury%2520discount%2520rate%2520is%2520set.&wdOrigin=BROWSELINK)'
   id: totrans-150
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Civil-liability-act-2018-Q-and-A.docx (live.com)](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F5c62d226ed915d04538f124f%2FCivil-liability-act-2018-Q-and-A.docx%23%3A%7E%3Atext%3DThe%2520Civil%2520Liability%2520Act%25202018%2520makes%2520important%2520changes%2520to%2520the%2Cinjury%2520discount%2520rate%2520is%2520set.&wdOrigin=BROWSELINK)'
 - en: '[interaction.pdf (mcgill.ca)](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf)'
   id: totrans-151
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[interaction.pdf (mcgill.ca)](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf)'
 - en: '[https://stackoverflow.com/a/59681727/11637704](https://stackoverflow.com/a/59681727/11637704)'
   id: totrans-152
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://stackoverflow.com/a/59681727/11637704](https://stackoverflow.com/a/59681727/11637704)'
