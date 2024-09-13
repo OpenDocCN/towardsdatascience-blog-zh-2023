@@ -1,246 +1,379 @@
 - en: Combine dbt Models Into a Single Target Table
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 将dbt模型合并为一个单一目标表
 - en: 原文：[https://towardsdatascience.com/combine-dbt-models-into-a-single-target-table-9873679ffd9b](https://towardsdatascience.com/combine-dbt-models-into-a-single-target-table-9873679ffd9b)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/combine-dbt-models-into-a-single-target-table-9873679ffd9b](https://towardsdatascience.com/combine-dbt-models-into-a-single-target-table-9873679ffd9b)
 - en: Tutorial covering 3 patterns and their trade-offs
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 涵盖3种模式及其权衡的教程
 - en: '[](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)[![Jay
     Peterman](../Images/94587c88cb7981fa58fa8137d27b9588.png)](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)
     [Jay Peterman](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)[![Jay
+    Peterman](../Images/94587c88cb7981fa58fa8137d27b9588.png)](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)
+    [Jay Peterman](https://medium.com/@jaypeterman?source=post_page-----9873679ffd9b--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)
     ·6 min read·Jan 3, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9873679ffd9b--------------------------------)
+    ·阅读时长6分钟·2023年1月3日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/d7f8c181012add6ebd4d042b7666b54b.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d7f8c181012add6ebd4d042b7666b54b.png)'
 - en: Image by author
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: If you’re looking for a simple way to build analytics pipelines, dbt is likely
     on your radar. It’s tailored to empower data analyst/scientist to focus on their
     areas of expertise, and reduce their dependencies on data engineers.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你在寻找一种简单的方式来构建分析管道，dbt可能会引起你的关注。它旨在赋能数据分析师/科学家专注于他们的专业领域，并减少对数据工程师的依赖。
 - en: 'I have noticed that newcomers to dbt often pose a common question: How do I
     load several dbt models with a common schema into a single target table? I will
     introduce a few patterns that can be adapted to different use cases, and discuss
     some of the trade-offs.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我注意到新手在使用dbt时常常会提出一个共同的问题：如何将多个具有共同模式的dbt模型加载到一个单一的目标表中？我将介绍一些可以适应不同用例的模式，并讨论一些权衡。
 - en: The remainder of this tutorial assumes you already have dbt set up, and have
     some familiarity using the tool. Even if you don’t, I think you can extract some
     useful insights. This tutorial uses BigQuery.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 本教程的其余部分假设你已经设置了dbt，并且对使用该工具有一定的熟悉度。即使你没有，我认为你也可以获得一些有用的见解。本教程使用BigQuery。
 - en: Setting up the problem
+  id: totrans-11
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 问题设置
 - en: 'This will be a trivial example where we will combine 3 dbt models with a simple
     schema:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将是一个简单的示例，我们将结合3个具有简单模式的dbt模型：
 - en: '![](../Images/7ce2303591b0d0b5a9f9266b391aaeec.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7ce2303591b0d0b5a9f9266b391aaeec.png)'
 - en: Image by author
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'To get started, we will created a new directory in `models` and name it `dbt-test`.
     Inside of `dbt-test` we will then create the following 4 files:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 要开始，我们将在`models`目录中创建一个新目录，并将其命名为`dbt-test`。在`dbt-test`内部，我们将创建以下4个文件：
 - en: '**table_1.sql**'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**table_1.sql**'
 - en: '[PRE0]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 2\. **table_2.sql**
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. **table_2.sql**
 - en: '[PRE1]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 3\. **table_3.sql**
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. **table_3.sql**
 - en: '[PRE2]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 4\. **schema.yml**
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 4\. **schema.yml**
 - en: '[PRE3]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Note: `union_table` will be the name of the target table (discussed below).'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意：`union_table`将是目标表的名称（如下讨论）。
 - en: 'The SQL files represent upstream tables that will be loaded into the target
     table. The `dbt-test` directory should now look like this:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: SQL文件表示将加载到目标表中的上游表。现在`dbt-test`目录应如下所示：
 - en: '![](../Images/a5492044692d558ec7adc57837762d20.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a5492044692d558ec7adc57837762d20.png)'
 - en: Image by author
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'Pattern 1: Manual UNION'
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模式1：手动UNION
 - en: The first pattern will simply create a new model that will `UNION` each of our
     tables, and materialize as a new table, `union_table`.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个模式将简单地创建一个新模型，该模型将`UNION`我们所有的表，并将其物化为一个新表`union_table`。
 - en: '**union_table.sql**'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**union_table.sql**'
 - en: '[PRE4]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: This solution is likely where most SQL developers will start, and it works well.
     This pattern emphasizes simplicity/readability at the cost of scalability. That
     is, it would quickly become unmanageable if we need to `UNION` 100 tables, or
     if the number of tables frequently changes. Further, if any of source tables fail
     or don’t exist, the entire model will fail.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个解决方案很可能是大多数 SQL 开发人员的起点，并且运行良好。这个模式强调简洁性/可读性，代价是扩展性。也就是说，如果我们需要 `UNION` 100
+    个表，或者表的数量经常变化，它将很快变得难以管理。此外，如果任何源表失败或不存在，整个模型都会失败。
 - en: 'Pattern 2: UNION using for-loop'
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模式 2：使用 for 循环进行 UNION
 - en: 'This pattern helps with scalability, but perhaps comes at the cost of readability.
     To test this pattern, modify the contents of `union_table.sql` as shown below:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个模式有助于扩展性，但可能以牺牲可读性为代价。要测试这个模式，请按如下所示修改 `union_table.sql` 的内容：
 - en: '**union_table.sql**'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '**union_table.sql**'
 - en: '[PRE5]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: This code ultimately achieves the same target output as Pattern 1, except this
     time we use a Jinja for-loop. The first step assigns an array containing each
     of the upstream tables, and assigns it to a variable called `tables`. We will
     then use a for-loop to iterate through `tables` and pass the iterating variable,
     `table`, through the `ref` function in the `FROM` statement.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码最终实现了与模式 1 相同的目标输出，不过这次我们使用了 Jinja 的 for 循环。第一步是将包含所有上游表的数组分配给一个名为 `tables`
+    的变量。接着，我们将使用 for 循环遍历 `tables` 并通过 `FROM` 语句中的 `ref` 函数传递迭代变量 `table`。
 - en: After the `FROM` statement, there is a conditional statement that controls whether
     the `UNION ALL` statement will be added to that iteration of the loop. In this
     case, we need to add a `UNION ALL` in all but the final iteration.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 `FROM` 语句之后，有一个条件语句控制是否将 `UNION ALL` 语句添加到该循环的迭代中。在这种情况下，我们需要在除了最后一次迭代之外的所有迭代中添加
+    `UNION ALL`。
 - en: To help understand what this model is doing, you can look at the compiled SQL
     code, which is the result of running `dbt compile`.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了帮助理解这个模型的功能，你可以查看编译后的 SQL 代码，这是运行 `dbt compile` 的结果。
 - en: '[PRE6]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: As you can see, this dbt model compiles into the same code as Pattern 1\. While
     the readability might be a bit worse than Pattern 1, I think it’s a bit easier
     to maintain and scale. However, we still face the problem that if any of the source
     tables fail, the entire model will fail.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你所看到的，这个 dbt 模型编译成与模式 1 相同的代码。虽然可读性可能比模式 1 差一些，但我认为它在维护和扩展性方面更容易。不过，我们仍然面临的问题是如果任何源表失败，整个模型都会失败。
 - en: To scale this pattern, you will need to update the `tables` array to include
     the appropriate tables to `UNION`. While I think this is an improvement to Pattern
     1, it can still be better.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 要扩展这个模式，你需要更新 `tables` 数组以包含适当的 `UNION` 表。我认为这是对模式 1 的改进，但仍然可以更好。
 - en: 'Pattern 2.1: Programmatically include the correct source tables'
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模式 2.1：以编程方式包含正确的源表
 - en: This pattern adds a scalability improvement to Pattern 2 that queries `INFORMATION_SCHEMA.TABLES`
     from BiqQuery to get the appropriate tables to include in the array. For this
     to work, you have to follow a naming convention for the tables, which is `table_<id>`
     in this example.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个模式为模式 2 添加了一个可扩展性的改进，它从 BigQuery 查询 `INFORMATION_SCHEMA.TABLES` 来获取需要包含在数组中的表。为了实现这一点，你必须遵循表的命名约定，在这个例子中是
+    `table_<id>`。
 - en: '**union_table.sql**'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '**union_table.sql**'
 - en: '[PRE7]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: This code queries `INFORMATION_SCHEMA.TABLES` to get the appropriate tables,
     by filtering for tables that follow the defined naming convention. The `data`
     element of the result is then saved to the `tables` variable. We can then iterate
     through the array as we did in Pattern 2.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码查询 `INFORMATION_SCHEMA.TABLES` 以获取适当的表，通过过滤符合定义命名约定的表来实现。结果的 `data` 元素被保存到
+    `tables` 变量中。然后，我们可以像在模式 2 中一样遍历这个数组。
 - en: 'In Pattern 2.1, `tables` is no longer an array of strings (like it was in Pattern
     2), but rather it’s an array of `tuples` that looks like this:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在模式 2.1 中，`tables` 不再是字符串数组（如模式 2 中的那样），而是一个 `tuples` 数组，格式如下：
 - en: '[PRE8]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Since the iterating variable is now a `tuple`, we need to access the element
     at index 0.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于迭代变量现在是 `tuple`，我们需要访问索引 0 处的元素。
 - en: 'The compiled code should look familiar:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 编译后的代码应该很熟悉：
 - en: '[PRE9]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: At this point, our model scales pretty well. However, it will still completely
     fail if any of the source tables fail, which very well might be the desired behavior.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 到此为止，我们的模型扩展得相当好。然而，如果任何源表失败，它仍然会完全失败，这可能是期望的行为。
 - en: 'Pattern 3: Load into target table using hooks'
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模式 3：使用 hooks 加载到目标表
 - en: To get more flexible loading patterns, you can try using hooks. This pattern
     independently loads each model into the target table, and a single failing model
     will not break the whole thing.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 要获得更灵活的加载模式，你可以尝试使用钩子。这个模式独立地将每个模型加载到目标表中，单个失败的模型不会破坏整个过程。
 - en: 'Here is an example of how you would modify `table_1.sql` to use a `post-hook`:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个如何修改`table_1.sql`以使用`post-hook`的示例：
 - en: '[PRE10]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: In this example, the post-hook will run the SQL query when the model completes.
     In this case, it will `INSERT` the materialized table into `hook_table`. This
     example assumes that `hook_table` already exists.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，后钩子将在模型完成时运行 SQL 查询。在这种情况下，它将`INSERT`物化表到`hook_table`中。这个例子假设`hook_table`已经存在。
 - en: You would then add the hook to all dbt models that you need to load into the
     target table. In the event that a single source table fails, the rest should still
     get loaded into `hook_table`. The trade-off here is that you will lose visibility
     in the lineage, and it will be harder to scale.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后你需要将钩子添加到所有需要加载到目标表中的 dbt 模型中。如果某一个源表失败，其他表仍然应该会被加载到`hook_table`中。这里的权衡是你将失去数据源的可视性，而且规模扩展会变得更加困难。
 - en: Conclusion
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: You just learned how to load several dbt models into a single target table.
     While the examples are trivial, they should be easy to adapt to your specific
     use case. Thanks for reading, and I hope you found it useful.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 你刚刚学习了如何将多个 dbt 模型加载到一个目标表中。虽然这些示例很简单，但它们应该容易适应你的具体用例。感谢阅读，希望你觉得有用。
