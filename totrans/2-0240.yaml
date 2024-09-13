@@ -1,491 +1,733 @@
 - en: A step-by-step guide to Row and Columns Access policies in BigQuery
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: BigQuery 中的行和列访问策略逐步指南
 - en: 原文：[https://towardsdatascience.com/a-step-by-step-guide-to-row-and-columns-access-policies-in-bigquery-6b0f6fe0b19f](https://towardsdatascience.com/a-step-by-step-guide-to-row-and-columns-access-policies-in-bigquery-6b0f6fe0b19f)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/a-step-by-step-guide-to-row-and-columns-access-policies-in-bigquery-6b0f6fe0b19f](https://towardsdatascience.com/a-step-by-step-guide-to-row-and-columns-access-policies-in-bigquery-6b0f6fe0b19f)
 - en: Google’s Datawarehouse offers amazing ways to restrict access to the information
     contained in tables and views, on both vertical and horizontal dimensions, let’s
     discover how to set this up.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Google 的数据仓库提供了令人惊叹的方式来限制对表格和视图中信息的访问，无论是在垂直还是水平维度上，让我们来探索如何设置这些限制。
 - en: '[](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[![Pierre-Louis
     Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)
     [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[![Pierre-Louis
+    Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)
+    [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----6b0f6fe0b19f--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)
     ·7 min read·Jan 19, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b0f6fe0b19f--------------------------------)
+    ·7 分钟阅读·2023年1月19日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/726d73195957ee54f18bfda9b8bf529a.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/726d73195957ee54f18bfda9b8bf529a.png)'
 - en: Photo from [Martin Olsen](https://unsplash.com/@martinols3n) on [Unsplash](https://unsplash.com/photos/szfPB4X-FWk)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来自 [Martin Olsen](https://unsplash.com/@martinols3n) 在 [Unsplash](https://unsplash.com/photos/szfPB4X-FWk)
 - en: Managing a data warehouse implies that multiple users, with different roles
     and rights, should be able to query the data they are looking for.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 管理数据仓库意味着多个用户，具有不同的角色和权限，应该能够查询他们所需的数据。
 - en: You might decide to build one specific table for each role but this would be
     time and resource-consuming, not to mention the difficulties to maintain this
     system over time.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会决定为每个角色构建一个特定的表格，但这将会消耗时间和资源，更不用说随着时间推移维护这个系统的困难了。
 - en: 'In this tutorial, we will create an “EMPLOYEES” table, containing various levels
     of information, from the “Country” where the employee is located… to his/her salary…
     and consider 3 roles:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本教程中，我们将创建一个“EMPLOYEES”表，包含各种级别的信息，从员工所在的“国家”... 到他/她的工资... 并考虑 3 个角色：
 - en: '![](../Images/03aacdca9a85d7f58da7ffedc6af0a45.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/03aacdca9a85d7f58da7ffedc6af0a45.png)'
 - en: Illustration of the 3 roles — Image by Author created with [www.freepik.com](http://www.freepik.com)
     sources
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 3 个角色的示意图 — 作者通过 [www.freepik.com](http://www.freepik.com) 创建的图像
 - en: '**Human Resources**: they should access all data for their daily work, without
     any restrictions.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**人力资源**：他们应该能够访问所有数据，以进行日常工作，没有任何限制。'
 - en: '**Data Scientists**: they might only access some selected and anonymized columns
     for modeling purposes.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**数据科学家**：他们可能只会访问一些为建模目的而选择的和匿名化的列。'
 - en: '**Data Citizen**: most of the columns should be hidden from them and only allowing
     to create high-level queries and analysis.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**数据公民**：大多数列应该对他们隐藏，只允许创建高层次的查询和分析。'
 - en: Creating a new project in Google Cloud Platform
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 Google Cloud Platform 中创建一个新项目
 - en: I will assume that you already have a GCP account. If not, you can easily open
     one and get $300 of credits for 30 days. If you already have one, this exemple
     will cost you close to nothing.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将假设你已经有了一个 GCP 帐户。如果没有，你可以轻松注册一个，并获得 30 天的 $300 额度。如果你已经有了，这个示例几乎不会花费你任何费用。
 - en: You should start by creating a new project to isolate your work.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 你应该从创建一个新项目开始，以隔离你的工作。
 - en: Click on the project selector in the top left and then “New Project”.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 点击左上角的项目选择器，然后选择“新建项目”。
 - en: '**Make sure you can create projects under an organization (like your company)
     otherwise, you will not be able to enforce some of the policies**:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**确保你可以在组织（如你的公司）下创建项目，否则你将无法执行一些策略**。'
 - en: '![](../Images/ab13ed827771aeadf5d54d5f0a57bc37.png)![](../Images/c7be03ab945951b569bc6e431efd9d1f.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab13ed827771aeadf5d54d5f0a57bc37.png)![](../Images/c7be03ab945951b569bc6e431efd9d1f.png)'
 - en: Creating a new project linked with an organization in GCP — Image from Author
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 GCP 中创建一个与组织关联的新项目 — 图片来源于作者
 - en: '*Note: The project created here is “****row-columns-policies****”.*'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：这里创建的项目是“****row-columns-policies****”。*'
 - en: Creating a fake employees information table
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建一个虚假的员工信息表
 - en: '![](../Images/a05d542ccdcc3acb4be036508c26b22d.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a05d542ccdcc3acb4be036508c26b22d.png)'
 - en: “salaries.csv“ content displayed with BigQuery — Image from Author
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: “salaries.csv” 内容显示在 BigQuery 中 — 图片来源于作者
 - en: 'I have created and uploaded a fake table available here on my [GoogleDrive](https://drive.google.com/file/d/1YHKOPR92SmiO1ujm3qDKRDLcpxkq_Npg/view?usp=share_link),
     containing, for each of the 8600 employees:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经创建并上传了一个虚假的表格，您可以在我的 [GoogleDrive](https://drive.google.com/file/d/1YHKOPR92SmiO1ujm3qDKRDLcpxkq_Npg/view?usp=share_link)
+    上查看，其中包含每 8600 名员工的信息：
 - en: '**First Name**'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**名**'
 - en: '**Last Name**'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**姓**'
 - en: '**Department**'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**部门**'
 - en: '**Country**'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**国家**'
 - en: '**Email**'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**电子邮件**'
 - en: '**Salary**'
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**薪资**'
 - en: '**Currency**'
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**货币**'
 - en: '**Salary Positioning**'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**薪资定位**'
 - en: '**Last Performance Evaluation**'
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**最后绩效评估**'
 - en: '**Seniority**'
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**资历**'
 - en: '**Commute Time**'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**通勤时间**'
 - en: 'Let’s jump on “BigQuery”, click on “**Add Data**”, and “**Local Storage**”,
     keeping in mind two important points:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们跳转到“BigQuery”，点击“**添加数据**”和“**本地存储**”，并牢记两个重要点：
 - en: 'A table must be stored in a dataset: we will create one called “EMPLOYEES”
     (see second screenshot). **You should pay attention to the region you select:
     you will have to use the same when defining policies.**'
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 表必须存储在数据集中：我们将创建一个名为“EMPLOYEES”的数据集（见第二张截图）。**您应注意选择的区域：定义策略时必须使用相同的区域。**
 - en: As the scheme of the CSV file is straightforward, we can choose the “Auto-Detect”
     Scheme option to relieve us from declaring each column’s type individually.
+  id: totrans-41
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于 CSV 文件的结构简单，我们可以选择“自动检测”方案选项，这样就无需逐一声明每列的类型。
 - en: '![](../Images/1c7c11e6722a9e96e8111479d7a60d25.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1c7c11e6722a9e96e8111479d7a60d25.png)'
 - en: Creating a new table in BigQuery — Image from Author
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 BigQuery 中创建新表 — 图片来源于作者
 - en: '![](../Images/51fa8306e2f242344a2c96bbb374046b.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/51fa8306e2f242344a2c96bbb374046b.png)'
 - en: Creating a new dataset in BigQuery — Image from Author
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 BigQuery 中创建新数据集 — 图片来源于作者
 - en: 'Our “SALARIES” table is now properly built (1st screenshot below) and a simple
     SQL query (2nd screenshot) will reveal the corresponding data:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的“薪资”表现在已正确构建（见第一个截图），简单的 SQL 查询（见第二个截图）将揭示相应的数据：
 - en: '![](../Images/0846e1b8b4b7a064a9edf445ca047501.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0846e1b8b4b7a064a9edf445ca047501.png)'
 - en: EMPLOYEES table scheme in BigQuery — Image from Author
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: BigQuery 中的 EMPLOYEES 表结构 — 图片来源于作者
 - en: '[PRE0]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '![](../Images/5076c50d9efe6ce01061a68a9b7a654b.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5076c50d9efe6ce01061a68a9b7a654b.png)'
 - en: SQL exploration result in BigQuery — Image from Author
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: SQL 探索结果在 BigQuery 中 — 图片来源于作者
 - en: Creating a “tag policy” taxonomy to restrict access
+  id: totrans-52
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建一个“标签政策”分类以限制访问
 - en: 'From BigQuery menu, let’s switch to “**Policy tags**” (if asked, enable the
     “**Google Cloud Data Catalog**” and/or “**BigQuery Data Policy**” APIs):'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 BigQuery 菜单中，我们切换到“**策略标签**”（如果被要求，启用“**Google Cloud Data Catalog**”和/或“**BigQuery
+    数据政策**”API）：
 - en: '![](../Images/1572494b4a8f5048976a360c69a1c5a3.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1572494b4a8f5048976a360c69a1c5a3.png)'
 - en: 'After clicking on “**Create Taxonomy**”, we define three levels of employee
     information:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 点击“**创建分类**”后，我们定义了三个级别的员工信息：
 - en: '**High** (critical information like Salary)'
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**高**（关键数据如薪资）'
 - en: '**Medium** (like “Last Performance” or “Salary Positioning”) that can be helpful
     for Data Scientists in their modeling tasks.'
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**中等**（如“最后绩效”或“薪资定位”）对于数据科学家在建模任务中可能会有帮助。'
 - en: '**Identification** (information that establishes a direct connection with an
     employee)'
+  id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**识别**（与员工直接相关的信息）'
 - en: '+ two sub-levels:'
+  id: totrans-59
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: + 两个子级：
 - en: '**Identification > Names**'
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**识别 > 姓名**'
 - en: '**Identification > Email**'
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**识别 > 电子邮件**'
 - en: '*Note: the two sub-tags below the “Identification” tag (Names & Emails) will
     allow us to use different masking strategies later on.*'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：下面的两个子标签（姓名和电子邮件）将允许我们以后使用不同的掩码策略。*'
 - en: '![](../Images/02032dfbf21992d80501dc13aaf4f975.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/02032dfbf21992d80501dc13aaf4f975.png)'
 - en: Creating a new taxonomy in BigQuery/Dataplex — Image from Author
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 BigQuery/Dataplex 中创建新分类 — 图片来源于作者
 - en: '*Note: As stated before, make sure you are using the same region as the one
     you chose for the dataset.*'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：如前所述，请确保使用与数据集相同的区域。*'
 - en: Once the taxonomy is created, the **most crucial part is to enable it** and
     you might be facing an issue if your project is not related to an organization
     (see [Google related documentation](https://cloud.google.com/resource-manager/docs/creating-managing-organization)).
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦分类法创建完成，**最关键的部分是启用它**，如果你的项目不与组织相关，你可能会遇到问题（见 [Google 相关文档](https://cloud.google.com/resource-manager/docs/creating-managing-organization)）。
 - en: '![](../Images/1416226c36660e65d02a52c1d5ddad5e.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1416226c36660e65d02a52c1d5ddad5e.png)'
 - en: Enforcing a taxonomy in BigQuery/Dataplex — Image from Author
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 BigQuery/Dataplex 中强制执行分类法 — 图片来自作者
 - en: Applying Tag policies to the table columns
+  id: totrans-69
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 将标签策略应用于表列
 - en: 'Tags policies can be applied through the “Dataplex” section of GCP. The search
     engine will help you to identify the “SALARIES” table quickly:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 标签策略可以通过 GCP 的“Dataplex”部分应用。搜索引擎将帮助你快速识别“SALARIES”表：
 - en: '![](../Images/5c6d78abdbf4be5fe5f7da38f9afbb83.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5c6d78abdbf4be5fe5f7da38f9afbb83.png)'
 - en: Searching a table in Dataplex — Image from Author
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Dataplex 中搜索表 — 图片来自作者
 - en: 'Thanks to the “SCHEMA AND COLUMN TAGS”, we can easily assign a policy tag to
     some of the sensitive columns:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过“SCHEMA AND COLUMN TAGS”，我们可以轻松地将策略标签分配给一些敏感列：
 - en: '![](../Images/7814f52c2bb4f8ed8d92dfd524a3c65d.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7814f52c2bb4f8ed8d92dfd524a3c65d.png)'
 - en: Applying policy tags in Dataplex — Image from Author
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Dataplex 中应用策略标签 — 图片来自作者
 - en: Adding a “viewer” principal to the project
+  id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 向项目中添加一个“查看者”主体
 - en: '![](../Images/439de62570b783adee18b171ff03fd86.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/439de62570b783adee18b171ff03fd86.png)'
 - en: Illustration of the 3 roles — Image by Author created with [www.freepik.com](http://www.freepik.com)
     sources
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 3 个角色的示意图 — 作者通过 [www.freepik.com](http://www.freepik.com) 创建的图片
 - en: Let’s assume that a Data Citizen wants to access to this project and conduct
     a high-level analysis regarding the employees’ spread in countries.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设一个数据公民想要访问这个项目，并进行关于员工在各个国家分布的高层次分析。
 - en: 'We go back to the IAM section of the project and add a principal with a “Viewer”
     role:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们返回到项目的 IAM 部分，添加一个“查看者”角色的主体：
 - en: '![](../Images/6cf4433a38c081d579c5e027b5fa6c33.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6cf4433a38c081d579c5e027b5fa6c33.png)'
 - en: Assigning a “Viewer” role in Google IAM — Image from Author
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Google IAM 中分配“查看者”角色 — 图片来自作者
 - en: 'Once connected, this principal will immediately get warnings from BigQuery
     telling him/her that access to some columns will be restricted:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦连接，该主体将立即收到来自 BigQuery 的警告，告知他/她某些列的访问将受到限制：
 - en: '![](../Images/28bb02c4f207718b8f04ea88a7fd8169.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/28bb02c4f207718b8f04ea88a7fd8169.png)'
 - en: Reviewing SALARIES table with a “viewer” role in BigQuery— Image from Author
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 BigQuery 中的“查看者”角色查看 SALARIES 表 — 图片来自作者
 - en: 'Indeed, as we have the minimum rights, only 3 columns are visible in the preview
     section:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，由于我们拥有的权限最少，预览部分仅显示 3 列：
 - en: '![](../Images/4fff750869a78a6e211415c745d47307.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4fff750869a78a6e211415c745d47307.png)'
 - en: Previewing SALARIES table with a “viewer” role in BigQuery — Image from Author
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 BigQuery 中的“查看者”角色预览 SALARIES 表 — 图片来自作者
 - en: 'But it still allows us to conduct the analysis we want to perform and get a
     breakdown of the number of employees, per country and department:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 但它仍允许我们进行我们想要的分析，并按国家和部门获取员工数量的详细信息：
 - en: '![](../Images/364645f2cc26126b0f38753c220fe94f.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/364645f2cc26126b0f38753c220fe94f.png)'
 - en: SQL query on SALARIES table with a “viewer” role in BigQuery — Image from Author
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 BigQuery 中的“查看者”角色对 SALARIES 表进行 SQL 查询 — 图片来自作者
 - en: Defining a “Masked Reader” role and the corresponding masking strategies
+  id: totrans-92
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 定义“掩码阅读者”角色及其对应的掩码策略
 - en: '![](../Images/e4a9b7ef1c80fca88d6fcf1d97a103ef.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e4a9b7ef1c80fca88d6fcf1d97a103ef.png)'
 - en: Illustration of the 3 roles — Image by Author created with [www.freepik.com](http://www.freepik.com)
     sources
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 3 个角色的示意图 — 作者通过 [www.freepik.com](http://www.freepik.com) 创建的图片
 - en: Now let’s assume that Human Resources asked a Data Scientist to perform some
     statistical analysis regarding the employees.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设人力资源部门要求数据科学家对员工进行一些统计分析。
 - en: She needs to access some of the columns but not necessarily in their original
     form.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 她需要访问一些列，但不一定以其原始形式访问。
 - en: 'We start by assigning the “**Masked Reader**” role to this new principal:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先将“**掩码阅读者**”角色分配给这个新主体：
 - en: '![](../Images/7ef308d69ab58af88a242b17ed38ad28.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7ef308d69ab58af88a242b17ed38ad28.png)'
 - en: Assigning a “Masked Reader” role in Google IAM — Image from Author
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Google IAM 中分配“掩码阅读者”角色 — 图片来自作者
 - en: 'And then define different masking strategies to transform each column according
     to our needs. For ex.:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后定义不同的掩码策略，根据我们的需要转换每一列。例如：
 - en: '**First** and **Last names** should be converted to **NULL**'
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**名字**和**姓氏**应转换为**NULL**'
 - en: '**Emails** should be “**hashed**” to keep a unique identifier but impossible
     to link with the original employees'
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Salary** should be converted to “**0**” ([default masking strategy for integers](https://cloud.google.com/bigquery/docs/column-data-masking-intro#masking_options))'
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '![](../Images/f3fc4e3233d49ecb11f28930a75f76e1.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
 - en: Steps to define a Masking Rule in Google BigQuery— Image from Author
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d515649596a93a98a99f6cd1806002a2.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
 - en: A set of Masking Rules in Google BigQuery — Image from Author
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
 - en: Finally, we need to grant access to the “Medium” labeled information and add
     this new principal as an authorized viewer of this category.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/caa3b05bb67a88f395f25caec7e696f5.png)'
+  id: totrans-109
   prefs: []
   type: TYPE_IMG
 - en: Adding a principal as a viewer of a masking policy in Google BigQuery — Image
     from Author
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
 - en: 'As expected, the result of the below SQL query — when connected as a Data Scientist
     with the “Masked Reader” role — will properly implement the rules defined:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/e675552af026653f55b63112b93214cd.png)'
+  id: totrans-113
   prefs: []
   type: TYPE_IMG
 - en: Result of masking policies on Masked Reader role in Google BigQuery — Image
     from Author
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
 - en: Adding a row policy to the table access management
+  id: totrans-115
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Now let’s assume that, as an HR Global Manager, we need to grant access to the
     table to the local Canadian HR… without disclosing figures from other countries.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can set row-level security, assigned to this user:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'It’s like automatically extending any query executed by this principal with
     the “ WHERE Country = ‘Canada’ ” statement:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/747d57586f8af2aa2d2c7971b379f8fb.png)'
+  id: totrans-120
   prefs: []
   type: TYPE_IMG
 - en: Result of row-level security in Google BigQuery — Image from Author
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
 - en: It is a very nice way to reduce the information available on one or multiple
     dimensions!
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
 - en: And this last example closes the different use cases I wanted to explore in
     this article.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
 - en: As a reminder, “Columns Masking” and “Row-Level” policies offer a great way
     to filter the data, directly in your Data platform. Only one table is managed
     in the Data Warehouse, allowing different solutions and/or users to query it seamlessly,
     without compromising secrecy rules.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
 - en: 🍒 Cherry on the cake, these functionalities are free so there is absolutely
     no reason not to leverage them!
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
 - en: As usual, I tried to identify all required steps but do not hesitate to revert
     to me should there be any missing instructions in my tutorial!
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
 - en: (thanks to our Lead Data Engineer, Ilyes Touzene, for proof-reading me!)
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
 - en: 'And do not hesitate to browse through my other contributions on Medium:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----6b0f6fe0b19f--------------------------------)
     [## Pierre-Louis Bescond’s articles on Medium'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
 - en: Data Science, Machine Learning and Innovation
+  id: totrans-130
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: pl-bescond.medium.com](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----6b0f6fe0b19f--------------------------------)
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
