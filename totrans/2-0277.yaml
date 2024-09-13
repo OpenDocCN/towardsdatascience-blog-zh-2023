@@ -1,217 +1,335 @@
 - en: How to Skip Tasks in Airflow DAGs
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何在 Airflow DAGs 中跳过任务
 - en: 原文：[https://towardsdatascience.com/airflow-skip-task-a5a6ab319378](https://towardsdatascience.com/airflow-skip-task-a5a6ab319378)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/airflow-skip-task-a5a6ab319378](https://towardsdatascience.com/airflow-skip-task-a5a6ab319378)
 - en: Skipping tasks in Airflow DAGs based on specific conditions
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 根据特定条件跳过 Airflow DAGs 中的任务
 - en: '[](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[![Giorgos
     Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)
     [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[![Giorgos
+    Myrianthous](../Images/ff4b116e4fb9a095ce45eb064fde5af3.png)](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)
+    [Giorgos Myrianthous](https://gmyrianthous.medium.com/?source=post_page-----a5a6ab319378--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)
     ·9 min read·Feb 8, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a5a6ab319378--------------------------------)
+    ·9分钟阅读·2023年2月8日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/881b8b4f1e7bf014f76b61f5f78e7900.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/881b8b4f1e7bf014f76b61f5f78e7900.png)'
 - en: Photo by [Hello I’m Nik](https://unsplash.com/@helloimnik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/l4ADb9OVqTY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Hello I’m Nik](https://unsplash.com/@helloimnik?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    提供，来源于 [Unsplash](https://unsplash.com/photos/l4ADb9OVqTY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: Recently, I was attempting to add a new task in an existing Airflow DAG that
     would only run on specific days of the week. However, I was surprised to find
     that skipping tasks in Airflow isn’t as straightforward as I anticipated.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近，我尝试在现有的 Airflow DAG 中添加一个仅在特定星期几运行的新任务。然而，我惊讶地发现，在 Airflow 中跳过任务并不像我预期的那样简单。
 - en: In this article, I will demonstrate how to skip tasks in Airflow DAGs, specifically
     focusing on the use of `AirflowSkipException` when working with `PythonOperator`
     or Operators that inherit from built-in operators (such as `TriggerDagRunOperator`).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我将演示如何在 Airflow DAGs 中跳过任务，特别是专注于在使用 `PythonOperator` 或继承自内置操作符的操作符（如 `TriggerDagRunOperator`）时使用
+    `AirflowSkipException`。
 - en: Lastly, I will discuss the use of `BranchPythonOperator` and `ShortCircuitOperator`
     and how then can potentially be used to decide when a tasks needs to be skipped.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我将讨论 `BranchPythonOperator` 和 `ShortCircuitOperator` 的使用方式，以及它们如何潜在地决定何时跳过任务。
 - en: '[](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
     [## How to Run Airflow Locally With Docker'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
+    [## 如何在本地使用 Docker 运行 Airflow'
 - en: A step by step guide for running Airflow with Docker on your local machine
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 本地机器上使用 Docker 运行 Airflow 的逐步指南
 - en: towardsdatascience.com](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/run-airflow-docker-1b83a57616fb?source=post_page-----a5a6ab319378--------------------------------)
 - en: Now let’s assume we have an Airlflow DAG consisting of three tasks
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们有一个包含三个任务的 Airflow DAG
 - en: '![](../Images/35643715c6392e0bb7ec4e3b925a78b7.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/35643715c6392e0bb7ec4e3b925a78b7.png)'
 - en: 'Example DAG consisting of three `` `PythonOperator` ta ``sks — Source: Author'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 包含三个 `` `PythonOperator` ta ``sks 的示例 DAG — 来源：作者
 - en: '[PRE0]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Skipping PythonOperator tasks
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 跳过 PythonOperator 任务
 - en: The most intuitive way to skip tasks created via `PythonOperator` is to raise
     `[AirflowSkipException](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/exceptions/index.html#airflow.exceptions.AirflowSkipException)`.
     This means `python_callable` function that gets executed via `PythonOperator`
     needs to implement the logic that decides when to raise exception.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 跳过通过 `PythonOperator` 创建的任务的最直观方法是抛出 `[AirflowSkipException](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/exceptions/index.html#airflow.exceptions.AirflowSkipException)`。这意味着通过
+    `PythonOperator` 执行的 `python_callable` 函数需要实现决定何时抛出异常的逻辑。
 - en: Let’s return to the example DAG we previously discussed and consider a scenario
     where task `task_b` must only run on Mondays of every week of the year.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们回到之前讨论的示例DAG，并考虑一个场景，即`task_b`必须仅在每年的每周周一运行。
 - en: '[PRE1]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: If DagRun’s start date is not a Monday, then `task_b` will be skipped and appear
     in pink colour (that denotes skipped tasks as per the legend on the UI).
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果DagRun的开始日期不是周一，则`task_b`将被跳过，并以粉红色显示（这表示UI中的跳过任务）。
 - en: '![](../Images/f85a539d002cd7a8e4b5d91b1a484b86.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f85a539d002cd7a8e4b5d91b1a484b86.png)'
 - en: 'Skip condition is met, and trigger_rule for task_c is set to `none_failed`
     — Source: Author'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 满足跳过条件，`task_c`的`trigger_rule`设置为`none_failed`——来源：作者
 - en: It’s important to pay attention to the `'none_failed'` value provided to `trigger_rule`
     keyword argument of `third_task`. If we skip this configuration, then `task_c`
     will also be skipped whenever `task_b` is also skipped.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 重要的是要注意传递给`third_task`的`trigger_rule`关键字参数的`'none_failed'`值。如果我们跳过此配置，那么每当`task_b`也被跳过时，`task_c`也会被跳过。
 - en: '![](../Images/f599ccae951ef14922a5e1b87f00e0c4.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f599ccae951ef14922a5e1b87f00e0c4.png)'
 - en: 'task_c is also skipped given that trigger_rule will get the default `all_success`
     value — Source: Author'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于`trigger_rule`将得到默认的`all_success`值，`task_c`也会被跳过——来源：作者
 - en: By default, `trigger_rule` is set to `all_success` which means that a task will
     be executed only if all of the upstream tasks are not skipped and are successful.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，`trigger_rule`设置为`all_success`，这意味着只有在所有上游任务未被跳过且成功的情况下，任务才会被执行。
 - en: 'If the DagRun’s start date is a Monday, then `task_b` will be executed:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果DagRun的开始日期是周一，那么`task_b`将被执行：
 - en: '![](../Images/4dd4c9ee164db3dd8798a7b42d045061.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4dd4c9ee164db3dd8798a7b42d045061.png)'
 - en: 'Skip condition is not met — Source: Author'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 跳过条件不满足——来源：作者
 - en: Skipping built-in Operator tasks
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 跳过内置操作符任务
 - en: Now let’s assume we have another DAG consisting of three tasks, including a
     `TriggerDagRunOperator` that is used to trigger another DAG.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有另一个包含三个任务的DAG，其中包括一个用于触发另一个DAG的`TriggerDagRunOperator`。
 - en: '[PRE2]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../Images/b660db5918493144b89bc94292256ca7.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b660db5918493144b89bc94292256ca7.png)'
 - en: 'A DAG consisting of TriggerDagRunOperator — Source: Author'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个包含TriggerDagRunOperator的DAG——来源：作者
 - en: Now things are a bit more complicated if you are looking into skipping tasks
     created using built-in operators (or even custom ones that inherit from built-in
     operators). To do so, there are essentially a few different options we can consider.
     In this section, I’m going to provide all of them and it’s up to you to pick the
     one that best suits your needs.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你正在考虑跳过使用内置操作符（甚至继承自内置操作符的自定义操作符）创建的任务，那么情况会复杂一些。为此，我们可以考虑几个不同的选项。在本节中，我将提供所有这些选项，具体选择哪个最适合你的需求由你决定。
 - en: The **first option** we have is `**BranchPythonOperator**` that is used to create
     a branching logic such that the DAG can take certain direction based on some conditional
     logic. Once again, let’s assume that `trigger_other_dag` — that essentially uses
     a `TriggerDagRunOperator` to trigger another Airflow DAG — needs to be executed
     only on Mondays.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的**第一个选项**是使用`**BranchPythonOperator**`来创建分支逻辑，使DAG可以根据某些条件逻辑采取特定方向。再一次，假设`trigger_other_dag`——本质上使用`TriggerDagRunOperator`来触发另一个Airflow
+    DAG——需要仅在周一执行。
 - en: We can choose when to skip a task using a `BranchPythonOperator` with two branches
     and a callable that underlying branching logic.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用带有两个分支的`BranchPythonOperator`和一个底层分支逻辑的可调用对象来选择何时跳过一个任务。
 - en: '[PRE3]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Now let’s go ahead and create the Airlfow Tasks.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们继续创建Airflow任务。
 - en: '[PRE4]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/72bf570f1e7fa047ad8771b799638547.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/72bf570f1e7fa047ad8771b799638547.png)'
 - en: 'Using `BranchPythonOperator` to decide when to skip a task — Source: Author'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`BranchPythonOperator`来决定何时跳过任务——来源：作者
 - en: 'Note that branch operators cannot have empty paths and thus we’ve had to create
     a dummy task using `DummyOperator` and corresponds to skipping task. Whenever
     the trigger task needs to be skipped, then `skip` operator will be executed (not
     really..) instead:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，分支操作符不能有空路径，因此我们不得不使用`DummyOperator`创建一个虚拟任务，并对应于跳过任务。每当需要跳过触发任务时，`skip`操作符将被执行（实际上并不是这样）：
 - en: '![](../Images/c010dafdb0c733246ca58229cb35cc59.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c010dafdb0c733246ca58229cb35cc59.png)'
 - en: 'Skip `trigger_other_dag` task— Source: Author'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 跳过`trigger_other_dag`任务——来源：作者
 - en: The **second option** we have is to use `**ShortCircuitOperator**` in order
     to implement a conditional logic to decide when to skip a particular task.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的**第二个选项**是使用`**ShortCircuitOperator**`来实现条件逻辑，以决定何时跳过特定任务。
 - en: The ShortCircuitOperator is derived from the PythonOperator and evaluates the
     result of a `python_callable`. If the returned result is `False` or a falsy value,
     the pipeline will be short-circuited. Downstream tasks will be marked with a state
     of “skipped” based on the short-circuiting mode configured. If the returned result
     is `True` or a truthy value, downstream tasks proceed as normal and an `XCom`
     of the returned result is pushed.
+  id: totrans-49
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: ShortCircuitOperator继承自PythonOperator，并评估`python_callable`的结果。如果返回结果为`False`或虚值，管道将短路。下游任务将根据配置的短路模式被标记为“跳过”。如果返回结果为`True`或真值，下游任务将正常进行，并推送返回结果的`XCom`。
 - en: ''
+  id: totrans-50
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: — [Airflow Docs](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html#airflow.operators.python.ShortCircuitOperator)
+  id: totrans-51
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: — [Airflow文档](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html#airflow.operators.python.ShortCircuitOperator)
 - en: '[PRE5]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/c211d468d0bb01050768e0204e7bb0dc.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c211d468d0bb01050768e0204e7bb0dc.png)'
 - en: 'Skipping Airflow tasks uisng ShortCircuitOperator — Source: Author'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用ShortCircuitOperator跳过Airflow任务—来源：作者
 - en: Now if `is_monday()` evaluates to False Airflow will skip all downstream tasks.
     However, this is the default behaviour which means that if we want just one task
     to be skipped we also need to provide `ignore_downstream_trigger_rules=False`
@@ -219,162 +337,246 @@
     take into account the corresponding trigger rules for downstream tasks and decide
     which should still be skipped or executed (note the trigger rule in our last task
     `task_c`).
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，如果`is_monday()`的结果为False，Airflow将跳过所有下游任务。然而，这是一种默认行为，这意味着如果我们只想跳过一个任务，我们还需要在创建`ShortCircuitOperator`实例时提供`ignore_downstream_trigger_rules=False`。这个配置将考虑下游任务的相应触发规则，并决定哪些任务仍需跳过或执行（注意我们最后一个任务`task_c`中的触发规则）。
 - en: '![](../Images/a0019eb7973e345834537ba5520efa4b.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a0019eb7973e345834537ba5520efa4b.png)'
 - en: 'If `is_monday` ShortCircuitOperator returns False, then skip only — Source:
     Author'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果`is_monday` ShortCircuitOperator返回False，则只跳过—来源：作者
 - en: If the result from `python_callable` is `True` then downstream tasks will also
     be executed.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果`python_callable`的结果为`True`，则下游任务也将被执行。
 - en: '![](../Images/3c74272f54778254e95ab149bb9087bb.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3c74272f54778254e95ab149bb9087bb.png)'
 - en: 'If `is_monday` ShortCircuitOperator returns True, then all downstream tasks
     will be executed — Source: Author'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果`is_monday` ShortCircuitOperator返回True，则所有下游任务将被执行—来源：作者
 - en: Lastly, the **third option** involves the **implementation of a sub-class that
     inherits** from a built-in operator, such as `TriggerDagRunOperator`.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，**第三种选项**涉及到**实现一个从内置操作符继承的子类**，例如`TriggerDagRunOperator`。
 - en: The following custom operator inhertis from the built-in `TriggerDagRunOperator`
     and takes an additional callable argument that will be used to decide whether
     an `AirflowSkipException` will be raised.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下自定义操作符继承自内置的`TriggerDagRunOperator`，并接受一个额外的可调用参数，用于决定是否会引发`AirflowSkipException`。
 - en: '[PRE6]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: If the result of `conditional_checker_callable` returns `True`, then the operator
     will be executed otherwise it will be skipped. Now the full code for our DAG becomes
     as
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果`conditional_checker_callable`的结果返回`True`，则操作符将被执行，否则将被跳过。现在，我们的DAG的完整代码变为：
 - en: '[PRE7]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/f15d6eb6466a31efaff165a2d9dd0ead.png)'
+  id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f15d6eb6466a31efaff165a2d9dd0ead.png)'
 - en: 'Creating a custom operator that is capable of being skipped. Note that for
     this option, no additional tasks are required— Source: Author'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建一个可以被跳过的自定义操作符。注意，对于这个选项，不需要额外的任务—来源：作者
 - en: Now if the condition results in `False`, the task created using our custom operator
     will be skipped.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，如果条件结果为`False`，使用我们自定义操作符创建的任务将被跳过。
 - en: '![](../Images/a364b09dd2dca0a6fcbfb849626d7504.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a364b09dd2dca0a6fcbfb849626d7504.png)'
 - en: 'Skipping the task if the condition is False — Source: Author'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果条件为False，则跳过任务—来源：作者
 - en: Likewise, if the condition is `True` the task will be executed.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样地，如果条件为`True`，任务将被执行。
 - en: '![](../Images/9bd6057b500b13d64e51b8d8acd1f909.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9bd6057b500b13d64e51b8d8acd1f909.png)'
 - en: 'Executing the task if the condition is True — Source: Author'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果条件为True，则执行任务—来源：作者
 - en: Notice that for this particular option, we don’t need to create additional tasks
     like we did in the two previous examples with `BranchPythonOperator` and `ShortCircuitOperator`
     which is something I personally like given that it declutters our DAG.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，对于这个特定选项，我们不需要像在前两个示例中那样创建额外的任务使用`BranchPythonOperator`和`ShortCircuitOperator`，这点我个人很喜欢，因为它使我们的DAG更简洁。
 - en: Note that a similar behaviour can be achived by inheriting functionality from
     `SkipMixin` Mixin Airlflow class. For more information, feel free to take a look
     at the documentation.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，类似的行为可以通过继承`SkipMixin` Mixin Airflow类的功能来实现。有关更多信息，请随时查看文档。
 - en: Personally, I do like the last approach as it’s a bit more clear when it comes
     to the DAG visualisation on the Airflow UI and at the same time, by creating a
     sub-class from a built-in operator to implement skipping logic, you can re-use
     it for other DAGs as well. But this comes down to the specific use-case and any
     preference you may have, so feel free to choose the approach that best suits your
     needs.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 就我个人而言，我喜欢最后一种方法，因为它在Airflow UI中的DAG可视化时更为清晰，同时，通过从内置操作符创建一个子类来实现跳过逻辑，你还可以将其重用到其他DAG中。但这取决于具体的用例和你的任何偏好，所以请随意选择最适合你需求的方法。
 - en: Final Thoughts
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最后的想法
 - en: Skipping tasks while authoring Airflow DAGs is a very common requirement that
     lets Engineers orchestrate tasks in a more dynamic and sophisticated way.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在编写Airflow DAG时跳过任务是一个非常常见的需求，它使工程师能够以更动态和复杂的方式协调任务。
 - en: In this article, we demonstrate many different options when it comes to implementing
     logic that requires conditional execution of certain Airflow tasks. More specifically,
     we demonstrated how you can implement such functionality when using `PythonOperator`
     by raising `AirflowSkipException`.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们演示了许多不同的选项，用于实现需要条件执行的Airflow任务逻辑。更具体地说，我们演示了如何通过引发`AirflowSkipException`来实现这种功能。
 - en: Furthermore, we also demonstrated a few different approaches when it comes to
     skipping tasks created using built-in Operators, other than the `PythonOperator`.
     Based on your specific use-case it’s up to you to decide which approach to take.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们还演示了几种不同的方法，用于跳过使用内置操作符创建的任务，除了`PythonOperator`。根据你的具体用例，你可以决定采用哪种方法。
 - en: Even though skipping tasks is a common requirement, it doesn’t seem that Airflow
     has a built-in feature to perform conditional runs within a specific DAG. I would
     expect that a feature allowing developers to specify trigger conditions in specific
     tasks would be available, but I am pretty sure that sooner or later this functionality
     will be implemented and packed into a future Airflow version.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管跳过任务是一个常见需求，但似乎Airflow没有内置的功能来在特定的DAG中执行条件运行。我期待能够让开发者在特定任务中指定触发条件的功能，但我很确定这种功能迟早会被实现并打包进未来的Airflow版本中。
 - en: 👉 [**Become a member**](https://gmyrianthous.medium.com/membership) **and read
     every story on Medium. Your membership fee directly supports me and other writers
     you read. You’ll also get full access to every story on Medium.**
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 👉 [**成为会员**](https://gmyrianthous.medium.com/membership) **并阅读Medium上的每一篇故事。你的会员费直接支持我和你阅读的其他作者。你还将获得Medium上每个故事的完整访问权限。**
 - en: '[](https://gmyrianthous.medium.com/membership?source=post_page-----a5a6ab319378--------------------------------)
     [## Join Medium with my referral link — Giorgos Myrianthous'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://gmyrianthous.medium.com/membership?source=post_page-----a5a6ab319378--------------------------------)
+    [## 通过我的推荐链接加入Medium — Giorgos Myrianthous'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-84
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为Medium会员，你的部分会员费会流向你阅读的作者，并且你将获得对每个故事的完整访问权限……
 - en: gmyrianthous.medium.com](https://gmyrianthous.medium.com/membership?source=post_page-----a5a6ab319378--------------------------------)
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: gmyrianthous.medium.com](https://gmyrianthous.medium.com/membership?source=post_page-----a5a6ab319378--------------------------------)
 - en: 👇**Related articles you may also like** 👇
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 👇**你可能还喜欢的相关文章** 👇
 - en: '[](/etl-vs-elt-68e221d78719?source=post_page-----a5a6ab319378--------------------------------)
     [## ETL vs ELT: What’s the Difference?'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/etl-vs-elt-68e221d78719?source=post_page-----a5a6ab319378--------------------------------)
+    [## ETL与ELT：有什么区别？'
 - en: A comparison between ETL and ELT in the context of Data Engineering
+  id: totrans-88
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 数据工程背景下ETL与ELT的比较
 - en: towardsdatascience.com](/etl-vs-elt-68e221d78719?source=post_page-----a5a6ab319378--------------------------------)
     [](/dbt-55b35c974533?source=post_page-----a5a6ab319378--------------------------------)
     [## What is dbt (data build tool)
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/etl-vs-elt-68e221d78719?source=post_page-----a5a6ab319378--------------------------------)
+    [](/dbt-55b35c974533?source=post_page-----a5a6ab319378--------------------------------)
+    [## 什么是dbt（数据构建工具）
 - en: A gentle introduction to dbt that is taking over the data world
+  id: totrans-90
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 对正在颠覆数据世界的dbt的温馨介绍
 - en: towardsdatascience.com](/dbt-55b35c974533?source=post_page-----a5a6ab319378--------------------------------)
     [](/apache-airflow-architecture-496b9cb28288?source=post_page-----a5a6ab319378--------------------------------)
     [## Apache Airflow Architecture
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/dbt-55b35c974533?source=post_page-----a5a6ab319378--------------------------------)
+    [](/apache-airflow-architecture-496b9cb28288?source=post_page-----a5a6ab319378--------------------------------)
+    [## Apache Airflow 架构'
 - en: A deep dive into Apache Airflow architecture and how it orchestrates workflows
+  id: totrans-92
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 深入探讨 Apache Airflow 架构及其如何协调工作流
 - en: towardsdatascience.com](/apache-airflow-architecture-496b9cb28288?source=post_page-----a5a6ab319378--------------------------------)
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/apache-airflow-architecture-496b9cb28288?source=post_page-----a5a6ab319378--------------------------------)'
