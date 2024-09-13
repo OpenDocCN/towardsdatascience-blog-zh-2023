@@ -1,36 +1,57 @@
 - en: Delta Lake — Partitioning, Z-Order and Liquid Clustering
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Delta Lake — 分区、Z-Order 和 Liquid Clustering
 - en: 原文：[https://towardsdatascience.com/delta-lake-partitioning-z-order-and-liquid-clustering-944030ff1828](https://towardsdatascience.com/delta-lake-partitioning-z-order-and-liquid-clustering-944030ff1828)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/delta-lake-partitioning-z-order-and-liquid-clustering-944030ff1828](https://towardsdatascience.com/delta-lake-partitioning-z-order-and-liquid-clustering-944030ff1828)
 - en: How are different partitioning/clustering methods implemented in Delta? How
     do they work in practice?
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Delta 中的不同分区/聚类方法是如何实现的？它们在实际中是如何工作的？
 - en: '[](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)[![Vitor
     Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)[](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)
     [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)[![Vitor
+    Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)[](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)
+    [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----944030ff1828--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)
     ·10 min read·Nov 8, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----944030ff1828--------------------------------)
+    ·10 分钟阅读·2023年11月8日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/19486b33b135625836f8ae64791213b1.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/19486b33b135625836f8ae64791213b1.png)'
 - en: Photo by [frame harirak](https://unsplash.com/@framemily?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [frame harirak](https://unsplash.com/@framemily?utm_source=medium&utm_medium=referral)
+    提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: One of the issues that make Big Data difficult has always been in its name,
     it is Big. Partitioning, especially when done well, has always been a way to improve
     query execution times on vast amounts of data by reducing the data that needs
@@ -40,8 +61,11 @@
     to be changed or even increase their cardinality and make data over-partitioned
     (small-files problem), requiring a complete restructuring of the data that is
     not ideal at all.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 使大数据变得困难的问题之一一直在于它的名字，它就是“大”。分区，特别是当做得好时，一直是一种通过将需要读取的数据减少到一个子集来提高对大量数据的查询执行时间的方法。然而，分区数据是复杂的，需要仔细考虑和一些前期规划，因为今天适用的要求可能不适合未来的要求。例如，在
+    Hive 风格的分区中，列可能需要更改或增加其基数，从而使数据过度分区（小文件问题），这会导致数据的完全重组，这并不理想。
 - en: Z-Order clustering is another technique that is used for data-skipping, also
     avoiding full data scans. However, this technique has some limitations. One is
     that newly ingested data is not ordered by default and the users are required
@@ -49,40 +73,60 @@
     rewritten, increasing the time spent on the operation. Z-Order users also need
     to define the clustering columns each time they run the command as they are not
     part of any table properties.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: Z-Order 聚类是另一种用于数据跳过的技术，同样避免了全面的数据扫描。然而，这种技术有一些局限性。其中之一是新摄取的数据默认情况下未排序，用户需要重新聚类，这意味着已经聚类的数据将被重新聚类和重写，增加了操作所花费的时间。Z-Order
+    用户还需要每次运行命令时定义聚类列，因为它们不是表属性的一部分。
 - en: This is where Liquid Clustering enters the game. The premise is that it can
     fit seamlessly into the current layout of the data and also be able to adapt to
     future needs without needing to rewrite any already clustered data.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是 Liquid Clustering 进入游戏的地方。前提是它可以无缝地融入当前的数据布局，并且能够适应未来的需求，而无需重写任何已经聚类的数据。
 - en: In this post, we will explain the details of different data pruning strategies
     in Delta and how are they applied.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将解释 Delta 中不同数据修剪策略的细节及其应用方式。
 - en: Partition pruning — Hive-style partitioning
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分区修剪 — Hive 风格的分区
 - en: '![](../Images/b0a77d05e7bf03d305d32e080f7a0bf0.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b0a77d05e7bf03d305d32e080f7a0bf0.png)'
 - en: Hive-style partitioning — Image by author
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: Hive 样式分区 — 作者提供的图片
 - en: Hive-style partitioning is a way of organizing a table into small chunks. These
     chunks of data are organized into several subfolders that contain the data for
     the partition value.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: Hive 样式分区是一种将表组织成小块的方式。这些数据块被组织成几个子文件夹，包含分区值的数据。
 - en: '[PRE0]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: This method is not native to Delta, that is, is not part of the Delta protocol.
     However, since Delta is built upon Apache Spark, the old Hive-style partitioning
     is also an option that can work well in some scenarios.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法不是 Delta 的原生方法，即不属于 Delta 协议的一部分。然而，由于 Delta 建立在 Apache Spark 之上，旧的 Hive
+    样式分区在某些场景下也可以很好地工作。
 - en: Several mechanisms deal with this type of partitioning in a way that makes it
     entirely invisible to the end user. In Apache Spark, when a user reads the dataset,
     the *gender* column is automatically added to the schema with the respective value
@@ -94,91 +138,123 @@
     is executed as a part of the execution plan which calls [FileFormatWriter](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/FileFormatWriter.scala#L111)
     that will spawn a write job (excluding the partition columns from its final schema
     and creating buckets for them) for each partition of the underlying RDD.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 几种机制处理这种类型的分区，使得它对最终用户完全不可见。在 Apache Spark 中，当用户读取数据集时，*gender* 列会自动添加到模式中，并带有相应的值，可以像常规列一样进行查询。这种技术称为
+    *分区发现*，由 [DataSource’s resolveRelation](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/DataSource.scala#L341C7-L341C22)
+    处理，它从给定的基本路径推断分区列。另一方面，当用户使用 [*partitionBy*](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/DataFrameWriter.scala#L194)
+    保存 DataFrame 时，会执行 [InsertIntoHadoopFsRelationCommand](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/InsertIntoHadoopFsRelationCommand.scala#L178C9-L178C25)
+    作为执行计划的一部分，这会调用 [FileFormatWriter](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/FileFormatWriter.scala#L111)，为每个底层
+    RDD 的分区生成一个写入作业（从最终模式中排除分区列并为其创建桶）。
 - en: In the above example, since the query only selects data for which the gender
     is *F*, it will only need to physically scan that folder, resulting in effective
     data-skipping as it only reads half of the files of the dataset. This is called
     *partition pruning*.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述示例中，由于查询仅选择性别为 *F* 的数据，它将只需要实际扫描该文件夹，从而有效跳过数据，因为它只读取数据集中的一半文件。这称为 *分区剪枝*。
 - en: There are some downsides to this approach, especially when partition columns
     with very high cardinality are chosen or multiple partition levels that will result
     in many small files and consequently worse read performance. In addition to this,
     once this partitioning strategy is defined, it cannot be changed without rewriting
     all the data as it is defined at the physical level.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法有一些缺点，特别是当选择具有非常高基数的分区列或多个分区级别时，这会导致许多小文件，从而导致更差的读取性能。此外，一旦定义了这种分区策略，就不能在不重写所有数据的情况下更改，因为它是在物理层面上定义的。
 - en: I/O pruning — Z-Order
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: I/O 剪枝 — Z-Order
 - en: Another technique that is used for effective data-skipping is filtering on file-level
     statistics. In this technique, each file has available statistics that can be
     used as an indicator of whether or not the file is worth reading. By default,
     Delta stores statistics on minimum, maximum, and null counts for the first 32
     columns.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种有效跳过数据的技术是对文件级统计数据进行过滤。在这种技术中，每个文件都有可用的统计数据，可以作为是否值得读取文件的指标。默认情况下，Delta 存储前
+    32 列的最小值、最大值和空值计数的统计数据。
 - en: 'Let’s take for instance a single column, *id* of the [*people10m*](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)publicdataset.
     If we use [*repartitionByRange*](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/Dataset.scala#L3713C24-L3713C24)to
     order the data in 5 different files on that column, the min/max statistics distribution
     might look similar to this:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/14328ffa6c45225cca3e6f30bc100091.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
 - en: Files after range partitioning by column Id — Image by Author
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/c3766938e2950352d739854579abf2f3.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
 - en: Select the first 20,000 employees of the company — Image by Author
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: Running the above query will result in a good plan given that our query only
     filters that column and all the files contain disjoint sets of IDs. This way it
     is easier for the engine to pick the correct files to scan without any false positives.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: '**What if we want to add another column to the query?**'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s assume that we also want to filter on the *salary* of the employees.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/6da12186e5133712dc6e4fcdd761ddfa.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
 - en: Select the first 20,000 employees of the company with a salary greater than
     40,000 — Image by Author
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: 'After we range partition our files on both columns we end up with something
     like this:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/e33bcb7cf94902d70e11fcb7477f6a6b.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
 - en: Files after range partitioning by column Id and salary — Image by Author
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: Salaries have no direct relation to IDs, organizing the files in a way that
     makes data-skipping effective using the previous linear method will result in
     data only being sorted by the first column. By simply filtering for salaries greater
     than 40,000 we end up reading all five files instead of just one.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: '**How can we solve this? Is there any way we can group multiple statistics
     in a single dimension while preserving locality so that our range partitioning
     just works?**'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: If you guessed Z-Ordering, you guessed right. If you guessed space-filling curves
     you were even more right!
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: What is a space-filling curve, should I care about it? A space-filling curve
@@ -186,20 +262,25 @@
     able to map these higher dimensional points into a single dimension while maintaining
     proximity in the original space. Sounds complex? It isn’t. Below we’ll give a
     bit more detail on how these curves work.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: '**Z-Order curve**'
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Z-Order curves were the first implementation of space-filling curves clustering
     in Delta, hence the operation name.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/fa275e1adb7012551482c131ee7edb6d.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
 - en: Level 1 Z-Order curve — Image by author
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: Z-Order values, the points that form the curve in the shape of a Z, are computed
@@ -208,6 +289,7 @@
     (0000 to 1111) we are able to encode a coordinate 4x4 grid by taking each bit
     and assigning it to an axis at a time. Below we’ll go through a more visual example
     of this technique.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: In Delta, Z-Ordering is used to group data in a way that makes data-skipping
@@ -219,56 +301,70 @@
     sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to avoid reading the
     whole dataset when calculating range IDs). Then, all the computed ranges are converted
     to bytes and interleaved, which results in the row Z-Order value.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: Below we’ll illustrate how Z-Order works in Delta, in a simplified way, for
     a group of 6 records and 3 partitions.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/86c0579fc76b1c0e1309de6a3c372ded.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
 - en: Z-Order optimization for 6 records to 3 different range IDs — Image by author
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: '**Hilbert curve**'
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The better a curve is at preserving locality, the fewer files we’ll have to
     read due to false positives. That is the reason why the Hilbert curve is more
     commonly used in scenarios where locality preservation is essential.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: At the time of writing, [Hilbert curves](https://en.wikipedia.org/wiki/Hilbert_curve)
     are not implemented in the open-source version of Delta. However, they are the
     default curve used by Databricks Z-Order implementation since they provide better
     data locality for higher dimensional data compared to Z-Order curves.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d9cfa094a98eaae6c55367e2a4b80e26.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
 - en: Hilbert curve— Image by author
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: The Hilbert curve can appear in four different ways, each one derived from the
     above with a rotation of 90º.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: '**But why is the Hilbert curve better at preserving locality than the default
     Z-Order curve?**'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: Hilbert curve’s adjacent points always have a distance of 1\. Unlike Z-Order,
     which means that these jumps might generate Z-Ordered files with a large min/max
     difference, which will make it useless.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/cb1e1a96e06d0273fb050b44c844dc2f.png)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
 - en: Distance between two adjacent points on Z-Order curve — Image by author
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
 - en: There are several implementations of the algorithm, but, in this post, I’ll
@@ -276,27 +372,37 @@
     curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)”.
     This algorithm might be confusing as it contains some bit manipulations. Feel
     free to skip to the next section if you don’t need to understand the details.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 该算法有几个实现，但在这篇文章中，我将介绍 John Skilling 在“[编程希尔伯特曲线](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)”中的一个整洁的迭代方法。这个算法可能会让人困惑，因为它包含了一些位操作。如果你不需要了解细节，可以直接跳到下一节。
 - en: '**Keep in mind that since the Databricks code is proprietary, the following
     examples might not represent the current implementation.**'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '**请注意，由于 Databricks 代码是专有的，以下示例可能不代表当前实现。**'
 - en: The J. Skilling encoding method interleaves the bits and encodes them using
     [Gray Code](https://en.wikipedia.org/wiki/Gray_code). This way, only one bit is
     changed at a time so traversing the grid will be only in vertical or horizontal
     directions. Then, it traverses the encoded bits and applies a series of bit exchanges
     and inversions which will return the bit representation of the coordinates, which
     can be retrieved by deinterleaving them.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: J. Skilling 编码方法将位交错并使用[格雷码](https://en.wikipedia.org/wiki/Gray_code)进行编码。这样，每次只改变一个位，因此遍历网格时只会在垂直或水平方向进行。然后，它遍历编码后的位，并应用一系列位交换和反转，最终返回坐标的位表示，可以通过解交错来恢复。
 - en: '![](../Images/31ae9ad47977944b7913fe0f255c3c36.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/31ae9ad47977944b7913fe0f255c3c36.png)'
 - en: Skilling transform which transforms cartesian points to a Hilbert index — From
     [Programming the Hilbert curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 将笛卡尔点转换为希尔伯特索引的 Skilling 变换 — 来源于 [编程希尔伯特曲线](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)
 - en: Similarly to Z-Order, what we need is a way of encoding a group of coordinates
     with an arbitrary dimension to a single point. In order to achieve that, we’ll
     be running the previous algorithm, but backward, so that we can retrieve the point
@@ -306,162 +412,237 @@
     least significant bit until *n-1* where *n* is the number of dimensions. Depending
     on our current bit we will have to either exchange bits or invert them. Finally,
     we’ll have to Gray decode the bits and we’ll get our point.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似于 Z-Order，我们需要一种将任意维度的坐标组编码为单一点的方法。为了实现这一点，我们将运行之前的算法，但要反向运行，以便可以检索希尔伯特曲线中的点。然后有两个循环，一个循环将遍历编码位，从最重要到最不重要，直到
+    *p-2*，其中 *p* 是每个轴上的位数，另一个内循环将从最不重要的位迭代到 *n-1*，其中 *n* 是维度数。根据当前的位，我们将交换位或反转它们。最后，我们需要对位进行格雷解码，就能得到我们的点。
 - en: Below we’ll go through how to encode the coordinates (2, 0), which represent
     the point number 14 in the Hilbert curve.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将介绍如何对坐标 (2, 0) 进行编码，它表示希尔伯特曲线中的点号 14。
 - en: '![](../Images/38876c735cce829a8cde5369afcf7bee.png)'
+  id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/38876c735cce829a8cde5369afcf7bee.png)'
 - en: Algorithm used to transform cartesian coordinates into Hilbert curve points
     — Image by author
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 将笛卡尔坐标转换为希尔伯特曲线点的算法 — 作者提供的图像
 - en: '![](../Images/d80f071d67415f6d4e68a37c66bbc8a7.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d80f071d67415f6d4e68a37c66bbc8a7.png)'
 - en: 4x4 Hilbert curve — Image by Author
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 4x4 希尔伯特曲线 — 作者提供的图像
 - en: From here, we’ll assume the process is the same as the Z-Order implementation
     where the data is range partitioned and close records are written in the same
     file.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里开始，我们假设过程与 Z-Order 实现相同，其中数据被划分范围，并且相近的记录被写入同一文件。
 - en: '**Liquid clustering**'
+  id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**液体聚类**'
 - en: So, what is Liquid Clustering after all? It is not more than Hilbert Curves
     with a new feature called ZCube that enables incremental clustering!
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，液体聚类究竟是什么？它不过是希尔伯特曲线加上一个名为 ZCube 的新特性，使得增量聚类成为可能！
 - en: The *OPTIMIZE ZORDER BY* command requires data to be fully rewritten, which
     is very expensive for large tables. Also, when there is an issue in the middle
     of an *OPTIMIZE ZORDER* command, everything needs to start from the beginning
     making it very cumbersome sometimes.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '*OPTIMIZE ZORDER BY* 命令要求完全重写数据，这对大型表非常昂贵。此外，当 *OPTIMIZE ZORDER* 命令中出现问题时，一切需要从头开始，这有时会非常麻烦。'
 - en: '**What are ZCubes?**'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '**什么是 ZCubes？**'
 - en: ZCubes are groups of files that were produced by the same *OPTIMIZE* job. This
     way, an *OPTIMIZE* job of a huge table can be split into several different jobs
     that will generate a new ZCube, and a new entry in the delta log in order to enable
     incremental clustering. Each newly optimized file will contain a *ZCUBE_ID* property
     in the AddFile metadata that will make it possible to distinguish between optimized
     and non-optimized files (ones that don’t have an associated ZCube).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: ZCubes 是由相同 *OPTIMIZE* 任务生成的一组文件。这样，一个大型表的 *OPTIMIZE* 任务可以分成几个不同的任务，这些任务会生成新的
+    ZCube，并在增量日志中生成新的条目，以实现增量聚类。每个新优化的文件将包含 AddFile 元数据中的 *ZCUBE_ID* 属性，这将使其可能区分优化和未优化的文件（即没有关联
+    ZCube 的文件）。
 - en: 'There are two new configurable ZCube properties:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 有两个新的可配置 ZCube 属性：
 - en: '***MIN_ZCUBE_SIZE*** sets the minimum size of a ZCUBE. ZCubes under this size
     will be considered as part of *OPTIMIZE* jobs and new files can be merged until
     the size reaches this threshold (defaults 100GB). These cubes are called **partial
     ZCubes**.'
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '***MIN_ZCUBE_SIZE*** 设置 ZCUBE 的最小尺寸。低于此尺寸的 ZCUBE 将被视为 *OPTIMIZE* 任务的一部分，新文件可以被合并，直到尺寸达到此阈值（默认为
+    100GB）。这些立方体被称为 **部分 ZCubes**。'
 - en: '***TARGET_CUBE_SIZE*** sets the target size for a finished cube, that contains
     files that exceed the target size. These cubes are called **stable ZCubes**.'
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '***TARGET_CUBE_SIZE*** 设置完成的立方体的目标尺寸，包含超过目标尺寸的文件。这些立方体被称为 **稳定 ZCubes**。'
 - en: Stable ZCubes can become partial ZCubes again if *Delete* commands end up invalidating
     a number of files that make them less than *MIN_ZCUBE_SIZE*.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果 *Delete* 命令使大量文件无效，从而使其小于 *MIN_ZCUBE_SIZE*，稳定 ZCubes 可能会重新变为部分 ZCubes。
 - en: '**How does it adapt to new partition columns seamlessly?**'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '**它如何无缝适应新的分区列？**'
 - en: When users change clustering columns, only ZCubes that contain the same clustering
     columns are considered for optimization. The other cubes stay untouched and new
     ones are created.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 当用户更改聚类列时，只有包含相同聚类列的 ZCubes 会被考虑进行优化。其他立方体保持不变，新立方体会被创建。
 - en: '**How does it work in practice?**'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '**这在实践中是如何工作的？**'
 - en: When an *OPTIMIZE table* command is issued, Delta picks the files that are valid
     for ZCube generation, which are files that are part of a partial ZCube (that can
     be further optimized), and the new files. Then, a planning step takes part, which
     packs the files under several ZCubes that are *OPTIMIZE* jobs that will run independently
     from each other.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 当发出 *OPTIMIZE table* 命令时，Delta 会选择有效的文件用于 ZCube 生成，这些文件是部分 ZCube 的一部分（可以进一步优化），以及新文件。然后，进行规划步骤，将文件打包到多个
+    ZCubes 下，这些 ZCubes 是相互独立运行的 *OPTIMIZE* 任务。
 - en: '![](../Images/d5446f72461d392e0bec909f5ab936b0.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5446f72461d392e0bec909f5ab936b0.png)'
 - en: OPTIMIZE flow with Liquid Clustering enabled — Image by Author
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 启用液态聚类的 OPTIMIZE 流程 — 作者图示
 - en: '**How can I enable/disable Liquid Clustering?**'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如何启用/禁用液态聚类？**'
 - en: '[PRE1]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Since clustering columns are defined at the table level, the *OPTIMIZE* command
     doesn’t need to define any parameters.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于聚类列是在表级别定义的，*OPTIMIZE* 命令不需要定义任何参数。
 - en: '**Note: This is still under** [**proposal**](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)
     **and might be subject to changes.**'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：这仍在** [**提议**](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)
+    **中，可能会有所变化。**'
 - en: Conclusion
+  id: totrans-90
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this blog post, we went through all the details of the different partitioning
     and clustering alternatives available in Delta Lake. We went through Hive Style
     partitioning, Z-Order, and their current issues to show how Liquid Clustering
     is able to solve them.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇博客文章中，我们详细讨论了 Delta Lake 中可用的不同分区和聚类选项。我们讨论了 Hive 风格分区、Z-Order 及其当前问题，展示了液态聚类如何解决这些问题。
 - en: Liquid clustering is very promising as it is easier to use, has incremental
     and better clustering performance, and supports changes in partition columns without
     any overhead. There are several performance comparisons available out there if
     you are curious about performance, and you can already try it if you are using
     Databricks Runtime 13.3+. Databrick's recommendation is to change all the current
     partition columns and ZOrder columns to clustering columns for better performance.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 液态聚类非常有前途，因为它使用起来更简单，具有增量和更好的聚类性能，并且支持在没有任何开销的情况下更改分区列。如果你对性能感兴趣，这里有几个性能比较，你也可以尝试使用
+    Databricks Runtime 13.3+。Databricks 推荐将所有当前的分区列和 ZOrder 列更改为聚类列，以获得更好的性能。
 - en: 'If you are using open-source Delta, while Liquid Clustering is not available,
     make sure to check my previous post on how to keep your tables fast and clean:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: '[](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
     [## Delta Lake— Keeping it fast and clean'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: Ever wondered how to improve your Delta tables’ performance? Hands-on on how
     to keep Delta tables fast and clean.
+  id: totrans-95
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: References
+  id: totrans-97
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '[https://docs.databricks.com/en/delta/clustering.html](https://docs.databricks.com/en/delta/clustering.html)'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
 - en: '[https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
 - en: '[https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve)'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: '[https://en.wikipedia.org/wiki/Z-order_curve](https://en.wikipedia.org/wiki/Z-order_curve)'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: '[https://en.wikipedia.org/wiki/Hilbert_curve](https://en.wikipedia.org/wiki/Hilbert_curve)'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
