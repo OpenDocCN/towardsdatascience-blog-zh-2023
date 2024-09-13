@@ -1,348 +1,537 @@
 - en: A Guide to Building Performant Real-Time Data Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 构建高性能实时数据模型指南
 - en: 原文：[https://towardsdatascience.com/a-guide-to-building-performant-real-time-data-models-d60b37bb07dc](https://towardsdatascience.com/a-guide-to-building-performant-real-time-data-models-d60b37bb07dc)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/a-guide-to-building-performant-real-time-data-models-d60b37bb07dc](https://towardsdatascience.com/a-guide-to-building-performant-real-time-data-models-d60b37bb07dc)
 - en: '[](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)[![Marie
     Truong](../Images/2816e49beef958724dc0f38cfa49c4be.png)](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)
     [Marie Truong](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)[![Marie
+    Truong](../Images/2816e49beef958724dc0f38cfa49c4be.png)](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)
+    [Marie Truong](https://medium.com/@marietruong?source=post_page-----d60b37bb07dc--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)
     ·7 min read·Aug 12, 2023
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d60b37bb07dc--------------------------------)
+    ·阅读时间7分钟·2023年8月12日
 - en: --
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/3861b61d9bafd196194be9f60407c51b.png)'
+  id: totrans-5
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3861b61d9bafd196194be9f60407c51b.png)'
 - en: Photo by [Lukas Blazek](https://unsplash.com/@goumbik?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由[Lukas Blazek](https://unsplash.com/@goumbik?utm_source=medium&utm_medium=referral)拍摄，发布在[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)上。
 - en: Data has become a critical tool for decision-making. To be actionable, data
     needs to be cleaned, transformed, and modeled.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据已成为决策的重要工具。为了便于操作，数据需要经过清洗、转换和建模。
 - en: This process is often part of an ELT pipeline that runs at a given frequency,
     for example daily.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个过程通常是ELT管道的一部分，按给定频率运行，例如每天。
 - en: On the other hand, to adjust and make decisions fast, stakeholders sometimes
     need access to the most recent data to be able to react fast.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，为了快速调整和做出决策，利益相关者有时需要访问最新数据，以便能够迅速做出反应。
 - en: For example, if there is a huge drop in the number of users of a website, they
     need to be aware of this issue quickly and be given the necessary information
     to understand the problem.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，如果网站用户数量大幅下降，他们需要迅速了解此问题，并获得必要的信息以理解问题。
 - en: The first time I was asked to build a dashboard with real-time data, I connected
     it directly to the raw table that was real-time and provided some simple KPIs
     like the number of users and crashes. For monthly graphs and deeper analysis,
     I created another dashboard connected to our data model, that was updated daily.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一次被要求构建一个实时数据仪表盘时，我直接将其连接到实时的原始表，并提供了一些简单的KPI，比如用户数量和崩溃次数。对于月度图表和更深入的分析，我创建了另一个仪表盘，连接到我们的数据模型，每天更新一次。
 - en: 'This strategy was not optimal: I was duplicating logic between the data warehouse
     and the BI tool, so it was harder to maintain. Moreover, the real-time dashboard
     could only perform well with a few days of data, so stakeholders had to switch
     to the historical one to check earlier dates.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种策略并不理想：我在数据仓库和BI工具之间重复逻辑，因此维护起来更困难。此外，实时仪表盘只能在几天的数据下表现良好，因此利益相关者不得不切换到历史仪表盘以查看早期日期。
 - en: I knew we had to do something about it. We needed real-time data models without
     compromising performance.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我知道我们必须对此采取措施。我们需要实时数据模型，同时不影响性能。
 - en: In this article, we’ll explore different solutions to build real-time models,
     and their pros and cons.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将探讨构建实时模型的不同解决方案及其优缺点。
 - en: Views
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 视图
 - en: An SQL view is a virtual table that contains the result of a query. Unlike tables,
     views do not store data. They are defined by a query that is executed every time
     someone queries the view.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: SQL视图是一个虚拟表，包含查询结果。与表不同，视图不存储数据。它们由一个每次有人查询视图时都会执行的查询定义。
 - en: 'Here is an example of a view definition:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个视图定义的示例：
 - en: '[PRE0]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Even when new rows are added to the table, views stay up to date. However, if
     the table is big, views might become very slow as no data is stored.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使在表中添加了新行，视图也会保持最新。然而，如果表很大，视图可能会变得非常慢，因为没有数据被存储。
 - en: They should be the first option to try out if you are working on a small project.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你在一个小项目中工作，它们应该是首选。
 - en: If the logic is complex, with joins and window functions, you’ll probably face
     extremely long loading times for your dashboards.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果逻辑复杂，包含连接和窗口函数，你可能会遇到仪表板加载时间极长的问题。
 - en: Pros
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 优点
 - en: ✅ They are really easy to set up
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ 它们确实很容易设置
 - en: ✅ They are always up-to-date
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ 它们始终保持最新
 - en: Cons
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 缺点
 - en: ❌ They perform poorly with big amounts of data or complex calculations
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: ❌ 对大数据量或复杂计算的性能较差
 - en: Often-Refreshed Tables
+  id: totrans-27
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 频繁刷新的表
 - en: If your data needs to be very recent but not exactly real-time, a good solution
     is to refresh the table very often.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你的数据需要非常近期但不完全是实时的，一个好的解决方案是非常频繁地刷新表。
 - en: 'Here is how we could define a query to refresh our table on a bihourly basis:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是如何定义一个查询，以便每两小时刷新一次表：
 - en: '[PRE1]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: At Scopely, we have some models that are refreshed every half an hour. Those
     models have great performance and provide information from the current day. The
     topic is not critical enough to need data from the last 30 minutes.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Scopely，我们有一些每半小时刷新一次的模型。这些模型具有很好的性能，并提供当天的信息。这个话题的重要性不需要数据来自最近的 30 分钟。
 - en: 'We added a little bit of complexity to our pipeline: it runs so often that
     it sometimes fails. When our daily pipeline fails, we just rerun it manually.
     But it would be a nightmare for a model that runs 48 times a day. Therefore we
     added an extra piece of code to ensure that if a run fails, the next one integrates
     data from the previous run.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在流水线中增加了一些复杂性：它运行得很频繁，有时会失败。当我们每日的流水线失败时，我们只是手动重新运行。但对于一个一天运行 48 次的模型来说，这将是噩梦。因此，我们添加了一段额外的代码，以确保如果一次运行失败，下一次运行会整合前一次运行的数据。
 - en: Pros
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 优点
 - en: ✅ They achieve very good performance
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ 它们能实现非常好的性能
 - en: Cons
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 缺点
 - en: ❌ Data is not exactly real-time
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: ❌ 数据不是完全实时的
 - en: ❌ Pipeline runs often and needs to be watched closely
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: ❌ 流水线运行频繁，需要密切监视
 - en: Materialized Views
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 物化视图
 - en: Most modern cloud data warehouses have an object called a materialized view.
     A materialized view is an object that stores the result of a query in a physical
     table.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数现代云数据仓库都有一个称为物化视图的对象。物化视图是一个将查询结果存储在物理表中的对象。
 - en: In some data warehouses, materialized views need to be refreshed with a trigger,
     but in others, like BigQuery, they can be refreshed automatically when new rows
     are added. This guarantees a good quality of data as the incremental logic is
     handled by the warehouse itself.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在某些数据仓库中，物化视图需要通过触发器刷新，而在其他如 BigQuery 的数据仓库中，它们可以在新增行时自动刷新。这确保了数据的良好质量，因为增量逻辑由仓库本身处理。
 - en: The downside of using materialized views is that they come with many constraints.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用物化视图的缺点是它们附带了许多限制。
 - en: 'If we try to use the same query as before to build a materialized view in BigQuery:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们尝试使用之前的相同查询来构建 BigQuery 中的物化视图：
 - en: '[PRE2]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'We get an error:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们遇到了一个错误：
 - en: '[PRE3]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Materialized views usually support a restricted syntax. Instead, we could use
     the function APPROX_COUNT_DISTINCT:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 物化视图通常支持受限的语法。相反，我们可以使用函数 APPROX_COUNT_DISTINCT：
 - en: '[PRE4]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Pros
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 优点
 - en: ✅ They combine the performance of a table with the simplicity of a view
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ 它们结合了表的性能和视图的简单性
 - en: ✅ There is no need to design the incremental logic
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ 无需设计增量逻辑
 - en: Cons
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 缺点
 - en: ❌ The allowed syntax is extremely limited
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: ❌ 允许的语法极其有限
 - en: Lambda View
+  id: totrans-53
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Lambda 视图
 - en: 'This idea came to us when we realized our logic was very simple: we used views
     for real-time data and tables for historical data. So why couldn’t we use a view
     that was just a **UNION ALL** of the two?'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个想法是在我们意识到逻辑非常简单时产生的：我们使用视图来处理实时数据，使用表来处理历史数据。那么，为什么不能使用一个**UNION ALL**视图来组合这两者呢？
 - en: 'After a little bit of research, we found out that this concept already had
     a name: lambda architecture.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 经过一点研究，我们发现这个概念已经有了名字：lambda 架构。
 - en: Lambda architecture is a system that combines batch processing (the incremental
     table part) and streaming (the view part).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: Lambda 架构是一个结合批处理（增量表部分）和流处理（视图部分）的系统。
 - en: Very enthusiastic, I tried building a lambda view based on my **orders_aggregated**
     table. I would simply use a where filter on a date and update that view every
     day to change the value of the filter to the current date.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我非常热情，尝试基于我的**orders_aggregated**表构建一个 lambda 视图。我只是简单地在日期上使用一个筛选器，并每天更新该视图，将筛选器的值更改为当前日期。
 - en: '[PRE5]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '[PRE6]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'But the execution time was very disappointing. Looking at the graph, I then
     understood why: BigQuery’s planner was still recomputing the whole view, even
     though it should only have looked at the table.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 但执行时间非常令人失望。查看图表后，我明白了原因：BigQuery 的计划器仍在重新计算整个视图，尽管它只应该查看表。
 - en: '![](../Images/4d87abc52231434405d4518080935e5d.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4d87abc52231434405d4518080935e5d.png)'
 - en: Image by author
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图像
 - en: Instead of knowing from the WHERE filter it doesn’t have to look at the view,
     it looks at the value of the column **order_date** in the whole view.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 与其从 WHERE 筛选器中知道它不需要查看视图，不如查看整个视图中**order_date**列的值。
 - en: 'So I used a small workaround and hardcoded the date value for the view:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我使用了一个小的变通方法，并为视图硬编码了日期值：
 - en: '[PRE7]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '[PRE8]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: This time, the execution time was very fast and the planner only read data from
     the table!
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一次，执行时间非常快，计划器只读取了表中的数据！
 - en: '![](../Images/00e5a663a84d08a733c289ddedd995eb.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/00e5a663a84d08a733c289ddedd995eb.png)'
 - en: Image by author
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图像
 - en: However, we though we might be missing part of the data if this query did not
     run at exactly midnight, or if our daily pipeline failed.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们担心如果查询没有在正午夜运行，或者我们的每日管道失败，我们可能会遗漏部分数据。
 - en: 'So we added one day of margin:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们添加了一天的边际时间：
 - en: '[PRE9]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: If our pipeline fails and we don’t fix it immediately, we still have the data,
     it’s just a little less performant.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们的数据管道失败而我们没有立即修复，我们仍然拥有数据，只是性能略有下降。
 - en: Since we are working with **data build tool**, we were able to write that iteration
     logic in Jinja2 syntax and avoid repeating ourselves.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们使用的是**数据构建工具**，我们能够用 Jinja2 语法编写那一迭代逻辑，避免了重复。
 - en: Pros
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 优点
 - en: ✅ Lambda views achieve great performance
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ Lambda 视图表现出色
 - en: ✅ Several days of margin can be defined to make sure they keep being up to date
     when the pipeline fails
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: ✅ 可以定义几天的边际时间，以确保它们在管道失败时保持最新
 - en: Cons
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 缺点
 - en: ❌ The logic to make the query planner efficient is complex
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: ❌ 使查询计划器高效的逻辑很复杂
 - en: ❌ One lambda view relies on at least two database objects
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: ❌ 一个 lambda 视图依赖于至少两个数据库对象
 - en: Which one is the best solution?
+  id: totrans-81
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 哪一个是最佳解决方案？
 - en: 'There is no best solution per se; it all depends on your data and use case.
     However, if you are still struggling to decide after reading about the four options,
     here is a little decision tree to help you reach a decision:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 没有绝对最好的解决方案；这完全取决于你的数据和使用案例。不过，如果你在了解了四个选项后仍然难以决定，这里有一个小的决策树来帮助你做出决定：
 - en: '![](../Images/4db526ffa4b8c98161313ef92c51b940.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4db526ffa4b8c98161313ef92c51b940.png)'
 - en: Image by author
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图像
 - en: Resources
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[BigQuery documentation on materialized views](https://cloud.google.com/bigquery/docs/materialized-views-create#supported-mvs)'
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[BigQuery 的物化视图文档](https://cloud.google.com/bigquery/docs/materialized-views-create#supported-mvs)'
 - en: '[How to create near real-time models with just dbt + SQL](https://discourse.getdbt.com/t/how-to-create-near-real-time-models-with-just-dbt-sql/1457)'
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[如何仅使用 dbt + SQL 创建接近实时的模型](https://discourse.getdbt.com/t/how-to-create-near-real-time-models-with-just-dbt-sql/1457)'
 - en: 'I hope you enjoyed this article! If you did, please follow me for more content
     on Python, SQL, and analytics, like this tutorial on ELT pipelines:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望你喜欢这篇文章！如果你喜欢，请关注我，获取更多关于 Python、SQL 和分析的内容，例如这个关于 ELT 管道的教程：
 - en: '[](/how-to-build-an-elt-with-python-8f5d9d75a12e?source=post_page-----d60b37bb07dc--------------------------------)
     [## How to Build an ELT with Python'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/how-to-build-an-elt-with-python-8f5d9d75a12e?source=post_page-----d60b37bb07dc--------------------------------)
+    [## 如何使用 Python 构建 ELT'
 - en: Extracting, Loading and Transforming Data
+  id: totrans-90
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 提取、加载和转换数据
 - en: towardsdatascience.com](/how-to-build-an-elt-with-python-8f5d9d75a12e?source=post_page-----d60b37bb07dc--------------------------------)
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/how-to-build-an-elt-with-python-8f5d9d75a12e?source=post_page-----d60b37bb07dc--------------------------------)
