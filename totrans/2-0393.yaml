@@ -1,461 +1,712 @@
 - en: 'BigQuery Optimization Strategies 3: Table Flattening'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: BigQuery 优化策略 3：表格扁平化
 - en: 原文：[https://towardsdatascience.com/bigquery-optimization-strategies-3-table-flattening-373d34c08cea](https://towardsdatascience.com/bigquery-optimization-strategies-3-table-flattening-373d34c08cea)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/bigquery-optimization-strategies-3-table-flattening-373d34c08cea](https://towardsdatascience.com/bigquery-optimization-strategies-3-table-flattening-373d34c08cea)
 - en: About Exploding Tables and Imploding Arrays
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关于爆炸表格和收缩数组
 - en: '[](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)[![Martin
     Weitzmann](../Images/c1d8ddc6db774465126c9aff1eab7ae2.png)](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)
     [Martin Weitzmann](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)[![Martin
+    Weitzmann](../Images/c1d8ddc6db774465126c9aff1eab7ae2.png)](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)
+    [Martin Weitzmann](https://medium.com/@martin.weitzmann?source=post_page-----373d34c08cea--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)
     ·9 min read·Feb 1, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----373d34c08cea--------------------------------)
+    ·9 分钟阅读·2023年2月1日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: Arrays are one of the coolest features for an analytics databases you can think
     of, because it can store additional information right at the place and time it
     happened. Let’s explore some basic examples and then have a look at arrays in
     Google Analytics 4.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '数组是分析数据库中最酷的功能之一，因为它可以在事件发生的地方和时间存储额外的信息。让我们先探讨一些基本示例，然后看看 Google Analytics
+    4 中的数组。 '
 - en: '![](../Images/076ff3f2da5c8b766f6edf93ed5c02e2.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/076ff3f2da5c8b766f6edf93ed5c02e2.png)'
 - en: Photo by [Torsten Dederichs](https://unsplash.com/@tdederichs?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Torsten Dederichs](https://unsplash.com/@tdederichs?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: For storing sales history, for example, we can just store the products bought
     in an array together with the purchase event and not in a separate table — it’s
     better to save all the SQL join hassle later in the analyses.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 比如说，在存储销售历史时，我们可以将购买的产品与购买事件一起存储在数组中，而不是单独的表中——这样可以避免在后续分析中处理 SQL 连接的麻烦。
 - en: And while arrays are not super intuitive, I would argue that SQL joins are worse
     (mostly because people [use the wrong mental model to explain them](https://medium.com/towards-data-science/explain-sql-joins-the-right-way-f6ea784b568b)).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管数组的直观性不强，但我认为 SQL 连接更糟糕（主要是因为人们[使用错误的思维模型来解释它们](https://medium.com/towards-data-science/explain-sql-joins-the-right-way-f6ea784b568b)）。
 - en: 'In terms of query optimization, there is a simple rule for dealing with arrays
     in SQL:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在查询优化方面，处理 SQL 中的数组有一个简单规则：
 - en: '**If you can aggregate the array — do it!**'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**如果你可以对数组进行汇总——那就做吧！**'
 - en: 'Let me explain — when you need information from an array you have two choices:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我解释一下——当你需要从数组中获取信息时，你有两个选择：
 - en: '*aggregate* the array / reduce it to one value'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*汇总* 数组 / 将其减少为一个值'
 - en: '*lateral join* the array to the table / “flatten” the table'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*横向连接* 数组到表 / “扁平化” 表格'
 - en: If you need only *one value*, then aggregate — if you really need *multiple*
     *values* then filter, filter and filter again, then do the expensive lateral join.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你只需要 *一个值*，那么进行汇总——如果你真的需要 *多个* *值*，那么过滤、再过滤，然后再进行昂贵的横向连接。
 - en: 'By the way — if you want a more elaborate refresher on querying nested data,
     please have a read here:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 顺便说一下——如果你想了解更详细的嵌套数据查询方法，请阅读这里：
 - en: '[](/https-medium-com-martin-weitzmann-bigquery-sql-on-nested-data-cf9589c105f4?source=post_page-----373d34c08cea--------------------------------)
     [## BigQuery: SQL on Nested Data'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/https-medium-com-martin-weitzmann-bigquery-sql-on-nested-data-cf9589c105f4?source=post_page-----373d34c08cea--------------------------------)
+    [## BigQuery: SQL on Nested Data'
 - en: BigQuery can be very powerful because nested data means working on pre-joined
     tables. But analysts struggle to use its…
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: BigQuery 非常强大，因为嵌套数据意味着在预先连接的表上工作。但分析师在使用它时...
 - en: towardsdatascience.com](/https-medium-com-martin-weitzmann-bigquery-sql-on-nested-data-cf9589c105f4?source=post_page-----373d34c08cea--------------------------------)
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/https-medium-com-martin-weitzmann-bigquery-sql-on-nested-data-cf9589c105f4?source=post_page-----373d34c08cea--------------------------------)'
 - en: 'Since we want to focus on optimization, here is only a short version:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们想专注于优化，这里只是简短版本：
 - en: Array Aggregation
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数组聚合
 - en: This means to reduce/implode your array to one value, i.e.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着将你的数组减少/压缩为一个值，即
 - en: 'select one value from the array: `my_array[OFFSET(2)]`'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从数组中选择一个值： `my_array[OFFSET(2)]`
 - en: 'use a function that aggregates: `ARRAY_LENGTH(my_array)`'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用一个进行聚合的函数：`ARRAY_LENGTH(my_array)`
 - en: use a sub-query for custom aggregation `(select sum(x) from unnest([3, 6, 7,
     2]) as x)`
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用自查询进行自定义聚合 `(select sum(x) from unnest([3, 6, 7, 2]) as x)`
 - en: We’ll look at more examples later!
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们稍后会查看更多示例！
 - en: Lateral Joins
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 横向连接
 - en: These joins are lateral because they combine a table with something that changes
     and is unique for every row. In our case it’s an array — it usually contains different
     values in every row.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些连接是横向的，因为它们将一个表与每行唯一且变化的内容结合。在我们的例子中是一个数组——它通常在每行中包含不同的值。
 - en: With unnesting arrays this just means that you take every value in the array
     and add it to a copy of the parent row. So we go from two rows …
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于展开数组，这只是意味着你将数组中的每个值添加到父行的副本中。因此，我们从两行 …
 - en: '[3, 6, 8]'
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[3, 6, 8]'
 - en: '[2, 7]'
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[2, 7]'
 - en: to 5 rows …
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 到5行 …
 - en: 3, [3, 6, 8]
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 3, [3, 6, 8]
 - en: 6, [3, 6, 8]
+  id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 6, [3, 6, 8]
 - en: 8, [3, 6, 8]
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 8, [3, 6, 8]
 - en: 2, [2, 7]
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 2, [2, 7]
 - en: 7, [2, 7]
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 7, [2, 7]
 - en: We got the elements out of their array, but we also got from 2 rows to 5, a
     150% increase!
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将元素从数组中提取出来，但从两行增加到五行，增加了150%！
 - en: 'Source: [https://giphy.com/channel/ThisIsAOK](https://giphy.com/channel/ThisIsAOK)'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源：[https://giphy.com/channel/ThisIsAOK](https://giphy.com/channel/ThisIsAOK)
 - en: Now imagine what happens in a table with more than two rows — it *explodes in
     size* and someone has to *pay* for this intense calculation!
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在想象一下在一个超过两行的表中会发生什么——它*在大小上爆炸*，而且有人必须为这种密集计算*付出代价*！
 - en: 'We should really try to avoid *these kinds of* lateral joins *if we can*! And
     that is what you need to check in your use-case: **Can I avoid a *lateral join*
     with an array?** or maybe better **Can I avoid a *table explosion*?**'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们真的应该尽量避免*这种类型的*横向连接*如果可以的话*! 这就是你需要在你的用例中检查的：**我能否避免使用包含数组的*lateral join*？**
+    或者更好的是 **我能否避免*表爆炸*？**
 - en: Comparing an avoidable *lateral cross join* implementation with its *array aggregation*
     counter-part just means to **push pre-aggregation onto the array level** while
     **completely dropping the join operation**. This saves resources both in terms
     of computation as well as cache needed (that might spill to disc and further slow
     down the query execution).
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 将一个可避免的*lateral cross join* 实现与其*数组聚合*对应物进行比较只是意味着**将预聚合推送到数组级别**同时**完全取消连接操作**。这节省了计算和缓存所需的资源（这可能溢出到磁盘并进一步降低查询执行速度）。
 - en: Minimal Examples
+  id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 最小示例
 - en: 'Let’s start with a table with two food items containing the name and ingredients:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从一个包含名称和成分的两种食品的表开始：
 - en: '**Pasta al Pomodoro**, [pasta, tomatoes, olive oil, garlic, basil, salt]'
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**意大利番茄面**, [意大利面, 番茄, 橄榄油, 大蒜, 罗勒, 盐]'
 - en: '**Kimchi**, [Napa cabbage, Korean pepper flakes, daikon radish, garlic, ginger,
     salt]'
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**泡菜**, [大白菜, 韩式辣椒粉, 白萝卜, 大蒜, 姜, 盐]'
 - en: 'Here are our prompts:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们的提示：
 - en: Find the number of daikon radishes in all foods!
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 查找所有食品中的白萝卜数量！
 - en: Find all ingredients that contain both letters ‘a’ and ‘i’
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 查找包含字母‘a’和‘i’的所有成分
 - en: Find the number of ingredients that contain both letters ‘a’ and ‘i’
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 查找包含字母‘a’和‘i’的所有成分
 - en: 'All three cases can be solved by just flattening the table and then do the
     grouping and/or counting. But let’s actually have a closer look — here is the
     table as CTE:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 三种情况都可以通过先展平表格，然后进行分组和/或计数来解决。但让我们实际看一下——这里是CTE中的表：
 - en: '[PRE0]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '![](../Images/0cf18e320e2da8181d2af2b843614de9.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0cf18e320e2da8181d2af2b843614de9.png)'
 - en: Yummy Query Result (Screenshot by author)
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 美味查询结果（作者截图）
 - en: Just *paste the query* into your console and follow along.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 只需*将查询粘贴*到控制台中并跟随执行。
 - en: Number of daikons in all foods
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 所有食品中的白萝卜数量
 - en: '**Can we aggregate?**'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们可以进行聚合吗？**'
 - en: 'Sure — in theory we just need one information from the array: *how many daikons
     does it contain?* And then just sum up the result over all rows.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然——理论上我们只需要从数组中获取一个信息：*它包含多少个白萝卜？* 然后将结果汇总到所有行中。
 - en: 'Let’s start with *adding the information to each row* — I put the comment numbering
     to show the order of execution:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从*将信息添加到每一行*开始——我放置了评论编号以显示执行顺序：
 - en: '[PRE1]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/1a1ab9888a8f54230c053f41827fc27f.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1a1ab9888a8f54230c053f41827fc27f.png)'
 - en: Amazingly Aggregated Arrays! (Screenshot by Author)
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 惊人的聚合数组！（作者截图）
 - en: Now that we have this information in the 3rd column, we can just sum it up in
     the parent query! So, we basically just *wrap the sub-query into a* `*SUM()*`and
     remove the wildcard `*` …
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们在第三列中拥有这些信息，我们可以直接在父查询中对其进行汇总！所以，我们基本上只需*将子查询包装在* `*SUM()*` 中并移除通配符 `*`
+    …
 - en: '[PRE2]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: … and we end up with the result `1`. Try it with garlic and other ingredients!
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: … 最终我们得到结果`1`。试试大蒜和其他成分！
 - en: And yes, the most confusing thing about SQL is that the order of reading the
     query doesn’t match the order of execution at all. But at least it’s consistent
     and you know exactly what a queries output is like.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的，SQL 最令人困惑的地方在于读取查询的顺序与执行顺序完全不同。但至少它是一致的，你可以准确知道查询的输出是什么样的。
 - en: Find all ingredients that contain both letters ‘a’ and ‘i’
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 查找包含字母‘a’和‘i’的所有成分
 - en: Can we aggregate? Hm, difficult, because we might have more than one ingredient
     in the array and we might want to group by all ingredients with ‘a’ and ‘i’ —
     so we need to “flatten” the table first …
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们能聚合吗？嗯，很难，因为我们可能在数组中有多个成分，并且可能需要对所有包含‘a’和‘i’的成分进行分组——所以我们需要先“扁平化”表 …
 - en: '[PRE3]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Nice and short query … but the table just grew from 2 to 12 entries!
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询简短而好，但表格条目从2增加到12！
 - en: '![](../Images/c9c0be8ba43af6d998ca7f83fc42bc62.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c9c0be8ba43af6d998ca7f83fc42bc62.png)'
 - en: Table Explosion Action a.k.a. Lateral Cross Join (Screenshot by author)
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 表格爆炸动作即横向交叉连接（作者截图）
 - en: 'Luckily, BigQuery works columnar and we don’t need the array anymore. We can
     also filter for the actual condition and so we end up with:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，BigQuery 是列式存储，我们不再需要数组。我们还可以过滤实际条件，从而得到：
 - en: '[PRE4]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/e0e048f9603f03fd58a54f2ee8833e1d.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e0e048f9603f03fd58a54f2ee8833e1d.png)'
 - en: Nice output — the nasty cross join is hidden in the back-end (Screenshot by
     author)
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出不错——讨厌的交叉连接隐藏在后台（作者截图）
 - en: 'Now we can use this output to group and summarize and get more information
     — but *we couldn’t have done it without* the cross join! You see that **we changed
     the table meaning**:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以使用这个输出进行分组和汇总，获得更多信息——但*没有*交叉连接，我们是做不到的！你可以看到**我们改变了表的含义**：
 - en: '*Before*: every row represents a food'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*之前*：每行代表一个食物'
 - en: '*After*: every row represents an ingredient'
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*之后*：每行代表一个成分'
 - en: If you do “flatten” your table, be aware of *how the meaning of your table changed*!
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对表进行“扁平化”，请注意*表的含义如何改变*！
 - en: Find the number of ingredients that contain both letters ‘a’ and ‘i’
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 查找同时包含字母‘a’和‘i’的成分数量
 - en: Now this is awfully similar to the one we just had, no? You guessed it, we don’t
     need the cross join for this one anymore! Because we can aggregate the array,
     right? We just do a pre-count inside the array and sum up the results!
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在这和我们刚才看到的非常相似，对吧？你猜对了，我们不再需要交叉连接了！因为我们可以聚合数组，对吧？我们只需在数组内进行预计数，然后汇总结果！
 - en: '[PRE5]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/f677e91c2e4f439a0537bfa69136de13.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f677e91c2e4f439a0537bfa69136de13.png)'
 - en: Nice output — no nasty cross join needed! (Screenshot by author)
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出不错——不需要讨厌的交叉连接！（作者截图）
 - en: Of course, you can again wrap a `SUM()` around the sub-query and get a table
     aggregate. But let’s look at some real-world scenarios.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，你可以再次将`SUM()`包装在子查询中，得到表格聚合。但让我们看看一些实际场景。
 - en: Google Analytics 4
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Google Analytics 4
 - en: 'With the schema we’re confronted with here, we got two kinds of arrays:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们这里面对的模式中，我们有两种数组：
 - en: 'Store **custom variables** and their value (non-hierarchical): *event_params*,
     *user_properties*'
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 存储**自定义变量**及其值（非层次结构）：*event_params*，*user_properties*
 - en: 'Provide **hierarchical** information: *items*'
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 提供**层次结构**信息：*items*
 - en: Custom variables are semantically on the same level as the parent row, we just
     can’t introduce new columns and so we store them in an array. Items are semantically
     *under* the event. E.g. in the items view event we want to know the concrete items
     that have been viewed by a user.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 自定义变量在语义上与父行处于同一层次，我们只是不能引入新的列，因此我们将它们存储在数组中。Items 在语义上*位于*事件之下。例如，在 items 视图事件中，我们想知道用户查看的具体项目。
 - en: 'For the **custom variables** you will probably *almost always* use a **sub-query**
     because you only want *one variable at a time*. It’s more of a challenge with
     the second case: items. Let’s have a look at this exploratory query:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于**自定义变量**，你可能*几乎总是*会使用**子查询**，因为你只想要*一个变量*。第二种情况：items 就更具挑战性了。让我们看一下这个探索性查询：
 - en: Let’s find events that contain items so we understand better what data is stored
     in the wild …
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们找到包含项目的事件，以便更好地理解数据在实际情况中的存储方式……
 - en: '[PRE6]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![](../Images/f95854fcc1f7b9420cc899eba8a66c54.png)'
+  id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f95854fcc1f7b9420cc899eba8a66c54.png)'
 - en: (Screenshot by author)
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: （截图由作者提供）
 - en: Let’s assume we want to count the amount of viewed items that had the color
     ‘Charcoal’ in their name.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们想要统计名称中包含颜色‘Charcoal’的项目的查看次数。
 - en: '[PRE7]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/f7414c8e6959140ecf626bee48d741b8.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f7414c8e6959140ecf626bee48d741b8.png)'
 - en: Sub-query count and visual count seem to match (screenshot by author)
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 子查询计数和可视计数似乎匹配（截图由作者提供）
 - en: Looks good! Let’s wrap it up into a sum of the count and group by *page_title*!
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 看起来不错！让我们将其汇总为计数总和，并按*page_title*分组！
 - en: '[PRE8]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![](../Images/a23b4435670cb84f6f23b307fe263508.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a23b4435670cb84f6f23b307fe263508.png)'
 - en: Charcoal for the Kids! (screenshot by author)
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 为孩子们准备的Charcoal！（截图由作者提供）
 - en: The kids section provides the most Charcoal item views … that must be important
     information for someone!
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 儿童专区提供了最多的Charcoal项目查看次数……这对某些人来说一定是重要的信息！
 - en: Anyways, I think we will be happy to only have used sub-queries here instead
     of cross joins when we scale this analysis up to year-on-year comparison for the
     last 6 months globally while we continue to add more really important metrics
     that management needs urgently to make very important decisions.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 不管怎样，我认为我们很高兴在将这项分析扩展到过去6个月的全球年度比较时，仅使用了子查询，而不是交叉连接，同时我们继续添加更多管理层迫切需要的非常重要的指标，以做出非常重要的决策。
 - en: I’ll leave it to you to develop good queries for lateral cross joins in GA4,
     but the only use-cases I can think of is some item dimension that you need to
     group by — like *item_category*.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将留给你开发GA4中横向交叉连接的良好查询，但我能想到的唯一用例是你需要按某个项目维度分组——比如*item_category*。
 - en: 'I hope you enjoyed this little tour around optimized queries on arrays with
     SQL in BigQuery! Check out the other articles in this series:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望你喜欢这次关于在BigQuery中使用SQL优化数组查询的小之旅！查看本系列中的其他文章：
 - en: '[](/bigquery-sql-optimization-2-with-temp-tables-to-fast-results-41869b15fcff?source=post_page-----373d34c08cea--------------------------------)
     [## BigQuery SQL Optimization 2: WITH Temp Tables to Fast Results'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/bigquery-sql-optimization-2-with-temp-tables-to-fast-results-41869b15fcff?source=post_page-----373d34c08cea--------------------------------)
+    [## BigQuery SQL优化2：使用临时表实现快速结果'
 - en: When to use Temporary Tables instead of WITH
+  id: totrans-111
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 何时使用临时表而不是WITH
 - en: 'towardsdatascience.com](/bigquery-sql-optimization-2-with-temp-tables-to-fast-results-41869b15fcff?source=post_page-----373d34c08cea--------------------------------)
     [](/bigquery-sql-optimization-1-filter-as-early-as-possible-60dfd65593ff?source=post_page-----373d34c08cea--------------------------------)
     [## BigQuery SQL Optimization 1: Filter as Early as Possible'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/bigquery-sql-optimization-2-with-temp-tables-to-fast-results-41869b15fcff?source=post_page-----373d34c08cea--------------------------------)
+    [](/bigquery-sql-optimization-1-filter-as-early-as-possible-60dfd65593ff?source=post_page-----373d34c08cea--------------------------------)
+    [## BigQuery SQL优化1：尽早过滤
 - en: Let’s talk about low performing SQL and how to use and optimize filters with
     WHERE, HAVING, and QUALIFY in flat and…
+  id: totrans-113
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 让我们讨论低效的SQL以及如何在平面和……中使用和优化WHERE、HAVING和QUALIFY的过滤器
 - en: towardsdatascience.com](/bigquery-sql-optimization-1-filter-as-early-as-possible-60dfd65593ff?source=post_page-----373d34c08cea--------------------------------)
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/bigquery-sql-optimization-1-filter-as-early-as-possible-60dfd65593ff?source=post_page-----373d34c08cea--------------------------------)
 - en: '*Did you enjoy reading this article?* [*Become a member*](https://medium.com/@martin.weitzmann/membership)
     *and join a growing community of curious minds!*'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '*你喜欢阅读这篇文章吗？* [*成为会员*](https://medium.com/@martin.weitzmann/membership) *并加入一个不断增长的好奇心社区！*'
 - en: '[](https://medium.com/@martin.weitzmann/membership?source=post_page-----373d34c08cea--------------------------------)
     [## Join Medium with my referral link - Martin Weitzmann'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@martin.weitzmann/membership?source=post_page-----373d34c08cea--------------------------------)
+    [## 使用我的推荐链接加入Medium - Martin Weitzmann'
 - en: Read every story from Martin Weitzmann (and thousands of other writers on Medium)
     …
+  id: totrans-117
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读Martin Weitzmann（以及Medium上的成千上万其他作者）的每个故事……
 - en: medium.com](https://medium.com/@martin.weitzmann/membership?source=post_page-----373d34c08cea--------------------------------)
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@martin.weitzmann/membership?source=post_page-----373d34c08cea--------------------------------)
