@@ -1,243 +1,365 @@
 - en: Add One Line of SQL to Optimise Your BigQuery Tables
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 添加一行 SQL 语句以优化你的 BigQuery 表格
 - en: 原文：[https://towardsdatascience.com/add-one-line-of-sql-to-optimise-your-bigquery-tables-304761b048f0](https://towardsdatascience.com/add-one-line-of-sql-to-optimise-your-bigquery-tables-304761b048f0)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/add-one-line-of-sql-to-optimise-your-bigquery-tables-304761b048f0](https://towardsdatascience.com/add-one-line-of-sql-to-optimise-your-bigquery-tables-304761b048f0)
 - en: 'Clustering: A simple way to group similar rows and prevent unnecessary data
     processing'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 聚类：一种简单的方法，用于将相似的行分组，防止不必要的数据处理
 - en: '[](https://medium.com/@mattchapmanmsc?source=post_page-----304761b048f0--------------------------------)[![Matt
     Chapman](../Images/7511deb8d9ed408ece21031f6614c532.png)](https://medium.com/@mattchapmanmsc?source=post_page-----304761b048f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----304761b048f0--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----304761b048f0--------------------------------)
     [Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----304761b048f0--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@mattchapmanmsc?source=post_page-----304761b048f0--------------------------------)[![Matt
+    Chapman](../Images/7511deb8d9ed408ece21031f6614c532.png)](https://medium.com/@mattchapmanmsc?source=post_page-----304761b048f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----304761b048f0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----304761b048f0--------------------------------)
+    [Matt Chapman](https://medium.com/@mattchapmanmsc?source=post_page-----304761b048f0--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----304761b048f0--------------------------------)
     ·5 min read·Dec 8, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----304761b048f0--------------------------------)
+    ·阅读时长 5 分钟·2023年12月8日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: 'In my previous article, I explained how to optimise SQL queries using partitioning:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我之前的文章中，我解释了如何使用分区来优化 SQL 查询：
 - en: '[](/use-the-partitions-luke-a-simple-and-proven-way-to-optimise-your-sql-queries-43e24ea4c5d0?source=post_page-----304761b048f0--------------------------------)
     [## Use the Partitions, Luke! A Simple and Proven Way to Optimise Your SQL Queries'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/use-the-partitions-luke-a-simple-and-proven-way-to-optimise-your-sql-queries-43e24ea4c5d0?source=post_page-----304761b048f0--------------------------------)
+    [## 使用分区，卢克！一种简单且经过验证的优化 SQL 查询的方法'
 - en: If you’ve ever written an SQL query that takes ages to run, this is the article
     for you
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如果你曾经写过一个运行时间非常长的 SQL 查询，这篇文章适合你
 - en: towardsdatascience.com](/use-the-partitions-luke-a-simple-and-proven-way-to-optimise-your-sql-queries-43e24ea4c5d0?source=post_page-----304761b048f0--------------------------------)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/use-the-partitions-luke-a-simple-and-proven-way-to-optimise-your-sql-queries-43e24ea4c5d0?source=post_page-----304761b048f0--------------------------------)
 - en: Now, I’m writing the **sequel**! (Dad joke, anyone?)
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我正在写**续集**！（有爸爸笑话吗？）
 - en: 'This article will look at **clustering**: another powerful optimisation technique
     you can use in BigQuery. Like partitioning, clustering can help you write more
     performant queries that are quicker and cheaper to run. If you want to develop
     your SQL toolkit and build those higher-level Data Science skills, this is a great
     place to start.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章将探讨**聚类**：另一种强大的优化技术，你可以在 BigQuery 中使用。与分区类似，聚类可以帮助你编写更高效的查询，使查询运行更快、成本更低。如果你想提升你的
+    SQL 工具包并建立更高级的数据科学技能，这是一个很好的起点。
 - en: What’s a clustered table?
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是聚类表？
 - en: In BigQuery, a clustered table is a table that keeps similar rows grouped together
     in physical “blocks”.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 BigQuery 中，聚类表是一种将相似的行在物理“块”中分组的表。
 - en: 'For example, picture a table called `user_signups` that keeps track of all
     the people registering an account on a fictitious website. It''s got four columns:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，设想一个名为`user_signups`的表格，用于跟踪所有在虚构网站上注册帐户的人员。它有四列：
 - en: '`registration_date`: the date on which the user created an account'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`registration_date`：用户创建帐户的日期'
 - en: '`country`: the country where the user is based'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`country`：用户所在的国家'
 - en: '`tier`: the user''s plan ("Free" or "Paid")'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`tier`：用户的计划（“免费”或“付费”）'
 - en: '`username`: the user''s username'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`username`：用户的用户名'
 - en: 'If we wanted, we could cluster the table by `country` so that users from the
     same country are stored nearby each other in the table:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们愿意，我们可以通过`country`对表格进行聚类，使得来自同一国家的用户在表格中彼此靠近存储：
 - en: '![](../Images/e5cb967bc391fbb357a09655caed09c8.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e5cb967bc391fbb357a09655caed09c8.png)'
 - en: Image by author
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: As you can see, each “block” within the table contains users from a particular
     country. The clustered table still contains the same data; it’s just ordered in
     a more efficient way.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，表中的每个“块”包含来自特定国家的用户。聚簇表仍然包含相同的数据，只是以更高效的方式排序。
 - en: Clustering speeds up our queries because it means BigQuery has to process less
     data
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 聚簇加速了我们的查询，因为这意味着 BigQuery 需要处理的数据更少。
 - en: When you query a clustered table, BigQuery will first identify the relevant
     blocks needed to execute the query. This preliminary step — known as **block pruning**
     — makes your queries quicker and cheaper to run because BigQuery doesn’t perform
     unnecessary operations on the irrelevant blocks. It only uses the blocks/data
     it actually needs.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你查询一个聚簇表时，BigQuery 会首先识别执行查询所需的相关块。这一步骤——称为**块修剪**——使你的查询更快且成本更低，因为 BigQuery
+    不会对无关的块执行不必要的操作。它只使用实际需要的块/数据。
 - en: 'To see the benefits of this, let’s imagine that our `user_signups` table contains
     1,000,000 rows, and let’s say we wanted to fetch the users that are from Lebanon
     and signed up on 2023-12-01\. We''d write:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了看到这一点的好处，让我们假设我们的`user_signups`表包含1,000,000行，并且我们想要获取来自黎巴嫩且在2023-12-01注册的用户。我们会写：
 - en: '[PRE0]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: When we run that code, BigQuery will (in theory) start by finding the relevant
     block (in this case, that’s the block containing users from Lebanon), and then
     filter that block to find the rows where `registration_date` equals “2023-12-01”.
     It won’t need to read ALL the rows in the table; just the ones in the relevant
     cluster.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们运行那段代码时，BigQuery 会（理论上）从找到相关块（在这种情况下，就是包含来自黎巴嫩的用户的块）开始，然后筛选该块以找到`registration_date`等于“2023-12-01”的行。它不需要读取表中的所有行，只需读取相关聚簇中的行。
 - en: 'IMPORTANT: Clustering won’t always do what you expect (especially for small
     tables)'
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 重要提示：聚簇不会总是按照你期望的方式工作（特别是对于小表格）
 - en: '![](../Images/71d367afd9b83008bb674aaf6f1a0637.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/71d367afd9b83008bb674aaf6f1a0637.png)'
 - en: Image by [Madison Oren](https://unsplash.com/@artbyhybrid) on [Unsplash](https://unsplash.com/photos/low-angle-photo-of-pink-and-orange-balloons-uGP_6CAD-14)
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Madison Oren](https://unsplash.com/@artbyhybrid)提供，来源于[Unsplash](https://unsplash.com/photos/low-angle-photo-of-pink-and-orange-balloons-uGP_6CAD-14)
 - en: BigQuery is smart.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: BigQuery 很聪明。
 - en: It knows that creating (and pruning) clusters/blocks uses computing power, and
     that sometimes the effort required to manage these clusters is too high to bring
     any performance gains.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 它知道创建（和修剪）聚簇/块需要计算能力，有时管理这些聚簇所需的工作量太大，无法带来任何性能提升。
 - en: For this reason, BigQuery won’t *necessarily* create a new block for each distinct
     value in the clustering column ([1](https://usercentrics.com/knowledge-hub/optimizing-your-bigquery-tables-using-clustering/)).
     As Data Engineer [Alessandro](https://stackoverflow.com/questions/66951917/how-to-know-the-minimum-cluster-size-in-a-bigquery-table)
     writes,
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，BigQuery 不*一定*会为聚簇列中的每个不同值创建一个新的块（[1](https://usercentrics.com/knowledge-hub/optimizing-your-bigquery-tables-using-clustering/)）。正如数据工程师[Alessandro](https://stackoverflow.com/questions/66951917/how-to-know-the-minimum-cluster-size-in-a-bigquery-table)所写，
 - en: “Clusters are not like partitions. In fact there is no guarantee that there
     will be one cluster per column value… This is also why BigQuery cannot give you
     a good estimation of how much data the query will use before running it (like
     it does for partitions).”
+  id: totrans-34
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “聚簇不同于分区。事实上，没有保证每个列值会有一个聚簇……这也是为什么 BigQuery 不能在运行查询之前给你一个数据使用量的良好估算（就像它对分区所做的那样）。”
 - en: 'Think about it this way: if your entire table only consists of 10 rows, it’s
     probably quicker to scan the entire table than to go through the process of block
     pruning and managing clusters. BigQuery knows this, so it doesn’t waste resources
     on clustering.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这个角度考虑：如果你的整个表只有10行，那么扫描整个表可能比进行块修剪和管理聚簇的过程要更快。BigQuery 知道这一点，所以它不会在聚簇上浪费资源。
 - en: How big does your table need to be in order to get the benefits of clustering?
     Well, according to [one](https://stackoverflow.com/a/52674573) ex-Google engineer,
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 要获得聚簇的好处，你的表需要有多大？根据[一位](https://stackoverflow.com/a/52674573)前谷歌工程师的说法，
 - en: “If you have less than 100MB of data per [group you want to cluster by], clustering
     won’t do much for you”
+  id: totrans-37
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “如果每个[你想要聚簇的组]的数据少于100MB，聚簇对你帮助不大。”
 - en: At risk of stating the obvious, it’s also worth noting that clustering won’t
     help your queries if you query on a non-clustering column (e.g., if I didn’t include
     the `WHERE country = ...` filter in my query above, we wouldn’t be able to apply
     block pruning on the `country` column).
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 不得不说，值得注意的是，如果你在非聚类列上进行查询，聚类将无法帮助你的查询（例如，如果我在上述查询中没有包含`WHERE country = ...`筛选条件，我们将无法在`country`列上应用块裁剪）。
 - en: Creating clustered tables
+  id: totrans-39
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建聚类表
 - en: 'It’s very easy to create a clustered table. Simply add a `CLUSTER BY` clause
     at the end of your `CREATE TABLE` statement:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建聚类表非常简单。只需在`CREATE TABLE`语句的末尾添加`CLUSTER BY`子句：
 - en: '[PRE1]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: You can cluster by up to four columns, and (unlike with partitions) you’re not
     limited to `INT64` or `DATE` columns; you can also cluster by columns with data
     types like `STRING` and `GEOGRAPHY`.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以通过最多四列进行聚类，并且（与分区不同）你不限于`INT64`或`DATE`列；你还可以通过如`STRING`和`GEOGRAPHY`等数据类型的列进行聚类。
 - en: 'Here’s what it would look like to cluster our `user_signups` table by two columns:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是将我们的`user_signups`表按两列进行聚类的效果：
 - en: '![](../Images/bbdf57aa6b9807a7941e1bf1529a1039.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bbdf57aa6b9807a7941e1bf1529a1039.png)'
 - en: Image by author
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Combine clustering with partitioning for optimal performance
+  id: totrans-46
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结合使用聚类和分区以获得最佳性能
 - en: 'In my [previous article](/use-the-partitions-luke-a-simple-and-proven-way-to-optimise-your-sql-queries-43e24ea4c5d0),
     I wrote about partitioning: a way to split your table into physical partitions
     based on dates or integers.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我之前的[文章](/use-the-partitions-luke-a-simple-and-proven-way-to-optimise-your-sql-queries-43e24ea4c5d0)中，我介绍了分区：一种基于日期或整数将表格拆分成物理分区的方法。
 - en: Luckily, it’s very easy to combine clustering with partitioning.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，将聚类与分区结合起来非常简单。
 - en: 'Here’s an example showing our `user_signups` table, now partitioned by `registration_date`
     and clustered by `country`:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个示例，展示了我们的`user_signups`表，现在按`registration_date`进行分区，并按`country`进行聚类：
 - en: '![](../Images/e87d5ffac70137bc047be14ff8535041.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e87d5ffac70137bc047be14ff8535041.png)'
 - en: Image by author
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: When you query the table, BigQuery will first try to apply **partition pruning**
     (to identify the relevant partitions) and then apply **block pruning** within
     the relevant partitions in order to find the relevant rows.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你查询表格时，BigQuery 会首先尝试应用**分区裁剪**（以识别相关的分区），然后在相关分区内应用**块裁剪**以查找相关的行。
 - en: 'This is one of the reasons I love working with BigQuery so much: it gives you
     the best of both worlds!'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 这也是我如此喜欢使用BigQuery的原因之一：它将两者的优点结合在了一起！
 - en: Want a place to practice SQL?
+  id: totrans-54
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 想找一个练习SQL的地方吗？
 - en: If you enjoyed this article, you might like my site [the-sql-gym.com](https://the-sql-gym.com/),
     which contains over 100 practice SQL questions. If you want to boost your SQL
     skills, check it out!
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢这篇文章，你可能会喜欢我的网站[the-sql-gym.com](https://the-sql-gym.com/)，它包含了100多个SQL练习题。如果你想提升你的SQL技能，赶紧看看吧！
 - en: Thanks for reading, and feel free to connect with me on [Twitter](https://twitter.com/matt_chapma)
     or [LinkedIn](https://www.linkedin.com/in/matt-chapman-ba8488118/)! :-)
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读，欢迎通过[Twitter](https://twitter.com/matt_chapma)或[LinkedIn](https://www.linkedin.com/in/matt-chapman-ba8488118/)与我联系！
+    :-)
