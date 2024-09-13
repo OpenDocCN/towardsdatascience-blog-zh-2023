@@ -1,39 +1,62 @@
 - en: Auto-Tuning for Deep Neural Network Deployment
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度神经网络部署的自动调整
 - en: 原文：[https://towardsdatascience.com/auto-tuning-for-deep-neural-network-deployment-ff2324cb41d](https://towardsdatascience.com/auto-tuning-for-deep-neural-network-deployment-ff2324cb41d)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/auto-tuning-for-deep-neural-network-deployment-ff2324cb41d](https://towardsdatascience.com/auto-tuning-for-deep-neural-network-deployment-ff2324cb41d)
 - en: What, why, and most importantly… how?
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 什么，为什么，最重要的是……如何？
 - en: '[](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)[![Federico
     Peccia](../Images/48ad8401c28e87717718f58336cc64cf.png)](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)
     [Federico Peccia](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)[![Federico
+    Peccia](../Images/48ad8401c28e87717718f58336cc64cf.png)](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)
+    [Federico Peccia](https://pecciaf.medium.com/?source=post_page-----ff2324cb41d--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)
     ·7 min read·Sep 1, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ff2324cb41d--------------------------------)
+    ·阅读时间7分钟·2023年9月1日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/58fccebb5870c0dfc860e5b9927f920f.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/58fccebb5870c0dfc860e5b9927f920f.png)'
 - en: Photo by [S. Tsuchiya](https://unsplash.com/@s_tsuchiya?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [S. Tsuchiya](https://unsplash.com/@s_tsuchiya?utm_source=medium&utm_medium=referral)
+    提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 - en: Introduction
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: One of the metrics used to compare different Neural Network (NN) architectures
     is the time it takes to train them. Does it take hours? Days? *Weeks*? Usually,
     this can be improved just by updating the hardware used to train them. Replace
@@ -42,69 +65,97 @@
     trained network on an embedded device, like a microcontroller? Or are we going
     to run it on a mobile device? Perhaps the network is just too big, and we need
     an embedded GPU or even a server-size GPU to execute it.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 比较不同神经网络（NN）架构的指标之一是训练所需的时间。需要几个小时？几天？*几周*？通常，通过更新训练所用的硬件可以改善这一点。用更强大的 GPU 替换性能较差的
+    GPU，将训练过程并行化到多个 GPU 上等。推理步骤也会发生类似的情况。我们是否将训练好的网络部署到嵌入式设备上，如微控制器？还是运行在移动设备上？也许网络太大了，我们需要嵌入式
+    GPU 或甚至服务器级 GPU 才能执行。
 - en: Let's select one of them. We take our NN, compile it for our device, and test
     how fast it runs. Oh no! It does not meet our latency requirements! We needed
     the NN to run faster than 1 second, and our NN took 2 seconds to run! What are
     the options now?
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们选择其中一个。我们将神经网络编译为我们的设备，并测试其运行速度。哦，不！它没有达到我们的延迟要求！我们需要神经网络的运行时间小于1秒，而我们的神经网络却需要2秒！现在有什么选择？
 - en: '**Replace the device with a more powerful one:** This can be very problematic,
     specifically when there are hard application constraints. Perhaps you are only
     allowed to use specific, already certified hardware. Or you have difficult energy
     constraints to meet.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**用更强大的设备替换当前设备：** 这可能会非常麻烦，特别是在存在严格应用约束的情况下。也许你只能使用特定的、已认证的硬件。或者你有难以满足的能源约束。'
 - en: '**Reduce the complexity of the NN:** This may also be difficult because you
     can lose quality in the metric of the NN if not done carefully.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**减少神经网络的复杂性：** 这可能也很困难，因为如果不小心，可能会损失神经网络的质量指标。'
 - en: '**Autotune the NN for your particular hardware.**'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**为你的特定硬件自动调整神经网络。**'
 - en: Wait, what? What do you mean by *autotune*? Well, that's the topic of this article.
     Stay with me to learn about this fascinating technique. In this article, I will
     try to explain this topic from a high-level point of view. If you stay with me
     till the end of the article, you will find examples from software frameworks that
     can be used to optimize your NN, together with links to their tutorials.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 等等，这是什么？你所说的*自动调优*是什么意思？好吧，这就是本文的主题。继续阅读，了解这种令人着迷的技术。在这篇文章中，我将尝试从高层次的角度解释这个话题。如果你跟着我直到文章结束，你将会找到可以用来优化你的NN的软件框架示例，并附有它们教程的链接。
 - en: Auto… why?
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自动…为什么？
 - en: 'If you read [my last post](https://medium.com/towards-data-science/green-ai-methods-and-solutions-to-improve-ai-sustainability-861d69dec658),
     you may remember a very simplistic explanation of computer architecture. In it,
     I talked about two elements: computation units and memory units.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你阅读了[我上一篇文章](https://medium.com/towards-data-science/green-ai-methods-and-solutions-to-improve-ai-sustainability-861d69dec658)，你可能记得对计算机架构的一个非常简单的解释。在其中，我讨论了两个元素：计算单元和内存单元。
 - en: In order to execute a layer of a NN, data needs to be transferred across the
     memory hierarchy until it reaches the computation units. Then, the computation
     units will execute the required mathematical operation, and the result will be
     stored at some level of the memory hierarchy.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了执行神经网络的一层，需要将数据在内存层次结构中传输，直到它到达计算单元。然后，计算单元将执行所需的数学操作，结果将存储在内存层次结构的某个级别。
 - en: We define the cost of executing a NN layer as the metric that will represent
     the quality of the inference. For example, one of the most common metrics is latency,
     which means how much time it takes to complete the execution of the layer. Another
     one could be energy.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将执行一个神经网络（NN）层的成本定义为表示推理质量的指标。例如，最常见的指标之一是延迟，即完成层执行所需的时间。另一个指标可能是能耗。
 - en: 'Now, there are two different aspects that modify this metric:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，有两个不同的方面会影响这个指标：
 - en: The cost of actually executing the mathematical operation
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实际执行数学操作的成本
 - en: The cost of moving data across the memory hierarchy
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 跨内存层次结构移动数据的成本
 - en: Depending on the available hardware, the computation units can be extremely
     complicated or very simple, or there can even be different ones available on the
     same hardware. An example of the first one would be a systolic array, a complex
@@ -115,114 +166,164 @@
     mathematical operation between two elements on each time step (for example, an
     addition or a multiplication). So the first aspect would be to select which data
     needs to be inserted into each computation unit at each timestep.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据可用的硬件，计算单元可以非常复杂，也可以非常简单，或者在同一硬件上甚至可以有不同的计算单元。例如，第一个类型的例子是一个脉动阵列，它是一个复杂的数字电路，能够并行执行多个数学操作（如果你对这个话题感兴趣，可以查看[我的文章](https://medium.com/towards-data-science/accelerating-neural-networks-on-hardware-baa3c14cd5ba)）。一个简单的例子是一个算术逻辑单元（ALU），它能够在每个时间步长中仅执行两个元素之间的一个数学操作（例如，加法或乘法）。因此，第一个方面是选择在每个时间步长中需要插入到每个计算单元中的数据。
 - en: The other aspect is moving data from memory to the computation units. The less
     data that is moved from the last memory levels to the closer memory levels, the
     better. So the main idea is to move data as little as possible, and then reutilize
     it as much as possible.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个方面是将数据从内存移动到计算单元。从最后一级内存级别到更接近的内存级别移动的数据越少越好。因此，主要的思想是尽可能少地移动数据，然后尽可能多地重用它。
 - en: 'Let''s look at an example to illustrate this, shall we? Now, we want to execute
     on this hardware the following mathematical operation, which is called a 1D convolution:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看一个例子来说明这一点，好吗？现在，我们想在这个硬件上执行以下数学操作，这被称为1D卷积：
 - en: As you can see from the animation, the basic idea is that we superimpose the
     filter over the input, and on each timestep, we move the filter to the right.
     On each timestep, we multiply elementwise the input and the filter and accumulate
     the results together. This is a typical operation, which in its 2D version is
     the basis operation used in Convolutional Neural Networks (CNN).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 如动画所示，基本思想是我们将滤波器叠加在输入上，每个时间步，我们将滤波器向右移动。在每个时间步，我们逐元素地将输入与滤波器相乘，并将结果累加在一起。这是一个典型的操作，在其
+    2D 版本中是卷积神经网络（CNN）中使用的基础操作。
 - en: 'I will propose a theoretical hardware, *only for illustration purposes*, with
     the following elements and costs (referenced to the basic mathematical operation
     needed by the 1D convolution):'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将提出一个理论硬件，*仅用于说明目的*，具有以下元素和成本（参考 1D 卷积所需的基本数学操作）：
 - en: 'Computation unit 1: Cost of 5.'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算单元 1：成本为 5。
 - en: 'Computation unit 2: Cost of 2.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算单元 2：成本为 2。
 - en: 'Memory level 1: Read and write each cost 1 per element, but we can only store
     here 8 elements at the same time.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 内存级别 1：读取和写入每个元素的成本为 1，但我们只能在此处同时存储 8 个元素。
 - en: 'Memory level 2: Read and write each cost 4 per element, and we can store here
     all elements needed by the layer.'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 内存级别 2：读取和写入每个元素的成本为 4，我们可以在此处存储层所需的所有元素。
 - en: 'How can we run this 1D convolution in this theoretical hardware? For example,
     we could use option A:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何在这种理论硬件上运行 1D 卷积？例如，我们可以使用选项 A：
 - en: 'But we could also use option B:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我们也可以使用选项 B：
 - en: As you can see, **we can map the same operation in different ways, and obtain
     different costs**. Option B has a lower cost not only because it uses computation
     unit 2, but also because I changed the way data is reused in Memory Level 1.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，**我们可以以不同的方式映射相同的操作，从而获得不同的成本**。选项 B 成本较低，不仅因为它使用了计算单元 2，还因为我改变了内存级别 1
+    中数据的重用方式。
 - en: Auto…what?
+  id: totrans-34
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自动…什么？
 - en: But what happens if there is no model of the hardware to obtain the cost, or
     if the hardware is just too complicated to do this kind of manual analysis? We
     need a way to automate the search for the best mapping of a particular operation
     on particular hardware. This is called *auto-tuning*. It is a process by which
     we **automate** this search.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 但如果没有硬件模型来获得成本，或者硬件太复杂而无法进行这种手动分析怎么办？我们需要一种方法来自动化特定操作在特定硬件上的最佳映射的搜索。这被称为 *自动调优*。这是一个我们**自动化**这种搜索的过程。
 - en: 'How would this work for an entire NN? We start with the pre-trained model and
     extract from it all the different operations that need to be executed. Then, for
     each operation, we run the search process on a host computer by:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 这对于整个神经网络如何工作？我们从预训练模型开始，并从中提取所有需要执行的不同操作。然后，对于每个操作，我们在主机计算机上运行搜索过程，方法是：
 - en: Generating a new mapping proposal for the selected mathematical operation
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为选定的数学操作生成新的映射提议
 - en: Compiling the mapping proposal for the particular hardware on which we want
     to run the inference
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为我们想运行推理的特定硬件编译映射提议
 - en: Sending the compiled mapping to the hardware where we are going to measure its
     cost
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将编译映射发送到硬件，在那里我们将测量其成本
 - en: Execution of the proposed compiled mapping
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 执行提议的编译映射
 - en: Reading the cost of the execution
+  id: totrans-41
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 读取执行成本
 - en: Selecting the next mapping to test and returning to step 2
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择下一个要测试的映射，并返回第 2 步
 - en: '![](../Images/425732d6a3c58528e5a2008dbc2802f7.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/425732d6a3c58528e5a2008dbc2802f7.png)'
 - en: Image by author. Schematic of the auto-tuning process
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。自动调优过程的示意图
 - en: 'One interesting point here is: how do we actually select the next mapping to
     test (point 6)? Well, one could try a grid search approach, by testing all possible
     mappings. But this is usually too slow because the search space of possible mapping
     proposals can be too huge to test all of them.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里一个有趣的点是：我们如何实际选择下一步测试的映射（第 6 点）？嗯，可以尝试网格搜索方法，测试所有可能的映射。但这通常太慢，因为可能的映射提议的搜索空间可能太大，无法测试所有的映射。
 - en: Another possibility is to use some algorithm to guide the selection of the next
     mapping proposals to test, instead of just testing everything blindly. The main
     goal is to reduce the number of mapping proposals to actually execute, and try
@@ -232,29 +333,41 @@
     thus being able to discard the mapping proposals that are *probably* not good
     and try only the most promising ones. Wait, are we using AI to optimize AI? Yes!
     Isn’t it wonderful?
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种可能性是使用某种算法来指导选择下一个要测试的映射提案，而不是盲目地测试所有内容。主要目标是减少实际执行的映射提案数量，并尽量使用最少的测量次数找到最佳解决方案。这可以通过使用遗传算法或强化学习等方法来实现，从过去的测量中学习并预测未来测量的性能，从而能够舍弃*可能*不好的映射提案，仅尝试最有前景的。等一下，我们是在用
+    AI 优化 AI 吗？是的！这不是很棒吗？
 - en: Auto…how?
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自动……怎么做？
 - en: Ok, this sounds promising, but how do we *actually* do this? Well, we need software
     that allows us to define the different transformations that need to be applied
     to an operation in order to get the different mapping proposals. Do we need to
     program this search ourselves?
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，这听起来很有前途，但我们*实际上*该怎么做呢？我们需要一种软件，允许我们定义需要对操作应用的不同转换，以获取不同的映射提案。我们需要自己编写这个搜索程序吗？
 - en: Of course not! There are a lot of papers proposing modelling techniques and
     methods to solve the autotuning process, and this is a very active research topic.
     Works like Bolt [1], Lorien [2], Ansor [3] or Chameleon [4] are examples of works
     that tackle this problem.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然不是！有很多论文提出了建模技术和方法来解决自动调优过程，这是一个非常活跃的研究领域。像 Bolt [1]、Lorien [2]、Ansor [3]
+    或 Chameleon [4] 等作品就是解决这个问题的例子。
 - en: 'Particularly, if you are looking for some **practical** frameworks built on
     top of works like this, that provide tutorials and documentation on how to run
     this process, I would recommend you take a look at:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你正在寻找一些**实用**的框架，这些框架建立在类似的工作基础上，并提供如何运行此过程的教程和文档，我建议你查看以下内容：
 - en: '**TVM [5]:** An end-to-end compiler that accepts models from different frameworks
     as inputs (PyTorch, Tensorflow Lite, Tensorflow, Keras, ONNX, etc.) and is able
     to optimize and deploy the network for an increasing number of targets (GPUs,
@@ -262,76 +375,113 @@
     its [AutoTVM](https://tvm.apache.org/docs/tutorial/autotvm_relay_x86.html#sphx-glr-tutorial-autotvm-relay-x86-py)
     or [AutoScheduler](https://tvm.apache.org/docs/tutorial/auto_scheduler_matmul_x86.html#sphx-glr-tutorial-auto-scheduler-matmul-x86-py)
     modules.'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**TVM [5]:** 一个端到端的编译器，接受来自不同框架的模型作为输入（PyTorch、Tensorflow Lite、Tensorflow、Keras、ONNX
+    等），并能够优化和部署网络以支持越来越多的目标（GPU、微控制器、自定义加速器等）。可以使用其 [AutoTVM](https://tvm.apache.org/docs/tutorial/autotvm_relay_x86.html#sphx-glr-tutorial-autotvm-relay-x86-py)
+    或 [AutoScheduler](https://tvm.apache.org/docs/tutorial/auto_scheduler_matmul_x86.html#sphx-glr-tutorial-auto-scheduler-matmul-x86-py)
+    模块来优化程序。'
 - en: '**TensorComprehensions [6]:** Provides an autotuner based on a genetic algorithm,
     and is integrated with [PyTorch](https://facebookresearch.github.io/TensorComprehensions/framework/pytorch_integration/writing_layers.html#autotuning).'
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**TensorComprehensions [6]:** 提供基于遗传算法的自动调优器，并与 [PyTorch](https://facebookresearch.github.io/TensorComprehensions/framework/pytorch_integration/writing_layers.html#autotuning)
+    集成。'
 - en: '**Tiramisu [7]:** Polyhedral compiler able to target NVIDIA GPUs, Xilinx FPGAs
     and multicore x86 CPUs. Tutorials can be found [here](https://github.com/Tiramisu-Compiler/tiramisu/tree/master/tutorials).'
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**Tiramisu [7]:** 一个多面体编译器，能够针对 NVIDIA GPU、Xilinx FPGA 和多核 x86 CPU。教程可以在 [这里](https://github.com/Tiramisu-Compiler/tiramisu/tree/master/tutorials)
+    找到。'
 - en: Conclusion
+  id: totrans-54
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Don’t give up if your NN fails to achieve the required performance when executed
     on a resource-constrained hardware! There are techniques for improving its performance,
     such as the auto-tuning method described in this article. This is not some esoteric
     technique only available in scientific papers; some of the provided software frameworks
     already include tutorials to accomplish this in a *nearly* plug-and-play manner.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你的神经网络在资源受限的硬件上未能达到所需的性能，不要放弃！有一些技术可以提高其性能，例如本文中描述的自动调优方法。这并不是仅在科学论文中出现的神秘技术；一些提供的软件框架已经包括了几乎即插即用的教程。
 - en: Give them a try, and let me know in the comments if you find them useful!
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 试试看，如果你觉得有用，请在评论中告诉我！
 - en: Feel free to follow me on [LinkedIn](https://www.linkedin.com/in/fpecc/) and
     let me know what you think of this article, or [buy me a coffee](https://www.buymeacoffee.com/pecciaf)
     if you really liked it!
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 欢迎在[LinkedIn](https://www.linkedin.com/in/fpecc/)上关注我，并告诉我你对这篇文章的看法，或者如果你真的喜欢这篇文章，可以[请我喝咖啡](https://www.buymeacoffee.com/pecciaf)！
 - en: Thanks for reading!
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！
 - en: References
+  id: totrans-59
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[[1] Jiarong Xing, “Bolt: Bridging the Gap between Auto-tuners and Hardware-native
     Performance”, 2021.](https://arxiv.org/abs/2110.15238)'
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[1] Jiarong Xing, “Bolt: 架起自动调优器与硬件本地性能之间的桥梁”，2021.](https://arxiv.org/abs/2110.15238)'
 - en: '[[2] Cody Hao Yu, “Lorien: Efficient Deep Learning Workloads Delivery”, 2021.](https://dl.acm.org/doi/abs/10.1145/3472883.3486973)'
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[2] Cody Hao Yu, “Lorien: 高效的深度学习工作负载交付”，2021.](https://dl.acm.org/doi/abs/10.1145/3472883.3486973)'
 - en: '[[3] Lianmin Zheng, “Ansor : Generating High-Performance Tensor Programs for
     Deep Learning”, 2020.](https://arxiv.org/abs/2006.06762)'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[3] Lianmin Zheng, “Ansor: 为深度学习生成高性能张量程序”，2020.](https://arxiv.org/abs/2006.06762)'
 - en: '[[4] Byung Hoon Ahn, “Chameleon: Adaptive Code Optimization for Expedited Deep
     Neural Network Compilation”, 2019.](https://openreview.net/forum?id=rygG4AVFvH)'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[4] Byung Hoon Ahn, “Chameleon: 适应性代码优化以加速深度神经网络编译”，2019.](https://openreview.net/forum?id=rygG4AVFvH)'
 - en: '[[5] Tianqi Chen, “TVM: An Automated End-to-End Optimizing Compiler for Deep
     Learning”, 2018.](https://arxiv.org/abs/1802.04799)'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[5] Tianqi Chen, “TVM: 一个自动化的端到端深度学习优化编译器”，2018.](https://arxiv.org/abs/1802.04799)'
 - en: '[[6] Nicolas Vasilache, “Tensor Comprehensions: Framework-Agnostic High-Performance
     Machine Learning Abstractions”, 2018.](https://arxiv.org/abs/1802.04730)'
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[6] Nicolas Vasilache, “Tensor Comprehensions: 框架无关的高性能机器学习抽象”，2018.](https://arxiv.org/abs/1802.04730)'
 - en: '[[7] Riyadh Baghdadi, “Tiramisu: A Polyhedral Compiler for Expressing Fast
     and Portable Code”, 2018.](https://arxiv.org/abs/1804.10694)'
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[[7] Riyadh Baghdadi, “Tiramisu: 一个用于表达快速且可移植代码的多面体编译器”，2018.](https://arxiv.org/abs/1804.10694)'
