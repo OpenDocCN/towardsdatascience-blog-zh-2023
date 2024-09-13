@@ -187,58 +187,71 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 以[*people10m*](https://learn.microsoft.com/en-us/azure/databricks/dbfs/databricks-datasets#create-a-table-based-on-a-databricks-dataset)公共数据集中的单列*id*为例。如果我们使用[*repartitionByRange*](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/Dataset.scala#L3713C24-L3713C24)在该列上将数据排序为5个不同的文件，最小/最大统计分布可能类似于以下内容：
 - en: '![](../Images/14328ffa6c45225cca3e6f30bc100091.png)'
   id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/14328ffa6c45225cca3e6f30bc100091.png)'
 - en: Files after range partitioning by column Id — Image by Author
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 按列ID范围分区后的文件 — 图片作者
 - en: '![](../Images/c3766938e2950352d739854579abf2f3.png)'
   id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c3766938e2950352d739854579abf2f3.png)'
 - en: Select the first 20,000 employees of the company — Image by Author
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择公司的前20,000名员工 — 图片作者
 - en: Running the above query will result in a good plan given that our query only
     filters that column and all the files contain disjoint sets of IDs. This way it
     is easier for the engine to pick the correct files to scan without any false positives.
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行上述查询将产生一个良好的计划，因为我们的查询仅筛选该列且所有文件包含不重叠的ID集合。这样，数据库引擎更容易选择正确的文件进行扫描，而不会产生假阳性。
 - en: '**What if we want to add another column to the query?**'
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如果我们想在查询中添加另一列怎么办？**'
 - en: Let’s assume that we also want to filter on the *salary* of the employees.
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们还想按员工的*薪资*进行筛选。
 - en: '![](../Images/6da12186e5133712dc6e4fcdd761ddfa.png)'
   id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6da12186e5133712dc6e4fcdd761ddfa.png)'
 - en: Select the first 20,000 employees of the company with a salary greater than
     40,000 — Image by Author
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择薪资大于40,000的公司前20,000名员工 — 图片作者
 - en: 'After we range partition our files on both columns we end up with something
     like this:'
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们按两列范围分区文件之后，我们最终得到如下结果：
 - en: '![](../Images/e33bcb7cf94902d70e11fcb7477f6a6b.png)'
   id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e33bcb7cf94902d70e11fcb7477f6a6b.png)'
 - en: Files after range partitioning by column Id and salary — Image by Author
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 按列ID和薪资范围分区后的文件 — 图片作者
 - en: Salaries have no direct relation to IDs, organizing the files in a way that
     makes data-skipping effective using the previous linear method will result in
     data only being sorted by the first column. By simply filtering for salaries greater
@@ -246,17 +259,20 @@
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 薪资与ID没有直接关系，使用之前的线性方法将文件组织成有效的数据跳过方式将导致数据仅按第一列排序。通过简单地筛选薪资大于40,000，我们最终会读取所有五个文件，而不仅仅是一个。
 - en: '**How can we solve this? Is there any way we can group multiple statistics
     in a single dimension while preserving locality so that our range partitioning
     just works?**'
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们如何解决这个问题？是否有办法在保持位置性的同时将多个统计信息分组到单一维度，从而使我们的范围分区正常工作？**'
 - en: If you guessed Z-Ordering, you guessed right. If you guessed space-filling curves
     you were even more right!
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你猜测了Z-Ordering，你猜对了。如果你猜测了填充空间曲线，你就更对了！
 - en: What is a space-filling curve, should I care about it? A space-filling curve
     is a curve that traverses all the points in an embedding space. Some curves are
     able to map these higher dimensional points into a single dimension while maintaining
@@ -265,24 +281,29 @@
   id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是空间填充曲线，我需要关注它吗？空间填充曲线是一种遍历嵌入空间中所有点的曲线。一些曲线能够将这些高维点映射到一个维度，同时保持在原始空间中的邻近性。听起来复杂？其实并不复杂。下面我们将详细介绍这些曲线的工作原理。
 - en: '**Z-Order curve**'
   id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**Z-Order曲线**'
 - en: Z-Order curves were the first implementation of space-filling curves clustering
     in Delta, hence the operation name.
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: Z-Order曲线是Delta中空间填充曲线聚类的第一次实现，因此得名。
 - en: '![](../Images/fa275e1adb7012551482c131ee7edb6d.png)'
   id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa275e1adb7012551482c131ee7edb6d.png)'
 - en: Level 1 Z-Order curve — Image by author
   id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 级别1 Z-Order曲线 — 图片作者
 - en: Z-Order values, the points that form the curve in the shape of a Z, are computed
     using a technique called bit interleaving. Bit interleaving is a way of representing
     an N-dimensional coordinate using bits. For instance, if we use a 4-bit representation
@@ -292,6 +313,7 @@
   id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: Z-Order值，即形成Z形状的曲线的点，是使用称为位交错的技术计算得出的。位交错是一种使用位表示N维坐标的方法。例如，如果我们使用4位表示（0000到1111），我们能够通过逐位分配给每个轴来编码4x4网格坐标。接下来，我们将通过一个更直观的示例来展示这种技术。
 - en: In Delta, Z-Ordering is used to group data in a way that makes data-skipping
     effective. All Z-Order columns are “marked” to be range-partitioned using [RangePartitionId](https://github.com/delta-io/delta/blob/master/spark/src/main/scala/org/apache/spark/sql/delta/expressions/RangePartitionId.scala)
     expression. This expression is just a placeholder that will be handled by an [optimizer](https://github.com/delta-io/delta/blob/master/spark/src/main/scala/org/apache/spark/sql/delta/optimizer/RangePartitionIdRewrite.scala)
@@ -304,30 +326,36 @@
   id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Delta中，Z-Ordering用于以使数据跳过操作有效的方式对数据进行分组。所有Z-Order列都被“标记”为使用[RangePartitionId](https://github.com/delta-io/delta/blob/master/spark/src/main/scala/org/apache/spark/sql/delta/expressions/RangePartitionId.scala)表达式进行范围分区。该表达式只是一个占位符，将由一个[优化器](https://github.com/delta-io/delta/blob/master/spark/src/main/scala/org/apache/spark/sql/delta/optimizer/RangePartitionIdRewrite.scala)处理，该优化器将对RDD进行采样，以找到列的范围边界。（如果你曾经尝试对一个相当大的数据集进行多次Z-Order，你可能会注意到其文件统计数据是不确定的。这是因为Delta使用[水库抽样](https://en.wikipedia.org/wiki/Reservoir_sampling)来避免在计算范围ID时读取整个数据集）。然后，所有计算出的范围被转换为字节并交错，这样就得出了行的Z-Order值。
 - en: Below we’ll illustrate how Z-Order works in Delta, in a simplified way, for
     a group of 6 records and 3 partitions.
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下我们将以简化的方式说明Z-Order在Delta中的工作原理，以一个6条记录和3个分区的组为例。
 - en: '![](../Images/86c0579fc76b1c0e1309de6a3c372ded.png)'
   id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/86c0579fc76b1c0e1309de6a3c372ded.png)'
 - en: Z-Order optimization for 6 records to 3 different range IDs — Image by author
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 针对6条记录到3个不同范围ID的Z-Order优化—作者提供的图像
 - en: '**Hilbert curve**'
   id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**希尔伯特曲线**'
 - en: The better a curve is at preserving locality, the fewer files we’ll have to
     read due to false positives. That is the reason why the Hilbert curve is more
     commonly used in scenarios where locality preservation is essential.
   id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 曲线在保持局部性的能力越强，我们由于误报需要读取的文件就越少。这就是为什么希尔伯特曲线在保持局部性至关重要的场景中更常使用的原因。
 - en: At the time of writing, [Hilbert curves](https://en.wikipedia.org/wiki/Hilbert_curve)
     are not implemented in the open-source version of Delta. However, they are the
     default curve used by Databricks Z-Order implementation since they provide better
@@ -335,38 +363,47 @@
   id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 在撰写时，[希尔伯特曲线](https://en.wikipedia.org/wiki/Hilbert_curve)尚未在Delta的开源版本中实现。然而，它们是Databricks
+    Z-Order实现中使用的默认曲线，因为它们相比Z-Order曲线在处理高维数据时提供了更好的数据局部性。
 - en: '![](../Images/d9cfa094a98eaae6c55367e2a4b80e26.png)'
   id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d9cfa094a98eaae6c55367e2a4b80e26.png)'
 - en: Hilbert curve— Image by author
   id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 希尔伯特曲线—作者提供的图像
 - en: The Hilbert curve can appear in four different ways, each one derived from the
     above with a rotation of 90º.
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 希尔伯特曲线可以以四种不同的方式出现，每种方式都是在上述基础上旋转90º得到的。
 - en: '**But why is the Hilbert curve better at preserving locality than the default
     Z-Order curve?**'
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '**但为什么希尔伯特曲线在保持局部性方面比默认的Z-Order曲线更好？**'
 - en: Hilbert curve’s adjacent points always have a distance of 1\. Unlike Z-Order,
     which means that these jumps might generate Z-Ordered files with a large min/max
     difference, which will make it useless.
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 希尔伯特曲线的相邻点之间的距离始终为1。与Z-Order不同，这意味着这些跳跃可能会生成具有较大最小/最大差异的Z-Order文件，从而使其无用。
 - en: '![](../Images/cb1e1a96e06d0273fb050b44c844dc2f.png)'
   id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cb1e1a96e06d0273fb050b44c844dc2f.png)'
 - en: Distance between two adjacent points on Z-Order curve — Image by author
   id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: Z-Order曲线上的相邻点之间的距离—作者提供的图像
 - en: There are several implementations of the algorithm, but, in this post, I’ll
     cover a neat iterative approach from John Skilling in “[Programming the Hilbert
     curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve?redirectedFrom=PDF)”.
@@ -606,43 +643,54 @@
   id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你在使用开源 Delta，尽管液态聚类功能不可用，请确保查看我之前的帖子，了解如何保持你的表格快速而干净：
 - en: '[](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
     [## Delta Lake— Keeping it fast and clean'
   id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
+    [## Delta Lake— Keeping it fast and clean'
 - en: Ever wondered how to improve your Delta tables’ performance? Hands-on on how
     to keep Delta tables fast and clean.
   id: totrans-95
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 是否曾想过如何提升 Delta 表的性能？手把手教你如何保持 Delta 表快速而干净。
 - en: towardsdatascience.com](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)
   id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/delta-lake-keeping-it-fast-and-clean-3c9d4f9e2f5e?source=post_page-----944030ff1828--------------------------------)'
 - en: References
   id: totrans-97
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[https://docs.databricks.com/en/delta/clustering.html](https://docs.databricks.com/en/delta/clustering.html)'
   id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://docs.databricks.com/en/delta/clustering.html](https://docs.databricks.com/en/delta/clustering.html)'
 - en: '[https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)'
   id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh](https://docs.google.com/document/d/e/2PACX-1vREkVPDxqlKrwnaQ7Et1EnaiCF-VhFXCwit7bGSomWKtGEfkxbuGhX4GP3cJ20LgllYfjzsjr2lyY5y/pub#kix.301alpimymwh)'
 - en: '[https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve)'
   id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve](https://pubs.aip.org/aip/acp/article-abstract/707/1/381/719611/Programming-the-Hilbert-curve)'
 - en: '[https://en.wikipedia.org/wiki/Z-order_curve](https://en.wikipedia.org/wiki/Z-order_curve)'
   id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://en.wikipedia.org/wiki/Z-order_curve](https://en.wikipedia.org/wiki/Z-order_curve)'
 - en: '[https://en.wikipedia.org/wiki/Hilbert_curve](https://en.wikipedia.org/wiki/Hilbert_curve)'
   id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://en.wikipedia.org/wiki/Hilbert_curve](https://en.wikipedia.org/wiki/Hilbert_curve)'
