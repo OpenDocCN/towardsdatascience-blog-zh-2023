@@ -1,35 +1,55 @@
 - en: 'Advanced Guide: Avoiding Max Character Limits on the Microsoft Translator API
     by Auto-Batching Inputs'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 高级指南：通过自动批处理输入来避免 Microsoft Translator API 的最大字符限制
 - en: 原文：[https://towardsdatascience.com/advanced-guide-avoiding-max-character-limits-on-the-microsoft-translator-api-by-auto-batching-8a106e5f9f80](https://towardsdatascience.com/advanced-guide-avoiding-max-character-limits-on-the-microsoft-translator-api-by-auto-batching-8a106e5f9f80)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/advanced-guide-avoiding-max-character-limits-on-the-microsoft-translator-api-by-auto-batching-8a106e5f9f80](https://towardsdatascience.com/advanced-guide-avoiding-max-character-limits-on-the-microsoft-translator-api-by-auto-batching-8a106e5f9f80)
 - en: Making the best use of the free tier subscription
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最大限度利用免费订阅层
 - en: '[](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)[![Yousef
     Nami](../Images/09a0baa3fe20c858ace5b7923b7c753a.png)](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)
     [Yousef Nami](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)[![Yousef
+    Nami](../Images/09a0baa3fe20c858ace5b7923b7c753a.png)](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)
+    [Yousef Nami](https://namiyousef96.medium.com/?source=post_page-----8a106e5f9f80--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)
     ·24 min read·Jan 31, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8a106e5f9f80--------------------------------)
+    ·阅读时间 24 分钟·2023年1月31日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/af8adbcc9c869a0985b8e5a4eed8d533.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/af8adbcc9c869a0985b8e5a4eed8d533.png)'
 - en: Photo from [Unsplash](https://unsplash.com/photos/5Z8mR4vqJD4) courtesy of [Edurne](https://unsplash.com/@edurnetx).
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源于 [Unsplash](https://unsplash.com/photos/5Z8mR4vqJD4)，感谢 [Edurne](https://unsplash.com/@edurnetx)。
 - en: The Microsoft Translator API [[1](https://www.microsoft.com/en-us/translator/business/translator-api/)]
     is one of the easiest translator services to set up, and it’s quite powerful,
     giving you access to translators for a multitude of low and high resource languages
@@ -37,199 +57,295 @@
     and a **2 million max character limit per hour of use** (on the free version).
     So while the service itself is very easy to setup and use, using it reliably is
     quite difficult.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: Microsoft Translator API [[1](https://www.microsoft.com/en-us/translator/business/translator-api/)]
+    是设置最简单的翻译服务之一，它功能强大，可以免费访问多种低资源和高资源语言的翻译服务。然而，它每个请求有 **50000 字符的最大限制** [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)]，每小时使用有
+    **200 万字符的最大限制**（在免费版本中）。所以虽然服务本身非常易于设置和使用，但可靠使用却相当困难。
 - en: 'In this article, I will explore methods for ensuring that:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我将探讨确保以下方法：
 - en: Any arbitrary number of texts can be translated to any number of target languages
     while adhering to the max character limit by autobatching inputs
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 可以通过自动批处理输入将任意数量的文本翻译成任意数量的目标语言，同时遵守最大字符限制
 - en: Consecutive requests are delayed such that they adhere to the max character
     limit per hour
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 连续请求会被延迟，以符合每小时最大字符限制
 - en: At worst (free subscription), these methods will decrease wasted characters
     on partial translations and at best (paid subscription) they’ll save you cash.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在最坏的情况下（免费订阅），这些方法将减少部分翻译中浪费的字符；在最好的情况下（付费订阅），它们将为你节省开支。
 - en: 'The tutorial is targeted towards those with working knowledge of the Microsoft
     Translator API. If you are unfamiliar and would like a beginner friendly-guide
     on setting it up, check my introduction article below:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 本教程面向对 Microsoft Translator API 有一定了解的用户。如果你不熟悉，并希望获得一个适合初学者的设置指南，请查看下面我的介绍文章：
 - en: '[](/how-to-integrate-the-microsoft-translator-api-in-your-code-89bad979028e?source=post_page-----8a106e5f9f80--------------------------------)
     [## How to Integrate the Microsoft Translator API in Your Code'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/how-to-integrate-the-microsoft-translator-api-in-your-code-89bad979028e?source=post_page-----8a106e5f9f80--------------------------------)
+    [## 如何在代码中集成 Microsoft Translator API'
 - en: A comprehensive beginner friendly guide
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一个全面的适合初学者的指南
 - en: towardsdatascience.com](/how-to-integrate-the-microsoft-translator-api-in-your-code-89bad979028e?source=post_page-----8a106e5f9f80--------------------------------)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/how-to-integrate-the-microsoft-translator-api-in-your-code-89bad979028e?source=post_page-----8a106e5f9f80--------------------------------)
 - en: Challenges with Simple Translation Interface
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 简单翻译接口的问题
 - en: 'The original translation code I wrote was simply a wrapper over `requests`
     that took a list of texts, a list of target languages, and optionally a source
     language as parameters, and called the **translate** endpoint of the translator
     API. The code snippet of the translation function is shown below:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我原来的翻译代码只是一个 `requests` 的封装，它接受文本列表、目标语言列表以及可选的源语言作为参数，并调用翻译 API 的 **translate**
+    端点。翻译函数的代码片段如下：
 - en: '[PRE0]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Upon use, I ran into the following challenges that caused my translation requests
     to fail:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在使用过程中，我遇到了导致我的翻译请求失败的挑战：
 - en: '**Challenge 1:** The total size of the texts exceeded the max character limit
     when translated to all target languages'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**挑战 1：** 文本的总大小在翻译成所有目标语言时超出了最大字符限制'
 - en: '**Challenge 2:** At least one of my texts exceeded the max character limit
     when translated to all target languages'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**挑战 2：** 至少有一段我的文本在翻译成所有目标语言时超出了最大字符限制'
 - en: '**Challenge 3:** At least one of my texts exceeded the max character limit'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**挑战 3：** 至少有一段我的文本超出了最大字符限制'
 - en: '**Challenge 4:** The total size of my texts was negligible but because of very
     frequent calls to the endpoint I was hitting a max number of requests limit'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**挑战 4：** 我的文本总大小虽然微不足道，但由于非常频繁地调用端点，我达到了最大请求次数限制'
 - en: The next section will run through a first implementation of a translation function
     to deal with the 4 challenges above.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一部分将介绍一个处理上述四个挑战的翻译函数的初步实现
 - en: First Implementation — Naïve Autobatching
+  id: totrans-26
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 初步实现 — 天真的自动分批
 - en: Challenge 1 — Too Many Texts, Too Many Languages
+  id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 挑战 1 — 文本过多，语言过多
 - en: The first issue occurs when you have a list of texts such that **no single text**
     exceeds the max character limit when translated to its target languages, but that
     the **texts together do**.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个问题发生在当你有一组文本时，**没有单一文本**在翻译成目标语言时超出最大字符限制，但**这些文本加起来却会**。
 - en: 'To put it concretely, this means that you can’t send a single request of **n**
     texts whose total size **S** is greater than 50000\. From Microsoft’s documentation
     [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)],
     we know that the **size** of a text is calculated as the **number of characters**
     in the text multiplied by the **number of languages** it’s being translated to.
     In Python:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，这意味着你不能发送一个包含 **n** 段文本的单个请求，其总大小 **S** 超过 50000。根据微软文档 [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)]，我们知道文本的**大小**是计算文本的**字符数**乘以其翻译成的**语言数**。在
+    Python 中：
 - en: '[PRE1]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'As such, we need a function to bucket all input texts into batches whose total
     size does not exceed 50000\. My first implementation resulted in the following
     code:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们需要一个函数将所有输入文本分成批次，每个批次的总大小不超过 50000。我的初步实现结果如下代码：
 - en: '[PRE2]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'The `translate_text` function from above can now be modified to include this
     functionality:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的 `translate_text` 函数现在可以修改为包含此功能：
 - en: '[PRE3]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Note some key considerations that were made:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意一些关键考虑因素：
 - en: A failure in translating a single batch would fail the whole request
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 翻译单个批次的失败会导致整个请求失败
 - en: The batching function is O(n)
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理函数的复杂度为 O(n)
 - en: The translation loop is O(n) in the worst case (e.g. each text size hits the
     max limit). Realistically it will be less, however the algorithm will not try
     to minimise the number of batches, since it only linearly loops through the texts
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在最坏情况下，翻译循环的复杂度为 O(n)（例如，每个文本大小达到最大限制）。实际情况可能会少一些，但算法不会尝试最小化批次数量，因为它仅仅是线性地遍历文本
 - en: '![](../Images/de2d8c04229a7c97a0fa35c3b10a80eb.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de2d8c04229a7c97a0fa35c3b10a80eb.png)'
 - en: Challenge 2 — Single Text, Too Many Languages
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 挑战 2 — 单一文本，语言过多
 - en: 'While the above code works for most cases, you will inevitably run into a case
     where you have a **single text** that alone will not exceed the max character
     limit, but would do if translated to all. In Python:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然上述代码适用于大多数情况，但你不可避免地会遇到一个情况，其中有一个**单一文本**，单独来看不会超过最大字符限制，但如果翻译成所有语言则会。在 Python
+    中：
 - en: '[PRE4]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'In this case, the problematic text must be translated separately for a batch
     of target languages, and at worst, for each language separately. At this point
     though, we realise that there are two batching strategies that we can consider:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，问题文本必须单独翻译到一批目标语言中，最坏情况下，必须分别为每种语言翻译。不过，到目前为止，我们意识到可以考虑两种批处理策略：
 - en: 'Batching where size is defined by `len(text) * n_target_langs` : batch items
     with the solution for **Challenge 1**. For texts whose size `S = len(text) * n_target_langs
     > max_limit` , further batch by target language'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理大小由`len(text) * n_target_langs`定义：批处理项目解决**挑战1**。对于大小`S = len(text) * n_target_langs
+    > max_limit`的文本，按目标语言进一步批处理。
 - en: 'Batching where size is defined by the optimal combination of text lengths and
     target languages: batch texts such that each batch can have an arbitrary number
     of languages associated with it, provided that `sum(texts_in_batch) * n_target_langs_for_batch
     <= max_limit`'
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理大小由文本长度和目标语言的最佳组合定义：批处理文本，使每个批次可以关联任意数量的语言，只要`sum(texts_in_batch) * n_target_langs_for_batch
+    <= max_limit`。
 - en: 'Below is a pictorial representation of an example where the second method leads
     to solution with less batches overall:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个示意图，展示了第二种方法导致的总体批次数较少的解决方案：
 - en: '![](../Images/accea85b90ac7655c730fecc17b79024.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/accea85b90ac7655c730fecc17b79024.png)'
 - en: 'While the second batching strategy is an interesting algorithm design problem,
     in this use case problems outweigh any possible benefits:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然第二种批处理策略是一个有趣的算法设计问题，但在这种用例中，问题超过了任何可能的好处：
 - en: Firstly, Microsoft’s limits are based on the total characters consumed, and
     not on the number of requests. So the only theoretical benefit from decreasing
     the number of requests is speed
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，微软的限制基于消耗的总字符数，而不是请求的数量。因此，减少请求数量的唯一理论好处是速度。
 - en: Secondly, it is hard to design an efficient algorithm for it so any speed gains
     that you could get from shaving the number of requests are negligible, it at all
     existent
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其次，设计一个高效的算法是困难的，因此你从减少请求数量中获得的速度提升几乎微不足道，甚至可能不存在。
 - en: Thirdly, and most importantly, breaking up texts by target language makes mapping
     them back very difficult. If there is a failure during the translation process
     you will have partially translated texts*
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第三，最重要的是，按目标语言拆分文本会使得将它们映射回来非常困难。如果在翻译过程中出现失败，你将会有部分翻译的文本。
 - en: '***Note:** While you will also run into this problem if you use the first batching
     strategy, the frequency of such failures will be minimal. For most cases that
     I can think of, it’s more important to have complete translations (e.g. texts
@@ -238,98 +354,135 @@
     target languages) for all texts. It is also easier to re-translate the failed
     examples because you can extract the IDs of the failed texts, whereas filling
     gaps in partial translations is much more difficult.'
+  id: totrans-52
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '***注意：** 虽然使用第一种批处理策略时你也会遇到这个问题，但这种失败的频率会很低。对我能想到的大多数情况来说，拥有完整的翻译（例如，翻译成**所有**目标语言的文本）而丢弃有限数量的失败翻译，比为所有文本提供部分翻译（例如，翻译成目标语言子集的文本）更为重要。因为你可以提取失败文本的ID来重新翻译失败的示例，而填补部分翻译的空白则要困难得多。'
 - en: 'As such, I continued with the first batching strategy. This resulted in some
     modifications of the translation function:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我继续使用第一种批处理策略。这导致了翻译功能的一些修改：
 - en: '[PRE5]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'As before, there are some key considerations here:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 和以前一样，这里有一些关键考虑因素：
 - en: Still, we are failing the entire translation if there is a failure in request.
     This is partially motivated by the fact that we **don’t know** how to resolve
     the status codes for partial translations, as our output expects a single status
     code.
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 尽管如此，如果请求中出现失败，我们会失败整个翻译。这部分是因为我们**不知道**如何解决部分翻译的状态码，因为我们的输出期望一个单一的状态码。
 - en: The batching function is still **O(n)**
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理函数仍然是**O(n)**
 - en: The translation loop has theoretically increased in computational complexity.
     In the worst case we now have **O(n*k)** where **k** is the number of languages.
     However, unlike before, we can now deal with cases where a text is **large enough**
     that it can’t be translated to **all** target languages in a single request, but
     **small enough** that it can be translated to **subsets** of the target languages
     as **separate** requests.
+  id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 翻译循环在理论上增加了计算复杂度。在最坏的情况下，我们现在有 **O(n*k)**，其中 **k** 是语言数量。然而，与以前不同，我们现在可以处理文本
+    **足够大** 以至于无法在一次请求中翻译到 **所有** 目标语言，但 **足够小** 以便可以作为 **单独** 请求翻译到 **部分** 目标语言。
 - en: Challenge 3 — Single Large Text
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 挑战 3 — 单个大型文本
 - en: 'We now reach the inevitable edge case: a single text that has more than 50000
     characters. In this case, none of our previous batching methods work. The only
     thing we can consider doing is automatically splitting the text prior to translation.
     However, I decided to avoid this for the following reasons:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在遇到了不可避免的边缘情况：一个超过 50000 个字符的单个文本。在这种情况下，我们之前的批处理方法都不起作用。我们唯一可以考虑的做法是自动拆分文本然后进行翻译。然而，我决定避免这样做，原因如下：
 - en: '**Single Responsibility Principle:** the purpose of the translation function
     is to act as a wrapper over the Microsoft Translator API. In my view, any extra
     processing should be done prior to translation.'
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**单一职责原则：** 翻译函数的目的是作为 Microsoft Translator API 的封装器。在我看来，任何额外的处理应该在翻译之前完成。'
 - en: '**Increased Code Complexity:** adding support for sentence splitting requires
     the use of sentence splitting libraries, which add unnecessary dependencies for
     a function whose role is to be a wrapper for the Microsoft API. It would also
     require lots of code for ensuring sentence splitting methods all return the same
     output format, ground truth labels prior to sentence splitting are preserved,
     and to enable split sentences to be mapped back together after translation.'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**代码复杂性增加：** 支持句子分割需要使用句子分割库，这为一个本应作为微软 API 的封装器的函数增加了不必要的依赖。这还需要大量代码来确保句子分割方法返回相同的输出格式、在句子分割之前保留真实标签，并在翻译后使分割句子能够拼接回一起。'
 - en: '**Increased Output Ambiguity:** the choice of sentence splitter could vary
     a lot. These could be naïve, classical or neural methods. The choice of sentence
     splitting method would inevitably impact the quality of the translations, and
     would raise ambiguities in mapping back translated split sentences back together.
     In principle, the sentence splitting methods should be used outside the translation
     function, evaluated using some metric to determine split quality, and then translated.'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**输出模糊性增加：** 句子分割器的选择可能差异很大。这些方法可以是简单的、经典的或神经网络方法。句子分割方法的选择必然会影响翻译的质量，并在将翻译后的分割句子拼接回一起时引发模糊性。原则上，句子分割方法应在翻译函数之外使用，通过某些指标评估分割质量，然后再进行翻译。'
 - en: Due to the above, for now I decided to add an error using the logger if such
     were encountered. Later we’ll look into how this fits in with the rest of the
     code when trying to resolve ambiguity in the case of partially failed translations.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于上述原因，我决定在遇到这种情况时使用日志记录器添加错误。稍后我们将探讨在部分翻译失败的情况下，如何将其与其余代码结合起来以解决模糊性。
 - en: '[PRE6]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Challenge 4 — Too Many Requests
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 挑战 4 — 请求过多
 - en: Finally, most cases that you encounter will not be edge cases. They will all
     fit within the max character limit. However, the issue you’ll run into is trying
     to call the translate API too many times in a short amount of time.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，你遇到的大多数情况不会是边缘情况。它们都将符合最大字符限制。然而，你会遇到的问题是尝试在短时间内调用翻译 API 太多次。
 - en: 'In order to avoid this, Microsoft recommends that your requests not exceed
     more than 2 million characters per hour, or 33300 per minute. We can estimate
     if our request will pass the threshold using the following function:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免这种情况，微软建议你的请求每小时不超过 200 万个字符，或每分钟 33300 个字符。我们可以使用以下函数估计我们的请求是否会超过阈值：
 - en: '[PRE7]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Each time we make a request, we need to update the value of `time_of_last_success`
     (which is initially set to `None`). The `request_size` is the size of the request
     we’re currently making, e.g. **total characters in batch * num_languages**. In
@@ -337,137 +490,196 @@
     it is not optimal. I have tried running translations without sleeping and without
     overloading the server. But without knowing how exactly Microsoft calculates the
     request limits, it is difficult to design an optimal solution (for speed).
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 每次我们发出请求时，都需要更新`time_of_last_success`的值（最初设置为`None`）。`request_size`是我们当前请求的大小，例如**批次中的总字符数
+    * 语言数量**。根据我的经验，这种方法有助于避免过载微软API，但并不是最优的。我尝试过在不休眠的情况下运行翻译，并避免过载服务器。但由于不知道微软如何准确计算请求限制，设计一个最优的解决方案（速度方面）还是很困难的。
 - en: Efficiency, Resolving Ambiguity and Cleaning Up Code
+  id: totrans-71
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 效率、解决歧义和清理代码
 - en: 'In the previous section, we designed a Proof-of-Concept solution that improved
     over our simple translation wrapper. We can now automatically:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一节中，我们设计了一个概念验证解决方案，它改进了我们的简单翻译包装器。我们现在可以自动：
 - en: Batch documents such that the total size of each batch does not exceed the max
     limit
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理文档，使每个批次的总大小不超过最大限制
 - en: Batch documents by language for cases where a single document is too large to
     be translated to all target languages
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 按语言批处理文档，对于那些单个文档过大以至于无法翻译到所有目标语言的情况
 - en: Get the IDs of documents that cannot be translated because they are larger than
     the max limit
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 获取因为超过最大限制而无法翻译的文档的ID
 - en: Avoid max number of requests limits by slowing down requests based on the total
     size of requests we’ve made in a single session
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过根据我们在单次会话中发出的请求的总大小来减缓请求速度，避免达到最大请求次数限制
 - en: 'However, we still had some unanswered questions and inefficient methods. In
     this section, we will introduce four enhancements to finalise the translation
     function:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，我们仍然存在一些未解答的问题和低效的方法。在本节中，我们将介绍四个改进，以完善翻译功能：
 - en: '**Enhancement 1:** decreasing the number of requests made by improving the
     batching functionality'
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**增强 1：** 通过改进批处理功能来减少请求次数'
 - en: '**Enhancement 2:** defining a strategy for resolving partial translations'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**增强 2：** 定义解决部分翻译的策略'
 - en: '**Enhancement 3:** refactoring our code into reusable code blocks'
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**增强 3：** 将我们的代码重构为可重用的代码块'
 - en: Enhancement 1 — Decreasing the Number of Requests Made
+  id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增强 1 — 减少请求次数
 - en: Our previous method of batching the data was fast, but not the best for minimising
     the number of batches. Instead, we modify it so that documents are assigned to
     each batch such that they minimise the difference between the total batch size
     and the max character limit.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们之前的数据批处理方法很快，但不是最适合最小化批次数的。相反，我们对其进行修改，使文档分配到每个批次中，从而最小化每个批次的总大小与最大字符限制之间的差异。
 - en: '[PRE8]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Note some comparisons with the naïve method:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意与简单方法的一些比较：
 - en: The batching function is now O(n²) at worst. While this may sound alarming,
     when we think of the whole system, we notice that the main bottleneck in terms
     of time will come from requests, so we could justify going for O(n²) for batching,
     if we’ll get a substantial decrease in the number of batches
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理功能现在最坏情况下是O(n²)。虽然这听起来令人担忧，但当我们考虑整个系统时，我们会发现时间上的主要瓶颈来自请求，因此，如果能大幅减少批次数，我们可以为批处理选择O(n²)
 - en: While this is a substantial improvement over the naïve method for decreasing
     the number of batches, it is still an *approximate* solution
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 虽然这比减少批次数的简单方法有了显著改进，但仍然是一个*近似*解决方案
 - en: I added an optional sorting parameter `sort_docs` to sort the sizes in descending
     order. My hunch is that setting `sort_docs=True` should decrease the number of
     batches.
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我添加了一个可选的排序参数`sort_docs`以按降序排序大小。我的直觉是，将`sort_docs=True`应能减少批次数。
 - en: 'For an illustration of why this is still an approximate solution, see the figure
     below:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于为什么这仍然是一个近似解决方案的说明，请参见下图：
 - en: '![](../Images/9490d6fb457e5880754b355850d169ee.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9490d6fb457e5880754b355850d169ee.png)'
 - en: It’s worth noting that having a random split can in *theory* result in the optimal
     solution. In this case, if the texts were organised in the following order [“Hello
     World”, “Bye”, “Hi”, “Hi World”, “Cry”, “Halo”] (as an example) then the algorithm
     without sorting would have led to the optimal solution. However, we will see that
     on average, sorting leads to more optimal solutions!
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 值得注意的是，随机拆分在*理论上*可能会导致最优解。在这种情况下，如果文本按照以下顺序组织[“Hello World”，“Bye”，“Hi”，“Hi World”，“Cry”，“Halo”]（仅作为示例），那么没有排序的算法会导致最优解。然而，我们将看到平均而言，排序会导致更优的解决方案！
 - en: 'To get a better understanding of how sorting affects the algorithm, I ran a
     few simulations, here are some results:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地理解排序如何影响算法，我运行了一些模拟，以下是一些结果：
 - en: '**How Does Sorting Affect Time Complexity?**'
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**排序如何影响时间复杂度？**'
 - en: The figure below shows the average time taken (over 50 iterations) for the four
     batching strategies we have (quadratic and naive for sorted and unsorted cases).
     As expected, sorting slows down batching by a tiny bit. However, as argued before
     in the article our main bottleneck in terms of time comes from requests, not batching,
     and since the difference in time between the methods is not massive, we can justify
     sorting if it decreases the number of batches.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图展示了我们拥有的四种批处理策略（对排序和未排序情况分别使用二次和简单策略）的平均时间（经过50次迭代）。正如预期的那样，排序稍微减慢了批处理。然而，正如文章中之前所论述的，我们在时间上的主要瓶颈来自请求，而不是批处理，并且方法之间的时间差异不大，因此如果排序减少了批次，我们可以为排序找到合理的理由。
 - en: '![](../Images/4955d09a78a391d6cc5b7185440540da.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4955d09a78a391d6cc5b7185440540da.png)'
 - en: '**How Does Sorting Affect The Number of Batches?**'
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**排序如何影响批次数量？**'
 - en: 'The figure below shows two important things:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图展示了两个重要的方面：
 - en: The quadratic batching algorithm substantially decreases the number of batches
     compared to the naive algorithm
+  id: totrans-97
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 与简单算法相比，二次批处理算法大幅减少了批次数量。
 - en: Sorting decreases the number of batches for both the naive and quadratic algorithms
+  id: totrans-98
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 排序减少了简单和二次算法的批次数量。
 - en: 'The first point shows the impact of using quadratic batching. A typically response
     from the Microsoft Translator has a latency of 150 milliseconds [[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)].
     If we consider the smallest gap between the naive and quadratic algorithms at
@@ -477,20 +689,28 @@
     complexity of the batching algorithm, we find that the O(n²) of the quadratic
     algorithm has a negligible impact on overall translation speed. The other hidden
     advantage of course, is that we have 40 less chances of request failures!'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一点展示了使用二次批处理的影响。微软翻译器的典型响应延迟为150毫秒[[2](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)]。如果我们考虑到简单算法和二次算法在300个文档时的最小差距，未排序的二次批处理与排序的简单批处理相比，我们有40个批次的差异。这意味着在最坏的情况下，二次算法仅请求就能节省6秒。与批处理算法的时间复杂度相比，我们发现二次算法的O(n²)对整体翻译速度的影响可以忽略不计。当然，另一个隐含的好处是，我们有40次请求失败的机会减少了！
 - en: The second point is interesting, for it empirically proves my theory that sorting
     decreases the number of batches. Unfortunately I don’t have a mathematical proof
     for this, so the empirical results suffice for now.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二点很有趣，因为它通过实验证明了我的理论，即排序减少了批次的数量。不幸的是，我没有数学证明，所以目前实验证据足够了。
 - en: '![](../Images/dd239165544787b1506ff112667227f1.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dd239165544787b1506ff112667227f1.png)'
 - en: '**How Does Sorting Affect The Average Batch Size?**'
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**排序如何影响平均批次大小？**'
 - en: Naturally, following the number of batches trend we expect that quadratic algorithms
     have a higher average batch size than the naive ones, and that sorting increases
     the batch size for each algorithm respectively. This is reflected empirically
@@ -498,35 +718,49 @@
     size seems to converge for all cases. We can also see that the sorted quadratic
     algorithm converges to the max character limit has the number of documents approaches
     infinity.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然地，考虑到批次数量的趋势，我们预期二次算法的平均批次大小会比简单算法高，并且排序会分别增加每种算法的批次大小。这在下图中得到了实证反映。然而，有趣的是，所有情况下的平均批次大小似乎趋于一致。我们还可以看到，排序的二次算法在文档数量接近无限时趋于最大字符限制。
 - en: '![](../Images/d9491eb924f044bc2ce80f53b4cd65f6.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d9491eb924f044bc2ce80f53b4cd65f6.png)'
 - en: Enhancement 2 — Resolving Partial Translations
+  id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增强 2 — 解决部分翻译
 - en: 'Previously, we automatically failed the entire translation process on encountering
     a single failure. However, this can be wasteful in cases where most translation
     requests have already succeeded, or in cases where there is no hard requirement
     on having a 100% success translation rate. The behaviour of the translate function
     should therefore be defined by the user. Here are a few notable cases that we
     should cover:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前，我们在遇到单个失败时自动使整个翻译过程失败。然而，在大多数翻译请求已经成功的情况下，或者在没有硬性要求 100% 成功翻译率的情况下，这可能是浪费的。因此，翻译函数的行为应由用户定义。以下是我们应该覆盖的一些显著情况：
 - en: '**Case 1:** Fail the entire process if there is any failure'
+  id: totrans-107
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**情况 1：** 如果有任何失败，则使整个过程失败'
 - en: '**Case 2:** Ignore failures from the output, and remove partial translations'
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**情况 2：** 忽略输出中的失败，并移除部分翻译'
 - en: '**Case 3:** Ignore failures from the output, but keep partial translations'
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**情况 3：** 忽略输出中的失败，但保留部分翻译'
 - en: 'To achieve these cases, we add two boolean parameters: `raise_error_on_translation_failure`
     and `include_partials_in_output` . The first will raise an error anytime there
     is a failure (e.g. at batch level, or at a language level) if set to `True` (if
@@ -534,15 +768,24 @@
     only relevant when `raise_error_on_translation_failure=False` , and it will keep
     partial translations if set to `True` , and remove them if set to `False` . The
     code for this is shown below:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了实现这些情况，我们添加了两个布尔参数：`raise_error_on_translation_failure` 和 `include_partials_in_output`
+    。第一个参数将在发生失败时引发错误（例如，在批处理级别或语言级别），如果设置为`True`（如果`False`，我们仍然记录错误！）。这涵盖了**情况 1**。第二个参数仅在
+    `raise_error_on_translation_failure=False` 时相关，它将在设置为`True` 时保留部分翻译，在设置为`False`
+    时移除部分翻译。相关代码如下：
 - en: '[PRE9]'
+  id: totrans-111
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Enhancement 3 — Cleaning Up Code
+  id: totrans-112
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增强 3 — 清理代码
 - en: It’s now time to clean up the code and to add useful comments. However, since
     there is lots of reusability and the code logic is complicated, it makes sense
     to re-write the the translate function as a class. This also has the added benefit
@@ -553,30 +796,48 @@
     code if a failure occurs and `ignore_on_translation_failure=False` . I decided
     to change this as I don’t wish for the API function to raise errors (errors should
     be captured by status codes).
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是清理代码并添加有用注释的时候了。然而，由于代码的可重用性高且逻辑复杂，将翻译函数重写为类是有意义的。这还带来了一个额外的好处，即允许我们存储翻译失败的文档/批次的
+    ID（如果你希望重新运行这些特定翻译，而不是通过日志查找它们，这非常有用！）。我还决定将 `raise_error_on_translation_failure`
+    更改为 `ignore_on_translation_failure`，并在发生失败且 `ignore_on_translation_failure=False`
+    时简单地返回错误和状态代码。我决定这样做是因为我不希望 API 函数引发错误（错误应通过状态代码捕获）。
 - en: 'The final code looks as follows:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终代码如下：
 - en: '[PRE10]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: For access to the full working code, please visit the [repository](https://github.com/namiyousef/ml-utils/blob/develop/mlutils/external_apis/microsoft.py).
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 要访问完整的工作代码，请访问 [代码库](https://github.com/namiyousef/ml-utils/blob/develop/mlutils/external_apis/microsoft.py)。
 - en: Concluding Remarks
+  id: totrans-117
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: The Microsoft Translate API is a versatile tool for translation and very easy
     to setup. However, it has request and character limits that make using it effectively
     difficult and costly. In this article we discussed methods for making the best
     use of the translate API, by automatically batching inputs.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: Microsoft 翻译 API 是一个多功能的翻译工具，非常容易设置。然而，它有请求和字符限制，使得有效使用变得困难且成本高。在本文中，我们讨论了通过自动批量处理输入来充分利用翻译
+    API 的方法。
 - en: 'Some final notes and comments on further direction:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些关于进一步方向的最终说明和评论：
 - en: '**Speed:** the biggest bottleneck to speed is by far the wait time between
     requests in order to avoid the max request limits imposed by Microsoft. However,
     just for an academic exercise, the batching algorithm can be made better. Of course,
@@ -585,9 +846,12 @@
     virtue of the max character limit we can never exceed 50000 (e.g. 50000 documents
     of length 1, being translated to a single language). If you are interested though,
     I would recommend reading about the [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem).'
+  id: totrans-120
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**速度：** 速度的最大瓶颈是避免 Microsoft 强加的最大请求限制之间的等待时间。然而，作为一种学术练习，批处理算法可以得到改进。当然，这在实际中没有意义，因为我们从更快的批处理中获得的任何好处只有在文档数量接近无穷大时才会变得相关，但由于最大字符限制，我们永远无法超过
+    50000（例如，50000 个长度为 1 的文档被翻译成单一语言）。如果你感兴趣的话，我建议你阅读一下[装箱问题](https://en.wikipedia.org/wiki/Bin_packing_problem)。'
 - en: '**Assurance:** at the moment, the code is designed to avoid most request limit
     problems. However, should there be a failure, it will not re-try the request until
     all translations have been completed. For this, a worker architecture is needed
@@ -596,77 +860,119 @@
     practical is also a question worth considering, since the current translator class
     stores failed translations, making it a relatively trivial task to re-translate
     manually.'
+  id: totrans-121
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**保证：** 目前，代码设计旨在避免大多数请求限制问题。然而，如果发生失败，它不会在所有翻译完成之前重试请求。为此，需要一种工作架构来不断重试失败的翻译（也许使用[指数退避](https://en.wikipedia.org/wiki/Exponential_backoff)），直到所有翻译成功完成。当然，这是否实际也是一个值得考虑的问题，因为当前的翻译器类存储了失败的翻译，使得手动重新翻译成为一个相对简单的任务。'
 - en: Author’s Note
+  id: totrans-122
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 作者说明
 - en: 'If you liked this article or learned something new, please consider getting
     a membership using my referral link:'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢这篇文章或学到了新东西，请考虑通过我的推荐链接获取会员：
 - en: '[](https://namiyousef96.medium.com/membership?source=post_page-----8a106e5f9f80--------------------------------)
     [## Join Medium with my referral link - Yousef Nami'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://namiyousef96.medium.com/membership?source=post_page-----8a106e5f9f80--------------------------------)
+    [## 通过我的推荐链接加入 Medium - Yousef Nami'
 - en: Read every story from Yousef Nami (and thousands of other writers on Medium).
     Your membership fee directly supports…
+  id: totrans-125
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读 Yousef Nami 的所有故事（以及 Medium 上其他成千上万的作者的故事）。你的会员费直接支持……
 - en: namiyousef96.medium.com](https://namiyousef96.medium.com/membership?source=post_page-----8a106e5f9f80--------------------------------)
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: '[namiyousef96.medium.com](https://namiyousef96.medium.com/membership?source=post_page-----8a106e5f9f80--------------------------------)'
 - en: This gives you unrestricted access to all of Medium, while helping me produce
     more content at no extra cost to you.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 这让你可以无限制地访问 Medium 的所有内容，同时帮助我在不增加额外费用的情况下生成更多内容。
 - en: 'If you are interested in in-depth tutorials on Software Engineering and Machine
     Learning, then join my email list to get notified whenever I release a new article:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对软件工程和机器学习的深入教程感兴趣，请加入我的邮件列表，以便在我发布新文章时获得通知：
 - en: '[## Get notified whenever I release a new article'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 获取通知，了解我发布的新文章'
 - en: Get notified whenever I release a new article By signing up, you will create
     a Medium account if you don't already have…
+  id: totrans-130
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 获取通知，了解我发布的新文章。注册后，如果你还没有 Medium 账户，你将创建一个……
 - en: medium.com](https://medium.com/subscribe/@namiyousef96?source=post_page-----8a106e5f9f80--------------------------------)
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/subscribe/@namiyousef96?source=post_page-----8a106e5f9f80--------------------------------)'
 - en: Happy learning and till next time!
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 祝学习愉快，下次见！
 - en: Reference List
+  id: totrans-133
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考列表
 - en: '[1] [https://www.microsoft.com/en-us/translator/business/translator-api/](https://www.microsoft.com/en-us/translator/business/translator-api/)'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [https://www.microsoft.com/en-us/translator/business/translator-api/](https://www.microsoft.com/en-us/translator/business/translator-api/)'
 - en: '[2] [https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits](https://learn.microsoft.com/en-us/azure/cognitive-services/translator/request-limits)'
 - en: Project Repository
+  id: totrans-136
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 项目仓库
 - en: '[](https://github.com/namiyousef/ml-utils?source=post_page-----8a106e5f9f80--------------------------------)
     [## GitHub - namiyousef/ml-utils: Useful ML util functions'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/namiyousef/ml-utils?source=post_page-----8a106e5f9f80--------------------------------)
+    [## GitHub - namiyousef/ml-utils：有用的 ML 实用函数'
 - en: You can't perform that action at this time. You signed in with another tab or
     window. You signed out in another tab or…
+  id: totrans-138
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 目前无法执行该操作。你在另一个标签页或窗口中登录了。在其他标签页或窗口中退出了…
 - en: github.com](https://github.com/namiyousef/ml-utils?source=post_page-----8a106e5f9f80--------------------------------)
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/namiyousef/ml-utils?source=post_page-----8a106e5f9f80--------------------------------)
 - en: '*All images by author unless specified otherwise*'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '*所有图片均由作者提供，除非另有说明*'
