@@ -1,36 +1,56 @@
 - en: Custom Kafka metrics using Apache Spark PrometheusServlet
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Apache Spark PrometheusServlet 自定义 Kafka 指标
 - en: 原文：[https://towardsdatascience.com/custom-kafka-streaming-metrics-using-apache-spark-prometheus-sink-9c04cf2ddaf1](https://towardsdatascience.com/custom-kafka-streaming-metrics-using-apache-spark-prometheus-sink-9c04cf2ddaf1)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/custom-kafka-streaming-metrics-using-apache-spark-prometheus-sink-9c04cf2ddaf1](https://towardsdatascience.com/custom-kafka-streaming-metrics-using-apache-spark-prometheus-sink-9c04cf2ddaf1)
 - en: Creating and exposing custom Kafka Consumer Streaming metrics in Apache Spark
     using PrometheusServlet
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 PrometheusServlet 在 Apache Spark 中创建和暴露自定义 Kafka 消费者流指标
 - en: '[](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)[![Vitor
     Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)
     [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)[![Vitor
+    Teixeira](../Images/db450ae1e572a49357c02e9ba3eb4f9d.png)](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)
+    [Vitor Teixeira](https://medium.com/@vitorf24?source=post_page-----9c04cf2ddaf1--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)
     ·6 min read·Feb 2, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----9c04cf2ddaf1--------------------------------)
+    ·阅读时间 6 分钟·2023年2月2日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/6bd8f187e7f1a8a29cca8e8787e9ce8f.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6bd8f187e7f1a8a29cca8e8787e9ce8f.png)'
 - en: Photo by [Christin Hume](https://unsplash.com/@christinhumephoto?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Christin Hume](https://unsplash.com/@christinhumephoto?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: In this blog post, I will describe how to create and enhance current Spark Structured
     Streaming metrics with Kafka consumer metrics and expose them using the Spark
     3 PrometheusServlet that can be directly targeted by Prometheus. In previous Spark
@@ -39,20 +59,29 @@
     couldn’t really avoid the increase in the complexity of our solutions as we must
     set up external components that interact with our applications so that they can
     be scraped by Prometheus.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇博客文章中，我将描述如何创建和增强当前 Spark Structured Streaming 指标，结合 Kafka 消费者指标，并通过 Spark
+    3 的 PrometheusServlet 暴露这些指标，使 Prometheus 可以直接访问。在之前的 Spark 版本中，必须设置 JmxSink/JmxExporter、GraphiteSink/GraphiteExporter
+    或自定义的 sink，将指标部署到 PushGateway 服务器。也就是说，我们无法避免解决方案复杂性的增加，因为我们必须设置与应用程序交互的外部组件，以便
+    Prometheus 可以抓取这些数据。
 - en: Motivation
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 动机
 - en: More than ever, observability is a must when it comes to software. It allows
     us to get insights into what is happening inside the software without having to
     directly interact with the system. One way of building upon this observability
     pillar is by exposing application metrics. When built upon an observability stack,
     they allow us to detect problems either by alerts or simply looking at a dashboard
     and finding their root cause by analyzing metrics.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 比以往任何时候都更加重要的是，软件的可观察性变得必不可少。它使我们能够在不直接与系统交互的情况下，洞察软件内部发生了什么。建立在这一可观察性支柱上的一种方法是暴露应用程序指标。当这些指标建立在可观察性堆栈上时，它们可以帮助我们通过警报或查看仪表板来检测问题，并通过分析指标找到其根本原因。
 - en: Apache Spark applications are no different. It is true that one can access the
     [Spark Web UI](https://spark.apache.org/docs/latest/web-ui.html) and gather insights
     into how our application is running, but when the number of applications increases
@@ -60,6 +89,7 @@
     tool like [Grafana](https://grafana.com/) comes in handy. Grafana is able to connect
     to Prometheus databases, and Prometheus integrates seamlessly with our applications
     by targeting the PrometheusServlet.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: 'When configurated, Apache Spark exposes several metrics natively, which are
@@ -67,209 +97,290 @@
     In Structured Streaming, no metrics are exposed by default unless we set `"spark.sql.streaming.metricsEnabled"
     -> "true"`. Below is an example of the metrics that are exposed on a Kafka Streaming
     job:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/c6e2a17b134c1fc4bcfee302c98f8781.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
 - en: Default Spark Structured Streaming metrics
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
 - en: As we can see, these metrics are very generic and do not provide any detailed
     information about our source.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: The goal is to be able to expose Kafka Consumer metrics that help us monitor
     how our event consumption is going.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: Defining custom metrics
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'Metrics should be quantifiable values that provide real-time insights about
     the status or performance of the application. In the scope of this article, we’ll
     be covering the following metrics:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
 - en: '**Start offsets:** The offsets where the streaming query first started.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**End offsets:** The last processed offsets by the streaming query. Tracks
     the consumer progress of the query.'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Lead offsets:** The latest offsets of the topic the streaming query is consuming.
     Tracks the evolution of the consumed topic.'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Lag offsets:** The difference between the last processed offsets and the
     lead offsets from the topic. Tracks how far a streaming query is in comparison
     with real-time.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Consumed rate:** The consumed rate of the streaming query topics. It is the
     sum of all the topics subscribed on a streaming query.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Last record timestamp:** The last message timestamp consumed from each TopicPartition.
     It tracks the latency between the producer and the consumer.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Creating the metric source
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: The next step, after defining the metrics, is to create the metric source that
     will be responsible for exposing the metrics to Spark’s MetricsSystem.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: In order to expose the metrics we need to create a class that extends `Source`.
     What this does is create an executor connection to the driver to pass the metrics
     as part of the heartbeat process.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: KafkaMetricsSource implementation
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: Make sure to define the gauges as `SettableGauge` in order to be able to update
     them during the execution.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: After having the source defined all we need to do is instantiate the source
     and register it in Spark’s MetricsSystem.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: A simplified version of source registration
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: 'For the full code of the source implementation, you can check:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
     [## spark-prometheus-kafka-metrics/KafkaMetricsSource.scala at master ·…'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## spark-prometheus-kafka-metrics/KafkaMetricsSource.scala at master ·…](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)'
 - en: Spark Streaming application with enhanced Kafka Streaming consumer metrics exposed
     using Spark 3 PrometheusServlet …
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 Spark 3 PrometheusServlet 增强的 Kafka Streaming 消费者指标的 Spark Streaming 应用程序…
 - en: github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '[github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/org/apache/spark/metrics/KafkaMetricsSource.scala?source=post_page-----9c04cf2ddaf1--------------------------------)'
 - en: Using the Streaming Query Progress as an information source
+  id: totrans-36
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 将 Streaming Query Progress 作为信息来源
 - en: Now that we have our source in place all we need is to make use of it. For that,
     we’ll need the metrics to populate our recently created gauges.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经有了我们的源，接下来需要做的是使用它。为此，我们需要这些指标来填充我们最近创建的仪表。
 - en: 'If you ran a Structured Streaming job before you might have noticed an output
     similar to the following when a Streaming Query progresses:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你之前运行过结构化 Streaming 作业，你可能会注意到，当 Streaming Query 进展时，会有类似下面的输出：
 - en: By analyzing the output we can see that we already have most of the metrics
     available just by parsing the JSON. Start offsets metric using `startOffsets`,
     end offsets using `endOffset`, lead offsets using `latestOffset`, `source.inputRowsPerSecond`as
     the consumed rate for the source, and lag offsets, that won’t be using the `metrics`
     values as we can instead calculate the lag for each TopicPartition by using the
     `endOffset` and `latestOffset` values, ending up with a more granular metric.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过分析输出，我们可以看到，通过解析 JSON 已经可以获得大部分指标。开始偏移量指标使用`startOffsets`，结束偏移量使用`endOffset`，最新偏移量使用`latestOffset`，`source.inputRowsPerSecond`作为源的消费速率，延迟偏移量则不会使用`metrics`值，因为我们可以通过使用`endOffset`和`latestOffset`值来计算每个
+    TopicPartition 的延迟，得到更细粒度的指标。
 - en: In order to make use of this information we can leverage the [StreamingQueryListener](https://spark.apache.org/docs/latest/api/java/org/apache/spark/sql/streaming/StreamingQueryListener.html)
     `onProgress` event.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了利用这些信息，我们可以使用 [StreamingQueryListener](https://spark.apache.org/docs/latest/api/java/org/apache/spark/sql/streaming/StreamingQueryListener.html)
+    的 `onProgress` 事件。
 - en: The first step is creating a class that extends `StreamingQueryListener` so
     that we’re able to receive and act upon the progress events. It receives the `KafkaMetricsSource`
     we previously created that will be responsible for emitting the metrics.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一步是创建一个扩展`StreamingQueryListener`的类，以便我们能够接收并处理进度事件。它接收我们之前创建的`KafkaMetricsSource`，负责发出这些指标。
 - en: KafkaOffsetsQueryListener snippet
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: KafkaOffsetsQueryListener 代码片段
 - en: The last step is just registering the listener in the desired streams on which
     we would want to receive the updates.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一步只是将监听器注册到我们希望接收更新的流中。
 - en: 'If you wish to check the full listener code you can do so here:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你希望查看完整的监听器代码，可以在这里查看：
 - en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/listeners/KafkaOffsetsQueryListener.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
     [## spark-prometheus-kafka-metrics/KafkaOffsetsQueryListener.scala at master ·…'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## spark-prometheus-kafka-metrics/KafkaOffsetsQueryListener.scala at master
+    ·…](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/listeners/KafkaOffsetsQueryListener.scala?source=post_page-----9c04cf2ddaf1--------------------------------)'
 - en: Spark Streaming application with enhanced Kafka Streaming consumer metrics exposed
     using Spark 3 PrometheusServlet …
+  id: totrans-46
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 Spark 3 PrometheusServlet 增强的 Kafka Streaming 消费者指标的 Spark Streaming 应用程序…
 - en: github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/listeners/KafkaOffsetsQueryListener.scala?source=post_page-----9c04cf2ddaf1--------------------------------)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '[github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics/blob/master/src/main/scala/listeners/KafkaOffsetsQueryListener.scala?source=post_page-----9c04cf2ddaf1--------------------------------)'
 - en: Executor metrics — Record Timestamp
+  id: totrans-48
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 执行器指标 — 记录时间戳
 - en: The last metric is the last processed record timestamp for each `TopicPartition`.
     This metric is trickier than the previous ones because the information resides
     in Spark Executors in computing time.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一个指标是每个 `TopicPartition` 的最后处理记录时间戳。这个指标比之前的更复杂，因为信息存在于 Spark 执行器的计算时间中。
 - en: The only way we can access that information is by creating a dummy Spark expression
     that acts as a side effect. We’ll use `value` column from [Spark’s Kafka Schema](https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html#creating-a-kafka-source-for-streaming-queries)
     as a way to trick Spark into running this transformation.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们唯一能访问这些信息的方法是创建一个作为副作用的虚拟 Spark 表达式。我们将使用来自[Spark 的 Kafka 模式](https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html#creating-a-kafka-source-for-streaming-queries)的`value`列来欺骗
+    Spark 执行此转换。
 - en: KafkaTimestampMetrics expression
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: KafkaTimestampMetrics 表达式
 - en: This expression receives the whole Kafka Row, extracts the necessary values,
     and emits the metric. It will return the `value` column which, as we said above,
     will be used to trick Spark into running this expression.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个表达式接收整个 Kafka 行，提取必要的值，并发出指标。它将返回`value`列，正如我们上面所说的，它将用于欺骗 Spark 执行此表达式。
 - en: Expression usage
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 表达式使用
 - en: If we, for instance, used `timestamp` column and ended up selecting the `value`
     column further in our query, Spark would truncate this expression out of the final
     plan and our metric would be ignored. If you don’t plan to use the `value` column
     (which is rather uncommon), make sure to use an appropriate column.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们例如使用了`timestamp`列，并且在查询的后续部分选择了`value`列，Spark 会将此表达式从最终计划中截断，我们的指标将被忽略。如果你不打算使用`value`列（这比较少见），请确保使用适当的列。
 - en: Configuring PrometheusServlet
+  id: totrans-55
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 配置 PrometheusServlet
 - en: After we have everything set up all we need is to enable the Prometheus on the
     UI by setting `spark.ui.prometheus.enabled=true` (it creates a single endpoint
     containing all driver and executor metrics) and configuring `spark.metrics.conf`
     with the required configurations.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 设置好一切后，我们只需通过将`spark.ui.prometheus.enabled=true`设置为启用 UI 上的 Prometheus（它创建了一个包含所有驱动程序和执行程序指标的单一端点）并配置`spark.metrics.conf`以满足所需的配置。
 - en: Running the application and accessing [http://localhost:4040/metrics/prometheus](http://localhost:4040/metrics/prometheus)
     will show you all the metrics we’ve previously created alongside the native ones.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行应用程序并访问[http://localhost:4040/metrics/prometheus](http://localhost:4040/metrics/prometheus)将显示我们之前创建的所有指标以及原生指标。
 - en: '![](../Images/d701a801bb6a8f14be5d254d90ea717a.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d701a801bb6a8f14be5d254d90ea717a.png)'
 - en: Metrics exposed on /metrics/prometheus/ endpoint
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: /metrics/prometheus/ 端点上暴露的指标
 - en: Native Prometheus integration limitations
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 原生 Prometheus 集成的局限性
 - en: There are a few limitations to this new feature. One of them is that this endpoint
     only exposes metrics that start with `metrics_` or `spark_info`. In addition to
     this, Prometheus naming conventions are not followed by Spark, and labels aren’t
@@ -277,37 +388,56 @@
     that we’ll have A LOT of different metrics in Prometheus, which might be a bit
     overwhelming. This issue can be solved by relabeling the metrics but it can be
     troublesome.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个新功能有一些局限性。其中之一是这个端点只暴露以`metrics_`或`spark_info`开头的指标。此外，Spark 不遵循 Prometheus
+    命名约定，并且当前不支持标签（如果你知道某种方法，请告诉我！）。这意味着我们将在 Prometheus 中拥有大量不同的指标，这可能会有些令人不知所措。这个问题可以通过重新标记指标来解决，但可能会比较麻烦。
 - en: Conclusion
+  id: totrans-62
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: That’s it! You are now able to create and expose Kafka custom metrics using
     Spark’s Prometheus native integration. Now, all it's left is to have Prometheus
     scrape all the endpoints and use the metrics to create both pretty dashboards
     and alarms that will help you have more visibility on what’s happening inside
     your applications.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这些！你现在可以使用 Spark 的 Prometheus 原生集成创建和暴露 Kafka 自定义指标。现在，只剩下让 Prometheus 抓取所有端点，并使用这些指标创建漂亮的仪表板和报警，以帮助你更好地了解应用程序内部发生的情况。
 - en: Despite Prometheus metrics sink early limitations, which is understandable as
     it is an *experimental* feature, I believe that it will be soon enhanced with
     more and more customizations.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 Prometheus 指标接收器早期的局限性是可以理解的，因为它是一个*实验性*功能，但我相信它将很快通过更多自定义进行增强。
 - en: 'If you wish to see the full project used in this article please check:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想查看本文中使用的完整项目，请检查：
 - en: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics?source=post_page-----9c04cf2ddaf1--------------------------------)
     [## GitHub - Orpheuz/spark-prometheus-kafka-metrics: Spark Streaming application
     with enhanced Kafka…'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/Orpheuz/spark-prometheus-kafka-metrics?source=post_page-----9c04cf2ddaf1--------------------------------)
+    [## GitHub - Orpheuz/spark-prometheus-kafka-metrics: 提升了 Kafka 的 Spark Streaming
+    应用程序…'
 - en: You can't perform that action at this time. You signed in with another tab or
     window. You signed out in another tab or…
+  id: totrans-67
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 目前无法执行该操作。您在另一个标签页或窗口中登录了。您在另一个标签页或窗口中注销了…
 - en: github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics?source=post_page-----9c04cf2ddaf1--------------------------------)
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '[github.com](https://github.com/Orpheuz/spark-prometheus-kafka-metrics?source=post_page-----9c04cf2ddaf1--------------------------------)'
