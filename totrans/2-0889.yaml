@@ -1,264 +1,392 @@
 - en: Finding Improved Rephrasings
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 寻找改进的改写
 - en: 原文：[https://towardsdatascience.com/finding-improved-rephrasings-b5fb002ac811](https://towardsdatascience.com/finding-improved-rephrasings-b5fb002ac811)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/finding-improved-rephrasings-b5fb002ac811](https://towardsdatascience.com/finding-improved-rephrasings-b5fb002ac811)
 - en: Using a Trie with machine-learned elements
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用带有机器学习元素的Trie
 - en: '[](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)[![Arun
     Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)
     [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----b5fb002ac811--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)
     ·19 min read·Apr 19, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5fb002ac811--------------------------------)
+    ·19分钟阅读·2023年4月19日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/b2d3d765f44d8d3e011a1660ef32353e.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b2d3d765f44d8d3e011a1660ef32353e.png)'
 - en: Image by [Nile](https://pixabay.com/users/nile-598962/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=623167)
     on [Pixabay](https://pixabay.com/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Nile](https://pixabay.com/users/nile-598962/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=623167)提供，[Pixabay](https://pixabay.com/)上可见
 - en: Expressing something well takes effort. Fortunately, chatbots that embody modern
     NLP, such as ChatGPT, are very helpful.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 表达得好需要付出努力。幸运的是，体现现代自然语言处理的聊天机器人，如ChatGPT，非常有帮助。
 - en: In this post, we will model this problem using a Trie, suitably enhanced. This
     Trie will automatically detect short word sequences that appear repeatedly in
     the corpus in an unsupervised way. Subsequently, it will also learn common “awkward
     phrasing” patterns from a labeled data set of (awkward phrasing, improved phrasing)
     pairs.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将使用适当增强的Trie来建模这个问题。这个Trie将自动检测在语料库中重复出现的短词序列，并且以无监督的方式进行。随后，它还将从标注的数据集（尴尬短语、改进短语对）中学习常见的“尴尬短语”模式。
 - en: For small, albeit nuanced, versions of the rephrasing problem, we’ll show that
     improved phrasings can be found directly, via suitable fuzzy searches on the learned
     Trie.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于小型但细微的改写问题版本，我们将展示通过在学习到的Trie上进行适当的模糊搜索，可以直接找到改进的表达方式。
 - en: For more elaborate versions of the problem, we describe a variant that uses
     Tries as feature extractors. These can be integrated into any state-of-the-art
     neural language model.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于更复杂的版本的问题，我们描述了一种使用Trie作为特征提取器的变体。这些特征可以集成到任何先进的神经语言模型中。
 - en: For this use, the Trie needs to be set up with certain preprocessing and pretraining.
     We describe both as well.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这个用途，Trie需要进行特定的预处理和预训练。我们也将描述这两个步骤。
 - en: This approach — in itself — is…
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法——本身——是…
 - en: easy to understand, without needing any background in neural networks or NLP.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**易于理解**，无需具备神经网络或自然语言处理的背景知识。'
 - en: easy to implement as a proof of concept.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**作为概念验证**容易实现。'
 - en: effective on its own to detect short awkward phrases and suggest rephrasings.
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**独立有效**于检测短小的尴尬短语并建议改写。'
 - en: Perhaps more importantly, as discussed above, this approach allows one to add
     Trie-based features to modern neural network models, features that model short
     sequences of words that repeatedly occur in a corpus and are therefore likely
     to carry distinct semantics.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 也许更重要的是，如上所述，这种方法允许将基于Trie的特征添加到现代神经网络模型中，这些特征建模了在语料库中重复出现的短序列，因此可能携带独特的语义。
 - en: 'The word sequence examples used in this post, both the awkward phrasings and
     the improved ones, were furnished by ChatGPT in response to a single prompt:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文中使用的单词序列示例，包括尴尬的短语和改进后的短语，都是ChatGPT在响应单个提示时提供的：
 - en: Give me some examples of phrasings that are awkward and of lengths two to four
     words
+  id: totrans-19
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 给我一些尴尬的短语示例，长度为两到四个词。
 - en: I then picked a subset that exhibited all the scenarios that the approach in
     this post addressed. I then distributed them into various sections in this post.
     This distribution was done because different phrasings illustrated different mechanisms
     in the approach of this post.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我选择了一个展示了本文方法所涉及的所有场景的子集。我将它们分配到本文的各个部分。这种分配是因为不同的表述展示了本文方法中的不同机制。
 - en: The last section in this post lists all the awkward phrasings together with
     their improved rephrasings. Including ones in ChatGPT’s response that were not
     used in this post, because they were part of its response.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文的最后部分列出了所有尴尬的表述及其改进后的表述。包括在ChatGPT的回复中未使用的那些，因为它们是其回复的一部分。
 - en: '**Initial Perspective: Problem Framed As Search**'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**初步观点：问题框定为搜索**'
 - en: Consider *She cook good* which we would like to express better. Say we have
     a rich and massive corpus of well-written sentences to learn from. Imagine searching
     for sentences in the corpus that start with *She cook.* By analyzing these, we
     might conclude that *She cook* is better phrased as *She cooks* or *She cooked*.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑*她做饭好*，我们希望更好地表达。假设我们有一个丰富且庞大的优质句子语料库进行学习。想象一下搜索以*她做饭*开头的句子。通过分析这些句子，我们可能会得出*她做饭*更好地表述为*她做饭*或*她做过饭*。
 - en: Now consider the third word, *good*. There may not be any sentence in the corpus
     with a match to the phrase *(cooks|cooked) good*.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑第三个词*good*。语料库中可能没有与短语*(cooks|cooked) good*匹配的句子。
 - en: On the other hand, we might find several sentences containing the phrase *cooks
     well*. Armed with the additional knowledge that *well* and *good* are similar
     enough, we would be inclined to suggest *She cooks well* as a better overall rephrase.
     Where might we get such knowledge? Word embeddings.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，我们可能会找到几个包含短语*做饭很好*的句子。凭借*well*和*good*足够相似的额外知识，我们可能会倾向于建议*她做饭很好*作为更好的整体改写。我们可能从哪里获得这样的知识？词嵌入。
 - en: (We entered *good* at [http://vectors.nlpl.eu/explore/embeddings/en/#](http://vectors.nlpl.eu/explore/embeddings/en/#)
     and the strongest “semantic associate” came out to be *well* with a score of 0.829.)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: （我们在[http://vectors.nlpl.eu/explore/embeddings/en/#](http://vectors.nlpl.eu/explore/embeddings/en/#)输入了*good*，最强的“语义关联”是*well*，得分为0.829。）
 - en: Let’s express the above in a flow.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将上述内容以流程的形式表达。
 - en: Search our corpus of sentences for those that begin with *She cook.* Get top
     hits *She cooks* and *She cooked*.
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在我们的句子语料库中搜索那些以*她做饭*开头的句子。得到的最佳匹配是*她做饭*和*她做过饭*。
 - en: Substitute the hits into the probe, i.e. get *She cooks/cooked good*.
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将匹配项替换到探测器中，即得到*她做饭/做过饭好*。
 - en: Next, search our corpus of sentences with *cooks/cooked good.* Get *cooks well*
     as a good hit. In scoring this as a good hit, also leverage that *good* and *well*
     are semantic associates, something that comparing their word embeddings can reveal.
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 接下来，搜索我们包含*做饭/做过饭好*的句子语料库。得到*做饭很好*作为一个好的匹配。在将其评分为好的匹配时，还要利用*good*和*well*是语义关联的这一点，这可以通过比较它们的词嵌入来揭示。
 - en: Substitute the hit into the relevant portion of the transformed input. We get
     *She cooks well*.
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将匹配项替换到转换输入的相关部分。我们得到*她做饭很好*。
 - en: The searches in steps 1 and 3 need to be somewhat fuzzy to find inexact matches.
     These matches then need to be post-processed further so we can extract statistical
     commonalities across them.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 步骤1和3中的搜索需要有一定的模糊性，以找到不完全匹配。这些匹配项随后需要进一步后处理，以便提取它们之间的统计共性。
 - en: Also, note the following. In step 1, the third word, *good*, does not play a
     role. This needs to be somehow discovered, either during preprocessing, during
     the search itself, or during the postprocessing of the results.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，请注意以下几点。在第1步中，第三个词*good*没有作用。这需要在预处理、搜索本身或结果的后处理过程中以某种方式发现。
 - en: Similarly, in step 3, somehow the word *She* needs to be ignored. Why? Because
     using *cooks/cooked good* as the probe instead of *She cooks/cooked good* will
     tend to generalize better. The final rephrase may get suggested even if the corpus
     does not have a sentence that begins with *She cooks well*.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，在第3步中，必须以某种方式忽略词*她*。为什么？因为使用*cooks/cooked good*作为探测器而不是*她做饭/做过饭好*将更倾向于更好地概括。即使语料库中没有以*她做饭很好*开头的句子，最终的改写也可能会被建议。
 - en: The points discussed in the above two paragraphs may be reframed in terms of
     the mechanism of *attention*, so important in large language models.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面两个段落讨论的要点可以用*注意力*机制来重新框定，这在大型语言模型中至关重要。
 - en: '**Sequential Nature**'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '**顺序特性**'
 - en: The approach sketched above is inherently sequential in nature. We start with
     the probe, examine its portions, transform as appropriate, and repeat.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述方法本质上是顺序的。我们从探针开始，检查其部分，适当地转换，然后重复。
 - en: '**Search On A Trie**'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在Trie上搜索**'
 - en: So far we used the term “search on a corpus of sentences” a number of times.
     We now dive a bit deeper into how such searches will be done.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经多次使用了“在句子语料库上搜索”这个术语。我们现在深入探讨一下如何进行这样的搜索。
 - en: We will ingest the corpus of sentences into a tree data structure called a Trie
     and search it instead.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将把句子语料库导入到一种叫做Trie的树数据结构中，然后在其上进行搜索。
 - en: Well, what is a Trie? Instead of giving a definition, we’ll illustrate it with
     an example.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，什么是Trie？我们将通过一个示例来说明它，而不是给出定义。
 - en: '![](../Images/dcb2e822725c43265176594d335affa9.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dcb2e822725c43265176594d335affa9.png)'
 - en: 'Figure 1: A Trie representing two sequences of words. (By Author.)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1：表示两个单词序列的Trie。（作者提供。）
 - en: 'The Trie in the above example represents the word sequences in the following
     two sentences: *The dog chased the cat* and *The new job is good*.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述示例中的Trie表示以下两个句子的单词序列：*狗追猫* 和 *新工作很好*。
 - en: Now imagine the phrase *New job good*. We can visually see that this phrase
     maps to the path from the Trie’s root that is labeled *The new job is good*.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在想象一下短语*新工作好*。我们可以直观地看到，这个短语映射到从Trie的根开始的路径，该路径标记为*新工作很好*。
 - en: This mapping is also known as an *alignment* and can be depicted below.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种映射也被称为*对齐*，可以在下方表示。
 - en: '[PRE0]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In this approach, the problem of finding better rephrasings of a phrasing becomes
     the problem of finding paths in the Trie that align well with the phrasing.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种方法中，找到表述的更好重述的问题变成了在Trie中找到与表述对齐的路径的问题。
 - en: Let’s begin with the simpler case when there is some path starting from the
     Trie’s root that represents the input exactly. In the Trie of Figure 1, *The new
     job is good* is an example of such an input.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从更简单的情况开始，当存在从Trie的根开始的路径完全表示输入时。在图1中的Trie中，*新工作很好* 是这样一个输入的例子。
 - en: It's easy to see how we can find the path that represents the input by doing
     a left-to-right scan based on the tokens in the input.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 很容易看出，我们可以通过基于输入中的令牌进行从左到右的扫描来找到表示输入的路径。
 - en: 'Now consider a not-so-clean probe: *New job good*. There is no path in the
     Trie of Figure 1 that corresponds exactly to this probe.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑一个不太干净的探针：*新工作好*。在图1的Trie中没有完全对应于这个探针的路径。
 - en: One way to take into account that the first word *The* is missing is by adding
     skip arcs into the Trie. Below is a version of our first figure with a few skip
     arcs added.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理第一个单词*The*缺失的一种方式是向Trie中添加跳过弧。下面是我们第一个图的一个版本，添加了几个跳过弧。
 - en: '![](../Images/e41b970eec85d11631b458fd91ab0710.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e41b970eec85d11631b458fd91ab0710.png)'
 - en: 'Figure 2: Trie With Some Skip Arcs Added. (By Author.)'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2：添加了一些跳过弧的Trie。（作者提供。）
 - en: The skip arcs allow us to find paths, some of whose elements are missing in
     the probe, at the expense of consuming more space and taking longer to search.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 跳过弧使我们能够找到路径，其中某些元素在探针中缺失，但代价是消耗更多的空间并且搜索时间更长。
 - en: Now imagine that we also knew a good rephrasing of *New job good*. We can think
     of the pair of the original phrasing and the improved rephrasing as a labeled
     instance. Furthermore, assume we had somehow aligned the rephrasing with the probe,
     as depicted below.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们还知道一个*新工作好*的良好重述。我们可以将原始表述和改进的重述对视为一个标记实例。此外，假设我们以某种方式将重述与探针对齐，如下所示。
 - en: '[PRE1]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: So now we have a labeled data set and we are in the world of supervised learning.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有了一个标记的数据集，并且进入了监督学习的领域。
 - en: Labeling can incur a significant cost. So what do the labels actually buy us
     in our setting? They tell us where to add skip arcs.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 标记可能会产生显著的成本。那么，在我们的设置中，标签实际上能给我们带来什么？它们告诉我们在哪里添加跳过弧。
 - en: In this particular example, we’d add two skip arcs, at the locations shown in
     Figure 2.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个特定的示例中，我们将在图2所示的位置添加两个跳过弧。
 - en: One might ask, why use skip arcs at all? Why not instead do look ahead searches?
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 人们可能会问，为什么要使用跳过弧？为什么不直接进行前瞻搜索？
 - en: What if we wanted to handle multiple contiguous missing tokens? This is quite
     plausible — we will see an example soon. We’d need a look ahead of some positive
     integer, *k*, greater than 1\. What should the value of *k* be? If *k* is only
@@ -268,258 +396,378 @@
     we have to search all possible descendants of the present node that are within
     a distance of *k.* The number of such descendants can grow superexponentially
     with *k*.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们想处理多个连续缺失的标记怎么办？这是很可能的——我们很快会看到一个例子。我们需要一些大于1的正整数*k*的前瞻。*k*的值应该是多少？如果*k*仅比1稍大，我们不能处理许多连续缺失的标记，这种情况在现实中是很可能发生的。如果我们使用一个大的*k*，前瞻搜索可能会遇到组合爆炸，即不可扩展。这是因为我们必须搜索所有距离当前节点*k*范围内的可能后代。这些后代的数量可能随着*k*的增大而呈超指数增长。
 - en: The use of skip arcs circumvents such a combinatorial explosion.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 跳跃弧的使用避免了这种组合爆炸。
 - en: An aligned version of a labeled instance reveals exactly what skip arcs we should
     add. As illustrated in the example below, sometimes we want to learn to skip multiple
     tokens.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 对齐版本的标注实例精确地揭示了我们应该添加的跳跃弧。如下面的示例所示，有时我们想要学习跳过多个标记。
 - en: '[PRE2]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: From this, we can learn to add the skip arc from the Trie node [*I*, *will*,
     *go]* to the node [*I*, *will*, *go*, *to*, *the*]. This skip arc would allow
     us to account for *to the* missing in the original phrasing relative to the improved
     phrasing in the above instance.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这点出发，我们可以学会将跳跃弧从Trie节点[*I*, *will*, *go*]添加到节点[*I*, *will*, *go*, *to*, *the*]。这个跳跃弧将允许我们处理原始表述中相对于上述改进表述中缺失的*to
+    the*。
 - en: Okay, so *I go store* will map to a particular path on the Trie emanating from
     the root. From this path, we need to read off the sequence [*I*, ***will***, *go*,
     ***to the***, *store*]. The question is, how do we get the portions in bold?
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，因此*I go store*将映射到从根节点发出的Trie上的特定路径。从这条路径中，我们需要读取序列[*I*, ***will***, *go*,
+    ***to the***, *store*]。问题是，我们如何得到粗体部分？
 - en: One thing we could do is assign a label to a skip arc which represents the sequence
     of tokens that is being skipped. We know what this sequence of tokens is when
     we first create the skip arc, so we can set the label then. In contrast to a main
     arc, a skip arc’s label is used only when building the improved phrasing, not
     during the lookup. The lookup as we know is a skip.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以做的一件事是为表示被跳过的标记序列的跳跃弧分配一个标签。当我们首次创建跳跃弧时，我们知道这个标记序列，因此可以立即设置标签。与主弧不同，跳跃弧的标签仅在构建改进的表述时使用，而不是在查找期间使用。正如我们所知，查找是跳跃。
 - en: '**This Is Semi-Supervised Learning**'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**这是半监督学习**'
 - en: Okay, we’ve seen that training on a labeled data set has value. We also realize
     that it may be infeasible to build a labeled data set whose labels cover most
     clean sentences we can find in a large readily-available corpus. Such as Wikipedia.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，我们已经看到在标注数据集上的训练是有价值的。我们还意识到，建立一个标签覆盖大多数干净句子的标注数据集可能是不可行的，比如维基百科。
 - en: How can we leverage the large corpus without having to derive labeled instances
     that are rich enough from it? Easy.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何利用大量语料库而不必从中推导出足够丰富的标注实例？简单。
 - en: Learn the Trie minus the skip connections from the corpus. This is unsupervised
     learning.
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从语料库中学习Trie减去跳跃连接。这是无监督学习。
 - en: Learn the skip connections from a possibly much smaller labeled data set. This
     is supervised learning.
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从可能更小的标注数据集中学习跳跃连接。这是监督学习。
 - en: The assumption underlying the latter is that the problem of learning skip connections
     exhibits generalizability. We indeed saw such generalizability in an example we
     covered earlier. We can learn to account for the word *The* missing in a corrupted
     version of a sentence beginning with *The dog* even from one labeled instance.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 后者的基本假设是学习跳跃连接的问题具有普适性。我们确实在之前讨论的一个例子中看到了这种普适性。即使从一个标注实例中，我们也可以学会处理一个以*The dog*开头的句子在被损坏版本中*The*的缺失。
 - en: '**Skip Arcs Closer To The Root Generalize More**'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '**跳跃弧越接近根节点的泛化能力越强**'
 - en: Look at Figure 2\. The skip arc closest to the Trie’s root starts from the root
     and skips over *The.* This allows it to account for the first word *The* missing
     in any corrupted version of a clean sentence that begins with *The*.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 看图2。最接近Trie根节点的跳跃弧从根节点开始，跳过了*The*。这使得它能够考虑到任何以*The*开头的干净句子在任何被损坏版本中*The*的缺失。
 - en: Now consider the skip arc that skips the *is* in sentences beginning with *The
     new job is*. This applies to a more limited set of sentences.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑跳过句子中*新工作是*的*是*的跳过弧。这适用于更有限的句子集。
 - en: '**Substitution Arcs And Their Learning**'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '**替代弧及其学习**'
 - en: To motivate this, we will find the first rephrasing example we covered in our
     post helpful. This involved rephrasing *She cook good* as *She cooks well*.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了激励这一点，我们将发现我们在帖子中覆盖的第一个重述示例是有用的。这涉及将*她做饭好*重述为*她做饭好*。
 - en: Okay, so we start from the root and step over the arc labeled *She.* We are
     now at the node [*She*] but it doesn’t have a child [*She*, *cook*]. The closest
     child is [*She*, *cooks*]. We can find this child if we fuzzily match *cooks*
     to *cook*. We should keep in mind that finding the best matching child could take
     time if the node we are currently at has many children.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，所以我们从根节点开始，越过标记为*她*的弧。我们现在在节点[*她*]上，但它没有子节点[*她*，*做饭*]。最接近的子节点是[*她*，*做饭*]。我们可以通过模糊匹配*做饭*和*做饭*来找到这个子节点。我们应该记住，如果当前节点有许多子节点，找到最佳匹配的子节点可能需要时间。
 - en: An alternative to such fuzzy matching is to learn substitution arcs from a labeled
     data set.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这种模糊匹配的一种替代方法是从标记数据集中学习替代弧。
 - en: Imagine that the following labeled instance appears in the supervised training
     set.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象以下标记实例出现在监督训练集中。
 - en: '[PRE3]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: We can imagine learning from this labeled instance to add what we will call
     *substitution arcs*. These are depicted below for our example.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以想象从这个标记实例中学习，以添加我们所称的*替代弧*。这些在我们的示例中如下所示。
 - en: '![](../Images/5d8b5a193694eaba8860486f231813b4.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5d8b5a193694eaba8860486f231813b4.png)'
 - en: 'Figure 3: A Trie With Learned Substitution Arcs Added. (By Author.)'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3：添加了学习到的替代弧的Trie。（作者提供。）
 - en: While Figure 3 does not bring this out, substitution arcs need to be distinguished
     from the main arcs as they are used a bit differently.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然图3没有显示这一点，但替代弧需要与主弧区分开，因为它们的使用方式略有不同。
 - en: Substitution arcs may be walked while processing an input. For example, on the
     input *She cook good* we would walk the path labeled [*She*, *cook*, *good*] whose
     second and third arcs are substitution arcs.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 在处理输入时，替代弧可能会被遍历。例如，在输入*她做饭好*时，我们会遍历标记为[*她*，*做饭*，*好*]的路径，其中第二个和第三个弧是替代弧。
 - en: The output that is derived from the resulting path involves replacing the labels
     on the substitution arcs that are in the path with the main arcs that correspond
     to them. In our example, [*She*, *cook*, *good*] would be replaced by [*She*,
     *cooks*, *well*].
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 从结果路径中得出的输出涉及将路径中的替代弧上的标签替换为对应的主弧。在我们的例子中，[*她*，*做饭*，*好*] 会被替换为 [*她*，*做饭*，*好*]。
 - en: '**Substitution Arcs Versus Fuzzy Matching Of Tokens**'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '**替代弧与令牌的模糊匹配**'
 - en: As we discussed in the previous section, tokens are matched fuzzily only when
     we are in the correct left context. As an example, consider *She cooks good* and
     say we are at the node *She cooks*. There is an arc emanating from this node with
     the label *well*. We are matching *good* with *well* only in this left context
     *She cooks.* This mitigates the risk of a false positive*.*
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在前一节中讨论的那样，只有在我们处于正确的左侧上下文时，令牌才会被模糊匹配。例如，考虑*她做饭好*，假设我们在节点*她做饭*。从这个节点发出的弧有一个标签*好*。我们仅在这个左侧上下文*她做饭*中将*好*与*好*匹配。这减少了假阳性的风险。
 - en: This means that using fuzzy token matching instead of substitution arcs does
     not incur increased risk. Using substitution arcs helps primarily in speeding
     up the matching when a node has many children. The fuzzy matching alternative
     would require us to find the labels on all the arcs emanating from the parent
     node and match each label one by one to the next token in the input.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着，使用模糊令牌匹配而不是替代弧不会增加风险。使用替代弧主要有助于加快匹配速度，当节点有许多子节点时尤其如此。模糊匹配替代方案要求我们找到来自父节点的所有弧上的标签，并将每个标签一个接一个地匹配到输入中的下一个令牌。
 - en: Neither fuzzy matching nor substitution arcs necessarily assume that the tokens
     being matched are lexically similar, only that they are aligned in a labeled instance.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 模糊匹配和替代弧都不一定假设匹配的令牌在词汇上相似，仅仅是它们在标记实例中对齐。
 - en: As an example, consider the alignment
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为示例，考虑对齐情况
 - en: '[PRE4]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '*lawyer* and *attorney* are aligned even though there is no lexical similarity.'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '*律师*和*法律顾问*即使没有词汇上的相似性也是对齐的。'
 - en: '**Self Arcs And Their Learning**'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自弧及其学习**'
 - en: Consider the phrasing *You Like What* along with an improved rephrasing *What
     Do You Like*. The rephrasing involves rearranging the words. We’d like to continue
     leveraging Tries as opposed to designing a new mechanism to handle word order
     rearrangements.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑表达方式*You Like What*及其改进的重述*What Do You Like*。重述涉及重新排列单词。我们希望继续利用字典树，而不是设计新的机制来处理单词顺序的重新排列。
 - en: Imagine that we have a labeled and aligned instance that represents this pair.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下，我们有一个标记和对齐的实例来表示这一对。
 - en: '[PRE5]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: We can model the *What do* in the improved rephrasing via a skip arc. To model
     the *what* in the original phrasing we will use the concept of a self arc.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过跳跃弧来建模改进的重述中的*What do*。要建模原始重述中的*what*，我们将使用自我弧的概念。
 - en: Below is a segment of the Trie that models this situation.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是建模这种情况的字典树的一部分。
 - en: '![](../Images/df9101caacff0e75687bc9d167eb3cba.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/df9101caacff0e75687bc9d167eb3cba.png)'
 - en: 'Figure 4: A Trie With A Self Arc (and a skip arc). (By Author.)'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4：具有自我弧（和跳跃弧）的字典树。（作者提供。）
 - en: Let’s walk through how we will process the input [*you*, *like*, *what*]. We
     will start at the root, take the skip arc, then take the arcs labeled *you* and
     *like*, and finally the self arc labeled *what*. We will now concatenate the labels
     of the first three arcs on the path. We will omit the fourth arc’s label, as we
     know it is a self-arc.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们走查一下如何处理输入[*you*, *like*, *what*]。我们将从根节点开始，走跳跃弧，然后走标记为*you*和*like*的弧，最后走标记为*what*的自我弧。我们将连接路径上前三个弧的标签。我们将省略第四个弧的标签，因为我们知道它是自我弧。
 - en: '**On Reducing The Effort To Construct Labeled And Aligned Instances**'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '**减少构建标记和对齐实例的工作量**'
 - en: As we’ve seen, labeled instances, ones in which original phrasings are aligned
     with improved rephrasings, play an important role in learning accurate rephrasing
     suggestion models. The richer our data set of labeled instances, the better the
     quality of the learned model.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，标记的实例，即原始表达方式与改进的重述对齐的实例，在学习准确的重述建议模型中发挥着重要作用。我们标记实例的数据集越丰富，学习到的模型质量就越好。
 - en: In view of this. can we reduce the effort to construct labeled instances? The
     answer is Yes.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于此，我们可以减少构建标记实例的工作量吗？答案是可以。
 - en: Below we present an approach that involves aligning sequences in one data set
     (in which there may be many awkward phrasings) to a Trie trained on a corpus of
     mostly clean sentences. Following this, we describe how to enhance this approach
     using certain well-motivated linguistic features.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下我们提出一种方法，这种方法涉及将一个数据集中的序列（其中可能有许多尴尬的表达方式）对齐到一个在主要干净句子语料库上训练的字典树。接着，我们将描述如何利用某些经过充分论证的语言特征来增强这种方法。
 - en: '**Aligning Poor Sequences With A Clean Trie**'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '**用干净的字典树对齐不良序列**'
 - en: First, let’s assume we have two data sets, one of relatively clean sentences,
     and the second of poorer-quality phrasings. Imagine that from the first data set,
     we learn the Trie in the manner described earlier. (This Trie only has main arcs.)
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，假设我们有两个数据集，一个是相对干净的句子，另一个是质量较差的表达方式。想象一下，从第一个数据集中，我们按照前面描述的方式学习字典树。（这个字典树只有主要弧。）
 - en: Now consider an instance — a relatively poor one — from the second data set.
     Imagine finding a path in the current Trie that starts from the root and is a
     sufficiently good fuzzy match to the instance. From this path combined with the
     instance, we can derive a labeled instance of the sort we seek.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑一个来自第二个数据集的实例——一个相对较差的实例。想象一下在当前字典树中找到一条从根节点开始并且与实例足够匹配的路径。通过这条路径结合实例，我们可以推导出我们所寻求的标记实例。
 - en: How does the fuzzy matcher need to work? It needs to use look-ahead operations
     to allow for tokens on a path that are missing in the probe. It also needs to
     use fuzzy token matching to allow for substitutions.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 模糊匹配器需要如何工作？它需要使用前瞻操作来允许路径上的标记在探测器中缺失。它还需要使用模糊标记匹配来允许替换。
 - en: Let’s illustrate this process. Consider the Trie below.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们说明这个过程。考虑下面的字典树。
 - en: '![](../Images/c7343d1e097505ad58f2829c9185019d.png)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c7343d1e097505ad58f2829c9185019d.png)'
 - en: 'Figure 5: Trie On Which To Illustrate Fuzzy Matching. (By Author.)'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 5：用于说明模糊匹配的字典树。（作者提供。）
 - en: Now consider the probe *Me go store*. Assume we know that *me* and *I* are semantic
     associates. We’ll use this knowledge to align *me* with *I*, then do a look-ahead
     of 1, align *go* with *go*, do another look-ahead of 1, and finally align *store*
     with *store*. We have the desired alignment.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑探测器*Me go store*。假设我们知道*me*和*I*是语义关联词。我们将利用这一知识将*me*与*I*对齐，然后进行一次前瞻，对齐*go*与*go*，再进行一次前瞻，最后对齐*store*与*store*。我们得到了所需的对齐。
 - en: If we are okay thinking of this as happening during an offline training phase,
     the fuzzy matching need not even be optimized further for speed. The lookaheads
     may take time but that’s okay.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们认为这发生在离线训练阶段，那么模糊匹配甚至不需要进一步优化速度。前瞻可能需要时间，但这没关系。
 - en: One might ask, why not simply use this fuzzy matching process during inference
     time and dispense with supervised training altogether? Two reasons.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人可能会问，为什么不在推断时直接使用这种模糊匹配过程，而完全放弃监督训练？有两个原因。
 - en: First, the fuzzy matcher may run slow since it may need to do lookaheads. A
     slow fuzzy matcher is more tolerable during training than inference.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，模糊匹配器可能运行较慢，因为它可能需要进行前瞻。一个慢的模糊匹配器在训练过程中比在推断过程中更可接受。
 - en: Second, allowing for learning from labeled instances permits a mix of human-curated
     labeled instances combined with those automatically derived using the fuzzy matcher.
     In fact, it even allows human curators to discard those automatically generated
@@ -528,375 +776,527 @@
     automates the discovery process. So long as enough of the labeled instances found
     via this automated process are good enough, the benefit may outweigh the cost
     of detecting and tagging the false positives.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 其次，允许从标记实例中学习允许将人工策划的标记实例与使用模糊匹配器自动生成的实例混合在一起。实际上，它甚至允许人工策划者丢弃那些被认为质量较低的自动生成实例。这可能仍然减少了获得一个同等丰富的数据集的整体努力，因为它自动化了发现过程。只要通过这种自动化过程找到的足够多的标记实例足够好，那么其好处可能会超过检测和标记假阳性的成本。
 - en: '**Leveraging Linguistic Features**'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '**利用语言特征**'
 - en: This is based on the observation that words in certain parts of speech are more
     likely to be absent from poor phrasings than others. Such as articles or prepositions.
     Below are some examples.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是基于这样的观察：在某些词性中，词语在不良表述中缺失的可能性比其他词性更高。例如，冠词或介词。以下是一些示例。
 - en: exposure sunlight
+  id: totrans-124
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 曝露阳光
 - en: ''
+  id: totrans-125
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: He is lawyer
+  id: totrans-126
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 他是律师
 - en: We incorporate this into our approach of aligning poor sequences with a clean
     Trie as follows.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将这融入到我们将不良序列与干净Trie对齐的方法中，如下所示。
 - en: In the first step, we align our poor sequences with the clean Trie. During this
     process, a poor sequence *x* gets aligned with a path *y* on the Trie. For the
     sequence of words in y, we now get their part of speech. The alignment now reveals
     not only the words that might be missing in *x* relative to *y* but also their
     parts of speech. We can now discern if certain parts of speech are much more likely
     to be missing than others.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第一步中，我们将不良序列与干净的Trie对齐。在这个过程中，不良序列*x*与Trie上的路径*y*对齐。对于*y*中的词序列，我们现在得到它们的词性。对齐现在不仅揭示了相对于*y*来说可能在*x*中缺失的词，还揭示了它们的词性。我们现在可以辨别出某些词性是否比其他词性更可能缺失。
 - en: In step 2, we exhaustively enumerate all root-to-leaf paths on our Trie, which
     can be done via a depth-first or breadth-first search for instance, and add skip
     arcs to skip over words whose part of speech is in our list of most-skippable
     ones.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第2步中，我们穷举地列出Trie上的所有根到叶子路径，这可以通过深度优先或广度优先搜索等方式完成，并添加跳过弧以跳过在我们最易跳过的词性列表中的词。
 - en: Let’s illustrate this with a simple example.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用一个简单的例子来说明。
 - en: Say we align *He is lawyer* with *He is a lawyer*. We have found one instance
     of an article, in this case *a*, that is missing from the former. Repeating this
     process over lots of poor sequences should be able to discern that articles are
     more predisposed to be missing than some other parts of speech.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 比如我们将*He is lawyer*与*He is a lawyer*对齐。我们发现前者缺少一个冠词，在这种情况下是*a*。重复这个过程于许多不良序列应该能够辨别出冠词比其他一些词性更倾向于缺失。
 - en: '**A Finer-Grained Variant**'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更细粒度的变体**'
 - en: So far the word sequences we’ve considered for ingesting into the Trie are sentences
     in a corpus. This choice was made for convenience, as it is relatively easy to
     segment text into its sentences.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们考虑的词序列用于输入Trie的都是语料库中的句子。这种选择是为了方便，因为将文本分割成句子相对容易。
 - en: In this section, we consider a finer-grained variant, one in which the word
     sequences we ingest into the Trie are not necessarily full sentences, but rather
     sequences of words that appear in a certain dominant order.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，我们考虑一个更细粒度的变体，其中我们输入到Trie中的词序列不一定是完整的句子，而是以某种主导顺序出现的词序列。
 - en: This finer-grained Trie has the potential to suggest improved phrasings of shorter
     word sequences embedded within a sentence.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种更细粒度的Trie有潜力建议句子中嵌入的较短单词序列的改进表述。
 - en: Here is an example. No one writes *skin cancer* as *cancer skin.* If we can
     discover that the former is the dominant order for the set of these two words,
     we can detect violations of this order and suggest a rephrasing.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个例子。没有人将*skin cancer*写作*cancer skin*。如果我们能够发现前者是这两个词的主导顺序，我们就可以检测到这种顺序的违规，并建议重新表述。
 - en: A more plausible case is when in a sentence the words *of the* have been erroneously
     transposed, as in *The top* ***the of*** *mountain*.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 更为可信的情况是，当句子中的单词*of the*被错误地调换位置时，例如*The top* ***the of*** *mountain*。
 - en: Additionally, and perhaps more importantly, this finer-grained Trie may be used
     as a feature extractor in a modern neural language model for more elaborate versions
     of the awkward phrasing problem. Indeed for any inference problems that large
     language models are applicable to, including language generation.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，也许更重要的是，这种更细粒度的Trie可以作为现代神经语言模型中的特征提取器，用于处理更复杂的拗口表述问题。实际上，对于大型语言模型适用的任何推断问题，包括语言生成，都是如此。
 - en: Regardless of whether the Trie is used directly or as a feature extractor, there
     is a new problem that needs to be solved. Discovering the word sequences that
     appear in a certain dominant order. This problem was absent from our first Trie
     as the sentences were treated as the word sequences.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论Trie是直接使用还是作为特征提取器，都需要解决一个新问题。即发现以某种主导顺序出现的单词序列。这个问题在我们的第一个Trie中不存在，因为句子被视为单词序列。
 - en: First, the following terminology will help.
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，以下术语将有所帮助。
 - en: '**Orderable Bag**'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '**可排序的袋子**'
 - en: We will say that a multiset of words is an orderable bag if it has a dominant
     ordering.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个单词多重集具有主导排序，我们将称之为可排序的袋子。
 - en: We use the term *multiset* rather than *set* to allow the same word to appear
     multiple times in it.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用*multiset*这个术语而不是*set*，以允许同一个词出现多次。
 - en: For example, the multiset {*the*, *of*} has a dominant ordering [*of, the*].
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，多重集{*the*, *of*}有一个主导排序[*of, the*]。
 - en: Note that orderable bags are not the same as salient phrases. The former is
     only concerned about dominant orderings; the latter also needs to consider saliency,
     i.e. that the phrase conveys a meaning that is bigger than the sum of its parts.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，可排序的袋子与显著短语不同。前者只关心主导排序；后者还需要考虑显著性，即该短语传达的意义大于其部分之和。
 - en: '**Discovering Orderable Bags From A Corpus Of Sentences**'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: '**从句子语料库中发现可排序的袋子**'
 - en: Okay, now let’s discuss how to discover orderable bagsfrom a corpus of sentences.
     We’ll suppose all the sentences in the corpus have been tokenized into words.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 好了，现在让我们讨论如何从句子语料库中发现可排序的袋子。我们假设语料库中的所有句子都已经被分词为单词。
 - en: From this corpus, imagine deriving a data set *D*1of all sequences of tokens
     of length at least two. Next, we’ll construct a new data set *D*2 from *D*1 as
     follows. In fact, we will interpret *D*2 as a labeled data set.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这个语料库中，设想从所有长度至少为二的令牌序列中派生出一个数据集*D*1。接下来，我们将根据以下方式从*D*1构建一个新的数据集*D*2。实际上，我们将把*D*2解释为一个带标签的数据集。
 - en: For every sequence *y* in *D*1 there will be the sequence *x* in *D*2 where
     *x* is obtained from *y* by sorting its words in lexicographic order. *x*’s label
     in *D*2 will be *y*. That is, we are labeling, a representation of *y*’s multiset
     of words, with a particular ordering *y* that was observed.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于每一个*D*1中的序列*y*，在*D*2中将有一个序列*x*，其中*x*是通过对*y*的单词进行词典顺序排序得到的。*x*在*D*2中的标签将是*y*。也就是说，我们用观察到的特定排序*y*来标记*y*的单词多重集。
 - en: Below is an example of an instance in *D*2.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个在*D*2中的实例示例。
 - en: x = [cancer, skin], y = [skin, cancer]
+  id: totrans-151
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: x = [cancer, skin], y = [skin, cancer]
 - en: We will build a Trie from all the *x*’s in *D*2\. For any pair (*x*, *y*) in
     *D*2, we will attach *y* as satellite data to the node in the Trie that *x* ends
     on.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从*D*2中的所有*x*构建一个Trie。对于*D*2中的任何一对(*x*, *y*)，我们将把*y*作为卫星数据附加到Trie中*x*结束的节点上。
 - en: Once the Trie has been built we will compactify the satellite data on the various
     nodes in the Trie into two attributes.
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦Trie构建完成，我们将把Trie中各节点上的卫星数据压缩为两个属性。
 - en: The number of distinct orderingsthat serve as labels for the *x* ending at that
     node.
+  id: totrans-154
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 作为标签的不同排序数量即在该节点结束的*x*。
 - en: A probability distribution over the universe of orderings for the *x* ending
     at that node. For representing this distribution compactly, we will encode orderings
     in the manner described below.
+  id: totrans-155
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: We will call the first attribute — the number of distinct orderings — *support*.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
 - en: Sure, this Trie can be huge. That is not a concern to us.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
 - en: '**Using The Trie To Discover Awkwardly-ordered Subsequences**'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
 - en: Consider a sequence of words in which some subsequence is ordered awkwardly.
     Such as *The top* ***the of*** *mountain.*
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
 - en: We’ll discover awkward phrasings (if any) by enumerating all subsequences of
     length at least 2, sorting each such sequence in lexicographic order, looking
     up the Trie with that sequence, and checking whether the end node has satellite
     data that reveals whether there is a dominant ordering or not.
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
 - en: '**Example**'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
 - en: As an example, once the Trie has been built, say the rightmost node on the path
     [*cancer*, *skin*] has satellite data (520, [*skin*, *cancer*] → 1). This just
     means that the bag {*cancer*, *skin*} was observed 520 times in the data set,
     in each case with the ordering [*skin*, *cancer*].
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
 - en: '**Using The Orderable Bags Trie As A Feature Extractor In A Neural Language
     Model**'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
 - en: Once the orderable bags Trie has been built, we can leverage it as a feature
     extractor as follows.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
 - en: First, let’s assign a unique identifier to every path in the Trie. This identifier
     will serve as the value of the feature associated with this path.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
 - en: We take a sequence of words as input and segment it into a sequence of maximal
     paths in the Trie each of which is a dominant ordering with a certain minimum
     support. So that we cover all cases, we will define a word sequence composed of
     a single word as being a dominant ordering with the aforementioned minimum support.
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
 - en: We now replace the paths in this sequence with their identifiers. So we have
     a sequence of features. For those paths in this sequence which represent single
     words, we can attach additional features. Such as word embeddings.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s illustrate this process in the example below.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
 - en: Consider
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
 - en: exposure to sunlight causes skin cancer
+  id: totrans-170
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Imagine that using the orderable bags Trie we segment this into
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
 - en: exposure → to → sunlight, causes, skin → cancer
+  id: totrans-172
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: which, after we replace paths with ids, becomes
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
 - en: pid1, pid(causes), pid2
+  id: totrans-174
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: From the perspective of adding value to our Trie-based approach, the benefit
     is clear. Modern neural language models are capable of impressive feats.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
 - en: In the context of the particular use case that we address in this post, this
     will allow them to detect phrasings needing improvement in longer portions of
     text, such as paragraphs or even many pages. Ones that might need to factor in
     long-range interactions.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
 - en: What about from the perspective of adding value to Modern neural language models?
     We think Trie-based features will enrich these models further. The basic intuition
     is that certain short word sequences do repeatedly occur frequently in text and
     implicitly encode particular semantics.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
 - en: The Trie-based approach discovers such sequences automatically from a corpus
     and can therefore be used to analyze longer sequences that are composed of certain
     arrangements of these sequences.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于Trie的方法可以从语料库中自动发现这些序列，因此可以用于分析由这些序列的某些排列组成的更长序列。
 - en: Let’s illustrate this with a simple example. Consider
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用一个简单的例子来说明。考虑
 - en: '**exposure to sunlight** causes **skin cancer**'
+  id: totrans-180
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**exposure to sunlight** 导致 **skin cancer**'
 - en: Here we deem the subsequences in bold to be dominant orderings and represented
     in our Trie.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们认为加粗的子序列是主导排序，并在我们的Trie中进行了表示。
 - en: We can imagine that a neural language model leveraging the Trie can easily predict
     that *exposure to sunlight causes* should be followed by *skin cancer*.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以想象，利用Trie的神经语言模型可以很容易地预测 *exposure to sunlight causes* 后面应该跟着 *skin cancer*。
 - en: Now imagine that we have a labeled data set of semantically-equivalent phrasings.
     As one instance in this data set, consider
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们有一个标记的数据集，其中包含语义上等价的表述。作为这个数据集中的一个实例，考虑
 - en: '[PRE6]'
+  id: totrans-184
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: From many instances of the form {*X causes Y*, *Y is caused by X*} and assuming
     *X* and *Y* are represented as dominant-ordering paths in the Trie we can discern
     the semantic equivalence of the two and use this learning in certain inferences
     or generation. Such as if we were asked to reexpress *X causes Y* differently,
     we could answer *Y is caused by X*.
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 从许多形式为 {*X causes Y*, *Y is caused by X*} 的实例中，并假设 *X* 和 *Y* 在Trie中被表示为主导排序路径，我们可以识别出这两者的语义等价性，并在某些推理或生成中使用这种学习。例如，如果我们被要求以不同的方式重新表达
+    *X causes Y*，我们可以回答 *Y is caused by X*。
 - en: '**Summary**'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结**'
 - en: In this post, we covered the problem of discovering awkward phrasings — i.e.,
     orderings of word sequences — and suggesting improved ones.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们讨论了发现尴尬表述——即词序列的排列——并提出改进方案的问题。
 - en: We modeled this problem using a Trie. This Trie automatically detects, in an
     unsupervised way, short word sequences that appear repeatedly in the corpus. A
     supervised mechanism in the Trie also learns certain common “awkward phrasing”
     patterns from a labeled data set of (awkward phrasing, improved phrasing) pairs.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用Trie对这个问题进行了建模。这个Trie可以以无监督的方式自动检测出语料库中重复出现的短词序列。Trie中的一个监督机制还从标记数据集（包括（awkward
+    phrasing, improved phrasing）对）中学习某些常见的“尴尬表述”模式。
 - en: For small, albeit nuanced, versions of the rephrasing problem, we showed that
     improved phrasings can be found directly, via suitable fuzzy searches on the learned
     Trie.
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于小规模但细微的表述重述问题，我们展示了可以通过在学习到的Trie上进行适当的模糊搜索直接找到改进的表述。
 - en: For more elaborate versions of the problem, we described a variant that uses
     Tries to extract advanced re-occurring features, in particular repeating word
     sequences that are short. We reasoned why using these features in a state-of-the-art
     neural language model can improve its accuracy. And simplify its training. For
     this use, the Trie needed to be set up with certain preprocessing and pretraining.
     We described both as well.
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于问题的更详细版本，我们描述了一个变体，使用Trie提取高级重复特征，特别是短的重复词序列。我们推测为什么在最先进的神经语言模型中使用这些特征可以提高其准确性，并简化其训练。为此用途，需要对Trie进行某些预处理和预训练。我们也描述了这两者。
 - en: '**Phrases From ChatGPT**'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: '**ChatGPT中的短语**'
 - en: Below are the awkward phrasings and their improved versions that ChatGPT furnished
     in response to the prompt
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是ChatGPT在回复提示时提供的尴尬表述及其改进版本
 - en: Give me some examples of phrasings that are awkward and of lengths two to four
     words
+  id: totrans-193
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 给我一些长度为两到四个单词的尴尬表述的例子
 - en: In its response, ChatGPT had the improved rephrasings separated out from the
     awkward ones. I have aligned these for the reader’s convenience.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 在回复中，ChatGPT将改进后的表述与尴尬的表述分开了。我为了读者的方便，将这些进行了对齐。
 - en: “Me go store.” I will go to the store
+  id: totrans-195
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Me go store.” 我要去商店
 - en: “You like what?” What do you like?
+  id: totrans-196
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “You like what?” 你喜欢什么？
 - en: “Dog chase cat.” The dog is chasing the cat.
+  id: totrans-197
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Dog chase cat.” 狗在追猫。
 - en: “He no here.” He is not here.
+  id: totrans-198
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “He no here.” 他不在这里。
 - en: “She cook good.” She is a good cook.
+  id: totrans-199
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “She cook good.” 她是个好厨师。
 - en: “Big house him.” He has a big house
+  id: totrans-200
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Big house him.” 他有一栋大房子
 - en: “Funny joke that.” That is a funny joke
+  id: totrans-201
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Funny joke that.” 那是个有趣的笑话
 - en: “Rain make wet.” The rain is making everything wet.
+  id: totrans-202
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Rain make wet.” 雨使一切变得湿润。
 - en: “Car go fast.” The car is going fast.
+  id: totrans-203
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Car go fast.” 这辆车正在快速行驶。
 - en: “New job good.” The new job is good.
+  id: totrans-204
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “New job good.” 新工作很好。
 - en: '**Further Reading**'
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: '**进一步阅读**'
 - en: '[https://en.wikipedia.org/wiki/Sequence_alignment](https://en.wikipedia.org/wiki/Sequence_alignment)'
+  id: totrans-206
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://en.wikipedia.org/wiki/Sequence_alignment](https://en.wikipedia.org/wiki/Sequence_alignment)'
 - en: '[https://en.wikipedia.org/wiki/Trie](https://en.wikipedia.org/wiki/Trie)'
+  id: totrans-207
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://en.wikipedia.org/wiki/Trie](https://en.wikipedia.org/wiki/Trie)'
