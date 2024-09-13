@@ -94,6 +94,7 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '**ControlNets**的引入，如Lvmin Zhang和Maneesh Agrawala在其开创性论文“[*将条件控制添加到文本到图像扩散模型*](https://arxiv.org/abs/2302.05543)”（2023）中提出的，显著增强了扩散模型的可控性和定制性。这些神经网络作为轻量级适配器，能够实现精确的控制和定制，同时保留扩散模型的原始生成能力。通过微调这些适配器，同时保持原始扩散模型的冻结，文本到图像模型可以高效地扩展到各种图像到图像应用中。'
 - en: What sets ControlNet apart is its solution to the challenge of spatial consistency.
     In contrast to previous methods, ControlNet allows for explicit control over spatial,
     structural, and geometric aspects of generated structures, while retaining semantic
@@ -103,6 +104,7 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: ControlNet 的独特之处在于其解决了空间一致性的问题。与之前的方法不同，ControlNet 允许对生成结构的空间、结构和几何方面进行显式控制，同时保留了来自文本说明的语义控制。原始研究介绍了各种模型，这些模型基于边缘、姿势、语义掩码和深度图实现条件生成，为计算机视觉领域的激动人心的进展铺平了道路。
 - en: 'In the field of medical imaging, numerous image-to-image applications hold
     significant importance. Among these applications, one notable task involves translating
     images between different domains, such as converting computational tomography
@@ -118,27 +120,36 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在医学影像领域，许多图像到图像应用具有重要意义。在这些应用中，一个显著的任务是跨领域翻译图像，例如将计算机断层扫描（CT）转换为磁共振成像（MRI），或在不同对比度之间转换图像，例如从
+    T1 加权图像到 T2 加权图像。在这篇文章中，我们将重点关注一个特定案例：使用从 FLAIR 图像获得的**2D 脑图像切片生成对应的 T1 加权图像**。我们的目标是展示如何有效地利用我们的
+    MONAI 扩展（[MONAI Generative Models](https://github.com/Project-MONAI/GenerativeModels)）和
+    ControlNets 来训练和评估医学数据上的生成模型。通过深入探讨这个例子，我们旨在提供这些技术在医学影像领域实际应用的见解。
 - en: '![](../Images/c375ecdab449c61cfdde33f301c92d7f.png)'
   id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c375ecdab449c61cfdde33f301c92d7f.png)'
 - en: FLAIR to T1w Translation
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: FLAIR 到 T1w 翻译
 - en: Latent Diffusion Model Training
   id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 潜在扩散模型训练
 - en: '![](../Images/43544d640b73ae5bff77412a659a6e63.png)'
   id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/43544d640b73ae5bff77412a659a6e63.png)'
 - en: Latent Diffusion Model Architecture
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 潜在扩散模型架构
 - en: To generate T1-weighted (T1w) images from FLAIR images, **the initial step involves
     training a diffusion model capable of generating T1w images**. In our example,
     we utilize 2D slices extracted from brain MRI images sourced from the [UK Biobank
@@ -176,10 +187,14 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了优化计算资源，潜在扩散模型使用**编码器**将输入图像x转换为低维潜在空间z，然后通过**解码器**重建。这种方法使得即使在计算能力有限的情况下也能训练扩散模型，同时保留其原始质量和灵活性。类似于我们在上一篇文章**（[***使用MONAI生成医学图像***](https://medium.com/towards-data-science/generating-medical-images-with-monai-e03310aa35e6)）**中做的，我们使用来自MONAI
+    Generative模型的[**带有KL正则化的自编码器模型**](https://github.com/Project-MONAI/GenerativeModels/blob/main/generative/networks/nets/autoencoderkl.py#L579)来创建我们的压缩模型。通过使用[这个配置](https://github.com/Warvito/generative_brain_controlnet/blob/main/configs/stage1/aekl_v0.yaml)和L1损失以及KL正则化，[感知损失](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/losses/perceptual.py#L21)和[对抗性损失](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/losses/adversarial_loss.py#L29)，**我们创建了一个能够高保真编码和解码脑部图像的自编码器**
+    [（使用这个脚本）](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/training/train_aekl.py)。自编码器的重建质量对于潜在扩散模型的性能至关重要，因为它定义了我们生成图像的质量上限。如果自编码器的解码器生成模糊或低质量的图像，我们的生成模型将无法生成更高质量的图像。
 - en: '![](../Images/ed59d3f19e84b64518ba86a2b5b4d483.png)'
   id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ed59d3f19e84b64518ba86a2b5b4d483.png)'
 - en: Using this [script](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_msssim_reconstruction.py),
     we can quantify the fidelity of the autoencoder by using the **Multi-scale Structural
     Similarity Index Measurement (MS-SSIM)** between the original images and their
@@ -188,6 +203,7 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用这个[脚本](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_msssim_reconstruction.py)，我们可以通过使用原始图像与其重建之间的**多尺度结构相似性指数测量（MS-SSIM）**来量化自编码器的保真度。在这个例子中，我们获得了一个MS-SSIM指标为0.9876的高性能。
 - en: After we train the autoencoder, we will train the [**diffusion model**](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/networks/nets/diffusion_model_unet.py#L1632)
     **on the latent space z**. The diffusion model it is a model that is able to generate
     images from a pure noise image by iteratively denoising it over a series of timesteps.
@@ -198,10 +214,13 @@
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练完自编码器后，我们将训练[**扩散模型**](https://github.com/Project-MONAI/GenerativeModels/blob/c1ec4ed4381de90ef18061c98624fa931c42e9b6/generative/networks/nets/diffusion_model_unet.py#L1632)
+    **在潜在空间z上**。扩散模型是一种能够通过在一系列时间步上逐步去噪，从纯噪声图像中生成图像的模型。它通常使用**U-Net架构**（具有编码器-解码器格式），其中编码器的层通过长**跳跃连接**与解码器部分的层相连，从而实现特征重用，稳定训练和收敛。
 - en: '![](../Images/1a9a40bef9b19b542c683181e50c34bb.png)'
   id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1a9a40bef9b19b542c683181e50c34bb.png)'
 - en: Diffusion Model’s U-Net architecture with skip connections between the encoder
     and decoder.
   id: totrans-26
@@ -346,16 +365,20 @@
   id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练模型后，我们可以对其进行采样和评估。[这里](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/sample_flair_to_t1w.py)，我们使用测试集中的
+    FLAIR 图像生成条件 T1w 图像。类似于我们的训练，采样过程与扩散模型使用的非常接近，唯一的区别是我们将条件图像传递给训练好的 ControlNet，并使用其输出在每个采样时间步中馈送给扩散模型。正如我们从下图中观察到的那样，**我们生成的图像在空间上高度忠实于原始条件**，大脑皮层回旋遵循类似的形状，并且图像保持了不同组织之间的边界。
 - en: '![](../Images/b2ce5162a27dae654d7bd4739ffca9f7.png)'
   id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b2ce5162a27dae654d7bd4739ffca9f7.png)'
 - en: Examples from the test set of the original FLAIR image used as input to the
     ControlNet (left), the generated T1-weighted image (middle), and the original
     T1-weighted image, a.k.a. the expected output (right)
   id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 测试集中用于输入到 ControlNet 的原始 FLAIR 图像（左）、生成的 T1 加权图像（中）和原始 T1 加权图像，即期望输出（右）的示例。
 - en: After we sample the images of our models, we can quantify the performance of
     our ControlNet when translating the images between different contrasts. Since
     we have the expected T1w images from the test set, we can also check their differences
@@ -366,6 +389,9 @@
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们对模型的图像进行采样后，我们可以量化我们 ControlNet 在不同对比度之间翻译图像的性能。由于我们拥有测试集中的期望 T1w 图像，我们还可以检查它们之间的差异，并使用**均方绝对误差
+    (MAE)**、**峰值** **信噪比 (PSNR)** 和**MS-SSIM**计算真实图像与合成图像之间的距离。在我们的测试集中，当执行这个 [脚本](https://github.com/Warvito/generative_brain_controlnet/blob/main/src/python/testing/compute_controlnet_performance.py)
+    时，我们得到了 PSNR=26.2458+-1.0092，MAE=0.02632+-0.0036 和 MSSIM=0.9526+-0.0111。
 - en: And that is it! ControlNet offers incredible control over our diffusion models
     and recent approaches have extended its method to combine different trained ControlNets
     ([Multi-ControlNet](https://github.com/Mikubill/sd-webui-controlnet#multi-controlnet)),
@@ -377,12 +403,17 @@
   id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这些！ControlNet 提供了对我们扩散模型的不可思议的控制，近期的方法已经扩展了其方法，以结合不同训练的 ControlNets ([Multi-ControlNet](https://github.com/Mikubill/sd-webui-controlnet#multi-controlnet))，在同一模型中处理不同类型的条件
+    ([T2I adapters](https://arxiv.org/abs/2302.08453))，甚至基于样式调整模型（使用像 ControlNet 1.1
+    这样的技术 — [仅供参考](https://github.com/Mikubill/sd-webui-controlnet/discussions/1236)）。如果这些方法听起来很有趣，不要忘记关注我，以获取更多类似的指南！😁
 - en: For more MONAI Generative Model’s tutorials and to learn more about our features,
     check out our [Tutorial page](https://github.com/Project-MONAI/GenerativeModels/tree/main/tutorials)!
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 想了解更多 MONAI Generative Model 的教程以及我们的功能，请查看我们的 [教程页面](https://github.com/Project-MONAI/GenerativeModels/tree/main/tutorials)！
 - en: '*Note: All images unless otherwise noted are by the author*'
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：除非另有说明，所有图像均由作者提供*'
