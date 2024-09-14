@@ -1,308 +1,460 @@
 - en: Model Evaluation in Time Series Forecasting
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 时间序列预测中的模型评估
 - en: 原文：[https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c](https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c](https://towardsdatascience.com/model-evaluation-in-time-series-forecasting-ae41993e267c)
 - en: Introducing backtesting for time series using the Skforecast library
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 介绍使用 Skforecast 库进行时间序列的回测
 - en: '[](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------)[![Javier
     Fernandez](../Images/d881a426c3f28ad5f41355a7aa92ed86.png)](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)
     [Javier Fernandez](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------)[![Javier
+    Fernandez](../Images/d881a426c3f28ad5f41355a7aa92ed86.png)](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)
+    [Javier Fernandez](https://javiferfer.medium.com/?source=post_page-----ae41993e267c--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)
     ·6 min read·Mar 5, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae41993e267c--------------------------------)
+    ·6 min read·2023年3月5日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/0a6a23a2ca72f5acd77ac7e855528173.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0a6a23a2ca72f5acd77ac7e855528173.png)'
 - en: Photo by [Lukas](https://www.pexels.com/@goumbik) on [Pexels](https://www.pexels.com/photo/chart-close-up-data-desk-590022/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[Lukas](https://www.pexels.com/@goumbik) 在 [Pexels](https://www.pexels.com/photo/chart-close-up-data-desk-590022/)
 - en: Time-series forecasting consists of making predictions based on historical time
     data to drive future strategic decision-making in a wide range of applications.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列预测包括基于历史时间数据进行预测，以驱动广泛应用中的未来战略决策。
 - en: When evaluating a model, we split our data into a training and a test set. While
     the training set is used to train the model and determine the optimal hyperparameters,
     the test set is used to evaluate it. To have a more robust evaluation of the model
     performance, it is common to use [cross-validation](https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29#:~:text=Cross%2Dvalidation%20is%20a%20resampling,model%20will%20perform%20in%20practice.).
     Cross-validation is a resampling method that uses different data sets to test
     and train a model on several iterations.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在评估模型时，我们将数据分为训练集和测试集。训练集用于训练模型并确定最佳超参数，而测试集用于评估模型。为了对模型性能进行更全面的评估，通常会使用 [交叉验证](https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29#:~:text=Cross%2Dvalidation%20is%20a%20resampling,model%20will%20perform%20in%20practice.)。交叉验证是一种重采样方法，使用不同的数据集对模型进行多次迭代测试和训练。
 - en: However, it is not possible to implement straightforward cross-validation on
     time series data as it ignores the temporal components between the observations.
     Therefore, this article presents different methods used to evaluate time series
     models, known as [backtesting](https://en.wikipedia.org/wiki/Backtesting).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，直接在时间序列数据上实施交叉验证是不可能的，因为它忽略了观察之间的时间成分。因此，本文介绍了评估时间序列模型的不同方法，这些方法被称为 [回测](https://en.wikipedia.org/wiki/Backtesting)。
 - en: 1\. Introduction
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 1\. 介绍
 - en: Backtesting is a term used in modeling that refers to assessing a model using
     existing historic data. It involves selecting several training and test sets going
     step-by-step forward in time. The main idea behind backtesting is similar to the
     one behind cross-validation, except that backtesting considers the temporal component
     of the data. This method enables us to (1) assess and visualize how the model
     error develops over time and (2) estimate the variance of the model error.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 回测是建模中使用的一个术语，指的是利用现有历史数据评估模型。它涉及选择多个训练集和测试集，逐步向前推进时间。回测的主要思想类似于交叉验证，但回测考虑了数据的时间成分。这种方法使我们能够
+    (1) 评估和可视化模型误差如何随时间发展，(2) 估计模型误差的方差。
 - en: In production, it is a common practice to first determine the optimal parameters
     using a backtesting method and then retrain the model with the available data.
     But, this retraining does not necessarily need to be with all the available data
     or every time new data is available. Depending on our strategy, we can select
     a different backtesting method.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在生产环境中，通常的做法是首先使用回测方法确定最佳参数，然后用可用数据重新训练模型。但是，这种重新训练不一定需要使用所有可用数据或每次有新数据时都进行。根据我们的策略，我们可以选择不同的回测方法。
 - en: 1\. Backtesting with refit and increasing training size
+  id: totrans-14
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. 具有重新拟合和增加训练样本量的回测
 - en: The model is tested on a sequentially increased training set, always having
     a fixed origin and using all the data available. In this method, there is a fixed
     origin and the size of the training set increases for each iteration, as displayed
     in Figure 1.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型在顺序增加的训练集上进行测试，始终保持固定的起点，并使用所有可用数据。在这种方法中，有一个固定的起点，训练集的大小在每次迭代中增加，如图 1 所示。
 - en: '![](../Images/fd8389c0b054e23a0ebd4d546586b671.png)![](../Images/d7005815c9ad3218745e209a0bf0957a.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fd8389c0b054e23a0ebd4d546586b671.png)![](../Images/d7005815c9ad3218745e209a0bf0957a.png)'
 - en: '***Fig. 1****. Time series backtesting diagram with an initial training size
     of ten observations, a prediction horizon of 3 steps, and retraining at each iteration.*
     ***Ref****:* [*Skforecast*](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)
     *[1].*'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '***图 1***。时间序列回测图示，初始训练样本量为十个观测值，预测范围为3步，每次迭代时进行重新训练。***参考***：[*Skforecast*](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)
+    *[1]*。'
 - en: 2\. Backtesting with refit and fixed training size
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 具有重新拟合和固定训练样本量的回测
 - en: This method is similar to the previous one except that it rolls the origin of
     the forecast. Therefore, the size of the training set remains constant, as displayed
     in Figure 2\. This method can be considered a time series analogous to cross-validation
     techniques.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法与前一种方法类似，只是它滚动了预测的起点。因此，训练集的大小保持不变，如图 2 所示。这种方法可以被认为是一种类似于交叉验证技术的时间序列方法。
 - en: Compared to the previous method, this method is less expensive as the size of
     the training set stays the same for each iteration. It also allows for distinct
     error distribution by lead time and desensitizes the error measures to special
     events at any single origin [2]. An example where this approach is interesting
     is when there have been events or “abnormal” periods, such as COVID, within the
     historical data.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 与之前的方法相比，这种方法更具成本效益，因为每次迭代中训练集的大小保持不变。它还允许根据提前时间分布错误，并使错误度量对任何单一来源的特殊事件不那么敏感[2]。这种方法有趣的一个例子是，当历史数据中发生了事件或“异常”时期（例如
+    COVID）时。
 - en: '![](../Images/f45f9dc96bec49070cdff66a94bbab04.png)![](../Images/6ca8fb135dd54935fcef37cdf8116117.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f45f9dc96bec49070cdff66a94bbab04.png)![](../Images/6ca8fb135dd54935fcef37cdf8116117.png)'
 - en: '**Fig. 2**. *Time series backtesting diagram with an initial training size
     of ten observations, a prediction horizon of 3 steps, and a training set of constant
     size.* ***Ref****:* [*Skforecast*](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)
     *[1].*'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 2**。*时间序列回测图示，初始训练样本量为十个观测值，预测范围为3步，训练集大小保持不变。* ***参考***：[*Skforecast*](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)
+    *[1]*。'
 - en: 3\. Backtesting without refit
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3\. 无重新拟合的回测
 - en: The last backtesting approach consists of training the model with an initial
     training set and assessing it sequentially without updating it. This strategy
     has the advantage of being much faster since the model is trained only once. However,
     the model does not incorporate the latest data available, so it may lose predictive
     capacity over time.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一种回测方法包括使用初始训练集训练模型，并顺序评估模型而不进行更新。这种策略的优点在于速度较快，因为模型仅训练一次。然而，该模型未纳入最新的数据，因此可能会随着时间的推移而失去预测能力。
 - en: This approach is interesting if it is necessary to make predictions with a high
     frequency on new data coming into the system.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果需要对系统中新进入的数据进行高频预测，这种方法非常有趣。
 - en: '![](../Images/426dfbdb0a65c10f1ecc67fb628fdf20.png)![](../Images/05a2ff5bac9d22384b24a8ad9496d1fc.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/426dfbdb0a65c10f1ecc67fb628fdf20.png)![](../Images/05a2ff5bac9d22384b24a8ad9496d1fc.png)'
 - en: '**Fig. 3**. *Time series backtesting diagram with an initial training size
     of ten observations, a prediction horizon of 3 steps, and no retraining at each
     iteration.* ***Ref****:* [*Skforecast*](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)
     *[1].*'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 3**。*时间序列回测图示，初始训练规模为十个观察值，预测范围为3步，每次迭代不重新训练。* ***参考****:* [*Skforecast*](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)
+    *[1].*'
 - en: 2\. Implementation
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 2\. 实现
 - en: Here is the implementation of backtesting using the Skforecast library. Skforecast
     is a python library that eases using scikit-learn regressors as multi-step forecasters.
     It also works with any regressor compatible with the scikit-learn API (pipelines,
     CatBoost, LightGBM, XGBoost, Ranger…).
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是使用Skforecast库进行回测的实现。Skforecast是一个Python库，简化了使用scikit-learn回归器作为多步预测器的过程。它还适用于任何与scikit-learn
+    API兼容的回归器（如pipelines、CatBoost、LightGBM、XGBoost、Ranger等）。
 - en: For testing purposes, we have used the publicly available h2o datastet under
     the [GitHub](https://github.com/JoaquinAmatRodrigo/skforecast/blob/master/data/h2o.csv)
     MIT license, whose data goes from 1991–07–01 to 2008–06–01 monthly.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 出于测试目的，我们使用了在[GitHub](https://github.com/JoaquinAmatRodrigo/skforecast/blob/master/data/h2o.csv)
+    MIT许可证下公开可用的h2o数据集，其数据从1991-07-01到2008-06-01，每月更新。
 - en: '![](../Images/1e3fac06460e27370029c29e4667b3d9.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1e3fac06460e27370029c29e4667b3d9.png)'
 - en: '**Fig. 4**. *Visualization of the dataset, where blue data is used for training
     and orange for testing.* ***Ref****: Image by author.*'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 4**。*数据集的可视化，其中蓝色数据用于训练，橙色数据用于测试。* ***参考****: 作者提供的图像。*'
 - en: Below, there are the three described backtesting methods with a random forest
     regressor used as autoregression.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是三种描述的回测方法，其中使用随机森林回归器作为自回归。
 - en: 'When looking at the implementation, the difference between the backtesting
     methods relies on the following parameters:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在查看实现时，回测方法之间的区别在于以下参数：
 - en: '*initial_train_size*: Number of samples in the initial train split.'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*initial_train_size*: 初始训练分割中的样本数量。'
 - en: '*fixed_train_size*: If *True*, train size doesn’t increase but moves by ‘steps’
     in each iteration.'
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*fixed_train_size*: 如果*True*，则训练规模不会增加，但在每次迭代中按“步数”移动。'
 - en: '*refit*: Whether to re-fit the forecaster in each iteration.'
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*refit*: 是否在每次迭代中重新拟合预测模型。'
 - en: '*steps*: Number of steps to predict.'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*steps*: 预测的步数。'
 - en: 1\. Backtesting with refit and increasing training size
+  id: totrans-39
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. 使用重新拟合和增加训练规模的回测
 - en: The model is first trained with the series length set until 2002–01–01, to then
     sequentially add ten new data into the training. This process is repeated until
     the entire series has been run.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型首先以2002-01-01为截止日期进行训练，然后依次将十个新数据添加到训练中。此过程重复进行，直到整个系列运行完毕。
 - en: To set this method, the *fixed_train_size* and *refit* parameters are set to
     *False* and *True*, respectively.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 要设置此方法，将*fixed_train_size*和*refit*参数分别设置为*False*和*True*。
 - en: '![](../Images/7819ead7155a4ebde3a6afe2727bc5b9.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7819ead7155a4ebde3a6afe2727bc5b9.png)'
 - en: As observed, the training set increases over time while the test set remains
     constant over time.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 如观察到的那样，训练集随着时间的推移而增加，而测试集则保持不变。
 - en: 2\. Backtesting with refit and fixed training size
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 使用重新拟合和固定训练规模的回测
 - en: Similar to backtesting with refit and increasing training size, the model is
     first trained with the series length set until 2002–01–01 to then sequentially
     add ten new data into the training. However, in this method, the size keeps constant
     over time, which means both the training and test sets have always the same size.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 与使用重新拟合和增加训练规模的回测方法类似，该模型首先以2002-01-01为截止日期进行训练，然后依次将十个新数据添加到训练中。然而，在这种方法中，规模保持不变，这意味着训练集和测试集的大小始终相同。
 - en: To set this method, both the *fixed_train_size* and *refit* parameters are set
     to *True*.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 要设置此方法，将*fixed_train_size*和*refit*参数都设置为*True*。
 - en: '![](../Images/48887a8d03df59c87af56fa3884fa5dc.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/48887a8d03df59c87af56fa3884fa5dc.png)'
 - en: 3\. Backtesting without refit
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3\. 无重新拟合的回测
 - en: Similar to backtesting with refit and increasing training size, the model is
     first trained with the series length set until 2002–01–01\. However, the training
     set does not change over time where as the test set moves ten steps each iteration.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 与使用重新拟合和增加训练规模的回测方法类似，该模型首先以2002-01-01为截止日期进行训练。然而，训练集随着时间的推移不会变化，而测试集在每次迭代中移动十步。
 - en: To set this method, both the *fixed_train_size* and *refit* parameters are set
     to *False*.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 要设置此方法，将*fixed_train_size*和*refit*参数都设置为*False*。
 - en: '![](../Images/18f669f95f4fe85af8aeb3ca72c44218.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/18f669f95f4fe85af8aeb3ca72c44218.png)'
 - en: This same methodology can be run with not only sklearn-based models but with
     other ones such as [SARIMAX](https://github.com/JoaquinAmatRodrigo/skforecast/blob/master/skforecast/model_selection_statsmodels/model_selection_statsmodels.py).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法不仅可以用于基于sklearn的模型，还可以用于其他模型，如[SARIMAX](https://github.com/JoaquinAmatRodrigo/skforecast/blob/master/skforecast/model_selection_statsmodels/model_selection_statsmodels.py)。
 - en: 3\. Conclusion
+  id: totrans-53
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 3\. 结论
 - en: 'In this article, we have discussed the different methods for model evaluation
     for time series forecasting, known as backtesting. The main take-home messages
     are:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们讨论了时间序列预测模型评估的不同方法，称为回测。主要的要点是：
 - en: There are three main backtesting methods, whose main differences rely on whether
     there is refit or not, the training size, and the origin of the forecast.
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 主要有三种回测方法，其主要区别在于是否重新拟合、训练规模以及预测的来源。
 - en: The backtesting method should depend on the production scenario.
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 回测方法应根据生产场景而定。
 - en: Since both the implementation and the computation time can be expensive, try
     to use already optimized Python libraries such as Skforecast.
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由于实施和计算时间可能昂贵，尽量使用已优化的Python库，如Skforecast。
 - en: '***If you enjoyed this post, please consider*** [***subscribing***](https://javiferfer.medium.com/membership)***.
     You’ll get access to all of my content + every other article on Medium from awesome
     creators!***'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '***如果你喜欢这篇文章，请考虑*** [***订阅***](https://javiferfer.medium.com/membership)***。你将获得对我所有内容的访问权限，并能阅读Medium上其他精彩创作者的每一篇文章！***'
 - en: References
+  id: totrans-59
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[](/creating-an-arima-model-for-time-series-forecasting-ff3b619b848d?source=post_page-----ae41993e267c--------------------------------)
     [## Creating an ARIMA Model for Time Series Forecasting'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/creating-an-arima-model-for-time-series-forecasting-ff3b619b848d?source=post_page-----ae41993e267c--------------------------------)
+    [## 创建时间序列预测的ARIMA模型'
 - en: Introducing and implementing the ARIMA model in the AirPassengers dataset
+  id: totrans-61
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在AirPassengers数据集中介绍和实现ARIMA模型
 - en: towardsdatascience.com](/creating-an-arima-model-for-time-series-forecasting-ff3b619b848d?source=post_page-----ae41993e267c--------------------------------)
     [](/time-series-forecasting-based-on-the-trend-and-seasonal-components-26b92866e548?source=post_page-----ae41993e267c--------------------------------)
     [## Time-Series Forecasting Based on Trend and Seasonal components
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/creating-an-arima-model-for-time-series-forecasting-ff3b619b848d?source=post_page-----ae41993e267c--------------------------------)
+    [](/time-series-forecasting-based-on-the-trend-and-seasonal-components-26b92866e548?source=post_page-----ae41993e267c--------------------------------)
+    [## 基于趋势和季节性成分的时间序列预测
 - en: Analyzing the trend and seasonality of the time-series to decompose the time-series
     and implement forecasting models
+  id: totrans-63
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 分析时间序列的趋势和季节性，分解时间序列并实现预测模型
 - en: towardsdatascience.com](/time-series-forecasting-based-on-the-trend-and-seasonal-components-26b92866e548?source=post_page-----ae41993e267c--------------------------------)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/time-series-forecasting-based-on-the-trend-and-seasonal-components-26b92866e548?source=post_page-----ae41993e267c--------------------------------)
 - en: '[1] Skforecast, [Skforecast: time series forecasting with Python and Scikit-learn](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Skforecast，[Skforecast: 使用Python和Scikit-learn进行时间序列预测](https://www.cienciadedatos.net/documentos/py27-time-series-forecasting-python-scikitlearn.html)'
 - en: '[2] Elsevier, [Out-of-sample tests of forecasting accuracy: an analysis and
     review](https://sci-hub.st/10.1016/S0169-2070(00)00065-0)'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Elsevier，[预测准确性的样本外测试：分析与综述](https://sci-hub.st/10.1016/S0169-2070(00)00065-0)'
 - en: '[3] H2O AI Cloud, [Backtesting](https://docs.h2o.ai/wave-apps/h2o-model-validation/v0.14.0/guide/validation-tests/backtesting/backtesting)'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] H2O AI Cloud，[回测](https://docs.h2o.ai/wave-apps/h2o-model-validation/v0.14.0/guide/validation-tests/backtesting/backtesting)'
 - en: '[4] Machine Learning Mastery, [Backtest ML models time series forecasting](https://machinelearningmastery.com/backtest-machine-learning-models-time-series-forecasting/)'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Machine Learning Mastery，[回测ML模型时间序列预测](https://machinelearningmastery.com/backtest-machine-learning-models-time-series-forecasting/)'
