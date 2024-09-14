@@ -1,690 +1,1064 @@
 - en: Matrix Approximation in Data Streams
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据流中的矩阵近似
 - en: 原文：[https://towardsdatascience.com/matrix-approximation-in-data-streams-7585720e8671](https://towardsdatascience.com/matrix-approximation-in-data-streams-7585720e8671)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/matrix-approximation-in-data-streams-7585720e8671](https://towardsdatascience.com/matrix-approximation-in-data-streams-7585720e8671)
 - en: Approximate a matrix without having all of its rows
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在没有所有行的情况下近似矩阵
 - en: '[](https://medium.com/@mina.ghashami?source=post_page-----7585720e8671--------------------------------)[![Mina
     Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----7585720e8671--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7585720e8671--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7585720e8671--------------------------------)
     [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----7585720e8671--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@mina.ghashami?source=post_page-----7585720e8671--------------------------------)[![Mina
+    Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----7585720e8671--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7585720e8671--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7585720e8671--------------------------------)
+    [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----7585720e8671--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7585720e8671--------------------------------)
     ·13 min read·Sep 17, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7585720e8671--------------------------------)
+    ·13 分钟阅读·2023年9月17日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/dc927665ca6a15dbc7eedcdf011561fe.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dc927665ca6a15dbc7eedcdf011561fe.png)'
 - en: 'Image credit: unsplash.com'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：unsplash.com
 - en: Matrix approximation is a heavily studied sub-field in data mining and machine
     learning. A large set of data analysis tasks rely on obtaining a *low rank approximation*of
     matrices. Examples are dimensionality reduction, anomaly detection, data de-noising,
     clustering, and recommendation systems. In this article, we look into the problem
     of matrix approximation, and how to compute it when the whole data is not available
     at hand!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 矩阵近似是数据挖掘和机器学习中一个广泛研究的子领域。许多数据分析任务依赖于获得矩阵的*低秩近似*。例如，降维、异常检测、数据去噪、聚类和推荐系统。本文将深入探讨矩阵近似的问题，以及在数据不完全时如何计算它！
 - en: The content of this article is partly taken from my [lecture](https://web.stanford.edu/class/cs246/slides/17-matrix_sketching.pdf)
     at [Stanford -CS246 course](https://web.stanford.edu/class/cs246/). I hope you
     find it useful. Please find the full content [here](https://web.stanford.edu/class/cs246/slides/17-matrix_sketching.pdf).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文内容部分取自我在 [斯坦福大学-CS246课程](https://web.stanford.edu/class/cs246/) 的[讲座](https://web.stanford.edu/class/cs246/slides/17-matrix_sketching.pdf)。希望对你有用。完整内容请见
+    [此处](https://web.stanford.edu/class/cs246/slides/17-matrix_sketching.pdf)。
 - en: Data as a matrix
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据作为矩阵
 - en: Most data generated on web can be represented as a matrix, where each row of
     the matrix is a data point. For example, in routers every packet sent across the
     network is a data point that can be represented as a row in a matrix of all data
     points. In retail, every purchase made is a row in the matrix of all transactions.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数在网上生成的数据可以表示为矩阵，其中矩阵的每一行是一个数据点。例如，在路由器中，每个通过网络发送的包都是一个数据点，可以表示为所有数据点矩阵中的一行。在零售中，每次购买都是所有交易矩阵中的一行。
 - en: '![](../Images/c2174d5fadd7df8c1421ee119c9792c1.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c2174d5fadd7df8c1421ee119c9792c1.png)'
 - en: 'Figure 1: Data as a matrix — Image by the author'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1：数据作为矩阵 — 作者提供的图像
 - en: At the same time, almost all data generated over web is of a *streaming nature;*
     meaning the data is generated by an external source at a rapid rate which we have
     no control over. Think of all searches users make on Google search engine in a
     every second. We call this data the *streaming data*; because just like a stream
     it pours in.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，几乎所有在网上生成的数据都是*流式性质的*；这意味着数据由外部源以我们无法控制的快速速率生成。想象一下用户每秒在Google搜索引擎上进行的所有搜索。我们称这种数据为*流式数据*；因为它像溪流一样源源不断地涌入。
 - en: 'Some examples of typical streaming web-scale data are as following:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些典型流式网页规模数据的示例如下：
 - en: '![](../Images/e077ae79ff78e06cf0eeb9950c667107.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e077ae79ff78e06cf0eeb9950c667107.png)'
 - en: 'Figure 2: Size of typical streaming web-scale data — Image by the author'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2：典型的流式网页规模数据的大小 — 作者提供的图像
 - en: Think of streaming data as a matrix *A* containing *n* rows in *d*-dimensional
     space, where typically *n >> d.* Often *n* is in order of billions and increasing.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 将流数据视为包含*n* 行、*d* 维空间中的矩阵*A*，其中通常 *n >> d*。通常 *n* 是以十亿为单位并不断增加的。
 - en: Data streaming model
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据流模型
 - en: In streaming model, data arrives at high speed, one row at a time, and algorithms
     must process the items fast, or they are lost forever.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在流模型中，数据以高速到达，一次一行，算法必须快速处理这些项目，否则它们将永远丢失。
 - en: '![](../Images/10a27202839bd9b4ebaadd879632b4aa.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/10a27202839bd9b4ebaadd879632b4aa.png)'
 - en: 'Figure 3: Data streaming model — Image by the author'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3：数据流模型 — 图片由作者提供
 - en: In data streaming model, algorithms can only make one pass over the data and
     they work with a small memory to do their processing.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数据流模型中，算法只能对数据进行一次遍历，并且需要使用较小的内存进行处理。
 - en: Rank-k approximation
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 秩-k 近似
 - en: '*Rank-k approximation* of a matrix *A* is a smaller matrix *B* of rank *k*
     such that *B* approximates *A accurately.* Figure 2 demonstrates this notion.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 矩阵*A*的*秩-k 近似*是一个秩为*k*的较小矩阵*B*，使得*B*对*A*进行准确的近似。图2展示了这一概念。
 - en: '![](../Images/53dc66610adbfedd4d744da8ee67bd13.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53dc66610adbfedd4d744da8ee67bd13.png)'
 - en: 'Figure 4: Getting a much smaller sketch B from A — Image by the author'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4：从*A*获取更小的草图*B* — 图片由作者提供
 - en: '*B* is often called a sketch of *A.* Note, in data streaming model, B will
     be much smaller than A such that it fits in memory. In addition, rank(B) << rank(A).
     For example, if A is a term-document matrix with 10 billion documents and 1 million
     words then B would probably be a 1000 by million matrix; i.e. 10 million times
     less rows!'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '*B*通常被称为*A*的草图。注意，在数据流模型中，*B*会比*A*小得多，以便适合内存。此外，rank(B) << rank(A)。例如，如果*A*是一个包含
+    100 亿文档和 100 万词的术语-文档矩阵，那么*B*可能是一个 1000×100 万的矩阵；即，少 1000 万行！'
 - en: 'The rank-k approximation has to approximate A “*accurately*”. While accurately
     is a vague notion, we can quantify it via various error definitions:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 秩-k 近似必须“*准确*”地近似*A*。虽然准确是一个模糊的概念，但我们可以通过各种误差定义来量化它：
 - en: '1️⃣ **Covariance error**:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 1️⃣ **协方差误差**：
 - en: 'The covariance error is the Frobenius norm or L2 norm of differences between
     covariance of A and covariance of B. This error is mathematically defined as following:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 协方差误差是矩阵 A 的协方差与矩阵 B 的协方差之间差异的 Frobenius 范数或 L2 范数。这个误差在数学上定义如下：
 - en: '![](../Images/658c13473308fa953a1b50cc5155ef34.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/658c13473308fa953a1b50cc5155ef34.png)'
 - en: covariance error definition — Image by the author
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 协方差误差定义 — 图片由作者提供
 - en: '2️⃣ **Projection error**:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 2️⃣ **投影误差**：
 - en: 'The projection error is the norm of the residual when data points in A are
     projected onto the subspace of B. This residual norm is measured as either L2
     norm or Frobenius norm:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 投影误差是当*A*中的数据点被投影到*B*的子空间时的残差的范数。这个残差范数被测量为 L2 范数或 Frobenius 范数：
 - en: '![](../Images/310d422bb40a8df456d5b33e90b82a46.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/310d422bb40a8df456d5b33e90b82a46.png)'
 - en: projection error definition — Image by the author
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 投影误差定义 — 图片由作者提供
 - en: These errors assess the quality of the approximation; the smaller they are the
     better the approximation is. But how small can they be?
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些误差评估了近似的质量；它们越小，近似效果越好。但它们可以小到什么程度呢？
 - en: When we compute these errors, we must have a baseline to compare them against.
     The baseline, everyone uses in field of matrix sketching is the rank-k approximation
     created by *Singular Value Decomposition (SVD)*! SVD computes the best rank-k
     approximation! Meaning it causes the smallest error on both “*covariance error”*
     and “*projection error*”.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们计算这些误差时，我们必须有一个基准来进行比较。在矩阵草图领域，每个人使用的基准是由*奇异值分解（SVD）*创建的秩-k 近似！SVD 计算最佳的秩-k
+    近似！这意味着它在“*协方差误差*”和“*投影误差*”上造成的误差最小。
 - en: 'The best rank-k approximation to A is denoted as Aₖ. Therefore, the least error
     caused by SVD is :'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 对*A*的最佳秩-k 近似记作Aₖ。因此，SVD引起的最小误差是：
 - en: '![](../Images/037bdb52e3a227e51d760b95a27eef7a.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/037bdb52e3a227e51d760b95a27eef7a.png)'
 - en: least rank k approximation error — Image by the author
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 最小秩k近似误差 — 图片由作者提供
 - en: 'SVD, decomposes a matrix *A* into three matrices:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: SVD 将矩阵*A*分解为三个矩阵：
 - en: The left singular matrix *U*
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 左奇异矩阵 *U*
 - en: The singular values matrix S
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 奇异值矩阵 *S*
 - en: The right singular matrix V
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 右奇异矩阵 V
 - en: U and V are orthonormal, meaning that their columns are of unit norm and they
     are orthogonal; i.e. the dot product of every two columns in U (similarly in V)
     is zero. The matrix S is diagonal; only entries on the diagonal are non-zeros
     and they are sorted in descending order.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: U 和 V 是正交的，意味着它们的列是单位范数且它们彼此正交；即 U 中每两列（V 中也是）之间的点积为零。矩阵 S 是对角矩阵；只有对角线上的条目是非零的，并且按降序排列。
 - en: '![](../Images/4e10bfbec83481719adb175f24178a92.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4e10bfbec83481719adb175f24178a92.png)'
 - en: 'Figure 5: Singular value decomposition — Image by the author'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 5：奇异值分解 — 图片来自作者
 - en: 'SVD computes the best rank-k approximation by taking the first k columns of
     U and V and the first k entries of S:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: SVD 通过取 U 和 V 的前 k 列以及 S 的前 k 项来计算最佳的秩-k 近似：
 - en: '![](../Images/674b0fccc2d859376d7e9d4bb285847c.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/674b0fccc2d859376d7e9d4bb285847c.png)'
 - en: 'Figure 6: Rank k approximation by SVD — Image by the author'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 6：SVD 的秩 k 近似 — 图片来自作者
 - en: As we mentioned, the Aₖ computed in this way has the lowest approximation error
     among any matrices B with rank k or lower. However, SVD is a very time-consuming
     method, it requires runtime O(nd²) if A is n-by-d, and it is not applicable to
     matrices in data streaming fashion. In addition, SVD is not efficient for sparse
     matrices; it does not utilize sparsity of the matrix in computing approximation.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，以这种方式计算的 Aₖ 在任何秩为 k 或更低的矩阵 B 中具有最低的近似误差。然而，SVD 是一种非常耗时的方法，如果 A 是 n×d，则需要运行时间
+    O(nd²)，并且不适用于数据流中的矩阵。此外，SVD 对稀疏矩阵效率不高；它在计算近似时没有利用矩阵的稀疏性。
 - en: ❓Now the question is how do we compute matrix approximation in streaming fashion
     ?
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: ❓现在的问题是我们如何以流式方式计算矩阵近似？
 - en: '**There are three main family of methods in streaming matrix approximations:**'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '**流式矩阵近似方法主要有三大类：**'
 - en: 1️⃣ Row sampling based
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 1️⃣ 基于行抽样
 - en: 2️⃣ Random projection based
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 2️⃣ 随机投影方法
 - en: 3️⃣ Iterative sketching
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 3️⃣ 迭代草图法
 - en: '**Row sampling based methods**'
+  id: totrans-59
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**基于行抽样的方法**'
 - en: 'These methods sample a subset of “important” rows with respect to a well-defined
     probability distribution. These methods differ is in how they define the notion
     of “importance”. The generic framework is that they construct the sketch B as
     following:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些方法从相对于良好定义的概率分布的“重要”行中进行抽样。这些方法的不同之处在于它们如何定义“重要性”的概念。通用框架是它们按以下方式构建草图 B：
 - en: They first assign a probability to each row in the streaming matrix *A*
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们首先给流式矩阵*A*中的每一行分配一个概率
 - en: Then they sample *l* rows from *A* (often with replacement) to construct *B*
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后他们从*A*中抽取*l*行（通常是有放回的）来构建*B*
 - en: Lastly, they rescale *B* appropriately to make it an unbiased estimate of *A*
+  id: totrans-63
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最后，它们将 *B* 适当缩放，使其成为 *A* 的无偏估计
 - en: '![](../Images/abb1b4fd0514a3f347059642385d0014.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/abb1b4fd0514a3f347059642385d0014.png)'
 - en: 'Figure 7: Row sampling with replacement to build sketch B — Image by the author'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7：有放回的行抽样以构建草图 B — 图片来自作者
 - en: Note, the probability assigned to rows in step 1, is in fact the “importance”
     of the row. Think of “importance” of an item as the weight associated to the item
     e.g. for file records, the weight can be size of the files. Or for IP addresses,
     the weight can be the number of times the IP address makes a request.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，步骤 1 中分配给行的概率实际上是行的“重要性”。将“重要性”视为与项相关的权重，例如，对于文件记录，权重可以是文件的大小。或者对于 IP 地址，权重可以是
+    IP 地址发出请求的次数。
 - en: 'In matrices, each item is a row vector, and its weight is the squared of its
     norm; also called *L2 norm*. There is a row sampling algorithm that samples with
     respect to L2 norm of rows in a one pass over data. This algorithm is called “*L2-norm
     row sampling*”, and its pseudocode is as following:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在矩阵中，每个项都是一个行向量，其权重是其范数的平方；也称为 *L2 范数*。有一种行抽样算法根据行的 L2 范数在数据的一次遍历中进行抽样。这个算法被称为“*L2
+    范数行抽样*”，其伪代码如下：
 - en: '![](../Images/c4351950a8a133bb15b461a8547faac1.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c4351950a8a133bb15b461a8547faac1.png)'
 - en: 'Figure 8: L2-norm row sampling algorithm — Image by the author'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8：L2 范数行抽样算法 — 图片来自作者
 - en: 'This algorithm samples *l = O(k/ε²)* rows with replacement and achieves the
     following error bound:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 该算法以有放回的方式抽样 *l = O(k/ε²)* 行，并实现以下误差界限：
 - en: '![](../Images/c4f00ca30599e08831b10004abfa0dee.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c4f00ca30599e08831b10004abfa0dee.png)'
 - en: 'Figure 9: Error guarantee of L2-norm row sampling — Image by the author'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9：L2 范数行抽样的误差保证 — 图片来自作者
 - en: Note, this is a weak error bound, as it is bounded by total Frobenius norm of
     A, which can be a large number! There is an extension of this algorithm that performs
     better; let’s take a look at it.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，这是一个较弱的误差界限，因为它受限于矩阵A的Frobenius范数，总体来说可能是一个很大的数值！有一个改进的算法表现更好；我们来看看它。
 - en: '**Extension**: There is a variation of this algorithm that samples both rows
     and columns! It is called “*CUR*” algorithm and it performs better than “*L2-norm
     row sampling”* method. The *CUR* method creates three matrices C, U and R by sampling
     rows and columns of A. Here is how it works:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '**扩展**：有一种变体算法同时采样行和列！它被称为“*CUR*”算法，并且比“*L2-范数行采样*”方法表现更好。*CUR*方法通过从A中采样行和列来创建三个矩阵C、U和R。它的工作原理如下：'
 - en: 'Step 1: *CUR* first samples few columns of *A*, each with the probability proportional
     to the norm of the columns. This makes the matrix *C*.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 步骤1：*CUR*首先从*A*中采样几列，每列的采样概率与该列的范数成正比。这形成了矩阵*C*。
 - en: '![](../Images/f850303fc206dc110d8bea962fbe599b.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f850303fc206dc110d8bea962fbe599b.png)'
 - en: 'Figure 10: CUR algorithm step 1— Image by the author'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10：CUR算法步骤1—— 图片由作者提供
 - en: 'Step 2: Then *CUR* samples few rows of *A*, each with probability proportional
     to the norm of the rows. This forms matrix *R*.'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 步骤2：然后*CUR*从*A*中随机抽取几行，每行的抽取概率与该行的范数成正比。这形成了矩阵*R*。
 - en: 'Step 3: The CUR then computes the pseudo-inverse of the intersection of C and
     R. This is called matrix U.'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 步骤3：CUR然后计算C和R的交集的伪逆。这被称为矩阵U。
 - en: '![](../Images/2d65f393f1a9bdf84c008271097e31b6.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2d65f393f1a9bdf84c008271097e31b6.png)'
 - en: 'Figure 11: CUR algorithm step 2,3— Image by the author'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11：CUR算法步骤2,3—— 图片由作者提供
 - en: Finally, the product of these three matrices, i.e. *C.U.R* approximates *A*,
     and provides a low-rank approximation. This algorithm achieves the following error
     bound sampling *l = O(k log k/ε²)* rows and columns.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，这三个矩阵的乘积，即*C.U.R*，近似于*A*，并提供了一个低秩近似。该算法在采样*l = O(k log k/ε²)*行和列时达到了以下误差界限。
 - en: '![](../Images/1e4dcb2aafc66e61401b8c4ec1791d95.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1e4dcb2aafc66e61401b8c4ec1791d95.png)'
 - en: 'Figure 12: CUR Error guarantee — Image by the author'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12：CUR误差保证—— 图片由作者提供
 - en: Note, how this is a much tighter bound as compared to *L2-norm row sampling.*
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，与*L2-范数行采样*相比，这个界限要紧得多。
 - en: '**Summary:** The row sampling family of methods (CUR included) samples rows
     (and columns) to form a low-rank approximation; therefore they are very intuitive
     and form interpretable approximations.'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结：** 行采样方法家族（包括CUR）通过采样行（和列）来形成低秩近似，因此它们非常直观并形成可解释的近似。'
 - en: In the next section, we see another family of methods that are data oblivious.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一部分，我们将看到另一类数据无关的方法。
 - en: '**Random projection based methods**'
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**基于随机投影的方法**'
 - en: The key idea of these group of methods is that if points in a vector space are
     projected onto a randomly selected subspace of suitably high dimension, then the
     distances between points are approximately preserved*.*
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些方法组的关键思想是，如果将向量空间中的点投影到一个随机选择的适当高维子空间中，则点之间的距离大致保持不变*。*
 - en: '**Johnson-Lindenstrauss Transform (JLT)** specifies this nicely as following:
     ***d*** datapoints in any dimension (e.g. n-dimensional space for n≫d) can get
     embedded into roughly ***log d*** dimensional space, such that their pair-wise
     distances are preserved to some extent.'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Johnson-Lindenstrauss变换（JLT）**很好地描述了这一点：***d***个数据点在任何维度（例如，对于n≫d的n维空间）中可以被嵌入到大约***log
+    d***维的空间中，使得它们的成对距离在某种程度上得以保持。'
 - en: 'A more precise and mathematical definition of JLT is as following:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: JLT的更精确和数学化的定义如下：
 - en: '![](../Images/fa42af817b3ba58390a124621bb9dd9e.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa42af817b3ba58390a124621bb9dd9e.png)'
 - en: 'Figure 13: JLT definition — Image by the author'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13：JLT定义—— 图片由作者提供
 - en: 'There are many ways to construct a matrix S that preserve pair-wise distances.
     All such matrices are called to have the *JLT property*. The image below, shows
     few well-known ways of creating such matrix S:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 有许多方法可以构造一个矩阵S，以保持成对距离。所有这些矩阵都称为具有*JLT属性*。下图展示了一些创建这样的矩阵S的常见方法：
 - en: '![](../Images/40fec39e26e49d953b0503b0d5d96494.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/40fec39e26e49d953b0503b0d5d96494.png)'
 - en: Image by the author
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: 'One simple construction of *S,* as shown above,is to pick entries of *S* to
     be independent random variables drawn from *N(0,1),* and rescale S by √(1/r):'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上图所示，*S*的一个简单构造是从*N(0,1)*中抽取独立随机变量作为*S*的条目，然后将S按√(1/r)进行缩放：
 - en: '![](../Images/0eb53e2113540584d8817b5bcf163dbc.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0eb53e2113540584d8817b5bcf163dbc.png)'
 - en: 'Figure 14: JLT matrix — Image by the author'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14：JLT矩阵—— 图片由作者提供
 - en: 'This matrix has the *JLT property* [6]*,* and we use it to design a random
     projection method as following:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个矩阵具有 *JLT 属性* [6]*，我们用它来设计随机投影方法如下：
 - en: '![](../Images/9ee91d359bb577156591f1798af06386.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ee91d359bb577156591f1798af06386.png)'
 - en: 'Figure 15: Random projection method — Image by the author'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15：随机投影方法 — 作者提供的图片
 - en: 'Note the second step, projects data points from a high n-dimensional space
     into a lower r-dimensional space. It’s easy to show [6]that this method produces
     an unbiased sketch:'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意第二步，它将数据点从高维空间投影到低维空间。很容易证明 [6] 该方法生成了无偏的草图：
 - en: '![](../Images/bb25673959486234e80ad3ab294d0d4a.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bb25673959486234e80ad3ab294d0d4a.png)'
 - en: 'Figure 16: Random projection provides an unbiased approximation— Image by the
     author'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 图16：随机投影提供了无偏的近似 — 作者提供的图片
 - en: The random projection method achieves the following error guarantee if it sets
     *r = O(k/ε + k log k).* Note that they achieve better bound than row sampling
     methods.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机投影方法在设置 *r = O(k/ε + k log k)* 时能达到以下误差保证。请注意，它们的界限优于行采样方法。
 - en: '![](../Images/0b86a215b239461b2af2ae74e967a33c.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0b86a215b239461b2af2ae74e967a33c.png)'
 - en: 'Figure 17: Random projection error bound— Image by the author'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 图17：随机投影误差界限 — 作者提供的图片
 - en: There is a similar line of work to random projection that achieves better time
     bound. It is called *Hashing techniques* [5]. This method take a matrix S which
     has only one non-zero entries per column and that entry is either 1 or -1\. They
     compute the approximation as *B = SA.*
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一类与随机投影类似的工作可以实现更好的时间界限。它被称为 *哈希技术* [5]。这种方法采用一个每列只有一个非零条目的矩阵 S，而该条目是1或-1。它们计算近似值为
+    *B = SA*。
 - en: '![](../Images/b5950efa90c38aa8d34de9166328aaf4.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b5950efa90c38aa8d34de9166328aaf4.png)'
 - en: Hashing technique — Image by the author
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 哈希技术 — 作者提供的图片
 - en: '**Summary**: Random projection methods are computationally efficient, and are
     data oblivious as their computation involves only a random matrix S. Compare it
     to row sampling methods that need to access data to form a sketch.'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结**：随机投影方法计算效率高，并且数据无关，因为其计算仅涉及一个随机矩阵 S。相比之下，行采样方法需要访问数据以形成草图。'
 - en: '**Iterative Sketching**'
+  id: totrans-113
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**迭代草图**'
 - en: These methods work over a stream A=<a1,a2,…> where each item is read once, get
     processed quickly and not read again. Upon reading each item, they update the
     sketch B.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些方法在流 A=<a1,a2,…> 上工作，其中每个项目被读取一次，迅速处理且不再读取。读取每个项目时，它们更新草图 B。
 - en: '![](../Images/4ec8205e7236541afe7681edcecf06b3.png)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4ec8205e7236541afe7681edcecf06b3.png)'
 - en: 'Figure 18: Iterative sketching methods — Image by the author'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 图18：迭代草图方法 — 作者提供的图片
 - en: State of the art method in this group is called “*Frequent Directions*”, and
     it is based on *Misra-Gries algorithm* for finding frequent items in a data stream.
     In what follows, we first see how Misra-Gries algorithm for finding frequent items
     work, then we extend it to matrices.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 该组的最先进方法称为“*频繁方向*”，基于 *Misra-Gries 算法* 查找数据流中的频繁项。接下来，我们首先了解 Misra-Gries 算法如何查找频繁项，然后将其扩展到矩阵。
 - en: Misra-Gries algorithm for finding frequent items
+  id: totrans-118
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Misra-Gries 算法用于查找频繁项
 - en: Suppose there is a stream of items, and we want to find frequency *f(i)* of
     each item.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设有一个项目流，我们想找到每个项目的频率 *f(i)*。
 - en: '![](../Images/54d29ccd557f9d13039452fd568f5703.png)'
+  id: totrans-120
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/54d29ccd557f9d13039452fd568f5703.png)'
 - en: 'Figure 19: frequent item counting over streams — Image by the author'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 图19：流中的频繁项计数 — 作者提供的图片
 - en: If we keep ***d*** counters, we can count frequency of every item. But it’s
     not good enough as for certain domains such IP addresses, queries, etc. the number
     of unique items are way too many.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们保持 ***d*** 个计数器，我们可以计算每个项的频率。但这不够好，因为在某些领域，如 IP 地址、查询等，唯一项的数量太多了。
 - en: '![](../Images/206173be287481bc8955b9da0bedef23.png)'
+  id: totrans-123
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/206173be287481bc8955b9da0bedef23.png)'
 - en: 'Figure 20: d counters for item frequency estimation — Image by the author'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 图20：用于项频率估计的d个计数器 — 作者提供的图片
 - en: 'So let’s Let’s keep *l* counters where *l≪d.* If a new item arrives in the
     stream that is in the counters, we add 1 to its count:'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以让我们保持 *l* 个计数器，其中 *l≪d*。如果流中到达的新项目在计数器中，我们将其计数加1：
 - en: '![](../Images/3a394fab3373e54819d58c3b2995ae35.png)'
+  id: totrans-126
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3a394fab3373e54819d58c3b2995ae35.png)'
 - en: 'Figure 21: incrementing counter of an item — image by the author'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 图21：增加项的计数器 — 作者提供的图片
 - en: If the new item is not in the counters and we have space, we create a counter
     for it and set it to 1.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果新项目不在计数器中且我们有空间，我们为其创建一个计数器并将其设置为1。
 - en: '![](../Images/0708aad8dd0be90b5b604c637ae20f16.png)'
+  id: totrans-129
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0708aad8dd0be90b5b604c637ae20f16.png)'
 - en: 'Figure 22: setting counter for a new item — Image by the author'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 22：为新项目设置计数器 — 作者提供的图像
 - en: 'But if we don’t have space for the new item (here the new item is the brown
     box), we get the median counter i.e. counter at position *l/2*:'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 但如果我们没有空间容纳新项目（这里的新项目是棕色盒子），我们获得中位数计数器，即位置为*l/2*的计数器：
 - en: '![](../Images/db530dd4cd999766870474f0a0d4254e.png)'
+  id: totrans-132
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/db530dd4cd999766870474f0a0d4254e.png)'
 - en: 'Figure 23: subtracting middle counter from every one.— Image by the author'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 23：从每一个计数器中减去中间计数器。— 作者提供的图像
 - en: 'and subtract it from all counters. For all counters that get negative, we reset
     them to zero. So it becomes as following:'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 并从所有计数器中减去它。对于所有变成负值的计数器，我们将其重置为零。所以它变成如下：
 - en: '![](../Images/6cf66db80be1c254e6e4e3bf4f034900.png)'
+  id: totrans-135
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6cf66db80be1c254e6e4e3bf4f034900.png)'
 - en: 'Figure 24: half of counters are zero — Image by the author'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 24：一半计数器为零 — 作者提供的图像
 - en: As we see, now we have space for the new item, so we continue processing the
     stream🙂.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所见，现在我们有空间容纳新项目，所以我们继续处理流🙂。
 - en: 'At any time in the stream, the approximated counts for items are what we have
     kept so far, for example:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 在流的任何时刻，项目的近似计数是我们迄今为止保留的计数，例如：
 - en: '![](../Images/27582695b5d02ddba678f230d04bac92.png)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/27582695b5d02ddba678f230d04bac92.png)'
 - en: 'Figure 25: estimating count of an item — Image by the author'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 25：估计项目计数 — 作者提供的图像
 - en: 'This method undercounts so for any item i, its approximated frequency is lesser
     or equal to its true frequency:'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法会低估计数，因此对于任何项目 i，其近似频率小于或等于其真实频率：
 - en: '![](../Images/9acefc419d289c334bc6c37b25734dd8.png)'
+  id: totrans-142
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9acefc419d289c334bc6c37b25734dd8.png)'
 - en: At the same time, its approximated frequency is lower bounded because each time
     we decrease, we decrease by at most count of the counter at position *l/2 i.e.,*
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，它的近似频率是下界的，因为每次我们减少时，最多减少*l/2*位置计数器的计数。
 - en: '![](../Images/546c48ec031b97d17e06bd9c22111c61.png)'
+  id: totrans-144
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/546c48ec031b97d17e06bd9c22111c61.png)'
 - en: 'At any point that we have seen ***n*** elements in stream, we have:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 在流中看到***n***个元素的任何点，我们有：
 - en: '![](../Images/ac227771f0be7275d8fb40c84e90ca74.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ac227771f0be7275d8fb40c84e90ca74.png)'
 - en: 'So the error guarantee it provides is as following:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，它提供的错误保证如下：
 - en: '![](../Images/ede440a1b30bc4c853a4dd087778ee65.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ede440a1b30bc4c853a4dd087778ee65.png)'
 - en: Misra-Gries error bound — Image by the author
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: Misra-Gries 错误界限 — 作者提供的图像
 - en: So Misra-Gries produces a non-zero approximated frequency for all items that
     their true frequency is larger than *2n/l* . As an example, to find items that
     appear more than 20% of the time we got to take *l = 10* counters and run Misra-Gries
     algorithm.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，Misra-Gries 对所有真实频率大于*2n/l*的项目生成一个非零近似频率。例如，要找到出现超过 20% 的项目，我们必须采取*l = 10*计数器并运行
+    Misra-Gries 算法。
 - en: 'Frequent Directions: an extension of Misra-Gries'
+  id: totrans-151
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 频繁方向：Misra-Gries 的扩展
 - en: Now, let’s extend Misra-Gries to vectors and matrices. In matrix case, the stream
     items are **row vectors** in ***d*** dimension. At any time ***n*** in the stream,
     all rows together form a tall matrix *A* of *n* rows. The goal is to find the
     **most important directions** of A. These correspond to top singular vectors of
     A. The more important a direction is the more frequent it is among data points,
     that’s why we call the next algorithm **Frequent Directions** [2,3].
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们将 Misra-Gries 扩展到向量和矩阵。在矩阵的情况下，流中的项目是***d***维的**行向量**。在流中的任何时刻***n***，所有行一起形成一个*有*n*行的高矩阵*A*。目标是找到*A*的**最重要方向**。这些方向对应于*A*的前几个奇异向量。一个方向越重要，它在数据点中出现的频率就越高，这就是我们称下一个算法为**频繁方向**
+    [2,3]的原因。
 - en: 'The pseudocode for *Frequent Directions* algorithm is as following:'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '*频繁方向*算法的伪代码如下：'
 - en: '![](../Images/561c183c6cd15343f8b9d982a2a4bddf.png)'
+  id: totrans-154
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/561c183c6cd15343f8b9d982a2a4bddf.png)'
 - en: 'Figure 26: FrequentDirections— Image by the author'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 26：FrequentDirections — 作者提供的图像
 - en: 'As we see, the algorithm takes input matrix *A* and the sketch size *l* as
     inputs. Then, in the first step (i.e. in the first line highlighted in blue) the
     algorithm initializes sketch *B* as an empty matrix of *l* rows. Then for every
     row in the stream *A*, the algorithm insert it into *B* until *B* is full:'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所见，该算法以矩阵*A*和草图大小*l*作为输入。然后，在第一步（即第一行突出显示的蓝色部分），算法将草图*B*初始化为空矩阵，具有*l*行。然后对于流中的每一行*A*，算法将其插入*B*中，直到*B*满为止：
 - en: '![](../Images/a2fbac30a27748109eb50e886b82d496.png)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a2fbac30a27748109eb50e886b82d496.png)'
 - en: 'Figure 27: when sketch B is full — Image by the author'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 27：当草图 B 满时 — 作者提供的图像
 - en: We then compute *SVD* of *B*; this produces left singular matrix *U*, singular
     values matrix *S* and right singular matrix *V*. Note *U*, and *V* provide rotation
     of subspaces as they are orthonormal matrices.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们计算*B*的*SVD*；这将产生左奇异矩阵*U*、奇异值矩阵*S*和右奇异矩阵*V*。注意，*U*和*V*提供了子空间的旋转，因为它们是正交矩阵。
 - en: '![](../Images/1175b22b2c060f147b19d1a8c06428b7.png)'
+  id: totrans-160
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1175b22b2c060f147b19d1a8c06428b7.png)'
 - en: 'Figure 28: SVD of B — Image by the author'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 28: B 的 SVD — 作者提供的图像'
 - en: We then reduce *B*’s rank by subtracting the squared of middle singular value
     from squared of all singular values! Note, this step resembles the part in Misra-Gries
     where we subtract middle counter from all counters. Subtracting squared of middle
     singular value from squared of all singular values makes half of singular values
     go to zero.
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们通过从所有奇异值的平方中减去中间奇异值的平方来降低*B*的秩！注意，这一步类似于Misra-Gries中的部分操作，我们从所有计数器中减去中间计数器。从所有奇异值的平方中减去中间奇异值的平方使得一半的奇异值变为零。
 - en: '![](../Images/105b9e0fd0dcc1737c05d7b47ea2d5f4.png)'
+  id: totrans-163
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/105b9e0fd0dcc1737c05d7b47ea2d5f4.png)'
 - en: 'Figure 29: lowering rank of B — Image by the author'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 29: 降低 B 的秩 — 作者提供的图像'
 - en: We then multiply *S* (the singular value matrix) by *V* transposed (right singular
     matrix) and assign it to *B*. In other words, we reconstruct *B* by dropping the
     left singular matrix *U*. The effect of this operation is a new matrix *B* which
     has half of its rows as empty. That’s good news, as it has room for next upcoming
     rows in the stream matrix *A.*
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们将*S*（奇异值矩阵）乘以*V* 转置（右奇异矩阵）并将其分配给*B*。换句话说，我们通过去掉左奇异矩阵*U*来重构*B*。这种操作的效果是得到一个新的矩阵*B*，其一半的行为空。这是好消息，因为它为流矩阵*A*中的下一行提供了空间。
 - en: '**Error guarantee**: Similar to the frequent items case, this method has the
     following error guarantees where *l* is the sketch size and *k* is the rank:'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: '**误差保证**：类似于频繁项的情况，该方法具有以下误差保证，其中*l*是草图大小，*k*是秩：'
 - en: '![](../Images/26af11f02db213823a89fd08a730206a.png)'
+  id: totrans-167
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/26af11f02db213823a89fd08a730206a.png)'
 - en: FrequentDirections covariance error bound — Image by the author
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: FrequentDirections 协方差误差界限 — 作者提供的图像
 - en: '![](../Images/3e84e4752ba2fe64ba053b39926b8c0e.png)'
+  id: totrans-169
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3e84e4752ba2fe64ba053b39926b8c0e.png)'
 - en: FrequentDirections projection error bound — Image by the author
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: FrequentDirections 投影误差界限 — 作者提供的图像
 - en: Compare the second error bound to that of random projection and row sampling.
     Note how this is a tighter and better error bound.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 比较第二个误差界限与随机投影和行采样的误差界限。注意这是一个更紧凑和更好的误差界限。
 - en: '**Experiments**: It is shown in experiments [2,4] that *Frequent Directions*
     algorithm outperforms every other streaming algorithm discussed above. Below is
     the experiments with respect to covariance error bound:'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: '**实验**：实验[2,4]表明，*Frequent Directions* 算法优于上述讨论的所有其他流式算法。以下是与协方差误差界限相关的实验：'
 - en: '![](../Images/053c83c270c62d2990bfd0ecab32cd13.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/053c83c270c62d2990bfd0ecab32cd13.png)'
 - en: 'Figure 30: Experiments in covariance error — Image from [2]'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 30: 协方差误差中的实验 — 来自 [2] 的图像'
 - en: 'and this is the experiment with respect to the projection error bound:'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是关于投影误差界限的实验：
 - en: '![](../Images/275ca9112d6e71ab891f32ca8da25aa4.png)'
+  id: totrans-176
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/275ca9112d6e71ab891f32ca8da25aa4.png)'
 - en: 'Figure 31: Experiments in projection error — Image from [2]'
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 31: 投影误差中的实验 — 来自 [2] 的图像'
 - en: This concludes the article. As we see, Frequent Directions not only outperform
     all other methods in approximation errors, but it uses the least amount of space.
     In other words, it is space optimal with respect to the error bound it achieves.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文到此结束。正如我们所见，*Frequent Directions* 不仅在近似误差中优于所有其他方法，而且使用的空间最少。换句话说，它在实现的误差界限方面是空间最优的。
 - en: Summary
+  id: totrans-179
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'Low-rank matrix approximation in data streams is the problem of computing a
     low-rank approximation to a matrix whose its rows arrive in a streaming fashion.
     This entails not having access to all rows of the matrix at once, and not knowing
@@ -695,43 +1069,65 @@
     (SOTA) is in the third group and it’s called Frequent Directions. This method
     is based on an old method from frequent item estimation, and it is space optimal
     with respect to the error bound it achieves.'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据流中的低秩矩阵近似是计算低秩矩阵近似的问题，其中矩阵的行以流式方式到达。这意味着无法一次性访问矩阵的所有行，也不知道矩阵的大小。有三种主要的近似方法类别：行采样——随机投影——迭代草图。虽然第一组方法是最直观的，因为它们采样实际数据点，第二组方法在运行时效率最高。最先进的方法（SOTA）属于第三组，称为频繁方向。该方法基于频繁项估计的旧方法，并且在误差界限方面具有空间最优性。
 - en: 'If you have any questions or suggestions, feel free to reach out to me:'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你有任何问题或建议，请随时联系我：
 - en: 'Email: mina.ghashami@gmail.com'
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 电子邮件：mina.ghashami@gmail.com
 - en: 'LinkedIn: [https://www.linkedin.com/in/minaghashami/](https://www.linkedin.com/in/minaghashami/)'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: LinkedIn：[https://www.linkedin.com/in/minaghashami/](https://www.linkedin.com/in/minaghashami/)
 - en: References
+  id: totrans-184
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[Fast monte carlo algorithms for matrices i: approximating matrix multiplication,
     p. drineas, et al, 2006](https://www.stat.berkeley.edu/~mmahoney/pubs/matrix1_SICOMP.pdf)'
+  id: totrans-185
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[快速蒙特卡罗矩阵算法 I：矩阵乘法的近似，P. Drineas 等，2006](https://www.stat.berkeley.edu/~mmahoney/pubs/matrix1_SICOMP.pdf)'
 - en: '[Frequent Directions: Simple and Deterministic Matrix Sketching](https://arxiv.org/abs/1501.01711)'
+  id: totrans-186
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[频繁方向：简单且确定性的矩阵草图](https://arxiv.org/abs/1501.01711)'
 - en: '[https://github.com/edoliberty/frequent-directions](https://github.com/edoliberty/frequent-directions)'
+  id: totrans-187
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://github.com/edoliberty/frequent-directions](https://github.com/edoliberty/frequent-directions)'
 - en: '[Improved Practical Matrix Sketching with Guarantees](https://arxiv.org/abs/1501.06561)'
+  id: totrans-188
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[具有保证的改进实用矩阵草图](https://arxiv.org/abs/1501.06561)'
 - en: '[Low Rank Approximation and Regression in Input Sparsity Time](https://arxiv.org/abs/1207.6365)'
+  id: totrans-189
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[输入稀疏时间下的低秩近似和回归](https://arxiv.org/abs/1207.6365)'
 - en: '[Improved Approximation Algorithms for Large Matrices via Random Projections](https://ieeexplore.ieee.org/document/4031351)'
+  id: totrans-190
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[通过随机投影改进的大矩阵近似算法](https://ieeexplore.ieee.org/document/4031351)'
