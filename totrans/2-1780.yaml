@@ -1,355 +1,548 @@
 - en: 'ReLoRa: Pre-train a Large Language Model on Your GPU'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'ReLoRa: 在您的 GPU 上预训练大型语言模型'
 - en: 原文：[https://towardsdatascience.com/relora-pre-train-a-large-language-model-on-your-gpu-d104756f9ddf](https://towardsdatascience.com/relora-pre-train-a-large-language-model-on-your-gpu-d104756f9ddf)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/relora-pre-train-a-large-language-model-on-your-gpu-d104756f9ddf](https://towardsdatascience.com/relora-pre-train-a-large-language-model-on-your-gpu-d104756f9ddf)
 - en: LoRa but with multiple resets in a row
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: LoRa，但多次重置
 - en: '[](https://medium.com/@bnjmn_marie?source=post_page-----d104756f9ddf--------------------------------)[![Benjamin
     Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----d104756f9ddf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d104756f9ddf--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d104756f9ddf--------------------------------)
     [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----d104756f9ddf--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@bnjmn_marie?source=post_page-----d104756f9ddf--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----d104756f9ddf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d104756f9ddf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d104756f9ddf--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----d104756f9ddf--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d104756f9ddf--------------------------------)
     ·8 min read·Jul 20, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d104756f9ddf--------------------------------)
+    ·8分钟阅读·2023年7月20日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a84220fa206495cacbda94863cf4dfe4.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a84220fa206495cacbda94863cf4dfe4.png)'
 - en: The ReLoRa framework — Image by the author
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: ReLoRa 框架 — 作者提供的图像
 - en: In 2021, [Hu et al.](https://arxiv.org/abs/2106.09685) proposed low-rank adapters
     (LoRa) for LLMs. This method significantly reduces the cost of fine-tuning large
     language models (LLMs) by only training a few added parameters (low-rank networks)
     while keeping the LLM’s original parameters (high-rank networks) frozen.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在2021年，[Hu et al.](https://arxiv.org/abs/2106.09685) 提出了低秩适配器（LoRa）用于 LLMs。此方法通过仅训练几个新增的参数（低秩网络），同时保持
+    LLM 的原始参数（高秩网络）冻结，从而显著降低了微调大型语言模型（LLMs）的成本。
 - en: With LoRa, we still need an existing pre-trained model to fine-tune, i.e., it
     can’t pre-train a good LLM from scratch due to the low-rank restrictions. It leaves
     pre-training unaffordable for most individuals and organizations.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 LoRa，我们仍然需要一个现有的预训练模型来进行微调，即它不能从零开始预训练一个好的 LLM，因为低秩限制。它使得大多数个人和组织无法承担预训练的费用。
 - en: To reduce this cost, [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf)
     propose ReLoRa. This is a modification of LoRa that allows pre-training LLMs from
     scratch.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了减少这种成本，[Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf) 提出了 ReLoRa。这是对
+    LoRa 的一种修改，允许从零开始预训练 LLMs。
 - en: In this article, I first explain how ReLoRa works. Then, I analyze and comment
     on the results presented in the scientific paper describing ReLoRa. In the last
     section, I show how to set up and run ReLoRa on your computer.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我首先解释了 ReLoRa 如何工作。然后，我分析并评论了描述 ReLoRa 的科学论文中呈现的结果。在最后一节中，我展示了如何在您的计算机上设置和运行
+    ReLoRa。
 - en: '*Note about the licenses:* [*The scientific paper published on arXiv*](https://arxiv.org/abs/2307.05695)
     *and describing ReLoRa is distributed under a CC BY 4.0 license.* [*The source
     code of ReLoRa is published on GitHub*](https://github.com/guitaricet/peft_pretraining)
     *and distributed under an Apache 2.0 license allowing commercial use.*'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*关于许可证的说明：* [*在 arXiv 上发表的科学论文*](https://arxiv.org/abs/2307.05695) *描述了 ReLoRa，并根据
+    CC BY 4.0 许可证进行分发。* [*ReLoRa 的源代码已发布在 GitHub 上*](https://github.com/guitaricet/peft_pretraining)
+    *并根据允许商业使用的 Apache 2.0 许可证进行分发。*'
 - en: 'ReLoRa: from low-rank to high-rank networks'
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'ReLoRa: 从低秩到高秩网络'
 - en: To understand how ReLoRa works, we must first have a closer look at LoRa.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 要理解 ReLoRa 如何工作，我们必须先更深入地了解 LoRa。
 - en: LoRA works by adding two different sets of new trainable parameters, *A* and
     *B*, which are merged back after training into the original frozen high-rank network
     of the pre-trained model.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: LoRA 通过添加两个不同的新可训练参数集，*A* 和 *B*，在训练后将其合并回原始冻结的高秩网络。
 - en: 'It may seem obvious but it is important to understand that the rank of the
     sum of A and B is higher than the sum of their individual ranks. This can be formalized
     as followed:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来可能显而易见，但理解 A 和 B 的和的秩高于它们各自秩的和是重要的。这可以形式化如下：
 - en: '![](../Images/c1a26cfaf96c26dd1430b0388951656f.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c1a26cfaf96c26dd1430b0388951656f.png)'
 - en: Equation (1) by [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf)
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 方程 (1) 由 [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf) 提供
 - en: LoRa only trained these two sets of parameters. However, if we could reset,
     train, and merge them back to the original high-rank network multiple times in
     a row we would be able to increase over time the total rank of the network. In
     other words, we would obtain a larger model.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: LoRa 仅训练了这两组参数。然而，如果我们能够重置、训练并将它们多次合并回原始高秩网络，我们将能够随着时间的推移增加网络的总体秩。换句话说，我们将获得一个更大的模型。
 - en: '*Why LoRa does not perform these resets?*'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*为什么 LoRa 不执行这些重置？*'
 - en: Because there are several significant obstacles to overcome to make these resets
     useful. Standard LLM training uses the Adam optimizer which has its own states.
     Resetting LoRa’s trainable parameters without changing the states of Adam would
     make the new LoRa parameters similar to the LoRa parameters of the previous iteration.
     The model wouldn’t learn anything.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为有几个重大障碍需要克服，以使这些重置变得有用。标准的 LLM 训练使用 Adam 优化器，Adam 优化器有其自身的状态。在不改变 Adam 状态的情况下重置
+    LoRa 的可训练参数，会使新的 LoRa 参数与上一个迭代的 LoRa 参数相似。模型将不会学到任何东西。
 - en: 'One of the main ideas proposed in ReLoRa is to also partially reset the Adam
     optimizer’s states in combination with “a jagged scheduler to stabilize training
     and warm starts”. This jagged scheduler resets the learning rate to 0 and performs
     a new warm-up for a few training steps. The following effect on the learning rate
     is as follows:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: ReLoRa 提出的一个主要想法是还部分重置 Adam 优化器的状态，并结合“一个不规则的调度器来稳定训练和热启动”。这个不规则调度器将学习率重置为 0，并在几个训练步骤中进行新的热启动。以下是学习率的变化效果：
 - en: '![](../Images/3d2bf3b9cf69192706a9e1e60f88e05d.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3d2bf3b9cf69192706a9e1e60f88e05d.png)'
 - en: Illustration by [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf)
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 插图由 [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf) 提供
 - en: 'More formally, the full algorithm running ReLoRa can be written as follows:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 更正式地说，运行 ReLoRa 的完整算法可以写成如下形式：
 - en: '![](../Images/3d6e9cc39f8d3c95b14ecffaa09c32b9.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3d6e9cc39f8d3c95b14ecffaa09c32b9.png)'
 - en: Algorithm by [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法由 [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf) 提供
 - en: 'Results: ReLoRa yields a lower perplexity than LoRa'
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结果：ReLoRa 的困惑度低于 LoRa
 - en: In practice, ReLoRa seems to yield results similar to standard pre-training,
     for a much lower cost, but only above a minimum number of parameters.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，ReLoRa 似乎在成本低得多的情况下，得到的结果与标准预训练相似，但仅在参数数量达到最低值以上时有效。
 - en: '![](../Images/e7b154048bf49bad3f39d1aada246bbc.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e7b154048bf49bad3f39d1aada246bbc.png)'
 - en: Table by [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf)
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 表格由 [Lialin et al. (2023)](https://arxiv.org/pdf/2307.05695.pdf) 提供
 - en: As we can see in the table above, ReLoRa roughly performs as well as “full training”
     (without LoRa and without freezing any parameters) for models with 250 million
     parameters or more.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在上表中看到的，ReLoRa 在参数数量达到 2.5 亿个或更多时，表现大致与“完整训练”（没有 LoRa 并且没有冻结任何参数）相当。
 - en: They also included results for pre-training with the standard LoRa. It poorly
     performs and illustrates very well how critical are the resets in ReLoRa.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们还包括了使用标准 LoRa 进行预训练的结果。它表现不佳，并很好地说明了 ReLoRa 中重置的重要性。
 - en: For these experiments, they used a neural network architecture similar to Meta’s
     LLaMa models. The training for most of these models took only 1 day using 8 RTX
     4090 GPUs (which are consumer GPUs).
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这些实验中，他们使用了类似于 Meta 的 LLaMa 模型的神经网络架构。这些模型的大部分训练仅用了 1 天时间，使用了 8 个 RTX 4090
+    GPU（即消费者级 GPU）。
 - en: They didn’t experiment with more parameters than 350M (approximately the size
     of BERT large) due to the computational cost.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们没有尝试超过 3.5 亿个参数（大约是 BERT large 的大小），因为计算成本较高。
 - en: In an ablation study, the authors also demonstrate that LoRa’s restarts and
     scheduler new warm-ups are essential to achieve a lower perplexity. They also
     show that removing the jagged scheduler may lead to training divergence.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一次消融研究中，作者还展示了 LoRa 的重启和调度器新热启动对于实现更低困惑度的重要性。他们还表明，移除不规则调度器可能会导致训练发散。
 - en: The computational efficiency of ReLoRa
+  id: totrans-37
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: ReLoRa 的计算效率
 - en: ReLoRa iteratively trains and adds new parameters to the model, while keeping
     the parameters from previous iterations frozen.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: ReLoRa 迭代地训练并向模型中添加新参数，同时保持先前迭代的参数冻结。
 - en: 'ReLoRa is thus as efficient as LoRa in terms of memory usage. Moreover, the
     frozen parameters can be quantized at a low precision to further reduce memory
     usage. We can do this for instance with QLoRa as I described here:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，ReLoRa 在内存使用方面与 LoRa 一样高效。此外，冻结的参数可以量化到低精度，以进一步减少内存使用。例如，我们可以使用 QLoRa 进行此操作，如我在这里描述的：
 - en: '[](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b?source=post_page-----d104756f9ddf--------------------------------)
     [## QLoRa: Fine-Tune a Large Language Model on Your GPU'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## QLoRa: 在你的 GPU 上微调大型语言模型](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b?source=post_page-----d104756f9ddf--------------------------------)'
 - en: Fine-tuning models with billions of parameters is now possible on consumer hardware
+  id: totrans-41
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 现在可以在消费级硬件上对拥有数十亿参数的模型进行微调。
 - en: towardsdatascience.com](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b?source=post_page-----d104756f9ddf--------------------------------)
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b?source=post_page-----d104756f9ddf--------------------------------)'
 - en: Running ReLoRa on your computer
+  id: totrans-43
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在你的计算机上运行 ReLoRa
 - en: Lialin et al. (2023) released their implementation of [ReLoRa on GitHub](https://github.com/Guitaricet/peft_pretraining/tree/main).
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: Lialin 等人（2023）在 GitHub 上发布了他们的 [ReLoRa 实现](https://github.com/Guitaricet/peft_pretraining/tree/main)。
 - en: Since ReLoRa works with models of 250 million parameters or more, we can run
     it on consumer hardware, e.g., with a GPU with more than 6 GB of VRAM, or on a
     free instance of Google Colab.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 ReLoRa 可以与 2.5 亿参数或更多的模型配合使用，我们可以在消费级硬件上运行它，例如，使用拥有超过 6 GB VRAM 的 GPU，或在免费的
+    Google Colab 实例上运行。
 - en: You can easily reproduce their experiments and pre-train your own 250-million-parameter
     LLM as follows.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以很容易地重现他们的实验，并按以下步骤预训练你自己的 2.5 亿参数的 LLM。
 - en: '*Note: If you want to directly test it without coding anything, I created a
     Google Colab notebook on The Kaitchup (my substack newsletter).* [*Search for
     notebook #3*](https://kaitchup.substack.com/p/notebooks)*.*'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：如果你想直接测试而不编写代码，我在 The Kaitchup（我的 substack 新闻简报）上创建了一个 Google Colab 笔记本。*
+    [*搜索笔记本 #3*](https://kaitchup.substack.com/p/notebooks)*。*'
 - en: 'First, clone the repository:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，克隆这个仓库：
 - en: '[PRE0]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'And then install all the requirements:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后安装所有需求：
 - en: '[PRE1]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Since training takes a lot of time, I recommend first trying the framework with
     hyperparameters that will early stop the training and shorten the validation (which
     can take hours on consumer hardware).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于训练需要很长时间，我建议首先尝试使用能够提前停止训练并缩短验证的超参数（在消费级硬件上可能需要几个小时）。
 - en: 'The framework doesn’t have the option to shorten the validation, so we will
     have to do it manually. Open the file torchrun_main.py, and replace the line:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 该框架没有缩短验证的选项，所以我们需要手动完成。打开文件 `torchrun_main.py`，并替换这一行：
 - en: '[PRE2]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '*Note: At the time of writing this article, this is line 129.*'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：在撰写本文时，这一行是 129。*'
 - en: 'by:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过：
 - en: '[PRE3]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: For better performance, the authors of the framework recommend running it in
     two steps.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好的性能，框架的作者建议将其分为两步运行。
 - en: The first step just initializes and trains the network for a few steps.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一步仅仅是初始化和训练网络几个步骤。
 - en: 'This is the hyperparameters I used to test that everything is working:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我用来测试一切是否正常工作的超参数：
 - en: '[PRE4]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '*Note: I set “— nproc-per-node” to 1 since I have only 1 GPU. You should change
     it to your number of GPUs.*'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：我将“— nproc-per-node”设置为 1，因为我只有 1 个 GPU。你应该根据你的 GPU 数量进行更改。*'
 - en: In the configs directory, you will see several llama files. They contain the
     configurations for different models, similar to the architecture of the LLaMa
     model, with different sizes. Here I chose the size 250M.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 `configs` 目录下，你会看到几个 llama 文件。它们包含了不同模型的配置，类似于 LLaMa 模型的架构，但大小不同。在这里，我选择了
+    250M 的大小。
 - en: 'The output is very verbose since the framework logs everything with wandb.
     It will also require you to make a choice here:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出非常详细，因为框架使用 wandb 记录所有内容。这也要求你在这里做出选择：
 - en: '[PRE5]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: I entered “3” since I don’t have an account.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 我输入了“3”，因为我没有账户。
 - en: 'Then, in the second step, we rerun the framework with ReLoRa’s hyperparameters
     and PEFT:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，在第二步中，我们使用 ReLoRa 的超参数和 PEFT 重新运行框架：
 - en: '[PRE6]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: With “ — continue_from”, we give the model saved at the first step. Your model
     will have a different name, so you will have to change it. You can find it in
     the “checkpoints” directory.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用“ — continue_from”选项，我们提供了在第一步保存的模型。你的模型将有一个不同的名字，所以你需要更改它。你可以在“checkpoints”目录中找到它。
 - en: Once you have confirmed that everything is working, i.e., without errors and
     with a decreasing perplexity, you can relaunch everything but with reasonable
     hyperparameters so that the model will be much better trained.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦确认一切正常运行，即没有错误且困惑度逐渐降低，你可以重新启动所有内容，但需要合理设置超参数，以便模型能够得到更好的训练。
 - en: '*Note: Don’t forget to remove the change we made in torchrun_main.py to shorten
     validation. You should at least increase the total number of batches to 100 to
     have a meaningful validation perplexity.*'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：不要忘记移除我们在 torchrun_main.py 中所做的更改，以缩短验证时间。你应该至少将批量总数增加到 100，以获得有意义的验证困惑度。*'
 - en: '[PRE7]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '*Note: Increase the batch size if you have GPUs with a lot of VRAM.*'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：如果你有大量 VRAM 的 GPU，请增加批量大小。*'
 - en: By default (it’s hardcoded), the framework used the C4 dataset (English only)
     for pre-training. This dataset was also used to pre-train the T5 models by Google.
     It covers many tasks, domains, and genres.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下（硬编码），框架使用了 C4 数据集（仅限英语）进行预训练。该数据集还被用于 Google 的 T5 模型预训练。它涵盖了许多任务、领域和体裁。
 - en: Once pre-training is finished, you will still have to fine-tune the resulting
     model for downstream tasks or domains of your choice. [You can do that very efficiently
     with QLoRa](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦预训练完成，你仍然需要对结果模型进行微调，以适应下游任务或你选择的领域。[你可以通过 QLoRa 高效地完成这项工作](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b)。
 - en: Conclusion
+  id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'To sum up, ReLoRa is a new pre-training method exploiting low-rank networks.
     It’s like performing LoRa multiple times in a row but with:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，ReLoRa 是一种利用低秩网络的新预训练方法。它就像是连续多次执行 LoRa，但具有以下特点：
 - en: A partial reset of the optimizer’s states
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 优化器状态的部分重置
 - en: A jagged learning rate schedule
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 锯齿状学习率调度
 - en: A short warmup after each reset of LoRa
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每次重置 LoRa 后进行短暂的预热
 - en: Thanks to ReLoRa, we can now pre-train LLM on consumer hardware.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 多亏了 ReLoRa，我们现在可以在消费级硬件上预训练 LLM。
 - en: It remains to explore whether this approach is also competitive for very large
     language models (with more than 1 billion parameters).
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 仍需探索这种方法是否对非常大的语言模型（超过10亿参数）也具有竞争力。
 - en: According to ReLoRa’s authors, ReLoRa works better as the model gets larger.
     Nonetheless, it should be empirically verified by future work.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据 ReLoRa 的作者，ReLoRa 随着模型的增大效果会更好。然而，这应由未来的工作来实证验证。
 - en: '*If you like this article and would be interested to read the next ones, the
     best way to support my work is to become a Medium member using this link:*'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你喜欢这篇文章并希望阅读后续文章，支持我工作的最佳方式是通过这个链接成为 Medium 会员：*'
 - en: '[](https://medium.com/@bnjmn_marie/membership?source=post_page-----d104756f9ddf--------------------------------)
     [## Join Medium with my referral link - Benjamin Marie'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@bnjmn_marie/membership?source=post_page-----d104756f9ddf--------------------------------)
+    [## 使用我的推荐链接加入 Medium - Benjamin Marie]'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-86
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为 Medium 会员，你的会员费的一部分将用于支持你阅读的作者，你将获得所有故事的完全访问权限…
 - en: medium.com](https://medium.com/@bnjmn_marie/membership?source=post_page-----d104756f9ddf--------------------------------)
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@bnjmn_marie/membership?source=post_page-----d104756f9ddf--------------------------------)'
 - en: '*If you are already a member and want to support this work,* [*just follow
     me on Medium*](https://medium.com/@bnjmn_marie)*.*'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你已经是会员并希望支持这项工作，* [*只需关注我在 Medium 上的文章*](https://medium.com/@bnjmn_marie)*。*'
