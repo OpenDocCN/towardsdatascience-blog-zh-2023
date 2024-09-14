@@ -1,391 +1,581 @@
 - en: Hey GPU, What’s Up with My Matrix?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 嘿，GPU，我的矩阵怎么了？
 - en: 原文：[https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6](https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6](https://towardsdatascience.com/hey-gpu-whats-up-with-my-matrix-cb7f6d7ae7d6)
 - en: A gentle guide to understanding how GPUs perform matrix multiplication
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 了解GPU如何执行矩阵乘法的温和指南
 - en: '[](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Thushan
     Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
     [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Thushan
+    Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
+    [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
     ·8 min read·Jun 13, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cb7f6d7ae7d6--------------------------------)
+    ·阅读时长8分钟·2023年6月13日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a911c1d35115175bbfe3894ea74e8d00.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a911c1d35115175bbfe3894ea74e8d00.png)'
 - en: Photo by [Thomas Foster](https://unsplash.com/@thomasfos?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/vWgoeEYdtIY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[Thomas Foster](https://unsplash.com/@thomasfos?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    在 [Unsplash](https://unsplash.com/photos/vWgoeEYdtIY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: Matrix multiplication; the holy grail of deep neural networks and modern language
     understanding behemoths. As MLEs or data scientists, our fingers are too quick
     to type `tf.matmul` or `torch.matmul` and we never look back. But don’t tell me
     you’ve never had the millisecond infatuation to know what might be happening to
     that matrix when it enters the GPU! If you did, you’re in the right place. Join
     me in a journey through the fascinating intricacies within a GPU.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 矩阵乘法；深度神经网络和现代语言理解巨头的圣杯。作为MLE或数据科学家，我们的手指太快了，以至于只需敲入 `tf.matmul` 或 `torch.matmul`，然后从未回头。但不要告诉我你从未对矩阵进入GPU时可能发生的情况感到过一丝兴奋！如果你有，那你来对地方了。跟随我，一起探索GPU内部那些迷人的复杂性。
 - en: I’ll explain to you how these compute powerhouses crunch up the numbers. You’ll
     learn three little-known impressive things GPUs do, when they come face-to-face
     with matrices. By the end of this blog post, you’ll have a good understanding
     of how matrix multiplication works inside GPUs.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将向你解释这些计算强者是如何处理数字的。你将了解GPU在面对矩阵时做的三件鲜为人知的令人印象深刻的事情。在本文结束时，你将对GPU内部的矩阵乘法有一个清晰的理解。
 - en: 'GEMM: A true gem 💎 for a GPU'
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: GEMM：一个真正的💎为GPU所用
 - en: GEMM or generalized matrix multiplication is the kernel that’s executed when
     GPUs perform matrix multiplication.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: GEMM 或广义矩阵乘法是当GPU执行矩阵乘法时运行的内核。
 - en: '`C = a (A.B) + b C`'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '`C = a (A.B) + b C`'
 - en: Here, `a` and `b` are scalars, `A` is an `MxK` matrix, `B` is an `KxN` matrix,
     and thus `C` is an `MxN` matrix. It’s easy as that! You might wonder why that
     trailing addition exists. Turns out this is a pretty common pattern for neural
     networks (e.g. adding bias, applying ReLU, adding residual connections).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，`a` 和 `b` 是标量，`A` 是一个 `MxK` 矩阵，`B` 是一个 `KxN` 矩阵，因此 `C` 是一个 `MxN` 矩阵。就是这么简单！你可能会好奇为什么会有那一个额外的加法。事实证明，这是一种在神经网络中非常常见的模式（例如，添加偏置、应用ReLU、添加残差连接）。
 - en: 'Trick #1: Outer product is out-er this world 👽'
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '技巧 #1：外积的效果出乎意料👽'
 - en: If you’re asked to write a matrix multiplication algorithm from first principles,
     here’s what you’ll do (unless you’re gifted with a GPU in lieu of a brain — wouldn’t
     that save money for an MLE!).
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你被要求从基本原理出发编写一个矩阵乘法算法，这里是你要做的（除非你天生聪慧，能用GPU代替大脑——那样不就能为MLE省下不少钱了！）。
 - en: '[PRE0]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Here’s an animated visual that shows you what this does.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个动画视觉效果，可以展示这是什么效果。
 - en: '![](../Images/4f0c3e4a00f1242d2e82a1d450984883.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4f0c3e4a00f1242d2e82a1d450984883.png)'
 - en: 'Inner product based multiplication of two matrices (Recreated by author — source
     of inspiration: [https://www.adityaagrawal.net/blog/architecture/matrix_multiplication](https://www.adityaagrawal.net/blog/architecture/matrix_multiplication))'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于内积的两个矩阵的乘法（由作者重现 — 灵感来源：[https://www.adityaagrawal.net/blog/architecture/matrix_multiplication](https://www.adityaagrawal.net/blog/architecture/matrix_multiplication)）
 - en: But did you know GPUs despise this implementation 🤔? To understand why that’s
     the case, you need to understand the GPU memory architecture,
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 但你知道GPU讨厌这种实现吗🤔？要理解原因，你需要了解GPU内存架构，
 - en: For all comparisons and specifications, I’ll be using the Nvidia A100 GPU specifications.
+  id: totrans-21
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 所有比较和规格，我将使用Nvidia A100 GPU规格。
 - en: A GPU has three main memory levels,
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: GPU有三个主要的内存级别，
 - en: Global memory or HBM (what you typically refer to as GPU memory and what you
     see when you run `nvidia-smi` )
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 全局内存或HBM（通常指的GPU内存，以及你在运行`nvidia-smi`时看到的内存）
 - en: Shared memory (a local memory that is dedicated to a single streaming multiprocessor
     [or SM] and shared between threads running in that SM)
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 共享内存（专门分配给一个流式多处理器[或SM]的本地内存，并在该SM中运行的线程之间共享）
 - en: Registers (individually allocated to threads to carry out their workload)
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 寄存器（分配给线程以执行其工作负载）
 - en: This is what it looks like,
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是它的样子，
 - en: '![](../Images/df76c1f0c3b54d513f3aaa48519ea1c5.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/df76c1f0c3b54d513f3aaa48519ea1c5.png)'
 - en: The typical memory hierarchy of a GPU (L0/L1/L2 caches ignored for simplicity)
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: GPU的典型内存层次结构（为了简便，忽略L0/L1/L2缓存）
 - en: The first thing to note is that shared memory (referred to as SRAM from now
     on) is way smaller than the HBM, let alone registers. So your matrix is not going
     to fit in there (in most occasions). If we go back to our animation, for a single
     row of `A` all columns of `B` needs to be retrieved, and repeat the process for
     all rows in `A`. This means, the GPU needs to do many-many reads to compute the
     output. The HBM (~1.5TB/s) is several magnitudes slower than SRAM (~19TB/s).
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先要注意的是，共享内存（从现在起称为SRAM）比HBM小得多，更不用说寄存器了。所以你的矩阵不可能适合其中（在大多数情况下）。如果我们回到我们的动画，对于`A`的一行，需要检索`B`的所有列，并对`A`中的所有行重复此过程。这意味着，GPU需要进行大量读取来计算输出。HBM（约1.5TB/s）比SRAM（约19TB/s）慢几个数量级。
 - en: To put that in numbers, say you want to multiply a `10x20` and `20x30` matrix,
     you need to read columns of `B` `10x30=300` times. Is there a better way we can
     do this?
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 用数字来说，假设你想乘以一个`10x20`和`20x30`的矩阵，你需要读取`B`的列`10x30=300`次。有没有更好的方法呢？
 - en: Turns out a simple trick can go a long way here! Simply flip the order of the
     loops, so that `k` becomes the outer most loop. And you’re done! 😮
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实证明一个简单的技巧能大有帮助！只需翻转循环的顺序，使`k`成为最外层的循环。就完成了！😮
 - en: '[PRE1]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We did not touch the actual computation, just the order of the loops, so we
     should get the same result as before. Here’s what the matrix multiplication looks
     like now!
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们没有触及实际计算，只是调整了循环的顺序，因此结果应该和之前一样。现在矩阵乘法看起来是这样的！
 - en: '![](../Images/2b847b863d6664b2bc0cf87042f7a6ab.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2b847b863d6664b2bc0cf87042f7a6ab.png)'
 - en: 'Outer product based multiplication of two matrices (Recreated by author — source
     of inspiration: [https://www.adityaagrawal.net/blog/architecture/matrix_multiplication](https://www.adityaagrawal.net/blog/architecture/matrix_multiplication))'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于外积的两个矩阵的乘法（由作者重现 — 灵感来源：[https://www.adityaagrawal.net/blog/architecture/matrix_multiplication](https://www.adityaagrawal.net/blog/architecture/matrix_multiplication)）
 - en: You see, we only bring one *column* of `A` and one *row* of `B` at a time and
     never look back. This requires far less reads than the original implementation.
     The only difference is we were computing the *inner product* between two vectors
     before, now we’re computing the *outer product*.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 你看，我们一次只带来`A`的一个*列*和`B`的一个*行*，并且不会回头看。这需要的读取次数比原始实现少得多。唯一的区别是，我们之前计算的是两个向量之间的*内积*，现在我们计算的是*外积*。
 - en: '![](../Images/d844eb8589acdba180851c314b96e206.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d844eb8589acdba180851c314b96e206.png)'
 - en: The difference between inner product and outer product shown in green for two
     vectors (blue and yellow).
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 绿色显示的两个向量（蓝色和黄色）之间的内积和外积的区别。
 - en: But still, we need entire `C` in SRAM, which might be too big to fit in SRAM.
     What does CUDA do then? That brings us to the second trick.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 但仍然，我们需要整个`C`在SRAM中，这可能太大而无法容纳在SRAM中。那么CUDA是怎么做的呢？这就引出了第二个技巧。
 - en: 'Trick #2: Divide and conquer (and accumulate)'
+  id: totrans-40
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '技巧 #2：分而治之（并累积）'
 - en: Not to worry! I’m not going to blast you with any complex mathematics or Leetcode
     algorithms. The main thing to keep in mind is, a matrix is a 2D layout of individual
     tiles. The following animation does justice to what I’m trying to explain.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 不用担心！我不会用复杂的数学或Leetcode算法轰炸你。主要要记住的是，矩阵是单独瓦片的二维布局。下面的动画很好地展示了我试图解释的内容。
 - en: '![](../Images/52fbea7b18ac1a73b3158ececd0f9c16.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/52fbea7b18ac1a73b3158ececd0f9c16.png)'
 - en: You can iterate each block in A and B and still compute the exact answer for
     C’s corresponding block
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以迭代A和B中的每个块，仍然可以计算C对应块的准确答案
 - en: The result of the green block 💚 is the light blue strip of A 💙 and the light
     yellow strip of B 💛. Taking this a step further, to compute the output, you can
     bring one block of that strip of A and one block from B’s strip at a time, compute
     the output and accumulate the result in the green box.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 绿色块💚的结果是浅蓝色的A条💙和浅黄色的B条💛。更进一步，为了计算输出，你可以一次带来一个A条的块和一个B条的块，计算输出并将结果累积在绿色框中。
 - en: This gives us a flexible framework where we can load an arbitrary size block
     (or tile) of A and B and still compute the final answer. We don’t have to stop
     there, we can keep recursively dividing the problem to even smaller problems.
     i.e. the matrix is broken into tiles, tiles are broken into fragments, and fragments
     to individual values.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 这为我们提供了一个灵活的框架，我们可以加载任意大小的A和B的块（或瓦片），仍然能够计算最终的答案。我们不必止步于此，可以继续递归地将问题划分为更小的问题。即矩阵被拆分成瓦片，瓦片被拆分成片段，片段进一步拆分成单个值。
 - en: '![](../Images/9ebe0775cebde0334adaa9b57b088d8c.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ebe0775cebde0334adaa9b57b088d8c.png)'
 - en: Using the tiling approach, the problem can be broken down recursively
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用瓦片方法，问题可以递归地拆解。
 - en: And this lends itself nicely to the process execution architecture in a GPU.
     There are three layers to a kernel execution in a GPU. For simplicity, we’ll say
     a SM runs a single thread block (although in practice they execute them concurrently,
     to reduce something known as the [tail effect](https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/index.html#gpu-execution)).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这很好地适用于GPU中的过程执行架构。GPU中的内核执行有三层。为了简化，我们说一个SM运行一个线程块（虽然实际上它们是并行执行的，以减少被称为[尾效应](https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/index.html#gpu-execution)的影响）。
 - en: Threads
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 线程
 - en: Warps (a collection of 32 threads)
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Warps（32个线程的集合）
 - en: Thread blocks (a collection of several warps)
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 线程块（几个warp的集合）
 - en: The exact number of threads in a thread block depends on a specific architecture.
     For example, an [A100 has the following specifications](https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 线程块中的确切线程数量取决于特定的架构。例如，[A100具有以下规格](https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/)。
 - en: Maximum of 2048 threads per SM
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个SM最大支持2048个线程
 - en: Maximum of 1024 threads per block
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个块最大支持1024个线程
 - en: Maximum of 32 thread blocks per SM
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个SM最大支持32个线程块
 - en: 'Sidebar #2: Magic of the power of 2'
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '侧边栏 #2：2的幂的魔力'
 - en: Going back to the tiling, It has been found that (heuristically) a matrix tile
     of size `256x128` per thread block gives reasonable efficiency for most problems.
     Therefore it’s a common tile size used by CUDA.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到瓦片方法，已发现（启发式地）每个线程块的矩阵瓦片大小为`256x128`在大多数问题中能提供合理的效率。因此，这是CUDA常用的瓦片大小。
 - en: You might have heard about a best practice of keeping batch size, hidden dimension
     size as powers of two. This is where this comes from! When your matrix dimensions
     are of powers of two, it will be fully divisible to a set of tiles with no remainder.
     If not, it makes your code [less efficient](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#requirements-tc).
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能听说过将批处理大小、隐藏维度大小保持为2的幂的最佳实践。这就是来源！当你的矩阵维度是2的幂时，它将被完全划分为一组没有余数的瓦片。如果不是，这会使你的代码[效率更低](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#requirements-tc)。
 - en: GPU computations are more efficient when your matrix dimensions are in the power
     of 2
+  id: totrans-59
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 当你的矩阵维度是2的幂时，GPU计算会更高效
 - en: What happens when it’s not a power of 2?
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 当不是2的幂时会发生什么？
 - en: 'Sidebar #2: Tile quantization'
+  id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '侧边栏 #2：瓦片量化'
 - en: What happens is an effect known as [*tile quantization*](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#tile-quant).
     In other words, if you have a tile row dimension of 128 but your matrix has 257
     elements in a row, you’ll need not two, but three tiles in a row (i.e. 256+1).
     This is illustrated below.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 这会导致一种叫做 [*tile quantization*](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#tile-quant)
+    的现象。换句话说，如果你的 tile 行维度为 128，但矩阵的行中有 257 个元素，你需要的不仅仅是两个，而是三个 tiles（即 256+1）。如下所示。
 - en: '![](../Images/6c0e19fcfcf9ef9bf3d1da19ff0313ca.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6c0e19fcfcf9ef9bf3d1da19ff0313ca.png)'
 - en: Just because we had on extra element in rows, we have to dedicate two entire
     thread blocks
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅仅因为行中多了一个元素，我们不得不分配两个完整的线程块。
 - en: Problem with this is that, the thread block does the same amount of computation
     regardless of the useful data residing in it. So, you’re taking the opportunity
     to do useful computation away from your GPU, leading to inefficiencies.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 问题在于，无论线程块中有用的数据如何，线程块执行的计算量是相同的。因此，你会把执行有用计算的机会从 GPU 中拿走，导致效率低下。
 - en: A similar effect is known as wave quantization, where the matrix is over-sized
     and the SMs collectively cannot fit it at once. Then the GPU needs to do the computation
     in 2 “waves”. However this is less of a concern for modern GPUs as they leverage
     concurrency to reduce wave quantization.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似的现象称为 wave 量化，即矩阵过大，SMs 无法一次性容纳。这时 GPU 需要进行 2 次“波”。不过，这对现代 GPU 影响较小，因为它们利用并发性来减少
+    wave 量化。
 - en: Tile quantization happens when a thread block has to spill data partially, wave
     quantization happens when SMs have to spill data.
+  id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 当线程块需要部分溢出数据时，就会发生 tile 量化；当 SMs 需要溢出数据时，就会发生 wave 量化。
 - en: 'Trick #3: One is better than two'
+  id: totrans-68
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '技巧 #3：一个比两个好'
 - en: The final trick is kernel fusion. More often than not, it is faster to do all
     the computations in one kernel than having two kernels called one after the other.
     Why? Because one kernel needs to write the data to HBM and other needs to read
     that back. We already talked about how slow this is. A better approach is just
     combine the two operations into one. Some examples are,
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终的技巧是内核融合。通常情况下，将所有计算放在一个内核中要比一个接一个调用两个内核要快。为什么？因为一个内核需要将数据写入 HBM，另一个需要读取数据。我们已经讨论过这种操作有多慢。更好的方法是将两个操作合并为一个。以下是一些示例，
 - en: '[matmul + bias + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/matmul_op_fused.cc)'
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[matmul + bias + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/matmul_op_fused.cc)'
 - en: '[conv + bias + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/conv_ops_fused_impl.h)'
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[conv + bias + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/conv_ops_fused_impl.h)'
 - en: '[batchnorm + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/fused_batch_norm_op.h)'
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[batchnorm + relu](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/fused_batch_norm_op.h)'
 - en: So as it is seen here (I’m sure Pytorch has a similar glossary), there are many
     fused kernels offered through TensorFlow that combines commodious operations in
     to a single kernel. In code, it means something like this,
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如这里所看到的（我相信 Pytorch 也有类似的术语表），TensorFlow 提供了许多融合的内核，将便捷的操作合并到一个内核中。在代码中，这意味着类似于以下内容，
 - en: '[PRE2]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: In other words, we hold dearly to our `tmp` variable until after we’ve finished
     all our computations. Then only we’ll write the result back to `C` .
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，我们会珍惜我们的 `tmp` 变量，直到完成所有计算后才将结果写回 `C`。
 - en: Conclusion
+  id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: That’s it folks. I hope this was an enjoyable excursion through the weeds of
     a GPU. If you’re interested in the audio-visual version here’s the link to my
     YouTube video.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这些了，希望这次通过 GPU 的“丛林探险”对你有所帮助。如果你对音频视觉版本感兴趣，这里是我的 YouTube 视频的链接。
 - en: To recap, we discussed three things that makes GPUs really fast at matrix multiplication.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，我们讨论了三件使 GPU 在矩阵乘法中非常快速的事情。
 - en: GPUs abandon the friendlier inner product implementation of matmul and embrace
     the more read-efficient outer product implementation of matmul
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GPUs 摒弃了更友好的内积实现，转而采用更高效的外积实现。
 - en: GPUs split the matrices into smaller blocks (and blocks into fragments) and
     split the compute load across thread blocks, warps and threads.
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GPUs 将矩阵分割成更小的块（块再分割成碎片），并将计算负载分配到线程块、warp 和线程上。
 - en: GPUs employ kernel fusion to bring commonly co-occurring functionality togetter,
     improving GPU efficiency.
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GPUs 使用内核融合将常见的功能组合在一起，提高 GPU 效率。
 - en: If you enjoyed this story, feel free [subscribe](https://thushv89.medium.com/membership)
     to Medium, and you will get notifications to fresh content from me, as well as
     unlock full access to thousands of quality stories from other authors.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢这个故事，可以随时[订阅](https://thushv89.medium.com/membership)Medium，这样你就会收到我的最新内容通知，并且能够解锁来自其他作者的成千上万的优质故事的完整访问权限。
 - en: '[](https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------)
     [## Join Medium with my referral link - Thushan Ganegedara'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------)
+    [## 通过我的推荐链接加入Medium - Thushan Ganegedara'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-84
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为Medium会员，你的一部分会员费用将会支持你阅读的作者，并且你可以完全访问每一篇故事…
 - en: thushv89.medium.com](https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------)
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------](https://thushv89.medium.com/membership?source=post_page-----cb7f6d7ae7d6--------------------------------)'
 - en: '*Unless otherwise noted all images are by the author*'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '*除非另有说明，否则所有图片均由作者提供*'
 - en: 'References:'
+  id: totrans-87
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献：
 - en: '[https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html)'
+  id: totrans-88
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html)'
 - en: '[https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)'
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)'
 - en: '[https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/](https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/)'
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/](https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/)'

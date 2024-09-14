@@ -1,103 +1,151 @@
 - en: Heuristics as Warm Start for Mixed Integer Programming (MIP) Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 混合整数规划（MIP）模型的启发式方法
 - en: 原文：[https://towardsdatascience.com/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f](https://towardsdatascience.com/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f](https://towardsdatascience.com/heuristics-as-warm-start-for-mixed-integer-programming-mip-models-9046781dd21f)
 - en: 'Setting a starting solution in MIP Models: a scheduling application'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在MIP模型中设置起始解：一个调度应用程序
 - en: '[](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)[![Bernardo
     Furtado](../Images/fa4e7e408135319d0531ef364acca8f6.png)](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)
     [Bernardo Furtado](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)[![Bernardo
+    Furtado](../Images/fa4e7e408135319d0531ef364acca8f6.png)](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)
+    [Bernardo Furtado](https://medium.com/@bernardovf?source=post_page-----9046781dd21f--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)
     ·10 min read·Apr 6, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9046781dd21f--------------------------------)
+    ·阅读时间10分钟·2023年4月6日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/dddb71a353bfd16b1c89773175b62f3d.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dddb71a353bfd16b1c89773175b62f3d.png)'
 - en: Photo by [Nils Geldner](https://unsplash.com/@n_geldner?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/nZf1_8WPIQk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Nils Geldner](https://unsplash.com/@n_geldner?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    提供，来源于 [Unsplash](https://unsplash.com/photos/nZf1_8WPIQk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: In computer science, heuristics are techniques used to find a feasible solution
     to a given problem, typically faster than exact methods but without a guarantee
     of optimality. On the other hand, exact methods are much more expensive computationally,
     but the optimal solution is guaranteed.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在计算机科学中，启发式方法是用于寻找给定问题的可行解的技术，通常比精确方法快，但不保证最优性。另一方面，精确方法计算成本高，但可以保证最优解。
 - en: Modeling a problem as a Mixed Integer Program (*MIP*) and solving it using a
     solver may give you the optimal solution. Usually, those solvers use a branch-and-bound
     algorithm behind the scenes. Branch and Bound (*B&B*) is considered an exact method
     to solve optimization problems.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 将问题建模为混合整数规划（*MIP*）并使用求解器求解可能会给出最终解决方案。通常，这些求解器在后台使用分支定界算法。分支定界（*B&B*）被认为是一种解决优化问题的精确方法。
 - en: As the name suggests, it enumerates the solutions as a tree (branching). The
     main difference between *B&B* and exhaustive search, often called brute force,
     is the bounding phase. During the process, every node (solution) is compared against
     the solution’s lower and upper bound. If the branch is proven not to give better
     results than the best already found, it is pruned and the algorithm goes to another
     branch.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如名字所示，它将解枚举为树状结构（分支）。*B&B* 和通常称为蛮力的穷举搜索的主要区别在于界限阶段。在过程中，每个节点（解）与解的下界和上界进行比较。如果分支被证明不能比已找到的最佳解更好，则会被剪枝，算法将转向另一个分支。
 - en: 'The target of this article is not to give too many details on the Branch and
     Bound algorithm; a much deeper explanation is found [here](https://www.gurobi.com/resources/mixed-integer-programming-mip-a-primer-on-the-basics/).
     But we have to define a couple of things:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文的目标不是详细介绍分支定界算法；更深入的解释可以在 [这里](https://www.gurobi.com/resources/mixed-integer-programming-mip-a-primer-on-the-basics/)
+    找到。但我们需要定义几个概念：
 - en: '*Incumbent*: best feasible solution found at each step of the algorithm. If
     it is a minimization problem, it is an upper bound.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*现有解*：在算法的每一步找到的最佳可行解。如果这是一个最小化问题，它是上界。'
 - en: '*Best Bound*: valid lower bound of the solution.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*最佳界限*：解的有效下界。'
 - en: '*Gap (%)*: difference between Best Bound and Incumbent. If incumbent is equal
     to the best bound, the gap is 0, and optimal solution was found.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Gap (%)*：最佳上界与现有解之间的差异。如果现有解等于最佳上界，则差距为 0，表明已找到最优解。'
 - en: State-of-the-art solvers have different methods to calculate an incumbent and
     best bound for any *MIP*. But for the solver, our *MIP* is just a set of equations
     and objective function. Since we know the exact structure of our problem, wouldn’t
     it be helpful to develop an Adhoc algorithm and provide the result as an incumbent
     itself? Yes, and that’s when heuristics and warm-start comes into the picture
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 先进的求解器有不同的方法来计算任意 *MIP* 的现有解和最佳上界。但对于求解器而言，我们的 *MIP* 只是一个方程组和目标函数。既然我们知道问题的确切结构，那么开发一个专门算法并将结果作为现有解提供会不会更有帮助？是的，这就是启发式方法和热启动发挥作用的地方。
 - en: 'The permutation flow shop scheduling problem is one of the most classic optimization
     problems in the literature. It can be briefly described as follows: given a set
     of machines *m* and a set of jobs *n*, how to process those jobs such that every
     job has to go through all the machines in the same order. Objective is to minimize
     the completion time of last job.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 排列流车间调度问题是文献中最经典的优化问题之一。它可以简要描述为：给定一组机器 *m* 和一组作业 *n*，如何处理这些作业，使得每个作业必须按照相同的顺序经过所有机器。目标是最小化最后一个作业的完成时间。
 - en: 'Let’s suppose there are *3* machines (*M1*, *M2* and *M3*) and *3* jobs (*J1*,
     *J2* and *J3*). Jobs have to follow that order given. A possible feasible solution
     is shown below in form of Gantt Chart:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设有 *3* 台机器（*M1*、*M2* 和 *M3*）和 *3* 个作业（*J1*、*J2* 和 *J3*）。作业必须按照给定的顺序进行。下图显示了一个可能的可行解，形式为甘特图：
 - en: '![](../Images/7bcaaf563561dc00b248db36fd137a92.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7bcaaf563561dc00b248db36fd137a92.png)'
 - en: Feasible solution for Permutation Flow shop
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 排列流车间的可行解
 - en: The completion time, or Makespan, of this schedule is *34* and the solution/order
     is *J1*, *J2*, *J3*.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个调度的完成时间，或称 Makespan，为 *34*，解决方案/顺序是 *J1*、*J2*、*J3*。
 - en: This problem can be formulated as *MIP* model. Let’s call *m* the set of machines
     and *n* the set of jobs. The jobs have to go through the same order of machines
     *{0,1,…,m}*. The processing time of job *j* in machine *i* is given by p_ij. Let’s
@@ -105,141 +153,215 @@
     machines. Processing time is generated randomly between *1* and *100*. *M* is
     an upper bound of the solution. A good upper bound is the sum of all processing
     times of all jobs in all machines.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个问题可以被表述为 *MIP* 模型。我们称 *m* 为机器集合，*n* 为作业集合。作业必须按照相同的机器顺序 *{0,1,…,m}* 进行。作业
+    *j* 在机器 *i* 上的处理时间由 p_ij 给出。我们来用 Python 创建这些参数。我们将从 *15* 个作业和 *5* 台机器开始。处理时间在
+    *1* 和 *100* 之间随机生成。*M* 是解的上界。一个好的上界是所有作业在所有机器上的处理时间之和。
 - en: '[PRE0]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: There are two sets of variables. Variable *x_ij*, a continuous variable, which
     is the starting time of job *j* in machine *i*. And variable *y_jk*, a binary
     variable that is equal to *1* if job *j* is executed before *k*. *0* otherwise.
     *Cmax* is the makespan of the schedule. Now let’s define that using *gurobipy*
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 变量有两组。变量 *x_ij* 是连续变量，表示作业 *j* 在机器 *i* 上的开始时间。变量 *y_jk* 是二进制变量，如果作业 *j* 在 *k*
+    之前执行，则等于 *1*，否则为 *0*。*Cmax* 是调度的 makespan。现在我们用 *gurobipy* 来定义这些。
 - en: '[PRE1]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Constraints are shown below:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 约束如下所示：
 - en: '![](../Images/15343bbeae0ca682b7b3e88f41d2f3af.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/15343bbeae0ca682b7b3e88f41d2f3af.png)'
 - en: '***(1)*** ensures that processing of job *j* in machine *i* can start only
     when it is finished in machine *i-1*. ***(2)*** and ***(3)*** are the disjunction
     constraints — if job *j* is executed after job *k*, it should start after its
     completion, in the given machine. ***(4)*** defines the makespan, which is the
     completion time of last job in machine *m* (last machine).'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '***(1)*** 确保作业 *j* 在机器 *i* 上的处理只能在其在机器 *i-1* 上完成后开始。***(2)*** 和 ***(3)*** 是选择约束——如果作业
+    *j* 在作业 *k* 之后执行，则在给定的机器上应该在其完成后开始。***(4)*** 定义了 makespan，即在机器 *m*（最后一台机器）上最后一个作业的完成时间。'
 - en: '[PRE2]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Objective function is minimize makespan:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标函数是最小化 makespan：
 - en: '[PRE3]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'If we set the *MIP* Gap to be *1.8%*, the best objective is *832\.* The convergence
     of the Branch-and-Bound algorithm is shown in the chart below:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将 *MIP* Gap 设置为 *1.8%*，最佳目标是 *832*。分支定界算法的收敛情况见下图：
 - en: '![](../Images/62581d485f313261ae8d6a11665c5744.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/62581d485f313261ae8d6a11665c5744.png)'
 - en: Convergence curve for Permutation Flow shop example
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 排列流车间示例的收敛曲线
 - en: Incumbent starts at around *1,200* (the first solution gurobi was able to find)
     and converges until *832*. What if we could find a better initial solution for
     the problem and use it as the incumbent?
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 现有解开始时约为 *1,200*（Gurobi 能找到的第一个解），并收敛到 *832*。如果我们能找到一个更好的初始解并将其作为现有解会怎样？
 - en: The *NEH* heuristic is one of the most known heuristics for the flow shop scheduling
     problem. It is named *NEH* due to its authors ([Nawaz, Enscore, and Ham](https://www.sciencedirect.com/science/article/abs/pii/0305048383900889)).
     It is a constructive heuristic, therefore, it starts from an empty solution and
     constructs the schedule iteratively until all the jobs are assigned.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*NEH* 启发式算法是流车间调度问题中最著名的启发式算法之一。它以其作者（[Nawaz, Enscore, 和 Ham](https://www.sciencedirect.com/science/article/abs/pii/0305048383900889)）命名为
+    *NEH*。它是一种构造性启发式算法，因此，它从一个空解开始，并迭代地构建调度，直到所有任务都被分配。'
 - en: A solution representation of the permutation flow shop problem is a list of
     *n* elements. The list is ordered by start time — the first job in the list is
     the first to be executed and the last job is the latest. The first step is to
     create a function that receives the ordered list (a solution) as input and returns
     the makespan associated to it.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 排列流车间问题的解的表示是一个由 *n* 个元素组成的列表。列表按开始时间排序——列表中的第一个任务是最早执行的任务，而最后一个任务是最晚的任务。第一步是创建一个函数，该函数接收有序列表（一个解）作为输入，并返回与之相关的总工时。
 - en: '[PRE4]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '*NEH* starts by sorting the jobs in decreasing order of processing times (sum
     of all machines). The first iteration adds the job with the highest processing
     time at the beginning of the schedule. For the remaining jobs, it tries to insert
     it in all possible positions in the current solution, compares the (partial) makespan
     of each, and stores the best solution found. This process is repeated until all
     the jobs are assigned. The function is shown below:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*NEH* 从按处理时间递减的顺序对任务进行排序开始（所有机器的处理时间之和）。第一次迭代将处理时间最长的任务添加到调度的开头。对于剩余的任务，它尝试将其插入当前解中的所有可能位置，比较每个位置的（部分）总工时，并存储找到的最佳解。这个过程会重复，直到所有任务都被分配。函数如下：'
 - en: '[PRE5]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The result found by *NEH* has makespan of *891*, much better than the *1,200*
     found by Gurobi as first incumbent.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '*NEH* 找到的结果的总工时为 *891*，比 Gurobi 作为第一个现有解找到的 *1,200* 要好得多。'
 - en: 'If we wanted to start with our incumbent, *B&B* from Gurobi would be able to
     skip a lot of branches with solution higher than *891*. As in the chart below:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们想从现有解开始，Gurobi 的 *B&B* 方法可以跳过许多解较高于 *891* 的分支。如下面的图表所示：
 - en: '![](../Images/881071d8ffa91adf1187133707ec5150.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/881071d8ffa91adf1187133707ec5150.png)'
 - en: Convergence curve for Permutation Flow shop example against NEH solution
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 对比 NEH 解的排列流车间示例的收敛曲线
 - en: Using a warm start in Gurobi is relatively easy. The only challenge is to transform
     the data structure returned by the heuristic into values of the *MIP* variables.
     For our problem, we must transform an ordered list and a makespan value into variable
     values of *y*, *x*, and *c*.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Gurobi 中使用热启动相对容易。唯一的挑战是将启发式返回的数据结构转换为 *MIP* 变量的值。对于我们的问题，我们必须将有序列表和总工时值转换为
+    *y*、*x* 和 *c* 的变量值。
 - en: '*cmax_heuristic* and *c* variable have thesame meaning, so the only task is
     assigning the variable start value.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '*cmax_heuristic* 和 *c* 变量具有相同的含义，因此唯一的任务是分配变量的初始值。'
 - en: '[PRE6]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Transforming the ordered list (*sequence_heuristic*) into variable *y* is also
     straightforward. One needs to iterate through the list, and if job *j* comes before
     job *k* in the list, *y_jk = 1*. *0* otherwise.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 将有序列表（*sequence_heuristic*）转换为变量 *y* 也很简单。需要遍历列表，如果任务 *j* 在列表中排在任务 *k* 之前，则
+    *y_jk = 1*。否则为 *0*。
 - en: '[PRE7]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'We don’t need to assign variable *x* values. Gurobi can infer their values
     from the constraints. Once the model is executed, the user will be able to see
     the following message:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不需要分配变量 *x* 的值。Gurobi 可以从约束条件中推断出它们的值。一旦模型执行，用户将能够看到以下消息：
 - en: '![](../Images/ab0cefcc8e354885050eacb1d7a244c8.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab0cefcc8e354885050eacb1d7a244c8.png)'
 - en: 'It means the solution is feasible, its objective is *891*, and it will be used
     as the *MIP* start. What if we try to insert an unfeasible *MIP* start? For example,
     if we try to add as a start *y_ij = 0*, for all *i* and all *j*. Of course, this
     is not feasible since all jobs must be on the schedule. In that case, the user
     would see the following message:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着解是可行的，其目标是 *891*，并将作为 *MIP* 开始。那如果我们尝试插入一个不可行的 *MIP* 开始呢？例如，如果我们尝试将所有 *i*
+    和所有 *j* 的 *y_ij = 0* 作为开始。当然，这是不可行的，因为所有任务都必须在调度中。在这种情况下，用户将看到以下消息：
 - en: '![](../Images/602ec4cace045ac441a4b9fb7c23a4d1.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/602ec4cace045ac441a4b9fb7c23a4d1.png)'
 - en: 'Having a heuristic that finds a good starting point for *MIP* is not the only
     use of the *MIP* start functionality. There are a couple of others:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 具有一个能为*MIP*找到良好起点的启发式方法并不是*MIP*启动功能的唯一用途。还有其他几个用途：
 - en: In a real-world problem, the user could feed the model with a scenario that
     happened in reality. In this case, the baseline would be the model’s starting
     point. For example, if a company wants to create a model for their routing process
@@ -247,45 +369,63 @@
     could be a *MIP* start if it respects the constraints given in the mathematical
     model. This is also a good exercise to check if the designed constraints are respected
     in reality.
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在实际问题中，用户可以用现实中发生的场景来为模型提供数据。在这种情况下，基准将是模型的起始点。例如，如果一家公司想要为其路线过程创建一个模型，并且有历史数据可用，那么一天运营所采取的路线可以作为*MIP*启动点，前提是它符合数学模型中给定的约束条件。这也是一个很好的练习，用于检查设计的约束在现实中是否得到遵守。
 - en: As already explained, for solvers, our model is just a bunch of equations. If
     the user doesn’t want to spend time developing heuristics, using a very simple/naive
     method could also be helpful. For example, an ordered list of jobs by their index
     is a feasible solution (*[1,2,3,..,n]*) and could be useful if solver is struggling
     to find an initial point.
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 正如已解释的，对于求解器而言，我们的模型只是一些方程。如果用户不想花时间开发启发式方法，使用非常简单/天真的方法也可能有帮助。例如，按索引排序的作业列表是一个可行解（*[1,2,3,..,n]*），如果求解器在寻找初始点时遇到困难，这可能会很有用。
 - en: If a very good known solution is available and one wants to prove it is the
     optimal, or how far it is from the optimal.
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果有一个非常好的已知解，并且想要证明它是否最优，或者离最优解有多远。
 - en: 'Last but not least, it is not guaranteed that a *MIP* start, even if it is
     better than the solver’s initial solution, will improve convergence and/or run
     time. This is because the solver takes an entirely different path than the original.
     The case we showed before is a good example. The convergence curve of *MIP* using
     a *MIP* start is shown below:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后但同样重要的是，不能保证即使*MIP*启动比求解器的初始解更好，也会改善收敛性和/或运行时间。这是因为求解器会走一条与原始不同的路径。我们之前展示的案例就是一个很好的例子。使用*MIP*启动的*MIP*收敛曲线如下所示：
 - en: '![](../Images/fb9777c7bbe498eacd4fcff084553835.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb9777c7bbe498eacd4fcff084553835.png)'
 - en: Convergence curve for Permutation Flow shop example using NEH as start
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用NEH作为起点的排列流车间示例的收敛曲线
 - en: It indeed starts from a better solution, but it gets stuck in values close to
     *891*.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 它确实从一个更好的解开始，但会卡在接近*891*的值附近。
 - en: Finally, *MIP* start is a very useful resource and almost all commercial solvers
     have this functionality. But its value will depend greatly on the problem, dataset,
     and time to develop a good heuristic.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，*MIP*启动是一个非常有用的资源，几乎所有商业求解器都有这一功能。但它的价值在很大程度上取决于问题、数据集以及开发一个好的启发式方法的时间。
 - en: All images unless otherwise noted are by the author. Full code is available
     in [GitHub](https://github.com/bernardoor/Permutation-Flow-Shop-Warm-Start).
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 除非另有说明，所有图片均由作者提供。完整代码可在[GitHub](https://github.com/bernardoor/Permutation-Flow-Shop-Warm-Start)获取。
