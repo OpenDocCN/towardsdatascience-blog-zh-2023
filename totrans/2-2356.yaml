@@ -1,801 +1,1205 @@
 - en: Which Features Are Harmful For Your Classification Model?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 哪些特征对你的分类模型有害？
 - en: 原文：[https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6](https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6](https://towardsdatascience.com/which-features-are-harmful-for-your-classification-model-6227859a44a6)
 - en: How to calculate the Error Contribution of the features of a classifier, with
     the goal of understanding and improving the model
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何计算分类器特征的误差贡献，以便理解和改进模型
 - en: '[](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[![Samuele
     Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)
     [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[![Samuele
+    Mazzanti](../Images/432477d6418a3f79bf25dec42755d364.png)](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)
+    [Samuele Mazzanti](https://medium.com/@mazzanti.sam?source=post_page-----6227859a44a6--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)
     ·14 min read·Sep 12, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----6227859a44a6--------------------------------)
+    ·14 min read·2023年9月12日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/76d978549f4c414fe424adb41c37db80.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/76d978549f4c414fe424adb41c37db80.png)'
 - en: '[Image by Author]'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者图片]'
 - en: Feature importance is the most common tool for explaining a machine learning
     model. It is so popular that many data scientists end up believing that feature
     importance equals feature goodness.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征重要性是解释机器学习模型的最常用工具。它如此受欢迎，以至于许多数据科学家最终相信特征重要性等于特征优越性。
 - en: It is not so.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实并非如此。
 - en: '**When a feature is important, it simply means that the model found it useful
     in the training set. However, this doesn’t say anything about the ability of the
     feature to generalize on new data!**'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**当一个特征重要时，这仅仅意味着模型在训练集上发现它是有用的。然而，这并不能说明该特征在新数据上推广的能力！**'
 - en: 'To account for that, we need to make a distinction between two concepts:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了说明这一点，我们需要区分两个概念：
 - en: '**Prediction Contribution**: the weight that a variable has in the predictions
     made by the model. This is determined by the patterns that the model found on
     the training set. This is equivalent to feature importance.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**预测贡献**：一个变量在模型预测中所占的权重。这是由模型在训练集上发现的模式决定的。这等同于特征重要性。'
 - en: '**Error Contribution**: the weight that a variable has in the errors made by
     the model on a holdout dataset. This is a better proxy of the feature performance
     on new data.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**误差贡献**：一个变量在模型在保留数据集上的错误中所占的权重。这是特征在新数据上表现的更好代理。'
 - en: In this article, I will explain the logic behind the calculation of these two
     quantities on a classification model. I will also show an example in which using
     Error Contribution for feature selection leads to a far better result, compared
     to using Prediction Contribution.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我将解释计算这两个量在分类模型中的逻辑。我还将展示一个例子，说明使用误差贡献进行特征选择相比使用预测贡献能够得到更好的结果。
 - en: If you are more interested in regression rather than classification, you can
     read my previous article “[Your Features Are Important? It Doesn’t Mean They Are
     Good](/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4)”.
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果你对回归比分类更感兴趣，可以阅读我之前的文章“[你的特征重要吗？这并不意味着它们是好的](/your-features-are-important-it-doesnt-mean-they-are-good-ff468ae2e3d4)。”
 - en: Table of Contents
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 目录
 - en: '**Starting from a toy example**'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**从一个简单的例子开始**'
 - en: '**Which “error” should we use for classification models?**'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**我们应该为分类模型使用哪种“误差”？**'
 - en: '**How should we manage SHAP values in classification models?**'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**我们应该如何管理分类模型中的SHAP值？**'
 - en: '**Computing “Prediction Contribution”**'
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**计算“预测贡献”**'
 - en: '**Computing “Error Contribution”**'
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**计算“误差贡献”**'
 - en: '**A real dataset example**'
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**一个真实数据集的例子**'
 - en: '**Proving it works: Recursive Feature Elimination with “Error Contribution”**'
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**证明其有效性：使用“错误贡献”的递归特征消除**'
 - en: '**Conclusions**'
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**结论**'
 - en: 1\. Starting from a toy example
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 1\. 从一个玩具示例开始
 - en: 'Imagine that we have a classification problem in which we want to predict whether
     the income of a person is lower or higher than $ 100k. Imagine also that we already
     have the predictions made by the model:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个分类问题，我们要预测一个人的收入是否高于或低于$ 100k。假设我们已经有模型做出的预测：
 - en: '![](../Images/cfecf26b6739bf397c87f6df3eaa3c74.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cfecf26b6739bf397c87f6df3eaa3c74.png)'
 - en: Ground truth and predictions made by the model. [Image by Author]
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 真实值和模型预测。[作者提供的图片]
 - en: 'The computation of Prediction and Error Contribution is mainly based on the
     error made by the model on each individual and on the SHAP values of each individual.
     So, we must take a moment to discuss two relevant points:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测和错误贡献的计算主要基于模型在每个个体上的错误以及每个个体的SHAP值。因此，我们需要花时间讨论两个相关点：
 - en: Which “error” should we use for classification models?
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们应该在分类模型中使用哪种“错误”？
 - en: How should we manage SHAP values in classification models?
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们如何在分类模型中管理SHAP值？
 - en: I will discuss these points in the next two paragraphs.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将在接下来的两个段落中讨论这些点。
 - en: '**2\. Which “error” should we use for classification models?**'
+  id: totrans-33
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**2\. 我们应该在分类模型中使用哪种“错误”？**'
 - en: 'Our main objective is to compute the Error Contribution of each feature of
     the model. So the most important question is: how do we define the “error” in
     a classification model?'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的主要目标是计算模型每个特征的错误贡献。因此，最重要的问题是：我们如何定义分类模型中的“错误”？
 - en: Note that **we need an error that can be calculated at the individual level
     and can be then aggregated on the full sample to get an “average error”** (just
     like we did with absolute error for regression models).
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意**我们需要一个可以在个体层面计算的错误，然后可以在整个样本上聚合以获得“平均错误”**（就像我们对回归模型使用绝对错误一样）。
 - en: The most common loss function for classification models is log-loss (a.k.a.
     cross-entropy). Let’s see if it’s right for us.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于分类模型，最常见的损失函数是对数损失（即交叉熵）。让我们看看它是否适合我们。
 - en: 'Here is the mathematical formula of log-loss:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是对数损失的数学公式：
 - en: '![](../Images/0b20d643911dbcf6a9de9d6b174a8962.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0b20d643911dbcf6a9de9d6b174a8962.png)'
 - en: Log-loss (a.k.a. cross-entropy). [Image by Author]
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 对数损失（即交叉熵）。[作者提供的图片]
 - en: 'The log-loss seems like the perfect choice for us because:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 对数损失似乎是对我们最合适的选择，因为：
 - en: '**the outer part of the formula is just a simple average**;'
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**公式的外部部分只是一个简单的平均值**；'
 - en: as the name says, **it’s a “loss”, which means the-lower-the-better (just like
     an “error”)**.
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如其名称所示，**这是一种“损失”，意味着数值越低越好（就像“错误”一样）**。
 - en: 'Let’s try to understand why we can actually call this thing an “error”. Out
     of simplicity, let’s focus on the quantity inside the sum (so we can get rid of
     the subscripts):'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试理解为什么我们实际上可以称这个为“错误”。为了简化，让我们专注于和中量：
 - en: '![](../Images/ef7c082c250f2aa11f5a03b64c35af50.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ef7c082c250f2aa11f5a03b64c35af50.png)'
 - en: Individual log-loss. [Image by Author]
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 个体对数损失。[作者提供的图片]
 - en: This is the contribution of a single individual to the global log-loss, so we
     can call this the “individual log-loss”.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是单个个体对全局对数损失的贡献，因此我们可以称之为“个体对数损失”。
 - en: 'This formula may still look scary, but if we consider that — in a binary classification
     problem — *y* can only be 0 or 1, we may obtain a simpler version:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个公式可能仍然看起来很可怕，但如果我们考虑到——在二分类问题中——*y*只能是0或1，我们可能会得到一个更简单的版本：
 - en: '![](../Images/8b9c90c18c64623d0e6c6d5a39975b16.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8b9c90c18c64623d0e6c6d5a39975b16.png)'
 - en: Individual log-loss, alternative version (equivalent to the previous one). [Image
     by Author]
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 个体对数损失，替代版本（等同于之前的版本）。[作者提供的图片]
 - en: With the help of a plot, it’s now easy to understand the main idea behind log-loss.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 借助图表，现在很容易理解对数损失的主要思想。
 - en: '![](../Images/d40b46846084e9048166e2a352d16f32.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d40b46846084e9048166e2a352d16f32.png)'
 - en: Visualization of individual log-loss. [Image by Author]
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 个体对数损失的可视化。[作者提供的图片]
 - en: The farther the predicted probability is from the true value (whether it is
     0 or 1), the higher the loss. Moreover, if the prediction is very far from the
     truth (for instance, *p*=.2 and *y*=1 or *p*=.8 and *y*=0), then the loss is worse
     than proportional. Now it should be clearer why log-loss is actually a kind of
     error.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测概率与真实值的距离越远（无论是0还是1），损失越大。此外，如果预测远离真实值（例如，*p*=.2且*y*=1或*p*=.8且*y*=0），那么损失会比比例更严重。现在应该更清楚为什么对数损失实际上是一种错误。
 - en: We are ready to translate the formula of individual log-loss into a Python function.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们准备将个体对数损失的公式翻译成Python函数。
 - en: 'To avoid dealing with infinite values (which happens when *y_pred* is exactly
     0 or 1), we will apply a little trick: if *y_pred* is less distant than *ε* from
     0 or 1, we will set it respectively to *ε* or 1-*ε*. For *ε* we will use 1^-15
     (this is also the default value used by Scikit-learn).'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免处理无限值（当*y_pred*恰好为0或1时会发生），我们将采用一个小技巧：如果*y_pred*距离0或1的距离小于*ε*，我们将分别将其设置为*ε*或1-*ε*。对于*ε*，我们将使用1^-15（这也是Scikit-learn使用的默认值）。
 - en: '[PRE0]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'We can use this function to calculate the individual log-loss of every row
     of our dataset:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用这个函数来计算数据集中每一行的个体对数损失：
 - en: '![](../Images/1d418c49192f096276a38b8cb77d2887.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1d418c49192f096276a38b8cb77d2887.png)'
 - en: Target variable, model prediction, and resulting individual log-loss. [Image
     by Author]
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标变量、模型预测以及结果的个体对数损失。[图片来自作者]
 - en: As you can see, the log-loss (or error) is very small for individuals 1 and
     2 since the predictions are both very close to the actual observed value, and
     it’s higher for individual 0.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，个体1和2的对数损失（或误差）非常小，因为预测值都非常接近实际观察值，而个体0的对数损失较高。
 - en: '**3\. How should we manage SHAP values in classification models?**'
+  id: totrans-61
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**3\. 我们应该如何在分类模型中管理SHAP值？**'
 - en: 'The most popular models are tree-based, such as XGBoost, LightGBM, and Catboost.
     Getting the SHAP values of a tree-based classifier on a dataset is as simple as:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 最流行的模型是基于树的模型，如XGBoost、LightGBM和Catboost。获取树模型分类器在数据集上的SHAP值是非常简单的：
 - en: '[PRE1]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'For example, say that we compute the SHAP values for our toy problem and we
     get the following result:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，假设我们计算了玩具问题的SHAP值，并得到如下结果：
 - en: '![](../Images/57331e551d8db676f2d417fc9709ce5d.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/57331e551d8db676f2d417fc9709ce5d.png)'
 - en: SHAP values for our model’s predictions. [Image by Author]
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们模型预测的SHAP值。[图片来自作者]
 - en: 'If you don’t know about how SHAP values work, you can read my article: [SHAP
     Values Explained Exactly How You Wished Someone Explained to You](/shap-explained-the-way-i-wish-someone-explained-it-to-me-ab81cc69ef30).
     However, for the purpose of this article, it’s enough to know that:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你不清楚SHAP值的工作原理，可以阅读我的文章：[SHAP值解释：正如你希望有人向你解释的那样](/shap-explained-the-way-i-wish-someone-explained-it-to-me-ab81cc69ef30)。不过，就本文而言，了解以下内容就足够了：
 - en: 'a positive SHAP value means: that feature leads to an increased probability
     for that individual;'
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个正的SHAP值意味着：该特征导致该个体的概率增加；
 - en: 'a negative SHAP value means: that feature leads to a smaller probability for
     that individual.'
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个负的SHAP值意味着：该特征导致该个体的概率减小。
 - en: As a consequence, it should be clear that **there is a direct relationship between
     the sum of the SHAP values of a given individual and the prediction made by the
     model**.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，应该清楚的是**某个个体的SHAP值总和与模型的预测之间存在直接关系**。
 - en: However, since the SHAP values can assume any real value (positive or negative),
     we cannot expect this to be equal to the probability predicted for that individual
     (which is a number between 0 and 1). So what is the relationship between the SHAP
     sum and the predicted probability?
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，由于SHAP值可以假设任何实际值（正值或负值），我们不能期望它等于该个体的预测概率（这是一个介于0和1之间的数字）。那么SHAP总和与预测概率之间有什么关系？
 - en: 'Since SHAP values can assume any negative or positive value, we need a function
     to turn the SHAP sum into a probability. This function must have two properties:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于SHAP值可以假设任何负值或正值，我们需要一个函数来将SHAP总和转换为概率。这个函数必须具有两个特性：
 - en: it should “squeeze” any real value into the interval [0,1];
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该将任何实际值“挤压”到区间[0,1]中；
 - en: it should be strictly increasing (since a higher SHAP sum must always be associated
     with a higher prediction).
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该是严格递增的（因为更高的SHAP总和必须总是与更高的预测相关联）。
 - en: A function that meets these requirements is the sigmoid function. Thus, **the
     probability predicted by the model for a given row is equal to the sigmoid of
     the sum of SHAP values for that individual**.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 满足这些要求的函数是Sigmoid函数。因此，**模型对给定行的预测概率等于该个体SHAP值的Sigmoid函数**。
 - en: '![](../Images/d86897805420615f970b1d95f22c7dee.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d86897805420615f970b1d95f22c7dee.png)'
 - en: From SHAP values to predicted probability. [Image by Author]
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 从SHAP值到预测概率。[图片来自作者]
 - en: 'Here is what the sigmoid function looks like:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是Sigmoid函数的样子：
 - en: '![](../Images/c01f86375685e4ef15610eb22dd1546c.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c01f86375685e4ef15610eb22dd1546c.png)'
 - en: 'Sigmoid function: the relationship between shap sum and predictive probability.
     [Image by Author]'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: Sigmoid 函数：shap 和与预测概率之间的关系。[作者提供的图片]
 - en: 'So, let’s translate this formula into a Python function:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，让我们把这个公式转换成一个 Python 函数：
 - en: '[PRE2]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'We can also display it graphically and see where our individuals will lie on
     the curve:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以通过图形展示，查看我们的个体在曲线上的位置：
 - en: '![](../Images/df7baf6370aba1a858f04447f2476031.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/df7baf6370aba1a858f04447f2476031.png)'
 - en: 'Sigmoid function: the relationship between shap sum and predictive probability.
     [Image by Author]'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: Sigmoid 函数：shap 和与预测概率之间的关系。[作者提供的图片]
 - en: Now that we have seen which error we should use and how to treat SHAP values
     in classification problems, we are ready to see how to compute the Prediction
     and the Error Contribution.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经了解了应该使用哪个误差以及如何在分类问题中处理 SHAP 值，我们准备好计算预测和误差贡献了。
 - en: 4\. Computing “Prediction Contribution”
+  id: totrans-87
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 4\. 计算“预测贡献”
 - en: As we have seen, when a SHAP value is highly positive (highly negative) then
     the prediction will be much higher (lower) than it would have been without the
     feature. In other words, **if the SHAP value is large in absolute terms, then
     that feature influences a lot the final prediction**.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，当 SHAP 值高度正（高度负）时，预测值将比没有该特征时高（低）很多。换句话说，**如果 SHAP 值在绝对值上很大，那么该特征对最终预测的影响很大**。
 - en: This is why we can measure the Prediction Contribution of a feature by taking
     the mean of the absolute SHAP values of that feature.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是为什么我们可以通过取该特征的绝对 SHAP 值的均值来衡量特征的预测贡献。
 - en: '[PRE3]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'In the case of our toy dataset, this is what we obtain:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于我们的玩具数据集，这就是我们得到的结果：
 - en: '![](../Images/4c902392865a9db95c48dc758abf5d2d.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4c902392865a9db95c48dc758abf5d2d.png)'
 - en: Prediction Contribution. [Image by Author]
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测贡献。[作者提供的图片]
 - en: Thus, in terms of feature importance, *job* is the main feature followed by
     *nationality* and then by *age*.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在特征重要性方面，*职位*是主要特征，其次是*国籍*，然后是*年龄*。
 - en: But what about the Error Contribution?
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么误差贡献呢？
 - en: 5\. Computing “Error Contribution”
+  id: totrans-96
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 5\. 计算“误差贡献”
 - en: The idea behind Error Contribution is computing what the error of the model
     would be if we removed a given feature.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 误差贡献的想法是计算如果我们移除一个给定特征，模型的误差会是什么。
 - en: 'Thanks to SHAP values, it’s easy to answer this question: if we exclude a feature
     from the SHAP sum, we obtain the prediction that the model would make if it didn’t
     know the feature. But that is not enough: as we have seen, to obtain the predicted
     probability, we first need to apply the sigmoid function.'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 多亏了 SHAP 值，我们可以轻松回答这个问题：如果我们从 SHAP 和中排除一个特征，我们就能得到模型在不知道该特征的情况下的预测。但这还不够：正如我们所见，要获得预测概率，我们首先需要应用
+    sigmoid 函数。
 - en: So we first need to subtract the SHAP value of a feature from the SHAP sum,
     and then we must apply the sigmoid function. And here we have the probabilities
     that the model would predict if it didn’t know the features.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们首先需要从 SHAP 值中减去一个特征的 SHAP 值，然后我们必须应用 sigmoid 函数。在这里，我们得到了如果模型不知道这些特征时的预测概率。
 - en: 'In Python, we can do that for all the features in a single shot:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Python 中，我们可以一次性处理所有特征：
 - en: '[PRE4]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'This is the result on our dataset:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们数据集上的结果：
 - en: '![](../Images/07b52a27a88d8caf2649262e171cc162.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/07b52a27a88d8caf2649262e171cc162.png)'
 - en: Predictions that we would obtain if we removed the respective feature. [Image
     by Author]
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们移除了相应的特征，我们将获得的预测值。[作者提供的图片]
 - en: This means that, if we didn’t have the feature *job*, the model would predict
     a probability of 71% for the first individual, 62% for the second one, and 73%
     for the third one. Instead, if we didn’t have the feature *nationality*, the predictions
     would be respectively 13%, 95%, and 0%.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着，如果我们没有特征*职位*，模型将为第一个个体预测71%的概率，为第二个个体预测62%，为第三个个体预测73%。相反，如果我们没有特征*国籍*，预测值将分别为13%、95%和0%。
 - en: As you can see, the predicted probabilities vary a lot depending on which feature
     we remove. As a consequence, the resulting error (individual log-loss) would be
     very different.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，根据我们移除哪个特征，预测的概率差异很大。因此，结果误差（个体对数损失）也会非常不同。
 - en: 'We can use the function defined above (`individual_log_loss`) to compute what
     the individual log-loss would be without the respective feature:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用上面定义的函数（`individual_log_loss`）来计算没有相应特征时的个体对数损失：
 - en: '[PRE5]'
+  id: totrans-108
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'This is the result:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是结果：
 - en: '![](../Images/82cf71dcf082988b6afcab719d66d2ec.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82cf71dcf082988b6afcab719d66d2ec.png)'
 - en: Individual log-loss that we would obtain if we removed the respective feature.
     [Image by Author]
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果移除相应特征，我们会得到的单独log-loss。[作者图片]
 - en: For example, if we take the first row, we can see that the log-loss would be
     1.24 without the feature *job*, but only 0.13 without the feature *nationality*.
     Since we want to minimize the loss, in this case, it would be preferable to remove
     the feature *nationality*.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，如果我们看第一行，我们可以看到在没有特征*job*的情况下，log-loss为1.24，而在没有特征*nationality*的情况下，log-loss只有0.13。因为我们希望最小化损失，在这种情况下，最好移除特征*nationality*。
 - en: 'Now, **to know whether the model would be better with or without the feature,
     we can compute the difference between the individual log-loss of the full model
     and the individual log-loss we would obtain without the feature**:'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，**要了解模型在有无该特征时的效果如何，我们可以计算完整模型的个别log-loss与去掉特征后的个别log-loss之间的差异**：
 - en: '[PRE6]'
+  id: totrans-114
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'This is the result:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是结果：
 - en: '![](../Images/7505a0cd47e9c68fa14cf5352370a0da.png)'
+  id: totrans-116
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7505a0cd47e9c68fa14cf5352370a0da.png)'
 - en: Difference between the errors of the model and the errors we would have without
     the feature. [Image by Author]
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型错误与去掉该特征后的错误之间的差异。[作者图片]
 - en: '**If this number is:**'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如果这个数字是：**'
 - en: '**negative, then the presence of the feature leads to a reduction in the prediction
     error, so the feature works well for that observation.**'
+  id: totrans-119
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**负数，则特征的存在会导致预测错误减少，因此该特征在该观察中表现良好。**'
 - en: '**positive, then the presence of the feature leads to an increase in the prediction
     error, so the feature is bad for that observation.**'
+  id: totrans-120
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**正数，则特征的存在会导致预测错误增加，因此该特征在该观察中表现不佳。**'
 - en: 'We can finally compute the Error Contribution of each feature as the mean of
     these values, by column:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以最终通过列计算每个特征的错误贡献值，这些值的均值如下：
 - en: '[PRE7]'
+  id: totrans-122
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'This is the result:'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是结果：
 - en: '![](../Images/d222dec169866d80b22ed301f639192b.png)'
+  id: totrans-124
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d222dec169866d80b22ed301f639192b.png)'
 - en: Error Contribution. [Image by Author]
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 错误贡献。[作者图片]
 - en: In general, if this number is negative, then the feature has a positive effect;
     instead, **if this number is positive then the feature is harmful to the model
     because it tends to increase the average error made by the model**.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 一般来说，如果这个数字是负数，则特征具有正面效果；相反，**如果这个数字是正数，则该特征对模型有害，因为它倾向于增加模型的平均错误**。
 - en: In this case, we can see that the presence of the feature *job* in the model
     leads to an average reduction of -0.897 in the individual log-loss, whereas the
     presence of the feature *nationality* causes the individual log-loss to increase
     on average by 0.049\. Thus, whereas *nationality* is the second most important
     feature, it doesn’t work well because it worsens the average individual log-loss
     by 0.049.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们可以看到特征*job*的存在使得个别log-loss平均减少了-0.897，而特征*nationality*的存在使得个别log-loss平均增加了0.049。因此，虽然*nationality*是第二重要的特征，但它的表现不佳，因为它使平均个别log-loss增加了0.049。
 - en: Let’s try to apply these concepts to a real dataset.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试将这些概念应用到实际数据集中。
 - en: '**6\. A real dataset example**'
+  id: totrans-129
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**6\. 真实数据集示例**'
 - en: Hereafter, I will use a dataset taken from [Pycaret](https://github.com/pycaret/pycaret)
     (a Python library under [MIT license](https://github.com/pycaret/pycaret/blob/master/LICENSE)).
     The dataset is called “Gold” and it contains some time series of financial data.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面，我将使用一个来自[Pycaret](https://github.com/pycaret/pycaret)（一个在[MIT许可](https://github.com/pycaret/pycaret/blob/master/LICENSE)下的Python库）的数据集。数据集叫做“Gold”，包含一些金融数据的时间序列。
 - en: '![](../Images/aed43ffc455350813676e97c661b8303.png)'
+  id: totrans-131
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/aed43ffc455350813676e97c661b8303.png)'
 - en: Dataset sample. The features are all expressed in percentage, so -4.07 means
     a return of -4.07%. [Image by Author]
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集样本。特征都以百分比表示，所以-4.07意味着回报为-4.07%。[作者图片]
 - en: 'The features consist in the returns of financial assets respectively 22, 14,
     7, and 1 days before the observation moment (“T-22”, “T-14”, “T-7”, “T-1”). Here
     is the exhaustive list of all the financial assets used as predictive features:'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征包括金融资产在观察时刻之前分别22、14、7和1天的回报（“T-22”、“T-14”、“T-7”、“T-1”）。这是所有用作预测特征的金融资产的详尽列表：
 - en: '![](../Images/7d6698ea47e0bafebdd776fcfc44f69b.png)'
+  id: totrans-134
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7d6698ea47e0bafebdd776fcfc44f69b.png)'
 - en: List of the available assets. Each asset is observed at times -22, -14, -7,
     and -1\. [Image by Author]
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 可用资产的列表。每个资产在时间-22、-14、-7和-1被观察到。[作者图片]
 - en: In total, we have 120 features.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 总共有120个特征。
 - en: 'The goal is to predict whether the Gold return 22 days ahead will be greater
     than 5%. In other words, the target variable is binary:'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标是预测黄金回报在22天后是否会超过5%。换句话说，目标变量是二元的：
 - en: 0, if the Gold return 22 days ahead is smaller than 5%;
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果22天后的黄金回报小于5%，则为0；
 - en: 1, if the Gold return 22 days ahead is greater than 5%.
+  id: totrans-139
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果22天后的黄金回报大于5%，则为1。
 - en: '![](../Images/75cd7caa3a3e16b4e9e2983eb8435f49.png)'
+  id: totrans-140
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/75cd7caa3a3e16b4e9e2983eb8435f49.png)'
 - en: 'Histogram of Gold return 22 days ahead. The threshold marked in red is used
     to define our target variable: whether the return is greater than 5%. [Image by
     Author]'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 黄金回报22天后的直方图。红色标记的阈值用于定义我们的目标变量：回报是否大于5%。[图片来源]
 - en: 'Once I loaded the dataset, these are the steps I carried out:'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦加载了数据集，这些是我执行的步骤：
 - en: 'Split the full dataset randomly: 33% of the rows in the training dataset, another
     33% in the validation dataset, and the remaining 33% in the test dataset.'
+  id: totrans-143
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机拆分完整数据集：33% 的行用于训练数据集，另33% 用于验证数据集，其余 33% 用于测试数据集。
 - en: Train a LightGBM Classifier on the training dataset.
+  id: totrans-144
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在训练数据集上训练一个 LightGBM 分类器。
 - en: Make predictions on training, validation, and test datasets, using the model
     trained at the previous step.
+  id: totrans-145
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用上一步骤训练的模型对训练、验证和测试数据集进行预测。
 - en: Compute SHAP values of training, validation, and test datasets, using the Python
     library “shap”.
+  id: totrans-146
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 Python 库 “shap” 计算训练、验证和测试数据集的 SHAP 值。
 - en: Compute the Prediction Contribution and the Error Contribution of each feature
     on each dataset (training, validation, and test), using the code we have seen
     in the previous paragraph.
+  id: totrans-147
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用我们在上一段中看到的代码，计算每个特征在每个数据集（训练集、验证集和测试集）上的预测贡献和误差贡献。
 - en: 'At this point, we have both Prediction and Error Contribution so we can finally
     compare them:'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前，我们既有预测贡献也有误差贡献，因此我们可以最终进行比较：
 - en: '![](../Images/12b830816f5fcbe5d38193cced26a739.png)'
+  id: totrans-149
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12b830816f5fcbe5d38193cced26a739.png)'
 - en: Prediction Contribution vs. Error Contribution (on the Validation dataset).
     [Image by Author]
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测贡献与误差贡献（在验证数据集上）。[图片来源]
 - en: Looking at this plot gives us precious insight about the model.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看这个图表可以为我们提供关于模型的宝贵洞察。
 - en: The most important feature is the US Bond ETF at T-22 days, however, it doesn’t
     bring such a strong reduction in the error. The best feature is 3M Libor at T-22
     since it’s the one that reduces the error the most.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 最重要的特征是 T-22 天的美国债券 ETF，但它并没有带来如此显著的误差减少。最佳特征是 T-22 的 3M Libor，因为它能最大程度地减少误差。
 - en: There is something very interesting about the Corn price. Both returns at T-1
     and T-22 are among the most important features, however, one of them (T-1) is
     overfitting (because it worsens the error on predictions).
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 玉米价格有一些非常有趣的特点。T-1 和 T-22 的回报率都是最重要的特征之一，然而其中一个（T-1）存在过拟合（因为它加剧了预测误差）。
 - en: In general, we can observe that all the features with higher Error Contribution
     are relative to T-1 or T-14 (1 or 14 days before the observation moment), whereas
     all the features with smaller Error Contribution are relative to T-22 (22 days
     before the observation moment). This seems to indicate that **the most recent
     features are prone to overfitting, whereas the features referring to older returns
     tend to generalize better**.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 一般来说，我们可以观察到，所有具有较高误差贡献的特征都与 T-1 或 T-14（观察时刻前1天或14天）相关，而所有具有较小误差贡献的特征都与 T-22（观察时刻前22天）相关。这似乎表明**最新特征容易过拟合，而指向较旧回报的特征更容易泛化**。
 - en: Besides getting insight about the model, it’s pretty natural to think about
     using Error Contribution to perform feature selection. This is what we are going
     to do in the next paragraph.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了获得关于模型的洞察，考虑使用误差贡献进行特征选择是很自然的。这也是我们将在下一段中要做的。
 - en: '**7\. Proving it works: Recursive Feature Elimination with “Error Contribution”**'
+  id: totrans-156
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**7\. 证明其有效性：使用“误差贡献”的递归特征消除**'
 - en: Recursive Feature Elimination (RFE) is the process of progressively removing
     features from a dataset, with the objective of obtaining a better model.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 递归特征消除（RFE）是一个逐步从数据集中删除特征的过程，目的是获得更好的模型。
 - en: 'The algorithm for RFE is very straightforward:'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: RFE 的算法非常简单明了：
 - en: Initialize the list of features;
+  id: totrans-159
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化特征列表；
 - en: Train a model on the training set, using the current list of features as predictors;
+  id: totrans-160
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在训练集上训练一个模型，使用当前特征列表作为预测器；
 - en: Remove the “worst” feature from the list of features;
+  id: totrans-161
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从特征列表中移除“最差”的特征；
 - en: Go to step 2 (until the list of features is empty).
+  id: totrans-162
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 返回第2步（直到特征列表为空）。
 - en: In the traditional approach, “worst” = least important. However, based on what
     we have seen, **we may object that it would make much more sense to remove the
     most harmful feature first**.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 在传统方法中，“最差”= 最不重要。然而，根据我们看到的，**我们可能会反对，首先去除最有害的特征更有意义**。
 - en: In other words,
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，
 - en: '**Traditional RFE: removing the most useless feature first** (most useless
     = lowest Prediction Contribution on the validation set).'
+  id: totrans-165
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**传统RFE：首先去除最无用的特征**（最无用 = 验证集上的预测贡献最低）。'
 - en: '**Our RFE: removing the most harmful** **feature** **first** (most harmful
     = highest Error Contribution on the validation set).'
+  id: totrans-166
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**我们的RFE：首先去除最有害的** **特征** **（最有害 = 验证集上的误差贡献最高）**。'
 - en: To see if this intuition is correct, I made a simulation using both approaches.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了验证这个直觉是否正确，我使用了两种方法进行模拟。
 - en: 'This is the resulting log-loss on the validation set:'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是验证集上的对数损失结果：
 - en: '![](../Images/ae9c27debabf663c59d308c4d0244aa9.png)'
+  id: totrans-169
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ae9c27debabf663c59d308c4d0244aa9.png)'
 - en: Log-loss of the two strategies on the validation set. [Image by Author]
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种策略在验证集上的对数损失。[作者提供的图像]
 - en: Since log-loss is a “the-lower-the-better” metric, we can see that our version
     of RFE is clearly superior to the classical RFE on the validation dataset.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于对数损失是“越低越好”的度量，我们可以看到我们的RFE版本在验证数据集上明显优于经典RFE。
 - en: However, you may have doubts that looking at the validation set is not fair,
     since the Error Contribution is calculated on it. So, let’s look at the test set.
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，你可能会怀疑查看验证集是否公平，因为误差贡献是基于它计算的。所以，让我们查看测试集。
 - en: '![](../Images/34522ef08da5f89c7f1a7b9ac39c88af.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/34522ef08da5f89c7f1a7b9ac39c88af.png)'
 - en: Log-loss of the two strategies on the test set. [Image by Author]
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种策略在测试集上的对数损失。[作者提供的图像]
 - en: Even if the difference between the two approaches is smaller now, we can see
     that it’s still huge, and it is enough to conclude that RFE based on Error Contribution
     is significantly better than RFE based on Prediction Contribution, on this dataset.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使现在两种方法之间的差异较小，我们仍然可以看到它仍然很大，并且足以得出结论：基于误差贡献的RFE在这个数据集上显著优于基于预测贡献的RFE。
 - en: 'Besides log-loss, it would be interesting to consider a metric that has more
     practical value. For example, let’s take a look at the average precision on the
     validation set:'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了对数损失之外，考虑一个更具实际价值的度量会很有趣。例如，让我们看看验证集上的平均精度：
 - en: '![](../Images/f567bb6d069557c981362126f9f5b965.png)'
+  id: totrans-177
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f567bb6d069557c981362126f9f5b965.png)'
 - en: Average precision of the two strategies on the validation set. [Image by Author]
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种策略在验证集上的平均精度。[作者提供的图像]
 - en: It’s interesting to note that, even though the Contribution Error is based on
     log-loss, we have an excellent result also on average precision.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，尽管贡献误差是基于对数损失的，我们在平均精度上也取得了优异的结果。
 - en: 'If we want to make a decision based on average precision, then we would select
     the model with the highest average precision on the validation set. This means:'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们想基于平均精度做出决策，那么我们将选择在验证集上具有最高平均精度的模型。这意味着：
 - en: 'RFE based on Error Contribution: the model with 19 features;'
+  id: totrans-181
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于误差贡献的RFE：具有19个特征的模型；
 - en: 'RFE based on Prediction Contribution: the model with 14 features;'
+  id: totrans-182
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于预测贡献的RFE：具有14个特征的模型；
 - en: 'If we do that, what performance would we observe on new data? The best proxy
     to answer this question is the test set:'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们这样做，我们在新数据上会观察到什么样的表现？回答这个问题的最佳代理是测试集：
 - en: '![](../Images/c6605f090a4daf2a4989c404e390b96c.png)'
+  id: totrans-184
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c6605f090a4daf2a4989c404e390b96c.png)'
 - en: Average precision of the two strategies on the validation set. [Image by Author]
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种策略在验证集上的平均精度。[作者提供的图像]
 - en: 'Also in this case, the performance of RFE based on Error Contribution is generally
     better than RFE based on Prediction Contribution. In particular, based on our
     previous decision:'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，基于误差贡献的RFE的表现通常优于基于预测贡献的RFE。特别是，根据我们之前的决定：
 - en: 'RFE based on Error Contribution (model with 19 features): 72.8% average precision;'
+  id: totrans-187
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于误差贡献的RFE（具有19个特征的模型）：72.8% 平均精度；
 - en: 'RFE based on Prediction Contribution (model with 14 features): 65.6% average
     precision.'
+  id: totrans-188
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于预测贡献的RFE（具有14个特征的模型）：65.6% 平均精度。
 - en: Thus, by using the RFE based on Error Contribution, rather than the traditional
     RFE based on Prediction Contribution, we would obtain an outstanding additional
     7.2% in average precision!
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，通过使用基于误差贡献的RFE，而不是传统的基于预测贡献的RFE，我们将在平均精度上获得额外的7.2%优秀结果！
 - en: 8\. Conclusions
+  id: totrans-190
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 8\. 结论
 - en: The concept of feature importance plays a fundamental role in machine learning.
     However, the notion of “importance” is often mistaken for “goodness”.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征重要性概念在机器学习中起着基础性作用。然而，“重要性”的概念常常被误解为“好处”。
 - en: 'In order to distinguish between these two aspects we have introduced two concepts:
     Prediction Contribution and Error Contribution. Both concepts are based on the
     SHAP values of the validation dataset, and in the article we have seen the Python
     code to compute them.'
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了区分这两个方面，我们引入了两个概念：预测贡献和误差贡献。这两个概念都基于验证数据集的SHAP值，文章中我们展示了计算这些值的Python代码。
 - en: We have also tried them on a real financial dataset (in which the task is predicting
     the price of Gold) and proved that Recursive Feature Elimination based on Error
     Contribution leads to an additional 7% in average precision compared to traditional
     RFE based on Prediction Contribution.
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还在一个真实的金融数据集上进行了试验（任务是预测黄金价格），并证明基于误差贡献的递归特征消除比基于预测贡献的传统RFE提高了平均精度7%。
 - en: '*You can find all the code used for this article in* [*this notebook*](https://github.com/smazzanti/tds_features_important_doesnt_mean_good/blob/main/classification.ipynb)*.*'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: '*你可以在* [*这个笔记本*](https://github.com/smazzanti/tds_features_important_doesnt_mean_good/blob/main/classification.ipynb)*找到本文所用的所有代码。*'
 - en: '*Thank you for reading!*'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '*感谢阅读！*'
 - en: '*If you find my work useful, you can subscribe to* [***get an email every time
     that I publish a new article***](https://medium.com/@mazzanti.sam/subscribe) *(usually
     once a month).*'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你觉得我的工作有用，你可以订阅* [***每次我发布新文章时都会收到邮件***](https://medium.com/@mazzanti.sam/subscribe)
+    *(通常是每月一次)。*'
 - en: '*If you want to support my work, you can* [***buy me a coffee***](https://ko-fi.com/samuelemazzanti)*.*'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你想支持我的工作，你可以* [***请我喝咖啡***](https://ko-fi.com/samuelemazzanti)*。*'
 - en: '*If you’d like,* [***add me on Linkedin***](https://www.linkedin.com/in/samuelemazzanti/)*!*'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你愿意，* [***可以加我Linkedin***](https://www.linkedin.com/in/samuelemazzanti/)*！*'
