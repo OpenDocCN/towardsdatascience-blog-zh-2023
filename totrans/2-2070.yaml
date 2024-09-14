@@ -1,12 +1,15 @@
 - en: The Transformer Architecture of GPT Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/the-transformer-architecture-of-gpt-models-b8695b48728b](https://towardsdatascience.com/the-transformer-architecture-of-gpt-models-b8695b48728b)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Learn the details of the Transformer architecture
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,20 +17,25 @@
     Stollnitz](../Images/63a2a7daeca6d93e26b3ac0556c42aa1.png)](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------)
     [Beatriz Stollnitz](https://medium.com/@bea_684?source=post_page-----b8695b48728b--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b8695b48728b--------------------------------)
     ·22 min read·Jul 25, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/b27fc545e177f9112abf27cfac0ceebb.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
 - en: Photo by [fabio](https://unsplash.com/@fabioha?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: In 2017, authors from Google published a paper called [Attention is All You
@@ -42,6 +50,7 @@
     folding problems. In particular, the Transformer architecture revolutionized text
     generation and paved the way for GPT models and the exponential growth we’re currently
     experiencing in AI.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: 'Given how pervasive Transformer models are these days, both in the industry
@@ -55,23 +64,35 @@
     and remove the parts that aren’t. Along the way, I’ll avoid making any unnecessary
     changes to the code, so that you can easily compare the GPT-like version of the
     code with the original and understand the differences.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于 Transformer 模型在当前行业和学术界的广泛应用，理解它们的工作细节是每位 AI 从业者的重要技能。本文将主要关注 GPT 模型的架构，这些模型是使用原始
+    Transformer 架构的一个子集构建的，但最后也会涉及原始 Transformer。关于模型代码，我将从我找到的最清晰的原始 Transformer
+    实现开始：[哈佛大学的注释 Transformer](http://nlp.seas.harvard.edu/annotated-transformer/)。我将保留与
+    GPT transformer 相关的部分，移除不相关的部分。在此过程中，我会避免对代码做任何不必要的修改，以便你可以轻松地将 GPT 类似版本的代码与原始代码进行比较，理解它们的差异。
 - en: This article is intended for experienced data scientists and machine learning
     engineers. In particular, I assume that you’re well-versed in tensor algebra,
     that you’ve implemented neural networks from scratch, and that you’re comfortable
     with Python. In addition, even though I’ve done my best to make this article stand
     on its own, you’ll have an easier time understanding it if you’ve read my previous
     article on [How GPT models work](https://bea.stollnitz.com/blog/how-gpt-works-technical/).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文面向经验丰富的数据科学家和机器学习工程师。特别是，我假设你对张量代数非常熟悉，已经从头实现了神经网络，并且对 Python 使用自如。此外，尽管我尽力使这篇文章独立完整，如果你读过我之前关于
+    [GPT 模型如何工作的文章](https://bea.stollnitz.com/blog/how-gpt-works-technical/)，理解起来会更容易。
 - en: The code in this post can be found in the associated [project on GitHub](https://github.com/bstollnitz/gpt-transformer).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文中的代码可以在相关的 [GitHub 项目](https://github.com/bstollnitz/gpt-transformer) 中找到。
 - en: '**How to invoke our GPT Transformer**'
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**如何调用我们的 GPT Transformer**'
 - en: Before we dive into how to construct a GPT model, let’s start by understanding
     how we’ll invoke it. We’ll assume for the moment that we have a working GPT model,
     and focus on how to prepare the input, call the model, and interpret the output.
@@ -79,16 +100,23 @@
     and return text that is likely to follow that input. For example, if we give a
     GPT model the input “A long time ago”, the model might return as output “in a
     galaxy far, far away”.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们深入了解如何构建 GPT 模型之前，先来理解如何调用它。我们暂时假设已经有一个可工作的 GPT 模型，重点讨论如何准备输入、调用模型以及解读输出。总体思路是提供几个单词作为输入来启动生成，并返回可能跟随该输入的文本。例如，如果我们给
+    GPT 模型输入“很久以前”，模型可能会返回“在一个遥远的星系”。
 - en: Let’s take a look at the code we’ll use to invoke our model, passing the input
     “A long time ago” and generating 10 new tokens. I’ve used comments to show the
     shape of each tensor. I’ll explain more of the details after the code.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看用于调用模型的代码，传入输入“很久以前”并生成 10 个新词。我使用了注释来展示每个张量的形状。代码之后我会解释更多细节。
 - en: '[PRE0]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Since we begin with the string “A long time ago”, you might be inclined to think
     that a Transformer receives a string as input. However, just like other neural
     networks, a Transformer requires numerical inputs, so the input string must first
@@ -102,6 +130,7 @@
     GPUs. Our example code is running inference on one sequence, so our `batch_size`
     is one, but you can experiment with larger numbers if you want to generate multiple
     sequences at once.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: After we’ve tokenized our input, we create the Transformer model using the `make_model`
@@ -111,9 +140,11 @@
     time it’s called. Since we want to generate many tokens, we use a `for` loop to
     call it multiple times, and in each iteration we append the newly generated token
     to the original sequence of tokens using `torch.cat`.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2949d05852f9bb6bd22a324497cd76c5.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
 - en: 'GPT-style Transformer models typically have a well-defined token limit: for
@@ -124,6 +155,7 @@
     we define this token limit using the `block_size` constant, and deal with longer
     sequences of tokens by simply truncating them to the maximum supported length
     in the `limit_sequence_length` function.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
 - en: We invoke the Transformer model in the `generate_next_token` function by calling
@@ -135,9 +167,11 @@
     which we use to predict the next token. This distribution contain a probability
     value for each possible token, representing how likely it is for that token to
     come next in the sentence.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/6b990788b66e90c73a5781e85742a804.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
 - en: To make our example code simple and readable, we choose the token that has the
@@ -147,31 +181,39 @@
     natural. If you have access to the “Completions playground” in the Azure AI Studio,
     you may have noticed the “Temperature” and “Top probabilities” sliders, which
     give you some control over how this sampling is done.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: In this article we’ll be focusing on the code for the Transformer model architecture,
     rather than the code for training the model, since that’s where we’ll find the
     bulk of the Transformer’s innovations. I’ll give you some pointers to train the
     model at the end, in case you’re interested in extending this code to generate
     better results.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: We now have a good understanding of the inputs and outputs of our Transformer
     model, and how we instantiate and invoke it. Next we’ll delve into the implementation
     details of the model itself.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: '**Overview of Transformer architecture**'
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Let’s get familiar with the high-level architecture of the GPT transformer:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/3f05be2dbf9b40771180a956ce812d96.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
 - en: 'In this diagram, the data flows from the bottom to the top, as is traditional
@@ -181,13 +223,16 @@
     inputs go through a sequence of *N* decoding steps, followed by a normalization
     layer. And finally, we send our decoded data through a linear layer and a softmax,
     ending up with a probability distribution that we can use to select the next token.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: In the sections that follow, we’ll take a closer look at each of the components
     in this architecture.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: '**Embedding**'
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -198,11 +243,14 @@
     of numbers of length `d_model`, and returns a tensor containing each embedding
     in place of the corresponding original token. Therefore, the output of this layer
     has shape `(batch_size, seq_len, d_model)`.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The purpose of using an embedding instead of the original token is to ensure
     that we have a similar mathematical vector representation for tokens that are
     semantically similar. For example, let’s consider the words “she” and “her”. These
@@ -214,9 +262,11 @@
     layer are initialized randomly and learned during training. But if the two words
     frequently appear nearby in the training data, eventually the embedding representations
     will converge to be similar.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: '**Positional Encoding**'
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -226,6 +276,7 @@
     possess any notion of where in the sequence each token appears. Therefore, to
     capture the order of tokens in the sequence, Transformers rely on a Positional
     Encoding.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: There are many ways to encode the positions of tokens. For example, we could
@@ -234,44 +285,55 @@
     value of each token as input. Once again, we would start with the weights in this
     embedding chosen randomly. Then during the training phase, the weights would learn
     to capture the position of each token.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: 'The authors of [The Annotated Transformer](http://nlp.seas.harvard.edu/annotated-transformer/)
     code decided to implement a more sophisticated algorithm that precomputes a representation
     for the positions of tokens in the sequence. Since we want to follow their code
     as closely as possible, we’ll use the same approach:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: This positional encoding uses sines and cosines of varying frequencies to populate
     a `pe` tensor. For example, in the illustration below, the values in blue and
     red were calculated using sine waves of two different frequencies, and the values
     in orange and green were calculated using cosine waves of those same frequencies.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/eddfe97cb8a32e8a6ace80d47d93f803.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
 - en: 'The values of the sine and cosine graphs end up populating the columns of the
     `pe` tensor, as shown below:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/f02bcdd47bf836c66fb929b97e81bf5c.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
 - en: Then during the “forward” phase, we receive the result `x` of the previous Embedding
     layer as input, and we return the sum of `x` and `pe`.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: The main advantage of precomputing the values for the positional encoding (rather
     than using a trainable Embedding) is that our model ends up with fewer parameters
     to train. This reduction in parameters leads to improved training performance,
     which is tremendously important when working with large language models.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: '**Decoder**'
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -280,18 +342,24 @@
     The Decoder consists of *N* copies of a Decoder Layer followed by a Layer Norm.
     Here’s the `Decoder` class, which takes a single `DecoderLayer` instance as input
     to the class initializer:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The “clones” function simply creates a PyTorch list containing *N* copies of
     a module:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The Layer Norm takes an input of shape `(batch_size, seq_len, d_model)` and
     normalizes it over its last dimension. As a result of this step, each embedding
     distribution will start out as unit normal (centered around zero and with standard
@@ -299,23 +367,31 @@
     the parameters `a_2` and `b_2` are optimized for our scenario. You can learn more
     about Layer Norm in the [Layer Normalization](https://arxiv.org/abs/1607.06450)
     paper from 2016.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE6]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The `DecoderLayer` class that we clone has the following architecture:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/95fa0df26b006228e9d1be7650d21926.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
 - en: 'Here’s the corresponding code:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE7]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'At a high level, a `DecoderLayer` consists of two main steps: the attention
     step, which is responsible for the communication between tokens, and the feed
     forward step, which is responsible for the computation of the predicted tokens.
@@ -329,41 +405,54 @@
     connections in the paper [Deep residual learning for image recognition](https://arxiv.org/abs/1512.03385),
     from 2015\. We implement these residual connections using the `SublayerConnection`
     module:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE8]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'The feed-forward step is implemented using two linear layers with a Rectified
     Linear Unit (ReLU) activation function in between:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE9]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The attention step is the most important part of the Transformer, so we’ll devote
     the next section to it.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
 - en: '**Masked multi-headed self-attention**'
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The multi-headed attention section in the previous diagram can be expanded
     into the following architecture:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/608a3f4c3aec9470e1b387a9c6ca014a.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
 - en: As the name implies, the multi-headed attention module processes several instances
     of attention computations in parallel, with some additional pre- and post-processing
     of the data.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE10]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'The inputs to the multi-headed attention layer include three tensors called
     `query` (Q), `key` (K), and `value` (V). In our particular model, we pass the
     same tensor for all three of these parameters: the output `x` of the previous
@@ -377,36 +466,46 @@
     back into tensors of shape `(batch_size, seq_len, d_model)`, and passes them through
     one more linear layer. By using tensor operations to do all the attention computations
     in each head in parallel, we can take full advantage of the GPU.'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: 'Attention is calculated using the following formula:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/962b20dcb548b8b373b072c539af57d8.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
 - en: 'Here’s the code that implements the formula:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE11]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: At a high level, the attention algorithm determines which tokens in the input
     sequence it should pay more attention to, and then uses that information to predict
     the next token. In the image below, darker shades of orange represent tokens that
     are more relevant in the prediction.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/decf787bcf0f9655c11266682370e0d0.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
 - en: More specifically, attention actually predicts the next token for several portions
     of our input sequence. It looks at the first token and predicts what a second
     token might be, then it looks at the first and second tokens and predicts what
     a third token might be, and so on.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/b433dbae627e98570b657cb710bc5c41.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
 - en: This seems a bit wasteful during inference because we’re only interested in
@@ -414,6 +513,7 @@
     the Transformer *n* tokens as input, it will be trained to receive inputs of lengths
     from *1* to *n-1*, so the model is better able to handle inputs of different lengths
     in the future.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: 'The idea in the diagram above is represented by the `p_attn` tensor in the
@@ -423,9 +523,11 @@
     the `p_attn` tensor contains a probability distribution, indicating how interesting
     all other key tokens are to the query token corresponding to that row. The resulting
     tensor encapsulates all the values shown in the previous image:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/8ea8ebdbee6193baf5ccf9b81eb3f21f.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
 - en: You can see in the code exactly how this tensor is calculated. We first do a
@@ -441,6 +543,7 @@
     the model has discovered an affinity between two positions in the input sequence.
     Roughly speaking, we now have a tensor that represents how “interesting” or “important”
     each token finds all other tokens in the sequence.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: 'The next step is to apply a mask to the `scores` tensor that causes the values
@@ -449,27 +552,34 @@
     only at past tokens when predicting the next token. We use the following code
     to define a mask that contains the value `True` in its diagonal and lower triangle,
     and `False` in its upper triangle:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE12]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: We apply this mask to the `scores` tensor using the `masked_fill` function,
     replacing all the values in the upper-triangle with a negative number of very
     large magnitude.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
 - en: Last, we apply a softmax that converts each row in the tensor into a probability
     distribution. Remember the formula for softmax?
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/80756c319ea5c0a355c5493e03228324.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
 - en: Since *e* raised to a negative power of very large magnitude is close to zero,
     all the values in the upper-triangle of the `p_attn` tensor essentially become
     zero. The remaining values (in the lower triangle and diagonal) become probabilities
     that sum to one in each row.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
 - en: You may have noticed that in the code, when we multiplied the query and key
@@ -479,6 +589,7 @@
     range, from zero to one. If we hadn’t done that, the distributions calculated
     by softmax could approach one-hot vectors, where one value is one and the others
     are all zero — which would make the output of the model seem predictable and robotic.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: 'At this point, we have a `p_attn` tensor containing probability distributions
@@ -489,9 +600,11 @@
     our tensor of probabilities by our `value` tensor, which contains the input token
     embeddings `x` after applying a linear layer. The resulting tensor will contain
     a prediction for each token subsequence:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/bdc02745464241ba99f093e8059aede5.png)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
 - en: 'Here’s the intuition for this diagram: for the input subsequence “A”, we pay
@@ -503,6 +616,7 @@
     so we only care about the last row in this diagram. We pay most attention to “ago”,
     we pay a little less attention to “long”, we pay the least attention to the other
     two tokens, and we produce a next-token prediction of “in”.'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: After we’ve calculated attention for all the heads, and have concatenated the
@@ -510,25 +624,31 @@
     d_model)`. This tensor contains the token predictions for each sub-sequence, and
     is almost ready to be returned to the user. But before we do that, we need one
     last step to finalize its shape and contents.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: '**Generator**'
+  id: totrans-91
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The last step in our Transformer is the Generator, which consists of a linear
     layer and a softmax executed in sequence:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE13]'
+  id: totrans-93
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: The purpose of the linear layer is to convert the third dimension of our tensor
     from the internal-only `d_model` embedding dimension to the `vocab_size` dimension,
     which is understood by the code that calls our Transformer. The result is a tensor
     dimension of `(batch_size, seq_len, vocab_size)`. The purpose of the softmax is
     to convert the values in the third tensor dimension into a probability distribution.
     This tensor of probability distributions is what we return to the user.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: You might remember that at the very beginning of this article, we explained
@@ -540,46 +660,59 @@
     that follows the first and second input tokens, and so on. The very last probability
     distribution of each batch enables us to predict the token that follows the whole
     input sequence, which is what we care about when doing inference.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: The Generator is the last piece of our Transformer architecture, so we’re ready
     to put it all together.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: '**Putting it all together**'
+  id: totrans-97
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'We use the `DecoderModel` module to encapsulate the three main pieces of the
     Transformer architecture: the embeddings, the decoder, and the generator.'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE14]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Calling `decode` executes just the embeddings and decoder, so if we want to
     execute all steps of the Transformer, we need to call `decode` followed by `generator`.
     That’s exactly what we did in the `generate_next_token` function of the inference
     code that I showed at the beginning of this post.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: 'The inference code also calls a `make_model` function that returns an instance
     of `DecoderModel`. This function initializes all the components we’ve discussed
     so far, and puts them together according to the architecture diagram at the beginning
     of this post:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE15]'
+  id: totrans-102
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: We now have all the pieces needed to implement a GPT-style Transformer architecture!
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
 - en: We’ll finish with a few thoughts on training, and we’ll do a brief comparison
     between the full Transformer and the GPT-style subset.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
 - en: '**Training**'
+  id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -589,6 +722,7 @@
     to the right. For example, if we give it “A long time ago” as input, we expect
     the sampling of the probabilities returned by the model to produce “long time
     ago in”.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
 - en: If you have experience training neural networks and want to train the Transformer
@@ -597,9 +731,11 @@
     in [Part 2 of the Annotated Transformer](http://nlp.seas.harvard.edu/annotated-transformer/#part-2-model-training).
     Either way, you’ll need access to a fast GPU, locally or in the cloud. I’m partial
     to training in the cloud on Azure of course!
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
 - en: '**Comparison with full Transformer**'
+  id: totrans-108
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -608,19 +744,23 @@
     [Attention is all you need](https://arxiv.org/abs/1706.03762) paper. Below you
     can see the diagram of the Transformer architecture presented in the paper, with
     the parts we covered in this post enclosed by an orange box.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/6fa18631106401a5fff1c12a1a4b3385.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
 - en: '*Illustration adapted from the* [*Attention is all you need*](https://arxiv.org/abs/1706.03762)
     *paper*'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
 - en: The full Transformer has an encoder section (on the left) and a decoder section
     (on the right). The original intent of the paper was to present an architecture
     for machine translation. In that context, the encoder was used to process the
     input language, and the decoder was used to produce the output language.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
 - en: You can see that in addition to the masked multi-headed self-attention used
@@ -637,9 +777,11 @@
     the input language, as it predicts tokens in the output language. The rest of
     the pieces of the diagram are similar to parts of the GPT-style Transformer, and
     have already been explained in this post.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
 - en: '**Conclusion**'
+  id: totrans-114
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -652,6 +794,7 @@
     and explore the code. Set breakpoints in any section of the code that isn’t clear
     to you, run it, and inspect its variables. If you have access to a GPU, write
     code that trains it and see the performance of its predictions improve.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
 - en: With your newly acquired knowledge, I hope that you can help the AI community
@@ -662,14 +805,20 @@
     training data. Maybe future versions of generative models will have a better understanding
     of the world, and generate even better predictions? If so, I’ll be here to tell
     you all about it.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望你运用新获得的知识，帮助人工智能社区揭开一些与这些模型相关的误解。许多人误以为这些模型对世界有更高层次的理解，而你现在知道事实并非如此。它们只是由数学和统计运算组成，旨在基于之前的训练数据预测下一个令牌。也许未来的生成模型会对世界有更好的理解，并生成更准确的预测？如果是这样，我会在这里告诉你所有的细节。
 - en: '**Note**'
+  id: totrans-117
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**注意**'
 - en: All images are by the author unless otherwise noted. You can use any of the
     original images in this blog post for any purpose, with attribution (a link to
     this article).
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有图片均由作者提供，除非另有说明。你可以在这篇博客文章中出于任何目的使用原始图片，并需注明出处（即链接到本文）。
