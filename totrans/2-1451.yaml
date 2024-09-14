@@ -3,16 +3,19 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Lucene 透视 — 处理整数编码和压缩
 - en: 原文：[https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d](https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d](https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d)
 - en: Delve into PackedInts, VInt, FixedBitSet, and **RoaringDocIdSet (**Roaring Bitmaps)
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 深入探讨 PackedInts、VInt、FixedBitSet 和 **RoaringDocIdSet**（**Roaring Bitmaps**）
 - en: '[](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Peggy
     Chang](../Images/f59e8d3b97ea7db59fc8cb33f05e835b.png)](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
@@ -20,60 +23,80 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Peggy
+    Chang](../Images/f59e8d3b97ea7db59fc8cb33f05e835b.png)](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
+    [Peggy Chang](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
     ·13 min read·Jun 28, 2023
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
+    ·13分钟阅读·2023年6月28日
 - en: --
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/3e285f99edf68c33f97c132920235b8a.png)'
   id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3e285f99edf68c33f97c132920235b8a.png)'
 - en: Image by [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
     from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
+    提供，来自 [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
 - en: Earlier on, we learned about vector compression using [product quantization](https://medium.com/towards-data-science/product-quantization-for-similarity-search-2f1f67c5fddd)
     for similarity search.
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 早些时候，我们学习了使用 [产品量化](https://medium.com/towards-data-science/product-quantization-for-similarity-search-2f1f67c5fddd)
+    进行相似性搜索的向量压缩。
 - en: '[](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
     [## Product Quantization for Similarity Search'
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
+    [## 产品量化用于相似性搜索'
 - en: How to compress and fit a humongous set of vectors in memory for similarity
     search with asymmetric distance computation…
   id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如何在内存中压缩和适配一个巨大的向量集，以便在不对称距离计算下进行相似性搜索……
 - en: towardsdatascience.com](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
 - en: In this article, we will explore and gain insight into how integers are encoded
     and compressed in Lucene, the world where the inverted index takes center stage.
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将探讨并深入了解整数在 Lucene 中的编码和压缩方式，那里倒排索引是核心。
 - en: Lucene — Brief Introduction
   id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Lucene — 简介
 - en: '[Lucene](https://lucene.apache.org/) is an open-source search engine library
     written in Java. Created by Doug Cutting in 1999, it is well-known for full-text
     search and indexing.'
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Lucene](https://lucene.apache.org/) 是一个用 Java 编写的开源搜索引擎库。由 Doug Cutting 于
+    1999 年创建，以全文搜索和索引著称。'
 - en: This open-source software project under [The Apache Software Foundation](https://www.apache.org/)
     is still in active development after more than two decades. Over the years, it
     has evolved and grown to become a powerful, fully featured high-performance search
@@ -81,6 +104,7 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个开源软件项目在 [Apache 软件基金会](https://www.apache.org/) 旗下，经过二十多年仍在积极开发中。多年来，它不断发展壮大，成为一个强大、功能齐全的高性能搜索引擎库。
 - en: Undeniably, Lucene's success is highly attributed to its strong community and
     the incredible work contributed by committers. Their participation and collaboration
     brought Lucene to where it is today. Many popular enterprise search platforms
