@@ -1,269 +1,393 @@
 - en: The easiest way to UPSERT with SQLAlchemy
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 SQLAlchemy 进行 UPSERT 的最简单方法
 - en: 原文：[https://towardsdatascience.com/the-easiest-way-to-upsert-with-sqlalchemy-9dae87a75c35](https://towardsdatascience.com/the-easiest-way-to-upsert-with-sqlalchemy-9dae87a75c35)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/the-easiest-way-to-upsert-with-sqlalchemy-9dae87a75c35](https://towardsdatascience.com/the-easiest-way-to-upsert-with-sqlalchemy-9dae87a75c35)
 - en: One command to both INSERT new data and UPDATE existing records in your database
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一个命令同时`INSERT`新数据和`UPDATE`数据库中现有的记录
 - en: '[](https://mikehuls.medium.com/?source=post_page-----9dae87a75c35--------------------------------)[![Mike
     Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----9dae87a75c35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9dae87a75c35--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9dae87a75c35--------------------------------)
     [Mike Huls](https://mikehuls.medium.com/?source=post_page-----9dae87a75c35--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://mikehuls.medium.com/?source=post_page-----9dae87a75c35--------------------------------)[![Mike
+    Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----9dae87a75c35--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9dae87a75c35--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9dae87a75c35--------------------------------)
+    [Mike Huls](https://mikehuls.medium.com/?source=post_page-----9dae87a75c35--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9dae87a75c35--------------------------------)
     ·5 min read·Mar 20, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9dae87a75c35--------------------------------)
+    ·5 min read·2023年3月20日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: 'In this short article we’ll find out how we can `UPSERT` in SQLAlchemy: we
     `INSERT` new data to our database and `UPDATE` records that already exist with
     the newly provided values. We’ll start out with a use-case, prepare our database
     and then UPSERT! Easy enough! Let’s code!'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇短文中，我们将深入探讨如何在 SQLAlchemy 中进行`UPSERT`：我们将`INSERT`新数据到数据库中，并用新提供的值`UPDATE`已经存在的记录。我们将从一个用例开始，准备数据库，然后进行
+    UPSERT！非常简单！让我们开始编码吧！
 - en: '![](../Images/c6efe92cefc9eca0364df4857d41e585.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c6efe92cefc9eca0364df4857d41e585.png)'
 - en: Upserting row by row (image by [Tom Fisk](https://www.pexels.com/@tomfisk/)
     on [Pexels](https://www.pexels.com/photo/aerial-shot-of-green-milling-tractor-1595108/))
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 一行行地进行 UPSERT（图片来源 [Tom Fisk](https://www.pexels.com/@tomfisk/) 在 [Pexels](https://www.pexels.com/photo/aerial-shot-of-green-milling-tractor-1595108/))
 - en: When would I want to UPSERT?
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么时候我需要进行 UPSERT？
 - en: Upserting is to `INSERT` new records into a database table but `UPDATE` records
     that already exist in that dataset. The database “knows which records already
     exist” by comparing the Primary Key column of the table.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: Upserting 是将新记录`INSERT`到数据库表中，同时`UPDATE`数据集中已经存在的记录。数据库通过比较表的主键列来“知道哪些记录已经存在”。
 - en: It’s important to `UPDATE` existing records so that our foreign key relationships
     remain intact. In the next part we’ll go through an example that’ll clearly explain
     our goal in practice.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '`UPDATE`现有记录很重要，以便我们的外键关系保持完整。在下一部分中，我们将通过一个示例清楚地解释我们在实践中的目标。'
 - en: '[](/dramatically-improve-your-database-inserts-with-a-simple-upgrade-6dfa672f1424?source=post_page-----9dae87a75c35--------------------------------)
     [## Dramatically improve your database insert speed with a simple upgrade'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/dramatically-improve-your-database-inserts-with-a-simple-upgrade-6dfa672f1424?source=post_page-----9dae87a75c35--------------------------------)
+    [## 通过简单升级显著提高数据库插入速度'
 - en: 4 levels of creating blazingly fast database connections in Python
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在 Python 中创建超快速数据库连接的 4 个级别
 - en: towardsdatascience.com](/dramatically-improve-your-database-inserts-with-a-simple-upgrade-6dfa672f1424?source=post_page-----9dae87a75c35--------------------------------)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/dramatically-improve-your-database-inserts-with-a-simple-upgrade-6dfa672f1424?source=post_page-----9dae87a75c35--------------------------------)
 - en: Setting up an example
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 设置示例
 - en: 'Imagine we run a web shop for a guitar store. Of course we have to keep track
     of which guitars are in stock, how many are in stock and what their prices are.
     This is what the `inventory` table does:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下我们经营一个吉他店的网店。当然，我们必须跟踪哪些吉他有库存、库存数量以及价格。这就是`inventory`表的作用：
 - en: '[PRE0]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Each row is unique per `sku`: this is the `primary key` of the table. The primary
     key is pretty important when upserting.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 每一行都基于`sku`是唯一的：这是表的`primary key`。主键在插入时非常重要。
 - en: 'Every day we receive a data set that could look like this:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们每天接收到的数据集可能如下所示：
 - en: '[PRE1]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Our goal is to `UPSERT` the new data into the `inventory` table:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的目标是将新数据`UPSERT`到`inventory`表中：
 - en: '`INSERT` new records (like the Gibson Flying V)'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '`UPDATE` existing records (like the new price for the Fender Jazzmaster'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '[](/thread-your-python-program-with-two-lines-of-code-3b474407dbb8?source=post_page-----9dae87a75c35--------------------------------)
     [## Thread Your Python Program with Two Lines of Code'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: Speed up your program by doing multiple things simultaneously
+  id: totrans-25
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/thread-your-python-program-with-two-lines-of-code-3b474407dbb8?source=post_page-----9dae87a75c35--------------------------------)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: Upserting with SQLAlchemy
+  id: totrans-27
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: We are going to use SQLAlchemy to UPSERT in 3 steps.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: '*In this article I assume you’re familiar with SQLAlchemy so I won’t go too
     much in detail since it’s not in our current scope but I’ll provide links to article
     with a more in-depth explanation. Also check out* [***this link***](https://mikehuls.com/articles?tags=sqlalchemy%2Cdatabase%2Csql)
     *for more articles on SQLAlchemy.*'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: 1\. Setting up our database and connection
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: First we declare a model called ‘Guitar’. This corresponds to a single row in
     our inventory table. Notice that it has a column called `sku` that is a primary
     key.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Next we create a database engine for our sqlite database (check [**out this
     article**](https://mikehuls.medium.com/how-to-make-a-database-connection-in-python-for-absolute-beginners-e2bfd8e4e52)for
     more information) and use it to create the `inventory` table.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: '[](/no-need-to-ever-write-sql-again-sqlalchemys-orm-for-absolute-beginners-107be0b3148f?source=post_page-----9dae87a75c35--------------------------------)
     [## No Need to Ever Write SQL Again: SQLAlchemy’s ORM for Absolute Beginners'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: With this ORM you can create a table, insert, read, delete and update data without
     writing a single line of SQL
+  id: totrans-35
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/no-need-to-ever-write-sql-again-sqlalchemys-orm-for-absolute-beginners-107be0b3148f?source=post_page-----9dae87a75c35--------------------------------)
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: 2\. Insert data into the `inventory` table
+  id: totrans-37
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Next we’ll create a few instances of our `Guitar` model and insert them into
     the database using SQLAlchemy’s `Session` object:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'When we `SELECT * FROM inventory` we see the contents of our `inventory` table:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Next we’re going to receive a new dataset that contains the new daily stock.
     We’re going to have to insert new `Guitar`s and update records in our current
     `inventory`.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '[](/getting-started-with-postgres-in-docker-616127e2e46d?source=post_page-----9dae87a75c35--------------------------------)
     [## Getting started with Postgres in Docker'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: Creating a Postgres database in a Docker container for beginners
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/getting-started-with-postgres-in-docker-616127e2e46d?source=post_page-----9dae87a75c35--------------------------------)
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: 3\. Upsert into the inventory table
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Finally it’s time to UPSERT! Here we go:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: As you see we use `session.merge`. This method analyzes our new_stock and checks
     which of the provided `sku` values are already present in the `inventory` table.
     If the `sku` exists it performs an update, otherwise it just inserts the new guitar.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你所见，我们使用 `session.merge`。此方法分析我们的 new_stock 并检查提供的 `sku` 值是否已存在于 `inventory`
+    表中。如果 `sku` 存在，它会执行更新，否则它会插入新的吉他。
 - en: 'This is the resulting table:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是结果表：
 - en: '[PRE6]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: One thing to notice is that the `merge` method differs from the MERGE in SQL
     since it only inserts and updates. If you want more fine-grain control check out
     [**this article**](https://mikehuls.medium.com/sql-insert-delete-and-update-in-one-statement-sync-your-tables-with-merge-14814215d32c)
     that shows you how to delete/update/insert in one statement in SQL.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 一点需要注意的是，`merge` 方法与 SQL 中的 MERGE 不同，因为它仅执行插入和更新。如果你想要更细粒度的控制，查看 [**这篇文章**](https://mikehuls.medium.com/sql-insert-delete-and-update-in-one-statement-sync-your-tables-with-merge-14814215d32c)，它展示了如何在
+    SQL 中用一条语句进行删除/更新/插入。
 - en: '[](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----9dae87a75c35--------------------------------)
     [## Detecting motion with OpenCV — image analysis for beginners'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----9dae87a75c35--------------------------------)
+    [## 使用 OpenCV 进行运动检测 — 初学者的图像分析'
 - en: How to detect and analyze moving objects with OpenCV
+  id: totrans-54
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如何使用 OpenCV 检测和分析移动物体
 - en: towardsdatascience.com](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----9dae87a75c35--------------------------------)
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42?source=post_page-----9dae87a75c35--------------------------------)
 - en: Conclusion
+  id: totrans-56
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: As we’ve seen UPSERTING is very easy when we use the SQLAlchemy ORM. Check out
     my other articles [**here**](https://mikehuls.com) to find out the many uses of
     Python, SQLAlchemy, Docker and databases in general!
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，当使用 SQLAlchemy ORM 时，UPSERT 非常简单。查看我的其他文章 [**这里**](https://mikehuls.com)，以了解
+    Python、SQLAlchemy、Docker 和数据库的一些用途！
 - en: 'I hope this article was as clear as I hope it to be but if this is not the
     case please let me know what I can do to clarify further. In the meantime, check
     out my [other articles](https://mikehuls.com/articles?tags=python) on all kinds
     of programming-related topics like these:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章能够如我所期望的那样清晰，但如果不是这种情况，请告诉我我可以做些什么来进一步澄清。同时，查看我关于各种编程相关主题的 [其他文章](https://mikehuls.com/articles?tags=python)：
 - en: '[Git for absolute beginners: understanding Git with the help of a video game](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Git 完全初学者指南：通过视频游戏理解 Git](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
 - en: '[Create and publish your own Python package](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[创建并发布你自己的 Python 包](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
 - en: '[Create a fast auto-documented, maintainable, and easy-to-use Python API in
     5 lines of code with FastAPI](https://mikehuls.medium.com/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e)'
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[用 FastAPI 在 5 行代码中创建一个快速的自动文档化、可维护且易于使用的 Python API](https://mikehuls.medium.com/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e)'
 - en: Happy coding!
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 编程愉快！
 - en: — Mike
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: — Mike
 - en: '*P.S: like what I’m doing?* [*Follow me!*](https://mikehuls.medium.com/membership)'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言：喜欢我所做的工作吗？* [*关注我！*](https://mikehuls.medium.com/membership)'
 - en: '[](https://mikehuls.medium.com/membership?source=post_page-----9dae87a75c35--------------------------------)
     [## Join Medium with my referral link - Mike Huls'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://mikehuls.medium.com/membership?source=post_page-----9dae87a75c35--------------------------------)
+    [## 通过我的推荐链接加入 Medium - Mike Huls'
 - en: Read every story from Mike Huls (and thousands of other writers on Medium).
     Your membership fee directly supports Mike…
+  id: totrans-66
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读 Mike Huls 的每个故事（以及 Medium 上其他成千上万的作家的故事）。你的会员费用直接支持 Mike…
 - en: mikehuls.medium.com](https://mikehuls.medium.com/membership?source=post_page-----9dae87a75c35--------------------------------)
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: mikehuls.medium.com](https://mikehuls.medium.com/membership?source=post_page-----9dae87a75c35--------------------------------)
