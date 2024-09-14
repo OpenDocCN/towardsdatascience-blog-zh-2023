@@ -1,577 +1,890 @@
 - en: 'TSMixer: The Latest Forecasting Model by Google'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'TSMixer: 谷歌推出的最新预测模型'
 - en: 原文：[https://towardsdatascience.com/tsmixer-the-latest-forecasting-model-by-google-2fd1e29a8ccb](https://towardsdatascience.com/tsmixer-the-latest-forecasting-model-by-google-2fd1e29a8ccb)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/tsmixer-the-latest-forecasting-model-by-google-2fd1e29a8ccb](https://towardsdatascience.com/tsmixer-the-latest-forecasting-model-by-google-2fd1e29a8ccb)
 - en: Explore the architecture of TSMixer and implement it in Python for a long-horizon
     multivariate forecasting task
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 探索TSMixer的架构，并在Python中实现它，用于长期多变量预测任务。
 - en: '[](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)[![Marco
     Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)
     [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)[![Marco
+    Peixeiro](../Images/7cf0a81d87281d35ff47f51e3026a3e9.png)](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)
+    [Marco Peixeiro](https://medium.com/@marcopeixeiro?source=post_page-----2fd1e29a8ccb--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)
     ·12 min read·Nov 14, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----2fd1e29a8ccb--------------------------------)
+    ·阅读时间12分钟·2023年11月14日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/e73873566af0876cf840a6284a7f2f21.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e73873566af0876cf840a6284a7f2f21.png)'
 - en: Photo by [Zdeněk Macháček](https://unsplash.com/@zmachacek?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由[Zdeněk Macháček](https://unsplash.com/@zmachacek?utm_source=medium&utm_medium=referral)拍摄的照片，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: The field of time series forecasting continues to be in effervescence, with
     many important recent contributions like N-HiTS, PatchTST, TimesNet and of course
     TimeGPT.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列预测领域仍在蓬勃发展，最近有许多重要的贡献，如N-HiTS、PatchTST、TimesNet以及当然还有TimeGPT。
 - en: In the meantime, the Transformer architecture unlocked unprecedented performance
     in the field of natural language processing (NLP), but that is not true for time
     series forecasting.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，Transformer架构在自然语言处理（NLP）领域实现了前所未有的性能，但在时间序列预测中并非如此。
 - en: In fact, many Transformer-based model were proposed like Autoformer, Informer,
     FEDformer, and more. Those models are often very long to train and it turns out
     that simple linear models outperform them on many benchmark datasets (see [Zheng
     et al., 2022](https://arxiv.org/pdf/2205.13504.pdf)).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实上，许多基于Transformer的模型如Autoformer、Informer、FEDformer等被提出。这些模型通常训练时间非常长，而简单的线性模型在许多基准数据集上表现更好（见[Zheng
+    et al., 2022](https://arxiv.org/pdf/2205.13504.pdf)）。
 - en: To that point, in September 2023, researchers from Google Cloud AI Research
     proposed **TSMixer**, a Multi-layer Perceptron (MLP) based model that focuses
     on mixing time and feature dimensions to make better predictions.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实上，在2023年9月，谷歌云AI研究人员提出了**TSMixer**，这是一个基于多层感知机（MLP）的模型，专注于混合时间和特征维度，以提供更好的预测。
 - en: 'In their paper [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf),
     the authors demonstrate that this model achieves state-of-the-art performance
     on many benchmark datasets, while remaining simple to implement.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '在他们的论文[TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)中，作者展示了该模型在许多基准数据集上实现了最先进的性能，同时保持了实现的简单性。'
 - en: In this article, we first explore the architecture of TSMixer to understand
     its inner workings. Then, we implement the model in Python and run our own experiment
     to compare its performance to N-HiTS.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们首先探索TSMixer的架构，以理解其内部工作原理。然后，我们在Python中实现该模型，并运行自己的实验，将其性能与N-HiTS进行比较。
 - en: For more details on TSMixer, make sure to read the [original paper](https://arxiv.org/pdf/2303.06053.pdf).
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 欲了解有关TSMixer的更多细节，请务必阅读[原始论文](https://arxiv.org/pdf/2303.06053.pdf)。
 - en: '**Learn the latest time series analysis techniques with my** [**free time series
     cheat sheet**](https://www.datasciencewithmarco.com/pl/2147608294) **in Python!
     Get the implementation of statistical and deep learning techniques, all in Python
     and TensorFlow!**'
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**通过我的** [**免费时间序列备忘单**](https://www.datasciencewithmarco.com/pl/2147608294)
+    **，** **学习最新的时间序列分析技术！获取统计和深度学习技术的实现，全部用Python和TensorFlow！**'
 - en: Let’s get started!
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧！
 - en: Explore TSMixer
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 探索TSMixer
 - en: When it comes to forecasting, we intuitively know that using cross-variate information
     can help make better predictions.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在预测方面，我们直观地知道，使用交叉变量信息可以帮助做出更好的预测。
 - en: For example, weather and precipitation are likely to have an impact on the number
     of visitors to an amusement park. Likewise, the days of the week and holidays
     will also have an impact.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，天气和降水量可能会影响游乐园的访客数量。同样，星期几和节假日也会产生影响。
 - en: Therefore, it would make sense to have models that can leverage information
     from covariates and other features to make predictions.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，拥有能够利用协变量和其他特征信息进行预测的模型是有意义的。
 - en: This is what motivated the creation of TSMixer. As simple univariate linear
     models were shown to outperform more complex architectures (see [Zheng et al.,
     2022](https://arxiv.org/pdf/2205.13504.pdf)), TSMixer now extends the capabilities
     of linear models by adding cross-variate feed-forward layers.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这激发了TSMixer的创建。由于简单的单变量线性模型被证明优于更复杂的架构（见 [Zheng et al., 2022](https://arxiv.org/pdf/2205.13504.pdf)），TSMixer现在通过添加交叉变量前馈层来扩展线性模型的能力。
 - en: Therefore, we now get a linear model capable of handling multivariate forecasting
     that can leverage information from covariates and other static features.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们现在得到一个能够处理多变量预测的线性模型，它可以利用协变量和其他静态特征的信息。
 - en: Architecture of TSMixer
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: TSMixer的架构
 - en: The general architecture is shown in the figure below.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 一般架构如下面的图所示。
 - en: '![](../Images/d91af3dd374db62e24ad58bc3635b890.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d91af3dd374db62e24ad58bc3635b890.png)'
 - en: 'Architecture of TSMixer. Image by S. Chen, C. Li, N. Yoder, S. Arik and T.
     Pfister from [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 'TSMixer的架构。图像来源：S. Chen、C. Li、N. Yoder、S. Arik 和 T. Pfister，来自 [TSMixer: An
+    All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
 - en: Since TSMixer is simply extending linear models, its architecture is fairly
     straightforward, since it is entirely MLP-based.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于TSMixer只是扩展线性模型，它的架构相当简单，因为它完全基于MLP。
 - en: 'From the figure above, we can see that the model mainly consists of two steps:
     a mixer layer and a temporal projection.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上图可以看出，该模型主要包括两个步骤：混合层和时间投影。
 - en: Let’s explore each step in more detail.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们更详细地探讨每一步。
 - en: Mixer layer
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 混合层
 - en: This is where time mixing and feature mixing occurs, hence the name TSMixer.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是时间混合和特征混合发生的地方，因此命名为TSMixer。
 - en: '![](../Images/b06f726222fad431f6ffb69063c8e599.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b06f726222fad431f6ffb69063c8e599.png)'
 - en: 'Focusing on the mixing layer. Image by S. Chen, C. Li, N. Yoder, S. Arik and
     T. Pfister from [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '专注于混合层。图像来源：S. Chen、C. Li、N. Yoder、S. Arik 和 T. Pfister，来自 [TSMixer: An All-MLP
+    Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
 - en: In the figure above, we see that for time mixing, the MLP consists of a fully
     connected layer, followed by the ReLU activation function, and a dropout layer.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上图中，我们看到对于时间混合，MLP包括一个全连接层，随后是ReLU激活函数和一个dropout层。
 - en: The input, where rows represent time and columns represent features, is transposed
     so the MLP is applied on the time domain and shared across all features. This
     unit is responsible for learning temporal patterns.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 输入数据中，行代表时间，列代表特征，数据被转置，以便MLP应用于时间域，并在所有特征中共享。这个单元负责学习时间模式。
 - en: Before leaving the time mixing unit, the matrix is transposed again, and it
     is sent to the feature mixing unit.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在离开时间混合单元之前，矩阵会再次转置，然后发送到特征混合单元。
 - en: The feature mixing unit, then consists of two MLPs. Since it is applied in the
     feature domain, it is shared across all time steps. Here, there is no need to
     transpose, since the features are already on the horizontal axis.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征混合单元包括两个MLP。由于它在特征域中应用，因此在所有时间步长中共享。在这里，没有必要转置，因为特征已经在水平轴上。
 - en: Notice that in both mixers, we have normalization layers and residual connections.
     The latter help the model learn deeper representations of the data while keeping
     the computational cost reasonable, while normalization is a common technique to
     improve the training of deep learning models.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，在两个混合器中，我们都有归一化层和残差连接。后者帮助模型学习数据的更深层次表示，同时保持计算成本合理，而归一化是提高深度学习模型训练的常用技术。
 - en: Once that mixing is done, the output is sent to the temporal projection step.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦混合完成，输出将发送到时间投影步骤。
 - en: Temporal projection
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间投影
 - en: The temporal projection step is what generates the predictions in TSMixer.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间投影步骤是生成TSMixer预测的部分。
 - en: '![](../Images/001d4503e1f393a0b44601e994fe95ac.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/001d4503e1f393a0b44601e994fe95ac.png)'
 - en: 'Focusing on the temporal projection layer. Image by S. Chen, C. Li, N. Yoder,
     S. Arik and T. Pfister from [TSMixer: An All-MLP Architecture for Time Series
     Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '重点关注时间投影层。图像来自**S. Chen**、**C. Li**、**N. Yoder**、**S. Arik**和**T. Pfister**，见[TSMixer:
+    An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
 - en: Here, the matrix is again transposed and sent through a fully connected layer
     to generate predictions. The final step is then to transpose that matrix again
     to have the features on the horizontal axis, and the time steps on the vertical
     axis.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，矩阵再次被转置，并通过全连接层生成预测。最终步骤是再次转置该矩阵，使特征位于水平轴上，时间步位于垂直轴上。
 - en: Now that we understand how TSMixer works, let’s implement it in Python and test
     it ourselves.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们了解了TSMixer的工作原理，让我们在Python中实现它并进行测试。
 - en: Implement TSMixer
+  id: totrans-46
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实现TSMixer
 - en: To my knowledge, TSMixer is not implemented in common time series libraries
     in Python, like Darts or Neuralforecast. Therefore, I will adapt the original
     implementation to my experiment for this article.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 据我了解，TSMixer在Python中的常用时间序列库中尚未实现，如Darts或Neuralforecast。因此，我将调整原始实现以适应我的实验。
 - en: The original implementation is available in the [repository of Google Research](https://github.com/google-research/google-research/tree/master/tsmixer/tsmixer_basic).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始实现可在[Google Research的代码库](https://github.com/google-research/google-research/tree/master/tsmixer/tsmixer_basic)中找到。
 - en: The complete code for this experiment is available on [GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/TSMixer.ipynb).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 本实验的完整代码可在[GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/TSMixer.ipynb)上获取。
 - en: Read and format the data
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 读取和格式化数据
 - en: The hardest part in applying deep learning models for time series forecasting
     is arguably formatting the dataset to be fed into the neural network.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 应用深度学习模型进行时间序列预测中最困难的部分无疑是格式化数据集以输入神经网络。
 - en: So, the first step is create a `DataLoader` class that handles all the transformations
     of the dataset. This class is initialized with the batch size, the input sequence
     length, the output sequence length (the horizon) and a slice object for the targets.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，第一步是创建一个`DataLoader`类来处理数据集的所有转换。这个类通过批处理大小、输入序列长度、输出序列长度（视野）以及目标的切片对象进行初始化。
 - en: '[PRE0]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Then, we add a method to read and scale the data. Here, we use the electricity
     transformer dataset Etth1, publicly [available on GitHub](https://github.com/zhouhaoyi/ETDataset/blob/main/ETT-small/ETTh1.csv)
     under the Creative Commons Attribute Licence.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们添加一个方法来读取和缩放数据。在这里，我们使用电力变压器数据集Etth1，公开[在GitHub上获取](https://github.com/zhouhaoyi/ETDataset/blob/main/ETT-small/ETTh1.csv)，根据创作共用署名许可。
 - en: '[PRE1]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: In the code block above, note that it is crucial to scale our data to improve
     the model’s training time. Also note that we fit the scaler on the training set
     only to avoid data leakage in the validation and test sets.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码块中，请注意缩放数据以提高模型训练时间是至关重要的。还要注意，我们只在训练集上拟合缩放器，以避免在验证集和测试集中出现数据泄漏。
 - en: Then, we create two methods for splitting the windows of data into inputs and
     labels, and then create a dataset that can be fed to a Keras neural network.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们创建两个方法，将数据窗口拆分为输入和标签，然后创建一个可以输入到Keras神经网络的数据集。
 - en: '[PRE2]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Finally, we complete the `DataLoader` class with methods to inverse transform
     the predictions and to generate the training, validation and test sets.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们完成`DataLoader`类，添加方法以逆向转换预测结果，并生成训练、验证和测试集。
 - en: '[PRE3]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'The complete `DataLoader` class is shown below:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整的`DataLoader`类如下所示：
 - en: '[PRE4]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Then, we can simply initialize an instance of the `DataLoader` class to read
     our dataset and create the relevant sets of data.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以简单地初始化`DataLoader`类的一个实例，以读取我们的数据集并创建相关的数据集。
 - en: Here, we use a horizon of 96, an input sequence length of 512, and a batch size
     of 32.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们使用了 96 的预测范围、512 的输入序列长度和 32 的批量大小。
 - en: '[PRE5]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Now that the data is ready, we can build the TSMixer model.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在数据已经准备好，我们可以构建 TSMixer 模型了。
 - en: Build TSMixer
+  id: totrans-67
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 构建 TSMixer
 - en: Building TSMixer is fairly easy, as the model consists only of MLPs. Let’s bring
     back its architecture so we can reference it as we build the model.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 构建 TSMixer 非常简单，因为该模型仅由 MLP 组成。让我们回顾一下其架构，以便在构建模型时参考。
 - en: '![](../Images/d91af3dd374db62e24ad58bc3635b890.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d91af3dd374db62e24ad58bc3635b890.png)'
 - en: 'Architecture of TSMixer. Image by S. Chen, C. Li, N. Yoder, S. Arik and T.
     Pfister from [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 'TSMixer 的架构。图片来自 [TSMixer: An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/pdf/2303.06053.pdf)
+    的 S. Chen、C. Li、N. Yoder、S. Arik 和 T. Pfister。'
 - en: 'First, we must take care of the Mixer Layer, which consists of:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们必须处理 Mixer Layer，它包括：
 - en: batch normalization
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批量归一化
 - en: transpose the matrix
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 转置矩阵
 - en: feed to a fully connected layer with a ReLu activation
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 输入到具有 ReLu 激活的全连接层
 - en: transpose again
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 再次转置
 - en: dropout layer
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: dropout 层
 - en: and add the residuals at the end
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 并在最后添加残差
 - en: 'This is translated to code like so:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以翻译成如下代码：
 - en: '[PRE6]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Then, we add the portion for feature mixing which has:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们添加特征混合部分，其中包括：
 - en: batch normalization
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批量归一化
 - en: a dense layer
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个 dense 层
 - en: a dropout layer
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: dropout 层
 - en: another dense layer
+  id: totrans-84
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 另一个 dense 层
 - en: another dropout layer
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 另一个 dropout 层
 - en: and add the residuals to make the residual connection
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 并添加残差以形成残差连接
 - en: '[PRE7]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'That’s it! The full function for the Mixer Layer is shown below:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这样！Mixer Layer 的完整函数如下：
 - en: '[PRE8]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Now, we simply write a function to build the model. We include a for loop to
     create as many Mixer Layers as we want, and we add the final temporal projection
     step.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们简单地编写一个函数来构建模型。我们包括一个 for 循环以创建我们需要的 Mixer 层，并添加最终的时间投影步骤。
 - en: 'From the figure above, the temporal projection step is simply:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上面的图中可以看到，时间投影步骤只是：
 - en: a transpose
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个转置
 - en: a pass through a dense layer
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 经过 dense 层处理
 - en: a final transpose
+  id: totrans-94
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后的转置
 - en: '[PRE9]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Now, we can run the function to build the model. In this case, we use eight
     blocks in the Mixer Layer.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以运行函数来构建模型。在这种情况下，我们在 Mixer Layer 中使用了八个块。
 - en: '[PRE10]'
+  id: totrans-97
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Train TSMixer
+  id: totrans-98
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练 TSMixer
 - en: We are now ready to train the model.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在准备好训练模型了。
 - en: We use the Adam optimizer with a learning rate of 1e-4\. We also implement checkpoints
     to save the best model and early stopping to stop training if there is no improvements
     for three consecutive epochs.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用学习率为 1e-4 的 Adam 优化器。我们还实现了检查点以保存最佳模型，并通过早停机制在连续三次训练轮次没有改进时停止训练。
 - en: '[PRE11]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Note that it took 15 minutes to train the model using the CPU only.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，仅使用 CPU 训练模型花费了 15 分钟。
 - en: Once the model is trained, we can load the best model that was saved by the
     checkpoint callback.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦模型训练完成，我们可以加载通过检查点回调保存的最佳模型。
 - en: '[PRE12]'
+  id: totrans-104
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: Then, let’s access the predictions for the last window of 96 time steps. Note
     that the predictions are scaled right now.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，让我们访问最后一个 96 时间步的预测。注意，预测现在是经过缩放的。
 - en: '[PRE13]'
+  id: totrans-106
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Finally, we store both the scaled and inverse transformed predictions in DataFrames
     to evaluate the performance and plot the predictions later on.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们将缩放后的预测和逆变换后的预测存储在 DataFrame 中，以便后续评估性能和绘制预测结果。
 - en: '[PRE14]'
+  id: totrans-108
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Predict with N-HiTS
+  id: totrans-109
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 N-HiTS 进行预测
 - en: To assess the performance of TSMixer, we perform the same training protocol
     with N-HiTS, as they also support multivariate forecasting.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了评估 TSMixer 的性能，我们使用与 N-HiTS 相同的训练协议，因为它们也支持多变量预测。
 - en: As a reminder, you can access the full code of this experiment on [GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/TSMixer.ipynb).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 提醒一下，你可以在 [GitHub](https://github.com/marcopeix/time-series-analysis/blob/master/TSMixer.ipynb)
+    上访问此实验的完整代码。
 - en: For this section, we use the library NeuralForecast. So the natural first step
     is to read the data and format it accordingly.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这一部分，我们使用 NeuralForecast 库。因此，自然的第一步是读取数据并按需格式化。
 - en: '[PRE15]'
+  id: totrans-113
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Then, we can initialize N-HiTS and fit on the data.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以初始化 N-HiTS 并在数据上进行拟合。
 - en: '[PRE16]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Then, we extract the predictions for the last 96 time steps only.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们仅提取过去 96 个时间步的预测。
 - en: '[PRE17]'
+  id: totrans-117
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: At this point, we have the predictions for each column over the last 96 time
     steps, as shown below.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，我们已经得到了每一列在过去 96 个时间步的预测，如下所示。
 - en: '![](../Images/993ea50dd61bab4b5aa76d2ec22b0747.png)'
+  id: totrans-119
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/993ea50dd61bab4b5aa76d2ec22b0747.png)'
 - en: Predictions of each series by N-HiTS over the last 96 time steps. Image by the
     author.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: N-HiTS 对过去 96 个时间步的每个序列的预测。图片由作者提供。
 - en: Now, we are ready to visualize and measure the performance of our models.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们准备好可视化和衡量我们模型的表现了。
 - en: Evaluation
+  id: totrans-122
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评估
 - en: First, let’s visualize the predictions.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们可视化预测结果。
 - en: For simplicity, we plot only the forecast for the first four series in the dataset.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了简便起见，我们只绘制了数据集中前四个序列的预测。
 - en: '[PRE18]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: '![](../Images/c3cba66a8a601f65922c0bea1bc9ab92.png)'
+  id: totrans-126
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c3cba66a8a601f65922c0bea1bc9ab92.png)'
 - en: Predictions of N-HiTS and TSMixer for the first four series in the dataset.
     We see that TSMixer had trouble generalizing for MULL and HULL, while N-HiTS seems
     to be following the actual curve fairly well. Image by the author.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: N-HiTS 和 TSMixer 对数据集中前四个序列的预测。我们看到 TSMixer 在 MULL 和 HULL 上难以泛化，而 N-HiTS 似乎很好地跟随了实际曲线。图片由作者提供。
 - en: From the figure above, we can see that TSMixer does a pretty good job at forecasting
     HUFL and MUFL, but it struggles with MULL and HULL. However, N-HiTS seems to be
     doing fairly good on all series.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上图中，我们可以看到 TSMixer 在预测 HUFL 和 MUFL 上表现得相当不错，但在 MULL 和 HULL 上表现不佳。然而，N-HiTS
+    似乎在所有序列上的表现都很不错。
 - en: Still, the best way to assess the performance is by measuring an error metric.
     Here, we compute the MAE and MSE.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，评估表现的最佳方式还是通过测量误差指标。在这里，我们计算 MAE 和 MSE。
 - en: '[PRE19]'
+  id: totrans-130
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: '![](../Images/64fc5b5d4d677632dd5a2459780d4404.png)'
+  id: totrans-131
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/64fc5b5d4d677632dd5a2459780d4404.png)'
 - en: MAE and MSE of N-HiTS and TSMixer for the task of multivariate forecasting on
     a horizon of 96 time steps. Image by the author.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: N-HiTS 和 TSMixer 在 96 个时间步长的多变量预测任务中的 MAE 和 MSE。图片由作者提供。
 - en: From the figure above, we can see that TSMixer outperforms N-HiTS on the task
     of multivariate forecasting on a horizon of 96 time steps, since it achieved the
     lowest MAE and MSE.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上图中，我们可以看到 TSMixer 在 96 个时间步长的多变量预测任务中优于 N-HiTS，因为它实现了最低的 MAE 和 MSE。
 - en: While this is not the most extensive experiment, it is interesting to see that
     kind of performance coming from a rather simple model architecture.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这不是最全面的实验，但看到这种性能来自相当简单的模型架构仍然很有趣。
 - en: Conclusion
+  id: totrans-135
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: TSMixer is an an all-MLP model specifically designed for multivariate time series
     forecasting.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: TSMixer 是一个专门为多变量时间序列预测设计的全 MLP 模型。
 - en: It extends the capacity of linear models by adding cross-variate feed-forward
     layers, enabling the model to achieve state-of-the-art performances on long horizon
     multivariate forecasting tasks.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 它通过添加交叉变量前馈层扩展了线性模型的能力，使模型在长时间跨度的多变量预测任务中达到最先进的表现。
 - en: While there is no out-of-the-box implementation yet, you now have the knowledge
     and skills to implement it yourself, as its simple architecture makes it easy
     for us to do so.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然目前还没有现成的实现，但你现在拥有了自己实现它的知识和技能，因为它简单的架构使得我们可以轻松做到这一点。
 - en: As always, each forecasting problem requires a unique approach and a specific
     model, so make sure to test TSMixer as well as other models.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 一如既往，每个预测问题都需要独特的方法和特定的模型，因此请确保测试 TSMixer 以及其他模型。
 - en: Thanks for reading! I hope that you enjoyed it and that you learned something
     new!
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！希望你喜欢，并且学到了一些新东西！
 - en: Looking to master time series forecasting? The check out my course [Applied
     Time Series Forecasting in Python](https://www.datasciencewithmarco.com/offers/zTAs2hi6/checkout?coupon_code=ATSFP10).
     This is the only course that uses Python to implement statistical, deep learning
     and state-of-the-art models in 16 guided hands-on projects.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 想要掌握时间序列预测吗？那就看看我的课程 [Applied Time Series Forecasting in Python](https://www.datasciencewithmarco.com/offers/zTAs2hi6/checkout?coupon_code=ATSFP10)。这是唯一一个使用
+    Python 实现统计、深度学习和最先进模型的 16 个引导性实践项目的课程。
 - en: Cheers 🍻
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 干杯 🍻
 - en: Support me
+  id: totrans-143
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 支持我
 - en: Enjoying my work? Show your support with [Buy me a coffee](http://buymeacoffee.com/dswm),
     a simple way for you to encourage me, and I get to enjoy a cup of coffee! If you
     feel like it, just click the button below 👇
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 喜欢我的工作吗？通过 [Buy me a coffee](http://buymeacoffee.com/dswm) 支持我，这是一种简单的方式来鼓励我，同时我可以享受一杯咖啡！如果你愿意，只需点击下面的按钮
+    👇
 - en: '![](../Images/d8286ff73e873a825293e2ae8e2a7da3.png)'
+  id: totrans-145
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d8286ff73e873a825293e2ae8e2a7da3.png)'
 - en: References
+  id: totrans-146
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: 'Si-An Chen, Chun-Liang Li, Nate Yoder, Sercan O. Arik, Tomas Pfister — [TSMixer:
     An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/abs/2303.06053)'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Si-An Chen, Chun-Liang Li, Nate Yoder, Sercan O. Arik, Tomas Pfister — [TSMixer:
+    An All-MLP Architecture for Time Series Forecasting](https://arxiv.org/abs/2303.06053)'
 - en: Original implementation of TSMixer by the researchers at Google— [GitHub](https://github.com/google-research/google-research/tree/master/tsmixer/tsmixer_basic)
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: Google 研究人员的 TSMixer 原始实现— [GitHub](https://github.com/google-research/google-research/tree/master/tsmixer/tsmixer_basic)
