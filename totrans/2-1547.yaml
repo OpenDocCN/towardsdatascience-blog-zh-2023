@@ -1,136 +1,191 @@
 - en: Multiple GPU training in PyTorch and Gradient Accumulation as an alternative
     to it
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: PyTorch 中的多 GPU 训练及其替代方案：梯度累积
 - en: 原文：[https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91](https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91](https://towardsdatascience.com/multiple-gpu-training-in-pytorch-and-gradient-accumulation-as-an-alternative-to-it-e578b3fc5b91)
 - en: Code and Theory
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 代码与理论
 - en: '[](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[![Alexey
     Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)
     [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[![Alexey
+    Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)
+    [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----e578b3fc5b91--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)
     ·7 min read·Jul 24, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e578b3fc5b91--------------------------------)
+    ·阅读时间 7 分钟·2023年7月24日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/ed6fca5026469bec09b620c9620bc331.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ed6fca5026469bec09b620c9620bc331.png)'
 - en: '[https://unsplash.com/photos/vBzJ0UFOA70](https://unsplash.com/photos/vBzJ0UFOA70)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://unsplash.com/photos/vBzJ0UFOA70](https://unsplash.com/photos/vBzJ0UFOA70)'
 - en: In this article we are going to first see the differences between Data Parallelism
     (DP) and Distributed Data Parallelism (DDP) algorithms, then we will explain what
     Gradient Accumulation (GA) is to finally show how DDP and GA are implemented in
     PyTorch and how they lead to the same result.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们首先将探讨数据并行（DP）和分布式数据并行（DDP）算法的区别，然后解释什么是梯度累积（GA），最后展示 DDP 和 GA 如何在 PyTorch
+    中实现，并且它们如何导致相同的结果。
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 引言
 - en: When training a deep neural network (DNN), one important hyperparameter is the
     batch size. Normally, the batch size should not be too big because the network
     would tend to overfit, but also not too small because it will result in slow convergence.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练深度神经网络（DNN）时，一个重要的超参数是批量大小。通常，批量大小不应过大，因为网络会倾向于过拟合，也不应过小，因为这会导致收敛速度缓慢。
 - en: 'When working with images of high resolution or other types of data that occupy
     a lot of memory, assuming that today most training of big DNN models are done
     on GPUs, fitting small batch size can be problematic depending on the memory of
     the available GPU. Because, as we said, small batch sizes result in slow convergence,
     there are three main methods we can use to increase the effective batch size:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 当处理高分辨率图像或其他占用大量内存的数据时，假设如今大多数大 DNN 模型的训练都是在 GPU 上进行的，根据可用 GPU 的内存，适配小批量大小可能会有问题。因为，如前所述，小批量大小会导致收敛缓慢，我们可以使用三种主要方法来增加有效批量大小：
 - en: Using multiple small GPUs running the model in parallel on mini-batches — DP
     or DDP algorithms
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用多个小型 GPU 并行运行模型于小批量 — DP 或 DDP 算法
 - en: Using a larger GPU (expensive)
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用更大的 GPU（昂贵）
 - en: Accumulate the gradient over multiple steps
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在多次步骤中累积梯度
 - en: Let’s now look at 1\. and 3\. in more details — if you are lucky to have a large
     GPU that you can fit all the data you need on it, you can read the DDP part and
     see how it’s implemented in PyTorch in the Full Code section skipping the rest.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们详细探讨 1\. 和 3\. — 如果你幸运地拥有一张可以容纳所有数据的大 GPU，你可以阅读 DDP 部分，了解它是如何在 PyTorch
+    中实现的，跳过其他部分。
 - en: 'Say we want an effective batch size of 30 but we can only fit 10 data points
     (mini-batch size) on each GPU. We have two choices: Data Parallelism or Distributed
     Data Parallelism:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们想要有效的批量大小为 30，但每个 GPU 上只能容纳 10 个数据点（小批量大小）。我们有两个选择：数据并行或分布式数据并行：
 - en: Data Parallelism (DP)
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据并行（DP）
 - en: 'First, we define the master GPU. Then, we perform the following steps:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们定义主 GPU。然后，执行以下步骤：
 - en: Move 10 data points (mini-batch) and the replica of the model to other 2 GPUs
     from master GPU
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Do a forward pass on each GPU and pass to master GPU the outputs
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Compute the total loss on Master GPU and then send back the loss to each GPU
     to compute the gradients for the parameters
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Send the gradients back (these are the average of the gradients for all training
     examples) to Master GPU, sum them up to get the average gradient for the entire
     batch of 30
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Update the parameters on the Master GPU and send these updates to the other
     2 GPUs for the next iteration
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'There are some problems & inefficiencies with this process:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: Data are passed from the Master GPU before being split between other GPUs. Also,
     Master GPU is utilized more than other GPUs as computation of total loss and parameters
     updates happen on Master GPU
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: We need to synchronize the models on other GPUs at each iteration which can
     slow down the training
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Distributed Data Parallel (DDP)**'
+  id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Distributed Data Parallel was introduced to improve on inefficiencies of Data
     Parallel algorithm. We still have the same settings as before — 30 data points
     for each batch with 3 GPUs. The differences are the following:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: It does not have the Master GPU
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -139,22 +194,28 @@
     does this job for us. Under the hood it uses the local rank (GPU id) to distribute
     the data across GPUs — given 30 data points, first GPU will use points [0, 3,
     6, … , 27], 2nd GPU [1, 4, 7, .., 28] and 3rd GPU [2, 5, 8, .. , 29]
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 3\. Forward pass, loss computation and backward passes are executed on each
     GPU independently and the gradients are asynchronously reduced calculating the
     mean and then the update follows across all GPUs
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: Because of the advantages of DDP over DP, DDP usage is preferred nowadays, thus
     we will only show the DDP implementation.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: Gradient Accumulation
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -164,9 +225,11 @@
     batch size. From the above example, we could accumulate the gradients of 10 data
     points for 3 iterations to achieve the same results as what we described in DDP
     training with an effective batch size of 30.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: '**DDP process** Code'
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -174,32 +237,45 @@
     to 1 GPU code. The full code can be found some sections below. First we initialize
     the process group that allows different processes to communicate between them.
     With *int(os.environ[“LOCAL_RANK”])* we retrieve the GPU used in a given process.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Then, we need to wrap the model in *DistributedDataParallel* that enables multi-gpu
     training.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The final part is to define *DistributedSampler* that I mentioned in DDP section.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The rest of the training stays the same — I will include the full code at the
     end of this article.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 其余的训练保持不变——我将在文章的末尾包括完整代码。
 - en: '**Gradient Accumulation Code**'
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**梯度累积代码**'
 - en: 'When backpropagation happens, after we call *loss.backward(),* gradients are
     stored in their respective Tensors. The actual update happens when *optimizer.step()*
     is called and then the gradients stored in the Tensors are set to zero with *optimizer.zero_grad()*
@@ -209,46 +285,71 @@
     iterations, and then **we average them to get the average gradient across accumulated
     gradient iterations** (*loss = loss/ACC_STEPS*). After that we call *optimizer.step()*
     and zero the gradients to start the next accumulation of gradients. In code:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 当发生反向传播时，在调用*loss.backward()*后，梯度会存储在各自的Tensor中。实际更新发生在调用*optimizer.step()*时，然后存储在Tensor中的梯度会被*optimizer.zero_grad()*设置为零，以便进行下一次反向传播和参数更新。因此，为了累积梯度，我们调用*loss.backward()*进行所需的梯度累积次数，而不将梯度设置为零，以便它们在多个迭代中累积，然后**我们对累积梯度迭代的平均梯度进行平均**（*loss
+    = loss/ACC_STEPS*）。之后，我们调用*optimizer.step()*并将梯度置零，以开始下一次梯度累积。在代码中：
 - en: '[PRE4]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Full code
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 完整代码
 - en: '[PRE5]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Now, if we run these two scripts:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，如果我们运行这两个脚本：
 - en: '*python3 ddp.py — epochs 2 — batch_size 4 — data_size 8 — verbose — acc_steps
     2*'
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*python3 ddp.py — epochs 2 — batch_size 4 — data_size 8 — verbose — acc_steps
+    2*'
 - en: '*torchrun — standalone — nproc_per_node=2 ddp.py — epochs 2 — distributed —
     batch_size 4 — data_size 8 — verbose*'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*torchrun — standalone — nproc_per_node=2 ddp.py — epochs 2 — distributed —
+    batch_size 4 — data_size 8 — verbose*'
 - en: 'we will see that we obtain the exact same final model parameters:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们会看到获得完全相同的最终模型参数：
 - en: '[PRE6]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Conclusions
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article we have briefly introduced and gave an intuition behind DP,
     DDP algorithms and Gradient Accumulation and have shown how to increase the size
     effective batch size even without multiple GPUs. One important thing to notice
     is that even if we obtain the same final results, training with multiple GPUs
     is much faster than using gradient accumulation, thus if the training speed is
     important then multiple GPUs is the only way to speed up the training.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们简要介绍了DP、DDP算法以及梯度累积的基本概念，并展示了如何在没有多个GPU的情况下增加有效批量大小。需要注意的是，即使我们获得了相同的最终结果，使用多个GPU的训练速度也远快于使用梯度累积，因此如果训练速度很重要，那么多个GPU是加速训练的唯一途径。
