@@ -1,12 +1,15 @@
 - en: Lucene Inside Out — Dealing With Integer Encoding and Compression
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d](https://towardsdatascience.com/lucene-inside-out-dealing-with-integer-encoding-and-compression-fe28f9dd265d)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Delve into PackedInts, VInt, FixedBitSet, and **RoaringDocIdSet (**Roaring Bitmaps)
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,55 +17,68 @@
     Chang](../Images/f59e8d3b97ea7db59fc8cb33f05e835b.png)](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
     [Peggy Chang](https://peggy1502.medium.com/?source=post_page-----fe28f9dd265d--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fe28f9dd265d--------------------------------)
     ·13 min read·Jun 28, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/3e285f99edf68c33f97c132920235b8a.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
 - en: Image by [Gerd Altmann](https://pixabay.com/users/geralt-9301/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
     from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=1536589)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Earlier on, we learned about vector compression using [product quantization](https://medium.com/towards-data-science/product-quantization-for-similarity-search-2f1f67c5fddd)
     for similarity search.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: '[](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
     [## Product Quantization for Similarity Search'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: How to compress and fit a humongous set of vectors in memory for similarity
     search with asymmetric distance computation…
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/product-quantization-for-similarity-search-2f1f67c5fddd?source=post_page-----fe28f9dd265d--------------------------------)
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: In this article, we will explore and gain insight into how integers are encoded
     and compressed in Lucene, the world where the inverted index takes center stage.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: Lucene — Brief Introduction
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '[Lucene](https://lucene.apache.org/) is an open-source search engine library
     written in Java. Created by Doug Cutting in 1999, it is well-known for full-text
     search and indexing.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
 - en: This open-source software project under [The Apache Software Foundation](https://www.apache.org/)
     is still in active development after more than two decades. Over the years, it
     has evolved and grown to become a powerful, fully featured high-performance search
     engine library.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: Undeniably, Lucene's success is highly attributed to its strong community and
@@ -70,621 +86,918 @@
     brought Lucene to where it is today. Many popular enterprise search platforms
     and solutions such as [Solr](https://solr.apache.org/) and [Elasticsearch](https://www.elastic.co/elasticsearch/)
     are built on top of Lucene.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 毫无疑问，Lucene 的成功在很大程度上归功于其强大的社区以及贡献者们的卓越工作。他们的参与和合作使得 Lucene 达到了今天的水平。许多流行的企业搜索平台和解决方案，如
+    [Solr](https://solr.apache.org/) 和 [Elasticsearch](https://www.elastic.co/elasticsearch/)，都是建立在
+    Lucene 之上的。
 - en: “For an open source project, 20 years is a long time. Without a doubt, Lucene’s
     longevity is a testament to the strength and diversity of its community” — [Celebrating
     20 years of Apache Lucene](https://www.elastic.co/celebrating-lucene)
+  id: totrans-17
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “对于一个开源项目来说，20 年是很长的时间。毫无疑问，Lucene 的长期存在证明了其社区的力量和多样性” — [庆祝 Apache Lucene 20
+    年](https://www.elastic.co/celebrating-lucene)
 - en: Inverted Index
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 反向索引
 - en: The inverted index lies in the heart of Lucene. The inverted index comprises
     two parts — on the left, we have the terms dictionary, and on the right, we have
     the postings for each term.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 反向索引是 Lucene 的核心。反向索引包括两部分 —— 左边是术语字典，右边是每个术语的 postings。
 - en: '![](../Images/544e0b0228ea263bff10e7b80847f9f0.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/544e0b0228ea263bff10e7b80847f9f0.png)'
 - en: 'Figure 1: Terms dictionary and postings lists form the inverted index in Lucene.
     All images are by the author unless otherwise specified.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 1: 术语字典和 postings 列表形成 Lucene 中的反向索引。所有图片均由作者提供，除非另有说明。'
 - en: Postings are information about the occurrence of a term in a document. The postings
     list contains Doc IDs of documents in which the term occurs.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: Postings 是关于术语在文档中出现的信息。Postings 列表包含术语出现的文档的 Doc ID。
 - en: If defined, it may also include information such as the frequency of the term
     within the document, and perhaps the positions, character offsets, and payloads.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果定义了，它也可能包括诸如术语在文档中的频率，甚至位置、字符偏移量和有效负载等信息。
 - en: 'Yes, all these are integers, and there are indeed a huge amount of integers
     to handle in Lucene. As quoted by Adrien Grand [1], a Lucene committer at The
     Apache Software Foundation:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的，这些都是整数，确实有大量的整数需要在 Lucene 中处理。正如 Apache 软件基金会的 Lucene 贡献者 Adrien Grand [1]
+    所引述的：
 - en: “One of the most important building blocks of a search engine is the ability
     to efficiently compress and quickly decode sorted lists of integers”
+  id: totrans-25
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “搜索引擎最重要的构建块之一是能够高效地压缩和快速解码排序的整数列表”
 - en: In the following sections, we will look into techniques used by Lucene to encode
     and compress integers, particularly integers from the postings list — Doc IDs
     and term frequencies.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的部分中，我们将深入探讨 Lucene 用于编码和压缩整数的技术，特别是来自 postings 列表的整数 —— Doc ID 和术语频率。
 - en: Delta Encoding
+  id: totrans-27
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Delta 编码
 - en: Let’s start by looking at how Lucene encodes and stores postings data on disk.
     The list of documents that contain each term is saved in the .doc file. Skip data
     is also saved in the same file, but it will not be discussed in this article.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们首先看看 Lucene 如何在磁盘上编码和存储 postings 数据。包含每个术语的文档列表保存在 .doc 文件中。跳过数据也保存在同一个文件中，但在本文中不作讨论。
 - en: First and foremost, as seen in *Figure 1*, the Doc IDs that each term is pointing
     to are basically a sorted list of integers. For each term, we begin by transforming
     the list of sorted Doc IDs into Doc Deltas.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，正如 *图 1* 所示，每个术语所指向的 Doc ID 基本上是一个排序好的整数列表。对于每个术语，我们首先将排序好的 Doc ID 列表转换为
+    Doc Deltas。
 - en: Through [**delta encoding**](https://en.wikipedia.org/wiki/Delta_encoding),
     Doc Deltas are obtained by getting the difference between each Doc ID and the
     previous one, except for the first Doc ID.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过 [**delta 编码**](https://en.wikipedia.org/wiki/Delta_encoding)，Doc Deltas 是通过计算每个
+    Doc ID 和前一个 Doc ID 之间的差异得到的，除了第一个 Doc ID。
 - en: Next, Doc Deltas are split into fixed blocks of 128 integers. These are referred
     to as *PackedDocDeltaBlock.* Each of these blocks is then encoded with **PackedInts**,
     a Lucene implementation of bit packing. The remaining Doc Deltas are encoded with
     **VInt**.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，将 Doc Deltas 切分为固定的 128 个整数块。这些块被称为 *PackedDocDeltaBlock*。每个块随后使用 **PackedInts**
+    进行编码，这是一种 Lucene 实现的位打包方式。剩余的 Doc Deltas 则用 **VInt** 编码。
 - en: The following diagram is a simplified illustration where the block size of a
     PackedDocDeltaBlock is 4 instead of the actual 128.
+  id: totrans-32
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 以下图是一个简化的示意图，其中 PackedDocDeltaBlock 的块大小为 4，而不是实际的 128。
 - en: '![](../Images/8855a0d77d2bd48b3bc61b331bfec123.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8855a0d77d2bd48b3bc61b331bfec123.png)'
 - en: 'Figure 2: The encoding process for Doc IDs'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 2: Doc ID 的编码过程'
 - en: Have you noticed that most of the integers have become smaller after going through
     delta-encoding?
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否注意到，大多数整数在经过 delta 编码后变得更小了？
 - en: Smaller integers require fewer bits to represent them, and this is crucial for
     the next step of encoding with **PackedInts** and **VInt**.
+  id: totrans-36
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 较小的整数需要更少的位来表示，这对于使用 **PackedInts** 和 **VInt** 进行编码的下一步至关重要。
 - en: PackedInts
+  id: totrans-37
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: PackedInts
 - en: '[PRE0]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In general, bit packing combines multiple values at the bit level into one or
     more bytes (or one or more long integers*)*. For example, four 2-bit values can
     be packed into one byte, and eight 16-bit values can be packed into two long integers.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，位打包将多个值在位级别组合成一个或多个字节（或一个或多个长整型*）。例如，四个 2 位的值可以打包成一个字节，八个 16 位的值可以打包成两个长整型。
 - en: With bit packing, the amount of space required to store integers can be reduced
     significantly.
+  id: totrans-40
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 通过位打包，存储整数所需的空间可以显著减少。
 - en: This is possible because a typical 32-bit `*int*` (the most commonly used integer
     type) almost always contains leading zeros at the bit level, and bit packing discards
     them.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是可能的，因为典型的 32 位 `*int*`（最常用的整数类型）几乎总是包含位级别的前导零，位打包会丢弃这些零。
 - en: '![](../Images/c2777515ba2d86ea51b905136824143d.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c2777515ba2d86ea51b905136824143d.png)'
 - en: 'Figure 3: An example of packing 4 integers into 1 byte, with each value occupying
     2 bits. Storage space is reduced from 16 bytes to 1 byte.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 3: 将 4 个整数打包到 1 个字节中的示例，每个值占用 2 位。存储空间从 16 字节减少到 1 字节。'
 - en: In [**PackedInts**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/packed/PackedInts.html),
     data is stored in a way that each value consumes a fixed number of bits between
     1 and 64, called `bitsPerValue`.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [**PackedInts**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/packed/PackedInts.html)
+    中，数据以每个值消耗固定数量位数的方式存储，这个位数在 1 到 64 之间，被称为`bitsPerValue`。
 - en: Following on from the encoding process for Doc IDs, if a data field is defined
     to include term frequencies (i.e. the field’s index option is set to `IndexOptions.DOCS_AND_FREQS`),
     then every *PackedDocDeltaBlock* is immediately accompanied by a *PackedFreqBlock*.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Doc IDs 的编码过程之后，如果一个数据字段定义为包含术语频率（即该字段的索引选项设置为 `IndexOptions.DOCS_AND_FREQS`），那么每个
+    *PackedDocDeltaBlock* 都会紧随其后一个 *PackedFreqBlock*。
 - en: '![](../Images/8272872c17748dea0e2e4bb4bdfd5b98.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8272872c17748dea0e2e4bb4bdfd5b98.png)'
 - en: 'Figure 4: *PackedDocDeltaBlock* and *PackedFreqBlock*'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 4: *PackedDocDeltaBlock* 和 *PackedFreqBlock*'
 - en: As the name suggests, *PackedFreqBlock* contains the corresponding frequency
     of terms occurring in documents in the preceding *PackedDocDeltaBlock*. Unlike
     Doc IDs, term frequencies do not go through delta encoding.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如其名，*PackedFreqBlock* 包含在前一个 *PackedDocDeltaBlock* 中出现的术语的对应频率。与文档 ID 不同，术语频率没有经过
+    delta 编码。
 - en: Each *PackedDocDeltaBlock* and *PackedFreqBlock* is independently encoded with
     **PackedInts**. `bitsPerValue` is derived from the number of bits required to
     represent the largest integer in the block. Despite that, the number of bits per
     value consumed could end up more than expected. Why and how does this happen?
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个 *PackedDocDeltaBlock* 和 *PackedFreqBlock* 都使用 **PackedInts** 独立编码。`bitsPerValue`
+    是根据块中表示最大整数所需的位数得出的。尽管如此，每个值所消耗的位数可能会比预期的更多。这是为什么，如何发生的？
 - en: Well, it turns out that Lucene may adjust the `bitsPerValue` to obtain compression
     with the best read-write performance based on a parameter called `acceptableOverheadRatio`.
     This is the amount of overhead that one is willing to take to trade memory efficiency
     for fast random reads.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，Lucene 可能会调整 `bitsPerValue` 以基于一个称为 `acceptableOverheadRatio` 的参数来获得最佳的读写性能。这个参数是为了在内存效率与快速随机读取之间进行权衡所愿意接受的开销。
 - en: '![](../Images/e7b1bc788312f1df2a0cf0b24ce52565.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e7b1bc788312f1df2a0cf0b24ce52565.png)'
 - en: 'Figure 5: The compression modes in **PackedInts**'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 5: **PackedInts** 中的压缩模式'
 - en: In Lucene, the [adjustments](https://docs.google.com/spreadsheets/d/1QobWCwUWU51Zv9fe5VQZ-hcrC-Q49xmS/edit?usp=sharing&ouid=106781124935005693725&rtpof=true&sd=true)
     for `bitsPerValue` are done in a way that the resulting overhead will not exceed
     the `acceptableOverheadRatio` when `bitsPerValue` is increased to 8, 16, 32, or
     64\. But why 8, 16, 32, 64, and not other numbers?
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Lucene 中，`bitsPerValue` 的 [调整](https://docs.google.com/spreadsheets/d/1QobWCwUWU51Zv9fe5VQZ-hcrC-Q49xmS/edit?usp=sharing&ouid=106781124935005693725&rtpof=true&sd=true)
+    是以这样一种方式进行的：当 `bitsPerValue` 增加到 8、16、32 或 64 时，结果开销不会超过 `acceptableOverheadRatio`。但为什么是
+    8、16、32、64，而不是其他数字？
 - en: Most of the time, the best read-write performance is realized when the number
     of bits representing a value is byte-aligned or in multiples of eight (i.e. 8,
     16, 32, 64). Reading and writing are simplified since there is no co-occupancy
     of values within a byte.
+  id: totrans-54
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 大多数情况下，当表示一个值的位数是字节对齐或是 8 的倍数（即 8、16、32、64）时，读写性能最佳。因为没有值在一个字节内共同存在，读写操作得以简化。
 - en: ''
+  id: totrans-55
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: In other words, the space of one byte, two bytes, four bytes, or eight bytes
     is dedicated entirely to only one value.
+  id: totrans-56
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 换句话说，1 字节、2 字节、4 字节或 8 字节的空间完全用于表示一个值。
 - en: In the worst case pertaining to memory efficiency, `bitsPerValue` of 1 is adjusted
     to 8\. For every legitimate bit that is present, 7 other unused bits are consumed.
     This produced a memory overhead of 700%. Effectively, 8 bits are consumed per
     value even when only 1 bit is of use.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在内存效率最差的情况下，`bitsPerValue` 从 1 调整到 8。对于每一个存在的有效位，消耗 7 个其他未使用的位。这导致了 700% 的内存开销。实际上，即使只有
+    1 位在使用，每个值也会消耗 8 位。
 - en: An `acceptableOverheadRatio` of 7 tends to have the fastest random read access.
     This is the result when `bitsPerValue` from 1 to 7 is adjusted to 8, `bitsPerValue`
     from 9 to 15 is adjusted to 16, and so on. The implementation has a varying degree
     of memory overhead, the highest of which is 700%.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '`acceptableOverheadRatio` 为 7 时，随机读取访问速度往往最快。这是当`bitsPerValue`从 1 到 7 调整为 8，`bitsPerValue`从
+    9 到 15 调整为 16，以此类推时的结果。实现的内存开销有不同程度，最高达到 700%。'
 - en: '![](../Images/c2b91d603cfd1e6d181f95198bd302b4.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c2b91d603cfd1e6d181f95198bd302b4.png)'
 - en: 'Figure 6: Memory overheads when bits per value are adjusted to 8'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 6：当每个值的位数调整为 8 时的内存开销
 - en: On the other hand, when `acceptableOverheadRatio` is 0, the `bitsPerValue` is
     kept as is without adjustment. Data is tightly packed to achieve the best memory
     efficiency, but random reads may be slow. There is a higher chance that more than
     one value occupies the space of a byte. Because of this, the bits representing
     a value could spill over to the next byte.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，当`acceptableOverheadRatio`为 0 时，`bitsPerValue`保持不变，不进行调整。数据被紧密打包以实现最佳内存效率，但随机读取可能较慢。可能会有多个值占据一个字节的空间。因此，表示一个值的位可能会溢出到下一个字节。
 - en: '![](../Images/d3a86207a2056509ac19233b4e460d1e.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d3a86207a2056509ac19233b4e460d1e.png)'
 - en: 'Figure 7: Example of tightly packed data with 6 bits per value. The number
     of bytes is reduced from 4 to 3.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7：具有每值 6 位的紧凑数据示例。字节数从 4 减少到 3。
 - en: With all that said, the default compression mode that Lucene uses for **PackedInts**
     has an `acceptableOverheadRatio` of 0.25\. This setting ensures that any memory
     overhead induced will never exceed 25%.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 综上所述，Lucene 默认使用的**PackedInts**压缩模式的`acceptableOverheadRatio`为 0.25。此设置确保任何产生的内存开销永远不会超过
+    25%。
 - en: VInt
+  id: totrans-65
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: VInt
 - en: '[**VInt**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/store/DataOutput.html#writeVInt(int))
     is a type of base-128 compression that generates [variable-length integers](https://en.wikipedia.org/wiki/Variable-length_quantity).
     Each integer is individually encoded as 1 to 5 bytes.'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '[**VInt**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/store/DataOutput.html#writeVInt(int))
+    是一种基础 128 压缩类型，生成[可变长度整数](https://en.wikipedia.org/wiki/Variable-length_quantity)。每个整数单独编码为
+    1 到 5 字节。'
 - en: '![](../Images/86c8f20d6eee3505d02b442b4315dfe0.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/86c8f20d6eee3505d02b442b4315dfe0.png)'
 - en: 'Figure 8: An example of converting 17000 to **VInt**'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8：将 17000 转换为**VInt**的示例
 - en: To generate **VInt**, the bits are split into chunks of 7, starting from the
     less significant bits on the right.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成**VInt**时，位被分成 7 位一组，从右侧的低位开始。
 - en: For each chunk of 7 bits going from right to left, another bit is added to form
     a byte. This bit acts as a continuation flag and constitutes the most significant
     bit of the byte. The value of this bit is `1` if there is more byte to follow,
     else it is `0`.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于每个从右到左的 7 位块，另一个位被添加以形成一个字节。这个位作为续接标志，构成字节的最高有效位。如果后面还有更多字节，这个位的值为`1`，否则为`0`。
 - en: With this representation, 1 byte is sufficient for small integers ranging from
     0 to 127\. Most integers would require 3 bytes or less, as 3 bytes in **VInt**
     is able to represent values between 16,384 and 2,097,151.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用这种表示方式，1 字节足以表示从 0 到 127 的小整数。大多数整数需要 3 字节或更少，因为 3 字节的**VInt**能够表示 16,384
+    到 2,097,151 之间的值。
 - en: Earlier, referring to *Figure 2*, we mentioned that the remaining Doc Deltas
     are encoded with **VInt**. What happens when term frequencies are indexed?
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前，参见*图 2*，我们提到剩余的文档增量是用**VInt**编码的。当术语频率被索引时会发生什么呢？
 - en: In that case, Doc Delta now defines both the document number and the frequency.
     The bits that represent Doc Delta would be shifted one step to the left, such
     that the least significant bit is now used to mark if the frequency is one or
     not. If the frequency is one, the least significant bit is `1`, else it is `0`.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，文档增量现在定义了文档编号和频率。表示文档增量的位将向左移动一步，这样最不重要的位现在用于标记频率是否为1。如果频率为1，则最不重要的位为`1`，否则为`0`。
 - en: As documented in the [Lucene90PostingsFormat](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/codecs/lucene90/Lucene90PostingsFormat.html),
     when Doc Delta is odd, the frequency is one. When Doc Delta is even, the frequency
     is read as another **VInt**.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 如在[Lucene90PostingsFormat](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/codecs/lucene90/Lucene90PostingsFormat.html)中所记录，当文档增量为奇数时，频率为1。当文档增量为偶数时，频率被读取为另一个**VInt**。
 - en: The illustration below shows how Doc Deltas `7, 10` (for which a term occurs
     once and three times respectively) are encoded with the sequence `15, 20, 3` in
     **VInt** when term frequencies are indexed.
+  id: totrans-75
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 下图显示了如何在**VInt**中对文档增量`7, 10`（其中词语分别出现一次和三次）进行编码，序列为`15, 20, 3`，当词频被索引时。
 - en: '![](../Images/53bce2fc2af732bdf71904546f774a4d.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53bce2fc2af732bdf71904546f774a4d.png)'
 - en: 'Figure 9: **VInt** encoding with and without term frequencies'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 9: **VInt** 编码与不编码词频的对比'
 - en: FixedBitSet
+  id: totrans-78
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: FixedBitSet
 - en: In Lucene, [**FixedBitSet**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/FixedBitSet.html)
     is a bitmap implementation of fixed length to store Doc IDs in memory.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Lucene中，[**FixedBitSet**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/FixedBitSet.html)是一个固定长度的位图实现，用于在内存中存储文档ID。
 - en: A bitmap is a collection of bits that map to a list of integers. A bit that
     is set to `1` represents an integer whose value is the index of the bit.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 位图是一组映射到整数列表的位。一个被设置为`1`的位表示一个整数，其值是该位的索引。
 - en: '**FixedBitSet** is internally implemented as a `*long[]*` integer array in
     Lucene, and as such each integer holds 64 bits. The length of this array (or the
     number of integers in this array) is determined based on the number of bits that
     one needs for the bitmap.'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '**FixedBitSet**在Lucene中内部实现为`*long[]*`整数数组，因此每个整数占64个位。该数组的长度（或数组中的整数数量）基于位图所需的位数来确定。'
 - en: For example, to encode a list of Doc IDs whose largest value is 190, a bitmap
     comprising at least 191 bits is required to represent bitmap indices from 0 to
     190\. As a result, an array of length 3 will be allocated, and this array is capable
     of holding `3*64=192` bits.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，要编码一个最大值为190的文档ID列表，需要至少191个位来表示从0到190的位图索引。因此，将分配一个长度为3的数组，该数组能够容纳`3*64=192`位。
 - en: '![](../Images/e434a6faf6b00b5402d39af6f27a27af.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e434a6faf6b00b5402d39af6f27a27af.png)'
 - en: 'Figure 10: An example of **FixedBitSet** — The `bitset[]` array contains 3
     long integers of 64 bits each'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 10: **FixedBitSet** 示例 — `bitset[]` 数组包含3个64位的长整数'
 - en: In the above example, **FixedBitSet** uses 24 bytes to encode a list of 6 integers
     whose largest value is 190\. This is an example of sparse data, whereby only 6
     out of 192 bits are set to `1` in the bitset.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述示例中，**FixedBitSet**使用24个字节来编码一个最大值为190的6个整数的列表。这是稀疏数据的一个例子，其中在位集中的192个位中仅有6个位被设置为`1`。
 - en: Here, there is no saving in memory and the same number of bytes is used if these
     integers were to be stored using `*int*` type.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，如果这些整数使用`*int*`类型存储，则内存没有节省，所用的字节数相同。
 - en: It shows that **FixedBitSet**, or bitmap in general, is less efficient when
     the data it is representing is sparse.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这表明，当其表示的数据是稀疏时，**FixedBitSet**或一般位图的效率较低。
 - en: RoaringDocIdSet (Roaring Bitmaps)
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: RoaringDocIdSet（Roaring 位图）
 - en: '![](../Images/66f4ea57bd23080f42d2cda2878ee589.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/66f4ea57bd23080f42d2cda2878ee589.png)'
 - en: Photo by [Glen Carrie](https://unsplash.com/fr/@glencarrie?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Glen Carrie](https://unsplash.com/fr/@glencarrie?utm_source=medium&utm_medium=referral)拍摄，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: In Lucene, queries are cached with LRU, a caching scheme that evicts the least
     recently used item to make room for new ones when the cache is full. Caching allows
     fast access to data that is frequently queried.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Lucene中，查询通过LRU缓存，LRU是一种缓存方案，当缓存满时会驱逐最少使用的项以为新的项腾出空间。缓存允许快速访问经常查询的数据。
 - en: Not all queries are cached in Lucene though. But for those that are, the cached
     content contains the Doc ID result set.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 并非所有查询在Lucene中都被缓存。但是，对于那些被缓存的内容，缓存的内容包含文档ID结果集。
 - en: The [LRU query cache](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/search/LRUQueryCache.html)
     in Lucene uses **RoaringDocIdSet** for sets that have a density that is less than
     1%. Otherwise, **FixedBitSet** is used.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: Lucene 中的[LRU 查询缓存](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/search/LRUQueryCache.html)对密度小于
+    1% 的集合使用**RoaringDocIdSet**。否则，使用**FixedBitSet**。
 - en: '[**RoaringDocIdSet**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/RoaringDocIdSet.html)
     is an implementation inspired by the ideas and design structure from **Roaring
     Bitmaps.** So what are **Roaring Bitmaps**? As described by [*roaringbitmap.org*](http://roaringbitmap.org/about/),'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '[**RoaringDocIdSet**](https://lucene.apache.org/core/9_6_0/core/org/apache/lucene/util/RoaringDocIdSet.html)
+    是受**Roaring Bitmaps**的思想和设计结构启发的实现。那么**Roaring Bitmaps**是什么呢？正如 [*roaringbitmap.org*](http://roaringbitmap.org/about/)所描述的那样，'
 - en: Roaring bitmaps are compressed bitmaps which tend to outperform conventional
     compressed bitmaps such as WAH, EWAH or Concise. In some instances, they can be
     hundreds of times faster and they often offer significantly better compression.
+  id: totrans-95
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Roaring 位图是压缩位图，其性能通常优于传统的压缩位图，如 WAH、EWAH 或 Concise。在某些情况下，它们的速度可以快几百倍，而且通常提供显著更好的压缩效果。
 - en: '**Roaring Bitmaps** works by partitioning data and storing them into different
     containers. Sparse and dense data containers in **Roaring Bitmaps** are stored
     differently based on the container’s cardinality. In Lucene’s literature, these
     containers are known as blocks.'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Roaring Bitmaps**通过将数据分区并存储到不同的容器中来工作。**Roaring Bitmaps**中的稀疏和密集数据容器根据容器的基数以不同的方式存储。在
+    Lucene 的文献中，这些容器被称为块。'
 - en: In **RoaringDocIdSet,** the block number is identified by the 16 most significant
     bits. The remaining 16 least significant bits are the value that would be stored
     in the block.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 在**RoaringDocIdSet**中，块号由 16 个最重要的位标识。剩余的 16 个最低有效位是将存储在块中的值。
 - en: '![](../Images/19fe15269ccb81531662b81c6b3199f8.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/19fe15269ccb81531662b81c6b3199f8.png)'
 - en: 'Figure 11: Examples of Doc IDs in binary format'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11：文档 ID 的二进制格式示例
 - en: From the above example, this would result in the first four Doc IDs being stored
     in *Block 0\.* The next two Doc IDs would be stored in *Block 1*, and the last
     three Doc IDs would be stored in *Block 4*.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上述示例可以看出，前四个文档 ID 会被存储在*Block 0*中。接下来的两个文档 ID 将存储在*Block 1*中，而最后三个文档 ID 则存储在*Block
+    4*中。
 - en: '![](../Images/f89d4a2460849fc706f8134135baed02.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f89d4a2460849fc706f8134135baed02.png)'
 - en: 'Figure 12: The data partitioned into blocks in **RoaringDocIdSet**'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 12：**RoaringDocIdSet**中数据的块分区
 - en: This way, **RoaringDocIdSet** can accommodate up to `2¹⁶ = 65536` blocks, and
     each block can store a maximum of 65536 records.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，**RoaringDocIdSet** 可以容纳最多`2¹⁶ = 65536`个块，每个块可以存储最多 65536 条记录。
 - en: But how exactly are data in these blocks stored?
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么这些块中的数据究竟是如何存储的呢？
 - en: With 16 bits (or 2 bytes) per record, a `*short[]*` integer array takes up 128
     kB for 65536 records. The space required by the array grows linearly with the
     number of records.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 每条记录 16 位（或 2 字节），一个`*short[]*`整型数组占用 128 kB 存储 65536 条记录。数组所需的空间随着记录数量线性增长。
 - en: Conversely, a bitmap that can hold 65536 bits takes up only 8 kB. Compared to
     128 kB, that is a huge difference, a 16 times reduction in space. As a result,
     one would be inclined to think that using a bitmap is more efficient.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，一个可以容纳 65536 位的位图仅占用 8 kB。与 128 kB 相比，这是一种巨大的差异，空间减少了 16 倍。因此，人们倾向于认为使用位图更为高效。
 - en: '![](../Images/bf1919f9d8b800ec6cef04ea8a0f59c4.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bf1919f9d8b800ec6cef04ea8a0f59c4.png)'
 - en: 'Figure 13: Using `short[]` integer array versus bitmap'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 13：使用`short[]`整型数组与位图
 - en: But wait, let’s do some analysis and look carefully at the graph again. It can
     be observed that when the total count of records is under 4096, storing them with
     a `*short[]*` integer array actually consumes less than 8 kB of space.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 但稍等，我们来做些分析，仔细查看图表。可以观察到，当记录总数低于 4096 时，使用`*short[]*`整型数组实际上占用的空间不到 8 kB。
 - en: And that is what led to how the storage method is determined for each block.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是决定每个块存储方法的原因。
 - en: Using a hybrid data structure, a sparse block containing less than 4096 records
     is stored using a `*short[]*` integer array, while a dense block with 4096 or
     more records is stored using a bitmap.
+  id: totrans-111
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 使用混合数据结构，包含少于 4096 条记录的稀疏块使用`*short[]*`整型数组存储，而包含 4096 条或更多记录的密集块则使用位图存储。
 - en: ''
+  id: totrans-112
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Lucene even improves this further by storing the inverse of the set using a
     `*short[]*` integer array for superdense blocks.
+  id: totrans-113
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Lucene 进一步改进了这一点，通过使用`*short[]*`整型数组存储超密集块的集合的反向数据。
 - en: What this means is when the number of records is more than 61440, the inverse
     of the set, which has less than 4096 values, is stored instead. How brilliant
     is that!
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着当记录数超过61440时，存储的是具有不到4096个值的集合的逆。这是多么聪明的做法！
 - en: '![](../Images/42073f4aa2cf37f8d8f4a0d8b8a0211a.png)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/42073f4aa2cf37f8d8f4a0d8b8a0211a.png)'
 - en: 'Figure 14: For superdense blocks, Lucene stores the inverse of the set using
     a `*short[]*` integer array.'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14：对于超密集块，Lucene使用`*short[]*`整数数组存储集合的逆。
 - en: It is interesting to see how **RoaringDocIdSet** performed when benchmarked
     against **FixedBitSet** in this [patch](https://issues.apache.org/jira/browse/LUCENE-7339).
     From the [graph](http://people.apache.org/~jpountz/doc_id_sets6.html), it can
     be observed that when the density of the Doc ID set is less than 1%,
+  id: totrans-117
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 有趣的是，**RoaringDocIdSet**在与**FixedBitSet**进行基准测试时的表现。根据这个[补丁](https://issues.apache.org/jira/browse/LUCENE-7339)，从[图表](http://people.apache.org/~jpountz/doc_id_sets6.html)可以观察到，当Doc
+    ID集的密度低于1%时，
 - en: ''
+  id: totrans-118
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '- the memory footprint of **RoaringDocIdSet** can go down to more than 128
     times smaller than **FixedBitSet**.'
+  id: totrans-119
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '- **RoaringDocIdSet**的内存占用可比**FixedBitSet**小超过128倍。'
 - en: ''
+  id: totrans-120
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '- the build time of **RoaringDocIdSet** can go up to approximately 64 times
     faster than **FixedBitSet**.'
+  id: totrans-121
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '- **RoaringDocIdSet**的构建时间可快约64倍于**FixedBitSet**。'
 - en: ''
+  id: totrans-122
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '- the iteration performance and skip performance of **RoaringDocIdSet** (using
     `*nextDoc()*`and `*advance()*`) can go up to approximately 90 times faster than
     **FixedBitSet**.'
+  id: totrans-123
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '- **RoaringDocIdSet**的迭代性能和跳过性能（使用`*nextDoc()*`和`*advance()*`）可快约90倍于**FixedBitSet**。'
 - en: ''
+  id: totrans-124
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: On the contrary, **FixedBitSet** performed better than **RoaringDocIdSet** when
     the density of the Doc ID set is above 1%.
+  id: totrans-125
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 相反，当Doc ID集的密度高于1%时，**FixedBitSet**的表现优于**RoaringDocIdSet**。
 - en: Key Takeaways
+  id: totrans-126
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关键要点
 - en: When it comes to compression, there’s no one-size-fits-all method. To approach
     integer compression, Lucene uses a combination of techniques and strategies in
     order to obtain the best possible result.
+  id: totrans-127
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在压缩方面，没有一种通用的方法。为了实现最佳结果，Lucene使用了多种技术和策略来处理整数压缩。
 - en: '**Delta encoding** plays an important role in effectively reducing integer
     size before moving on to compression with **PackedInts** or **VInt**.'
+  id: totrans-128
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**Delta编码**在有效减少整数大小后，再进行**PackedInts**或**VInt**的压缩中起着重要作用。'
 - en: What if there is a presence of large values? Data compression quality is compromised
     since the largest integer in the block determines the number of bits per value
     to use for **PackedInts**. Splitting Doc Deltas and term frequencies into fixed-size
     blocks is a smart way to mitigate this issue. The impact is confined only to data
     within the block, and others stay unaffected.
+  id: totrans-129
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果存在大值会怎样？数据压缩质量会受到影响，因为块中的最大整数决定了用于**PackedInts**的每个值的位数。将Doc Deltas和术语频率拆分成固定大小的块是缓解此问题的明智方法。其影响仅限于块内的数据，而其他数据保持不变。
 - en: While bitmaps are ideal for dense integer sets, it is fascinating to see how
     **RoaringDocIdSet (**an adaptation of **Roaring Bitmaps**) approaches dense and
     sparse sets in an ingenious way.
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 尽管位图非常适合于密集整数集合，但看到**RoaringDocIdSet**（**Roaring Bitmaps**的一种变体）以巧妙的方式处理密集和稀疏集合，确实令人着迷。
 - en: Conclusion
+  id: totrans-131
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: A big part of Lucene deals with integers. Hence, integer compression is of utmost
     importance in reducing storage and memory footprint, as well as shortening transmission
     time when data is fetched from or written to disk or memory.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: Lucene的大部分工作涉及整数。因此，整数压缩在减少存储和内存占用，以及缩短从磁盘或内存读取或写入数据的传输时间方面至关重要。
 - en: As demonstrated by Lucene, adopting the right strategy for the right use case
     and thinking outside the box to optimize efficiency with fast access is one of
     many success factors leading to continuous growth and evolution in the search
     engine arena.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 如Lucene所示，采用正确的策略来匹配用例，并通过创新方式优化高效访问，是促成搜索引擎领域持续增长和发展的成功因素之一。
 - en: These implementations can bring significant cost savings on storage, memory,
     and network bandwidth, along with improvement in performance.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些实现可以在存储、内存和网络带宽方面带来显著的成本节约，同时提升性能。
 - en: Reference
+  id: totrans-135
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考
 - en: '[1] A. Grand, [Frame of Reference and Roaring Bitmaps](https://www.elastic.co/blog/frame-of-reference-and-roaring-bitmaps)
     (2015)'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] A. Grand, [参考框架与Roaring位图](https://www.elastic.co/blog/frame-of-reference-and-roaring-bitmaps)（2015）'
 - en: '[2] [Celebrating 20 years of Apache Lucene](https://www.elastic.co/celebrating-lucene)'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [庆祝Apache Lucene成立20周年](https://www.elastic.co/celebrating-lucene)'
 - en: '[3] [Roaring bitmaps: A better compressed bitset](https://roaringbitmap.org/)'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [咆哮位图：更好的压缩位集](https://roaringbitmap.org/)'
 - en: '[4] S. Chambi, D. Lemire, O. Kaser, and R. Godin, [Better bitmap performance
     with Roaring bitmaps](https://arxiv.org/pdf/1402.6407.pdf) (2016)'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] S. Chambi, D. Lemire, O. Kaser 和 R. Godin, [使用咆哮位图提高位图性能](https://arxiv.org/pdf/1402.6407.pdf)
+    (2016)'
 - en: '[5] D. Lemire, G. Ssi-Yan-Kai, and O. Kaser, [Consistently faster and smaller
     compressed bitmaps with Roaring](https://arxiv.org/pdf/1603.06549.pdf) (2018)'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] D. Lemire, G. Ssi-Yan-Kai 和 O. Kaser, [使用咆哮位图实现一致更快且更小的压缩位图](https://arxiv.org/pdf/1603.06549.pdf)
+    (2018)'
 - en: '[6] D. Lemire, O. Kaser, N. Kurz, L. Deri, C. O’Hara, F. Saint-Jacques, and
     G. Ssi-Yan-Kai, [Roaring Bitmaps: Implementation of an Optimized Software Library](https://arxiv.org/pdf/1709.07821.pdf)
     (2022)'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] D. Lemire, O. Kaser, N. Kurz, L. Deri, C. O’Hara, F. Saint-Jacques 和 G.
+    Ssi-Yan-Kai, [咆哮位图：优化软件库的实现](https://arxiv.org/pdf/1709.07821.pdf) (2022)'
 - en: '[7] V. Oberoi, [A primer on Roaring bitmaps: what they are and how they work](https://vikramoberoi.com/a-primer-on-roaring-bitmaps-what-they-are-and-how-they-work/)
     (2022)'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] V. Oberoi, [咆哮位图简介：它们是什么以及如何工作](https://vikramoberoi.com/a-primer-on-roaring-bitmaps-what-they-are-and-how-they-work/)
+    (2022)'
 - en: '[8] D. Lemire and L. Boytsov, [Decoding billions of integers per second through
     vectorization](https://arxiv.org/pdf/1209.2137.pdf) (2021)'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] D. Lemire 和 L. Boytsov, [通过向量化每秒解码数十亿个整数](https://arxiv.org/pdf/1209.2137.pdf)
+    (2021)'
 - en: '**Before You Go…**'
+  id: totrans-144
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**在你离开之前…**'
 - en: ''
+  id: totrans-145
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '*🙏* Thank you for reading this post, and I hope you’ve enjoyed learning about
     integer encoding and compression in Lucene.'
+  id: totrans-146
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*🙏* 感谢你阅读这篇帖子，希望你喜欢了解 Lucene 中的整数编码和压缩。'
 - en: ''
+  id: totrans-147
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '*👉* If you like my post, don’t forget to hit [**Follow**](https://peggy1502.medium.com/)
     and [**Subscribe**](https://peggy1502.medium.com/subscribe) to get notified via
     email when I publish.'
+  id: totrans-148
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*👉* 如果你喜欢我的帖子，不要忘记点击 [**关注**](https://peggy1502.medium.com/) 和 [**订阅**](https://peggy1502.medium.com/subscribe)，以便在我发布新内容时通过电子邮件收到通知。'
 - en: ''
+  id: totrans-149
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '*😃* Optionally, you may also [**sign up**](https://peggy1502.medium.com/membership)
     for a Medium membership to get full access to every story on Medium.'
+  id: totrans-150
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*😃* 可选地，你也可以 [**注册**](https://peggy1502.medium.com/membership) 成为 Medium 会员，以获得对
+    Medium 上每个故事的完全访问权限。'
 - en: ''
+  id: totrans-151
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '*📑* Visit this [GitHub repository](https://github.com/peggy1502/Data-Science-Articles/blob/main/README.md)
     for all the codes and notebooks that I shared in my posts.'
+  id: totrans-152
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*📑* 访问这个 [GitHub 仓库](https://github.com/peggy1502/Data-Science-Articles/blob/main/README.md)，获取我在帖子中分享的所有代码和笔记本。'
 - en: ''
+  id: totrans-153
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '*© 2023 All rights reserved.*'
+  id: totrans-154
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*© 2023 保留所有权利。*'
