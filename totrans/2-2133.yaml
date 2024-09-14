@@ -1,46 +1,70 @@
 - en: Towards Stand-Alone Self-Attention in Vision
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 迈向视觉中的独立自注意力
 - en: 原文：[https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5](https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5](https://towardsdatascience.com/towards-stand-alone-self-attention-in-vision-3d0561c6aee5)
 - en: '*A deep dive into the application of the transformer architecture and its self-attention
     operation for vision*'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*深入探讨变换器架构及其自注意力操作在视觉中的应用*'
 - en: '[](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[![Julian
     Hatzky](../Images/9f1ce9a29d215feeb5223e8fd659383e.png)](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)
     [Julian Hatzky](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[![Julian
+    Hatzky](../Images/9f1ce9a29d215feeb5223e8fd659383e.png)](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)
+    [Julian Hatzky](https://medium.com/@ju2ez?source=post_page-----3d0561c6aee5--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)
     ·14 min read·Apr 28, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d0561c6aee5--------------------------------)
+    ·阅读时间14分钟·2023年4月28日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/b58911b38409853b14032c171382c9bd.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b58911b38409853b14032c171382c9bd.png)'
 - en: Image created by author using [craiyon AI](https://www.craiyon.com/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者使用[craiyon AI](https://www.craiyon.com/)创建。
 - en: While self-attention is already widely adopted in NLP and significantly contributes
     to the performance of state-of-the-art models (e.g. [2], [3]), more and more work
     is being done to achieve similar results in vision.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然自注意力已经在自然语言处理（NLP）中广泛应用，并显著提升了最先进模型的性能（如[2]，[3]），但在视觉领域也正在进行越来越多的工作，以实现类似的效果。
 - en: Even though, there are hybrid approaches that combine for example CNNs with
     attention [4] or apply linear transformations on patches of the image [5], a pure
     attention-based model is harder to train effectively due to various reasons that
     we will investigate further on.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管有一些混合方法将CNN与注意力机制结合[4]，或对图像的图块应用线性变换[5]，但纯注意力模型由于各种原因更难以有效训练，我们将进一步探讨这些原因。
 - en: The *Stand-Alone Self-Attention in Vision Models* [6] paper introduces the idea
     of such a pure attention-based model for vision. In the following, I will give
     an overview of the paper’s ideas and related follow-up work. Further, I assume
@@ -48,113 +72,166 @@
     and have a [basic knowledge of CNNs](https://www.youtube.com/watch?v=2hS_54kgMHs).
     An understanding of [PyTorch](https://pytorch.org/) is also beneficial for the
     coding parts but these can also be safely skipped.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '*《视觉模型中的独立自注意力》*[6] 论文提出了这样一个纯注意力模型的理念。接下来，我将概述论文的思想及相关后续工作。此外，我假设你对[变换器的工作原理](https://peterbloem.nl/blog/transformers)已有所了解，并具备[CNN的基础知识](https://www.youtube.com/watch?v=2hS_54kgMHs)。了解[PyTorch](https://pytorch.org/)对编码部分也有帮助，但这些部分也可以安全跳过。'
 - en: '*If you are on the other hand only interested in the code, feel free to skip
     this article and directly take a look at* [*this annotated colab notebook*](https://colab.research.google.com/drive/1DDjyC3d1R8jgbaP73u6-77FIlnCEN57M?usp=sharing)*.*'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你只是对代码感兴趣，可以直接跳过这篇文章，直接查看* [*这个带注释的colab笔记本*](https://colab.research.google.com/drive/1DDjyC3d1R8jgbaP73u6-77FIlnCEN57M?usp=sharing)*。*'
 - en: The Case for Self-Attention in Vision
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自注意力在视觉中的应用
 - en: CNNs are commonly used to build neural networks for image processing due to
     their powerful geometric prior of translation equivariance. This means that they
     can handle relative shifts of the input well, making them robust.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: CNN通常用于构建图像处理的神经网络，因为它们具有强大的几何平移等变先验。这意味着它们能够很好地处理输入的相对位移，使其具有鲁棒性。
 - en: On the other hand, self-attention does not have this prior and is instead permutation
     equivariant. This means that if the input is rearranged, the output will be rearranged
     in an equivalent way. Although permutation equivariance is more general, it is
     not as useful for images as translation equivariance.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，自注意力没有这种先验，而是具有置换等变性。这意味着如果输入被重新排列，输出也会以等效的方式重新排列。尽管置换等变性更为通用，但对于图像而言，它不如平移等变性有用。
 - en: Fortunately, we can use different positional encodings to constrain the self-attention
     operation and achieve translation equivariance. Positional encoding — which is
     also called *positional embedding* when it has learnable parameters, allows us
     to have a more flexible architecture than CNNs while still being able to incorporate
     certain priors.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，我们可以使用不同的位置编码来约束自注意力操作，并实现平移等变性。位置编码——当它具有可学习参数时也称为*位置嵌入*——使我们能够拥有比 CNN
+    更灵活的架构，同时仍然能够融入某些先验知识。
 - en: Implementing Basic Self-Attention in 1D
+  id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 实现 1D 中的基本自注意力
 - en: For one-dimensional inputs like text and speech, the single-head self-attention
     operation is defined as
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于一维输入，如文本和语音，单头自注意力操作的定义为
 - en: '![](../Images/9f163f0984657a7943673bcf2c87a0fb.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9f163f0984657a7943673bcf2c87a0fb.png)'
 - en: '***Scaled Dot-Product Attention***as proposed in [1]'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '***缩放点积注意力***，如 [1] 中提出的'
 - en: which is essentially a scaled dot-product between the query Q and the key K
     followed by another dot-product between the resulting matrix and V.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这本质上是查询 Q 和键 K 之间的缩放点积，然后是结果矩阵与 V 之间的另一个点积。
 - en: We can also express the dot-product as a weighted sum explicitly and show how
     to get a specific output. Keep that in mind because later we will generalize this
     for 2D images.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以将点积明确地表示为加权和，并展示如何获得特定输出。请记住这一点，因为稍后我们将把它推广到 2D 图像。
 - en: '![](../Images/3a9590fdd288736100a52c7fde657f35.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3a9590fdd288736100a52c7fde657f35.png)'
 - en: Self-Attention for a specific output yᵢ
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 特定输出 yᵢ 的自注意力
 - en: In PyTorch, this could look as follows.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 PyTorch 中，这可能看起来如下。
 - en: '[PRE0]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Global vs Local Self-attention
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 全局与局部自注意力
 - en: When we talk about global and local self-attention in visual models, we are
     referring to how much of the image the model is looking at. Global self-attention
     looks at the entire image at once, while local self-attention focuses only on
     certain parts. Generally, the larger the area the model is looking at, the more
     complex it becomes and the more memory it requires.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们谈论视觉模型中的全局自注意力和局部自注意力时，我们指的是模型观察图像的范围。全局自注意力一次查看整个图像，而局部自注意力只关注某些部分。通常，模型观察的区域越大，复杂度就越高，所需的内存也越多。
 - en: Let’s take a closer look at the basic self-attention operation and how it performs
     with larger image sizes. To do this, we’ll use a concept called [big O notation](https://en.wikipedia.org/wiki/Big_O_notation)
     to express the complexity of the operation as the input size *n* increases.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们仔细看看基本的自注意力操作及其在更大图像尺寸下的表现。为此，我们将使用一种叫做 [大 O 符号](https://en.wikipedia.org/wiki/Big_O_notation)
+    的概念来表达操作的复杂度，随着输入大小 *n* 的增加。
 - en: 'The self-attention operation involves three separate calculations:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 自注意力操作涉及三个单独的计算：
 - en: Calculating QKᵀ has a complexity of O(n² d_k)
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算 QKᵀ 的复杂度为 O(n² d_k)
 - en: The softmax operation, which involves exponentiation, summation, and division,
     has a quadratic complexity of O(n²)
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含指数运算、求和和除法的 softmax 操作具有 O(n²) 的平方复杂度
 - en: Multiplying softmax(QKᵀ)V has a complexity of O(n² d_v)
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 乘以 softmax(QKᵀ)V 的复杂度为 O(n² d_v)
 - en: In total, the basic self-attention operation scales quadratically as the length
     of the input sequence *n* increases. So, as we apply self-attention to larger
     and larger images — which are of roughly length *n² = h*w* themselves due to their
     2D nature — the space and time complexity of the operation becomes increasingly
     higher. This is one reason why using global receptive fields on larger images
     can be difficult and why local receptive fields are an appealing solution.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，基本自注意力操作的复杂度随着输入序列长度 *n* 的增加而呈平方增长。因此，当我们将自注意力应用于越来越大的图像——由于其 2D 特性，这些图像的长度大约为
+    *n² = h*w* ——操作的空间和时间复杂度也会随之增加。这是为什么在更大的图像上使用全局感受野可能会很困难，而局部感受野则是一种有吸引力的解决方案的原因之一。
 - en: Revisiting CNNs
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 重新审视 CNN
 - en: In Figure 1, we can see that we use small squares called kernels that slide
     across the image. We choose a center point [i,j] on the image and kernel size,
     which determines how much of the image is included in the kernel. The kernel is
@@ -162,23 +239,31 @@
     network, so we use fewer parameters. *Note that in the figure, there are multiple
     pixels in each square, but in reality, we only have one pixel per square unless
     we use pooling to group them together.*
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图1中，我们可以看到我们使用了称为内核的小方块，这些方块在图像上滑动。我们选择图像上的中心点[i,j]和内核大小，这决定了内核包含图像的多少部分。内核应用于图像中的每个像素，值输入到同一个神经网络中，因此我们使用了更少的参数。*注意，在图中，每个方块中有多个像素，但实际上，我们每个方块中只有一个像素，除非我们使用池化将它们分组在一起。*
 - en: '![](../Images/ca3fc4cbf503b9bde38a0bbcaed3218a.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ca3fc4cbf503b9bde38a0bbcaed3218a.png)'
 - en: '**Figure 1**: An example of a local convolutional window around a point [i,
     j] (red square) with spatial extend k=3\. ©J. Hatzky'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图1**：围绕点[i, j]（红色方块）的局部卷积窗口示例，空间扩展k=3。©J. Hatzky'
 - en: The size of the kernel can vary between the layers of the network. This allows
     the network to learn local correlation structures within a particular layer. In
     recent work, differential kernels of variable size have been introduced [7], but
     we will focus on the basic approach used in traditional CNNs. Since the convolutional
     kernel is an important concept that we will build upon, I explain it using the
     notation used in [6].
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 内核的大小可以在网络的不同层之间变化。这使得网络能够在特定层内学习局部相关结构。在最近的工作中，引入了可变大小的差分内核[7]，但我们将重点关注传统CNN中使用的基本方法。由于卷积内核是我们将要构建的重要概念，我将使用[6]中使用的符号来解释它。
 - en: 'The input image is specified by its height *h*, width *w,* and channel size
     *din* (e.g. 3 for RGB image): x ∈ ℝʰˣʷˣᵈⁱⁿ. We define a local neighborhood Nₖ
     around a pixel xᵢⱼ using a spatial extent k, which is the set of pixels within
@@ -186,24 +271,35 @@
     centered around the pixel at row 2, column 2\. For completeness, we can define
     it as: Nₖ(i, j) = {a, b ∣ |a − i| ≤ k/2, |b − j| ≤ k/2}. We optimize a weight
     matrix W ∈ ℝᵏˣᵏˣᵈᵒᵘᵗˣᵈⁱⁿ to calculate a specific output yᵢⱼ for each pixel.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 输入图像由其高度*h*、宽度*w*和通道大小*din*（例如，RGB图像为3）指定：x ∈ ℝʰˣʷˣᵈⁱⁿ。我们使用空间范围k定义一个像素xᵢⱼ周围的局部邻域Nₖ，即内核范围内的像素集合。例如，N₃(2,2)将是以第2行第2列的像素为中心的3x3方块内的像素集合。为了完整性，我们可以定义为：Nₖ(i,
+    j) = {a, b ∣ |a − i| ≤ k/2, |b − j| ≤ k/2}。我们优化一个权重矩阵W ∈ ℝᵏˣᵏˣᵈᵒᵘᵗˣᵈⁱⁿ，以计算每个像素的特定输出yᵢⱼ。
 - en: '![](../Images/ba472173308aa2bdf87d4f886be9de1f.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ba472173308aa2bdf87d4f886be9de1f.png)'
 - en: Weighted sum with spatial extend k and center [i, j]
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 具有空间扩展k和中心点[i, j]的加权和
 - en: To get this output, we sum up the product of depth-wise matrix multiplications
     for each pixel in the local neighborhood. This operation is translation equivariant,
     which means it’s designed to recognize patterns regardless of where they appear
     in the image.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了得到这个输出，我们对局部邻域内每个像素进行深度矩阵乘法的乘积求和。这一操作具有平移等变性，这意味着它旨在识别图像中无论出现在哪里的模式。
 - en: The Memory Block as a 2D Local Receptive Field
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 作为二维局部感受野的记忆块
 - en: To perform self-attention on a 2D image, researchers in [6] came up with a memory
     block concept that is inspired by the way CNNs work. If you want to apply self-attention
     globally, you just need to make the memory block as big as the entire image. The
@@ -211,118 +307,177 @@
     instead of using a CNN, we apply the self-attention operation on the pixels in
     the receptive field Nₖ, which creates a learnable connection between any pair
     of pixels in the local memory block.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在二维图像上执行自注意力，[6]中的研究人员提出了一个受CNN工作方式启发的记忆块概念。如果您想要全球应用自注意力，只需将记忆块做得与整个图像一样大即可。记忆块本质上与CNN中使用的感受野相同，但我们不是使用CNN，而是对感受野Nₖ中的像素应用自注意力操作，从而在局部记忆块中的任何像素对之间创建一个可学习的连接。
 - en: 'To define the single-head self-attention operation for this 2D case, we can
     use the following equation:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 要为这种二维情况定义单头自注意力操作，我们可以使用以下方程：
 - en: '![](../Images/82c493c731e7da96156ea1aaca3f96ca.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82c493c731e7da96156ea1aaca3f96ca.png)'
 - en: Self-Attention for a specific output yᵢⱼ
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 特定输出yᵢⱼ的自注意力
 - en: While losing the translation equivariance of the CNN, we now gained the more
     general permutation equivariance that is a property of self-attention.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在失去CNN的平移等变性的同时，我们现在获得了自注意力的更一般的置换等变性。
 - en: Let’s see how this would look in PyTorch.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这在PyTorch中会是什么样子。
 - en: '[PRE1]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: This simple implementation has one big downside to it. We lose all the spatial
     information when we apply self-attention to the flattened memory block. One way
     to resolve this is by adding positional information — the subject of the next
     section.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个简单的实现有一个很大的缺点。我们在将自注意力应用于展平的内存块时丢失了所有的空间信息。解决这一问题的一种方法是添加位置嵌入——这是下一节的主题。
 - en: 2D Relative Positional Embedding
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2D 相对位置嵌入
 - en: In addition to the 2D self-attention, [6] introduces the 2D application of relative
     embeddings. Relative embeddings for 1D were first introduced by [8] and then later
     on extended by e.g. [9] and [10].
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了 2D 自注意力，[6] 还引入了相对嵌入的 2D 应用。相对嵌入在一维中最早由[8]引入，后来由例如[9]和[10]扩展。
 - en: With relative embeddings we first get a powerful positional representation that
     has the potential to generalize better than say absolute embeddings [8], to bigger
     images (or longer sequences as is the case in NLP).
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用相对嵌入，我们首先获得了一个强大的位置表示，其在泛化能力上可能优于绝对嵌入[8]，适用于更大的图像（或在自然语言处理中的更长序列）。
 - en: Further, we introduce a powerful inductive bias in the model which is translation
     equivariance, and which already has been proven to be very helpful in the case
     of CNNs.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们在模型中引入了一个强大的归纳偏置，即平移等变性，这在 CNN 的情况下已被证明非常有用。
 - en: The way that relative positional embeddings work in 2D is to define relative
     indices for the x (columns) and y (rows) direction. Relative here means, that
     the indices should be relative to the pixel yᵢⱼ that is queried (Figure 2).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 相对位置嵌入在二维中的工作方式是为 x（列）和 y（行）方向定义相对索引。这里的相对意味着，索引应相对于被查询的像素 yᵢⱼ（图 2）。
 - en: '![](../Images/1581a063d2864f0d0c78c7f69ef02b33.png)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1581a063d2864f0d0c78c7f69ef02b33.png)'
 - en: '**Figure 2**: Relative positional embedding for a specific pixel ab ∈ Nₖ(i,
     j). ©J. Hatzky'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 2**：特定像素 ab ∈ Nₖ(i, j) 的相对位置嵌入。©J. Hatzky'
 - en: As proposed in [6], the row and column offsets are associated with an embedding
     *r* for *(a-i)* and *(b-j)* respectively each with dimension *1/2*dout*. The row
     and column offset embeddings are then concatenated to form this spatial-relative
     attention.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 如[6]中提出的，行和列偏移量与嵌入 *r* 相关联，分别对应 *(a-i)* 和 *(b-j)*，每个维度为 *1/2*dout*。然后将行和列偏移嵌入连接在一起形成这种空间相对注意力。
 - en: '![](../Images/bdbd5f32e0c3bfe96b7bdd2e2ff7705c.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bdbd5f32e0c3bfe96b7bdd2e2ff7705c.png)'
 - en: Relative positional embeddings are added within the self-attention operation
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 在自注意力操作中添加了相对位置嵌入。
 - en: Essentially, what we create here is an embedding matrix that contains relative
     positional information and that is added to the *QK* dot-product within the *softmax*.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 本质上，我们在这里创建了一个包含相对位置的信息的嵌入矩阵，并将其添加到 *QK* 点积中的 *softmax*。
 - en: See below how it could be done in PyTorch. Note that there are more efficient
     ways to implement this, which we will not cover here as we stick to the introduced
     formulation.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 请参见下面如何在 PyTorch 中完成这项工作。请注意，还有更高效的方法来实现这一点，我们在这里不予讨论，因为我们坚持介绍的公式。
 - en: '[PRE2]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Putting it all together
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将所有部分结合起来
 - en: Now we are at the point where we can put all the parts together.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经到达可以将所有部分结合在一起的点。
 - en: For a better understanding, Figure 3 is an overview of the data flow and shapes
     involved in self-attention.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地理解，图 3 是自注意力中数据流和形状的概述。
 - en: '![](../Images/af2658cc029341d382bc397fc7330736.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/af2658cc029341d382bc397fc7330736.png)'
 - en: '**Figure 3**: Overview of the shapes throughout the self-attention. Inspired
     by [this GitHub post](https://github.com/MartinGer/Stand-Alone-Self-Attention-in-Vision-Models/tree/master).
     ©J. Hatzky'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 3**：自注意力过程中的形状概述。灵感来源于[这个 GitHub 帖子](https://github.com/MartinGer/Stand-Alone-Self-Attention-in-Vision-Models/tree/master)。©J.
+    Hatzky'
 - en: Let’s create a class that implements the whole model.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们创建一个实现整个模型的类。
 - en: '[PRE3]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '**Epilogue**'
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**结语**'
 - en: The *Stand-Alone Self-Attention in Vision Models [6]* paper presents a fascinating
     idea for applying pure self-attention models in vision. Despite the self-attention
     operation’s complexity, the paper demonstrates an effective approach that uses
@@ -331,46 +486,75 @@
     this method has immense potential to become a top contender for state-of-the-art
     architectures in vision with additional software and hardware improvements. It’s
     an exciting piece of work that could take vision models to the next level!
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '*“视觉模型中的独立自注意力 [6]”* 论文提出了将纯自注意力模型应用于视觉的一个有趣想法。尽管自注意力操作的复杂性较高，论文展示了一种有效的方法，使用局部接收字段，也称为记忆块，以减少计算资源。虽然近期发布的视觉变换器可能抢占了风头，但这种方法具有巨大的潜力，有望通过额外的软件和硬件改进成为视觉领域的顶尖架构。这是一项令人兴奋的工作，可能会将视觉模型提升到一个新的水平！'
 - en: '*Interested in more code? Feel free to look at* [*this annotated colab notebook*](https://colab.research.google.com/drive/1DDjyC3d1R8jgbaP73u6-77FIlnCEN57M?usp=sharing)
     *where I apply this model to the CIFAR-10 dataset.*'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '*对更多代码感兴趣？可以查看* [*这个注释过的 Colab 笔记本*](https://colab.research.google.com/drive/1DDjyC3d1R8jgbaP73u6-77FIlnCEN57M?usp=sharing)
+    *，在其中我将此模型应用于 CIFAR-10 数据集。*'
 - en: '*Spotted a mistake? Please let me know!*'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '*发现了错误？请告知我！*'
 - en: References
+  id: totrans-76
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] [Vaswani et al.](https://arxiv.org/abs/1706.03762)'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [Vaswani 等人](https://arxiv.org/abs/1706.03762)'
 - en: '[2] [Devlin et al.](https://arxiv.org/abs/1810.04805)'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [Devlin 等人](https://arxiv.org/abs/1810.04805)'
 - en: '[3] [Brown et al.](https://arxiv.org/abs/2005.14165)'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [Brown 等人](https://arxiv.org/abs/2005.14165)'
 - en: '[4] [Zhang et al.](https://arxiv.org/pdf/2206.01821.pdf)'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] [Zhang 等人](https://arxiv.org/pdf/2206.01821.pdf)'
 - en: '[5] [Dosovitskiy et al.](https://arxiv.org/pdf/2010.11929.pdf)'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] [Dosovitskiy 等人](https://arxiv.org/pdf/2010.11929.pdf)'
 - en: '[6] [Ramachandran et al.](https://arxiv.org/abs/1906.05909)'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] [Ramachandran 等人](https://arxiv.org/abs/1906.05909)'
 - en: '[7] [Romero et al.](https://arxiv.org/abs/2110.08059)'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] [Romero 等人](https://arxiv.org/abs/2110.08059)'
 - en: '[8] [Shaw et al.](https://arxiv.org/abs/1803.02155)'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] [Shaw 等人](https://arxiv.org/abs/1803.02155)'
 - en: '[9] [Dai et al.](https://arxiv.org/pdf/1901.02860.pdf)'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] [Dai 等人](https://arxiv.org/pdf/1901.02860.pdf)'
 - en: '[10] [Liutkus et al.](https://arxiv.org/pdf/2105.08399.pdf)'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] [Liutkus 等人](https://arxiv.org/pdf/2105.08399.pdf)'
