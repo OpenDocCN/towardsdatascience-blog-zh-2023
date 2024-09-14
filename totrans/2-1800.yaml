@@ -1,36 +1,58 @@
 - en: Running Python Wheel Tasks in Custom Docker Containers in Databricks
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 Databricks 中使用自定义 Docker 容器运行 Python Wheel 任务
 - en: 原文：[https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79](https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79](https://towardsdatascience.com/running-python-wheel-tasks-in-custom-docker-containers-in-databricks-de3ff20f5c79)
 - en: A step-by-step tutorial to build and run Python Wheel Tasks on custom Docker
     images in Databricks (feat. Poetry and Typer CLI)
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一步一步的教程，教你如何在 Databricks 中使用自定义 Docker 镜像构建和运行 Python Wheel 任务（配合 Poetry 和 Typer
+    CLI）。
 - en: '[](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Johannes
     Schmidt](../Images/e0cacf7ff37f339a9bf8bd33c7c83a4d.png)](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)
     [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Johannes
+    Schmidt](../Images/e0cacf7ff37f339a9bf8bd33c7c83a4d.png)](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)
+    [Johannes Schmidt](https://johschmidt42.medium.com/?source=post_page-----de3ff20f5c79--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)
     ·13 min read·Jun 29, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----de3ff20f5c79--------------------------------)
+    ·13 分钟阅读·2023年6月29日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/fb9e8f76720dd5326d06b7b8b62a10ad.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb9e8f76720dd5326d06b7b8b62a10ad.png)'
 - en: Photo by [Lluvia Morales](https://unsplash.com/@hi_lluvia?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片来自 [Lluvia Morales](https://unsplash.com/@hi_lluvia?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: 'Data engineers design and build pipelines to run ETL workloads so that data
     can be used downstream to solve business problems. In Databricks, for such a pipeline,
     you usually start off by creating a **cluster**, a **notebook/script**, and write
@@ -43,309 +65,473 @@
     to the Databricks workspace or [connecting to a remote Git repository](https://docs.databricks.com/repos/index.html):
     **Python wheel tasks** with declared entrypoints and **Databricks Container Services**
     allow you to start job runs that will use Docker images from a container registry.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据工程师设计和构建管道以运行 ETL 工作负载，使数据能够在下游用于解决业务问题。在 Databricks 中，对于这样的管道，通常需要创建一个**集群**、一个**笔记本/脚本**并编写一些**Spark**
+    代码。一旦有了工作原型，就可以使其准备好生产环境，以便通过 Databricks 作业执行代码，例如使用 REST API。对于 Databricks，这意味着通常需要在
+    Databricks 文件系统中已有一个 Python 笔记本/脚本，或者已将远程 Git 存储库连接到工作区*。但如果你不想做这两种情况呢？还有另一种方法可以在不上传任何文件到
+    Databricks 工作区或 [连接到远程 Git 存储库](https://docs.databricks.com/repos/index.html)
+    的情况下将 Python 脚本作为 Databricks 作业运行：**Python wheel 任务**具有声明的入口点，**Databricks 容器服务**允许你启动作业运行，这些作业将使用来自容器注册表的
+    Docker 镜像。
 - en: 'Hence, this tutorial will show you how to do exactly that: run **Python jobs**
     (Python wheel tasks) in **custom Docker images** in Databricks.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，本教程将向你展示如何做到这一点：在 Databricks 中的**自定义 Docker 镜像**中运行**Python 任务**（Python wheel
+    任务）。
 - en: '**either a* [*syncing process uploads the Git files to the Databricks workspace*](https://docs.databricks.com/repos/repos-setup.html)
     *before code execution or the remote* [*git ref notebook/script is provided for
     job runs*](https://docs.databricks.com/workflows/jobs/how-to/use-repos.html)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**要么** [*同步过程将 Git 文件上传到 Databricks 工作区*](https://docs.databricks.com/repos/repos-setup.html)
+    *在代码执行之前，要么提供远程* [*git 引用笔记本/脚本用于作业运行*](https://docs.databricks.com/workflows/jobs/how-to/use-repos.html)。'
 - en: Why would you want to do this?
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为什么你会想这么做？
 - en: You might have a “build, ship and run anywhere” philosophy, so you may not be
     satisfied with the conventional way of using DataBricks.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能有“构建、发布和随处运行”的理念，所以你可能对使用 DataBricks 的传统方式不满意。
 - en: Let me explain.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我解释一下。
 - en: Databricks suggests some [CI/CD techniques](https://docs.databricks.com/dev-tools/index-ci-cd.html#dev-tools-ci-cd)
     for it’s platform.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks 为其平台建议了一些 [CI/CD 技术](https://docs.databricks.com/dev-tools/index-ci-cd.html#dev-tools-ci-cd)。
 - en: Continuous integration and continuous delivery/continuous deployment (CI/CD)
     refers to the process of developing and delivering software in short, frequent
     cycles through the use of automation pipelines.
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 持续集成和持续交付/持续部署（CI/CD）是指通过使用自动化管道，以短而频繁的周期开发和交付软件的过程。
 - en: Typically, a commit to the deafult branch or a release starts a pipeline for
     linting, testing etc. and ulitmately results in an action that interacts with
     Databricks. This can be a REST API call to trigger a job run in which the notebook/script
     is specified OR a deployment package is deployed to a target environment, in the
     case of Databricks, this can be the workspace.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，对默认分支或发布的提交会启动一个管道进行代码检查、测试等，并最终导致与 Databricks 交互的操作。这可能是一个 REST API 调用以触发作业运行，其中指定了笔记本/脚本，或者在
+    Databricks 的情况下，将部署包部署到目标环境，这可以是工作区。
 - en: '**The first option** usually needs Databricks to be connected to the remote
     Git repository to be able to use a remote Git ref, for example, a specific notebook
     in main branch of a Github repository to trigger the a job run.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第一种选择** 通常需要 Databricks 连接到远程 Git 仓库，以便能够使用远程 Git 引用，例如，Github 仓库主分支中的特定笔记本，以触发作业运行。'
 - en: '**The second option** uploads files to its workspace but does not necessarily
     need Databricks to be connected to the remote Git repository. A visual summary
     for this workflow option is shown [here](https://docs.databricks.com/dev-tools/index-ci-cd.html#dev-tools-ci-cd).'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第二种选择** 将文件上传到其工作区，但不一定需要 Databricks 连接到远程 Git 仓库。此工作流选项的可视化摘要请见 [此处](https://docs.databricks.com/dev-tools/index-ci-cd.html#dev-tools-ci-cd)。'
 - en: Where a *deployment package* can be a notebook, a library, a workflow etc. The
     Databricks CLI or the REST API is commonly used to deploy packages to the Databricks
     workspace. In essence, an automation pipeline syncs the changes in the remote
     git repository with the Databricks workspace.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*部署包* 可以是笔记本、库、工作流等。通常使用 Databricks CLI 或 REST API 将包部署到 Databricks 工作区。实质上，自动化管道将远程
+    git 仓库中的更改与 Databricks 工作区同步。'
 - en: My goal for this blog post is to explore a different CI/CD workflow, one in
     which there is no interaction with Databricks (decoupling the code from the Databricks
     workspace). The workflow suggested, just creates a **Docker image** and pushes
     it to a container registry and leaves the execution of job runs up to the service.
     This can be anything, a web app, function, a cron job or [Apache Airflow](https://docs.databricks.com/workflows/jobs/how-to/use-airflow-with-jobs.html).
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我这篇博客的目标是探讨一种不同的 CI/CD 工作流，即不与 Databricks 交互的工作流（将代码与 Databricks 工作区解耦）。所建议的工作流只是创建一个
+    **Docker 镜像**，并将其推送到容器注册表，将作业运行的执行留给服务。这可以是任何东西，例如 Web 应用、函数、定时任务或 [Apache Airflow](https://docs.databricks.com/workflows/jobs/how-to/use-airflow-with-jobs.html)。
 - en: Please bear in mind that doing it like this is not for all use cases but I think
     some workloads (e.g. ETL) can benefit from it. Use common sense to decide what
     fits best to you. Nonetheless, it’s worth to explore the options a platform such
     as Databricks offers. So let’s get started.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，像这样做并不适用于所有用例，但我认为一些工作负载（例如 ETL）可以从中受益。用常识来决定最适合你的方法。尽管如此，值得探索 Databricks
+    提供的平台选项。那么，让我们开始吧。
 - en: TLDR
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: TLDR
 - en: Databricks (standard tier*) will be provisionied on **Azure****. A single Python
     **wheel** file with defined entrypoints and dependencies will be created using
     **Poetry**. The wheel file will be installed in a Databricks compatible **Docker
     image** that is pushed to a container registry. Job runs will be created and triggered
     with the Databricks workspace UI portal and REST API.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks（标准层*）将在 **Azure** 上提供。将使用 **Poetry** 创建一个具有定义入口点和依赖项的单个 Python **wheel**
+    文件。该 wheel 文件将被安装在与 Databricks 兼容的 **Docker 镜像** 中，并推送到容器注册表。将创建并触发作业运行，使用 Databricks
+    工作区 UI 门户和 REST API。
 - en: '**Provisioning the Azure Databricks Workspace with Standard tier should not
     incur any costs*'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**标准层的 Azure Databricks 工作区不应产生任何费用**。'
 - en: '***alternatives include* *AWS or GCP*'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '***替代方案包括* *AWS 或 GCP***'
 - en: Prerequisites
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 前提条件
 - en: Poetry
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Poetry
 - en: Docker
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Docker
 - en: Azure or AWS Account
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Azure 或 AWS 账户
 - en: Container registry (e.g. DockerHub, ACR, ECR)
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 容器注册表（例如 DockerHub、ACR、ECR）
 - en: Structure
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结构
 - en: Apache Spark & Databricks
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Apache Spark 和 Databricks
 - en: Provisioning Databricks on Azure
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 Azure 上配置 Databricks
 - en: Enable Databricks Container Services
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 启用 Databricks 容器服务
 - en: Create a Personal Access Token (PAT)
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建个人访问令牌（PAT）
 - en: Options to execute jobs runs (Python)
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 执行作业运行的选项（Python）
 - en: Create a Python wheel with entrypoints (feat. Poetry & Typer CLI)
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用入口点创建 Python wheel（使用 Poetry 和 Typer CLI）
 - en: Build a Databricks compatible Docker image
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 构建一个与 Databricks 兼容的 Docker 镜像
 - en: Create and trigger a job run (UI)
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建并触发一个作业运行（UI）
 - en: Create and trigger a job run (REST API)
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建并触发一个作业运行（REST API）
 - en: Apache Spark & Databricks
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Apache Spark 和 Databricks
 - en: 'In the introduction, I already talked about Databricks and mentioned a common
     use case for data enigneers. But if you need a short definition on what Apache
     Spark and Databricks is, here you go:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在介绍中，我已经谈到了 Databricks，并提到了数据工程师的常见用例。如果你需要一个关于 Apache Spark 和 Databricks 的简短定义，请看这里：
 - en: '**Spark** is an open-source engine for processing large-scale data. By distributing
     the data and the computation to multiple nodes in a cluster, it achieves parallelism
     and scalability.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Spark** 是一个用于处理大规模数据的开源引擎。通过将数据和计算分布到集群中的多个节点，它实现了并行性和可扩展性。'
 - en: '**Databricks** is a cloud-based platform that leverages Spark to run various
     data-related tasks, such as data processing, data analysis, machine learning,
     and AI workloads.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Databricks** 是一个基于云的平台，利用 Spark 执行各种与数据相关的任务，如数据处理、数据分析、机器学习和 AI 工作负载。'
 - en: Provisionig Databricks on Azure
+  id: totrans-45
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 Azure 上配置 Databricks
 - en: It is assumed that you have an **Azure account** and a **subscription** at this
     point, if not, [create a free Azure account](https://azure.microsoft.com/en-us/free/search/),
     or just follow along.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你已经有了**Azure 账户**和**订阅**，如果没有，[创建一个免费的 Azure 账户](https://azure.microsoft.com/en-us/free/search/)，或者继续跟随教程。
 - en: Let’s provision the Databricks resource (workspace) on Azure. No costs should
     occur at this stage.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在 Azure 上配置 Databricks 资源（工作区）。在此阶段不应产生费用。
 - en: 'We create a resource group in which we will provision the Databricks resource:
     *databricks-job-run-rg*'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们创建一个资源组，在其中配置 Databricks 资源：*databricks-job-run-rg*
 - en: '![](../Images/932daac23bd6403b40ea28dc4601e5fc.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/932daac23bd6403b40ea28dc4601e5fc.png)'
 - en: Creating a resource group — Image by author
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建资源组 — 作者提供的图片
 - en: 'Within this resource group, we can create the **Azure Databricks workspace**
     and give it a name: *databricks-job-run*'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 在此资源组内，我们可以创建**Azure Databricks 工作区**并为其命名：*databricks-job-run*
 - en: '![](../Images/2b327c704135def5f72622ba5c60c47e.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2b327c704135def5f72622ba5c60c47e.png)'
 - en: Create an Azure Databricks workspace — Image by author
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建一个 Azure Databricks 工作区 — 作者提供的图片
 - en: For the pricing tier, select **Standard***. You can leave the rest as suggested.
     *Managed Resource Group name* can be left empty.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于定价层，选择**标准**。你可以保持其余部分为建议设置。*托管资源组名称*可以留空。
 - en: '**Please note that only with Premium, we will have proper Role based access
     control (RBAC) capabilites. But for the sake of this tutorial, we don’t need it.
     We will use a Personal Access Token (PAT) that allows us to create and trigger
     job runs using the Databricks REST API.*'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '**请注意，只有使用 Premium 版，我们才会拥有适当的基于角色的访问控制（RBAC）功能。但为了本教程的方便，我们不需要它。我们将使用个人访问令牌（PAT），允许我们通过
+    Databricks REST API 创建和触发作业运行。**'
 - en: 'After the deployment, our resource group now contains the Azure Databricks
     workspace:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 部署后，我们的资源组现在包含 Azure Databricks 工作区：
 - en: '![](../Images/f3dd5e8a82d83850c9b9141cf87a10f1.png)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f3dd5e8a82d83850c9b9141cf87a10f1.png)'
 - en: Azure Databricks Service in the resource group — Image by author
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 资源组中的 Azure Databricks 服务 — 作者提供的图片
 - en: And we can launch the workspace,
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们可以启动工作区，
 - en: '![](../Images/3fafa0e099e83f6acd89bff2a9c40638.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3fafa0e099e83f6acd89bff2a9c40638.png)'
 - en: Launch Databricks Workspace from the Azure Portal — Image by author
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 Azure 门户启动 Databricks 工作区 — 作者提供的图片
 - en: 'which will open a friendly user interface (UI) like this:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将打开一个友好的用户界面（UI），如下所示：
 - en: '![](../Images/e6fef7a1040be04a9e69abc770183ab1.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e6fef7a1040be04a9e69abc770183ab1.png)'
 - en: Databricks UI — Image by author
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks UI — 作者提供的图片
 - en: So far so good.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，一切顺利。
 - en: Enable Databricks Container Services
+  id: totrans-66
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 启用 Databricks 容器服务
 - en: Databricks does not allow custom Databricks Docker images by default, we must
     enable this feature first. The steps for this are described [here](https://docs.databricks.com/administration-guide/clusters/container-services.html).
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks 默认情况下不允许自定义 Databricks Docker 镜像，我们必须先启用此功能。有关步骤，请参阅[这里](https://docs.databricks.com/administration-guide/clusters/container-services.html)。
 - en: 'In the *Admin Settings* (drop-down menu at the top right corner), we must enable
     the *Container Services* field:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*管理员设置*（右上角下拉菜单）中，我们必须启用*容器服务*字段：
 - en: '![](../Images/624f48f032a76bf2664e61b3dd0ad257.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/624f48f032a76bf2664e61b3dd0ad257.png)'
 - en: Workspace settings — Image by author
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 工作区设置 — 图片由作者提供
 - en: Also make sure *Personal Access Token* is enabled, we will create one in the
     next section.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 还要确保*个人访问令牌*已启用，我们将在下一节中创建一个。
 - en: Create a Personal Access Token (PAT)
+  id: totrans-72
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建个人访问令牌（PAT）
 - en: 'In the *User Settings* (drop-down menu at the top right corner), a button allows
     us to generate a new token:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*用户设置*（右上角下拉菜单）中，有一个按钮允许我们生成一个新令牌：
 - en: '![](../Images/46deed62e705a38b7af0122a78c19431.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/46deed62e705a38b7af0122a78c19431.png)'
 - en: Create a PAT — Image by author
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建PAT — 图片由作者提供
 - en: Store this token somewhere safe as this can be used for secure authentication
     to the [Databricks API](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth).
     We’re going to need it later.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 将这个令牌保存在安全的地方，因为它可以用于对[Databricks API](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth)进行安全认证。我们稍后将需要它。
 - en: '*Please note: We use a PAT, because the standard tier does not come with RBAC
     capabilites. For this, we would need to upgrade to Premium.*'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请注意：我们使用PAT，因为标准层不提供RBAC功能。为此，我们需要升级到高级版。*'
 - en: Options to execute jobs runs (Python)
+  id: totrans-78
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 执行作业运行的选项（Python）
 - en: Before we create a **Python wheel** for a Databricks job, I’d like to focus
     on the options that we have to create and run [Databricks jobs](https://docs.databricks.com/workflows/jobs/create-run-jobs.html)
     (Python). There are different ways to execute scripts in a cluster.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们为Databricks作业创建**Python wheel**之前，我想重点关注我们用于创建和运行[Databricks作业](https://docs.databricks.com/workflows/jobs/create-run-jobs.html)（Python）的选项。有不同的方法可以在集群中执行脚本。
 - en: Creating a task in the *Workflows/Jobs* or *Workflows/Job* runs pane, reveals
     our options. Alternatively, we find out about them reading the [docs](https://docs.databricks.com/workflows/jobs/create-run-jobs.html).
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*工作流/作业*或*工作流/作业运行*面板中创建任务，显示了我们的选项。或者，我们可以通过阅读[文档](https://docs.databricks.com/workflows/jobs/create-run-jobs.html)来了解它们。
 - en: '![](../Images/793b9be34643999ff8dca378a4d367f0.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/793b9be34643999ff8dca378a4d367f0.png)'
 - en: Options to run scripts (Python) in Databricks jobs — Image by author
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Databricks作业中运行脚本的选项 — 图片由作者提供
 - en: 'As mentioned earlier, we can basically specify **2** types of sources from
     where the job gets the notebook/script to be executed: The **Databricks Workspace**
     OR a **remote Git repository***. For **Python wheels**, we can’t select the source,
@@ -355,277 +541,441 @@
     does a poor job of explaining the source options (May 2023), or maybe I’m just
     unable to find this information. But there’s a neat blog post that shows how to
     do it: [How to deploy you Python project to Databricks](https://godatadriven.com/blog/how-to-deploy-your-python-project-on-databricks/)'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，我们基本上可以指定**2**种来源从中获取要执行的笔记本/脚本：**Databricks工作区**或**远程Git仓库**。对于**Python
+    wheels**，我们不能选择来源，而是必须输入*包名称*和*入口点*。wheel包应存在于DBFS（Databricks文件系统）或如PyPi等索引上。我认为[文档中的教程](https://docs.databricks.com/workflows/jobs/how-to/use-python-wheels-in-workflows.html)对来源选项的解释不够清晰（2023年5月），或者可能是我无法找到这些信息。但有一篇很好的博客文章展示了如何做：[如何将你的Python项目部署到Databricks](https://godatadriven.com/blog/how-to-deploy-your-python-project-on-databricks/)
 - en: Anyway, it’s not really mentioned (even though it makes sense) that if you provide
     a **custom docker image** that has your Python wheel task already installed, you
     can also specify it and it will be executed. And that’s what we’re going to do.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，实际上并没有提到（尽管这是合理的），如果你提供一个已经安装了你的Python wheel任务的**自定义docker镜像**，你也可以指定它并且它会被执行。这就是我们要做的。
 - en: '**For Python scripts, there is also the option: DBFS (Databricks File System)*'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '**对于Python脚本，还有一个选项：DBFS（Databricks文件系统）*'
 - en: Create a Python wheel with entrypoints (feat. Poetry & *Typer CLI*)
+  id: totrans-86
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用入口点创建一个Python wheel（配有Poetry和*Typer CLI*）
 - en: 'I’ve setup a project with **Poetry*** in *src* *layout*, that contains the
     code and commands to build a wheel. You can find the full code here:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经在*src* *布局*中设置了一个使用**Poetry**的项目，其中包含了构建wheel的代码和命令。你可以在这里找到完整的代码：
 - en: '[https://github.com/johschmidt42/databricks-python-wheel-job-run](https://github.com/johschmidt42/databricks-python-wheel-job-run)'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://github.com/johschmidt42/databricks-python-wheel-job-run](https://github.com/johschmidt42/databricks-python-wheel-job-run)'
 - en: '[PRE0]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'In the *pyproject.toml*, these scripts are defined as follows:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*pyproject.toml*中，这些脚本定义如下：
 - en: '[PRE1]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'And within the two packages *dbscript1* and *dbscript2*, we find some code:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 在两个包*dbscript1*和*dbscript2*中，我们找到了一些代码：
 - en: src/dbscript1/script.py
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: src/dbscript1/script.py
 - en: and
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 和
 - en: src/dbscript2/__main__.py
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: src/dbscript2/__main__.py
 - en: They pretty much do the same thing. The only noticeble difference between them
     is that *script1’s* name is just “script” and the other’s name is “__main__”.
     You will see the impact of this difference in a bit. Both scripts use the `typer`**
     library to create a command-line interface (CLI) for the `script1` or `script2`
     function.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 它们基本上做了相同的事情。它们之间唯一明显的区别是*script1* 的名字只是“script”，而另一个的名字是“__main__”。你会很快看到这个区别的影响。这两个脚本都使用
+    `typer`**库来为 `script1` 或 `script2` 函数创建一个命令行界面（CLI）。
 - en: When the `script1` or `script2` function is called with an argument (required),
     it prints the name of the current file (`__file__`) and the value of the passed
     in `argument` parameter.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 `script1` 或 `script2` 函数被带有参数（必需）调用时，它会打印当前文件的名称 (`__file__`) 和传入的 `argument`
+    参数的值。
 - en: 'From these files, we can use `Poetry` to create a package:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这些文件中，我们可以使用 `Poetry` 创建一个包：
 - en: '[PRE2]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: which will create a *wheel* in the *dist* directory
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将创建一个*wheel*文件在*dist*目录中
 - en: '[PRE3]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'We can use `pip` to install this *wheel* into a virtual environment to see
     what will happen:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用 `pip` 将这个*wheel*安装到虚拟环境中，看看会发生什么：
 - en: '[PRE4]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'If we restart the shell (bash, zsh etc.), we now have two new functions that
     we can call:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们重新启动 shell（bash、zsh 等），我们现在可以调用两个新函数：
 - en: '[PRE5]'
+  id: totrans-105
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Both can be used as functions, such as [black](https://github.com/psf/black)
     or [isort](https://pypi.org/project/isort/):'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 两者都可以作为函数使用，如 [black](https://github.com/psf/black) 或 [isort](https://pypi.org/project/isort/)：
 - en: '[PRE6]'
+  id: totrans-107
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '[PRE7]'
+  id: totrans-108
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'And here comes the benfit of naming the entrypoint function “__main__”:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是将入口点函数命名为“__main__”的好处：
 - en: '[PRE8]'
+  id: totrans-110
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: compared to
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 与之相比
 - en: '[PRE9]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'If you’re baffled how both scripts can be executed as functions in the shell,
     just take a look into your venv’s bin directory: *.venv/bin*'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对两个脚本如何在 shell 中作为函数执行感到困惑，只需查看你的虚拟环境的 bin 目录：*.venv/bin*
 - en: '[PRE10]'
+  id: totrans-114
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'The codes looks like this:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码看起来像这样：
 - en: These are called **consol_scripts entry points**. You can read up about them
     in the [Python documention](https://packaging.python.org/en/latest/specifications/entry-points/).
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些被称为**consol_scripts 入口点**。你可以在[Python 文档](https://packaging.python.org/en/latest/specifications/entry-points/)中阅读相关内容。
 - en: '**Poetry is a dependency, environment & package manager*'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Poetry 是一个依赖、环境和包管理器**'
 - en: '***Typer is wrapper that is based on the popular Python lib click. It allows
     us to build CLIs from only Python type hints!*'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '***Typer 是一个基于流行 Python 库 click 的封装器。它允许我们仅通过 Python 类型提示构建 CLI！***'
 - en: Build a Databricks compatible Docker image
+  id: totrans-119
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 构建一个兼容 Databricks 的 Docker 镜像
 - en: 'We now have a Python wheel file that comes with two console script entry points
     when installed. Let’s containerize it with docker:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在有一个 Python wheel 文件，在安装时带有两个控制台脚本入口点。让我们用 docker 容器化它：
 - en: Dockerfile
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: Dockerfile
 - en: This Dockerfile defines a **multi-stage** build for our Python application.
     The Stages are seperated by `#----#` in the Dockefile.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个 Dockerfile 定义了一个**多阶段**构建用于我们的 Python 应用程序。各个阶段通过 Dockerfile 中的 `#----#`
+    分隔。
 - en: The first stage is the **base image** that uses **Databricks Runtime Python
     12.2-LTS*** as the base image and sets the working directory to `/app`. It also
     updates pip.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个阶段是**基础镜像**，它使用**Databricks Runtime Python 12.2-LTS***作为基础镜像，并将工作目录设置为 `/app`。它还会更新
+    pip。
 - en: '**We can also build our own base image, as long as we have certain libraries
     installed:* [*Build your own Docker base*](https://learn.microsoft.com/en-us/azure/databricks/clusters/custom-containers#option-2-build-your-own-docker-base)'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们也可以构建我们自己的基础镜像，只要我们安装了某些库：** [*构建你自己的 Docker 基础镜像*](https://learn.microsoft.com/en-us/azure/databricks/clusters/custom-containers#option-2-build-your-own-docker-base)'
 - en: The second stage is the **builder image** that installs Poetry, copies the application
     files (including `pyproject.toml`, `poetry.lock`, and `README.md`) and builds
     a wheel using Poetry.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二阶段是**构建镜像**，它安装 Poetry，复制应用程序文件（包括 `pyproject.toml`、`poetry.lock` 和 `README.md`），并使用
+    Poetry 构建一个 wheel。
 - en: The third stage is the **production image** that copies the wheel from the build
     stage and installs it using pip (We don’t want Poetry in our production image!).
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三阶段是**生产镜像**，它从构建阶段复制 wheel 并使用 pip 安装（我们不希望在生产镜像中使用 Poetry！）。
 - en: We can build a docker container from this with
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过以下命令从中构建一个 docker 容器：
 - en: '[PRE11]'
+  id: totrans-128
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'When going inside (bash), we can execute our **console_script** as we did before:'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 进入（bash）后，我们可以像之前一样执行我们的**console_script**：
 - en: '[PRE12]'
+  id: totrans-130
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Or we do this in one line:'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者我们可以一行完成：
 - en: '[PRE13]'
+  id: totrans-132
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '*Please note, that the docker entrypoint is /bin/bash, as this shell contains
     the dbscript1 and dbscript2 in the $PATH variable.*'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请注意，docker 的入口点是 /bin/bash，因为这个 shell 包含了 $PATH 变量中的 dbscript1 和 dbscript2。*'
 - en: This docker image can be now pushed to a **container registry** of our choice.
     This can be e.g. DockerHub, ACR, ECR etc. In my case, I choose Azure Container
     Registry (ACR), because the Databricks workspace is on Azure as well.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个 docker 镜像现在可以推送到我们选择的**容器注册表**。这可以是 DockerHub、ACR、ECR 等。例如，在我的情况下，我选择 Azure
+    Container Registry（ACR），因为 Databricks 工作区也在 Azure 上。
 - en: 'To push the image I run these commands:'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 要推送镜像，我运行这些命令：
 - en: '[PRE14]'
+  id: totrans-136
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Create and trigger a Dabricks job run (UI)
+  id: totrans-137
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建并触发一个 Databricks 作业运行（UI）
 - en: 'In the Databricks workspace (UI), we can create a job (*Workflows tab*) and
     define a new cluster for it:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Databricks 工作区（UI）中，我们可以创建一个作业（*工作流选项卡*）并为其定义一个新的集群：
 - en: '![](../Images/f1619505fcfbaba40e4d631d0b6f9bb7.png)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f1619505fcfbaba40e4d631d0b6f9bb7.png)'
 - en: Create a new Databricks cluster — image by author
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建一个新的 Databricks 集群 — 作者图片
 - en: 'Here, I create the smallest available single node cluster, the **Standard_F4**
     that consums **0,5 DBU/h**. In the *Advanced* *options* section, we can specify
     the Docker settings:'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我创建了最小的单节点集群，**Standard_F4**，其消耗**0.5 DBU/h**。在*高级* *选项* 部分，我们可以指定 Docker
+    设置：
 - en: '![](../Images/45c9cc2cbb8265acb424d5a8bdfc0947.png)'
+  id: totrans-142
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/45c9cc2cbb8265acb424d5a8bdfc0947.png)'
 - en: Use your own Docker container — Image by author
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用你自己的 Docker 容器 — 作者图片
 - en: So that the cluster can pull the image from the container registry. We provide
     a container registry **username** and **password** but we could also use the “Default
     authentication” method (e.g. Azure).
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样集群就可以从容器注册表中拉取镜像。我们提供一个容器注册表**用户名**和**密码**，但我们也可以使用“默认身份验证”方法（例如 Azure）。
 - en: 'In the jobs UI, we can then create a job:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 在作业 UI 中，我们可以创建一个作业：
 - en: '![](../Images/fd42d81f6f854f8b97dfd18c2b28590a.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fd42d81f6f854f8b97dfd18c2b28590a.png)'
 - en: Job creation — Image by author
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 作业创建 — 作者图片
 - en: where we define the **package name** and **entry point**.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里我们定义**包名**和**入口点**。
 - en: Please note, in the UI, we create a job first and then trigger it for a job
     run. The REST API allows us to create and trigger a **one-time job run** with
     one call only! We’ll see this in the next section.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，在 UI 中，我们先创建一个作业，然后触发它进行作业运行。REST API 允许我们通过一个调用创建并触发**一次性作业运行**！我们将在下一部分中看到这一点。
 - en: 'In the *Job runs* tab, we can see the status of our job run:'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 *作业运行* 选项卡中，我们可以看到作业运行的状态：
 - en: '![](../Images/46e129ca0ff7f724d367089cf41d0838.png)'
+  id: totrans-151
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/46e129ca0ff7f724d367089cf41d0838.png)'
 - en: Pending job run — Image by author
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 待处理的作业运行 — 作者图片
 - en: 'In a matter of minutes, the cluster was ready and ran our console script in
     the docker image of our choice:'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 几分钟内，集群就准备好了，并在我们选择的 docker 镜像中运行了我们的控制台脚本：
 - en: '![](../Images/2b0508c3b1a7cbcf4427e85faf941da7.png)'
+  id: totrans-154
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2b0508c3b1a7cbcf4427e85faf941da7.png)'
 - en: Succeeded job run — Image by author
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 作业运行成功 — 作者图片
 - en: 'We can get the logs (stdout, stderr) by clicking on the run:'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过点击运行来获取日志（stdout、stderr）：
 - en: '![](../Images/49a61b0d7c548c549b35c21e19884c37.png)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49a61b0d7c548c549b35c21e19884c37.png)'
 - en: Output of the job run — Image by author
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 作业运行的输出 — 作者图片
 - en: Fantastic!
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 太棒了！
 - en: Create and trigger a job run (REST API)
+  id: totrans-160
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建并触发作业运行（REST API）
 - en: 'A service such as an Azure Function cannot use the UI to initiate job runs.
     Instead, it has to use the Databricks REST API (Jobs API 2.1). We could use [Airflow’s
     Databricks Connectors](https://docs.databricks.com/workflows/jobs/how-to/use-airflow-with-jobs.html)
@@ -633,22 +983,34 @@
     API is probably faster to set up. So let’s to write some Python code that allows
     us to create and trigger job runs. I will enclose this code in a class called
     **Databricks service**:'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 像 Azure Function 这样的服务不能使用 UI 来启动作业运行。相反，它必须使用 Databricks REST API（Jobs API
+    2.1）。我们可以使用 [Airflow 的 Databricks 连接器](https://docs.databricks.com/workflows/jobs/how-to/use-airflow-with-jobs.html)
+    来完成，但编写一些发送单个请求到 REST API 的 Python 代码可能设置更快。因此，让我们编写一些允许我们创建和触发作业运行的 Python 代码。我将把这些代码封装在一个名为**Databricks
+    服务**的类中：
 - en: 'The script has two components: a `SecretsConfig` class and a `DatabricksService`
     class.'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 脚本有两个组件：一个 `SecretsConfig` 类和一个 `DatabricksService` 类。
 - en: The `SecretsConfig` class is used read and store config settings and secrets
     such as Databricks URL, Databricks Personal Access Token (PAT)*, Azure Container
     Registry (ACR) username and password. These are the same basic parameters that
     we had to specify using the UI.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: '`SecretsConfig`类用于读取和存储配置设置和秘密，例如 Databricks URL、Databricks 个人访问令牌（PAT）*、Azure
+    容器注册表（ACR）用户名和密码。这些是我们通过 UI 需要指定的基本参数。'
 - en: '**If you have Databricks deployed with the Premium Tier, you don’t need to
     use the PAT, but can get yourself a token with OAuth.*'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如果你使用的是 Premium Tier 部署的 Databricks，你无需使用 PAT，而可以通过 OAuth 获取令牌。*'
 - en: 'The `DatabricksService` class is used to interact with the Databricks API.
     It allows to create and trigger a **one-time job run** using an existing cluster
     or a new cluster. The API documentation can be found in the [jobs API 2.1](https://docs.databricks.com/api/azure/workspace/jobs/submit).
@@ -656,76 +1018,118 @@
     The `create_job_run_on_existing_cluster()` method is used to create a job run
     on an existing cluster, while the `create_job_run_on_new_cluster()` method is
     used to create a job run on a new cluster.'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '`DatabricksService`类用于与 Databricks API 交互。它允许使用现有集群或新集群创建和触发**一次性作业运行**。API
+    文档可以在[作业 API 2.1](https://docs.databricks.com/api/azure/workspace/jobs/submit)中找到。该服务本身只有对同一
+    *submit* 端点的两种变体调用：`create_job_run_on_existing_cluster()`方法用于在现有集群上创建作业运行，而`create_job_run_on_new_cluster()`方法用于在新集群上创建作业运行。'
 - en: 'Let’s briefly examine the `create_job_run_on_new_cluster()` function:'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们简要查看一下`create_job_run_on_new_cluster()`函数：
 - en: The method takes several arguments, such as *image_url*, *package_name*, *entrypoint*
     etc and calls the *submit* endpoint to create and start a job run on a new cluster.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 该方法接受多个参数，例如*image_url*、*package_name*、*entrypoint* 等，并调用 *submit* 端点以在新集群上创建并启动作业运行。
 - en: The `python_wheel_task_payload` dictionary is used to specify the package name
     and entry point of the Python package to use. The positional and named arguments
     are also specified in this dictionary if they are provided.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: '`python_wheel_task_payload`字典用于指定要使用的 Python 包的包名称和入口点。如果提供了位置参数和命名参数，也可以在此字典中指定。'
 - en: The `cluster` dictionary is used to specify the cluster settings for the new
     cluster. The settings include the number of workers, Spark version, runtime engine,
     node type ID, and driver node type ID.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: '`cluster`字典用于指定新集群的设置。设置包括工作节点数量、Spark 版本、运行时引擎、节点类型 ID 和驱动程序节点类型 ID。'
 - en: 'Having that, we now need some code to call the Databricks REST API using our
     DatabricksService:'
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了这些，我们现在需要一些代码来使用我们的 DatabricksService 调用 Databricks REST API：
 - en: Example script to create a job run using the Databricks REST API Jobs2.1
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 示例脚本用于通过 Databricks REST API Jobs2.1 创建作业运行
 - en: 'After running the script, we observe that we get a status code 200 back and
     our job run completes successfully after a while:'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行脚本后，我们观察到返回了状态码 200，并且作业运行在一段时间后成功完成：
 - en: '![](../Images/5113f8578b89d9ce196ea3f834ac02a9.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5113f8578b89d9ce196ea3f834ac02a9.png)'
 - en: Succeeded job run (called through the REST API) — Image by author
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 成功的作业运行（通过 REST API 调用） — 图片由作者提供
 - en: 'And we see the output:'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们看到输出：
 - en: '![](../Images/59b59f16aad562de70be1ad9688beb39.png)'
+  id: totrans-176
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/59b59f16aad562de70be1ad9688beb39.png)'
 - en: Job run output — Image by author
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 作业运行输出 — 图片由作者提供
 - en: Easy!
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 很简单！
 - en: If we wanted to use an identity to access resources in Azure, we’d provide the
     credentials of a service principal as **environment variables** when calling the
     submit endpoint (new cluster!).
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们想要使用身份访问 Azure 中的资源，我们需要在调用提交端点时（新集群！）提供服务主体的凭据作为**环境变量**。
 - en: Conclusion
+  id: totrans-180
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Running Python jobs in custom Docker images in Databricks is not only possible
     but also practical and efficient. It gives you more flexibility, control, and
     portability over your code and workflows. You can use this technique to run any
     Python script (or any other code) as a Databricks job without uploading any file
     to the Databricks workspace or connecting to a remote Git repository.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Databricks 中运行自定义 Docker 镜像中的 Python 作业不仅是可能的，而且是实用且高效的。这为你的代码和工作流程提供了更多的灵活性、控制权和可移植性。你可以使用这种技术运行任何
+    Python 脚本（或任何其他代码）作为 Databricks 作业，而无需将任何文件上传到 Databricks 工作区或连接到远程 Git 存储库。
 - en: In this short tutorial, you’ve learned how to create **Python wheel tasks**
     in **custom Docker images** and trigger job runs with the Databricks UI or the
     REST API.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个简短的教程中，你已经学习了如何在**自定义 Docker 镜像**中创建**Python wheel 任务**，并使用 Databricks UI
+    或 REST API 触发作业运行。
 - en: What do you think of this workflow? How do you run your Python jobs in Databricks?
     Let me know in the comments.
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 你对这个工作流程怎么看？你在 Databricks 中是如何运行你的 Python 作业的？请在评论中告诉我。
