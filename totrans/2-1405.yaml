@@ -1,15 +1,21 @@
 - en: Learning Network Games
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 学习网络游戏
 - en: 原文：[https://towardsdatascience.com/learning-network-games-29970aee44bb](https://towardsdatascience.com/learning-network-games-29970aee44bb)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/learning-network-games-29970aee44bb](https://towardsdatascience.com/learning-network-games-29970aee44bb)
 - en: Graph ML meets Game Theory
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图论机器学习与博弈论
 - en: Network games are a powerful tool for modelling strategic interactions between
     individuals or organisations played out on networks, where a player’s payoff depends
     not only on their own actions but also on those of their neighbours. Such games
@@ -22,34 +28,55 @@
     network structure. In this blog post, we outline a novel approach that uses a
     Transformer-like architecture to infer the network structure of a game without
     explicitly knowing the utility function associated with the game.
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 网络游戏是一个强大的工具，用于建模在网络上进行的个体或组织之间的战略互动，其中一个玩家的回报不仅依赖于他们自己的行动，还依赖于他们邻居的行动。这类游戏在经济学和社会科学中有广泛的应用，包括研究社会网络中的影响扩散、金融市场的动态以及国际关系中的联盟形成。网络游戏的研究通常假设已知底层网络结构，但这往往是不切实际的。最近，机器学习方法被提出来解决这个问题，通过利用玩家的观察行为来学习底层网络结构。在这篇博客文章中，我们概述了一种新颖的方法，它使用类似
+    Transformer 的架构来推断游戏的网络结构，而不需要明确知道与游戏相关的效用函数。
 - en: '[](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)[![Michael
     Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)
     [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)[![Michael
+    Bronstein](../Images/1aa876fce70bb07bef159fecb74e85bf.png)](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)
+    [Michael Bronstein](https://michael-bronstein.medium.com/?source=post_page-----29970aee44bb--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)
     ·10 min read·Apr 20, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----29970aee44bb--------------------------------)
+    ·阅读时间 10 分钟·2023年4月20日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/7eb99f9ccbe299de8373fdaf9c268f05.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7eb99f9ccbe299de8373fdaf9c268f05.png)'
 - en: Illustration based on Shutterstock.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于 Shutterstock 的插图。
 - en: '*This post was co-authored with* [*Emanuele Rossi*](https://emanuelerossi.co.uk/)
     *and is based on the paper E. Rossi et al., “*[*Learning to infer the structure
     of network games*](https://proceedings.mlr.press/v162/rossi22a/rossi22a.pdf)*”
     (2022) ICML, a collaboration with Federico Monti, Yan Leng, and Xiaowen Dong.*'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这篇文章由* [*Emanuele Rossi*](https://emanuelerossi.co.uk/) *共同撰写，并基于论文 E. Rossi
+    等人，"*[*学习推断网络游戏的结构*](https://proceedings.mlr.press/v162/rossi22a/rossi22a.pdf)*"（2022年）ICML，与
+    Federico Monti、Yan Leng 和 Xiaowen Dong 合作。*'
 - en: G[ame theory](https://en.wikipedia.org/wiki/Game_theory) is a mathematical framework
     for modelling and analysing situations where multiple decision-makers interact
     with each other, and where the outcome of each decision depends on the actions
@@ -58,42 +85,56 @@
     strategies but also on the structure of the network. Each player tries to maximise
     their *utility function*, which in the case of network games depends both on their
     own actions and the actions of their neighbours.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '[博弈论](https://en.wikipedia.org/wiki/Game_theory)是一个用于建模和分析多个决策者相互作用的情况的数学框架，其中每个决策的结果都依赖于所有相关玩家的行动。在*网络游戏*中[1]，玩家通过网络（图）相互连接，游戏的结果不仅依赖于玩家的策略，还依赖于网络的结构。每个玩家都试图最大化他们的*效用函数*，在网络游戏中，这个函数不仅依赖于他们自己的行动，还依赖于邻居的行动。'
 - en: '*Equilibrium actions* refer to a set of strategies where no player has an incentive
     to change their strategy, given the strategies of the other players. In other
     words, at equilibrium, each player’s strategy is optimal, given the strategies
     of the other players. In network games, the equilibrium actions depend on the
     graph structure, along with other parameters dependent on the game.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*均衡行为* 是指一组策略，在这种策略下，任何玩家都没有动机去改变自己的策略，前提是其他玩家的策略不变。换句话说，在均衡状态下，每个玩家的策略都是最优的，考虑到其他玩家的策略。在网络游戏中，均衡行为取决于图结构以及其他依赖于游戏的参数。'
 - en: Consider, for example, a scenario where individuals on a social network can
     decide how much time to spend on the platform. In such a case, their behaviours
     may be influenced by their friends on the network, which creates a strategic interdependence
     between players. For instance, if Joe’s friends spend a lot of time on the platform,
     Joe might perceive a greater benefit from using the platform himself.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，考虑一个社交网络上的场景，个人可以决定在平台上花费多少时间。在这种情况下，他们的行为可能会受到网络上朋友的影响，这在玩家之间创造了战略上的相互依赖。例如，如果乔的朋友们在平台上花费了大量时间，乔可能会感受到自己使用平台的更大收益。
 - en: In a different setting, Joe is a user of an e-commerce platform deciding whether
     to buy a book. If his friend has already purchased the book, Joe might be less
     likely to buy it, as he can borrow it from his friend. These examples illustrate
     how actions in network games can be affected by the actions of neighbouring players,
     leading to strategic interdependence and the emergence of equilibrium actions.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在不同的环境下，乔是一个电子商务平台的用户，他在决定是否购买一本书。如果他的朋友已经购买了这本书，乔可能会不太愿意买，因为他可以向朋友借这本书。这些例子说明了网络游戏中的行动如何受到邻近玩家行动的影响，从而导致战略上的相互依赖和均衡行为的出现。
 - en: '![](../Images/6e43e639405e3420a88ded6b9fb10f50.png)'
+  id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e43e639405e3420a88ded6b9fb10f50.png)'
 - en: 'Examples of network games. *Left:* a user Joe is likely to spend more time
     on a social app if his friends are also spending time on the app. Right: Joe has
     less incentive to buy a book if his friend has already bought it because Joe can
     borrow it.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 网络游戏的示例。*左侧：* 如果乔的朋友们也在社交应用上花时间，乔可能会在应用上花更多的时间。右侧：如果他的朋友已经买了那本书，乔就更没有购买的动力，因为乔可以借到书。
 - en: Inferring the Network from the Actions
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 从行动中推断网络
 - en: In the above examples, we assumed to know the friends of Joe, i.e., the network
     structure of the game. However, in many situations, the underlying network structure
     is not directly available to us. Instead, we may only observe the equilibrium
@@ -102,8 +143,10 @@
     equilibrium actions. Knowing the network structure can be helpful in predicting
     behaviour and planning network-based interventions, such as marketing campaigns
     or information diffusion.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述例子中，我们假设了解乔的朋友，即游戏的网络结构。然而，在许多情况下，潜在的网络结构并不可直接获得。相反，我们可能只能观察到由代理之间的互动所产生的均衡行为。在这些情况下，一个关键问题是我们是否可以仅根据这些均衡行为重建网络结构。了解网络结构可以帮助预测行为并规划基于网络的干预措施，如营销活动或信息扩散。
 - en: It was previously shown that, under specific assumptions about the mathematical
     form of the utility function and game types, it is possible to reconstruct the
     graph governing the network game [2]. However, such assumptions can be unrealistic,
@@ -111,24 +154,34 @@
     in a recent paper [3] we developed an approach that does not require assumptions
     about the form of the utility function and can be applied to a broad range of
     network games.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前已经显示，在关于效用函数和游戏类型的特定假设下，可以重建控制网络游戏的图 [2]。然而，这些假设可能不切实际，特别是当对正在进行的游戏了解甚少时。为此，在最近的一篇论文
+    [3] 中，我们开发了一种不需要关于效用函数形式的假设的方法，可以应用于广泛的网络游戏。
 - en: 'We start by studying three common types of network games, *Linear Quadratic*,
     *Linear Influence*, and *Barik-Honorio* [4]. The three types of games differ by
     the form of the utility function, leading to different levels of smoothness of
     the actions in the graph:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先研究三种常见的网络游戏类型，*线性二次*、*线性影响* 和 *Barik-Honorio* [4]。这三种游戏因效用函数的形式不同而异，从而导致图中行动的平滑程度不同：
 - en: '*eᵤᵥ* = *bᵤ xᵤ* — ½ *xᵤ²* + *β* Σ*ᵥ aᵤᵥ xᵤ xᵥ,*'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*eᵤᵥ* = *bᵤ xᵤ* — ½ *xᵤ²* + *β* Σ*ᵥ aᤥᵥ xᵤ xᵥ,*'
 - en: where *xᵤ* is the continuous action taken by player *u*, *bᵤ* is the player’s
     *marginal benefit*, *β* is a game parameter representing the strength of dependencies
     between actions of neighbours in the network, and *aᵤᵥ* is the entry in the adjacency
     matrix of the graph representing the strength of the connection between *u* and
     *v*.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*xᵤ* 是玩家 *u* 采取的连续行动，*bᵤ* 是玩家的 *边际效益*，*β* 是表示网络中邻居行为之间依赖强度的游戏参数，*aᵤᵥ* 是表示 *u*
+    和 *v* 之间连接强度的图的邻接矩阵中的条目。'
 - en: Taking as an example the aforementioned scenario of time spent on a social platform,
     the first term of the equation would capture the individual benefit from using
     the platform (such as staying up-to-date with the news), the second term would
@@ -136,52 +189,76 @@
     things), and the third term would capture the interdependence with the friends'
     actions. In particular, *β* would be positive if a user has an incentive to spend
     more time on the app when his friends do so [5].
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 以先前提到的在社交平台上花费时间的情景为例，方程的第一项将捕捉使用平台的个人效益（例如保持最新消息），第二项将表示这样做的成本（例如减少时间做其他更重要的事情），第三项将捕捉与朋友行为的相互依赖。特别是，如果用户在朋友也花时间使用该应用时有动机花更多时间使用它，则
+    *β* 将是正值 [5]。
 - en: The pure-strategy [Nash equilibrium](https://en.wikipedia.org/wiki/Nash_equilibrium)
     of *Linear Quadratic* games is
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '*线性二次* 游戏的纯策略 [纳什均衡](https://en.wikipedia.org/wiki/Nash_equilibrium) 是'
 - en: '**x*** = (**I** — β**A**)ᐨ¹ **b**,'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**x*** = (**I** — β**A**)ᐨ¹ **b**'
 - en: where **x*** is a vector of dimension *n* (equal to the number of players, or
     nodes of the graph), **A** is the unknown *n*×*n* adjacency matrix of the graph,
     **b** is the *n*-dimensional vector of marginal benefits of the players.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**x*** 是一个维度为 *n* 的向量（等于玩家数量或图的节点数），**A** 是图的未知 *n*×*n* 邻接矩阵，**b** 是玩家的 *n*
+    维边际效益向量。'
 - en: Similar formulas can be derived for *Linear Influence* and *Barik-Honorio* games.
     A formula for the equilibrium actions **x*** that generalizes all three games
     has the form [6]
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似的公式可以推导出 *线性影响* 和 *Barik-Honorio* 游戏的平衡行动 **x*** 的公式，将这三种游戏泛化为形式 [6]
 - en: '**x*** = *f*(**A**) *h*(**b**),'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**x*** = *f*(**A**) *h*(**b**),'
 - en: where the function *f*(**A**) accounts for the influence from the actions of
     one’s neighbours in the network and encodes the specific utility function of the
     game, and conversely, *h*(**b**) is only affected by one’s characteristics, such
     as the marginal benefit of an individual player.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数 *f*(**A**) 反映了网络中邻居行为的影响，并编码了游戏的具体效用函数，相反，*h*(**b**) 仅受个体特征影响，如单个玩家的边际效益。
 - en: '![](../Images/a80761caaa45a5c1108857fa5910f3f8.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a80761caaa45a5c1108857fa5910f3f8.png)'
 - en: Specific instances of three different types of games common in the game theory
     literature. The colours represent the actions taken by the players, which in this
     case are continuous values normalised between -1 and +1.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 游戏理论文献中常见的三种不同类型的具体实例。颜色表示玩家采取的行动，在这种情况下是归一化在 -1 和 +1 之间的连续值。
 - en: In our paper we further show [7] that the players’ actions contain information
     about the spectrum of the graph, confirming that it is possible to reconstruct
     the graph structure from only the actions and justifying our approach outlined
     below.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的论文中，我们进一步展示了[7]玩家的动作包含图的谱信息，确认了仅从动作中重建图结构的可能性，并证明了我们下面概述的方法的合理性。
 - en: A Machine Learning approach
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一种机器学习方法
 - en: We approach inferring the network structure of a game as a machine-learning
     problem. We train a model to map the players’ actions to the network structure
     of the game, without any prior knowledge of the underlying utility function. To
@@ -189,8 +266,11 @@
     from games played with the same utility function (although this function is unknown
     to us). This allows us to avoid making strong assumptions about the utility function
     and instead train a model that is agnostic to it.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将推断游戏网络结构视为一个机器学习问题。我们训练一个模型，将玩家的动作映射到游戏的网络结构中，而没有对基础效用函数的任何先验知识。为此，我们收集了来自使用相同效用函数的游戏中的动作和网络对(**X**,
+    **A**)的数据集（尽管我们不知道这个函数）。这使我们能够避免对效用函数做出强假设，而是训练一个对其无关的模型。
 - en: Such an approach is particularly useful in scenarios where social network and
     decision data exist for a small population, and we aim to learn the mapping from
     decisions to the network structure of a larger population. For instance, governments,
@@ -198,110 +278,158 @@
     by asking individuals to nominate their friends, and then use the proposed method
     to learn the network interactions for a larger population in a cost-effective
     manner.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法在社会网络和决策数据仅存在于小规模人群的场景中特别有用，我们旨在学习从决策到较大人群网络结构的映射。例如，政府、公共机构和研究人员可以通过让个人提名他们的朋友来收集小规模人群的社会网络数据，然后使用提出的方法以成本效益的方式学习较大人群的网络互动。
 - en: 'Our ML model has an encoder-decoder architecture that is invariant to the permutation
     of both the players and the games, corresponding to the rows and columns of the
     *n*×*K* matrix **X**, where *K* denotes the number of games. To achieve this,
     we modify a Transformer model, which is naturally permutation-invariant over the
     set of nodes but not over the set of games. Our encoder produces *K* vectors for
     each player as follows:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的机器学习模型具有一个编码器-解码器架构，该架构对玩家和游戏的排列是不可变的，对应于*n*×*K*矩阵**X**的行和列，其中*K*表示游戏的数量。为实现这一点，我们修改了一个变换器模型，该模型在节点集合上自然是排列不变的，但在游戏集合上则不是。我们的编码器为每个玩家生成*K*个向量，如下所示：
 - en: The scalar action *xᵤₖ* of player *u* for game *k* is first passed through a
     non-linear transformation resulting in an *F*-dimensional vector
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 玩家*u*在游戏*k*中的标量动作*xᵤₖ*首先通过一个非线性变换，得到一个*F*维向量。
 - en: '**y***ᵤₖ*= ReLU(*xᵤₖ***w** + **b**).'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**y***ᵤₖ* = ReLU(*xᵤₖ***w** + **b**).'
 - en: We then calculate the unnormalised attention scores
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们接着计算未归一化的注意力分数。
 - en: '*sᵤᵥ* = Σₖ **y***ᵤₖ*ᵀ **W** **W***ₖ* **y***ᵥₖ*'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '*sᵤᵥ* = Σₖ **y***ᵤₖ*ᵀ **W** **W***ₖ* **y***ᵥₖ*'
 - en: between players *u* and *v* by first computing per-game scores using a ‘learned
     dot-product’ with query and key weight matrices **W** and **W***ₖ* as in the original
     Transformer [8], and then summing them over the games. The attention scores
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过首先计算每个游戏的分数，使用带有查询和键权重矩阵**W**和**W***ₖ*的“学习点积”，然后对游戏进行求和，得到玩家*u*与玩家*v*之间的注意力分数。注意力分数
 - en: '*αᵤᵥ* = softmax*ᵥ*(*uᵤᵥ*)'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '*αᵤᵥ* = softmax*ᵥ*(*uᵤᵥ*)'
 - en: are obtained by taking the softmax over the unnormalised scores over the second
     dimension. Finally, the *F*-dimension embedding
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过在第二维度上对未归一化分数进行softmax，得到最终的*F*维嵌入。
 - en: '**z***ᵤₖ* = *φ*(Σ*ᵥ* *αᵤᵥ***y***ᵥₖ*)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '**z***ᵤₖ* = *φ*(Σ*ᵥ* *αᵤᵥ***y***ᵥₖ*)'
 - en: of node *u* for game *k* is obtained by aggregating the **y***ᵤₖ* vectors of
     other nodes weighted by the attention scores, before passing the result through
     a 2-layer MLP *φ*.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 节点*u*在游戏*k*中的**y***ᵤₖ*向量，通过将其他节点的**y***ᵤₖ*向量按注意力分数加权后聚合得到，然后通过一个2层MLP *φ*进行处理。
 - en: 'The decoder outputs probabilities for each entry of the adjacency matrix by
     aggregating the *K* vectors for players *u* and *v*. This is done by taking the
     dot product of the two vectors for each game and summing the results before feeding
     them into a multilayer perceptron (MLP):'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 解码器通过聚合玩家*u*和*v*的*K*个向量来输出邻接矩阵每个条目的概率。这是通过对每个游戏的两个向量进行点积并求和，然后将结果输入多层感知机（MLP）来完成的。
 - en: '*âᵤᵥ* = *ψ*(Σ*ₖ* **z***ᵤₖ* ⊙**z**ᵥ*ₖ*)'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '*âᵤᵥ* = *ψ*(Σ*ₖ* **z***ᵤₖ* ⊙**z**ᵥ*ₖ*)'
 - en: where ⊙ represents the dot product and *ψ* is a 2-layer MLP.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 ⊙ 表示点积，*ψ* 是一个2层MLP。
 - en: The resulting encoder is also permutation-invariant over the set of games.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成的编码器在游戏集上也是排列不变的。
 - en: '![](../Images/f636828f3b7273868b2c6b9bfa47252b.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f636828f3b7273868b2c6b9bfa47252b.png)'
 - en: Diagram representing the encoder-decoder architecture of our model. The *n*x*K*
     input matrix **X** containing the players’ actions is encoded into the *n*x*F*x*K*
     tensor **Z**, where **z***ᵤₖ* is the embedding for node *u* in game *k*, obtained
     by attending over the actions of the other players in the same game. **Z** is
     then decoded into the *n*×*n* adjacency matrix **Â** where the entry âᵤᵥ contains
     the probability of an edge between *u* and *v*.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 图示表示了我们模型的编码器-解码器架构。包含玩家行为的*n*x*K* 输入矩阵**X**被编码为*n*x*F*x*K* 张量**Z**，其中**z***ᵤₖ*是游戏*k*中节点*u*的嵌入，基于在同一游戏中其他玩家的行为进行计算。**Z**随后被解码为*n*×*n*的邻接矩阵**Â**，其中条目âᵤᵥ包含了*u*和*v*之间存在边的概率。
 - en: Experimental Results
+  id: totrans-51
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实验结果
 - en: We conducted experiments to validate the effectiveness of our approach in learning
     the network structure from players’ actions, using both synthetic and real-world
     datasets. As baselines, we used DeepGraph [9] (the only machine learning approach
     we are aware of), optimisation methods specific to the game type, and simple correlation
     and anticorrelation of actions between nodes.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们进行了实验，以验证我们的方法在从玩家行为中学习网络结构的有效性，使用了合成数据集和真实数据集。作为基线，我们使用了DeepGraph [9]（我们知道的唯一机器学习方法），特定于游戏类型的优化方法，以及节点之间行为的简单相关性和反相关性。
 - en: On synthetic datasets, our model (called *NuGgeT*) consistently outperformed
     previous methods across a range of different games and graph types.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 在合成数据集上，我们的模型（称为*NuGgeT*）在各种不同的游戏和图类型中始终优于以前的方法。
 - en: '![](../Images/8bbe9d5459e558784acdcc49da9924c7.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8bbe9d5459e558784acdcc49da9924c7.png)'
 - en: We report the results on *Linear Influence* games (see the paper for *Linear
     Quadratic* and *Barik-Honorio*) on three different types of synthetic graphs (Watts–Strogatz,
     Erdős–Rényi and Barabási–Albert) and with varying smoothness of the marginal benefit
     (a hyperparameter of this type of game). Our method, called NuGgeT, consistently
     outperforms the baselines.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们报告了在*Linear Influence*游戏中的结果（见论文中的*Linear Quadratic*和*Barik-Honorio*），在三种不同类型的合成图（Watts–Strogatz，Erdős–Rényi和Barabási–Albert）以及不同的边际效益平滑度（这种游戏的超参数）下。我们的方法称为NuGgeT，始终优于基线方法。
 - en: '![](../Images/249557f74295d8a3f81c01e26660346c.png)![](../Images/da03d1a69ba2fdc550cbaeab6ee0221f.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/249557f74295d8a3f81c01e26660346c.png)![](../Images/da03d1a69ba2fdc550cbaeab6ee0221f.png)'
 - en: The performance of our model in learning the mapping depends on the number of
     available games and training graphs, and we conducted ablations to evaluate both
     factors. Generally, a higher number of games and graphs are beneficial for our
     approach. However, we observe that the model performance tends to plateau at around
     100 games and 500 graphs in most cases.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们模型在学习映射的性能取决于可用的游戏数量和训练图的数量，我们进行了消融实验来评估这两个因素。通常，更多的游戏和图对我们的方法有利。然而，我们观察到，在大多数情况下，模型性能在大约100个游戏和500个图时趋于饱和。
 - en: 'We further validated our approach on two real-world datasets: the *Indian Villages*
     dataset [10] and the *Yelp Ratings* dataset [11]. The former contains data from
     a survey of social networks in 75 villages in India. Each village constitutes
@@ -310,30 +438,41 @@
     other decisions families have to make related to their household. The reasoning
     is that if neighbours adopt a specific facility, villagers tend to gain a higher
     payoff by doing the same, i.e., complying with social norms.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们进一步在两个真实世界的数据集上验证了我们的方法：*Indian Villages* 数据集[10]和*Yelp Ratings* 数据集[11]。前者包含来自印度75个村庄的社会网络调查数据。每个村庄构成一个社会网络图，其中节点是家庭，边是自报的友谊。我们将房间数量、床位数量以及家庭在家庭相关决策中的其他决定视为行动。理由是，如果邻居采用了某种设施，村民往往通过采取相同措施来获得更高的收益，即遵循社会规范。
 - en: The *Yelp Ratings* dataset consists of user ratings of businesses and social
     connections between users. We extracted 5000 sub-graphs representing communities
     from the raw data, where the actions were the average rating of users for 22 categories
     of businesses.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Yelp Ratings* 数据集由用户对商家的评分和用户之间的社交连接组成。我们从原始数据中提取了5000个表示社区的子图，其中的行为是用户对22类商业的平均评分。'
 - en: On both real-world datasets, NuGgeT outperforms previous methods, showcasing
     the efficacy of our approach in cases where the game utility is not explicitly
     known. The gain is particularly large on the *Indian Villages* dataset, where
     the competing DeepGraph method fails to learn altogether. We conjecture this is
     due to NuGgeT being more data-efficient thanks to its built-in invariances, as
     confirmed by the above ablation over the number of training graphs.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 在两个现实世界的数据集上，NuGgeT 优于以往的方法，展示了我们的方法在游戏效用未知的情况下的有效性。特别是在*印度村庄*数据集上，NuGgeT 的增益尤其显著，而竞争方法
+    DeepGraph 完全无法学习。我们推测这可能是因为 NuGgeT 更加数据高效，得益于其内置的不变性，这一点通过对训练图数量的消融实验得到了确认。
 - en: '![](../Images/6fa51b572bf42449fa6b6d24d6422725.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6fa51b572bf42449fa6b6d24d6422725.png)'
 - en: NuGgeT outperforms previous methods on both the two real-world datasets we tested
     on, confirming its efficacy in cases where the game utility function is not explicitly
     known.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: NuGgeT 在我们测试的两个现实世界数据集上优于以往的方法，确认了其在游戏效用函数未知的情况下的有效性。
 - en: In conclusion, our paper highlights the fruitful connection between game theory
     and graph machine learning, particularly in the context of network games. By developing
     a new machine learning approach to infer network structure from observed game
@@ -341,25 +480,39 @@
     learning and vice versa. Looking forward, there is ample opportunity to explore
     further connections between network games and graph neural networks, paving the
     way for more exciting developments in these fields.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，我们的论文突出了博弈论与图机器学习之间的有益联系，特别是在网络游戏的背景下。通过开发一种新的机器学习方法来从观察到的游戏结果中推断网络结构，我们展示了利用博弈论思想来提升机器学习的潜力，反之亦然。展望未来，还有广阔的机会进一步探索网络游戏与图神经网络之间的联系，为这些领域带来更多激动人心的发展。
 - en: '[1] See e.g. M. O. Jackson and Y. Zenou, [Games on networks](https://web.stanford.edu/~jacksonm/GamesNetworks.pdf)
     (2014), *Handbook of Game Theory* 4:95–163 for an overview.'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 参见例如 M. O. Jackson 和 Y. Zenou，[网络上的游戏](https://web.stanford.edu/~jacksonm/GamesNetworks.pdf)
+    (2014)，*博弈论手册* 4:95–163 以获取概述。'
 - en: '[2] Y. Leng et al., [Learning quadratic games on networks](http://proceedings.mlr.press/v119/leng20a/leng20a.pdf)
     (2020), *ICML*.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Y. Leng 等，[在网络上学习二次博弈](http://proceedings.mlr.press/v119/leng20a/leng20a.pdf)
+    (2020)，*ICML*。'
 - en: '[3] E. Rossi et al., [Learning to infer the structure of network games](https://proceedings.mlr.press/v162/rossi22a/rossi22a.pdf)
     (2022), *ICML*.'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] E. Rossi 等， [学习推断网络游戏的结构](https://proceedings.mlr.press/v162/rossi22a/rossi22a.pdf)
+    (2022)，*ICML*。'
 - en: '[4] A. Barick and J. Honorio, [Provable computational and statistical guarantees
     for efficient learning of continuous-action graphical games](https://arxiv.org/pdf/1911.04225.pdf)
     (2019), *arXiv*:1911.04225.'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] A. Barick 和 J. Honorio，[对连续动作图形游戏高效学习的可证明计算和统计保证](https://arxiv.org/pdf/1911.04225.pdf)
+    (2019)，*arXiv*:1911.04225。'
 - en: '[5] The first term represents the marginal benefit for taking a larger action,
     the second term represents the cost for taking the action, while the third term
     represents the relation with the neighbours actions. If *β* is positive, the incentive
@@ -368,35 +521,53 @@
     relationship*. On the other hand, if *β* is negative the incentive of a player
     to take a higher action is decreasing in the number of their neighbours taking
     a higher action (*strategic substitute relationship*).'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 第一个项表示采取更大行动的边际收益，第二个项表示采取行动的成本，而第三个项表示与邻居行动的关系。如果*β*为正，则玩家采取更高行动的激励会随着其邻居也采取更高行动的数量增加而增加，这称为*战略互补关系*。另一方面，如果*β*为负，则玩家采取更高行动的激励会随着其邻居采取更高行动的数量增加而减少（*战略替代关系*）。'
 - en: '[6] In this formula, the choice *f*(**A**)=(**I** — β**A**)ᐨ¹ and *h*(**b**)=**b**
     yields a Linear Quadratic game, *f*(**A**)=**A**ᐨ¹ and *h*(**b**)=**b** a Linear
     Influence game, and *f*(**A**)=**u**₁ (the largest eigenvector of **A**) and *h*(**b**)=**1**
     a game of the Barik-Honorio type.'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] 在这个公式中，选择 *f*(**A**)=(**I** — β**A**)ᐨ¹ 和 *h*(**b**)=**b** 产生一个线性二次博弈，*f*(**A**)=**A**ᐨ¹
+    和 *h*(**b**)=**b** 产生一个线性影响博弈，*f*(**A**)=**u**₁（**A** 的最大特征向量）和 *h*(**b**)=**1**
+    产生一个 Barik-Honorio 类型的博弈。'
 - en: '[7] Section 3.3 in our paper [3].'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 我们论文中的第3.3节 [3]。'
 - en: '[8] See “[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)”
     blog post for an intuitive explanation of the Ttransformer and the role of the
     query and weight matrices.'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] 参见 “[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)”
+    博客文章，以获得对 Transformer 及查询和权重矩阵作用的直观解释。'
 - en: '[9] E. Belilovsky et al., [Learning to discover sparse graphical models](https://arxiv.org/abs/1605.06359)
     (2017), ICML.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] E. Belilovsky 等人，《[学习发现稀疏图模型](https://arxiv.org/abs/1605.06359)》（2017），ICML。'
 - en: '[10] The dataset accompanies the paper of A. Banerjee et al., [The diffusion
     of microfinance](https://www.science.org/doi/10.1126/science.1236498) (2013),
     Science 341(6144). Two authors of the paper (Abhijit Banerjee and Esther Duflo)
     received the [2019 Economics Nobel Prize](https://www.nobelprize.org/prizes/economic-sciences/2019/press-release/).'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] 数据集与 A. Banerjee 等人的论文《[微型金融的扩散](https://www.science.org/doi/10.1126/science.1236498)》（2013），《科学》341(6144)
+    配套。论文的两位作者（Abhijit Banerjee 和 Esther Duflo）获得了 [2019 年经济学诺贝尔奖](https://www.nobelprize.org/prizes/economic-sciences/2019/press-release/)。'
 - en: '[11] [Yelp Open dataset](https://www.yelp.com/dataset).'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] [Yelp 开放数据集](https://www.yelp.com/dataset)。'
 - en: '*We are grateful to* [*Federico Barbero*](https://federicobarbero.com/)*,*
     [*Fabrizio Frasca*](https://noired.github.io/)*, and* [*Francesco Di Giovanni*](https://francescodgv.github.io/)
     *for proofreading this post. For additional articles about deep learning on graphs,
@@ -405,5 +576,13 @@
     *to his posts and* [*YouTube channel*](https://www.youtube.com/c/MichaelBronsteinGDL)*,
     get* [*Medium membership*](https://michael-bronstein.medium.com/membership)*,
     or follow him on* [*Twitter*](https://twitter.com/mmbronstein)*.*'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '*我们感谢* [*Federico Barbero*](https://federicobarbero.com/)*，* [*Fabrizio Frasca*](https://noired.github.io/)*，以及*
+    [*Francesco Di Giovanni*](https://francescodgv.github.io/) *对本文的校对。有关图上深度学习的更多文章，请查看
+    Michael 的* [*其他文章*](https://towardsdatascience.com/graph-deep-learning/home) *，在
+    Towards Data Science 上* [*订阅*](https://michael-bronstein.medium.com/subscribe)
+    *他的文章和* [*YouTube 频道*](https://www.youtube.com/c/MichaelBronsteinGDL)*，获得* [*Medium
+    会员资格*](https://michael-bronstein.medium.com/membership)*，或在* [*Twitter*](https://twitter.com/mmbronstein)*
+    上关注他。*'
