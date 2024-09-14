@@ -1,12 +1,15 @@
 - en: Visual Question Answering with Frozen Large Language Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/visual-question-answering-with-frozen-large-language-models-353d42791054](https://towardsdatascience.com/visual-question-answering-with-frozen-large-language-models-353d42791054)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Talking with LLMs about images, without training LLMs on images.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,20 +17,25 @@
     Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)[](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)
     [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)
     ·18 min read·Oct 9, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/20a13db13c9eda0a5658fa9c857f7ff0.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
 - en: “Bridging modalities”, made with MidJourney. All images by the author unless
     otherwise stated.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: In this article we’ll use a Q-Former, a technique for bridging computer vision
@@ -35,68 +43,84 @@
     go over the necessary theory, following the [BLIP-2 paper](https://arxiv.org/abs/2301.12597),
     then implement a system which can be used to talk with a large language model
     about an image.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d999ca849fd33e7ae32b9d4a3a667559.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
 - en: What we’ll be building
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: '**Who is this useful for?** Data scientists interested in computer vision,
     natural language processing, and multimodal modeling.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: '**How advanced is this post?** Intermediate. You might struggle if you don’t
     have some experience in both computer vision and natural language processing.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: '**Prerequisites:** High level familiarity with transformers, embeddings, and
     encoder-decoders. All of these topics are covered in the following article:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
     [## Transformers — Intuitively and Exhaustively Explained'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
 - en: 'Exploring the modern wave of machine learning: taking apart the transformer
     step by step'
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: A Brief Chronology of Visual Language Modeling
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'Visual language modeling really started up in 2016 with the paper [VQA: Visual
     Question Answering](https://arxiv.org/pdf/1505.00468.pdf), which formally posed
     the following class of problem:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
 - en: 'Given an image and a natural language question about the image, the task is
     to provide an accurate natural language answer — [VQA: Visual Question Answering](https://arxiv.org/pdf/1505.00468.pdf)'
+  id: totrans-19
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'In 2016, when VQA was popularized, a typical approach looked something like
     this:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/34330c5a3381d8c9a541e3a397b64e46.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
 - en: 'A VQA model from 2016 using an LSTM to embed the question into a vector, an
     existing computer vision network to embed the image as a vector, then a dense
     layer which considers the two in the correct choice of output. From [VQA: Visual
     Question Answering](https://arxiv.org/pdf/1505.00468.pdf).'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: In the early days of VQA it was appropriate to train the vision and language
     components from scratch, pass the outputs to a dense network, and pick one of
     n possible outputs as a response.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
 - en: As vision and language models became more powerful, Visual Question Answering
@@ -105,25 +129,30 @@
     “is there a car in this image”, modern Visual Language Models allow you to ask
     what type of car is in an image, then ask about how the car drives, the most popular
     movie that car was in, etc.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/68bf25d3db06ca6d1d2f76374f501bbb.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
 - en: An example of Visual Language Modeling in action. This particular example is
     from the [BLIP-2 paper](https://arxiv.org/pdf/2301.12597.pdf), which we will be
     using as a reference in this post.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: This shift from VQA to VLM was largely the result of incorporating large language
     models into visual systems, providing complex reasoning abilities and encyclopedic
     knowledge out of the box.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: The difficulty of visual language modeling is, and always has been, **multi-modality**.
     You have to be good at images, natural language, and you have to be good at getting
     them to play nicely together. As vision and language models have gotten larger,
     systems for combining them for visual language modeling have gotten more complex.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: This poses a practical problem. Large language models are massive, so updating
@@ -133,101 +162,124 @@
     when models forget key information when being tuned to a new use case. If you
     slap an image encoder and a large language model together willy-nilly, you might
     get a model that’s bad at understanding both images and text.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: The [BLIP-2 paper](https://arxiv.org/abs/2301.12597) proposes the Q-Former to
     address both the catastrophic forgetting issue, as well as being economical by
     leveraging existing models.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: The Q-Former in a nutshell
+  id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'If you wanted to make a VQA system from scratch in a weekend, you might consider
     the following approach:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: Pass the image you want to talk about through a caption generator
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Combine the question asked by the user and the generated caption into a prompt
     for an LLM using some template
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Pass that prompt to the LLM, which would return the final output
+  id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '![](../Images/c1cb089d3646b557b5854adc04fb8196.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
 - en: The flow diagram of a naive approach being successful. The user asked a question
     which happens to be answerable from the generated caption.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: That approach might work if you’re asking simple questions about the subject
     of an image, but if you have more obscure questions you might be out of luck.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/6d471b4dddc577ac2f7ad271d21fd47d.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
 - en: The flow diagram of a naive approach not being successful. The user asked a
     question which is not answerable from the generated caption.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: The Q-former is used as a querying transformer (hence the name) which can transform
     a users query based on the image. **The idea is to be able to extract the correct
     information from the image, based on the users prompt, and provide it to the LLM.**
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/53d0c432e21edc653b3d0d54ce5b914b.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
 - en: A conceptual diagram of what the Q-Former does. It uses both the prompt and
     the image to constuct the input to the LLM. In reality the Q-Former doesn’t actually
     generate text, it generates a high dimensional embedding, but this is the conceptual
     essence.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: The BLIP-2 Architecture
+  id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Before we really dive into it, let’s get a high level understanding.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/12606f77558602bdfc00521a1280ee30.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
 - en: A Slightly more accurate depiction of the Q-Former, and the components around
     it. The image encoder embeds an Image into its most important parts, the text
     encoder does the same for the users prompt, and the Q-Former combines them to
     create an input for the LLM.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: 'The BLIP-2 Architecture, which the Q-Former exists within, has the following
     components:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: '**An Image Encoder:** A pretrained model which embeds images into an abstract
     representation which makes tasks like image classification easier. In essence,
     you can think of this as extracting an images important content. A popular example
     of this is CLIP.'
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**A Text Encoder:** A pretrained model which embeds text into an abstract representation.
     These typically treat words like points in a high dimensional space, where similar
     words will be in similar points in that space. A popular example of this is Word2Vect.'
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**An LLM:** A large language model trained to perform general language tasks.
     Kind of like chat GPT.'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -235,6 +287,7 @@
     the embedded prompt into a format compatible for the LLM. The Q-Formers main job
     is to properly contextualize both inputs and provide them to the LLM in a way
     that’s conducive with text generation.'
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -242,28 +295,35 @@
     within BLIP-2\. I won’t cover those in depth in this post, but I’ll be writing
     an article on CLIP image encoding soon, and I have an article on LLMs and text
     embeddings which may be of service to those unfamiliar:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
     [## Transformers — Intuitively and Exhaustively Explained'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: 'Exploring the modern wave of machine learning: taking apart the transformer
     step by step'
+  id: totrans-55
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: The Q-Former, in a Nutshell
+  id: totrans-57
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '![](../Images/300ad8d9bf0a718b9874b27610929791.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
 - en: A High level conceptual diagram of the Q-Former
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: First of all, a general understanding of attention is required as it makes up
@@ -271,21 +331,25 @@
     in [this post](https://medium.com/@danielwarfield1/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb),
     but, basically, attention makes modified copies of its inputs, then mixes the
     copies together.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: If we passed the text input “What Color is the Background” through a self-attention
     mechanism then the vector for each word in the sentence would be combined with
     the vector for every other word. This would result in an abstract matrix that
     contains contextualized information about all the words in the input.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/70f02daec4f4676c2fbd33dc601f179d.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
 - en: Multi Headed self attention, in a nutshell. The mechanism mathematically combines
     the vectors for different inputs (in this example, words), creating a matrix which
     encodes a deeper meaning of the entire input. Intuitively and exaustively explaind
     in [this article](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb).
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: What might not be so obvious, even if you are familiar with attention, is why
@@ -298,29 +362,35 @@
     trained, the self-attention block is good at manipulating just the image, just
     the text, and the two simultaneously. Hence why it’s somewhat like two attention
     blocks, but it’s really one big attention block.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/b6899a92dfeeb7826225c5e317b1f860.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
 - en: A conceptual diagram of how the self attention mechanism in the Q-Former both
     isolates text and image representations, and aids in their interaction. This is
     done in the bootstrapping phase of training, which we’ll discuss in the next section.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
 - en: 'The learned tokens on the bottom left of the diagram are essentially learned
     constants which are used by the model in the first self attention block. We’ll
     talk about them more later, but, briefly, I like to think of them two ways:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: If you think about them in terms of self attention with the text, they’re dictating
     how the text is initially introduced to the image.
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: If you think of them in terms of interacting with the image, they’re serving
     as an initialization which gets modified by the image, ultimately becoming the
     prompt to the model.
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -328,42 +398,50 @@
     connections connecting the output of the two feedforward networks back into the
     input. the entire region depicted in yellow is a Q-Former block. Multiple of these
     blocks are stacked on top of eachother to create the complete Q-Former.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
 - en: That’s all the components, which might be surprising. Based on just looking
     at the components it’s not obvious why the Q-Former would be especially good at
     bridging images and text. To understand that, you need to understand how the Q-Former
     is trained.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: How the Q-Former Is Trained
+  id: totrans-72
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'The Training of the Q-Former can be divided into two phases: Bootstrapping
     and Generative Learning Pre-Training. The bootstrapping phase can be further divided
     into three sub phases. We’ll go over all of them step by step.'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: 'The naming of these training phases might be a bit confusing. What is “bootstrapping”?
     Why is there a pre-training step but not a “training step”? I think the naming
     of these phases is the result of the following definitions:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: '**Bootstrapping** is the general process of using data which may or may not
     be perfectly suited for the final use case in order to get the model up from random
     initialization to some state which performs well at related tasks.'
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Pre-Training** is the general process of using large amounts of data to get
     the model into a generally good state for the final task.'
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**Fine-Tuning** is the process of taking a pre-trained model and presenting
     it a small amount of task specific data to optimize it for the final modeling
     task.'
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -372,9 +450,11 @@
     VQA datasets. It uses datasets with captioned images (captions which explain the
     content of an image) to do bootstrapping and pre-training, but never actually
     does fine-tuning on VQA.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: Bootstrapping
+  id: totrans-79
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -383,21 +463,25 @@
     [self-supervision post](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33),
     you can think of this as a sort of “game”, which the model learns to prepare for
     the final task of visual question answering.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: 'The bootstrapping phase has three sub-phases. These will be explored in the
     following sections, but in summary:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: '**Image-Text Contrastive Learning**: The model learns how to group image-caption
     pairs which belong together, and separate image-caption pairs which don’t belong
     together through [contrastive learning](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33).'
+  id: totrans-82
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '**Image-Grounded Text Generation:** Divide the caption into two sections, the
     hidden and not hidden part, and attempt to guess the hidden part based on both
     the not hidden part and the image.'
+  id: totrans-83
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -405,14 +489,17 @@
     dense network](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33),
     which converts the output into a binary classification, then use this binary classification
     to decide if a caption does, or does not, belong to an image.'
+  id: totrans-84
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Image-Text Contrastive Learning
+  id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: '![](../Images/abdf9891353a0d21a09d765e693a4262.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
 - en: Image-Text Contrastive Learning in action. All of the vectors on the image side
@@ -420,20 +507,24 @@
     text side. In this example the similarity is high, because the image and text
     match. We would hope, if the image and text didn’t match, the maximum similarity
     score would be low.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: 'In this mode of bootstrapping, the self attention mechanism in the Q-Former
     is split in two. This is done via a mask applied to the attention layer called
     the “Uni-modal Self-Attention Mask”. This is a complicated phrase for a simple
     concept:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
 - en: '**within the self attention mechanism, any time the text side interacts with
     the image side, just set the value to zero.**'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: This, in effect, blocks all communication between the image side of the Q-Former
     and the text side of the Q-Former.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: This training method also employs a special token, called the “class” token.
@@ -445,6 +536,7 @@
     token, when present, is special and will try to learn how to manipulate both the
     vision on the left, and the text on the right, to maximize performance in terms
     of contrastive loss.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: '**Contrastive loss, essentially, is the task of trying to get matching pairs
@@ -456,31 +548,38 @@
     side, and finding the maximum similarity value. matching pairs of text and images
     should have a large similarity score, and not matching pairs should have a small
     similarity score.'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: By performing this bootstrapping operation, we are encouraging the model to
     learn to align images and text. **In other words, we’re training the model to
     learn which image is, or isn’t related to some piece of text.**
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5b57777057a0d8317df2152e656079b5.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
 - en: A conceptual diagram of uni-modal self attention, the masking strategy used
     in this phase of training. Note how there is full attention on the image side,
     and full attention on the text side, but no attention between the two.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: Image-Grounded Text Generation
+  id: totrans-96
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: '![](../Images/b6f30cf23404ae6f00f274622ee277a5.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
 - en: A conceptual diagram of the “Image-Grounded Text Generation” pre-training step
     in action. A section of the input text is hidden from the Q-Former, and the Q-Former
     is tasked with trying to fill in the hidden text.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
 - en: In this bootstrapping mode, we ask the Q-Former to complete a partially hidden
@@ -489,27 +588,33 @@
     the caption which is to be predicted by the Q-Former. We also swap out the “class”
     token for a “decoder” token to let the model know what task it’s supposed to be
     doing.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/49fe1bebc9f6d7f8f3a30090a7970378.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
 - en: A conceptual diagram of multi-modal causal self-attention; the masking strategy
     used in this phase of training. Not how full attention is permitted across all
     tokens save those which are supposed to be output by the model.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: Image-Text Matching
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: '![](../Images/90146f17f2780f59a1737f8469f83c56.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
 - en: A conceptual diagram of the “Image-Text Matching” pre-training step in action.
     No mask is used in this phase, allowing all text and image tokens to interact
     within the self attention mechanism. Note how the output is false because the
     image is not compatible with the text “A Painting of a Monster Truck”.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
 - en: In this pre-training mode, we create a temporary linear classifier (a dense
@@ -517,6 +622,7 @@
     classifier projects the tokens into “true” or “false” predictions, which are used
     to train the model to predict whether input text matches the input image. Different
     pairs, both with matching and not matching combinations, are fed into the model.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
 - en: I talk about the concept behind using a dense network to project the output
@@ -526,15 +632,18 @@
     about text and images, but helps to keep the model from being too specialized
     in the task; so specialized that it’s less good at doing its actual job of feeding
     tokens to an LLM.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
 - en: You can think of the Q-Former as the “understanding text and images” part, and
     the temporary linear classifier as the “turn that understanding into a yes or
     no answer” part. After this step we throw out the “turn that understanding into
     a yes or no answer” part, keeping the general text and image understanding.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
 - en: What We Get Out of Bootstrapping
+  id: totrans-108
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -543,9 +652,11 @@
     Through the process of optimizing the Q-Former for these various tasks, the Q-Former
     is encouraged to build strong representations of both image and text, and a strong
     system for inter-relating the two.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
 - en: A Note on the Learned Tokens
+  id: totrans-110
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -553,27 +664,33 @@
     as the “query vectors”) interact with both the image and text to extract key information.
     To flesh out that idea a bit further, I wanted to share the following quotes from
     the BLIP-2 paper related to the query vectors:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
 - en: 'On the query vectors generally:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
 - en: The queries interact with each other through self-attention layers, and interact
     with frozen image features through cross-attention layers (inserted every other
     transformer block). The queries can additionally interact with the text through
     the same self-attention layers.
+  id: totrans-113
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'On how the bootstrapping phase relates to the query vectors:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
 - en: We aim to train the Q-Former such that the queries can learn to extract visual
     representation that is most informative of the text.
+  id: totrans-115
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'On how the query vectors relate text and image information:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
 - en: Since the architecture of Q-Former does not allow direct interactions between
@@ -581,21 +698,26 @@
     the text must be first extracted by the queries, and then passed to the text tokens
     via self-attention layers. Therefore, the queries are forced to extract visual
     features that capture all the information about the text.
+  id: totrans-117
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '**Pre-Training**'
+  id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Now that we have a Q-Former which has good internal representations of both
     text and images, we can hook it up to an LLM and use it to train the Q-Former.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2328112a11a9ea1ec44d14b843edcf9b.png)'
+  id: totrans-120
   prefs: []
   type: TYPE_IMG
 - en: Generative pre-training diagram from [BLIP-2](https://arxiv.org/pdf/2301.12597.pdf)
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
 - en: We can divide the caption of the image into two parts, a prefix and a sufix.
@@ -603,9 +725,11 @@
     weights of the Q-Former to encourage the output of the LLM to output the suffix.
     Conceptually, this alligns the image and text representations within the Q-Former
     with the needs of the specific LLM model it’s being used with.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
 - en: Theory Conclusion
+  id: totrans-123
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -613,15 +737,19 @@
     Q-Former (its core component) works, and how it’s trained. In the next section
     we’ll use a pre-trained version of BLIP-2 to do image captioning, VQA, and even
     have a small image grounded conversation.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2e5f55efb7a1b9f61c4f8c313b199662.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
 - en: The entire [BLIP-2](https://arxiv.org/pdf/2301.12597.pdf) architecture
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/24913f8c8eb427bee01a0f92922177b0.png)'
+  id: totrans-127
   prefs: []
   type: TYPE_IMG
 - en: 'The BLIP-2 architecture in relation to the Q-Former, as defined in the [BLIP-2
@@ -633,183 +761,246 @@
     which encourages repeated and increasingly more complex analysis of the image.
     The blocks without access to the image are allowed to form complex relations,
     which are then compared with the image in the subsequent block.'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
 - en: VQA using Q-Formers from Hugging Face
+  id: totrans-129
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: In a future post I’ll be coding up and training a Q-Former from scratch, but
     I think you’ll agree this post is already long enough. For now let’s experiment
     with Q-Formers using a pre-built solution.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
 - en: 'The full notebook can be viewed here:'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/VQAWithQFormer.ipynb?source=post_page-----353d42791054--------------------------------)
     [## MLWritingAndResearch/VQAWithQFormer.ipynb at main · DanielWarfield1/MLWritingAndResearch'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
 - en: Notebook Examples used in machine learning writing and research - MLWritingAndResearch/VQAWithQFormer.ipynb
     at main ·…
+  id: totrans-133
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/VQAWithQFormer.ipynb?source=post_page-----353d42791054--------------------------------)
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
 - en: 'Graciously LAVIS, a machine learning team within SalesForce (the group which
     published the BLIP-2 paper) provide an end-to-end pre-trained solution on Hugging
     face:'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-136
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: As you can see BLIP-2 comes with two parts; a processor and a model. First let's
     explore the processor.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
 - en: The Processor
+  id: totrans-138
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: In the example provided by HuggingFace, the processor is used to pre-process
     the inputs (both the text and image) before passing them to BLIP-2\. Let’s load
     up an image, generate some text, and pass it to the processor to see what we get.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-140
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/f78be25a4b85e2bbd9c8e0b8d5b2d64b.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
 - en: A sample image we’ll be using for this example
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
 - en: 'Passing this image along with some sample text through the processor, we can
     see we get a dictionary from the processor:'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-144
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../Images/8a0861f3106a4cc891ea8892ee05f0f4.png)'
+  id: totrans-145
   prefs: []
   type: TYPE_IMG
 - en: The pixel_values from the processor are a transformation of the image down to
     224 x 224, with the color values normalized to a convenient range for modeling.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-147
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '![](../Images/be760d4590ea97f9b5e6557a45b39b2c.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
 - en: '[PRE4]'
+  id: totrans-149
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/9bb57b2f3cf91fcd281aad9b09156189.png)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
 - en: The values for the processed images are reduced within a reasonable range, and
     they seem to be averaged around zero
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/ab3ac5d8f7872627a951c935b4146f4c.png)'
+  id: totrans-152
   prefs: []
   type: TYPE_IMG
 - en: The values for the raw image have a biased distribution which spans a much wider
     range of values
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
 - en: The input_ids from the processor are word piece indexes. Individual parts of
     a sentence are assigned individual indexes, which are later used in a word to
     vector embedder, which is then applied to the BLIP-2.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-155
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/6531009b22ce5cc5752767e1e6fc1f65.png)'
+  id: totrans-156
   prefs: []
   type: TYPE_IMG
 - en: Because we’re inferencing the model, the mask provided by the processor is simply
     all 1’s, allowing the model to see all input values.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE6]'
+  id: totrans-158
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![](../Images/de74742516636847ad9335aeeca98ae5.png)'
+  id: totrans-159
   prefs: []
   type: TYPE_IMG
 - en: Invoking the Model
+  id: totrans-160
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Now that we have some idea what the processor does, we can start using it to
     pass things to BLIP-2, and start generating output.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
 - en: '**Image Captioning:** BLIP-2 will caption an image if you provide it an image
     and no text.'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE7]'
+  id: totrans-163
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/9065b1916160668a5610e68fbc814c84.png)'
+  id: totrans-164
   prefs: []
   type: TYPE_IMG
 - en: '**Prompted Image Captioning:** If you provide a prefix to a caption, BLIP-2
     will try to complete the caption.'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE8]'
+  id: totrans-166
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![](../Images/863b37d616f37eedb672c15821bd7aa9.png)'
+  id: totrans-167
   prefs: []
   type: TYPE_IMG
 - en: The result of completing the prompt “this is a picture of”
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE9]'
+  id: totrans-169
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '![](../Images/6e258c8ded3532891ed2874fe9ee1dc8.png)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
 - en: The result of completing the prompt “the weather looks”
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
 - en: '**Visual Question Answering:** By invoking BLIP-2 with a specially formatted
     query, visual question answering can be achieved without ever having trained on
     visual question answering data.'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE10]'
+  id: totrans-173
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '![](../Images/12e02488bee399b8d3943c5a678df7a3.png)'
+  id: totrans-174
   prefs: []
   type: TYPE_IMG
 - en: '**Visually Based Conversations:** We can format our prompts into something
     resembling a conversation, thus allowing us to converse with the model about an
     image.'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE11]'
+  id: totrans-176
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![](../Images/5eb2e48990f6ac3947ae92cab18a90b9.png)'
+  id: totrans-177
   prefs: []
   type: TYPE_IMG
 - en: Conclusion
+  id: totrans-178
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -820,20 +1011,25 @@
     workings of it’s most significant component, the Q-Former. We then explored practical
     applications of BLIP-2 for captioning, visual question answering, and visually
     based conversations.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
 - en: Follow For More!
+  id: totrans-180
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: I describe papers and concepts in the ML space, with an emphasis on practical
     and intuitive explanations. I plan on implementing a Q-Former from scratch in
     a future post.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
 - en: '**Attribution:** All of the images in this document were created by Daniel
     Warfield, unless a source is otherwise provided. You can use any images in this
     post for your own non-commercial purposes, so long as you reference this article,
     [https://danielwarfield.dev](https://danielwarfield.dev/), or both.'
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: '**归属声明：** 本文档中的所有图片均由**丹尼尔·沃菲尔德**创作，除非另有来源说明。您可以将此帖中的任何图片用于非商业目的，只要您注明此文章，[https://danielwarfield.dev](https://danielwarfield.dev/)，或两者皆可。'
