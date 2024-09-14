@@ -1,218 +1,328 @@
 - en: 'Mastering ExternalTaskSensor in Apache Airflow: How to Calculate Execution
     Delta'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 掌握Apache Airflow中的**ExternalTaskSensor**：如何计算执行增量
 - en: 原文：[https://towardsdatascience.com/mastering-externaltasksensor-in-apache-airflow-how-to-calculate-execution-delta-425093323758](https://towardsdatascience.com/mastering-externaltasksensor-in-apache-airflow-how-to-calculate-execution-delta-425093323758)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/mastering-externaltasksensor-in-apache-airflow-how-to-calculate-execution-delta-425093323758](https://towardsdatascience.com/mastering-externaltasksensor-in-apache-airflow-how-to-calculate-execution-delta-425093323758)
 - en: External Task Sensors stop bad data from trickling downstream in a data pipeline.
     Leverage them to create a reliable data infrastructure.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 外部任务传感器阻止坏数据在数据管道中流入下游。利用它们来创建可靠的数据基础设施。
 - en: '[](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)[![Casey
     Cheng](../Images/92174e223d1436b326ec42622ceefdd6.png)](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)[](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)
     [Casey Cheng](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)[![Casey
+    Cheng](../Images/92174e223d1436b326ec42622ceefdd6.png)](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)[](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)
+    [Casey Cheng](https://casey-cheng.medium.com/?source=post_page-----425093323758--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)
     ·15 min read·May 8, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----425093323758--------------------------------)
+    ·15分钟阅读·2023年5月8日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/6325cbd704ec069b44ecc8ece0402ada.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6325cbd704ec069b44ecc8ece0402ada.png)'
 - en: External Task Sensors are like gatekeepers — they stop bad data from trickling
     downstream. [Image](https://www.freepik.com/free-photo/arrangement-financial-crisis-with-wooden-pieces_11433457.htm#query=domino%20effect%20stop&position=46&from_view=keyword&track=ais)
     by Freepik.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 外部任务传感器就像守门员——它们阻止坏数据流入下游。[图片](https://www.freepik.com/free-photo/arrangement-financial-crisis-with-wooden-pieces_11433457.htm#query=domino%20effect%20stop&position=46&from_view=keyword&track=ais)由Freepik提供。
 - en: Orchestrating a data pipeline is a delicate endeavor. In a data pipeline, we
     can have thousands of tasks running simultaneously and they are often dependent
     on one another. If we’re not careful, a single point of failure can have a domino-like
     effect that trickles downstream and mess up the whole pipeline.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 协调数据管道是一项微妙的工作。在数据管道中，我们可能会有数千个任务同时运行，并且这些任务通常相互依赖。如果不小心，单点故障可能会产生多米诺骨牌效应，流入下游并搞乱整个管道。
 - en: Apache Airflow introduced the External Task Sensor to put an end to these issues.
     While it is an extremely powerful feature, it also comes with some degree of complexity.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache Airflow引入了外部任务传感器，以解决这些问题。虽然这是一个极其强大的功能，但也伴随着一定的复杂性。
 - en: In this introductory piece, I hope to untangle some of the confusion surrounding
     the External Task Sensor and show how we can use it to enhance the reliability
     of our data pipelines — making sense of sensors!
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇介绍性文章中，我希望解开一些关于外部任务传感器的困惑，并展示我们如何使用它来增强数据管道的可靠性——让传感器变得有意义！
 - en: '[Why do we need External Task Sensor?](#6513)'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[我们为什么需要外部任务传感器？](#6513)'
 - en: '[What does External Task Sensor do?](#a2d1)'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[外部任务传感器有什么作用？](#a2d1)'
 - en: '[How do we create an External Task Sensor?](#a476)'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[我们如何创建外部任务传感器？](#a476)'
 - en: '[What are Execution Delta and Execution Date Function?](#bdab)'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[什么是执行增量和执行日期函数？](#bdab)'
 - en: – [How to calculate Execution Delta?](#6c71)
+  id: totrans-15
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: – [如何计算执行增量？](#6c71)
 - en: – [How to calculate Execution Date Function?](#cb9b)
+  id: totrans-16
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: – [如何计算执行日期函数？](#cb9b)
 - en: '[How do we fit External Task Sensor into our DAGs?](#dd35)'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[我们如何将外部任务传感器融入到我们的DAG中？](#dd35)'
 - en: '[Bonus: Concept of Dates in Airflow](#159c)'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[附加信息：Airflow中的日期概念](#159c)'
 - en: Why do we need External Task Sensor?
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 我们为什么需要外部任务传感器？
 - en: Meet Jamie, a rookie chef at Airflow Bakery. She’s new. Her only responsibility
     is to make a new batch of cookie dough every hour.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 认识Jamie，她是Airflow Bakery的一个新手厨师。她刚刚加入。她唯一的责任是每小时制作一批新的饼干面团。
 - en: '![](../Images/13fdb464679bc75b3f7af3cccdc5793a.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/13fdb464679bc75b3f7af3cccdc5793a.png)'
 - en: Jamie’s responsibilities as shown in a “DAG” format. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
     icon by Freepik.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 杰米的职责以“DAG”格式展示。 [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    图标由 Freepik 提供。
 - en: And then we have Gordon Damnsie, the cookie master. Gordon takes the dough from
     Jamie and turns them into award-winning cookies.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们有戈登·丹姆斯，饼干大师。戈登从杰米那里拿到面团，并将其制作成获奖的饼干。
 - en: '![](../Images/c5d53c21d5515b7fbdc85e71c416702c.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c5d53c21d5515b7fbdc85e71c416702c.png)'
 - en: Gordon’s responsibilities as shown in a “DAG” format. [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
     icon by Freepik.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 戈登的职责以“DAG”格式展示。 [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    图标由 Freepik 提供。
 - en: One fine day, Gordon swoops in to grab the freshest dough he can find and bakes
     cookies. But when he takes a bite, yuck! “Bad” would’ve been an understatement.
     Gordon quickly discovers the root cause was the stale dough, which was left over
     from a week ago.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 一天，戈登急忙去找最新鲜的面团来烘焙饼干。但当他咬一口时，哎呀！“坏”只是个轻描淡写的说法。戈登很快发现根本原因是面团陈旧，是一周前剩下的。
 - en: Gordon, visibly frustrated, tosses the cookies into the bin. After he composes
     himself, he slowly turns to Jamie and asks, “Why is the dough not fresh?”
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 戈登显得很沮丧，把饼干扔进了垃圾桶。调整好情绪后，他慢慢转向杰米，问道：“为什么面团不新鲜？”
 - en: “I had to stop making them, Chef. There was a problem with the raw ingredients,”
     Jamie replies, trying to stay calm in the face of Gordon’s anger. Unfortunately,
     the bad cookies had already been served to clients and they no longer trust the
     food quality of the bakery.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: “我不得不停止制作它们，厨师。原料有问题，”杰米回答道，试图在戈登的愤怒面前保持冷静。不幸的是，坏饼干已经送给了客户，他们不再信任面包店的食品质量。
 - en: This slight detour is a cautionary tale on the importance of validating the
     freshness of data sources. In the story, Gordon’s success is dependent on Jamie,
     but they are working independently without communicating with each other. They
     “trust” that the other person will do their job flawlessly. But as any data practitioner
     will know, everything that can go wrong *will* go wrong in a data pipeline.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这次小小的偏离是关于验证数据源新鲜度重要性的警示故事。在故事中，戈登的成功依赖于杰米，但他们独立工作而没有互相沟通。他们“相信”对方会完美地完成自己的工作。但正如任何数据从业者所知道的那样，数据管道中一切可能出错的事情*都会*出错。
 - en: Ideally, Gordon should check with Jamie whether she made dough recently. Once
     he has confirmed, it means that the dough is fresh so he can proceed to bake his
     cookies. Otherwise, stop baking and figure out what went wrong.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想情况下，戈登应该检查杰米是否最近制作了面团。一旦确认，这意味着面团是新鲜的，他可以继续烘焙饼干。否则，停止烘焙并找出问题所在。
 - en: You see, what Gordon needs… is an *external task sensor*.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 你看，戈登需要的是一个*外部任务传感器*。
 - en: What does External Task Sensor do?
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 外部任务传感器的作用是什么？
 - en: An external task sensor checks whether other people completed their assigned
     task. It ***senses*** the completion of an ***external task***, hence the name.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 外部任务传感器检查其他人是否完成了分配的任务。它***感知***到***外部任务***的完成，因此得名。
 - en: In the context of Airflow, Jamie and Gordon are DAGs. They have specific tasks
     that they need to complete.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Airflow 的背景下，杰米和戈登是 DAG。他们有具体的任务需要完成。
 - en: When we add an External Task Sensor, it becomes the middleman that coordinates
     between the two independent DAGs. The sensor will check on Jamie at a specific
     time to see if she has completed her task.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们添加一个外部任务传感器时，它会成为协调两个独立 DAG 之间的中介。传感器会在特定时间检查杰米是否完成了她的任务。
 - en: If Jamie successfully completes her task, the sensor will inform Gordon so that
     he can carry on with his downstream tasks.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果杰米成功完成了她的任务，传感器将通知戈登，以便他可以继续进行下游任务。
 - en: '![](../Images/87d7f0dc1e3861d1c0cf946493ac62c0.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/87d7f0dc1e3861d1c0cf946493ac62c0.png)'
 - en: The external task sensor — check_dough() returns as a success after verifying
     that make_dough() ran successfully. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
     and [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
     icons by Freepik.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 外部任务传感器 — check_dough() 在验证 make_dough() 成功运行后返回成功。 [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    和 [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    图标由 Freepik 提供。
 - en: If Jamie fails to complete her task, the sensor stops Gordon from doing any
     tasks that have a dependency on the failed task.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果杰米未能完成她的任务，传感器会阻止戈登执行任何依赖于失败任务的任务。
 - en: '![](../Images/47b6b5e65941e627db1483c61e3fe57f.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/47b6b5e65941e627db1483c61e3fe57f.png)'
 - en: The external task sensor — check_dough() returns as a fail after verifying that
     make_dough() did not run successfully. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
     and [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
     icons by Freepik.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 外部任务传感器 — check_dough() 在验证 make_dough() 未成功运行后返回失败。[厨师 (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    和 [厨师 (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    图标由 Freepik 提供。
 - en: Having this additional layer of validation essentially stops stale data from
     trickling further downstream and polluting the rest of our pipeline with dirty,
     inaccurate data.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 拥有这层额外的验证本质上可以防止陈旧数据进一步传递到下游，并污染我们管道中的其他部分，导致数据脏乱且不准确。
 - en: How do we create External Task Sensor?
+  id: totrans-43
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 我们如何创建外部任务传感器？
 - en: 'Airflow makes it very easy to create an External Task Sensor — just import
     them. The syntax will look something like this:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: Airflow 使创建外部任务传感器变得非常简单——只需导入它们即可。语法大致如下：
 - en: '[PRE0]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Here’s what they mean:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 它们的含义如下：
 - en: '`**dag**` is the current DAG object. Since Gordon is the one who wants to check
     whether Jamie made dough, this should point to Gordon’s DAG.'
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**dag**` 是当前的 DAG 对象。由于 Gordon 是想检查 Jamie 是否做了面团的人，因此这应该指向 Gordon 的 DAG。'
 - en: '`**task_id**` is the unique name for this External Task Sensor.'
+  id: totrans-48
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**task_id**` 是这个外部任务传感器的唯一名称。'
 - en: '`**external_dag_id**` is the name of the DAG you want to check. In this case,
     Jamie’s DAG.'
+  id: totrans-49
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**external_dag_id**` 是你要检查的 DAG 的名称。在这种情况下，是 Jamie 的 DAG。'
 - en: '`**external_task_id**` is the name of the specific task you want to check.
     Ideally, we should always specify this. Otherwise, the sensor will check for the
     completion of the *entire DAG* instead of just one specific task. In other words,
@@ -220,548 +330,829 @@
     restocking the pantry, even though we only want to know whether she made dough.
     Or worse, if any one of these irrelevant tasks fails, the sensor will unnecessarily
     pause the entire pipeline.'
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**external_task_id**` 是你要检查的具体任务的名称。理想情况下，我们应始终指定这一点。否则，传感器将检查 *整个 DAG* 的完成情况，而不仅仅是一个特定任务。换句话说，Gordon
+    不会做任何事，直到 Jamie 完成切洋葱、洗碗和补充食品储备，即使我们只想知道她是否做了面团。更糟的是，如果这些无关任务中的任何一个失败，传感器将不必要地暂停整个管道。'
 - en: '`**email**` is the list of people you want Airflow to notify when the External
     Task Sensor fails. Keep in mind that for this to work, you need to have the SMTP
     settings properly configured in the Airflow configuration file.'
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**email**` 是你希望 Airflow 在外部任务传感器失败时通知的人员名单。请记住，要使其正常工作，你需要在 Airflow 配置文件中正确配置
+    SMTP 设置。'
 - en: '`**execution_delta**` is arguably the most confusing part about External Task
     Sensors but also the most important. So, I’m dedicating an entire section to it
     [below](#bdab). Keep scrolling!'
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**execution_delta**` 可以说是外部任务传感器中最令人困惑但也是最重要的部分。因此，我为此专门设置了一个部分 [如下](#bdab)。继续滚动！'
 - en: '`**execution_date_fn**` and execution delta are very similar. We can only use
     one of them at a time. Sometimes it’s easier to use this rather than execution
     delta. I’m also giving this its own section [below](#bdab).'
+  id: totrans-53
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**execution_date_fn**` 和执行增量非常相似。我们一次只能使用其中一个。有时候，使用这个比执行增量更方便。我也将其单独列出 [如下](#bdab)。'
 - en: '`**timeout**` limits how long a sensor can stay alive. When we create a sensor,
     it consumes resources by occupying one worker slot. If the target task never completes,
     these sensors will keep checking indefinitely while hogging the worker slot. Over
     time, we can run into a [Sensor Deadlock](https://marclamberti.com/blog/airflow-sensors/#The_Deadlock),
     where all worker slots become occupied by useless sensors and no tasks can run
     anymore. Therefore, it’s best practice to set a maximum time limit for the checks.'
+  id: totrans-54
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**timeout**` 限制传感器能够存在的时间。当我们创建一个传感器时，它会占用一个工作槽，从而消耗资源。如果目标任务永远无法完成，这些传感器将无限期地继续检查，同时占用工作槽。随着时间的推移，我们可能会遇到一个
+    [传感器死锁](https://marclamberti.com/blog/airflow-sensors/#The_Deadlock)，所有工作槽都被无用的传感器占用，任务无法再运行。因此，设置检查的最大时间限制是最佳实践。'
 - en: '`**poke_interval**` is the duration before the sensor checks again if the previous
     check fails. The rationale is that we don’t want the sensor to check excessively
     like a madman, as it adds unnecessary loads to the server. On the flip side, checking
     too infrequently means the sensor will wait longer than necessary, delaying the
     pipeline. The trick is to find the sweet spot based on the expected run time of
     the external task.'
+  id: totrans-55
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**poke_interval**` 是在传感器再次检查之前的持续时间，如果之前的检查失败。其理由是我们不希望传感器像疯子一样过度检查，因为这会给服务器增加不必要的负担。另一方面，检查过于频繁意味着传感器会比必要时等待更长时间，从而延迟管道。诀窍是根据外部任务的预期运行时间找到最佳点。'
 - en: '`**mode**`is how we want the sensor to behave. It can be set to “poke” or “reschedule”.'
+  id: totrans-56
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`**mode**` 是我们希望传感器的行为方式。它可以设置为“poke”或“reschedule”。'
 - en: When set to “poke”, the sensor goes to sleep on failure and wakes up on the
     next poke interval to try again. It’s like being on standby mode. The sensor will
     be more reactive, but since it’s on standby, the worker slot remains occupied
     throughout the whole process.
+  id: totrans-57
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 当设置为“poke”时，传感器在失败时进入休眠状态，并在下一个 poke 间隔时重新唤醒尝试。这就像处于待机模式。传感器将更具反应性，但由于它处于待机状态，工人插槽在整个过程中都会被占用。
 - en: When set to “reschedule”, the sensor will check once. If the check fails, the
     sensor will schedule another check at a later time but terminates itself for now,
     freeing up the worker slot. Airflow recommends using “reschedule” if the poke
     interval is greater than 60 seconds.
+  id: totrans-58
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 当设置为“reschedule”时，传感器会检查一次。如果检查失败，传感器会安排在稍后的时间进行另一次检查，但现在会终止自身，释放工人插槽。如果 poke
+    间隔大于 60 秒，Airflow 推荐使用“reschedule”。
 - en: Alright, that’s just about every parameter we need to know about External Task
     Sensor. Granted that this list is not exhaustive, knowing these 10 parameters
     will be more than enough for us to set up our External Task Sensor properly for
     virtually all use cases.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 好了，这就是我们需要了解的外部任务传感器的所有参数。虽然这个列表并不详尽，但了解这 10 个参数对于我们在几乎所有用例中正确设置外部任务传感器已经足够了。
 - en: For completeness' sake, I’ll include [Airflow's official documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/external_task/index.html)
     for those who are eager to explore it in more detail.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了完整性，我将包括 [Airflow 官方文档](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/external_task/index.html)
+    供那些渴望更详细了解的人参考。
 - en: What are Execution Delta and Execution Date Function?
+  id: totrans-61
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 执行时间差和执行日期函数是什么？
 - en: In the section above, I’ve glossed over these two parameters because they are
     arguably the most notorious, annoying, and confusing part of external task sensors.
     But I think it’s time we tackle them.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的部分中，我略过了这两个参数，因为它们可以说是外部任务传感器中最臭名昭著、最烦人且最令人困惑的部分。但我认为现在是时候解决它们了。
 - en: So what are `execution_delta` and `execution_date_fn`?
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么 `execution_delta` 和 `execution_date_fn` 是什么呢？
 - en: Building on our analogy, `external_task_id` tells the sensor to check if Jamie
     completed the `make_dough()` task. But she makes a lot of dough — once every hour.
     Are we checking if she baked in the past hour, yesterday, or last week?
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于我们的类比，`external_task_id` 告诉传感器检查 Jamie 是否完成了 `make_dough()` 任务。但她做面团的频率很高——每小时一次。我们是在检查她在过去一小时、昨天还是上周是否做过面团？
 - en: This ambiguity confuses External Task Sensors and that’s why Airflow came up
     with two ways for us to communicate this information. Both `execution_delta` and
     `execution_date_fn` are meant to tell sensors the specific time of the task.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种模糊性使得外部任务传感器感到困惑，这也是 Airflow 提供了两种方式来传达这些信息的原因。`execution_delta` 和 `execution_date_fn`
+    都旨在告知传感器任务的具体时间。
 - en: '`execution_delta` expresses time on a *relative* basis, e.g.: “Did Jamie bake
     30 minutes ago?” It accepts a `datetime.timedelta` object as its argument, e.g:
     `datetime.timedelta(minutes=30)`.'
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`execution_delta` 以 *相对* 时间为基础，举例来说：“Jamie 是否在 30 分钟前烘烤过？” 它接受一个 `datetime.timedelta`
+    对象作为参数，例如：`datetime.timedelta(minutes=30)`。'
 - en: '`execution_date_fn` expresses time on an *absolute* basis, e.g.: “Did Jamie
     bake on the 3rd May 2023 at 4.30 pm?” It accepts a callable Python function as
     its argument. This function should return the *execution date* of the task that
     we want to check on, e.g: `datetime.datetime(year=2023,month=5,day=3,hour=4,minute=30)`.'
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`execution_date_fn` 以 *绝对* 时间为基础，举例来说：“Jamie 是否在 2023年5月3日下午4:30 烘烤过？” 它接受一个可调用的
+    Python 函数作为参数。这个函数应该返回我们想要检查的任务的 *执行日期*，例如：`datetime.datetime(year=2023,month=5,day=3,hour=4,minute=30)`。'
 - en: Since both of them convey the same information, **Airflow only allows us to
     use one or the other, but not both at the same time**.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这两者传达了相同的信息，**Airflow 仅允许我们使用其中一个，而不能同时使用两个**。
 - en: I generally use `execution_delta` as the de-facto choice. But, there are scenarios
     where it’s too complicated to calculate the `execution_delta`. In that case, I’d
     use `execution_date_fn` instead.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我通常使用`execution_delta`作为默认选择。但在某些情况下，计算`execution_delta`可能过于复杂。在这种情况下，我会使用`execution_date_fn`。
 - en: How to calculate execution_delta?
+  id: totrans-70
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何计算execution_delta？
 - en: The word, `execution_delta`, is short for *delta* (a.k.a difference)of *execution
     dates* (a.k.a the previous runtime of our tasks).
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 词语`execution_delta`是*delta*（即差异）和*execution dates*（即任务的上次运行时间）的缩写。
 - en: '![](../Images/5f81154e7de3aecf803d0e49f60526b1.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5f81154e7de3aecf803d0e49f60526b1.png)'
 - en: The formula for execution_delta. Image by author.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: execution_delta的公式。图片由作者提供。
 - en: I’d like to highlight the keyword here — “previous”.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想强调这里的关键词——“previous”。
 - en: Some of you may be wondering… Why does Airflow want the time difference of previous
     runs, but not the current runs? This used to confuse the crap out of me when I
     first started using Airflow.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 有些人可能会想… 为什么Airflow需要之前运行的时间差，而不是当前运行的时间差？这在我刚开始使用Airflow时曾让我非常困惑。
 - en: Turns out there is a perfectly good reason. However, I don’t want to derail
     from the topic at hand so I will include it in the later section ([here](#159c)).
     For now, let’s just accept the formula as-is and see how we would apply this.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 原来有一个完全合理的原因。然而，我不想偏离当前话题，因此我会在后面的部分（[这里](#159c)）中包含它。现在，我们就按原样接受公式，并看看如何应用它。
 - en: 'Suppose that Jamie makes dough every hour (e.g: 13:00 pm, 14:00 pm, 15:00 pm,
     …). Gordon also makes cookies every hour, but he makes them at the 30th minute
     of every hour (e.g: 13:30 pm, 14:30 pm, 15:30 pm, …).'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设Jamie每小时做一次面团（例如：13:00 pm, 14:00 pm, 15:00 pm，…）。Gordon也每小时做一次饼干，但他在每小时的第30分钟做（例如：13:30
+    pm, 14:30 pm, 15:30 pm，…）。
 - en: At 14:30 pm sharp, Gordon gets ready to bake his cookie. Before he starts, he
     would need to check if Jamie made fresh dough recently. The latest run for `make_dough()`
     would be 14:00 pm.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在14:30 pm整点，Gordon准备好烘烤饼干。在开始之前，他需要检查Jamie是否最近做了新鲜面团。`make_dough()`的最新运行时间将是14:00
+    pm。
 - en: '![](../Images/b636f935d6ebb4104aa91f6ac3e89276.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b636f935d6ebb4104aa91f6ac3e89276.png)'
 - en: This time series shows the task dependencies between Jamie and Gordon. Gordon
     always checks whether Jamie completed her task half an hour ago. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
     and [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
     icons by Freepik.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这条时间序列展示了Jamie和Gordon之间的任务依赖关系。Gordon总是检查Jamie是否在半小时前完成了任务。[Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    和 [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)图标由Freepik提供。
 - en: Given that both Gordon and Jamie’s tasks are scheduled hourly, their execution
     date (a.k.a previous runs) for the 14:30 pm run would be…
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于Gordon和Jamie的任务是按小时安排的，他们在14:30 pm运行时的执行日期（即之前的运行）将是…
 - en: Gordon’s execution date = 14:30 pm — 1 hour = 13:30 pm
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Gordon的执行时间 = 14:30 pm — 1小时 = 13:30 pm
 - en: Jamie’s execution date = 14:00 pm — 1 hour = 13:00 pm
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Jamie的执行时间 = 14:00 pm — 1小时 = 13:00 pm
 - en: We can plug these values into the formula, and voilà!
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将这些值代入公式中，瞧！
 - en: '![](../Images/12d7bc1785b7cdc9a8a26a449c7a7bf2.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12d7bc1785b7cdc9a8a26a449c7a7bf2.png)'
 - en: The `execution_delta` comes out to be `datetime.timedelta(minute=30) for one
     specific run`. Image by author.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '`execution_delta`的结果是`datetime.timedelta(minute=30)对于一次特定运行`。图片由作者提供。'
 - en: You can do the same calculation for different runs of the tasks to get their
     respective `execution_delta`.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以对任务的不同运行进行相同的计算，以获取各自的`execution_delta`。
 - en: '![](../Images/737ce6ba54a829924e72fa42439efd98.png)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/737ce6ba54a829924e72fa42439efd98.png)'
 - en: When calculating execution delta, it’s helpful to lay them out in a format like
     this. We want to calculate the execution deltas for multiple runs, not just one,
     in order to make sure they’re all the same! Image by author.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 在计算execution delta时，将其以这种格式排列是有帮助的。我们想要计算多个运行的执行delta，而不仅仅是一个，以确保它们都相同！图片由作者提供。
 - en: In this (cherry-picked) example, all of the `execution_delta` turns out to be
     exactly the same. We can pass this to our External Task Sensor and everything
     will work.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个（挑选的）示例中，所有的`execution_delta`都恰好相同。我们可以将其传递给我们的External Task Sensor，一切都会正常工作。
 - en: '[PRE1]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: But-!
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是-!
 - en: 'The `execution_delta` *can* be different sometimes. This usually happens when
     the schedule intervals of the two dags are different (e.g.: daily vs weekly, daily
     vs monthly, …).'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '`execution_delta`*有时*可能不同。这通常发生在两个dags的调度间隔不同（例如：每日 vs 每周，每日 vs 每月，…）时。'
 - en: For example, let’s say that Jamie makes her dough *weekly* on Sunday at 14:00
     pm, but Gordon makes his cookies *daily* at 14:30 pm.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，假设 Jamie 每周 *一次* 在星期天 14:00 制作面团，而 Gordon 每天 *一次* 在 14:30 制作饼干。
 - en: '![](../Images/49521d0576017cd2b11926d4c783e8ae.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49521d0576017cd2b11926d4c783e8ae.png)'
 - en: The arrow between Jamie’s task and Gordon’s sensor represents the execution
     delta. The execution delta gets longer over the week until it resets again on
     Sunday. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999) and [Chef
     (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
     by Freepik.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: Jamie 的任务和 Gordon 的传感器之间的箭头表示执行增量。执行增量在一周内变得更长，直到在星期天再次重置。[Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    和 [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    图标由 Freepik 提供。
 - en: If we do the same calculations, you will see that the execution deltas differ
     for every run.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们进行相同的计算，你会看到每次运行的执行增量都不同。
 - en: '![](../Images/7017f1f0bc8e39608c9b438209c6172c.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7017f1f0bc8e39608c9b438209c6172c.png)'
 - en: Note that execution deltas can vary for different runs. Image by author.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，不同运行的执行增量可能会有所不同。图片来源：作者。
 - en: This becomes a problem because `execution_delta` only accepts a single `datetime`
     object as its argument. We can’t input a different value of `execution_delta`
     for every run.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 这成为一个问题，因为 `execution_delta` 只接受单一的 `datetime` 对象作为其参数。我们不能为每次运行输入不同的 `execution_delta`
+    值。
 - en: In cases like this, we need `execution_date_fn`.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们需要 `execution_date_fn`。
 - en: How to calculate Execution Date Function?
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何计算执行日期函数？
 - en: The `execution_date_fn` is just a regular Python function. As with all Python
     functions, it takes some argument(s) and returns some output(s). But the beauty
     of using a function is the ability to return a different output based on the function’s
     inputs and logic.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '`execution_date_fn` 只是一个普通的 Python 函数。像所有 Python 函数一样，它接收一些参数并返回一些输出。但使用函数的优点在于能够根据函数的输入和逻辑返回不同的输出。'
 - en: In the case of `execution_date_fn`, Airflow passes the **current task’s execution
     date** as an argument and expects the function to return the **external task’s**
     **execution date***.* Note that these execution dates need to be **expressed in
     UTC time**.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 `execution_date_fn`，Airflow 将 **当前任务的执行日期** 作为参数传递，并期望函数返回 **外部任务的** **执行日期**。请注意，这些执行日期需要
+    **以 UTC 时间表示**。
 - en: '[PRE2]'
+  id: totrans-105
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Based on our earlier case study, our `execution_date_fn` would need to do the
     following…
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据我们之前的案例研究，我们的 `execution_date_fn` 需要执行以下操作…
 - en: '![](../Images/165565eba9b9431153c3b7cecbc6b585.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/165565eba9b9431153c3b7cecbc6b585.png)'
 - en: My Airflow is configured to local time (GMT+8), so I need to deduct 8 hours
     to get the UTC time. Image by author.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的 Airflow 配置为本地时间（GMT+8），所以我需要减去 8 小时来获得 UTC 时间。图片来源：作者。
 - en: One naive way could be hardcoding every single run, until the end of time.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种简单的方法是硬编码每一个运行，直到时间的尽头。
 - en: '[PRE3]'
+  id: totrans-110
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: This works but it is definitely not the most efficient way.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 这有效，但显然不是最有效的方法。
 - en: A better approach is to look for consistent patterns and use that to programmatically
     derive the outputs. Usually, a good place to look for patterns is the `execution_delta`,
     since it contains the relationship between the execution dates (we talked about
     this [here](#6c71)).
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 更好的方法是寻找一致的模式，并利用这些模式程序性地推导输出。通常，寻找模式的好地方是 `execution_delta`，因为它包含执行日期之间的关系（我们在[这里](#6c71)讨论过这个问题）。
 - en: Additionally, we can also look at `datetime` attributes, such as the day of
     the week. If we really think about it, our External Task Sensor will always be
     pointing to a Sunday because Jamie only makes dough on Sunday. As we move through
     the week, Gordon’s task date will be further and further away from this Sunday
     until it resets again the next Sunday. Then, it repeats.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们还可以查看 `datetime` 属性，如星期几。如果我们仔细考虑一下，我们的 External Task Sensor 将总是指向星期天，因为
+    Jamie 只在星期天制作面团。随着我们度过一周，Gordon 的任务日期将越来越远离这个星期天，直到下一个星期天再次重置。然后，它会重复。
 - en: '![](../Images/49521d0576017cd2b11926d4c783e8ae.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49521d0576017cd2b11926d4c783e8ae.png)'
 - en: This is showing the time difference between the current runs for simplicity's
     sake. Execution_date_fn looks at previous runs, but we will see the same patterns
     there too. [Chef (F)](https://www.flaticon.com/free-icon/chef_8840999) and [Chef
     (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
     icons by Freepik.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 这显示了当前运行之间的时间差，为了简单起见。Execution_date_fn 查看之前的运行，但我们也会看到相同的模式。[Chef (F)](https://www.flaticon.com/free-icon/chef_8840999)
+    和 [Chef (M)](https://www.flaticon.com/free-icon/baker_817282?related_id=817282&origin=search)
+    图标由 Freepik 提供。
 - en: This suggests that **day of the week** can also be helpful in coming up with
     our `execution_date_fn`. So let’s add the day of the week to our table. I’ll be
     labeling Monday as 1 and Sunday as 7 as per the [ISO 8601](https://www.timeanddate.com/date/week-numbers.html#:~:text=The%20most%20common%20is%20the,and%20confusion%20when%20communicating%20internationally.)
     standard.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 这表明 **星期几** 也可以帮助我们制定 `execution_date_fn`。所以我们将星期几添加到我们的表格中。我将星期一标记为1，星期天标记为7，按[ISO
+    8601](https://www.timeanddate.com/date/week-numbers.html#:~:text=The%20most%20common%20is%20the,and%20confusion%20when%20communicating%20internationally.)
+    标准。
 - en: '![](../Images/ce44b091c9f31b9dac79fd58cb22956b.png)'
+  id: totrans-117
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ce44b091c9f31b9dac79fd58cb22956b.png)'
 - en: The numbers in brackets are the week of day, where Monday is 1 and Sunday is
     7\. Image by author.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 括号中的数字表示星期几，其中星期一为1，星期天为7。图片由作者提供。
 - en: By labeling them, it becomes immediately clear that…
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过标记它们，立即可以清楚地看到……
 - en: The `execution_delta` starts from 6 on a Saturday.
+  id: totrans-120
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`execution_delta` 从星期六的6开始。'
 - en: The `execution_delta` increases by 1 every day, up to a maximum of 12 every
     Friday.
+  id: totrans-121
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`execution_delta` 每天增加1，每周五最多增加到12。'
 - en: The `execution_delta` then resets back to a 6 on a Saturday.
+  id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`execution_delta` 然后在星期六重置回6。'
 - en: We can re-create that relationship in a Python function and assign this `execution_date_fn`
     to our External Task Sensor.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以在Python函数中重新创建这种关系，并将 `execution_date_fn` 分配给我们的外部任务传感器。
 - en: '[PRE4]'
+  id: totrans-124
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: There we have it — our very own `execution_date_fn`. With a bit of creativity,
     `execution_date_fn` can cater to *any* scenario.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是我们自己的 `execution_date_fn`。凭借一点创造力，`execution_date_fn` 可以满足 *任何* 场景。
 - en: How do we fit External Task Sensor into our DAGs?
+  id: totrans-126
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 我们如何将外部任务传感器融入到我们的DAG中？
 - en: Up until this point, we’ve covered everything you need to know to get started
     with External Task Sensor. In this section, I thought it’d be nice to collate
     all of the things we’ve learned to see how the pieces fit together in our data
     pipelines.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经涵盖了开始使用外部任务传感器所需了解的所有内容。在这一部分，我认为整理我们所学的内容，看看它们在数据管道中如何结合在一起，会是很好的。
 - en: First of all, we’ll be creating Jamie DAG, in a file called `jamie_dag.py`.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们将在一个名为 `jamie_dag.py` 的文件中创建Jamie DAG。
 - en: '[PRE5]'
+  id: totrans-129
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Then, we’ll be creating Gordon DAG, in another file called `gordon_dag.py`.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们将在另一个名为 `gordon_dag.py` 的文件中创建Gordon DAG。
 - en: '[PRE6]'
+  id: totrans-131
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Note that External Task Sensor is in `gordon_dag.py` and not `jamie_dag.py`
     since we want Gordon to be checking on Jamie, not the other way around. Gordon’s
     DAG would be the current DAG and Jamie the external DAG.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，外部任务传感器在 `gordon_dag.py` 中，而不是 `jamie_dag.py` 中，因为我们希望Gordon来检查Jamie，而不是反过来。Gordon的DAG将是当前DAG，而Jamie是外部DAG。
 - en: And… there we have it!
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后……我们就完成了！
 - en: We’ve created our very first External Task Sensor, `check_dough_fresness`. This
     sensor will poke Jamie’s `make_new_dough()` returns either Success or Fail. If
     it fails, `bake_cookies()` and `make_money()` will not run.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们创建了第一个外部任务传感器 `check_dough_fresness`。这个传感器会检测Jamie的 `make_new_dough()` 是否返回成功或失败。如果失败，`bake_cookies()`
+    和 `make_money()` 将不会运行。
 - en: 'Bonus: Concept of Dates in Airflow'
+  id: totrans-135
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 附加内容：Airflow中的日期概念
 - en: Dates in Apache Airflow are confusing because there are so many date-related
     terminologies, such as `start_date`, `end_date`, `schedule_interval`, `execution_date`,
     etc. It’s a mess, really. But let’s try and figure it out with a story.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Apache Airflow中，日期令人困惑，因为有很多与日期相关的术语，如 `start_date`、`end_date`、`schedule_interval`、`execution_date`
+    等。真的很混乱。但让我们通过一个故事来尝试弄清楚。
 - en: Suppose that our boss wants to know the sales performance of his company. He
     wants this data to be refreshed *every day* at *12 midnight* for the next *6 months.*
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们的老板想了解他公司销售业绩。他希望这些数据在接下来的 *6个月* 中 *每天* 的 *午夜12点* 刷新。
 - en: First, we write a complicated SQL query that generates the sales performance
     data. It takes *6 hours* to run the query.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们编写一个复杂的SQL查询来生成销售业绩数据。运行查询需要 *6小时*。
 - en: '`task_start` is the start time of a task.'
+  id: totrans-139
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`task_start` 是任务的开始时间。'
 - en: '`task_end` is the end time of a task.'
+  id: totrans-140
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`task_end` 是任务的结束时间。'
 - en: '`task_duration` is the time it takes to run the task.'
+  id: totrans-141
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`task_duration` 是运行任务所需的时间。'
 - en: '![](../Images/77cc87def5c5b24335fa1b2be7b0b8bc.png)'
+  id: totrans-142
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/77cc87def5c5b24335fa1b2be7b0b8bc.png)'
 - en: A single task. Image by author.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 单个任务。图片由作者提供。
 - en: Every day, we will need to run this task at 12 midnight.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 每天，我们需要在午夜12点运行这个任务。
 - en: '![](../Images/be480214c92910c701041c74585487e0.png)'
+  id: totrans-145
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/be480214c92910c701041c74585487e0.png)'
 - en: A single task, scheduled at 12am and runs for 6 hours. Image by author.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个单独的任务，安排在凌晨12点并运行6小时。图片由作者提供。
 - en: To automate this query, we create an Airflow DAG and specify the `start_date`
     and `end_date`. Airflow will execute the DAG as long as today’s date falls within
     this period.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了自动化此查询，我们创建一个 Airflow DAG 并指定 `start_date` 和 `end_date`。只要今天的日期在这个时间段内，Airflow
+    就会执行 DAG。
 - en: '![](../Images/e8927e14501927829996d0a2e6730ac9.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e8927e14501927829996d0a2e6730ac9.png)'
 - en: An Airflow DAG. Image by author.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个 Airflow DAG。图片由作者提供。
 - en: Then, we put the task into the Airflow DAG.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们将任务放入 Airflow DAG 中。
 - en: We need this data refreshed once a day at 12 midnight. So, we set the `schedule_interval`
     to `"0 0 * * *"`, which is the [CRON](https://crontab.guru/#0_0_*_*_*) equivalent
     of daily at 12 midnight.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要这个数据每天凌晨 12 点刷新一次。因此，我们将 `schedule_interval` 设置为 `"0 0 * * *"`，这相当于 [CRON](https://crontab.guru/#0_0_*_*_*)
+    的每天午夜 12 点。
 - en: The `schedule_interval` essentially adds a delay between each consecutive schedule,
     telling Airflow only run the task at a specific time, since we don’t want the
     task to re-run again as soon as it finishes.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '`schedule_interval` 实质上在每个连续调度之间添加了延迟，告知 Airflow 只在特定时间运行任务，因为我们不希望任务在完成后立即重新运行。'
 - en: '`interval_start` refers to the start time of a particular schedule interval.'
+  id: totrans-153
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`interval_start` 指的是特定调度间隔的开始时间。'
 - en: '`interval_end` refers to the end time of a particular schedule interval.'
+  id: totrans-154
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`interval_end` 指的是特定调度间隔的结束时间。'
 - en: '![](../Images/56b9d7e428899aabb7fe43f6896889b9.png)'
+  id: totrans-155
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/56b9d7e428899aabb7fe43f6896889b9.png)'
 - en: Note that interval_start and interval_end can overlap. The interval_end of the
     previous schedule interval will be the same as the interval_start of the next
     schedule interval. Image by author.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，`interval_start` 和 `interval_end` 可能会重叠。前一个调度间隔的 `interval_end` 将与下一个调度间隔的
+    `interval_start` 相同。图片由作者提供。
 - en: Here comes the most mind-blowing part — although seemingly counterintuitive,
     Airflow Scheduler triggers a DAG run at the ***end*** of its schedule interval,
     rather than at the beginning of it.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有最让人惊讶的部分——尽管看似直觉相悖，Airflow 调度器在调度间隔的***结束***时触发 DAG 运行，而不是在其开始时。
 - en: This means that Airflow will not do anything in the first-ever schedule interval.
     Our query will run for the first time on 2nd Jan 2023 at 12 am.
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着 Airflow 在第一次调度间隔内不会做任何事情。我们的查询将在 2023 年 1 月 2 日 12 点首次运行。
 - en: '![](../Images/edad1a82094c5e1395626e6ac885a9a3.png)'
+  id: totrans-159
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/edad1a82094c5e1395626e6ac885a9a3.png)'
 - en: The colored bars are like data. All the “yellow” data only gets summarized on
     2nd Jan. Image by author.
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些彩色条像数据一样。所有“黄色”数据只有在 1 月 2 日才会被汇总。图片由作者提供。
 - en: This is because Airflow is originally created as an ETL tool. It’s built on
     the idea that data from a period of time gets summarised at the *end* of the interval.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是因为 Airflow 最初是作为一个 ETL 工具创建的。它建立在一个理念上，即一段时间的数据在间隔的*结束*时进行汇总。
 - en: For example, if we wanted to know the sales of cookies for the 1st of January,
     we wouldn’t create a sales report on the 1st of January at 1 pm because the day
     hasn’t ended yet and the sales number would be incomplete. Instead, we would only
     process the data when the clock strikes 12 midnight. Today, we will be processing
     yesterday’s data.
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，如果我们想了解 1 月 1 日的饼干销售情况，我们不会在 1 月 1 日下午 1 点创建销售报告，因为一天还没有结束，销售数字会不完整。相反，我们只会在午夜
+    12 点处理数据。今天，我们将处理昨天的数据。
 - en: Why is this important?
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 这为什么重要？
 - en: Since we are summarizing the previous run’s data, the sales report we are producing
     on the 2nd of Jan describes the 1st of Jan sales, not the 2nd of Jan sales.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们在总结上一个运行的数据，我们在 1 月 2 日生成的销售报告描述的是 1 月 1 日的销售情况，而不是 1 月 2 日的销售情况。
 - en: For that reason, Airflow finds it more meaningful to refer to this run as the
     1st of Jan run even though it’s executed on the 2nd. To better differentiate the
     dates, Airflow gives a special name to the beginning of a schedule interval—`execution_date`.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，尽管任务在 2 日执行，Airflow 仍将其称为 1 月 1 日的运行。为了更好地区分日期，Airflow 给调度间隔的开始时间赋予了一个特别的名称——`execution_date`。
 - en: '![](../Images/f06b3ef75c125c2c44c27293b40ff896.png)'
+  id: totrans-166
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f06b3ef75c125c2c44c27293b40ff896.png)'
 - en: Although we run the “yellow” task on 2nd Jan, its execution date is actually
     1st Jan. Image by author.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我们在 1 月 2 日运行了“黄色”任务，但其执行日期实际上是 1 月 1 日。图片由作者提供。
 - en: This is why we always take the difference of the “previous” run when we calculate
     `execution_delta` because it is the delta of the `execution_dates`, which is essentially
     the “previous” run.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是为什么我们在计算 `execution_delta` 时总是取“上一个”运行的差值，因为它是 `execution_dates` 的增量，本质上是“上一个”运行。
 - en: Concluding Remarks
+  id: totrans-169
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: External Task Sensors are like gatekeepers. They stop bad data from going downstream
     by making sure that tasks are executed in a specific order and that the necessary
     dependencies are met before proceeding with subsequent tasks.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 外部任务传感器就像门卫。它们通过确保任务按照特定顺序执行，并且在继续执行后续任务之前满足必要的依赖关系，来阻止不良数据流入下游。
 - en: For those who have never used External Task Sensors before, I hope the article
     was able to convey its importance and convince you to start using them. For those
     who have been using them, I hope some of the insights here are able to help deepen
     your understanding.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于那些从未使用过外部任务传感器的人，我希望这篇文章能传达它的重要性并说服你开始使用它们。对于那些已经在使用它们的人，我希望这里的一些见解能够帮助加深你的理解。
 - en: Thank you for your time, and have a great day.
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢你的时间，祝你有美好的一天。
 - en: '*Enjoyed the article? Consider becoming a* [*Medium member*](https://casey-cheng.medium.com/membership)
     *to get full access to every story and support content creators like me.*'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: '*喜欢这篇文章？考虑成为一个* [*Medium会员*](https://casey-cheng.medium.com/membership) *以获得对每篇文章的完全访问权限，并支持像我这样的内容创作者。*'
 - en: '[](https://medium.com/@casey-cheng/membership?source=post_page-----425093323758--------------------------------)
     [## Join Medium with my referral link - Casey Cheng'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@casey-cheng/membership?source=post_page-----425093323758--------------------------------)
+    [## 使用我的推荐链接加入Medium - Casey Cheng'
 - en: Read every story from Casey Cheng (and thousands of other writers on Medium).
     Your membership fee directly supports…
+  id: totrans-175
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读每一篇来自Casey Cheng的故事（以及Medium上成千上万的其他作者的文章）。你的会员费直接支持…
 - en: medium.com](https://medium.com/@casey-cheng/membership?source=post_page-----425093323758--------------------------------)
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@casey-cheng/membership?source=post_page-----425093323758--------------------------------)
