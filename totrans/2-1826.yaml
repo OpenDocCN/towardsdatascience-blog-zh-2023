@@ -1,542 +1,804 @@
 - en: Segmenting Text Into Paragraphs
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 将文本分段成段落
 - en: 原文：[https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd](https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd](https://towardsdatascience.com/segmenting-text-into-paragraphs-e8bed99b6ebd)
 - en: A statistical NLP approach based on supervised learning
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于监督学习的统计 NLP 方法
 - en: '[](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Arun
     Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)
     [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----e8bed99b6ebd--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)
     ·11 min read·Feb 25, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e8bed99b6ebd--------------------------------)
+    ·11 min 阅读·2023年2月25日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/8e2618a1773575c3a2cb635554d5915f.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8e2618a1773575c3a2cb635554d5915f.png)'
 - en: Image by [Gordon Johnson](https://pixabay.com/users/gdj-1086657/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=4385160)
     from [Pixabay](https://pixabay.com/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Gordon Johnson](https://pixabay.com/users/gdj-1086657/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=4385160)
+    提供，来自 [Pixabay](https://pixabay.com/)
 - en: 'In a previous post on Medium, we discussed segmenting text into sentences [3].
     Now we look at a related problem: segmenting text into paragraphs.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前的 Medium 文章中，我们讨论了将文本分割成句子的问题[3]。现在我们来看一个相关问题：将文本分割成段落。
 - en: At first glance, it may seem that the two problems are essentially the same,
     only at different levels of chunking. The problem of segmenting text into paragraphs
     is in fact far more interesting.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 初看起来，这两个问题似乎本质上是相同的，只是在不同的分块层次上。实际上，将文本分段成段落的问题要有趣得多。
 - en: For one thing, sentence boundaries have explicit signals such as periods, question
     marks, or exclamation points. Generally, the issue is this. Which of these occurrences
     are actual boundaries versus which are embedded within a sentence? That is the
     issue of false positives.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 一方面，句子边界有明确的信号，如句号、问号或感叹号。通常，问题在于这些标记中的哪些是实际的边界，哪些是在句子内嵌入的边界。这就是假阳性的难题。
 - en: Segmenting the text into paragraphs is more nuanced. Think this way. Say you
     have a long sequence of sentences with no paragraph breaks. Where should the paragraph
     boundaries be? Not an easy problem to solve. Nor does it necessarily have unique
     solutions. Meaning that there may be more than one good split of a sequence of
     sentences into paragraphs.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 将文本分段成段落更为复杂。这样考虑一下。假设你有一个长句子序列，没有段落分隔符。应该在哪里设置段落边界？这不是一个容易解决的问题，也不一定有唯一的解决方案。这意味着可能存在多种将句子序列分段的合理分法。
 - en: Splitting text into paragraphs may be viewed as a particular case of text segmentation
     [1]. A text segment is a contiguous segment that preserves some coherency such
     as being on the same topic. According to this measure of coherency, a segment
     would transition to another one on a change in topic.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 将文本分段成段落可以看作是文本分割的一个特例[1]。文本片段是一个连续的段落，保持一定的连贯性，比如说在同一主题上。根据这种连贯性度量，段落会在主题发生变化时过渡到另一个段落。
 - en: The broader text segmentation problem is more difficult to solve. For several
     reasons. Including the fact that it is hard to get labeled data. For paragraph
     segmentation, plenty of labeled data is available. In the form of web pages and
     Wikipedia articles with paragraph breaks in them. For the broader text segmentation
     problem this is not so.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 更广泛的文本分段问题更难解决。原因有几个。其中之一是很难获取标记数据。对于段落分段，有大量的标记数据可用，这些数据以网页和包含段落分隔符的维基百科文章的形式存在。而对于更广泛的文本分段问题情况则不然。
 - en: In this post, we take the view that an algorithm that can suggest reasonable
     split boundaries can be helpful to someone writing text. In the same way that
     Grammarly is helpful. In other words, neither the precision nor the recall needs
     to be particularly high. The precision needs to be reasonable; the recall could
     be even less.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们认为一个能够建议合理分割边界的算法对写作中的人是有帮助的。就像Grammarly对写作的帮助一样。换句话说，精确率和召回率都不需要特别高。精确率需要合理；召回率甚至可以更低。
 - en: The rest of this post should be read keeping this view in mind. We will be satisfied
     with a solution that has a reasonable precision, possibly even around 50%, and
     even low recall, possibly around 10%. The point is that even this is useful in
     a Grammarly-like setting.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文的其余部分应以此视角进行阅读。我们将满足于一个具有合理精确度的解决方案，可能接近50%，以及较低的召回率，可能接近10%。关键是即使这样也在类似Grammarly的环境中是有用的。
 - en: Even if paragraph break suggestions are made rarely, so long as they have reasonable
     precision, they add to the value of a product such as Grammarly.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使段落分割建议很少出现，只要它们具有合理的精确度，它们就会增加像Grammarly这样的产品的价值。
 - en: It goes without saying that if we could get better precision or recall with
     minimal effort we would take it.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 不用说，如果我们可以在付出最少努力的情况下获得更好的精确率或召回率，我们自然会选择这样做。
 - en: '**A Probabilistic Model That Predicts Paragraph Breaks**'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预测段落分割的概率模型**'
 - en: We’ll start with a formal description, explaining its various components in
     plain English.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从正式描述开始，用简单的英语解释其各个组件。
 - en: Let X1 and X2 denote two adjacent sentences in a document in the training corpus.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 设X1和X2表示训练语料库中相邻的两个句子。
 - en: We will associate a binary label Y with (X1, X2). Y will be 1 if there is a
     paragraph break between X1 and X2 and 0 if not.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将与(X1, X2)关联一个二进制标签Y。如果X1和X2之间有段落分割，则Y为1，否则为0。
 - en: We will track a third predictor *i*. X1 will be the *i*th sentence in the current
     paragraph. The predictor “*i*” will imbue our model with the ability to pay attention
     to paragraph lengths.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将跟踪第三个预测变量*i*。X1将是当前段落中的第*i*个句子。预测变量“*i*”将赋予我们的模型关注段落长度的能力。
 - en: Our training set will comprise instances (X1, X2, *i*, Y).
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的训练集将包含实例(X1, X2, *i*, Y)。
 - en: From the training set, we aim to learn a model *P*(Y | X1, X2, *i*).
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 从训练集中，我们旨在学习一个模型*P*(Y | X1, X2, *i*)。
 - en: '*P*(Y=1 | X1, X2, *i*) will denote the probability that there is a paragraph
     break between X1 and X2 when X1 is the *i*th sentence in the current paragraph.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(Y=1 | X1, X2, *i*)将表示在X1作为当前段落中的第*i*个句子的情况下，X1和X2之间有段落分割的概率。'
 - en: P(Y=0|X1, X2, *i*) will denote the probability that X2 should extend the current
     paragraph given X1 as the *i*th sentence in the current paragraph.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: P(Y=0|X1, X2, *i*)表示在X1作为当前段落中的第*i*个句子的情况下，X2应该扩展当前段落的概率。
 - en: The model P(Y | X1, X2, *i*) is very complex. This is because X1 and X2 are
     sentences and can be arbitrarily rare or long. Meaning that there won’t be sufficient
     data to estimate this model even if our training set comprises a few billion labeled
     instances.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型P(Y | X1, X2, *i*)非常复杂。这是因为X1和X2是句子，可能非常稀有或很长。这意味着，即使我们的训练集包含了几亿个标记实例，也可能没有足够的数据来估计这个模型。
 - en: We will need to make certain assumptions.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要做一些假设。
 - en: First off, let’s apply the Bayes rule
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们应用贝叶斯规则。
 - en: '*P*(Y | X1, X2, *i*) = N(X1, X2, *i*, Y)/Z'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(Y | X1, X2, *i*) = N(X1, X2, *i*, Y)/Z'
 - en: where N(X1, X2, *i*, Y) equals *P*(X1, X2, *i* | Y) P(Y).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中N(X1, X2, *i*, Y)等于*P*(X1, X2, *i* | Y) P(Y)。
 - en: Z is simply N(X1, X2, *i*, 0) + N(X1, X2, *i*, 1)
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: Z只是N(X1, X2, *i*, 0) + N(X1, X2, *i*, 1)。
 - en: Next, we will factor N(X1, X2, *i*, Y) as below.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将对N(X1, X2, *i*, Y)进行如下分解。
 - en: N(X1, X2, *i*, Y) = *P*(X1 | Y)**P*(X2 | Y)**P*(*i* | Y)**P*(Y)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: N(X1, X2, *i*, Y) = *P*(X1 | Y)**P*(X2 | Y)**P*(*i* | Y)**P*(Y)
 - en: '*P*(X1 | Y=1) is the distribution of the last sentences in a paragraph. *P*(X1
     | Y = 0) is the distribution over the non-last sentences in a paragraph.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(X1 | Y=1)是段落中最后句子的分布。*P*(X1 | Y = 0)是段落中非最后句子的分布。'
 - en: '*P*(X2 | Y = 1) is the distribution over the first sentences in a paragraph.
     *P*(X2 | Y = 0) is the distribution over the non-first sentences in a paragraph.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(X2 | Y = 1)是段落中第一句子的分布。*P*(X2 | Y = 0)是段落中非第一句子的分布。'
 - en: Now consider *P*(*i* | Y).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑*P*(*i* | Y)。
 - en: Let’s remind ourselves that X1 is the *i*th sentence in the current paragraph.
     So *P*(*i* | Y=1) is effectively the distribution of the length of a paragraph
     as the paragraph must end right after X1, the ith sentence in the current paragraph.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们提醒自己 X1 是当前段落中的 *i* 句。因此，*P*(*i* | Y=1) 实际上是段落长度的分布，因为段落必须在 X1，即当前段落中的第 *i*
+    句之后结束。
 - en: '*P*(*i* | Y = 1) will tend to be biased towards small *i*. This is because
     most paragraphs are short.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(*i* | Y = 1) 将倾向于偏向于较小的 *i*。这是因为大多数段落较短。'
 - en: '*P*(*i* | Y = 0) will tend to be biased towards being even smaller. This is
     because Y = 0 means that the *i*th sentence X1 in the current paragraph does not
     end it.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(*i* | Y = 0) 将倾向于偏向于更小。这是因为 Y = 0 表示当前段落中的第 *i* 句 X1 不会结束该段落。'
 - en: The probability models *P*(X1 | Y) and *P*(X2|Y) are each still too complex.
     This is because the universe of sentences is unbounded. That is, sentences can
     be arbitrarily long. And arbitrarily rare.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 概率模型 *P*(X1 | Y) 和 *P*(X2|Y) 都仍然过于复杂。这是因为句子的宇宙是无限的。也就是说，句子可以任意长。也可以任意稀有。
 - en: Can we make further simplifying assumptions? Specifically use the likelihoods
     not necessarily of the entire sentences but of the first few words in them.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以做进一步的简化假设吗？具体来说，使用的可能性不一定是整个句子，而是它们的前几个词。
 - en: Let’s start by looking at real examples.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从实际例子开始。
 - en: First, let’s see examples of sentences that continue short paragraphs.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们看看继续短段落的句子的例子。
 - en: Say the next sentence starts with “For example,” “Examples of”, “More precisely,
     “, etc. If the current paragraph is sufficiently short, e.g. one or two sentences
     long, these prefixes in the next sentence predict Y = 0, i.e. extending the paragraph.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设下一句以“例如”，“例子”，“更准确地说”等开头。如果当前段落足够短，比如一两句，这些前缀在下一句中的出现预测 Y = 0，即扩展段落。
 - en: To support this hypothesis, we invite the reader to read these pairs of adjacent
     sentences from [https://en.wikipedia.org/wiki/Deep_learning](https://en.wikipedia.org/wiki/Deep_learning)
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了支持这个假设，我们邀请读者阅读这些相邻句子的对，例如 [https://en.wikipedia.org/wiki/Deep_learning](https://en.wikipedia.org/wiki/Deep_learning)
 - en: Deep learning algorithms can be applied to unsupervised learning tasks. This
     is an important benefit because unlabeled data are more abundant than the labeled
     data. **Examples of** deep structures that can be trained in an unsupervised manner
     are deep belief networks.
+  id: totrans-47
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 深度学习算法可以应用于无监督学习任务。这是一个重要的好处，因为未标记的数据比标记的数据更为丰富。**例子** 包括可以以无监督方式训练的深度结构，如深度置信网络。
 - en: …
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: …
 - en: 'Deep learning is a class of machine learning algorithms that[8]: 199–200 uses
     multiple layers to progressively extract higher-level features from the raw input.
     **For example**, in image processing, lower layers may identify edges, while higher
     layers may identify the concepts relevant to a human such as digits or letters
     or faces.'
+  id: totrans-49
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '深度学习是一类机器学习算法，它[8]: 199–200 使用多个层次逐步从原始输入中提取更高级的特征。**例如**，在图像处理过程中，较低的层次可能识别边缘，而较高的层次可能识别对人类相关的概念，如数字、字母或面孔。'
 - en: …
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: …
 - en: The word “deep” in “deep learning” refers to the number of layers through which
     the data is transformed. **More precisely**, deep learning systems have a substantial
     credit assignment path (CAP) depth.
+  id: totrans-51
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “深度学习”中的“深度”指的是数据转换通过的层数。**更准确地说**，深度学习系统具有实质性的信用分配路径（CAP）深度。
 - en: Would you agree that the bolded word sequences in each predict continuing the
     paragraph?
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否同意每个加粗的词序列预测段落的延续？
 - en: These examples suggest that it makes sense to consider simplifying *P*(X1 |
     Y) to *P*(the first few words of X1 | Y).
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些例子表明，考虑简化 *P*(X1 | Y) 为 *P*(X1 的前几个词 | Y) 是有意义的。
 - en: This begs the question what is the value of “few” above? We’ll tackle this later.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就引出了“few”在这里的值是多少的问题？我们稍后会解决这个问题。
 - en: Next, let’s see examples of one-sentence paragraphs.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们看看一句话段落的例子。
 - en: For this, I asked ChatGPT to give me examples of one-sentence paragraphs. Seems
     like it took this literally. So I rephrased the question to
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 为此，我要求 ChatGPT 给我一些一句话段落的例子。似乎它很字面地理解了这个问题。因此我重新表述了问题为
 - en: Give me examples of sentences that **only** form one-sentence paragraphs.
+  id: totrans-57
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 给我一些**仅**由一句话构成的段落的例子。
 - en: Now I got good examples.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我得到了好的例子。
 - en: Silence.
+  id: totrans-59
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 沉默。
 - en: ''
+  id: totrans-60
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Stop.
+  id: totrans-61
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 停止。
 - en: ''
+  id: totrans-62
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Never again.
+  id: totrans-63
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 再也不见。
 - en: ''
+  id: totrans-64
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Why?
+  id: totrans-65
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 为什么？
 - en: ''
+  id: totrans-66
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Yes!
+  id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 是的！
 - en: ''
+  id: totrans-68
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: I’m sorry.
+  id: totrans-69
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对不起。
 - en: ''
+  id: totrans-70
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Enough.
+  id: totrans-71
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 足够了。
 - en: ''
+  id: totrans-72
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Remember.
+  id: totrans-73
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 记住。
 - en: ''
+  id: totrans-74
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Help!
+  id: totrans-75
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 帮助！
 - en: ''
+  id: totrans-76
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Goodbye.
+  id: totrans-77
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 再见。
 - en: We would expect each of these sentences to have a high likelihood *P*(X1 | Y
     = 1). That said, for some or all of them *P*(X1 | Y = 0) may also be somewhat
     high. This would mean the paragraph does not end right after them.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望这些句子中的每一个都有较高的 *P*(X1 | Y = 1) 的可能性。也就是说，对于其中一些或全部句子，*P*(X1 | Y = 0) 也可能相对较高。这意味着段落不会在它们之后立即结束。
 - en: Nonetheless, we show these examples here, as they do suggest that *P*(X1 | Y
     = 1) for these sentences is worth modeling.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，我们在这里展示这些示例，因为它们确实表明 *P*(X1 | Y = 1) 对于这些句子是值得建模的。
 - en: Next, let’s see examples of sentences that begin new paragraphs. We picked up
     some paragraphs from [https://en.wikipedia.org/wiki/Deep_learning](https://en.wikipedia.org/wiki/Deep_learning)
     and are showing the first few words in their first sentence.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们看看以新段落开始的句子的示例。我们从 [https://en.wikipedia.org/wiki/Deep_learning](https://en.wikipedia.org/wiki/Deep_learning)
+    中挑选了一些段落，并展示了它们第一句话的前几个词。
 - en: Deep learning is part of a broader family …
+  id: totrans-81
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 深度学习是一个更广泛领域的一部分…
 - en: ''
+  id: totrans-82
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Deep-learning architectures such as …
+  id: totrans-83
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 深度学习架构如…
 - en: ''
+  id: totrans-84
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Artificial neural networks (ANNs) were …
+  id: totrans-85
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 人工神经网络（ANNs）是…
 - en: ''
+  id: totrans-86
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: In deep learning, each level learns to …
+  id: totrans-87
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在深度学习中，每一层学会…
 - en: ''
+  id: totrans-88
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: An ANN is based on a collection of …
+  id: totrans-89
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: ANN 基于一组…
 - en: ''
+  id: totrans-90
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: DNNs can model complex non-linear …
+  id: totrans-91
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 深度神经网络（DNNs）可以建模复杂的非线性…
 - en: These examples suggest that *P*(X2 | Y = 1) could be simplified to
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些示例表明，*P*(X2 | Y = 1) 可以简化为
 - en: '*P*(first few words of X2 | Y = 1)'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(X2 | Y = 1)'
 - en: for a suitable choice of “few”.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于“少量”这一选择的合适情况。
 - en: Let’s formalize what we have learned from these examples.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将从这些示例中学到的内容形式化。
 - en: We can simplify *P*(X1 | Y) and *P*(X2 | Y) to
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以简化 *P*(X1 | Y) 和 *P*(X2 | Y) 为
 - en: '*P*(X1 begins with *w*(1), *w*(2), …, *w*(*k*) | Y)'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(X1 以 *w*(1)、*w*(2)、…、*w*(*k*) | Y)'
 - en: and
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及
 - en: '*P*(X2 begins with *w*’(1), *w*’(2), …, *w*’(*k*’) |Y)'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(X2 以 *w*’(1)、*w*’(2)、…、*w*’(*k*’) |Y)'
 - en: respectively.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 分别。
 - en: Here *w*(1), *w*(2), …, *w*(k) and *w*’(1), *w*’(2), …, *w*’(*k*’) are sequences
     of *k* and *k*’ words respectively.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里 *w*(1)、*w*(2)、…、*w*(k) 和 *w*’(1)、*w*’(2)、…、*w*’(*k*’) 分别是 *k* 和 *k*’ 的词序列。
 - en: The obvious question is what should *k* and *k*’ be?
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 显而易见的问题是 *k* 和 *k*’ 应该是什么？
 - en: One way to address this question is to not fix *k* and k’ in advance, but rather
     delay the decision until inference time.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 解决这个问题的一种方法是不要提前固定 *k* 和 k’，而是推迟决策直到推断时。
 - en: Here is how.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法如下。
 - en: First some terminology. We will call a sequence of words that begins a sentence
     as the sentence’s prefix.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先介绍一些术语。我们将称以句子开始的词序列为句子的前缀。
 - en: Now consider *P*(X1 | Y=y). We will approximate this as follows.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑 *P*(X1 | Y=y)。我们将按如下方式近似。
 - en: We will first find the largest prefix of X, call it P, which has sufficient
     support. We will use P(X1 starts with P | Y) as a proxy for P(X1 | Y).
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将首先找到 X 的最大前缀，称之为 P，并且具有足够的支持。我们将使用 P(X1 以 P 开始 | Y) 作为 P(X1 | Y) 的代理。
 - en: The support of a prefix P of X1 for the estimation of *P*(X1 | Y) is defined
     as the number of instances in the training set in which P is a prefix of X1.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: X1 前缀 P 对 *P*(X1 | Y) 的支持定义为训练集中 P 作为 X1 前缀的实例数量。
 - en: The idea behind this approximation procedure is that we should use the longest
     prefix of X1 that we can, provided it is seen enough times in the training set
     (as a prefix of X1).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一近似过程的理念是，我们应该使用 X1 的最长前缀，只要它在训练集中出现的次数足够多（作为 X1 的前缀）。
 - en: Similarly, we should estimate *P*(X2 | Y) as *P*(Q | Y) where Q is the largest
     prefix of X2 whose support is sufficiently large.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似地，我们应该将 *P*(X2 | Y) 估计为 *P*(Q | Y)，其中 Q 是 X2 的最大前缀，其支持度足够大。
 - en: What does the form our inference has taken mean for a model? We will need to
     track the probabilities *P*(X1 starts with P | Y) for all prefixes P of X1\. Similarly
     for *P*(X2 | Y).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们推断出的形式对模型意味着什么？我们需要跟踪所有 X1 的前缀 P 的概率 *P*(X1 以 P 开始 | Y)。*P*(X2 | Y) 也类似。
 - en: Internally, for modeling *P*(X1 |Y) and *P*(X2 | Y), there are lots of word
     sequences we need to track.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 内部，对于建模 *P*(X1 |Y) 和 *P*(X2 | Y)，我们需要跟踪大量的词序列。
 - en: Fortunately, these word sequences can be collected into so-called Trie data
     structures. These are optimized for compactly representing a huge set of word
     sequences.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，这些词序列可以收集到所谓的 Trie 数据结构中。这些结构被优化为紧凑地表示大量的词序列。
 - en: These Tries are built during the training process as follows.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些 Tries 在训练过程中如下构建。
 - en: We will use four Tries T10, T11, T20, and T21 respectively. T*iy*, *i* = 1 or
     2, will store the prefix sequences and their counts for Y=*y* for X*i*.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将分别使用四个 Tries T10、T11、T20 和 T21。T*iy*，*i* = 1 或 2，将存储前缀序列及其对 Y=*y* 的计数，针对
+    X*i*。
 - en: Each node in the Trie will store a count.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: Trie 中的每个节点将存储一个计数。
 - en: We will initialize all the tries to start with a single node, the root node,
     whose count is set to zero.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将所有的 Trie 初始化为从一个单独的节点开始，即根节点，其计数设置为零。
 - en: Now consider an instance (X1, X2, *y*) in the training set. We have left out
     *i* as it will not affect the tries.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑一个训练集中的实例 (X1, X2, *y*)。我们忽略了 *i*，因为它不会影响 Trie。
 - en: Interpreting X1 as a sequence of words, we will look up X1 in T1*y*, extending
     the trie with a path comprised of new nodes as needed. Any time a new node is
     created its count will be initialized to 0.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 将 X1 解释为单词序列时，我们将在 T1*y* 中查找 X1，必要时扩展 Trie 并添加由新节点组成的路径。每次创建新节点时，其计数将初始化为 0。
 - en: Now, in the Trie T1*y*, we will increment the counts of all nodes on the path
     that represents X1\. By one each.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，在 Trie T1*y* 中，我们将沿着表示 X1 的路径递增所有节点的计数，每个节点增加一次。
 - en: To process X2 we will repeat the same procedure on the Trie T2*y*.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理 X2 时，我们将在 Trie T2*y* 上重复相同的过程。
 - en: '**Numeric Example**'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '**数值示例**'
 - en: Let’s now illustrate this process.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们说明这个过程。
 - en: The four tries will be initialized to T10, T11, T20, and T21 each being {[]:0}.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 四个 Trie 将被初始化为 T10、T11、T20 和 T21，每个 Trie 的初始状态为 {[]:0}。
 - en: Now imagine that we present the first training instance as ([a,b],[A,B,C],1)
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们呈现第一个训练实例为 ([a,b],[A,B,C],1)
 - en: T11’s new state will be {[]:1,[a]:1,[a,b]:1}.
+  id: totrans-126
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: T11 的新状态将是 {[]:1,[a]:1,[a,b]:1}
 - en: ''
+  id: totrans-127
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: T21’s new state will be {[]:1,[A]:1, [A,B]:1, [A,B,C]:1}
+  id: totrans-128
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: T21 的新状态将是 {[]:1,[A]:1, [A,B]:1, [A,B,C]:1}
 - en: 'Now imagine that we present this training instance: ([a,d],[A,B,E],1)'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们呈现这个训练实例：([a,d],[A,B,E],1)
 - en: T11’s new state will be {[]:2,[a]:2,[a,b]:1,[a,d]:1}
+  id: totrans-130
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: T11 的新状态将是 {[]:2,[a]:2,[a,b]:1,[a,d]:1}
 - en: ''
+  id: totrans-131
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: T21’s new state will be {[]:2,[A]:2, [A,B]:2, [A,B,C]:1,[A,B,E]:1}
+  id: totrans-132
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: T21 的新状态将是 {[]:2,[A]:2, [A,B]:2, [A,B,C]:1,[A,B,E]:1}
 - en: In the above illustration, for visual convenience, we have represented each
     Trie as a hashmap, i.e. a Dict in Python.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述示例中，为了视觉上的方便，我们将每个 Trie 表示为一个哈希映射，即 Python 中的字典。
 - en: In reality, we can represent the Trie more compactly as a tree by leveraging
     the structure of the (repeated) prefixes.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我们可以通过利用（重复的）前缀结构将 Trie 更紧凑地表示为树。
 - en: The representation of the Trie as a tree is also much more efficient for looking
     up the counts associated with all the prefixes of a given sequence X in the trie.
     We simply go down the unique path that the Trie contains for the longest prefix
@@ -544,94 +806,140 @@
     never encountered in the training set in the context in which it would be placed
     in this Trie. However, there is always a path in the Trie for at least one prefix
     of X, even if only the empty one.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 将 Trie 表示为树对于查找与给定序列 X 的所有前缀相关的计数也更高效。我们只需沿着 Trie 包含的唯一路径向下查找 X 的最长前缀。我们说“最长前缀”是因为
+    X 可能未完全包含在 Trie 中，如果 X 在训练集中从未以这种上下文出现，它会被放置在这个 Trie 中。然而，Trie 中总是存在至少一个 X 的前缀的路径，即使只是空前缀。
 - en: '**Inference Using The Tries**'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用 Trie 推理**'
 - en: Say we are done with training. Now for a given (X1, X2, *i*) we want to compute
     *P*(Y=y|X1,X2,i).
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设训练已经完成。现在，对于给定的 (X1, X2, *i*)，我们想计算 *P*(Y=y|X1,X2,i)。
 - en: The components of this calculation that involve the tries are *P*(X1|Y=*y*)
     and *P*(X2|Y=*y*) respectively.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个计算中涉及 Trie 的部分是 *P*(X1|Y=*y*) 和 *P*(X2|Y=*y*)。
 - en: Let’s illustrate how to compute one of these, as the other will be similar.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们演示如何计算其中之一，其他的计算过程也会类似。
 - en: Let’s pick *P*(X1|Y=*y*).
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们选择 *P*(X1|Y=*y*)。
 - en: We run down the tries T10 and T11 to find the longest prefix of X1 that has
     sufficiently high support. We need to use both tries since the support of a prefix
     P of X1 is the sum of the counts on the nodes in T10 and T11 at which P ends.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们遍历 Trie T10 和 T11 以找到 X1 的最长支持前缀。我们需要使用这两个 Trie，因为 X1 的前缀 P 的支持是 T10 和 T11
+    中 P 结束的节点上的计数之和。
 - en: Let’s denote the longest prefix of X1 with sufficient support as P(X1).
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用 P(X1) 表示 X1 的最长支持前缀。
 - en: '*P*(P(X1) | Y=*y*) is simply the count at the node where P ends in T1*y* divided
     by the count on the root node of the trie T1*y*. This is simply the number of
     instances in the training set whose label is *y* and whose X1 starts with P(X1)
     divided by the number of instances in the training set whose label is *y*.'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(P(X1) | Y=*y*) 只是 P 在 Trie T1*y* 中结束的节点上的计数除以 Trie T1*y* 根节点上的计数。这仅仅是训练集中标签为
+    *y* 且 X1 以 P(X1) 开始的实例数量，除以标签为 *y* 的训练集中实例数量。'
 - en: '**Summary**'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结**'
 - en: In this post, we covered the NLP problem of segmenting a text into its paragraphs.
     We noted that this problem is more challenging than the problem of segmenting
     text into sentences but less challenging than the problem of segmenting text into
     coherent units such as by topic.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们介绍了将文本分割成段落的 NLP 问题。我们注意到，这个问题比将文本分割成句子的难度更大，但比将文本分割成以主题为单位的连贯单元的难度要小。
 - en: We framed this problem as one of supervised learning. There is a lot of labeled
     data readily available. The input is a pair of adjacent sentences. The outcome
     is whether or not there is a paragraph break between the two. As such this is
     a supervised learning problem in which the input is a pair of sequences and the
     outcome is binary.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将这个问题框架设定为监督学习问题。有大量标记数据可以直接使用。输入是一对相邻句子。结果是这两句之间是否存在段落分隔。因此，这是一个监督学习问题，其中输入是一对序列，结果是二元的。
 - en: Next, we applied the Bayes rule under the naive Bayes assumption, one of conditional
     independence of the predictors given the outcome. We then worked out the likelihood
     and the prior terms in the resulting formula.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们在简单贝叶斯假设下应用了贝叶斯规则，即在给定结果的情况下，预测变量的条件独立性。然后我们计算了结果公式中的似然性和先验项。
 - en: From here we noted that even under the naive assumption the resulting model
     is too complex. We discussed how to cope with this complexity by modeling each
     of the two sentences in the input as a collection of prefixes going from the null
     prefix to the entire sequence. At inference time, we described how to use the
     “right” prefix for the prediction of the outcome.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里我们注意到，即使在简单假设下，得到的模型也过于复杂。我们讨论了如何通过将输入的两个句子建模为从空前缀到整个序列的一组前缀来应对这种复杂性。在推理时，我们描述了如何使用“正确”的前缀来预测结果。
 - en: We examined several real examples of adjacent sentences in real text to support
     our case for working off prefixes instead of full sentences.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们检查了多个实际文本中相邻句子的实例，以支持我们基于前缀而非完整句子的工作方法。
 - en: Finally, we noted that working with all prefixes of sentences rather than the
     sentences themselves potentially blows up the model size. For this, we came up
     with a scheme using Tries. Sequences in the same context are compactly represented
     in appropriate tries. We discussed in detail how the Tries would be learned during
     training, and how the Tries would be used during inference.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们注意到，处理句子的所有前缀而不是句子本身可能会导致模型规模激增。为此，我们提出了一种使用 Tries 的方案。在适当的 Tries 中，以紧凑方式表示相同上下文中的序列。我们详细讨论了
+    Tries 如何在训练过程中学习，以及 Tries 在推理过程中如何使用。
 - en: '**References**'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '**参考文献**'
 - en: '[A Neural Model for Text Segmentation](https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1214/reports/final_reports/report001.pdf)'
+  id: totrans-152
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[文本分割的神经模型](https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1214/reports/final_reports/report001.pdf)'
 - en: Grammarly
+  id: totrans-153
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: Grammarly
 - en: '[https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd](/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd)'
+  id: totrans-154
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://towardsdatascience.com/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd](/segmenting-text-into-sentences-using-nlp-35d8ef55c0fd)'
 - en: '[https://en.wikipedia.org/wiki/Trie](https://en.wikipedia.org/wiki/Trie)'
+  id: totrans-155
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[https://en.wikipedia.org/wiki/Trie](https://en.wikipedia.org/wiki/Trie)'
