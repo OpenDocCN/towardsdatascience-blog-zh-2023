@@ -132,17 +132,20 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 10 个数据点（小批量）和模型的副本从 Master GPU 移动到其他 2 个 GPU。
 - en: Do a forward pass on each GPU and pass to master GPU the outputs
   id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在每个 GPU 上进行前向传播，并将输出传递给 Master GPU。
 - en: Compute the total loss on Master GPU and then send back the loss to each GPU
     to compute the gradients for the parameters
   id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 Master GPU 上计算总损失，然后将损失返回到每个 GPU，以计算参数的梯度。
 - en: Send the gradients back (these are the average of the gradients for all training
     examples) to Master GPU, sum them up to get the average gradient for the entire
     batch of 30
@@ -150,16 +153,19 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将梯度（这些是所有训练样本的梯度平均值）返回到 Master GPU，将它们求和以获得整个 30 个数据点批次的平均梯度。
 - en: Update the parameters on the Master GPU and send these updates to the other
     2 GPUs for the next iteration
   id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新 Master GPU 上的参数，并将这些更新发送到其他两个 GPU 以进行下一次迭代。
 - en: 'There are some problems & inefficiencies with this process:'
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个过程存在一些问题和低效之处：
 - en: Data are passed from the Master GPU before being split between other GPUs. Also,
     Master GPU is utilized more than other GPUs as computation of total loss and parameters
     updates happen on Master GPU
@@ -167,28 +173,35 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据从 Master GPU 传递，然后在其他 GPU 之间分割。此外，Master GPU 的利用率高于其他 GPU，因为总损失的计算和参数更新都发生在
+    Master GPU 上。
 - en: We need to synchronize the models on other GPUs at each iteration which can
     slow down the training
   id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们需要在每次迭代时同步其他 GPU 上的模型，这可能会减慢训练速度。
 - en: '**Distributed Data Parallel (DDP)**'
   id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**分布式数据并行（DDP）**'
 - en: 'Distributed Data Parallel was introduced to improve on inefficiencies of Data
     Parallel algorithm. We still have the same settings as before — 30 data points
     for each batch with 3 GPUs. The differences are the following:'
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 分布式数据并行（Distributed Data Parallel）旨在改善数据并行（Data Parallel）算法的低效问题。我们仍然使用之前的设置——每批次
+    30 个数据点，3 个 GPU。区别如下：
 - en: It does not have the Master GPU
   id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它没有 Master GPU。
 - en: Because we don’t have the Master GPU anymore, we load the data on each GPU in
     a *non-overlapping* way in parallel directly from the disk/RAM — *DistributedSampler*
     does this job for us. Under the hood it uses the local rank (GPU id) to distribute
@@ -198,6 +211,9 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于我们不再拥有 Master GPU，我们直接从磁盘/RAM 上以 *非重叠* 的方式并行加载每个 GPU 上的数据——*DistributedSampler*
+    负责这项工作。在底层，它使用本地排名（GPU id）将数据分配到各个 GPU 上——给定 30 个数据点，第一个 GPU 将使用点 [0, 3, 6, …
+    , 27]，第二个 GPU [1, 4, 7, .., 28]，第三个 GPU [2, 5, 8, .. , 29]。
 - en: '[PRE0]'
   id: totrans-31
   prefs: []
@@ -209,16 +225,19 @@
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向传播、损失计算和反向传播在每个 GPU 上独立执行，梯度异步减少，计算均值，然后所有 GPU 上的更新进行。
 - en: Because of the advantages of DDP over DP, DDP usage is preferred nowadays, thus
     we will only show the DDP implementation.
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 DDP 相对于 DP 的优势，现如今更倾向于使用 DDP，因此我们仅展示 DDP 实现。
 - en: Gradient Accumulation
   id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度累积
 - en: If we have only one GPU but still want to use a larger batch size, an alternative
     option is to accumulate the gradients for a certain number of steps, effectively
     accumulating the gradients for certain number of mini-batches increasing the effective
@@ -228,11 +247,14 @@
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们只有一个 GPU，但仍想使用更大的批次大小，可以选择在一定步数内累积梯度，有效地累积一定数量的小批次的梯度，从而增加有效批次大小。以上述示例为例，我们可以累积
+    10 个数据点的梯度进行 3 次迭代，以实现与 DDP 训练中有效批次大小为 30 相同的结果。
 - en: '**DDP process** Code'
   id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**DDP 过程** 代码'
 - en: Below I will only go through the differences when implementing DDP compared
     to 1 GPU code. The full code can be found some sections below. First we initialize
     the process group that allows different processes to communicate between them.
@@ -240,6 +262,8 @@
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面我将仅讲述实现 DDP 与单 GPU 代码相比的区别。完整代码可以在下几节中找到。首先，我们初始化进程组，以允许不同进程之间进行通信。通过 *int(os.environ[“LOCAL_RANK”])*，我们可以检索给定进程中使用的
+    GPU。
 - en: '[PRE1]'
   id: totrans-38
   prefs: []
@@ -250,6 +274,7 @@
   id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们需要将模型包装在 *DistributedDataParallel* 中，以启用多 GPU 训练。
 - en: '[PRE2]'
   id: totrans-40
   prefs: []
@@ -259,6 +284,7 @@
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一部分是定义 *DistributedSampler*，我在 DDP 部分提到过。
 - en: '[PRE3]'
   id: totrans-42
   prefs: []
