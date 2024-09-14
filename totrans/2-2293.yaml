@@ -3,16 +3,19 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用冻结的大型语言模型进行视觉问答
 - en: 原文：[https://towardsdatascience.com/visual-question-answering-with-frozen-large-language-models-353d42791054](https://towardsdatascience.com/visual-question-answering-with-frozen-large-language-models-353d42791054)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/visual-question-answering-with-frozen-large-language-models-353d42791054](https://towardsdatascience.com/visual-question-answering-with-frozen-large-language-models-353d42791054)
 - en: Talking with LLMs about images, without training LLMs on images.
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 与大型语言模型讨论图像，而无需在图像上训练大型语言模型。
 - en: '[](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)[![Daniel
     Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)[](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)
@@ -20,24 +23,33 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)[![Daniel
+    Warfield](../Images/c1c8b4dd514f6813e08e401401324bca.png)](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)[](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)
+    [Daniel Warfield](https://medium.com/@danielwarfield1?source=post_page-----353d42791054--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)
     ·18 min read·Oct 9, 2023
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----353d42791054--------------------------------)
+    ·18分钟阅读·2023年10月9日
 - en: --
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/20a13db13c9eda0a5658fa9c857f7ff0.png)'
   id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/20a13db13c9eda0a5658fa9c857f7ff0.png)'
 - en: “Bridging modalities”, made with MidJourney. All images by the author unless
     otherwise stated.
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: “弥合模态”，由MidJourney制作。除非另有说明，否则所有图像均由作者提供。
 - en: In this article we’ll use a Q-Former, a technique for bridging computer vision
     and natural language models, to create a visual question answering system. We’ll
     go over the necessary theory, following the [BLIP-2 paper](https://arxiv.org/abs/2301.12597),
@@ -46,70 +58,85 @@
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将使用Q-Former，一种弥合计算机视觉和自然语言模型的技术，来创建一个视觉问答系统。我们将讨论必要的理论，参照 [BLIP-2论文](https://arxiv.org/abs/2301.12597)，然后实现一个可以与大型语言模型讨论图像的系统。
 - en: '![](../Images/d999ca849fd33e7ae32b9d4a3a667559.png)'
   id: totrans-9
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d999ca849fd33e7ae32b9d4a3a667559.png)'
 - en: What we’ll be building
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将构建的内容
 - en: '**Who is this useful for?** Data scientists interested in computer vision,
     natural language processing, and multimodal modeling.'
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '**谁会觉得这篇文章有用？** 对计算机视觉、自然语言处理和多模态建模感兴趣的数据科学家。'
 - en: '**How advanced is this post?** Intermediate. You might struggle if you don’t
     have some experience in both computer vision and natural language processing.'
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '**这篇文章的难度如何？** 中级。如果你没有一些计算机视觉和自然语言处理的经验，你可能会觉得有些困难。'
 - en: '**Prerequisites:** High level familiarity with transformers, embeddings, and
     encoder-decoders. All of these topics are covered in the following article:'
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '**前提条件：** 对变换器、嵌入和编码器-解码器有较高的熟悉度。所有这些主题在以下文章中都有涵盖：'
 - en: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
     [## Transformers — Intuitively and Exhaustively Explained'
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## Transformers — 直观且全面的解释](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)'
 - en: 'Exploring the modern wave of machine learning: taking apart the transformer
     step by step'
   id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 探索现代机器学习的浪潮：一步一步拆解变换器
 - en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
 - en: A Brief Chronology of Visual Language Modeling
   id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 视觉语言建模的简要时间线
 - en: 'Visual language modeling really started up in 2016 with the paper [VQA: Visual
     Question Answering](https://arxiv.org/pdf/1505.00468.pdf), which formally posed
     the following class of problem:'
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '视觉语言建模真正起步于2016年，随着论文 [VQA: Visual Question Answering](https://arxiv.org/pdf/1505.00468.pdf)
+    的发布，该论文正式提出了以下问题类别：'
 - en: 'Given an image and a natural language question about the image, the task is
     to provide an accurate natural language answer — [VQA: Visual Question Answering](https://arxiv.org/pdf/1505.00468.pdf)'
   id: totrans-19
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '给定一张图片和关于这张图片的自然语言问题，任务是提供一个准确的自然语言回答——[VQA: 视觉问答](https://arxiv.org/pdf/1505.00468.pdf)'
 - en: 'In 2016, when VQA was popularized, a typical approach looked something like
     this:'
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在2016年，当VQA（视觉问答）被普及时，典型的方法看起来是这样的：
 - en: '![](../Images/34330c5a3381d8c9a541e3a397b64e46.png)'
   id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/34330c5a3381d8c9a541e3a397b64e46.png)'
 - en: 'A VQA model from 2016 using an LSTM to embed the question into a vector, an
     existing computer vision network to embed the image as a vector, then a dense
     layer which considers the two in the correct choice of output. From [VQA: Visual
@@ -117,12 +144,15 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '2016年的一个VQA模型使用LSTM将问题嵌入向量，使用现有的计算机视觉网络将图像嵌入向量，然后通过一个密集层在正确的输出选择中考虑这两个向量。来自[VQA:
+    视觉问答](https://arxiv.org/pdf/1505.00468.pdf)。'
 - en: In the early days of VQA it was appropriate to train the vision and language
     components from scratch, pass the outputs to a dense network, and pick one of
     n possible outputs as a response.
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在VQA的早期阶段，从头开始训练视觉和语言组件，将输出传递到密集网络，并选择n个可能输出中的一个作为响应是合适的。
 - en: As vision and language models became more powerful, Visual Question Answering
     gave way to **Visual Language Modeling (VLM)**, which can generally be considered
     as an expansion on visual question answering. Instead of simple questions like
@@ -132,22 +162,26 @@
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着视觉和语言模型变得更强大，视觉问答让位于**视觉语言建模（VLM）**，它通常被认为是对视觉问答的扩展。现代视觉语言模型不仅可以回答“这张图片中有车吗”这样简单的问题，还可以询问图片中是什么类型的车，然后询问这辆车的驾驶情况、这辆车出演过的最受欢迎的电影等。
 - en: '![](../Images/68bf25d3db06ca6d1d2f76374f501bbb.png)'
   id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/68bf25d3db06ca6d1d2f76374f501bbb.png)'
 - en: An example of Visual Language Modeling in action. This particular example is
     from the [BLIP-2 paper](https://arxiv.org/pdf/2301.12597.pdf), which we will be
     using as a reference in this post.
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是视觉语言建模实际应用的一个例子。这个特定的例子来自[BLIP-2 论文](https://arxiv.org/pdf/2301.12597.pdf)，我们将用它作为本帖的参考。
 - en: This shift from VQA to VLM was largely the result of incorporating large language
     models into visual systems, providing complex reasoning abilities and encyclopedic
     knowledge out of the box.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 从VQA到VLM的转变在很大程度上是由于将大型语言模型融入视觉系统，提供了复杂的推理能力和开箱即用的百科知识。
 - en: The difficulty of visual language modeling is, and always has been, **multi-modality**.
     You have to be good at images, natural language, and you have to be good at getting
     them to play nicely together. As vision and language models have gotten larger,
@@ -155,6 +189,7 @@
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 视觉语言建模的难点是，一直以来都是**多模态**。你需要擅长图像、自然语言，并且需要让它们良好地协同工作。随着视觉和语言模型的不断扩大，用于将它们结合起来进行视觉语言建模的系统变得越来越复杂。
 - en: This poses a practical problem. Large language models are massive, so updating
     their parameters to learn some new task is exorbitantly expensive (like, thousands
     to millions of dollars expensive). Also, when training a model on a completely
@@ -165,71 +200,86 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这带来了实际问题。大型语言模型是巨大的，因此更新它们的参数以学习一些新任务是昂贵的（比如，几千到几百万美元的费用）。此外，当在完全新模式的数据上训练模型时，该模型通常会**灾难性遗忘**；这是一个术语，用于描述模型在调整到新用例时遗忘关键信息的情况。如果你随意将图像编码器和大型语言模型结合起来，你可能会得到一个对图像和文本理解都很差的模型。
 - en: The [BLIP-2 paper](https://arxiv.org/abs/2301.12597) proposes the Q-Former to
     address both the catastrophic forgetting issue, as well as being economical by
     leveraging existing models.
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '[BLIP-2 论文](https://arxiv.org/abs/2301.12597)提出了Q-Former来解决灾难性遗忘问题，并且通过利用现有模型来降低成本。'
 - en: The Q-Former in a nutshell
   id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Q-Former的简要介绍
 - en: 'If you wanted to make a VQA system from scratch in a weekend, you might consider
     the following approach:'
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想在一个周末从零开始构建一个VQA系统，你可以考虑以下方法：
 - en: Pass the image you want to talk about through a caption generator
   id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过标题生成器处理你想讨论的图像
 - en: Combine the question asked by the user and the generated caption into a prompt
     for an LLM using some template
   id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将用户提出的问题和生成的标题结合起来，使用一些模板创建 LLM 的提示。
 - en: Pass that prompt to the LLM, which would return the final output
   id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将该提示传递给 LLM，LLM 将返回最终输出。
 - en: '![](../Images/c1cb089d3646b557b5854adc04fb8196.png)'
   id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c1cb089d3646b557b5854adc04fb8196.png)'
 - en: The flow diagram of a naive approach being successful. The user asked a question
     which happens to be answerable from the generated caption.
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个天真的方法成功的流程图。用户提出了一个能够从生成的标题中回答的问题。
 - en: That approach might work if you’re asking simple questions about the subject
     of an image, but if you have more obscure questions you might be out of luck.
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你问的是关于图像主题的简单问题，这种方法可能会奏效，但如果你有更晦涩的问题，你可能就会失望了。
 - en: '![](../Images/6d471b4dddc577ac2f7ad271d21fd47d.png)'
   id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6d471b4dddc577ac2f7ad271d21fd47d.png)'
 - en: The flow diagram of a naive approach not being successful. The user asked a
     question which is not answerable from the generated caption.
   id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个天真的方法未成功的流程图。用户提出了一个无法从生成的标题中回答的问题。
 - en: The Q-former is used as a querying transformer (hence the name) which can transform
     a users query based on the image. **The idea is to be able to extract the correct
     information from the image, based on the users prompt, and provide it to the LLM.**
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-Former 作为查询 transformer（因此得名）用于根据图像转换用户的查询。**其目的是根据用户的提示从图像中提取正确的信息，并将其提供给
+    LLM。**
 - en: '![](../Images/53d0c432e21edc653b3d0d54ce5b914b.png)'
   id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53d0c432e21edc653b3d0d54ce5b914b.png)'
 - en: A conceptual diagram of what the Q-Former does. It uses both the prompt and
     the image to constuct the input to the LLM. In reality the Q-Former doesn’t actually
     generate text, it generates a high dimensional embedding, but this is the conceptual
@@ -237,19 +287,23 @@
   id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-Former 所做的概念图。它利用提示和图像来构建 LLM 的输入。实际上，Q-Former 并不生成文本，而是生成高维嵌入，但这就是概念的本质。
 - en: The BLIP-2 Architecture
   id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: BLIP-2 架构
 - en: Before we really dive into it, let’s get a high level understanding.
   id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们真正深入之前，先对其进行高层次的了解。
 - en: '![](../Images/12606f77558602bdfc00521a1280ee30.png)'
   id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12606f77558602bdfc00521a1280ee30.png)'
 - en: A Slightly more accurate depiction of the Q-Former, and the components around
     it. The image encoder embeds an Image into its most important parts, the text
     encoder does the same for the users prompt, and the Q-Former combines them to
@@ -257,11 +311,14 @@
   id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-Former 的稍微准确一点的描述，以及周围的组件。图像编码器将图像嵌入其最重要的部分，文本编码器对用户的提示做同样的处理，而 Q-Former 将它们结合起来，为
+    LLM 创建输入。
 - en: 'The BLIP-2 Architecture, which the Q-Former exists within, has the following
     components:'
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: BLIP-2 架构中存在 Q-Former 的组件如下：
 - en: '**An Image Encoder:** A pretrained model which embeds images into an abstract
     representation which makes tasks like image classification easier. In essence,
     you can think of this as extracting an images important content. A popular example
@@ -270,6 +327,8 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**图像编码器：** 一个预训练模型，将图像嵌入到抽象表示中，从而使图像分类等任务变得更容易。实际上，你可以将其看作是提取图像的重要内容。一个流行的例子是
+    CLIP。'
 - en: '**A Text Encoder:** A pretrained model which embeds text into an abstract representation.
     These typically treat words like points in a high dimensional space, where similar
     words will be in similar points in that space. A popular example of this is Word2Vect.'
@@ -277,12 +336,15 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**文本编码器：** 一个预训练模型，将文本嵌入到抽象表示中。这些模型通常将单词视为高维空间中的点，相似的单词会位于该空间中的相似点。一个流行的例子是
+    Word2Vec。'
 - en: '**An LLM:** A large language model trained to perform general language tasks.
     Kind of like chat GPT.'
   id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**LLM：** 一个经过训练的大型语言模型，用于执行通用语言任务。类似于聊天 GPT。'
 - en: '**The Q-Former:** A transformer model which combines the embedded image and
     the embedded prompt into a format compatible for the LLM. The Q-Formers main job
     is to properly contextualize both inputs and provide them to the LLM in a way
@@ -291,6 +353,8 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**Q-Former：** 一个将嵌入的图像和嵌入的提示结合成与 LLM 兼容的格式的 transformer 模型。Q-Former 的主要工作是正确地上下文化这两种输入，并以有利于文本生成的方式将其提供给
+    LLM。'
 - en: 'Because of the Q-Formers flexibility, different encoders and LLMs can be used
     within BLIP-2\. I won’t cover those in depth in this post, but I’ll be writing
     an article on CLIP image encoding soon, and I have an article on LLMs and text
@@ -298,34 +362,43 @@
   id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 Q-Former 的灵活性，可以在 BLIP-2 中使用不同的编码器和 LLM。我在这篇文章中不会深入探讨这些内容，但我将很快撰写一篇关于 CLIP
+    图像编码的文章，并且我有一篇关于 LLM 和文本嵌入的文章，可能对不熟悉的人有所帮助：
 - en: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
     [## Transformers — Intuitively and Exhaustively Explained'
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
+    [## Transformers — 直观且详尽的解释'
 - en: 'Exploring the modern wave of machine learning: taking apart the transformer
     step by step'
   id: totrans-55
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 探索现代机器学习的浪潮：逐步拆解transformer
 - en: towardsdatascience.com](/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb?source=post_page-----353d42791054--------------------------------)
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Transformers 直观且详尽的解释](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb)'
 - en: The Q-Former, in a Nutshell
   id: totrans-57
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Q-Former，简而言之
 - en: '![](../Images/300ad8d9bf0a718b9874b27610929791.png)'
   id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/300ad8d9bf0a718b9874b27610929791.png)'
 - en: A High level conceptual diagram of the Q-Former
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-Former的高层次概念图
 - en: First of all, a general understanding of attention is required as it makes up
     the bulk of the Q-Former architecture. I cover attention intuitively and exhaustively
     in [this post](https://medium.com/@danielwarfield1/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb),
@@ -334,6 +407,7 @@
   id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，需要对注意力有一个整体理解，因为它构成了Q-Former架构的主要部分。我在[这篇文章](https://medium.com/@danielwarfield1/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb)中直观且详尽地讲解了注意力机制，但基本上，注意力机制会生成修改过的输入副本，然后将这些副本混合在一起。
 - en: If we passed the text input “What Color is the Background” through a self-attention
     mechanism then the vector for each word in the sentence would be combined with
     the vector for every other word. This would result in an abstract matrix that
@@ -341,10 +415,12 @@
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将文本输入“What Color is the Background”通过自注意力机制处理，那么句子中每个词的向量将与其他每个词的向量结合。这将产生一个抽象矩阵，其中包含输入中所有词的上下文信息。
 - en: '![](../Images/70f02daec4f4676c2fbd33dc601f179d.png)'
   id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/70f02daec4f4676c2fbd33dc601f179d.png)'
 - en: Multi Headed self attention, in a nutshell. The mechanism mathematically combines
     the vectors for different inputs (in this example, words), creating a matrix which
     encodes a deeper meaning of the entire input. Intuitively and exaustively explaind
@@ -352,6 +428,7 @@
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 多头自注意力，简而言之。这一机制在数学上将不同输入（在这个例子中是词语）的向量结合起来，生成一个矩阵，该矩阵编码了整个输入的更深层次的含义。在[这篇文章](https://medium.com/towards-data-science/transformers-intuitively-and-exhaustively-explained-58a5c5df8dbb)中直观且详尽地解释了这一点。
 - en: What might not be so obvious, even if you are familiar with attention, is why
     the self attention block is divided down the middle. In reality the two self attention
     blocks within the Q-Former are actually one. The input on the left of the self
@@ -365,28 +442,33 @@
   id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使你对注意力机制有所了解，可能仍不清楚为什么自注意力块会被分成两半。实际上，Q-Former中的两个自注意力块实际上是一个。自注意力机制左侧的输入可以与自注意力机制右侧的输入完全互动，反之亦然。这个划分不是基于模型的工作原理，而是基于模型的训练方式。我们将在下一节中详细讨论，但要点是：由于Q-Former的训练方式，自注意力块擅长处理仅图像、仅文本以及同时处理这两者。因此，它有点像两个注意力块，但实际上是一个大的注意力块。
 - en: '![](../Images/b6899a92dfeeb7826225c5e317b1f860.png)'
   id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b6899a92dfeeb7826225c5e317b1f860.png)'
 - en: A conceptual diagram of how the self attention mechanism in the Q-Former both
     isolates text and image representations, and aids in their interaction. This is
     done in the bootstrapping phase of training, which we’ll discuss in the next section.
   id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个概念图展示了Q-Former中的自注意力机制如何既隔离文本和图像表示，又促进它们的交互。这是在训练的引导阶段完成的，我们将在下一节中讨论。
 - en: 'The learned tokens on the bottom left of the diagram are essentially learned
     constants which are used by the model in the first self attention block. We’ll
     talk about them more later, but, briefly, I like to think of them two ways:'
   id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 图表左下角学习到的标记本质上是模型在第一个自注意力块中使用的学习常量。我们稍后会详细讨论它们，但简而言之，我喜欢从两种方式来理解它们：
 - en: If you think about them in terms of self attention with the text, they’re dictating
     how the text is initially introduced to the image.
   id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你从文本的自注意力角度考虑它们，它们在决定文本如何最初介绍给图像。
 - en: If you think of them in terms of interacting with the image, they’re serving
     as an initialization which gets modified by the image, ultimately becoming the
     prompt to the model.
@@ -394,6 +476,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你从与图像互动的角度考虑它们，它们作为初始化，最终会通过图像进行修改，最终成为模型的提示。
 - en: Also, as you can see in the first image in this section, there are dotted recursive
     connections connecting the output of the two feedforward networks back into the
     input. the entire region depicted in yellow is a Q-Former block. Multiple of these
@@ -401,6 +484,7 @@
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，如本节的第一张图片所示，有虚线递归连接将两个前馈网络的输出连接回输入。整个区域被描绘为黄色的是一个Q-Former块。这些块堆叠在一起以创建完整的Q-Former。
 - en: That’s all the components, which might be surprising. Based on just looking
     at the components it’s not obvious why the Q-Former would be especially good at
     bridging images and text. To understand that, you need to understand how the Q-Former
@@ -408,23 +492,27 @@
   id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是所有组件，这可能会让人惊讶。仅仅从组件来看，并不明显为什么Q-Former在桥接图像和文本方面表现得特别好。要理解这一点，你需要了解Q-Former是如何训练的。
 - en: How the Q-Former Is Trained
   id: totrans-72
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Q-Former的训练方式
 - en: 'The Training of the Q-Former can be divided into two phases: Bootstrapping
     and Generative Learning Pre-Training. The bootstrapping phase can be further divided
     into three sub phases. We’ll go over all of them step by step.'
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-Former的训练可以分为两个阶段：引导和生成学习预训练。引导阶段可以进一步分为三个子阶段。我们将逐步探讨所有这些。
 - en: 'The naming of these training phases might be a bit confusing. What is “bootstrapping”?
     Why is there a pre-training step but not a “training step”? I think the naming
     of these phases is the result of the following definitions:'
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些训练阶段的命名可能会有些困惑。什么是“引导”？为什么会有预训练步骤却没有“训练步骤”？我认为这些阶段的命名是以下定义的结果：
 - en: '**Bootstrapping** is the general process of using data which may or may not
     be perfectly suited for the final use case in order to get the model up from random
     initialization to some state which performs well at related tasks.'
@@ -432,12 +520,14 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**引导**是指使用可能不完全适合最终用例的数据，以将模型从随机初始化状态提升到在相关任务中表现良好的状态的过程。'
 - en: '**Pre-Training** is the general process of using large amounts of data to get
     the model into a generally good state for the final task.'
   id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**预训练**是指使用大量数据将模型调整到一个普遍良好的状态，为最终任务做好准备。'
 - en: '**Fine-Tuning** is the process of taking a pre-trained model and presenting
     it a small amount of task specific data to optimize it for the final modeling
     task.'
@@ -445,6 +535,7 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**微调**是指将预训练模型进行调整，并提供少量任务特定数据，以优化其最终建模任务。'
 - en: One of the core advantages of BLIP-2 is **Zero-Shot Performance**. BLIP-2 promises
     to be good at tasks like visual question answering without being fine tuned on
     VQA datasets. It uses datasets with captioned images (captions which explain the
@@ -453,11 +544,13 @@
   id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: BLIP-2的核心优势之一是**零样本性能**。BLIP-2承诺能够在没有针对VQA数据集进行微调的情况下，出色地完成诸如视觉问答等任务。它使用带有图片说明的图像数据集（这些说明解释了图像的内容）来进行引导和预训练，但从未实际对VQA进行微调。
 - en: Bootstrapping
   id: totrans-79
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 引导
 - en: The bootstrapping phase is designed to encourage the model to be good at a variety
     of tasks which require understanding of both text and images. Kind of like my
     [self-supervision post](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33),
@@ -466,11 +559,13 @@
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 引导阶段旨在鼓励模型在需要理解文本和图像的各种任务中表现良好。就像我的[自监督学习帖子](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33)一样，你可以将其视为一种“游戏”，模型学习为视觉问答的最终任务做准备。
 - en: 'The bootstrapping phase has three sub-phases. These will be explored in the
     following sections, but in summary:'
   id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 引导阶段有三个子阶段。这些将在后续部分中探讨，但总的来说：
 - en: '**Image-Text Contrastive Learning**: The model learns how to group image-caption
     pairs which belong together, and separate image-caption pairs which don’t belong
     together through [contrastive learning](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33).'
@@ -478,6 +573,8 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**图像-文本对比学习**：模型学习如何将属于一组的图像-字幕对分在一起，并通过 [对比学习](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33)
+    将不属于一组的图像-字幕对分开。'
 - en: '**Image-Grounded Text Generation:** Divide the caption into two sections, the
     hidden and not hidden part, and attempt to guess the hidden part based on both
     the not hidden part and the image.'
@@ -485,6 +582,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**图像基础的文本生成：** 将字幕分成两部分，隐藏的和未隐藏的部分，并尝试根据未隐藏的部分和图像来猜测隐藏的部分。'
 - en: '**Image-Text Matching:** Pass the output of the Q-Former into a [sacrificial
     dense network](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33),
     which converts the output into a binary classification, then use this binary classification
@@ -493,15 +591,18 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**图像-文本匹配：** 将 Q-Former 的输出传入 [牺牲密集网络](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33)，该网络将输出转换为二元分类，然后使用此二元分类来决定一个字幕是否属于某个图像。'
 - en: Image-Text Contrastive Learning
   id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像-文本对比学习
 - en: '![](../Images/abdf9891353a0d21a09d765e693a4262.png)'
   id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/abdf9891353a0d21a09d765e693a4262.png)'
 - en: Image-Text Contrastive Learning in action. All of the vectors on the image side
     (which would be the input to the LLM) are compared with the class token from the
     text side. In this example the similarity is high, because the image and text
@@ -510,6 +611,7 @@
   id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像-文本对比学习的实际操作。图像侧的所有向量（即 LLM 的输入）都与文本侧的类标记进行比较。在这个例子中，相似度很高，因为图像和文本匹配。我们希望，如果图像和文本不匹配，最大相似度分数会很低。
 - en: 'In this mode of bootstrapping, the self attention mechanism in the Q-Former
     is split in two. This is done via a mask applied to the attention layer called
     the “Uni-modal Self-Attention Mask”. This is a complicated phrase for a simple
@@ -517,16 +619,19 @@
   id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种自举模式中，Q-Former 中的自注意力机制被分为两部分。这是通过应用于注意力层的掩码完成的，称为“单模态自注意力掩码”。这是一个复杂的短语，但表示一个简单的概念：
 - en: '**within the self attention mechanism, any time the text side interacts with
     the image side, just set the value to zero.**'
   id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在自注意力机制中，每次文本侧与图像侧互动时，只需将值设置为零。**'
 - en: This, in effect, blocks all communication between the image side of the Q-Former
     and the text side of the Q-Former.
   id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 这实际上阻止了 Q-Former 图像侧和文本侧之间的所有通信。
 - en: This training method also employs a special token, called the “class” token.
     This idea was inspired by [BERT](https://arxiv.org/abs/1810.04805), a landmark
     I’ll get around to covering at some point. Basically, you have some arbitrary
@@ -539,6 +644,7 @@
   id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种训练方法还使用了一个特殊的标记，称为“类”标记。这个想法受到 [BERT](https://arxiv.org/abs/1810.04805) 的启发，这是一个我将来会详细介绍的里程碑。基本上，你有一个任意的标记，让模型知道“嘿，我们现在在进行图像-文本对比学习”。然后，你会忽略文本侧除了类标记之外的任何其他输出，并使用它来计算损失。因此，模型知道当“类”标记出现时，它是特殊的，并会尝试学习如何操控左侧的视觉和右侧的文本，以最大化对比损失的性能。
 - en: '**Contrastive loss, essentially, is the task of trying to get matching pairs
     close together, and not-matching pairs far apart.** [I have an article that covers
     contrastive loss more in depth](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33),
@@ -551,37 +657,44 @@
   id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '**对比损失，本质上，是将匹配对拉近而将不匹配对拉远的任务。** [我有一篇更详细地介绍对比损失的文章](https://medium.com/towards-data-science/self-supervised-learning-using-projection-heads-b77af3911d33)，但本质上，对比损失会查看一组图像及其标题，并尝试让模型学习哪些图像属于哪些标题。在我们的案例中，这通过计算两侧向量的相似度并找到最大相似度值来实现。匹配的文本和图像对应该具有较大的相似度分数，而不匹配的对应该具有较小的相似度分数。'
 - en: By performing this bootstrapping operation, we are encouraging the model to
     learn to align images and text. **In other words, we’re training the model to
     learn which image is, or isn’t related to some piece of text.**
   id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过执行这种自举操作，我们鼓励模型学习对齐图像和文本。**换句话说，我们正在训练模型来学习哪些图像与某段文本相关，哪些则不相关。**
 - en: '![](../Images/5b57777057a0d8317df2152e656079b5.png)'
   id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5b57777057a0d8317df2152e656079b5.png)'
 - en: A conceptual diagram of uni-modal self attention, the masking strategy used
     in this phase of training. Note how there is full attention on the image side,
     and full attention on the text side, but no attention between the two.
   id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 单模态自注意力的概念图，这是在此训练阶段使用的掩码策略。请注意图像端和文本端都有完全的注意力，但两者之间没有注意力。
 - en: Image-Grounded Text Generation
   id: totrans-96
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像基础文本生成
 - en: '![](../Images/b6f30cf23404ae6f00f274622ee277a5.png)'
   id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b6f30cf23404ae6f00f274622ee277a5.png)'
 - en: A conceptual diagram of the “Image-Grounded Text Generation” pre-training step
     in action. A section of the input text is hidden from the Q-Former, and the Q-Former
     is tasked with trying to fill in the hidden text.
   id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: “图像基础文本生成”预训练步骤的概念图。在这里，Q-Former的一个输入文本部分被隐藏，Q-Former的任务是尝试填补隐藏的文本。
 - en: In this bootstrapping mode, we ask the Q-Former to complete a partially hidden
     caption. We apply a “Multi-modal Causal Self-Attention Mask”, which allows the
     text side of the Q-Former to interact with the image side, but hides a part of
@@ -591,25 +704,30 @@
   id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种自举模式下，我们要求Q-Former完成一个部分隐藏的标题。我们应用了“多模态因果自注意力掩码”，允许Q-Former的文本端与图像端交互，但隐藏了部分需要由Q-Former预测的标题。我们还将“类别”标记替换为“解码器”标记，以让模型知道它应该执行什么任务。
 - en: '![](../Images/49fe1bebc9f6d7f8f3a30090a7970378.png)'
   id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49fe1bebc9f6d7f8f3a30090a7970378.png)'
 - en: A conceptual diagram of multi-modal causal self-attention; the masking strategy
     used in this phase of training. Not how full attention is permitted across all
     tokens save those which are supposed to be output by the model.
   id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 多模态因果自注意力的概念图；这是在此训练阶段使用的掩码策略。请注意，除了那些模型应输出的标记外，所有标记之间都允许完全的注意力。
 - en: Image-Text Matching
   id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像-文本匹配
 - en: '![](../Images/90146f17f2780f59a1737f8469f83c56.png)'
   id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/90146f17f2780f59a1737f8469f83c56.png)'
 - en: A conceptual diagram of the “Image-Text Matching” pre-training step in action.
     No mask is used in this phase, allowing all text and image tokens to interact
     within the self attention mechanism. Note how the output is false because the
@@ -617,6 +735,8 @@
   id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: “图像-文本匹配”预训练步骤的概念图。在这个阶段没有使用掩码，允许所有文本和图像标记在自注意力机制中进行交互。请注意，输出是错误的，因为图像与文本“A
+    Painting of a Monster Truck”不兼容。
 - en: In this pre-training mode, we create a temporary linear classifier (a dense
     network) and feed all of the output tokens of the Q-Former into it. This linear
     classifier projects the tokens into “true” or “false” predictions, which are used
@@ -625,6 +745,7 @@
   id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种预训练模式下，我们创建了一个临时线性分类器（一个密集网络），并将Q-Former的所有输出标记输入其中。这个线性分类器将标记投影为“真实”或“虚假”预测，用于训练模型预测输入文本是否与输入图像匹配。不同的组合对，无论是匹配还是不匹配的组合，都被输入到模型中。
 - en: I talk about the concept behind using a dense network to project the output
     of a model for certain pre-training tasks in this [post](/self-supervised-learning-using-projection-heads-b77af3911d33).
     In essence, a linear classifier that gets used to train, but is thrown out at
@@ -635,6 +756,8 @@
   id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在这篇[文章](/self-supervised-learning-using-projection-heads-b77af3911d33)中讨论了使用密集网络来投影模型输出用于某些预训练任务的概念。本质上，线性分类器用于训练，但在推理时被丢弃，这有助于模型学习文本和图像的一般表示，但有助于防止模型在任务中过于专业化；如此专业化，以至于在将标记传递给
+    LLM 的实际任务中表现较差。
 - en: You can think of the Q-Former as the “understanding text and images” part, and
     the temporary linear classifier as the “turn that understanding into a yes or
     no answer” part. After this step we throw out the “turn that understanding into
@@ -642,11 +765,13 @@
   id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以把 Q-Former 想象成“理解文本和图像”的部分，而临时线性分类器则是“将这种理解转化为是或否的回答”的部分。在这一步之后，我们会丢弃“将这种理解转化为是或否的回答”的部分，保留一般的文本和图像理解。
 - en: What We Get Out of Bootstrapping
   id: totrans-108
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 从自举中得到什么
 - en: In the last section we talked about the three phases of bootstrapping; Image-Text
     Contrastive Learning, Image-Grounded Text Generation, and Image-Text Matching.
     Through the process of optimizing the Q-Former for these various tasks, the Q-Former
@@ -655,11 +780,14 @@
   id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一节中，我们讨论了自举的三个阶段：图像-文本对比学习、图像基础文本生成和图像-文本匹配。通过优化 Q-Former 以完成这些各种任务，Q-Former
+    被鼓励建立图像和文本的强表示，并建立一个强大的系统来关联这两者。
 - en: A Note on the Learned Tokens
   id: totrans-110
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关于学习到的标记的说明
 - en: 'As previously mentioned, the learned tokens (referred to in the BLIP-2 paper
     as the “query vectors”) interact with both the image and text to extract key information.
     To flesh out that idea a bit further, I wanted to share the following quotes from
@@ -667,10 +795,12 @@
   id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，学习到的标记（在 BLIP-2 论文中称为“查询向量”）与图像和文本交互以提取关键信息。为了进一步阐述这一点，我想分享 BLIP-2 论文中关于查询向量的以下引文：
 - en: 'On the query vectors generally:'
   id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于查询向量的一般情况：
 - en: The queries interact with each other through self-attention layers, and interact
     with frozen image features through cross-attention layers (inserted every other
     transformer block). The queries can additionally interact with the text through
@@ -679,20 +809,24 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 查询通过自注意力层相互作用，并通过交叉注意力层（插入每隔一个变换器块）与冻结的图像特征互动。查询还可以通过相同的自注意力层与文本交互。
 - en: 'On how the bootstrapping phase relates to the query vectors:'
   id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于自举阶段如何与查询向量相关：
 - en: We aim to train the Q-Former such that the queries can learn to extract visual
     representation that is most informative of the text.
   id: totrans-115
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们的目标是训练 Q-Former，使查询能够学习提取对文本最具信息性的视觉表示。
 - en: 'On how the query vectors relate text and image information:'
   id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于查询向量如何关联文本和图像信息：
 - en: Since the architecture of Q-Former does not allow direct interactions between
     the frozen image encoder and the text tokens, the information required for generating
     the text must be first extracted by the queries, and then passed to the text tokens
@@ -702,24 +836,29 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 由于 Q-Former 的架构不允许冻结的图像编码器和文本标记之间直接交互，因此生成文本所需的信息必须首先由查询提取，然后通过自注意力层传递给文本标记。因此，查询被迫提取能够捕捉文本所有信息的视觉特征。
 - en: '**Pre-Training**'
   id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**预训练**'
 - en: Now that we have a Q-Former which has good internal representations of both
     text and images, we can hook it up to an LLM and use it to train the Q-Former.
   id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有了一个在文本和图像上具有良好内部表示的 Q-Former，我们可以将其连接到 LLM 上，并使用它来训练 Q-Former。
 - en: '![](../Images/2328112a11a9ea1ec44d14b843edcf9b.png)'
   id: totrans-120
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2328112a11a9ea1ec44d14b843edcf9b.png)'
 - en: Generative pre-training diagram from [BLIP-2](https://arxiv.org/pdf/2301.12597.pdf)
   id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[BLIP-2](https://arxiv.org/pdf/2301.12597.pdf) 的生成预训练图'
 - en: We can divide the caption of the image into two parts, a prefix and a sufix.
     We can pass the prefix through the entire BLIP-2 architecture, and modify the
     weights of the Q-Former to encourage the output of the LLM to output the suffix.
@@ -728,11 +867,14 @@
   id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将图像的描述分成两部分，一个前缀和一个后缀。我们可以通过整个 BLIP-2 架构传递前缀，并修改 Q-Former 的权重以鼓励 LLM 的输出为后缀。从概念上讲，这使图像和文本的表示在
+    Q-Former 中与特定 LLM 模型的需求对齐。
 - en: Theory Conclusion
   id: totrans-123
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 理论总结
 - en: Great, so now we understand the BLIP-2 architecture; the components, how the
     Q-Former (its core component) works, and how it’s trained. In the next section
     we’ll use a pre-trained version of BLIP-2 to do image captioning, VQA, and even
@@ -740,18 +882,23 @@
   id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 太好了，现在我们了解了 BLIP-2 架构；组件、Q-Former（其核心组件）如何工作以及如何进行训练。在下一节中，我们将使用预训练的 BLIP-2
+    进行图像描述、VQA，甚至进行小型图像基础对话。
 - en: '![](../Images/2e5f55efb7a1b9f61c4f8c313b199662.png)'
   id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2e5f55efb7a1b9f61c4f8c313b199662.png)'
 - en: The entire [BLIP-2](https://arxiv.org/pdf/2301.12597.pdf) architecture
   id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 整个[BLIP-2](https://arxiv.org/pdf/2301.12597.pdf)架构
 - en: '![](../Images/24913f8c8eb427bee01a0f92922177b0.png)'
   id: totrans-127
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/24913f8c8eb427bee01a0f92922177b0.png)'
 - en: 'The BLIP-2 architecture in relation to the Q-Former, as defined in the [BLIP-2
     paper](https://arxiv.org/pdf/2301.12597.pdf). Here we can see the inputs of the
     Q-Former, the learned queries, the three training bootstrapping strategies, and
@@ -764,42 +911,52 @@
   id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[BLIP-2 论文](https://arxiv.org/pdf/2301.12597.pdf)中定义的 BLIP-2 架构与 Q-Former 的关系。这里我们可以看到
+    Q-Former 的输入、学习到的查询、三种训练引导策略和支持这些策略的三种掩码。一个微妙的说明：BLIP-2 每隔一个块就将图像暴露给 Q-Former。我邀请你自行思考这样做的理由。对我来说，这感觉像是一种残差连接，鼓励对图像进行反复且越来越复杂的分析。没有图像访问权限的块可以形成复杂的关系，然后在随后的块中与图像进行比较。
 - en: VQA using Q-Formers from Hugging Face
   id: totrans-129
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Hugging Face 的 Q-Former 进行 VQA
 - en: In a future post I’ll be coding up and training a Q-Former from scratch, but
     I think you’ll agree this post is already long enough. For now let’s experiment
     with Q-Formers using a pre-built solution.
   id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 在未来的帖子中，我会从零开始编写和训练一个 Q-Former，但我认为你会同意这篇帖子已经足够长了。现在让我们使用预构建的解决方案来实验 Q-Formers。
 - en: 'The full notebook can be viewed here:'
   id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整的笔记本可以在这里查看：
 - en: '[](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/VQAWithQFormer.ipynb?source=post_page-----353d42791054--------------------------------)
     [## MLWritingAndResearch/VQAWithQFormer.ipynb at main · DanielWarfield1/MLWritingAndResearch'
   id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/VQAWithQFormer.ipynb?source=post_page-----353d42791054--------------------------------)
+    [## MLWritingAndResearch/VQAWithQFormer.ipynb at main · DanielWarfield1/MLWritingAndResearch'
 - en: Notebook Examples used in machine learning writing and research - MLWritingAndResearch/VQAWithQFormer.ipynb
     at main ·…
   id: totrans-133
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用于机器学习写作和研究的笔记本示例 - MLWritingAndResearch/VQAWithQFormer.ipynb at main ·…
 - en: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/VQAWithQFormer.ipynb?source=post_page-----353d42791054--------------------------------)
   id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/DanielWarfield1/MLWritingAndResearch/blob/main/VQAWithQFormer.ipynb?source=post_page-----353d42791054--------------------------------)
 - en: 'Graciously LAVIS, a machine learning team within SalesForce (the group which
     published the BLIP-2 paper) provide an end-to-end pre-trained solution on Hugging
     face:'
   id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 SalesForce 内的机器学习团队 LAVIS（发布 BLIP-2 论文的团队）慷慨地提供了 Hugging Face 上的端到端预训练解决方案：
 - en: '[PRE0]'
   id: totrans-136
   prefs: []
@@ -810,17 +967,20 @@
   id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，BLIP-2 包含两个部分；一个处理器和一个模型。首先，让我们探讨处理器。
 - en: The Processor
   id: totrans-138
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 处理器
 - en: In the example provided by HuggingFace, the processor is used to pre-process
     the inputs (both the text and image) before passing them to BLIP-2\. Let’s load
     up an image, generate some text, and pass it to the processor to see what we get.
   id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 HuggingFace 提供的示例中，处理器用于在将输入（包括文本和图像）传递给 BLIP-2 之前进行预处理。让我们加载一张图像，生成一些文本，并将其传递给处理器，看看结果如何。
 - en: '[PRE1]'
   id: totrans-140
   prefs: []
@@ -830,15 +990,18 @@
   id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f78be25a4b85e2bbd9c8e0b8d5b2d64b.png)'
 - en: A sample image we’ll be using for this example
   id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用的一个示例图像
 - en: 'Passing this image along with some sample text through the processor, we can
     see we get a dictionary from the processor:'
   id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 将这张图片和一些示例文本传递给处理器后，我们可以看到从处理器获得了一个字典：
 - en: '[PRE2]'
   id: totrans-144
   prefs: []
@@ -848,11 +1011,13 @@
   id: totrans-145
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8a0861f3106a4cc891ea8892ee05f0f4.png)'
 - en: The pixel_values from the processor are a transformation of the image down to
     224 x 224, with the color values normalized to a convenient range for modeling.
   id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 从处理器获得的 pixel_values 是将图像缩小到 224 x 224 的变换，颜色值被标准化到适合建模的范围。
 - en: '[PRE3]'
   id: totrans-147
   prefs: []
@@ -862,6 +1027,7 @@
   id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/be760d4590ea97f9b5e6557a45b39b2c.png)'
 - en: '[PRE4]'
   id: totrans-149
   prefs: []
@@ -871,26 +1037,31 @@
   id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9bb57b2f3cf91fcd281aad9b09156189.png)'
 - en: The values for the processed images are reduced within a reasonable range, and
     they seem to be averaged around zero
   id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理过的图像的值被缩减到一个合理的范围，并且它们似乎平均接近于零
 - en: '![](../Images/ab3ac5d8f7872627a951c935b4146f4c.png)'
   id: totrans-152
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab3ac5d8f7872627a951c935b4146f4c.png)'
 - en: The values for the raw image have a biased distribution which spans a much wider
     range of values
   id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始图像的值具有偏倚分布，覆盖了更宽的值范围
 - en: The input_ids from the processor are word piece indexes. Individual parts of
     a sentence are assigned individual indexes, which are later used in a word to
     vector embedder, which is then applied to the BLIP-2.
   id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 从处理器获得的 input_ids 是词片索引。句子的各个部分被分配了单独的索引，这些索引后来被用于词向量嵌入器，然后应用于 BLIP-2。
 - en: '[PRE5]'
   id: totrans-155
   prefs: []
@@ -900,11 +1071,13 @@
   id: totrans-156
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6531009b22ce5cc5752767e1e6fc1f65.png)'
 - en: Because we’re inferencing the model, the mask provided by the processor is simply
     all 1’s, allowing the model to see all input values.
   id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们是在推断模型，因此处理器提供的掩码只是全 1，允许模型看到所有输入值。
 - en: '[PRE6]'
   id: totrans-158
   prefs: []
@@ -914,21 +1087,25 @@
   id: totrans-159
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de74742516636847ad9335aeeca98ae5.png)'
 - en: Invoking the Model
   id: totrans-160
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 调用模型
 - en: Now that we have some idea what the processor does, we can start using it to
     pass things to BLIP-2, and start generating output.
   id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们对处理器的功能有了初步了解，我们可以开始使用它将数据传递给 BLIP-2，并开始生成输出。
 - en: '**Image Captioning:** BLIP-2 will caption an image if you provide it an image
     and no text.'
   id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图像标题生成：** 如果你提供图像而没有文本，BLIP-2 将为图像生成标题。'
 - en: '[PRE7]'
   id: totrans-163
   prefs: []
@@ -938,11 +1115,13 @@
   id: totrans-164
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9065b1916160668a5610e68fbc814c84.png)'
 - en: '**Prompted Image Captioning:** If you provide a prefix to a caption, BLIP-2
     will try to complete the caption.'
   id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '**提示图像标题生成：** 如果你为标题提供一个前缀，BLIP-2 将尝试完成这个标题。'
 - en: '[PRE8]'
   id: totrans-166
   prefs: []
@@ -952,10 +1131,12 @@
   id: totrans-167
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/863b37d616f37eedb672c15821bd7aa9.png)'
 - en: The result of completing the prompt “this is a picture of”
   id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 完成提示“这是一张……的图片”的结果
 - en: '[PRE9]'
   id: totrans-169
   prefs: []
@@ -965,16 +1146,19 @@
   id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e258c8ded3532891ed2874fe9ee1dc8.png)'
 - en: The result of completing the prompt “the weather looks”
   id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 完成提示“天气看起来……”的结果
 - en: '**Visual Question Answering:** By invoking BLIP-2 with a specially formatted
     query, visual question answering can be achieved without ever having trained on
     visual question answering data.'
   id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: '**视觉问答：** 通过调用格式化特殊查询的 BLIP-2，可以实现视觉问答，而无需经过视觉问答数据的训练。'
 - en: '[PRE10]'
   id: totrans-173
   prefs: []
@@ -984,12 +1168,14 @@
   id: totrans-174
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12e02488bee399b8d3943c5a678df7a3.png)'
 - en: '**Visually Based Conversations:** We can format our prompts into something
     resembling a conversation, thus allowing us to converse with the model about an
     image.'
   id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: '**基于视觉的对话：** 我们可以将提示格式化成类似对话的内容，从而与模型就图像进行对话。'
 - en: '[PRE11]'
   id: totrans-176
   prefs: []
@@ -999,11 +1185,13 @@
   id: totrans-177
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5eb2e48990f6ac3947ae92cab18a90b9.png)'
 - en: Conclusion
   id: totrans-178
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this post we went over the history of multimodal image and language modeling;
     from it’s humble beginnings in visual question answering to it’s modern stage
     of using large language models and image encoders. We described a method for exposing
@@ -1014,17 +1202,21 @@
   id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们回顾了多模态图像和语言建模的发展历史；从最初的视觉问答，到现代阶段使用大型语言模型和图像编码器。我们描述了一种将图像暴露给大型语言模型的方法，即
+    BLIP-2 架构，并描述了其最重要组件 Q-Former 的内部工作原理。接着，我们探索了 BLIP-2 在标题生成、视觉问答和基于视觉的对话中的实际应用。
 - en: Follow For More!
   id: totrans-180
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关注以获取更多信息！
 - en: I describe papers and concepts in the ML space, with an emphasis on practical
     and intuitive explanations. I plan on implementing a Q-Former from scratch in
     a future post.
   id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 我描述机器学习领域的论文和概念，重点是提供实用和直观的解释。我计划在未来的文章中从零开始实现一个 Q-Former。
 - en: '**Attribution:** All of the images in this document were created by Daniel
     Warfield, unless a source is otherwise provided. You can use any images in this
     post for your own non-commercial purposes, so long as you reference this article,
