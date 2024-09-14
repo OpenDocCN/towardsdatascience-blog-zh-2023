@@ -141,11 +141,13 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 你还必须优先创建高质量的数据标签用于你的学习任务。如果组织对高质量数据的承诺不足，特别是对于你项目的微调支持，我建议考虑其他方法。模型依赖于高质量的标注输入。如果你的利益相关者对人工标注者的承诺不足，你可能会让所有相关方感到失望。
 - en: Who Even Uses PEFT?
   id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 谁在使用 PEFT？
 - en: PEFT is used by most providers that offer the ability to fine-tune language
     models. If the provider doesn’t already make use of these techniques, I guarantee
     they have plans to. This article covers all of the techniques from [Hugging Face
@@ -159,6 +161,11 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: PEFT 被大多数提供语言模型微调能力的供应商使用。如果供应商尚未使用这些技术，我保证他们有计划使用这些技术。本文涵盖了在撰写时可用的[Hugging
+    Face PEFT](https://huggingface.co/docs/peft/index)中的所有技术。Lialin 等人的调查[2]在 Google
+    关于[在 Vertex AI 上调整基础模型](https://www.youtube.com/watch?v=4A4W03qUTsw)的介绍视频中被引用。虽然
+    Vertex AI 更像是一个黑箱，但我听说过销售推介中提到的[适配器](https://services.google.com/fh/files/misc/adaptation_of_foundation_models_whitepaper_google_cloud.pdf)、提示微调，以及最近的
+    LoRa。虽然不清楚他们具体使用了什么，但我们在这里讨论的技术就是支撑这些功能的核心。
 - en: OpenAI does offer fine-tuning, but however famously [has not implemented any
     PEFT methods](https://web.archive.org/web/20230531203946/https://humanloop.com/blog/openai-plans)
     yet. This is based on a blog post that was requested to be deleted by OpenAI a
@@ -171,11 +178,15 @@
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: OpenAI 确实提供了微调服务，但[至今尚未实现任何 PEFT 方法](https://web.archive.org/web/20230531203946/https://humanloop.com/blog/openai-plans)。这一点基于
+    OpenAI 几个月前要求删除的一篇博客文章。该文章详细说明了 OpenAI 不使用 Adapters 或 LoRa 来使微调更加计算友好。OpenAI 尚未宣布这些功能的实施，因此可以安全地假设这些功能目前还不可用。它已被纳入
+    OpenAI 的路线图中，并且由于[微调比正常模型使用更具盈利性](https://openai.com/pricing)，我怀疑它将在不久的将来推出。
 - en: Quick Transformer Review
   id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 快速 Transformer 复习
 - en: I assume that readers of this article are familiar with the Transformer architecture.
     You don’t need to be intimately invested in the details of self-attention or any
     components, but you should have glanced at Vaswani et al. [3] and maybe had a
@@ -184,11 +195,15 @@
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我假设这篇文章的读者对 Transformer 架构已经有所了解。你不需要对自注意力或任何组件的细节有深入的了解，但你应该至少浏览过 Vaswani 等人的[论文](https://wiki.example.org/feynmans_learning_method)，并且可能对[注释版
+    Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)有过一些了解（在我看来，这是学习
+    Transformer 的最佳资源）。
 - en: 'I am going to include this pseudo code for the transformer block. If you don’t
     know much about transformers, just know that at it’s core they do this:'
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将包括 Transformer 块的伪代码。如果你对 Transformer 了解不多，只需知道它的核心功能如下：
 - en: '[PRE0]'
   id: totrans-22
   prefs: []
@@ -201,19 +216,24 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 那些伪代码中的所有功能都如 Vaswani 等人所述。FFN 是前馈网络，对于我们的目的来说是 2 层。许多随后的 PEFT 技术对 Transformer
+    块或自注意力进行修改，因此在我们进行指南时，我会参考并修改这段伪代码。
 - en: A Tour through PEFT Methods
   id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: PEFT 方法概览
 - en: '![](../Images/b9e462418b0698dca2f8e214b7774e8e.png)'
   id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b9e462418b0698dca2f8e214b7774e8e.png)'
 - en: Overview of methods and classes from [2].
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自 [2] 的方法和类别概述。
 - en: We’ll go through each technique by looking at the broader classes in the diagram
     above. The classes we will cover are Additive, Adapters, Soft-Prompts, Reparameterization,
     and one Hybrid method that is a combination of Reparameterization and Selective
@@ -221,11 +241,14 @@
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将通过查看上图中的更广泛类别来逐一介绍每种技术。我们将涵盖的类别包括加性方法、适配器、软提示、重新参数化，以及一种混合方法，它是重新参数化和选择性（而不是稀疏
+    LoRa）的组合。
 - en: Additive Methods
   id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加性方法
 - en: Additive methods are probably the easiest to grasp. The goal of additive methods
     is to add an additional set of parameters or network layers to augment the model.
     When fine-tuning the data you update the weights only of these newly added parameters.
@@ -234,11 +257,14 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 加性方法可能是最容易理解的。加性方法的目标是添加一组额外的参数或网络层以增强模型。在微调数据时，您只更新这些新添加参数的权重。这使得训练计算上更容易，并且适应较小的数据集（起始时大约
+    100-500，最高接近 100,000）。
 - en: 'Method: Adapters'
   id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 方法：适配器
 - en: Adapters are simultaneously a method and a class. This technique was introduced
     in Houlsby et al [4]. The goal of adapters is to add small fully connected networks
     after Transformer sub-layers and learn those parameters. I follow the definitions
@@ -247,11 +273,14 @@
   id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 适配器既是一种方法也是一种类别。这项技术在 Houlsby 等人 [4] 中被介绍。适配器的目标是在 Transformer 子层之后添加小的全连接网络，并学习这些参数。我遵循
+    [2] 中的定义，并将适配器严格定义为仅向网络添加全连接层。
 - en: Houlsby et al. propose a simple update to the transformer block. They add fully
     connected layers in two places as shown in this pseudo code.
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: Houlsby 等人提出了一种对 transformer 块进行简单更新的方法。他们在两个地方添加了全连接层，如下所示的伪代码。
 - en: '[PRE1]'
   id: totrans-33
   prefs: []
@@ -262,6 +291,7 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 方法：（IA）³
 - en: Infused Adapter by Inhibiting and Amplifying Inner Activations, or (IA)³ is
     a very interesting additive method (adding parameters) that augments the transformer
     block with some new parameters. It was proposed by Liu et al. [5] in 2022\. Despite
@@ -270,37 +300,45 @@
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过抑制和放大内部激活的注入适配器，或 (IA)³ 是一种非常有趣的加性方法（添加参数），它通过一些新参数扩展了 transformer 块。它由 Liu
+    等人 [5] 于 2022 年提出。尽管名字如此，但这不是适配器方法，因为它并没有严格地在 transformer 块的子层之后添加全连接层。
 - en: 'Let’s consider the scaled dot-product attention found in a normal transformer:'
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑正常 transformer 中的缩放点积注意力：
 - en: Scaled dot-product attention from Vaswani et al. [3]
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自 Vaswani 等人 [3] 的缩放点积注意力
 - en: 'Since we are working with an additive method, we are seeking to add parameters
     to this network. We want the dimensionality to be quite small. (IA)³ proposes
     the following new vectors to be added to the attention mechanism:'
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们正在使用加性方法，我们寻求向此网络添加参数。我们希望维度尽可能小。（IA）³ 提出了以下新向量以添加到注意力机制中：
 - en: Scaled dot-product attention in (IA)³ from [5]. Here we added two column vectors
     to the normal equation, l_k, l_v, which take the Hadamard product by the key and
     value terms, respectively.
   id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 (IA)³ 中的缩放点积注意力来自 [5]。这里我们在普通方程中添加了两个列向量 l_k 和 l_v，它们分别与键和值项进行 Hadamard 乘积。
 - en: We just added column vectors l_k and l_v and take the [Hadamard product](https://en.wikipedia.org/wiki/Hadamard_product_(matrices))
     between the column vector and the matrix (multiple the column vector against all
     columns of the matrix).
   id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只是添加了列向量 l_k 和 l_v，并进行 [Hadamard 乘积](https://en.wikipedia.org/wiki/Hadamard_product_(matrices))，即列向量与矩阵之间的乘法（将列向量与矩阵的所有列相乘）。
 - en: 'We also introduce one other learnable column vector l_{ff} that is added to
     the feed forward layers as follow:'
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还引入了另一个可学习的列向量 l_{ff}，它被添加到前馈层中，如下所示：
 - en: Feed Forward update in (IA)³ adapted from [5]. We can see that we add the column
     vector l_{ff} to the network and take Hadamard product with the output of the
     first layer of the transformer blocks FFN. The function gamma is the activation
@@ -308,6 +346,8 @@
   id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: (IA)³ 中的前馈更新改编自 [5]。我们可以看到，我们将列向量 l_{ff} 添加到网络中，并与 transformer 块 FFN 的第一层输出进行
+    Hadamard 乘积。函数 gamma 是激活函数 [GELU](https://paperswithcode.com/method/gelu#:~:text=The%20GELU%20activation%20function%20is%20x%20%CE%A6%20(%20x%20)%20%2C%20where,of%20as%20a%20smoother%20ReLU.)。
 - en: 'In this example, gamma is the activation function applied to the product between
     the weights and input. Here is some pseudo code for (IA)³:'
   id: totrans-43
@@ -594,6 +634,7 @@
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 微调中最流行的技术之一是基于重参数化的方法，称为低秩适应（LoRa）[9]。LoRa通过学习一个单独的矩阵来更新权重矩阵，该矩阵表示来自优化的更新。它们进一步创建两个较小维度的权重矩阵来表示这种差异。通过创建较小维度的权重矩阵，我们需要学习的参数更少。
 - en: To train LoRa we use the fundamental ideas of gradient descent, where we make
     incremental adjustments to a set of parameters that move us closer to our goal
     (loss function). In LoRa we choose to isolate all of our updates to a separate
@@ -602,6 +643,8 @@
   id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了训练LoRa，我们使用梯度下降的基本思想，在这一过程中，我们对一组参数进行渐进调整，使我们更接近目标（损失函数）。在LoRa中，我们选择将所有更新隔离到一个单独的矩阵中。这个矩阵，我们称之为Delta
+    W，表示我们在微调过程中学到的所有参数更新。
 - en: Let’s assign W_0 to have dimensions dxk (d rows and k columns). We want to update
     it’s parameters so that it is aligned with our new goal. You can represent this
     update to the parameters by ΔW, which also the dimension dxk. We can model our
@@ -609,6 +652,7 @@
   id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将W_0的维度设为dxk（d行和k列）。我们希望更新它的参数，以使其与我们的新目标对齐。你可以通过ΔW来表示这个参数的更新，它的维度也是dxk。我们可以使用下面的方程来建模我们的更新规则。
 - en: Update rule for W_0 from [9]. We isolate the changes to W_0 in DeltaW. We then
     represent DeltaW as the product of A and B, two smaller dimension matrices. This
     way we learn less parameters but still update W, which makes fine-tuning computational
@@ -616,6 +660,7 @@
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自[9]的W_0的更新规则。我们将W_0的变化隔离到DeltaW中。然后，我们将DeltaW表示为A和B两个较小维度矩阵的乘积。这样，我们学习的参数更少，但仍然更新W，这使得微调的计算更加简单。
 - en: 'Now let’s change our update rule such that ΔW is modeled by a matrix multiplication
     AB. We assign matrix A to have dimensions dxr and B to have dimensions rxk. If
     you’re up to speed on your matrix multiplications you will see that AB has the
@@ -628,6 +673,7 @@
   id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们改变更新规则，使得ΔW由矩阵乘法AB建模。我们将矩阵A指定为dxr的维度，矩阵B指定为rxk的维度。如果你对矩阵乘法有所了解，你会发现AB与W_0的维度相同，因此这些矩阵的加法是有效的。这里是AB比DeltaW更好的原因：矩阵A仅有dxr的维度，而矩阵B有rxk的维度。如果我们将r设为一个非常小的数值（r=8是一个典型值），那么A和B中的参数数量会比ΔW小得多。如果我们只学习A和B的参数，我们将学习`d*k-d*r-r*k`更少的参数。实际上，这使我们只需学习原始网络参数的0.1–0.5%。
 - en: The walk through I just illustrated is the essence of how LoRa works. Instead
     of optimizing a matrix W through additional training steps, we alter a matrix
     ΔW through two new matrices A and B that have far fewer parameters. This result
@@ -635,12 +681,14 @@
   id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我刚刚描述的过程就是LoRa工作原理的精髓。我们不是通过额外的训练步骤来优化矩阵W，而是通过两个参数远少的新矩阵A和B来改变矩阵ΔW。这种结果帮助我们优化了更少的参数，使得训练更为高效。
 - en: Typically we use this update rule for the key and value matrices of the self
     attention in the transformer block. We also add a scaling factor, set to 1/r,
     to the amount of information given to the update. See the pseudo code below.
   id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常我们将这个更新规则应用于变换器块中的自注意力的关键和数值矩阵。我们还添加了一个缩放因子，设为1/r，以调整更新所提供的信息量。请参见下面的伪代码。
 - en: '[PRE7]'
   id: totrans-87
   prefs: []
@@ -651,6 +699,7 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 选择性方法
 - en: With selective methods we choose some of the parameters to update and do not
     update others. The problem with these approaches is that we have created a sparse
     matrix of parameters. Sparse matrix operations are not well supported on present
@@ -659,6 +708,7 @@
   id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用选择性方法，我们选择一些参数进行更新，而不更新其他参数。这些方法的问题在于我们创建了一个稀疏的参数矩阵。稀疏矩阵操作在现代GPU上不太被支持，并带来计算挑战。有关稀疏矩阵为何会产生计算挑战的更多信息，请查看[10]。
 - en: There are also techniques in Selective methods that focus on pruning unsuccessful
     vectors or manipulating model biases. These also create additional complexity
     when attempting to train the model. In general these methods have more challenging
@@ -730,6 +780,7 @@
   id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 在修剪SVD元素时，通过删除最不重要的三元组，低维度的秩（矩阵的r项）会被迭代地改变。他们通过一个全局预算调度器来实现这一点，该调度器在训练步骤中逐渐降低秩r。预算初始化为目标预算的1.5倍，并在经过t次预热步骤后按立方方式减少到目标预算。
 - en: This is conceptually a dense method to understand. If you’re technically inclined
     I encourage reading through the paper to understand the inner workings of the
     method. If you remember this as an efficient SVD implementation applied to LoRa
@@ -738,6 +789,7 @@
   id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 从概念上讲，这是一个难以理解的方法。如果您有技术背景，我鼓励您阅读论文以了解该方法的内部工作原理。如果您记住这是一个高效的SVD实现应用于LoRa，并结合了修剪不重要的奇异向量，那么在概念层面上，这可能是安全的。
 - en: '[PRE8]'
   id: totrans-98
   prefs: []
@@ -748,6 +800,7 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 方法比较
 - en: To compare all of the methods in one place I created the table below to show
     their number of trainable parameters (which are all additional parameters to the
     network), the method type, and an informal summary of the method. The informal
@@ -756,21 +809,25 @@
   id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在一个地方比较所有的方法，我创建了下面的表格来展示它们的可训练参数数量（这些都是网络的附加参数）、方法类型以及对方法的非正式总结。非正式总结是我如何用一句话向一个从未听说过该方法的大学生描述该方法。
 - en: '![](../Images/92175ae12769830938d7d7d9d3d5c308.png)'
   id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/92175ae12769830938d7d7d9d3d5c308.png)'
 - en: Table adapted from Lialin et al [2]. Author contributed P-Tuning, LLaMA-Adapter,
     and AdaLoRa and informal summary column. Informal summary is how I would describe
     the paper in one sentence to a college student.
   id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 表格改编自Lialin等人[2]。作者贡献了P-Tuning、LLaMA-Adapter和AdaLoRa，并在非正式总结栏中进行总结。非正式总结是我如何用一句话向大学生描述这篇论文的方式。
 - en: Is this the only conceptual guide you need?
   id: totrans-103
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 这是您需要的唯一概念性指南吗？
 - en: I argue this is the only conceptual guide you need because after reading you
     understand the basics of PEFT techniques. If you noticed, all of the techniques
     expanded on the ideas from another. After this introduction you understand enough
@@ -780,11 +837,13 @@
   id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为这是您需要的唯一概念性指南，因为阅读后您将理解PEFT技术的基础知识。如果您注意到，所有技术都扩展了其他技术的思想。在这次介绍之后，您已经理解了足够的基础知识，您可以自己探索研究论文。然而，如果您最终需要另一个概念性指南来理解这些概念，请在文章的评论中分享，以便其他读者可以找到这些资源！
 - en: Time to get started!
   id: totrans-105
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 现在是开始的时候了！
 - en: After this conceptual review you are at a great point to start experimenting
     with these methods to train your own models. There are plenty of great implementation
     guides available from [Hugging Face](https://huggingface.co/docs/peft/index).
@@ -793,6 +852,8 @@
   id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这次概念性回顾之后，您处于一个很好的起点，可以开始实验这些方法来训练自己的模型。来自[Hugging Face](https://huggingface.co/docs/peft/index)有很多很棒的实现指南。如果您希望采取更少的动手方法，您可以使用Google的Vertex
+    AI模型或使用OpenAI的微调服务。
 - en: '*Thank you for reading the article! If you have additional questions or something
     was unclear, leave a comment and I will get back to you. If you want to see more
     articles like this one, please follow me on* [*Medium*](https://medium.com/@smsmith714)
@@ -800,80 +861,107 @@
   id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '*感谢您阅读这篇文章！如果您有其他问题或有不清楚的地方，请留言，我会回复您。如果您想看到更多类似的文章，请在* [*Medium*](https://medium.com/@smsmith714)
+    *和* [*LinkedIn*](https://www.linkedin.com/in/sms714/)*上关注我。*'
 - en: '*If you found a technical error in this article, please let me know ASAP! I
     strive to make sure the information I publish is as correct as possible, but no
     one is perfect.*'
   id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果您发现本文中的技术错误，请尽快告知我！我努力确保我发布的信息尽可能准确，但没有人是完美的。*'
 - en: '**References:**'
   id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '**参考文献：**'
 - en: '[1] Nicholas Carlini, Daphne Ippolito, Matthew Jagielski, Katherine Lee, Florian
     Tramer, & Chiyuan Zhang. (2023). Quantifying Memorization Across Neural Language
     Models.'
   id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Nicholas Carlini, Daphne Ippolito, Matthew Jagielski, Katherine Lee, Florian
+    Tramer, & Chiyuan Zhang. (2023). 量化神经语言模型的记忆。'
 - en: '[2] Vladislav Lialin, Vĳeta Deshpande, & Anna Rumshisky. (2023). Scaling Down
     to Scale Up: A Guide to Parameter-Efficient Fine-Tuning.'
   id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Vladislav Lialin, Vĳeta Deshpande, & Anna Rumshisky. (2023). 缩小规模以扩大规模：参数高效微调指南。'
 - en: '[3] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
     Aidan N. Gomez, Lukasz Kaiser, & Illia Polosukhin (2017). Attention Is All You
     Need*. CoRR, abs/1706.03762.*'
   id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+    Aidan N. Gomez, Lukasz Kaiser, & Illia Polosukhin (2017). 关注即是你所需要的*。CoRR, abs/1706.03762*。'
 - en: '[4] Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
     de Laroussilhe, Andrea Gesmundo, Mona Attariyan, & Sylvain Gelly (2019). Parameter-Efficient
     Transfer Learning for NLP*. CoRR, abs/1902.00751.*'
   id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
+    de Laroussilhe, Andrea Gesmundo, Mona Attariyan, & Sylvain Gelly (2019). NLP 的参数高效迁移学习*。CoRR,
+    abs/1902.00751*。'
 - en: '[5] Haokun Liu, Derek Tam, Mohammed Muqeeth, Jay Mohta, Tenghao Huang, Mohit
     Bansal, & Colin Raffel. (2022). Few-Shot Parameter-Efficient Fine-Tuning is Better
     and Cheaper than In-Context Learning.'
   id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Haokun Liu, Derek Tam, Mohammed Muqeeth, Jay Mohta, Tenghao Huang, Mohit
+    Bansal, & Colin Raffel. (2022). 少样本参数高效微调优于上下文学习且更经济。'
 - en: '[6] Xiao Liu, Yanan Zheng, Zhengxiao Du, Ming Ding, Yujie Qian, Zhilin Yang,
     & Jie Tang (2021). GPT Understands, Too*. CoRR, abs/2103.10385.*'
   id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Xiao Liu, Yanan Zheng, Zhengxiao Du, Ming Ding, Yujie Qian, Zhilin Yang,
+    & Jie Tang (2021). GPT 也能理解*。CoRR, abs/2103.10385*。'
 - en: '[7] Renrui Zhang, Jiaming Han, Chris Liu, Peng Gao, Aojun Zhou, Xiangfei Hu,
     Shilin Yan, Pan Lu, Hongsheng Li, & Yu Qiao. (2023). LLaMA-Adapter: Efficient
     Fine-tuning of Language Models with Zero-init Attention.'
   id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Renrui Zhang, Jiaming Han, Chris Liu, Peng Gao, Aojun Zhou, Xiangfei Hu,
+    Shilin Yan, Pan Lu, Hongsheng Li, & Yu Qiao. (2023). LLaMA-Adapter：零初始化注意力的语言模型高效微调。'
 - en: '[8] Armen Aghajanyan, Luke Zettlemoyer, & Sonal Gupta (2020). Intrinsic Dimensionality
     Explains the Effectiveness of Language Model Fine-Tuning*. CoRR, abs/2012.13255.*'
   id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Armen Aghajanyan, Luke Zettlemoyer, & Sonal Gupta (2020). 内在维度解释了语言模型微调的有效性*。CoRR,
+    abs/2012.13255*。'
 - en: '[9] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li,
     Shean Wang, & Weizhu Chen (2021). LoRA: Low-Rank Adaptation of Large Language
     Models*. CoRR, abs/2106.09685.*'
   id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li,
+    Shean Wang, & Weizhu Chen (2021). LoRA：大语言模型的低秩适应*。CoRR, abs/2106.09685*。'
 - en: '[10] Trevor Gale, Matei Zaharia, Cliff Young, & Erich Elsen. (2020). Sparse
     GPU Kernels for Deep Learning.'
   id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Trevor Gale, Matei Zaharia, Cliff Young, & Erich Elsen. (2020). 深度学习的稀疏
+    GPU 内核。'
 - en: '[11] Brian Lester, Rami Al-Rfou, & Noah Constant. (2021). The Power of Scale
     for Parameter-Efficient Prompt Tuning.'
   id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Brian Lester, Rami Al-Rfou, & Noah Constant. (2021). 参数高效提示调优的规模效应。'
 - en: '[12] Qingru Zhang, Minshuo Chen, Alexander Bukharin, Pengcheng He, Yu Cheng,
     Weizhu Chen, & Tuo Zhao. (2023). Adaptive Budget Allocation for Parameter-Efficient
     Fine-Tuning.'
   id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Qingru Zhang, Minshuo Chen, Alexander Bukharin, Pengcheng He, Yu Cheng,
+    Weizhu Chen, & Tuo Zhao. (2023). 参数高效微调的自适应预算分配。'
