@@ -1,104 +1,156 @@
 - en: Harnessing Multi-Core Power with Asyncio in Python
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 利用Python中的Asyncio发挥多核性能
 - en: 原文：[https://towardsdatascience.com/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f](https://towardsdatascience.com/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f](https://towardsdatascience.com/harnessing-multi-core-power-with-asyncio-in-python-1764404ce44f)
 - en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[PYTHON并发](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
 - en: Boost your Python application’s performance by efficiently utilizing multiple
     CPU cores with asyncio
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过高效利用多个CPU核心，提升你的Python应用程序性能
 - en: '[](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)[![Peng
     Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)
     [Peng Qian](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----1764404ce44f--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)
     ·7 min read·May 9, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1764404ce44f--------------------------------)
+    ·阅读时间7分钟·2023年5月9日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/229d20ad602218a5869ea3daecce8616.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/229d20ad602218a5869ea3daecce8616.png)'
 - en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：由作者创建，[Canva](https://www.canva.com/)
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: In this article, I will show you how to execute Python asyncio code on a multi-core
     CPU to unlock the full performance of concurrent tasks.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我将向你展示如何在多核CPU上执行Python asyncio代码，以解锁并发任务的*全部性能*。
 - en: What is our problem?
+  id: totrans-11
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我们的问题是什么？
 - en: asyncio uses only one core.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: asyncio只使用一个核心。
 - en: In previous articles, I covered the mechanics of using Python asyncio in detail.
     With this knowledge, you can learn that asyncio allows IO-bound tasks to execute
     at high speed by manually switching task execution to bypass the GIL contention
     process during multi-threaded task switching.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前的文章中，我详细介绍了如何使用Python asyncio。通过这些知识，你可以了解到asyncio允许IO绑定任务通过手动切换任务执行以绕过多线程任务切换中的GIL争用过程，从而以高速执行。
 - en: Theoretically, the execution time of IO-bound tasks depends on the time from
     initiation to the response of an IO operation and is not dependent on your CPU
     performance. Thus, we can concurrently initiate tens of thousands of IO tasks
     and complete them quickly.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 从理论上讲，IO绑定任务的执行时间取决于从启动到IO操作响应的时间，而不依赖于你的CPU性能。因此，我们可以同时启动数万个IO任务，并迅速完成它们。
 - en: 'But recently, I was writing a program that needed to crawl tens of thousands
     of web pages simultaneously and found that although my asyncio program was much
     more efficient than programs that use iterative crawling of web pages, it still
     made me wait for a long time. Should I be using the full performance of my computer?
     So I opened Task Manager and checked:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 但最近，我在编写一个需要同时抓取数万个网页的程序时发现，尽管我的asyncio程序比使用迭代抓取网页的程序高效得多，但它仍然让我等待了很长时间。我是否应该充分利用我的计算机性能？于是我打开了任务管理器并检查了一下：
 - en: '![](../Images/4a6532d75e085230100c06fe182e5996.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4a6532d75e085230100c06fe182e5996.png)'
 - en: Only one core has a load. Image by Author
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 只有一个核心在负载中。图片来源：作者
 - en: I found that since the beginning, my code was running on only one CPU core,
     and several other cores were idle. In addition to launching IO operations to grab
     network data, a task has to unpack and format the data after it returns. Although
     this part of the operation does not consume much CPU performance, after more tasks,
     these CPU-bound operations will severely impact the overall performance.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我发现从一开始，我的代码只在一个CPU核心上运行，其他几个核心处于闲置状态。除了启动IO操作以获取网络数据外，一个任务在返回后还需要解包和格式化数据。虽然这部分操作并不消耗很多CPU性能，但随着任务的增加，这些CPU绑定操作会严重影响整体性能。
 - en: I wanted to make my asyncio concurrent tasks execute in parallel on multiple
     cores. Would that squeeze the performance out of my computer?
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望让我的 asyncio 并发任务在多个核心上并行执行。这是否会挤压我计算机的性能？
 - en: The underlying principles of asyncio
+  id: totrans-20
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: asyncio 的底层原理
 - en: To solve this puzzle, we must start with the underlying asyncio implementation,
     the event loop.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 要解决这个难题，我们必须从底层 asyncio 实现，即事件循环开始。
 - en: '![](../Images/b758e8a4edaa316f667b8d276ffb5997.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b758e8a4edaa316f667b8d276ffb5997.png)'
 - en: How does the event loop work. Image by Author
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 事件循环如何工作。图片由作者提供
 - en: As shown in the figure, asyncio’s performance improvement for programs starts
     with IO-intensive tasks. IO-intensive tasks include HTTP requests, reading and
     writing files, accessing databases, etc. The most important feature of these tasks
@@ -106,8 +158,11 @@
     for external data to be returned, which is very different from another class of
     synchronous tasks that require the CPU to be occupied all the time to compute
     a specific result.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 如图所示，asyncio 对程序的性能提升始于 IO 密集型任务。IO 密集型任务包括 HTTP 请求、读写文件、访问数据库等。这些任务的一个重要特点是，CPU
+    不会阻塞，并且在等待外部数据返回时花费大量时间计算，这与另一类同步任务完全不同，后者要求 CPU 始终占用以计算特定结果。
 - en: When we generate a batch of asyncio tasks, the code will first put these tasks
     into a queue. At this point, there is a thread called event loop that grabs one
     task at a time from the queue and executes it. When the task reaches the await
@@ -115,223 +170,335 @@
     another task from the queue and executes it. Until the previously waiting task
     gets data through a callback, the event loop returns to the previous waiting task
     and finishes executing the rest of the code.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们生成一批 asyncio 任务时，代码会首先将这些任务放入队列中。这时，有一个名为事件循环的线程从队列中一个一个地取出任务并执行。当任务到达 await
+    语句并等待（通常是等待请求的返回）时，事件循环从队列中取出另一个任务并执行。直到之前等待的任务通过回调获得数据，事件循环才会返回到之前等待的任务并完成执行其余代码。
 - en: Since the event loop thread executes on only one core, the event loop blocks
     when the “rest of the code” happens to take up CPU time. When the number of tasks
     in this category is large, each small blocking segment adds up and slows down
     the program as a whole.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于事件循环线程仅在一个核心上执行，当“其余代码”恰好占用 CPU 时间时，事件循环会被阻塞。当这种情况的任务数量很大时，每个小的阻塞段累加起来会使程序整体变慢。
 - en: What is my solution?
+  id: totrans-27
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 我的解决方案是什么？
 - en: From this, we know that asyncio programs slow down because our Python code executes
     the event loop on only one core, and the processing of IO data causes the program
     to slow down. Is there a way to start an event loop on each CPU core to execute
     it?
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 从中我们了解到，asyncio 程序变慢的原因是我们的 Python 代码仅在一个核心上执行事件循环，并且 IO 数据的处理导致程序变慢。有没有办法在每个
+    CPU 核心上启动一个事件循环以执行它呢？
 - en: 'As we all know, starting with Python 3.7, all asyncio code is recommended to
     be executed using the method `asyncio.run`, which is a high-level abstraction
     that calls the event loop to execute the code as an alternative to the following
     code:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 众所周知，从 Python 3.7 开始，推荐使用`asyncio.run`方法来执行所有 asyncio 代码，这是一个高级抽象，它调用事件循环来执行代码，作为以下代码的替代：
 - en: '[PRE0]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: As you can see from the code, each time we call `asyncio.run`, we get (if it
     already exists) or create a new event loop. Could we achieve our goal of executing
     asyncio tasks on multiple cores simultaneously if we could call the `asyncio.run`
     method on each core separately?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 从代码中可以看出，每次调用`asyncio.run`时，我们会得到（如果它已经存在）或创建一个新的事件循环。如果我们能够在每个核心上单独调用`asyncio.run`方法，是否可以实现同时在多个核心上执行
+    asyncio 任务的目标？
 - en: 'The previous article used a real-life example to explain using asyncio’s `loop.run_in_executor`
     method to parallelize the execution of code in a process pool while also getting
     the results of each child process from the main process. If you haven’t read the
     previous article, you can check it out here:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 前一篇文章使用了一个实际示例来解释如何使用 asyncio 的`loop.run_in_executor`方法在进程池中并行化代码执行，同时从主进程中获取每个子进程的结果。如果你还没有阅读前一篇文章，你可以在这里查看：
 - en: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----1764404ce44f--------------------------------)
     [## Combining Multiprocessing and Asyncio in Python for Performance Boosts'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----1764404ce44f--------------------------------)
+    [## 结合多进程和 asyncio 提升 Python 性能'
 - en: Using a real-world example to demonstrate a map-reduce program
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用真实世界的例子来演示一个 map-reduce 程序
 - en: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----1764404ce44f--------------------------------)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----1764404ce44f--------------------------------)'
 - en: 'Thus, our solution emerges: distribute many concurrent tasks to multiple sub-processes
     using multi-core execution via the `loop.run_in_executor` method, and then call
     `asyncio.run` on each sub-process to start the respective event loop and execute
     the concurrent code. The following diagram shows The entire flow:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们的解决方案出现了：通过 `loop.run_in_executor` 方法将许多并发任务分发到多个子进程中， 然后在每个子进程上调用 `asyncio.run`
+    启动各自的事件循环并执行并发代码。下图展示了整个流程：
 - en: '![](../Images/576f27087e45a3871343d5dfec459fc7.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/576f27087e45a3871343d5dfec459fc7.png)'
 - en: How the code is executed. Image by Author
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码的执行情况。图片由作者提供
 - en: Where the green part represents the sub-processes we started. The yellow part
     represents the concurrent tasks we started.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 绿色部分表示我们启动的子进程。黄色部分表示我们启动的并发任务。
 - en: Preparation before starting
+  id: totrans-40
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 启动前的准备
 - en: Simulating the task implementation
+  id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模拟任务的实现
 - en: 'Before we can solve the problem, we need to prepare before we start. In this
     example, we can’t write actual code to crawl the web content because it would
     be very annoying for the target website, so we will simulate our real task with
     code:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们解决问题之前，我们需要做好准备。在这个示例中，我们不能编写实际的代码来抓取网络内容，因为这会对目标网站造成很大的困扰，所以我们将用代码模拟实际任务：
 - en: As the code shows, we first use `asyncio.sleep` to simulate the return of the
     IO task in random time and an iterative summation to simulate the CPU processing
     after the data is returned.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 如代码所示，我们首先使用 `asyncio.sleep` 模拟 IO 任务在随机时间后返回，并进行迭代求和以模拟数据返回后的 CPU 处理。
 - en: The effect of traditional code
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 传统代码的效果
 - en: 'Next, we take the traditional approach of starting 10,000 concurrent tasks
     in a main method and watch the time consumed by this batch of concurrent tasks:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们采用传统的方法在主方法中启动 10,000 个并发任务，并观察这一批并发任务所耗费的时间：
 - en: As the figure shows, executing the asyncio tasks with only one core takes a
     longer time.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 如图所示，使用仅一个核心执行 asyncio 任务需要更长的时间。
 - en: '![](../Images/9177895ae0985cf1c0e717bc37989c36.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9177895ae0985cf1c0e717bc37989c36.png)'
 - en: Takes a long time on a single core. Image by Author
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在单个核心上耗时较长。图片由作者提供
 - en: The code implementation
+  id: totrans-49
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 代码实现
 - en: Next, let’s implement the multi-core asyncio code according to the flowchart
     and see if the performance is improved.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们按照流程图实现多核心 asyncio 代码，并查看性能是否有所提高。
 - en: Designing the overall structure of the code
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设计代码的整体结构
 - en: 'First, as an architect, we still need first to define the overall script structure,
     what methods are required, and what tasks each method needs to accomplish:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，作为一个架构师，我们仍然需要首先定义整体脚本结构，需要哪些方法，以及每个方法需要完成什么任务：
 - en: The specific implementation of each method
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 每个方法的具体实现
 - en: Then, let’s implement each method step by step.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，让我们一步步实现每个方法。
 - en: 'The `query_concurrently` method will start the specified batch of tasks concurrently
     and get the results via the `asyncio.gather` method:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '`query_concurrently` 方法会并发启动指定批次的任务，并通过 `asyncio.gather` 方法获取结果：'
 - en: 'The `run_batch_tasks` method is not an async method, as it is started directly
     in the child process:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '`run_batch_tasks` 方法不是一个异步方法，因为它直接在子进程中启动：'
 - en: 'Finally, there is our `main` method. This method will call the `loop.run_in_executor`
     method to have the `run_batch_tasks` method execute in the process pool and merge
     the results of the child process execution into a list:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，这是我们的 `main` 方法。此方法将调用 `loop.run_in_executor` 方法，使 `run_batch_tasks` 方法在进程池中执行，并将子进程执行的结果合并到一个列表中：
 - en: 'Since we are writing a multi-process script, we need to use `if __name__ ==
     “__main__”` to start the main method in the main process:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们正在编写一个多进程脚本，我们需要使用 `if __name__ == "__main__"` 来在主进程中启动主方法：
 - en: Execute the code and see the results
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 执行代码并查看结果
 - en: 'Next, we start the script and look at the load on each core in the task manager:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们启动脚本并查看任务管理器中每个核心的负载：
 - en: '![](../Images/a926d4be139a26f9625a2fcda8a0a5cd.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a926d4be139a26f9625a2fcda8a0a5cd.png)'
 - en: All cores are almost utilized. Image by Author
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有核心几乎都被利用。图片由作者提供
 - en: As you can see, all the CPU cores are utilized.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，所有 CPU 核心都被利用了。
 - en: Finally, we observe the code execution time and confirm that the multi-threaded
     asyncio code does indeed speed up the code execution by several times! Mission
     accomplished!
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们观察了代码执行时间，并确认多线程`asyncio`代码确实将代码执行速度提高了数倍！任务完成！
 - en: '![](../Images/1e64a6dfd249ddaed28e499cfed5499f.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1e64a6dfd249ddaed28e499cfed5499f.png)'
 - en: Nearly triple the performance boost! Image by Author
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 性能提升近三倍！作者图片
 - en: Conclusion
+  id: totrans-67
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article, I explained why asyncio could execute IO-intensive tasks concurrently
     but still takes longer than expected when running large batches of concurrent
     tasks.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我解释了为什么`asyncio`可以并发执行IO密集型任务，但在运行大量并发任务时仍然花费比预期更长的时间。
 - en: It is because in the traditional implementation scheme of asyncio code, the
     event loop can only execute tasks on one core, and the other cores are in an idle
     state.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是因为在`asyncio`代码的传统实现方案中，事件循环只能在一个核心上执行任务，其他核心处于空闲状态。
 - en: So I have implemented a solution for you to call each event loop on multiple
     cores separately to execute concurrent tasks in parallel. And finally, it improved
     the performance of the code significantly.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我为你实现了一个解决方案，可以在多个核心上分别调用每个事件循环，以并行执行并发任务。最终，它显著提高了代码性能。
 - en: Due to the limitation of my ability, the solution in this article inevitably
     has imperfections. I welcome your comments and discussion. I will actively answer
     for you.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我的能力有限，本文中的解决方案不可避免地存在一些不完善之处。我欢迎你的评论和讨论。我会积极为你解答。
 - en: 'Using asyncio in new code can speed up the program. But in reality, there are
     still a number of legacy systems. How to integrate asyncio concurrent code in
     these legacy systems will become another big challenge. If you are interested
     in learning more about this, you can read my next article at:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`asyncio`在新代码中可以加速程序。但是在现实中，仍然有许多遗留系统。如何在这些遗留系统中集成`asyncio`并发代码将成为另一个重大挑战。如果你有兴趣了解更多，可以阅读我的下一篇文章：
 - en: '[](/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c?source=post_page-----1764404ce44f--------------------------------)
     [## Combining Traditional Thread-Based Code and Asyncio in Python'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c?source=post_page-----1764404ce44f--------------------------------)
+    [## 结合传统的基于线程的代码和Python中的Asyncio'
 - en: A comprehensive guide to integrating synchronous and asynchronous programming
     in Python
+  id: totrans-74
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在Python中集成同步和异步编程的全面指南
 - en: towardsdatascience.com](/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c?source=post_page-----1764404ce44f--------------------------------)
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/combining-traditional-thread-based-code-and-asyncio-in-python-dc162084756c?source=post_page-----1764404ce44f--------------------------------)'
 - en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
     access to all of my posts and those of thousands of other authors. It only costs
     you the price of a cup of coffee, but it’s a great encouragement to me.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过[加入Medium](https://medium.com/@qtalen/membership)，你将可以无限制地访问我和其他成千上万作者的所有文章。只需一杯咖啡的价格，但对我来说是巨大的鼓励。
 - en: 'This article was originally published at: [https://www.dataleadsfuture.com/harnessing-multi-core-power-with-asyncio-in-python/](https://www.dataleadsfuture.com/harnessing-multi-core-power-with-asyncio-in-python/)'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文最初发布于：[https://www.dataleadsfuture.com/harnessing-multi-core-power-with-asyncio-in-python/](https://www.dataleadsfuture.com/harnessing-multi-core-power-with-asyncio-in-python/)
