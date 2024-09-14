@@ -1,318 +1,492 @@
 - en: 'vLLM: PagedAttention for 24x Faster LLM Inference'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: vLLM：PagedAttention 实现 24 倍更快的 LLM 推理
 - en: 原文：[https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83](https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83](https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83)
 - en: A more efficient way to compute Transformer’s attention during inference
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在推理过程中，更高效地计算 Transformer 的注意力
 - en: '[](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[![Benjamin
     Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
     [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
     ·6 min read·Jun 24, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
+    ·6 分钟阅读·2023 年 6 月 24 日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/9b79c5674eecc1de9d97ae46d9048bff.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9b79c5674eecc1de9d97ae46d9048bff.png)'
 - en: PagedAttention for a prompt “the cat is sleeping in the kitchen and the dog
     is”. Key-Value pairs of tensors for attention computation are stored in virtual
     contiguous blocks mapped to non-contiguous blocks in the GPU memory. — Image by
     the author
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: PagedAttention 用于提示“the cat is sleeping in the kitchen and the dog is”。用于注意力计算的键值对张量存储在映射到
+    GPU 内存中非连续块的虚拟连续块中。— 图片由作者提供
 - en: Almost all the large language models (LLM) rely on the Transformer neural architecture.
     While this architecture is praised for its efficiency, it has some well-known
     computational bottlenecks.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 几乎所有的大型语言模型（LLM）都依赖于 Transformer 神经架构。虽然这一架构因其高效性而受到赞誉，但也存在一些众所周知的计算瓶颈。
 - en: During decoding, one of these bottlenecks is in the computation of the attention
     with pairs of key-value tensors for each token of the input. All these tensors
     must be stored in memory.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在解码过程中，一个瓶颈是在计算每个输入标记的键值对张量的注意力。这些张量必须全部存储在内存中。
 - en: '*Note: I won’t explain in this article what is the role of these key-value
     pairs. It’s one of the most complicated and interesting aspects of the Transformer
     architecture. If you don’t know about it, I strongly recommend reading* [*The
     Illustrated Transformer by Jay Alammar*](https://jalammar.github.io/illustrated-transformer/)*.*'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：本文不会解释这些键值对的作用。这是 Transformer 架构中最复杂且最有趣的方面之一。如果你对此不了解，我强烈建议阅读* [*Jay Alammar
+    的《图解 Transformer》*](https://jalammar.github.io/illustrated-transformer/)*。*'
 - en: As LLM accepts longer and longer inputs, e.g., the LLM Claude accepts 100k token-long
     inputs, the memory consumed by these tensors can become very large.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着 LLM 接受越来越长的输入，例如，LLM Claude 接受 100k 标记长的输入，这些张量消耗的内存可能变得非常大。
 - en: Naively storing all these tensors in memory leads to memory over-reservation
     and fragmentation. This fragmentation can make memory access very inefficient,
     especially for long sequences of tokens. As for over-reservation, the system does
     it to make sure it has allocated enough memory for the tensors, even if it doesn’t
     consume all of it.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 盲目地将所有这些张量存储在内存中会导致内存过度预留和碎片化。这种碎片化会使内存访问变得非常低效，特别是对于长序列的标记。至于过度预留，系统这样做是为了确保为张量分配足够的内存，即使它没有完全使用这些内存。
 - en: To alleviate these issues, UC Berkeley proposes PagedAttention.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了缓解这些问题，UC Berkeley 提出了 PagedAttention。
 - en: PagedAttention is implemented in [vLLM](https://github.com/vllm-project/vllm)
     (Apache 2.0 license) which is deployed by LMSYS, an organization for open research
     founded by students and faculty from UC Berkeley with the help of UCSD and CMU.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: PagedAttention 被实现于 [vLLM](https://github.com/vllm-project/vllm)（Apache 2.0
+    许可），该项目由 LMSYS 部署，LMSYS 是一个由 UC Berkeley 的学生和教师以及 UCSD 和 CMU 的帮助下成立的开放研究组织。
 - en: In this article, I explain what PagedAttention is and why it significantly speeds
     up decoding. I show towards the end of the article how to get started with vLLM
     to exploit PagedAttention for inference and serving LLMs on your computer.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我解释了什么是 PagedAttention 以及它为何显著加速解码。我将在文章的最后部分展示如何开始使用 vLLM 利用 PagedAttention
+    来进行推理和在你的计算机上服务 LLMs。
 - en: PagedAttention for Transformer
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Transformer 的 PagedAttention
 - en: '[Kwon et al. (2023)](https://vllm.ai/) propose PagedAttention.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Kwon 等人 (2023)](https://vllm.ai/) 提出了PagedAttention。'
 - en: The goal is to store key-value tensors more efficiently in the non-contiguous
     spaces of the GPU VRAM.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标是在 GPU VRAM 的不连续空间中更高效地存储键值张量。
 - en: In short, the idea behind PagedAttention is to create contiguous virtual blocks
     mapped to physical blocks in the GPU memory.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，PagedAttention 背后的思想是创建映射到 GPU 内存中物理块的连续虚拟块。
 - en: Each block is designed to store key-value pairs’ tensors for a predefined number
     of tokens. All the blocks are virtually contiguous and mapped to physical non-contiguous
     blocks, allocated on demand during inference, in the fragmented GPU memory. A
     simple index table is also created in memory to associate virtual with physical
     blocks.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个块被设计用来存储预定义数量标记的键值对张量。所有块在虚拟上是连续的，并且映射到物理上不连续的块，这些块在推理过程中按需分配，在碎片化的 GPU 内存中。内存中还创建了一个简单的索引表，以将虚拟块与物理块关联起来。
 - en: The kernel of PagedAttention fetches as needed these blocks. This is efficient
     because the system fetches smaller numbers of key-value tensors due to the limited
     size of the blocks.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: PagedAttention 的内核根据需要提取这些块。这是高效的，因为系统由于块的大小限制而提取较少的键值张量。
 - en: 'Let’s take the following prompt for illustration:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用以下提示进行说明：
 - en: '*the cat is sleeping in the kitchen and the dog is*'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '*猫正在厨房里睡觉，而狗则*'
 - en: We have key-value tensors for each token. With PageAttention, we can (arbitrarily)
     set the block size at 4\. Each block contains 4 key-value tensors, except the
     last one which contains only 3 key-value tensors. The blocks are virtually contiguous
     but are not necessarily contiguous in the GPU memory, as illustrated by the figure
     in the introduction of this article.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们为每个标记提供了键值张量。使用 PageAttention，我们可以（任意地）将块大小设置为 4。每个块包含 4 个键值张量，除了最后一个块，只包含
+    3 个键值张量。块在虚拟上是连续的，但在 GPU 内存中不一定是连续的，如本文引言中的图所示。
 - en: For the computation of attention, for each query token, the system fetches the
     block one by one, as illustrated below.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 在注意力计算中，对于每个查询标记，系统逐个提取块，如下所示。
 - en: '![](../Images/f3cd673ef42a553957e10b65d2bca6cb.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f3cd673ef42a553957e10b65d2bca6cb.png)'
 - en: Illustration of virtual blocks containing key-value tensors for up to 4 tokens
     — Image by the author
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 说明包含最多 4 个标记的虚拟块 —— 作者提供的图像
 - en: By fetching key-value tensors by blocks, instead of the entire sequence of tensors,
     the computation of attention is much faster.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过按块提取键值张量，而不是整个张量序列，注意力计算要快得多。
 - en: Parallel Sampling for Inference
+  id: totrans-29
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 推理的并行采样
 - en: Another advantage of PagedAttention is that the virtual blocks can be shared
     when sampling during inference. All the sequences generated in parallel via sampling
     or beam search can use the same virtual blocks, avoiding duplicates.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: PagedAttention 的另一个优势是虚拟块在推理时可以共享。所有通过采样或束搜索并行生成的序列可以使用相同的虚拟块，从而避免重复。
 - en: In their experiments, LMSYS observed a 55% reduction in memory usage for beam
     search decoding.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在他们的实验中，LMSYS 观察到束搜索解码的内存使用减少了 55%。
 - en: PagedAttention performance reported by LMSYS
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: LMSYS 报告的 PagedAttention 性能
 - en: Before trying it by ourselves, let’s have a look at the performance reported
     by the authors (UC Berkely/LMSYS) when using PagedAttention implemented in vLLM
     compared to the text generation inference library developed by Hugging Face.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们亲自尝试之前，先看看作者（UC Berkeley/LMSYS）在使用 vLLM 中实现的 PagedAttention 与 Hugging Face
+    开发的文本生成推理库相比的性能报告。
 - en: '![](../Images/9af453af09acfb3da2b973d78d51f1a4.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9af453af09acfb3da2b973d78d51f1a4.png)'
 - en: Performance of LLaMa models for output completion tasks for the original Hugging
     Face library (HF), text generation inference library (TGI), and vLLM with PagedAttention
     (vLLM) — [Plots by UC Berkeley and LMSYS](https://github.com/vllm-project/vllm)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: LLaMa 模型在输出完成任务中的性能，包括原始 Hugging Face 库 (HF)、文本生成推理库 (TGI) 和使用 PagedAttention
+    (vLLM) 的 vLLM —— [由 UC Berkeley 和 LMSYS 绘制的图](https://github.com/vllm-project/vllm)
 - en: vLLM looks much faster according to these results, especially in the case of
     multiple output completions. The difference between TGI and vLLM increases with
     bigger models. This is expected since bigger models require more memory and are
     thus more impacted by memory fragmentation.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据这些结果，vLLM 看起来要快得多，特别是在多次输出完成的情况下。TGI 和 vLLM 之间的差距在更大的模型中会增加。这是预期中的，因为更大的模型需要更多内存，因此更容易受到内存碎片化的影响。
 - en: Overall, vLLM is up to 24x faster than the Hugging Face Transformers library.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，vLLM 的速度比 Hugging Face Transformers 库快多达 24 倍。
 - en: '*Note: Actually, I’m also impressed by the improvement from HF to TGI. I didn’t
     cover TGI yet on my blog but I’ll probably write a guide about it. TGI is used
     in production at Hugging Face. While it seems much slower than vLLM, TGI has other
     advantages such as the support for many more models and features.*'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：实际上，我对 HF 到 TGI 的改进也感到很惊讶。我还没有在我的博客上覆盖 TGI，但我可能会写一篇关于它的指南。TGI 在 Hugging
+    Face 的生产环境中使用。虽然它似乎比 vLLM 慢很多，但 TGI 还有其他优点，比如支持更多的模型和功能。*'
 - en: How to set up vLLM on your computer
+  id: totrans-39
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何在你的计算机上设置 vLLM
 - en: '*Note: vLLM doesn’t support CUDA 12 yet. Use a lower version, such as 11.8.*'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：vLLM 还不支持 CUDA 12。请使用较低版本，例如 11.8。*'
 - en: In this section, I will only go through the basics of how to set up and run
     vLLM on your computer. For more advanced usage, you can have a look at the [vLLM
     documentation](https://vllm.readthedocs.io/en/latest/).
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我只会讲解如何在你的计算机上设置和运行 vLLM 的基本步骤。有关更高级的用法，你可以查看 [vLLM 文档](https://vllm.readthedocs.io/en/latest/)。
 - en: 'As I write this article, [vLLM only supports a few types of models](https://vllm.readthedocs.io/en/latest/models/supported_models.html):'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我写这篇文章时，[vLLM 仅支持几种类型的模型](https://vllm.readthedocs.io/en/latest/models/supported_models.html)：
 - en: GPT-2
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GPT-2
 - en: GPT-NeoX and Pythia based
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于 GPT-NeoX 和 Pythia
 - en: LLaMa based
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于 LLaMa
 - en: OPT based
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于 OPT
 - en: You can add the support of other models by following [these instructions](https://vllm.readthedocs.io/en/latest/models/adding_model.html).
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以通过遵循 [这些说明](https://vllm.readthedocs.io/en/latest/models/adding_model.html)
+    来添加对其他模型的支持。
 - en: In the code below, I use Dolly V2 (MIT license). It is a chat model based on
     [Pythia](https://github.com/EleutherAI/pythia) and trained by [DataBricks](https://www.databricks.com/).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的代码中，我使用 Dolly V2（MIT 许可证）。这是一个基于 [Pythia](https://github.com/EleutherAI/pythia)
+    的聊天模型，由 [DataBricks](https://www.databricks.com/) 训练。
 - en: I chose [the smallest version with 3 billion parameters](https://huggingface.co/databricks/dolly-v2-3b).
     It can run a consumer GPU with 24 GB of VRAM, e.g., an nVidia RTX 3080/3090.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我选择了 [最小的 30 亿参数版本](https://huggingface.co/databricks/dolly-v2-3b)。它可以在配备 24
+    GB VRAM 的消费级 GPU 上运行，例如 nVidia RTX 3080/3090。
 - en: 'The most straightforward way to install vLLM is with pip:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 安装 vLLM 最直接的方法是使用 pip：
 - en: '[PRE0]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '*Note: This should take up to 10 minutes.*'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：这可能需要最多 10 分钟。*'
 - en: But in my case, on both my computer and Google Colab, pip failed to install
     the vllm library. The authors of vLLM confirm that there is a problem with some
     nvcc versions and environments. Nonetheless, for most configurations, pip should
     install vLLM without any problem.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 但在我的情况下，无论是在我的计算机上还是 Google Colab 上，pip 都无法安装 vllm 库。vLLM 的作者确认某些 nvcc 版本和环境存在问题。然而，对于大多数配置，pip
+    应该能够顺利安装 vLLM。
 - en: 'If you are in the same situation as me, the workaround is simply to use a Docker
     image. This one worked for me:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你和我处于相同的情况，解决方法就是使用 Docker 镜像。这一个对我有效：
 - en: '[PRE1]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '*Note: Once in the docker, the authors recommend removing Pytorch before installing
     vLLM: pip uninstall torch. Then, “pip install vllm” should work.*'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：进入 docker 后，作者建议在安装 vLLM 之前卸载 Pytorch：pip uninstall torch。然后，“pip install
+    vllm” 应该可以正常工作。*'
 - en: Then, we can start writing Python.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以开始编写 Python 代码。
 - en: We first need to import vllm, and then we load the model with vllm. The inference
     is triggered by llm.generate().
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先需要导入 vllm，然后用 vllm 加载模型。推理通过 llm.generate() 触发。
 - en: '[PRE2]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: You can also use vLLM for serving LLMs. It works similarly to TGI. It’s also
     much more simple than [running the NVIDIA Triton inference server that I described
     in a previous article](/deploy-your-local-gpt-server-with-triton-a825d528aa5d).
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 你也可以使用 vLLM 来服务 LLM。它的工作方式类似于 TGI。它也比 [我在之前文章中描述的 NVIDIA Triton 推理服务器](./deploy-your-local-gpt-server-with-triton-a825d528aa5d)
+    更加简单。
 - en: 'You first need to start the server:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 你首先需要启动服务器：
 - en: '[PRE3]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '*Note: The server will listen on port 8000\. Make sure it is available or change
     it in the vLLM configuration file.*'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：服务器将监听 8000 端口。确保该端口可用或在 vLLM 配置文件中更改它。*'
 - en: 'Then, you can query the server with prompts as follows:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，你可以使用以下提示查询服务器：
 - en: '[PRE4]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: And that’s it! You have a very efficient LLM server running on your computer.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这样！你在计算机上运行了一个非常高效的 LLM 服务器。
 - en: Conclusion
+  id: totrans-67
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: PagedAttention significantly speeds up inference. It’s another step toward more
     affordable AI with LLM.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: PagedAttention 显著加速了推理。这是向更实惠的 AI 迈出的另一大步。
 - en: In further experiments, I confirmed that vLLM is especially efficient with batches
     of prompts. To fully take advantage of vLLM, consider optimizing your batching
     strategy for inference.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进一步的实验中，我确认 vLLM 在处理批量提示时特别高效。为了充分利用 vLLM，请考虑优化你的推理批处理策略。
 - en: While beam search with large beams may have been prohibitive with standard attention
     computation, beam search with PagedAttention is faster and more memory efficient.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管大束的束搜索可能在标准注意力计算中是不可行的，但使用 PagedAttention 的束搜索更快且内存更高效。
 - en: One of my next experiments will be to combine PagedAttention with [QLoRa](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b)
     to reduce memory usage. It should be straightforward. It would make running LLMs
     on consumer hardware even more efficient.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的一个下一个实验是将 PagedAttention 与 [QLoRa](/qlora-fine-tune-a-large-language-model-on-your-gpu-27bed5a03e2b)
+    结合，以减少内存使用。这应该很简单。它将使在消费级硬件上运行 LLM 更加高效。
 - en: '*If you like this article and would be interested to read the next ones, the
     best way to support my work is to become a Medium member using this link:*'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你喜欢这篇文章并且有兴趣阅读接下来的文章，支持我工作的最佳方式是通过这个链接成为 Medium 会员：*'
 - en: '[](https://medium.com/@bnjmn_marie/membership?source=post_page-----fdfb1b80f83--------------------------------)
     [## Join Medium with my referral link - Benjamin Marie'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@bnjmn_marie/membership?source=post_page-----fdfb1b80f83--------------------------------)
+    [## 通过我的推荐链接加入 Medium - 本杰明·玛丽'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-74
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为 Medium 会员，你的一部分会员费将会转到你阅读的作家那里，而且你可以全面访问每一篇故事…
 - en: medium.com](https://medium.com/@bnjmn_marie/membership?source=post_page-----fdfb1b80f83--------------------------------)
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@bnjmn_marie/membership?source=post_page-----fdfb1b80f83--------------------------------)
 - en: '*If you are already a member and want to support this work,* [*just follow
     me on Medium*](https://medium.com/@bnjmn_marie)*.*'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你已经是会员并且想要支持这项工作，* [*只需在 Medium 上关注我*](https://medium.com/@bnjmn_marie)*。*'
