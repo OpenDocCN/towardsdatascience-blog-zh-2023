@@ -1,146 +1,220 @@
 - en: The Semantics of Differing SCD2 Techniques
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SCD2技术的语义
 - en: 原文：[https://towardsdatascience.com/scd2-semantics-and-styles-c9faafe9e537](https://towardsdatascience.com/scd2-semantics-and-styles-c9faafe9e537)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/scd2-semantics-and-styles-c9faafe9e537](https://towardsdatascience.com/scd2-semantics-and-styles-c9faafe9e537)
 - en: How small differences can have a big impact
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 小差异如何产生大影响
 - en: '[](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)[![Chad
     Isenberg](../Images/56e50c1ee292ac672df4b8062e460c8e.png)](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)
     [Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)[![Chad
+    Isenberg](../Images/56e50c1ee292ac672df4b8062e460c8e.png)](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)
+    [Chad Isenberg](https://medium.com/@cisenbe?source=post_page-----c9faafe9e537--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)
     ·7 min read·Nov 16, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----c9faafe9e537--------------------------------)
+    ·阅读时长7分钟·2023年11月16日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a1ed07e31161b1274a226214c153a03a.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a1ed07e31161b1274a226214c153a03a.png)'
 - en: Photo by [Brad Starkey](https://unsplash.com/@bradstarkey?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Brad Starkey](https://unsplash.com/@bradstarkey?utm_source=medium&utm_medium=referral)拍摄，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)提供
 - en: 'Recently, I’ve been thinking a lot about dimensional modeling, specifically
     how we represent different kinds of history in the warehouse / lakehouse. There
     are many articles that describe how to build an SCD2 table across many languages
     and platforms. Instead, I want to focus on something more nuanced and less commonly
     discussed: the semantics of SCD2 and how various design choices have meaningful
     consequences on use cases.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近，我一直在思考维度建模，特别是我们如何在数据仓库/湖仓中表示不同类型的历史。有许多文章描述了如何在多种语言和平台中构建SCD2表格。我想关注的是更微妙且较少讨论的内容：SCD2的语义以及各种设计选择如何对用例产生重要影响。
 - en: 'The two major topics I want to cover are:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想讨论的两个主要话题是：
 - en: The dates you choose to row-version your dimensions matter quite a bit. The
     choice should never be arbitrary, and your most common use cases should be top-of-mind
     in your design.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你选择用于行版本控制的日期非常重要。这个选择绝不能是任意的，你最常见的用例应该在设计中占据重要位置。
 - en: How you row-version records will determine the access patterns against your
     tables. To some extent this is strictly ergonomic, but I would argue that ergonomics
     are an important aspect of data quality; making it easy for users to do the right
     thing should be our goal as data modelers.
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你如何对记录进行行版本控制将决定访问表的模式。在某种程度上，这纯粹是为了方便，但我认为人性化是数据质量的重要方面；作为数据模型师，我们的目标应该是让用户更容易做到正确的事情。
 - en: Choosing reference dates
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 选择参考日期
 - en: The most common pattern for creating an SCD2 table is utilizing some date or
     timestamp in your data. Once you’ve established that a row has changed meaningfully,
     either via direct comparison of columns or comparison of hash values, you will
     have to establish dates to “retire” existing records and insert new records.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建SCD2表格的最常见模式是利用数据中的某个日期或时间戳。一旦确定某行数据发生了有意义的变化，无论是通过直接比较列还是比较哈希值，你都必须设定日期以“退役”现有记录并插入新记录。
 - en: 'But which dates do we use? For many types of data, we’ll be able to choose
     from one of three options:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 那我们使用哪些日期呢？对于许多类型的数据，我们可以从三个选项中选择一个：
 - en: Extract timestamps
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 提取时间戳
 - en: Source system timestamps
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 源系统时间戳
 - en: Business (entity / event) timestamps
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 业务（实体/事件）时间戳
 - en: Let’s dive in.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们深入探讨一下。
 - en: Extract timestamps
+  id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 提取时间戳
 - en: This method takes the perspective of, “What the raw data looked like when we
     captured it.” The source of truth is your warehouse and the processes that load
     it, as opposed to any essential attributes of the data itself.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法从“我们捕获数据时原始数据的样子”这个角度出发。真实性的来源是你的仓库及其加载过程，而不是数据本身的任何关键属性。
 - en: 'Consider the following example:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 请考虑以下示例：
 - en: '![](../Images/3bdf2c573bd2cc2715af4df1e68fd4cc.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3bdf2c573bd2cc2715af4df1e68fd4cc.png)'
 - en: A spreadsheet row representing our contract record
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 一行电子表格行表示我们的合同记录
 - en: 'From this record, we would generate the following SCD2 record (omitting some
     metadata fields like a surrogate key, hash, dimension insertion timestamp, etc.
     for readability):'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 从此记录，我们将生成以下SCD2记录（为了可读性省略了一些元数据字段，如代理键、哈希、维度插入时间戳等）：
 - en: '![](../Images/74690939c95283829ee2c853d153f1e0.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/74690939c95283829ee2c853d153f1e0.png)'
 - en: A spreadsheet row representing our SCD2 record created from our contract record
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 一行电子表格行表示从合同记录创建的我们的SCD2记录
 - en: 'Nothing super exciting so far; the big thing to note is that our record is
     valid from the *time we extracted*, not some other date. So, what does this look
     like when we get a new record? For example:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，没有特别令人兴奋的事情；需要注意的主要是我们的记录有效期从*我们提取的时间*开始，而不是其他日期。那么，当我们获得新记录时，这是什么样的呢？例如：
 - en: '![](../Images/4dd5a358fc35d086e718171e0c2772a3.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4dd5a358fc35d086e718171e0c2772a3.png)'
 - en: A spreadsheet row representing an updated view of our contract record
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 一行电子表格行表示我们合同记录的更新视图
 - en: 'This new record will generate the following changes in our dimension table:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个新记录将导致我们的维度表中出现以下变化：
 - en: '![](../Images/7b8d1e32fb860007552b7aeaf6d82b3c.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7b8d1e32fb860007552b7aeaf6d82b3c.png)'
 - en: Two spreadsheet rows representing our SCD2 records created and modified by our
     new contract record
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 两行电子表格行表示我们的SCD2记录，由新的合同记录创建和修改
 - en: We’ll talk a bit more about our choice of `valid_to` and `valid_from` timestamps
     later, but for now, let’s focus on the semantics of our table. When a user queries
     `dim_contracts` using our valid metadata dates, what exactly does that mean?
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们稍后会更多讨论`valid_to`和`valid_from`时间戳的选择，但现在，让我们集中在表的语义上。当用户使用我们的有效元数据日期查询`dim_contracts`时，这到底意味着什么？
 - en: '[PRE0]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: As I mentioned before, this approach considers the landing of data in the warehouse
     to be our primary point of reference. Our users will need to know (and express
     to their consumers) that records are valid not according to business processes
@@ -150,43 +224,59 @@
     available, in which case, you’re stuck with extract timestamps. Just make sure
     you have good onboarding and documentation so that your users can interpret results
     correctly.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我之前提到的，这种方法将数据在数据仓库中的落地视为我们的主要参考点。我们的用户需要知道（并向他们的消费者说明）记录是根据数据仓库过程而不是业务流程或甚至来源系统过程来确定有效性的。就个人而言，我认为这种方法可能会影响用户的直觉，我更愿意使用其他方法；然而，有些来源可能没有其他时间戳可用，在这种情况下，你只能使用提取时间戳。只要确保你有良好的入职培训和文档，以便用户可以正确解释结果。
 - en: Source system timestamps
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 来源系统时间戳
 - en: 'This method takes the perspective of, “What the raw data looked like when the
     source system created or updated it.” Extending our example from above, let’s
     look at the table after our insert and update:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法从“原始数据在来源系统创建或更新时的样子”来考虑。以我们上面的例子为例，我们来看看插入和更新后的表：
 - en: '![](../Images/1da5233fcd15640b9c377d0f3b033196.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1da5233fcd15640b9c377d0f3b033196.png)'
 - en: Two spreadsheet rows representing our SCD2 table, using source system timestamps
     as our reference times
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 两行电子表格行表示我们的SCD2表，使用来源系统时间戳作为参考时间
 - en: Fundamentally, we’re representing the same changes here as we did above; the
     key difference is that our semantics have shifted subtly. Instead of considering
     the record validity with respect to when we landed the data in the warehouse,
     now we’re concerned with when the source system updated these records. The advantage
     here is that users have an easier story to tell; records are valid when they were
     valid in the source system!
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 从根本上说，我们在这里表示的变化与上述相同；关键区别在于我们的语义发生了微妙的变化。我们不再考虑记录有效性与数据落地到数据仓库的时间，而是关注来源系统更新这些记录的时间。这里的优势是用户可以更轻松地讲述故事；记录在来源系统中有效时就是有效的！
 - en: This method can be especially valuable for source system history tables that
     aren’t true dimensions. You’ll have a representation of the source system that
     can be referenced when building other dim and fact tables, a necessity if [bitemporal
     history](https://martinfowler.com/articles/bitemporal-history.html)¹ is important
     to your analytics capabilities.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法对于不是真正维度的源系统历史表尤其有价值。你将拥有一个可以在构建其他维度和事实表时参考的源系统表示，如果[bitemporal历史](https://martinfowler.com/articles/bitemporal-history.html)¹对你的分析能力很重要，这是一个必要条件。
 - en: Business timestamps
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 业务时间戳
 - en: This approach takes the perspective of, “What the business entity looked like
     in relation to a business date.” A key advantage here is that users can join directly
     on the table with business dates; the effective dates map to “real-world” events,
@@ -194,25 +284,35 @@
     of tables give you the full business history of an entity without the overhead
     of having to know how the source system generated records or how the warehouse
     captured them.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法从“业务实体在业务日期下的样子”来考虑。一个主要的优势是用户可以直接在具有业务日期的表上进行联接；有效日期映射到“现实世界”的事件，例如发票创建或合同生效。这些类型的表提供了实体的完整业务历史，而无需了解源系统如何生成记录或仓库如何捕获记录的开销。
 - en: 'Let’s consider what a dimension looks like if we use business dates to bound
     our records:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑一下，如果我们使用业务日期来界定记录，那么一个维度会是什么样的：
 - en: '![](../Images/6f59b041ca748c70ea9e831f44fd0554.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6f59b041ca748c70ea9e831f44fd0554.png)'
 - en: Two spreadsheet rows representing our SCD2 table, using business dates our reference
     times
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用业务日期作为参考时间表示我们的SCD2表的两行电子表格
 - en: In this case, we can actually provide a firm date boundary for the record, since
     the contract will no longer be effective on 2023–12–31, and thus the record shouldn’t
     be effective from that date forward, either. This approach can be extremely intuitive
     for users, as the record reflects the business process.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们实际上可以为记录提供一个确定的日期边界，因为合同在2023年12月31日将不再有效，因此记录也不应该从那时起生效。这种方法对于用户来说非常直观，因为记录反映了业务过程。
 - en: This simplicity does come at a cost. Unlike the other methods, you will need
     to give more thought to backdating and post-hoc corrections. Will you perform
     “Type 1” updates (i. e., overwrite the affected fields for the records active
@@ -220,56 +320,82 @@
     audit purposes but somehow indicate they aren’t active? If the latter, how will
     you help users avoid these records for everyday analytics? Views? Entries in the
     data dictionary? Sample queries?
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种简单性确实有其代价。与其他方法不同，你需要更多地考虑回溯和事后修正。你会执行“类型1”更新（即，覆盖回溯日期上活动记录的受影响字段），还是会保留这些“错误”的记录以便审计，但以某种方式指示它们不再有效？如果是后者，你将如何帮助用户在日常分析中避免这些记录？视图？数据字典中的条目？示例查询？
 - en: Choosing the format of valid_to and valid_from
+  id: totrans-49
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 选择valid_to和valid_from的格式
 - en: In our examples, we used a popular strategy for picking our record effective
     dates based off of some update columns. dbt snapshots provide this functionality
     out of the box via their [timestamp strategy](https://docs.getdbt.com/docs/build/snapshots#timestamp-strategy-recommended).
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的示例中，我们使用了一种流行的策略，通过一些更新列来选择记录的有效日期。dbt快照通过其[时间戳策略](https://docs.getdbt.com/docs/build/snapshots#timestamp-strategy-recommended)直接提供了这一功能。
 - en: The subtle note on usage is that when the `valid_to` of the “old” record and
     the `valid_from` of the record that’s replacing it are equal, our query patterns
     require a strict inequality, as seen above.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用时的细微注意点是，当“旧”记录的`valid_to`和替代记录的`valid_from`相等时，我们的查询模式需要严格的不等式，如上所示。
 - en: 'If instead you go through the additional step of offsetting these dates / timestamps,
     you can use slightly different and perhaps more ergonomic access patterns:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你选择额外的步骤来偏移这些日期/时间戳，你可以使用略微不同且可能更符合人体工学的访问模式：
 - en: '![](../Images/74ecf106b1802d6531a52d458b19bd0a.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/74ecf106b1802d6531a52d458b19bd0a.png)'
 - en: Two spreadsheet rows representing our SCD2 table using the source system timestamps
     and the offset method
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用源系统时间戳和偏移方法表示我们的SCD2表的两行电子表格
 - en: 'This small change allows us to query the data in two different ways:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一小的变化使我们能够以两种不同的方式查询数据：
 - en: '[PRE1]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Or:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 或：
 - en: '[PRE2]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Our latter example, however, only works for retired records; “current” records
     will fail due to our `NULL` value in `valid_to`. One popular method for getting
     around this is to `COALESCE()` with use some far-future date, like 2999–12–31,
     9999–12–31, etc.. Whether this additional work is worth it to enable these query
     patterns is up to you and your users.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们后面的示例仅适用于已退役的记录；由于`valid_to`中的`NULL`值，“当前”记录将失败。解决这个问题的一种流行方法是使用远未来的日期进行`COALESCE()`，比如2999–12–31、9999–12–31等。是否值得进行额外的工作以启用这些查询模式取决于你和你的用户。
 - en: 'Bonus Round: SCD2 vs. dimensional snapshots'
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 奖励环节：SCD2 vs. 维度快照
 - en: As you can see, SCD2 introduces a lot of complexity to your data models, and
     there’s an open question whether this modeling exercise is always worth it. In
     one of [data engineering’s most seminal works](https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a)²,
@@ -277,20 +403,27 @@
     maintaining complex logic to retire existing rows and insert new ones, or is it
     worth the storage overhead to simply snapshot our dimension tables on a daily
     basis?
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，SCD2为你的数据模型引入了大量复杂性，而这个建模练习是否总是值得尚未明确。在 [数据工程最具开创性的著作之一](https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a)²
+    中，Maxime Beauchemin对此进行了深入讨论。总结来说，我们是否应该维护复杂的逻辑来退役现有行并插入新行，还是仅仅通过每天快照我们的维度表来应对存储开销，这值得我们权衡。
 - en: This is a math problem. You can figure out how many records your dims contain,
     how wide the tables are, and then calculate the monthly storage costs. If those
     costs are acceptable, you can greatly simplify your design; just add a snapshot
     at the end of your dim update process, and you’re done. Users will love it, too,
     since they can join directly on a snapshot date rather than trying to wrestle
     with effective date ranges.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个数学问题。你可以计算出你的维度包含多少记录，表的宽度，然后计算每月的存储成本。如果这些成本是可以接受的，你可以大大简化你的设计；只需在维度更新过程结束时添加一个快照，就完成了。用户也会喜欢，因为他们可以直接基于快照日期进行连接，而不是试图处理有效日期范围。
 - en: Wrapping Up
+  id: totrans-63
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: Dimensional modeling is a powerful tool in any data engineer’s or analytics
     engineer’s toolbox. Being able to track history is crucial to certain analytics
     use cases, and history can provide you with valuable insights into operational
@@ -300,12 +433,18 @@
     clear. The first time you have to explain why a “missing” record isn’t actually
     missing, just not valid when a user expects it to be, you’ll know exactly how
     important these choices are.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 维度建模是任何数据工程师或分析工程师工具箱中的强大工具。能够跟踪历史记录对某些分析用例至关重要，而历史记录可以为你提供有关操作工作流的宝贵见解。虽然处理SCD2的方法有很多种，但你需要对你做出的决策保持意识。这些小变化可能看起来抽象且微不足道，但在实际使用中，这些区别将变得清晰明了。第一次你必须解释为什么“丢失”的记录实际上并未丢失，只是在用户期望时并不有效，你将会清楚这些选择的重要性。
 - en: ¹Martin Fowler. (April 7, 2021). *Bitemporal History*. ([https://martinfowler.com/articles/bitemporal-history.html](https://martinfowler.com/articles/bitemporal-history.html)
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: ¹Martin Fowler. (2021年4月7日). *双时间维度历史*。 ([https://martinfowler.com/articles/bitemporal-history.html](https://martinfowler.com/articles/bitemporal-history.html))
 - en: ²Maxime Beauchemin. (January 18, 2018). *Functional Data Engineering — a modern
     paradigm for batch data processing*. [https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a](https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a)
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: ²Maxime Beauchemin. (2018年1月18日). *功能性数据工程 — 批量数据处理的现代范式*。 [https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a](https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a)
