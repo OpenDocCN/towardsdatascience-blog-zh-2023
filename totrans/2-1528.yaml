@@ -1,36 +1,56 @@
 - en: Model Optimization with TensorFlow
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 TensorFlow 进行模型优化
 - en: 原文：[https://towardsdatascience.com/model-optimization-with-tensorflow-629342d1a96f](https://towardsdatascience.com/model-optimization-with-tensorflow-629342d1a96f)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/model-optimization-with-tensorflow-629342d1a96f](https://towardsdatascience.com/model-optimization-with-tensorflow-629342d1a96f)
 - en: MLOps
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MLOps
 - en: Reduce your models' latency, storage, and inference costs with quantization
     and pruning
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用量化和剪枝减少模型的延迟、存储和推理成本
 - en: '[](https://michaloleszak.medium.com/?source=post_page-----629342d1a96f--------------------------------)[![Michał
     Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----629342d1a96f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----629342d1a96f--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----629342d1a96f--------------------------------)
     [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----629342d1a96f--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://michaloleszak.medium.com/?source=post_page-----629342d1a96f--------------------------------)[![Michał
+    Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----629342d1a96f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----629342d1a96f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----629342d1a96f--------------------------------)
+    [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----629342d1a96f--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----629342d1a96f--------------------------------)
     ·9 min read·Apr 17, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----629342d1a96f--------------------------------)
+    ·9分钟阅读·2023年4月17日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/ff833d1ba8f3475a8a12f0187b1f2a2c.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ff833d1ba8f3475a8a12f0187b1f2a2c.png)'
 - en: 'Over the last few years, machine learning models have seen two seemingly opposing
     trends. On the one hand, the models tend to get bigger and bigger, culminating
     in what’s all the rage these days: the [large language models](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3).
@@ -38,49 +58,74 @@
     model has 530 billion parameters! On the other hand, these models are being deployed
     onto smaller and smaller devices, such as smartwatches or drones, whose memory
     and computing power are naturally limited by their size.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在过去几年中，机器学习模型经历了两种看似对立的趋势。一方面，模型往往变得越来越大，最终形成了如今流行的： [大型语言模型](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3)。Nvidia
+    的 [Megatron-Turing 自然语言生成](https://developer.nvidia.com/megatron-turing-natural-language-generation)模型拥有5300亿个参数！另一方面，这些模型正在被部署到越来越小的设备上，如智能手表或无人机，这些设备的内存和计算能力自然受到其尺寸的限制。
 - en: 'How do we squeeze ever larger models into increasingly smaller devices? The
     answer is model optimization: the process of compressing the model in size and
     reducing its latency. In this article, we will see how it works and how to implement
     two popular model optimization methods — quantization and pruning — in TensorFlow.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何将越来越大的模型压缩到越来越小的设备中？答案是模型优化：压缩模型的大小并减少其延迟的过程。在这篇文章中，我们将了解其工作原理以及如何在 TensorFlow
+    中实现两种流行的模型优化方法——量化和剪枝。
 - en: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
+  id: totrans-10
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
 - en: Baseline model
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基线模型
 - en: 'Before we jump to model optimization techniques, we need a toy model to be
     optimized. Let’s train a simple binary classifier to differentiate between Paris’
     two famous landmarks: the Eiffel Tower and the Mona Lisa, as drawn by the players
     of [Google’s game called “Quick, Draw!”](https://quickdraw.withgoogle.com/). The
     [QuickDraw dataset](https://github.com/googlecreativelab/quickdraw-dataset) consists
     of 28x28 grayscale images.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们跳到模型优化技术之前，我们需要一个要优化的玩具模型。让我们训练一个简单的二分类器，以区分巴黎的两个著名地标：埃菲尔铁塔和蒙娜丽莎，由 [Google
+    的游戏“Quick, Draw!”](https://quickdraw.withgoogle.com/) 的玩家绘制。 [QuickDraw 数据集](https://github.com/googlecreativelab/quickdraw-dataset)包含28x28的灰度图像。
 - en: '![](../Images/07437054e5fb8dc5ce7357e75cde82ce.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/07437054e5fb8dc5ce7357e75cde82ce.png)'
 - en: 'Examples from the Quickdraw dataset: Eiffel Tower (top) and Mona Lisa (bottom).'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自 Quickdraw 数据集的示例：埃菲尔铁塔（上）和蒙娜丽莎（下）。
 - en: Let’s train a simple convolutional network to classify the two landmarks.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们训练一个简单的卷积网络来分类这两个地标。
 - en: '[PRE0]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We will now save the model in the TensorFlow Lite format. It’s a smaller and
     more efficient file format compared to the traditional `.h5` file, designed specifically
     with mobile and edge deployments in mind.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在将模型保存为 TensorFlow Lite 格式。与传统的 `.h5` 文件相比，这是一种更小、更高效的文件格式，专门为移动和边缘部署设计。
 - en: '[PRE1]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: To assess our model’s size and accuracy, we will need two simple utility functions.
     First, `evaluate_tflite_model()` sets up a TF Lite interpreter to pass test examples
     to a saved TF Lite model and calculates the accuracy of its predictions. Second,
@@ -88,157 +133,234 @@
     model file to compress it further and returns its size on disc in bytes. The implementations
     of both functions we use here are based on similar utilities from Coursera’a [Machine
     Learning Modeling Pipelines in Production course](https://www.coursera.org/learn/machine-learning-modeling-pipelines-in-production?specialization=machine-learning-engineering-for-production-mlops).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了评估我们的模型的大小和准确性，我们需要两个简单的工具函数。首先，`evaluate_tflite_model()` 设置一个 TF Lite 解释器，将测试样本传递给保存的
+    TF Lite 模型，并计算其预测的准确性。其次，`get_gzipped_model_size()` 创建一个 `.tflite` 模型文件的临时压缩版本，以进一步压缩它，并返回其在磁盘上的字节大小。我们这里使用的这两个函数的实现基于
+    Coursera 的 [机器学习建模管道生产课程](https://www.coursera.org/learn/machine-learning-modeling-pipelines-in-production?specialization=machine-learning-engineering-for-production-mlops)
+    的类似工具。
 - en: '[PRE2]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Let’s get some baseline metrics from our unoptimized model.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从未优化的模型中获取一些基准指标。
 - en: '[PRE3]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The model scores an accuracy of 98.524% while taking over 14k bytes of space.
     Let’s see whether we can compress its size without sacrificing much of the accuracy.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 该模型的准确率为 98.524%，同时占用超过 14k 字节的空间。让我们看看是否可以在不牺牲太多准确性的情况下压缩其大小。
 - en: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
 - en: Quantization
+  id: totrans-26
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 量化
 - en: The first optimization technique we will look at is model quantization. Its
     goal is to decrease the precision of objects in which the model’s parameters are
     stored.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将首先讨论的优化技术是模型量化。它的目标是减少存储模型参数的对象的精度。
 - en: Quantization decreases the precision of objects in which the model’s parameters
     are stored.
+  id: totrans-28
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 量化减少了存储模型参数的对象的精度。
 - en: By default, TensorFlow stores model biases, weights, and activations as 32-bit
     floating points. A quick check with `np.finfo(np.float32).max` will tell you that
     this data type allows for storing values as large as 3³⁸. But do we need it?
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，TensorFlow 将模型的偏差、权重和激活存储为 32 位浮点数。通过 `np.finfo(np.float32).max` 快速检查会告诉你，这种数据类型允许存储的值最大为
+    3³⁸。我们真的需要这么大的值吗？
 - en: Typically, most model weights and activations are not that far away from zero;
     otherwise, the gradients would explode preventing us from training a model in
     the first place. Converting these `float32`s into a lighter data structure such
     as `int8` could go a long way toward reducing the model size, while not necessarily
     impacting its accuracy.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，大多数模型权重和激活值离零并不远；否则，梯度会爆炸，阻止我们首先训练模型。将这些 `float32` 转换为更轻量的数据结构，例如 `int8`，可以大大减少模型的大小，同时不一定影响其准确性。
 - en: Quantization is very convenient to use since it operates on an already trained
     model and only converts its internal data structures. In TensorFlow, it can be
     done while converting the model to the TF Lite format by setting the `optimizations`
     attribute in the converter.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化非常方便使用，因为它操作的是已经训练好的模型，只需转换其内部数据结构。在 TensorFlow 中，这可以通过在转换器中设置 `optimizations`
+    属性来完成。
 - en: '[PRE5]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: This implements the default quantization variant called dynamic range quantization.
     This is a good starting point in most cases. Other, more advanced strategies are
     available such as full integer quantization which tries to estimate the range
     of values in each model’s tensor, but to do so, it requires a representative dataset
     to calibrate its estimates.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 这实现了称为动态范围量化的默认量化变体。在大多数情况下，这是一个很好的起点。还有其他更高级的策略，例如完全整数量化，它试图估计每个模型张量中的值范围，但要做到这一点，它需要一个代表性数据集来校准其估计值。
 - en: Let’s stick with the default option and check the size and accuracy of the quantized
     model.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们保持默认选项，检查量化模型的大小和准确性。
 - en: '[PRE6]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '[PRE7]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: The model size was almost halved, from more than 14k to over 7k bytes! At the
     same time, the accuracy did not degrade. Actually, it even went up a little bit
     from 98.524% to 98.526%. This is a rare case, as one would typically observe a
     slight decrease in accuracy as the result of quantization.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型的大小几乎减少了一半，从 14k 多字节降至 7k 多字节！与此同时，准确率没有下降。实际上，准确率甚至从 98.524% 微增至 98.526%。这是一个罕见的情况，因为通常量化结果会导致准确率略有下降。
 - en: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
 - en: Pruning
+  id: totrans-39
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 剪枝
 - en: Another popular model optimization technique is weight pruning. In large neural
     networks, it is very unlikely that each weight plays a crucial role in the model’s
     performance. Identifying the not-so-important weights and removing them from the
     network allows us to reduce the space needed to store the model and save on float
     multiplications during inference, reducing its latency.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种流行的模型优化技术是权重剪枝。在大型神经网络中，每个权重不太可能对模型性能发挥关键作用。识别出不太重要的权重并将其从网络中移除，可以减少存储模型所需的空间，并在推理过程中节省浮点乘法，从而减少延迟。
 - en: Pruning identifies and removes unimportant weights from the model, reducing
     its size and inference time.
+  id: totrans-41
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 剪枝识别并移除模型中不重要的权重，减少模型大小和推理时间。
 - en: The simplest way to identify unimportant weights is by their magnitude. The
     weights with values close to zero are the least likely to contribute much to the
     network’s output and are the best candidates for pruning.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 识别不重要权重的最简单方法是通过其幅度。值接近零的权重最不可能对网络的输出有较大贡献，是剪枝的最佳候选者。
 - en: '![](../Images/e33263b610445e20e05d33ac9e2b6e45.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e33263b610445e20e05d33ac9e2b6e45.png)'
 - en: A dense network (left) and a sparse network after pruning two nodes (right).
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 密集网络（左）和剪枝两个节点后的稀疏网络（右）。
 - en: Unfortunately, setting some weights to zero in a trained network breaks the
     flow of information inside it with tends to result in sharp accuracy drops. An
     obvious remedy would be to retrain the model after pruning, but this proved to
     be a challenging task.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，在训练后的网络中将一些权重设置为零会打断网络内部的信息流，这通常会导致准确率急剧下降。显而易见的补救方法是剪枝后重新训练模型，但这证明是一个具有挑战性的任务。
 - en: Instead, pruning and retraining can be performed concurrently. This allows us
     to explicitly teach the model not to use some of the network’s weights.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，剪枝和重新训练可以同时进行。这使我们能够明确地教导模型不要使用一些网络的权重。
 - en: 'To implement the in-retraining pruning in TensorFlow, we need to define a pruning
     schedule. The schedule governs two processes during retraining:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 要在 TensorFlow 中实现再训练剪枝，我们需要定义一个剪枝计划。该计划在再训练过程中管理两个过程：
 - en: How much sparsity to enforce throughout the training;
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在整个训练过程中强制实施的稀疏性程度；
 - en: When (in which training steps) to enforce it.
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在（哪些训练步骤中）强制实施它。
 - en: A popular choice for the rate of sparsity increase that proved to work in practice
     is a polynomial decay function. It will sharply increase the sparsity in the first
     training steps to slow the increase down in later steps.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 实践中被证明有效的稀疏性增加率的流行选择是多项式衰减函数。它将在前期训练步骤中急剧增加稀疏性，然后在后期步骤中减缓增加速度。
 - en: '![](../Images/0f45c7cc8f3d6346c010c4b9e39da4e1.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0f45c7cc8f3d6346c010c4b9e39da4e1.png)'
 - en: Sparsity increase rate.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 稀疏性增加率。
 - en: Here, we will start by requiring 50% of the weights to be zero at the beginning
     of training and this percentage will increase to reach 80% at the end. We will
     also start introducing sparsity immediately as the training starts, and the process
     will last for all the training steps.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们将从训练开始时要求 50% 的权重为零，这一比例会在训练结束时增加到 80%。我们还将立即在训练开始时引入稀疏性，整个过程将持续所有训练步骤。
 - en: '[PRE8]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Having the schedule set up, we pass it alongside the trained baseline model
     to the `prune_low_magnitude` method. Next, we recompile and retrain the model,
     passing it the `UpdatePruningStep` callback. This callback is called after each
@@ -246,73 +368,113 @@
     aligned with the pre-defined schedule. It also adds wrappers around layers to
     be pruned, so to get the original model architecture, we need to strip these wrappers
     off after retraining with the `strip_pruning` method.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 设置好计划后，我们将其与训练好的基线模型一起传递给 `prune_low_magnitude` 方法。接下来，我们重新编译并重新训练模型，传递 `UpdatePruningStep`
+    回调。每处理完一批训练数据后，该回调会被调用，并更新剪枝步骤，以保持与预定义计划的一致性。它还在待剪枝的层周围添加了包装器，因此在用 `strip_pruning`
+    方法重新训练后，我们需要去掉这些包装器，以获得原始模型架构。
 - en: '[PRE9]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Now we can convert the model to the TFLite format and check its size and accuracy
     as we have done before.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以将模型转换为TFLite格式，并检查其大小和准确性，如之前所做的那样。
 - en: '[PRE10]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[PRE11]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Pruning has compressed our model even more than quantization: from 14k to less
     than 6k bytes. The accuracy took a slight hit, however; it dropped from 98.524%
     in the baseline model to 98.402% in the pruned version.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 剪枝使我们的模型比量化压缩得更多：从14k减少到不到6k字节。然而，准确率略有下降；从基线模型的98.524%降至剪枝版本的98.402%。
 - en: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
 - en: Quantization & pruning come together
+  id: totrans-62
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 量化与剪枝结合在一起
 - en: Since quantization and pruning work independently and in different ways, there
     is nothing prohibiting us from using both these methods at the same time. We can
     prune some of the model’s weights and then quantize the ones that are left to
     achieve an even stronger compression.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于量化和剪枝是独立且以不同方式工作的，因此没有任何东西禁止我们同时使用这两种方法。我们可以剪枝一些模型的权重，然后对剩下的权重进行量化，以实现更强的压缩效果。
 - en: We already have our pruned model, so all we need to do is to quantize it while
     converting to TFLite, just like we did before.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经有了剪枝后的模型，所以我们需要做的就是在转换为TFLite时进行量化，就像之前一样。
 - en: '[PRE12]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '[PRE13]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Quantization did not decrease the accuracy of the pruned model, but it compressed
     its size by roughly a third, from less than 6k to 4k bytes.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化没有降低剪枝模型的准确性，但将其大小压缩了大约三分之一，从不到6k字节压缩到4k字节。
 - en: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
 - en: Takeaways
+  id: totrans-69
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 主要收获
 - en: Overall, we started from a baseline model of 14k bytes and ended up with a compressed
     version of 4k bytes, a reduction of 70%.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，我们从一个14k字节的基线模型开始，最终得到一个4k字节的压缩版本，减少了70%。
 - en: '![](../Images/e9bdcde57ad095b8355fe9a7686fa270.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e9bdcde57ad095b8355fe9a7686fa270.png)'
 - en: At the same time, the model’s accuracy saw barely any degradation.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，模型的准确性几乎没有下降。
 - en: '![](../Images/3e66a19208a5fc0c2baeb68837ab0cbe.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3e66a19208a5fc0c2baeb68837ab0cbe.png)'
 - en: As machine learning models continue to grow in size and are being deployed on
     increasingly smaller devices, model optimization techniques such as quantization
     and pruning become essential to reduce the model size and increase its efficiency.
@@ -320,60 +482,93 @@
     losing much accuracy. Optimizing models can lead to faster inference times, smaller
     memory footprints, and improved power efficiency, making it easier to deploy them
     on a wider range of devices.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着机器学习模型的规模不断增长，并且被部署到越来越小的设备上，模型优化技术如量化和剪枝变得至关重要，以减少模型的大小并提高其效率。通过在TensorFlow中实现这些技术，我们可以在几乎不损失准确性的情况下压缩模型。优化模型可以带来更快的推理时间、更小的内存占用和更高的能效，使得在更多设备上部署变得更加容易。
 - en: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b2d87f1fce5973b8a06955590df36b9.png)'
 - en: Thanks for reading!
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！
 - en: If you liked this post, why don’t you [**subscribe for email updates**](https://michaloleszak.medium.com/subscribe)
     on my new articles? And by [**becoming a Medium member**](https://michaloleszak.medium.com/membership),
     you can support my writing and get unlimited access to all stories by other authors
     and yours truly.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢这篇文章，为什么不[**订阅邮件更新**](https://michaloleszak.medium.com/subscribe)我的新文章呢？通过[**成为Medium会员**](https://michaloleszak.medium.com/membership)，你可以支持我的写作，并获得其他作者以及我自己所有故事的无限制访问。
 - en: Want to always keep your finger on the pulse of the increasingly faster-developing
     field of machine learning and AI? Check out my new newsletter, [**AI Pulse**](https://pulseofai.substack.com/).
     Need consulting? You can ask me anything or book me for a 1:1 [**here**](https://topmate.io/michaloleszak).
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 想要时刻掌握日益加速发展的机器学习和人工智能领域的最新动态吗？请查看我的新通讯，[**AI Pulse**](https://pulseofai.substack.com/)。需要咨询？你可以随时问我问题或[**在这里**](https://topmate.io/michaloleszak)预约一对一咨询。
 - en: 'You can also try one of [my other articles](https://michaloleszak.github.io/blog/).
     Can’t choose? Pick one of these:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 你也可以尝试阅读[我的其他文章](https://michaloleszak.github.io/blog/)。不知道选择哪篇？可以从这些中挑选一篇：
 - en: '[](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----629342d1a96f--------------------------------)
     [## Forget About ChatGPT'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----629342d1a96f--------------------------------)
+    [## 忘记ChatGPT'
 - en: Bard, Sparrow, and multimodal chatbots will render it obsolete soon, and here
     is why.
+  id: totrans-81
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Bard、Sparrow 和多模态聊天机器人将很快使其过时，原因如下。
 - en: pub.towardsai.net](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----629342d1a96f--------------------------------)
     [](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----629342d1a96f--------------------------------)
     [## Self-Supervised Learning in Computer Vision
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '[pub.towardsai.net](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----629342d1a96f--------------------------------)
+    [](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----629342d1a96f--------------------------------)
+    [## 自监督学习在计算机视觉中的应用'
 - en: How to train models with only a few labeled examples
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如何用少量标记样本训练模型
 - en: towardsdatascience.com](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----629342d1a96f--------------------------------)
     [](/monte-carlo-dropout-7fd52f8b6571?source=post_page-----629342d1a96f--------------------------------)
     [## Monte Carlo Dropout
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----629342d1a96f--------------------------------)
+    [](/monte-carlo-dropout-7fd52f8b6571?source=post_page-----629342d1a96f--------------------------------)
+    [## 蒙特卡洛丢弃法'
 - en: Improve your neural network for free with one small trick, getting model uncertainty
     estimate as a bonus.
+  id: totrans-85
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用一个小技巧免费改进你的神经网络，并附带模型不确定性估计的好处。
 - en: towardsdatascience.com](/monte-carlo-dropout-7fd52f8b6571?source=post_page-----629342d1a96f--------------------------------)
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/monte-carlo-dropout-7fd52f8b6571?source=post_page-----629342d1a96f--------------------------------)'
 - en: All images, unless otherwise noted, are by the author.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有图像，除非另有说明，均由作者提供。
