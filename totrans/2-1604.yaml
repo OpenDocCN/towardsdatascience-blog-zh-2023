@@ -1,304 +1,448 @@
 - en: Optimizing Browsing A Taxonomy
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 优化浏览分类法
 - en: 原文：[https://towardsdatascience.com/optimizing-browsing-a-taxonomy-30596bcdbd9d](https://towardsdatascience.com/optimizing-browsing-a-taxonomy-30596bcdbd9d)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/optimizing-browsing-a-taxonomy-30596bcdbd9d](https://towardsdatascience.com/optimizing-browsing-a-taxonomy-30596bcdbd9d)
 - en: '**Problems, models, and implementation issues**'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**问题、模型和实施问题**'
 - en: '[](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)[![Arun
     Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)
     [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----30596bcdbd9d--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)
     ·20 min read·Jan 4, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----30596bcdbd9d--------------------------------)
+    ·阅读时间20分钟·2023年1月4日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/701afca47c30a4c877941cba92f3156f.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/701afca47c30a4c877941cba92f3156f.png)'
 - en: Image by [mcmurryjulie](https://pixabay.com/users/mcmurryjulie-2375405/) from
     [pixabay](https://pixabay.com/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来自[mcmurryjulie](https://pixabay.com/users/mcmurryjulie-2375405/)，[pixabay](https://pixabay.com/)
 - en: The driving use case for this is [https://jagota-arun.medium.com/interactive-and-adaptive-menu-ordering-agent-bb447c58b3af](https://jagota-arun.medium.com/interactive-and-adaptive-menu-ordering-agent-bb447c58b3af)
     (Not a prerequisite read.)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的主要用例是[https://jagota-arun.medium.com/interactive-and-adaptive-menu-ordering-agent-bb447c58b3af](https://jagota-arun.medium.com/interactive-and-adaptive-menu-ordering-agent-bb447c58b3af)（不是必读材料。）
 - en: Here we focus on the modeling. What is it? How does it relate to recommender
     systems? And then on the implementation. As in object-oriented design. Classes
     etc.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们专注于建模。它是什么？它如何与推荐系统相关？然后是实施。就像面向对象设计一样。类等。
 - en: The object-oriented exposition style extends the benefits of sequencing, modularity,
     composability, and extensibility to writing. Good fit here.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 面向对象的阐述风格将序列化、模块化、可组合性和可扩展性的好处扩展到写作中。这里非常合适。
 - en: The single most important concept in this post is that of taxonomy. Everything
     happens on it. User browsing, user actions (on leaves), modeling, and scoring
     to dynamically rearrange the taxonomy for the user to optimize her browsing.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文最重要的概念是分类法。一切都发生在它上面。用户浏览、用户行为（在叶子上）、建模和评分，以动态重新排列分类法，优化用户的浏览体验。
 - en: So let’s start by defining it. By taxonomy, we mean a tree of choices, with
     concrete items of interest on its leaves. We assume ultimately the user cares
     about reaching leaves of interest. The internal nodes are mainly there for navigation.
     We learn from whether a user acts or not on a leaf.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么让我们从定义它开始。分类法是一个选择树，具体的感兴趣项目位于其叶子上。我们最终假设用户关心的是到达感兴趣的叶子。内部节点主要用于导航。我们通过用户是否在叶子上采取行动来学习。
 - en: 'An example is a restaurant menu. The menu items are on the leaves. The internal
     nodes are the various categories on the menu: drinks, appetizers, main dishes,
     etc. A user action is to order a particular menu item. Should the user want to
     order a drink, she’d go down the *drinks* subtree.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个例子是餐厅菜单。菜单项位于叶子上。内部节点是菜单上的各种类别：饮料、开胃菜、主菜等。用户的一个动作是点选特定的菜单项。如果用户想点饮料，她会进入*饮料*子树。
 - en: In a video-watching setting, the user’s action may be to view the video.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在视频观看场景中，用户的行为可能是观看视频。
 - en: We model a user’s interaction with the taxonomy as a session in which the user
     navigates certain portions of the tree. When the user reaches a suitable leaf,
     she can act or not.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将用户与分类法的互动建模为一个会话，其中用户浏览树的某些部分。当用户到达一个合适的叶子时，她可以选择行动或不行动。
 - en: Our primary interest is learning to prefer certain nodes in the tree from the
     user’s actions on specific leaves. We want to learn preferences on leaves as well
     as on internal nodes.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的主要兴趣是从用户在特定叶子上的行为中学习偏好，以便在树中的某些节点上表现出偏好。我们希望在叶子节点和内部节点上都能学习到偏好。
 - en: '**How does this relate to usual recommender systems?**'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '**这与常规推荐系统有何关系？**'
 - en: Generally, we expect a recommender system to primarily recommend new items.
     Our focus here is on streamlining the user’s navigation to items of interest.
     This may include items the user has acted on before. As in the restaurant setting.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，我们期望推荐系统主要推荐新的项目。我们在这里的重点是简化用户对感兴趣项目的导航。这可能包括用户之前已操作过的项目。例如餐厅设置。
 - en: Another thing to note is that recommender systems usually operate on user-item
     matrices, not on taxonomies.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个需要注意的是，推荐系统通常基于用户-物品矩阵操作，而不是基于分类法。
 - en: '**Object-Oriented Exposition**'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**面向对象的阐述**'
 - en: Our most important class will be *UserInteractionsWithTaxonomy*. Its role should
     be clear from its name and our earlier discussion.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们最重要的类将是 *UserInteractionsWithTaxonomy*。其角色应从其名称和我们之前的讨论中明确。
 - en: This class gets instantiated to model the interactions of a particular user
     with a particular taxonomy. The taxonomy needs to be supplied when the class is
     instantiated. The caller is responsible for associating the instantiated model
     with the appropriate user. As depicted below. This class will maintain a counter
     for each node in the taxonomy. These counters will be initialized to zero on a
     new instance.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个类会被实例化以建模特定用户与特定分类法的互动。实例化时需要提供分类法。调用者负责将实例化的模型与适当的用户关联。如下面所示。这个类会为分类法中的每个节点维护一个计数器。这些计数器在新实例中会被初始化为零。
 - en: '[PRE0]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: “User” can be whatever the modeler wants. A single person or an entire group
     of people.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: “用户”可以是模型创建者想要的任何人。一个人或一整个群体。
 - en: '**Key Methods**'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**关键方法**'
 - en: '*UserInteractionsWithTaxonomy* will support a method *act*. This method will
     model an instance of one action by the user on a particular leaf. Such as ordering
     a specific item on a restaurant’s menu.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*UserInteractionsWithTaxonomy* 将支持一个方法 *act*。这个方法将建模用户在特定叶子上的一次行为实例。例如，点餐时选择某个特定的菜品。'
 - en: In our first version of the method *act*, an invocation will increment the counts
     of the leaf and all of its ancestors. To be able to do this efficiently, this
     class may maintain parent arcs for all nodes in the taxonomy.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们版本的 *act* 方法中，每次调用都会递增叶子及其所有祖先的计数。为了高效地做到这一点，这个类可能会维护分类法中所有节点的父节点弧。
 - en: Notice that we have chosen to learn user preferences only from *act* actions.
     We could generalize this to incorporate feedback from user clicks on the tree’s
     internal nodes. We won’t pursue this here, as we think act actions are better
     predictors of user preferences than internal node clicks. The reader is welcome
     to.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，我们选择仅从 *act* 行为中学习用户偏好。我们可以将此推广到包括用户点击树的内部节点的反馈。但在这里我们不会追求这一点，因为我们认为 *act*
+    行为比内部节点点击更能预测用户偏好。读者可以自行尝试。
 - en: A second method will simulate a click by the user on a certain node in the tree.
     This will let us track where the user currently is on the tree, so we can present
     the appropriate choices below.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二个方法将模拟用户在树上的某个节点上点击。这将让我们追踪用户当前在树上的位置，以便我们可以在下面展示适当的选择。
 - en: We will express these choices in a method *choices()* which will return scores
     of the children of the current node that the user is on the tree. More precisely,
     it will return a list of [*child*, *score*] pairs where *child* is a child of
     *self*.*current_node* and *score* its score. This list is in nonincreasing order
     by score.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在一个方法 *choices()* 中表达这些选择，该方法将返回当前用户在树上所在节点的子节点的得分。更精确地说，它将返回一个 [*child*,
+    *score*] 对列表，其中 *child* 是 *self*.*current_node* 的子节点，*score* 是其得分。这个列表按得分的非递增顺序排列。
 - en: Here is an example flow.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个示例流程。
 - en: '[PRE1]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Let’s see the internals of this class together.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们一起来看看这个类的内部细节。
 - en: '[PRE2]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Notice the parameter *pc* in the method *act*. We will explain it later. For
     now, let’s assume *pc* equals 1, its default value. So “increment … by *pc*” means
     “increment … by 1” or in short “increment …”.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意 *act* 方法中的参数 *pc*。我们稍后会解释它。目前，假设 *pc* 等于 1，即其默认值。因此，“递增 … by *pc*” 意味着 “递增
+    … by 1” 或简称 “递增 …”。
 - en: The method *score*(*.*) returns *P*(*child*|*parent*), the probability that
     the user will visit *child* next given that she is currently at *parent*. This
     is just the count of the child divided by the count of the parent.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法*score*(*.*)返回*P*(*child*|*parent*)，即用户在*parent*位置时访问*child*的概率。这只是子项的计数除以父项的计数。
 - en: '**Cold Start Problems**'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**冷启动问题**'
 - en: Say the user visits a new restaurant. As is, the scoring method cannot be used
     because the user has no order history there. So we have to wait for the user to
     order a few items before we can score. This scenario is known as the *user cold-start
     problem*.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设用户访问了一家新餐馆。由于用户在该餐馆没有订单历史记录，因此不能使用评分方法。因此，我们必须等用户点几个项目后才能评分。这个场景被称为*用户冷启动问题*。
 - en: Similarly, there is a *taxonomy cold start problem*. In the restaurant setting,
     this would correspond to a brand new restaurant opening up. No interactions with
     any users yet.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似地，还有一个*分类冷启动问题*。在餐馆的场景中，这对应于一个全新的餐馆开张。尚未与任何用户互动。
 - en: In fact, there are finer versions of cold start problems buried inside our current
     scoring. Our score function is
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我们当前评分中隐藏了更细致的冷启动问题。我们的评分函数是
 - en: '[PRE3]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Imagine a restaurant in which a user has order history but none under a particular
     category, say *desserts*. The count of *parent* = *desserts* will be 0 so none
     of its children can be scored.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下一个餐馆，用户有订单历史记录，但在特定类别下没有，例如*甜点*。*父类别* = *甜点*的计数将为0，因此其子类别的得分也无法计算。
 - en: Now imagine that the user has ordered within a category but not within a particular
     subcategory. Such as a particular drink within the drinks category. The child’s
     score will be 0\. Sure, 0 is a valid score, but probably not what we want.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在想象一下，用户在某个类别中下单，但未在特定子类别中下单。例如，在饮料类别中点了一种特定的饮料。子项的得分将为0。虽然0是一个有效的得分，但可能不是我们所希望的。
 - en: In summary, an item that has never been ordered will either not be scorable
     or score 0.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，未曾被点过的项目将无法评分或得分为0。
 - en: Cold start problems are frequently encountered in the setting of recommender
     systems, see [4]. In such settings, the taxonomy cold start problem corresponds
     to the item cold start problem.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 冷启动问题在推荐系统的环境中经常出现，见[4]。在这种环境下，分类冷启动问题对应于项目冷启动问题。
 - en: '**Alleviating The Cold Start Problems**'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '**缓解冷启动问题**'
 - en: A simple approach to alleviating all the cold start problems is to initialize
     the counters at all the nodes to a certain positive number called *pc*. While
     it needs to be positive, it could be less than 1.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 缓解所有冷启动问题的一个简单方法是将所有节点上的计数器初始化为一个称为*pc*的正数。虽然它需要是正数，但可以小于1。
 - en: In our setting, we will support a similar mechanism which is more powerful.
     Without being any more complex, from either the modeling or the coding perspective.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的设置中，我们将支持一个类似但更强大的机制。无论是从建模还是编码的角度来看，都不会更复杂。
 - en: We will add a method *act_randomly*(*n*, *pc*) to the class *UserInteractionsWithTaxonomy*.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将为类*UserInteractionsWithTaxonomy*添加一个方法*act_randomly*(*n*, *pc*)。
 - en: '[PRE4]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Now come back to the scenario of the user visiting a restaurant for the first
     time. Say we call *act_randomly*(*n* = 100, *pc* = 0.01). The effect of this will
     be as if the user had ordered 100 times at this restaurant, picking a random item
     on the menu in each instance. To account for *pc*, we should call each of these
     orders “fractional”.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在回到用户第一次访问餐馆的场景。假设我们调用*act_randomly*(*n* = 100, *pc* = 0.01)。这样做的效果就像用户在这家餐馆点了100次，每次随机选择菜单上的一项。为了考虑*pc*，我们应该将这些订单称为“分数订单”。
 - en: Why use *pc* at all? That is, why not set it to 1? Because in some settings
     we may want a single *actual* order to be much more significant than a single
     virtual order. In this case, we would set *pc* to a value much less than 1\. In
     other settings, we may want the opposite behavior. Only if a user has ordered
     a certain item a certain minimum number of times should we deem it significant.
     In this case, we would set *pc* to a value greater than 1.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么要使用*pc*？也就是说，为什么不设置为1？因为在某些环境中，我们可能希望单个*实际*订单比单个虚拟订单更重要。在这种情况下，我们会将*pc*设置为远小于1的值。在其他环境中，我们可能希望相反的行为。只有当用户订单达到一定的最小次数时，我们才会认为它是重要的。在这种情况下，我们会将*pc*设置为大于1的值。
 - en: The *act_randomly* approach alleviates all the aforementioned cold start problems.
     That said, we can often do better on the user cold start problem.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '*act_randomly*方法可以缓解所有上述冷启动问题。不过，我们通常可以在用户冷启动问题上做得更好。'
 - en: '**Warming Up A User Cold Start Using A Taxonomy Model**'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用分类模型加热用户冷启动**'
 - en: Consider a restaurant that has a lot of history of users engaging with it. The
     interactions from this history can be used to form a model for this restaurant.
     This model, which we will call the *restaurant model*, is really an instance of
     *UserInteractionsWithTaxonomy* in which the user is a collective rather than an
     individual.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑一个有很多用户互动历史的餐厅。这些历史互动可以用来为该餐厅形成一个模型。这个模型，我们称之为*餐厅模型*，实际上是*UserInteractionsWithTaxonomy*的一个实例，其中用户是一个集体而非个人。
 - en: To leverage a taxonomy model within a particular user’s interactions with the
     taxonomy we will refactor the class *UserInteractionsWithTaxonomy* as follows.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在特定用户的交互中利用分类模型，我们将重构*UserInteractionsWithTaxonomy*类如下。
 - en: '[PRE5]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Let’s explain. When instantiating *UserInteractionsWithTaxonomy* we supply another
     instance of *UserInteractionsWithTaxonomy* which will be used as the taxonomy
     model, as depicted below.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们解释一下。在实例化*UserInteractionsWithTaxonomy*时，我们提供另一个*UserInteractionsWithTaxonomy*的实例，它将用作分类模型，如下所示。
 - en: '[PRE6]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: In the example above, all user restaurant models share the same (generic) restaurant
     model.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的示例中，所有用户餐厅模型共享相同的（通用）餐厅模型。
 - en: Any *act* on any of the user restaurant models, even one in the future, will
     perform the same action on the shared restaurant model as well.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 对任何用户餐厅模型上的*act*，即使是未来的模型，也会对共享餐厅模型执行相同的操作。
 - en: To implement this cleanly, we renamed the previous version of *act* to *act_on_this*
     so that we can compose the new *act* on top of it. Due to this name change, we
     also had to make a change to *act_randomly*(.).
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了干净地实现这一点，我们将之前的*act*版本重命名为*act_on_this*，以便可以在其上构建新的*act*。由于这一名称更改，我们还不得不对*act_randomly*(.)进行更改。
 - en: We then refactored the method *score*(.) so that if the instance has a taxonomy
     model attached to it, it uses it as well in its scoring.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们重构了方法*score*(.)，使得如果实例附加了分类模型，它也会在评分中使用该模型。
 - en: There is a lot happening in the refactored version of *score*(.) so let’s elaborate.
     Considering scoring a particular child against a certain parent in the user-specific
     model. First, we make a call to
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*score*(.)的重构版本中发生了很多事情，所以我们来详细说明一下。考虑在用户特定模型中对某个孩子与某个父母进行评分。首先，我们调用
 - en: '[PRE7]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: which gives us *P*(*child*|*parent*, *generic taxonomy model*). Next, we imagine
     sampling *pcm* visits to parent, of which *pcm***P*(*child*|*parent*, *generic*
     *taxonomy model*) are expected to end up at *child*. So we add the count of these
     imagined visits to *child* to the actual visits from the user.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 这给我们提供了*P*(*child*|*parent*, *generic taxonomy model*)。接下来，我们假设对父母进行*pcm*次访问，其中*pcm***P*(*child*|*parent*,
+    *generic* *taxonomy model*)预计会以*child*结束。因此，我们将这些想象中的访问次数加到用户的实际访问次数上。
 - en: In the above paragraph, the expression “visits to a node” is used for illustrative
     purposes only. In actuality, a visit to a node corresponds to an instance of an
     *act* on a leaf under that node.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的段落中，术语“访问节点”仅用于说明。在实际情况中，对一个节点的访问对应于在该节点下的叶子上的*act*实例。
 - en: Let’s see a numeric example. Say *pcm* is 10\. Say *P*(*child*|*parent*, *generic
     taxonomy model*) equals ⅕. *pc* will be 2 for this child. Were the particular
     user not to have ever visited the parent, *P*(*child*|*parent*, *user model for
@@ -307,567 +451,844 @@
     subsequently will start influencing *P*(*child*|*parent*, *user model for this
     taxonomy*), possibly moving it away from *P*(*child*|*parent*, *generic taxonomy*
     *model*) if the user’s behavior deviates.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看一个数字示例。假设*pcm*是10。假设*P*(*child*|*parent*, *generic taxonomy model*)等于⅕。对于这个孩子，*pc*将是2。如果特定用户从未访问过父母，*P*(*child*|*parent*,
+    *user model for this taxonomy*)将等于⅕，即*P*(*child*|*parent*, *generic taxonomy model*)的值。随着用户开始访问*parent*，用户随后访问的孩子将开始影响*P*(*child*|*parent*,
+    *user model for this taxonomy*)，如果用户的行为偏离，可能会将其从*P*(*child*|*parent*, *generic
+    taxonomy* *model*)中移开。
 - en: '**Modeling User Preferences**'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**建模用户偏好**'
 - en: Consider this scenario. A brand new restaurant just opened up. There is no restaurant
     model for it since there is no history.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑这种情况。一个全新的餐厅刚刚开张。由于没有历史记录，因此没有餐厅模型。
 - en: A user walks in. Sure, we could randomly sample from the menu using *act_randomly*
     in the manner described better. Can we do better?
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个用户走进来。当然，我们可以使用*act_randomly*从菜单中随机采样，如前所述。我们能做得更好吗？
 - en: We should certainly link the restaurant model instance to every new user who
     visits the restaurant. This way, at least the restaurant model will learn more
     rapidly than any one individual. Any menu items that stand out, in the sense of
     being ordered frequently across users, would get surfaced more quickly. Can we
     do even better?
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该将餐馆模型实例与每一个访问餐馆的新用户关联起来。这样，至少餐馆模型会比任何一个个人学习得更快。任何突出显示的菜单项，即在用户中被频繁点餐的项，会更快地被呈现出来。我们还能做得更好吗？
 - en: Say the user has visited other restaurants in the past. If we could model and
     learn user preferences from these visits, we could potentially apply them to the
     user’s first visit to this new restaurant. Such as preferences for items with
     certain words in them, e.g. *curry*, or for certain price ranges.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设用户过去访问过其他餐馆。如果我们能够对这些访问建模并学习用户的偏好，我们就可以将这些偏好应用到用户首次访问这家新餐馆时。例如，某些词汇如*curry*的偏好，或某些价格范围的偏好。
 - en: While in the previous paragraph we used the restaurant cold start problem to
     motivate modeling user preferences, solving this problem involves complex issues
     relating to knowledge transfer. This is because the taxonomies of the restaurants
     the user visited previously may differ from the one of the current restaurant.
     So we will defer covering this use case to a separate post.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然在前一段中我们使用了餐馆冷启动问题来激励建模用户偏好，但解决这个问题涉及到复杂的知识转移问题。这是因为用户之前访问的餐馆的分类法可能与当前餐馆的分类法不同。所以我们将推迟讨论这个用例到另外一篇文章中。
 - en: That said, incorporating user preferences into our model can help with future
     interactions the user has with the same taxonomy as well.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 也就是说，将用户偏好纳入我们的模型可以帮助未来用户与相同分类法的互动。
 - en: Such as when there are many leaves. There is a chance the user might simply
     have missed some good ones. Some restaurants have more than forty items on their
     menu. In other settings, taxonomies can be even larger. Such as videos available
     on Netflix, Amazon Prime, or various other streaming video streaming services.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 比如，当有很多菜品时。用户可能会错过一些好的菜品。一些餐馆的菜单上有超过四十种菜品。在其他情况下，分类法甚至可能更大。例如，Netflix、Amazon
+    Prime 或其他各种流媒体视频服务上的视频。
 - en: Or when the same word appears in multiple items. This applies even to small
     taxonomies. Imagine visiting a Thai restaurant that has several main dishes that
     have the word *curry* in them. Say the user ordered one of them. Next time, the
     user will see other curry items displayed prominently. That makes sense, right?
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者，当相同的词出现在多个项目中时。这甚至适用于小型分类法。想象一下访问一家泰国餐馆，该餐馆有几个主菜中包含了词汇 *curry*。假设用户点了其中一道菜。下次，用户会看到其他咖喱菜品被显著展示。这很有道理，对吧？
 - en: '**Bag Of Words**'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '**词袋模型**'
 - en: Now that we are set on modeling user preferences, let’s get started. We will
     model them as bags of words.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们决定对用户偏好进行建模，就让我们开始吧。我们将把它们建模为词袋。
 - en: A bag of words is a set of word-frequency pairs. An example is { *beer* :10,
     *wine* :2 }. We can interpret this example as saying that the user prefers beer
     over wine.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 词袋模型是一个词频对的集合。一个例子是 { *beer* :10, *wine* :2 }。我们可以将这个例子解释为用户偏好啤酒而非葡萄酒。
 - en: While we use the term “word” here, we can define it however we want. For instance,
     we could take the term “wheat beer” and represent it as “wheat-bear”.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我们在这里使用了“词”这个术语，但我们可以根据需要定义它。例如，我们可以把术语“wheat beer”表示为“wheat-bear”。
 - en: We’ll model *BagOfWords* as a class. We’ll represent a bag of words as a hash,
     i.e. a python *Dict*. The keys are words. The frequencies are their values.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将把*BagOfWords*建模为一个类。我们将用一个哈希来表示词袋，即 Python 的*Dict*。键是单词，值是它们的频率。
 - en: How specifically will we use *BagOfWords*? When instantiating *UserInteractionsWithTaxonomy*
     we will also create a single instance of *BagOfWords* to model the user’s keyword
     preferences. When a user makes a call to *act* on a leaf, we will add the bag
     of words of the leaf’s name to the bag of words representing the user’s preferences.
     For this, the *BagOfWords* class needs to support a method “add” that adds a supplied
     bag of words to the instance’s bag of words.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将如何具体使用*BagOfWords*？在实例化*UserInteractionsWithTaxonomy*时，我们还将创建一个*BagOfWords*实例来建模用户的关键词偏好。当用户对某个叶子进行操作时，我们将把该叶子名称的词袋添加到代表用户偏好的词袋中。为此，*BagOfWords*
+    类需要支持一个“add”方法，用于将提供的词袋添加到实例的词袋中。
 - en: Here is our initial version of BagOfWords.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们的初始版本的 BagOfWords。
 - en: '[PRE8]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Here is the version of *UserInteractionsWithTaxonomy*, refactored to model user
     preferences from her interactions on the taxonomy.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是*用户与分类法交互*的版本，重构以建模她在分类法中的交互中的用户偏好。
 - en: '[PRE9]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '**Using The User Preferences**'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用用户偏好**'
 - en: Now that we are done with the modeling and training of our first version of
     user preferences, let’s discuss how we are going to use it.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们完成了首个版本的用户偏好建模和训练，让我们讨论一下如何使用它。
 - en: Let’s start by reviewing the method *score* in *UserInteractionsWithTaxonomy*.
     It scores a particular child against a given parent. This is done for the purposes
     of differentiating, for navigation purposes, between the various children of a
     given parent.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从回顾*UserInteractionsWithTaxonomy*中的*score*方法开始。它对特定子项进行评分，以区分给定父项的各种子项，用于导航目的。
 - en: Now suppose we want to enhance the score function to use user preferences in
     addition to order counts.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们想要增强评分功能，以便除了订单数量外，还使用用户偏好。
 - en: In our current design, user preferences are modeled as a single bag of words
     maintained in the *UserInteractionsWithTaxonomy* instance. In view of how we intend
     to use the score function, which is to differentiate between the various children
     of a parent, it would be more natural if the parent had its own user preferences.
     This would imply that every internal node in the taxonomy should have its own
     user preferences.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们当前的设计中，用户偏好被建模为在*用户与分类法交互*实例中维护的单一词袋。鉴于我们打算如何使用评分函数，即区分一个父项的各种子项，如果每个父项拥有自己的用户偏好会更自然。这意味着分类法中的每个内部节点都应该有自己的用户偏好。
 - en: This would let us refactor UserInteractionsWithTaxonomy.score as below.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将使我们可以将UserInteractionsWithTaxonomy.score重构如下。
 - en: '[PRE10]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: We won’t elaborate on the “if it makes sense to score off user likes and not
     order frequencies” just yet. This needs some discussion.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不会详细说明“是否有意义基于用户喜欢而非订单频率进行评分”这一点。这需要一些讨论。
 - en: Going from a single user preferences model to node-specific user preferences
     models may seem daunting at first glance. On further thought, one, this change
     is not as daunting as it might first appear, and, two, it in fact can make the
     scoring more accurate.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 从单一用户偏好模型转向节点特定的用户偏好模型乍看之下可能令人望而生畏。经过进一步考虑，首先，这种变化并不像最初看起来那样令人生畏；其次，它实际上可以使评分更加准确。
 - en: 'Elaborating on one, many taxonomies in practice will be small. For example,
     even a full-service restaurant’s taxonomy may typically only have four internal
     nodes excluding root: *drinks*, *appetizers*, *entrees*, and *desserts*.'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 详细说明一下，实际中许多分类法会很小。例如，即使是一个全方位服务的餐厅的分类法，通常也只有四个内部节点，不包括根节点：*饮料*、*开胃菜*、*主菜*和*甜点*。
 - en: Elaborating on two, some words may cut across node boundaries. In a particular
     restaurant, say the word *salmon* appears in an appetizer’s name as well as in
     an entree’s name. Say from the order history of a particular user we discern that
     she likes the salmon appetizer but not the salmon main dish. When she is looking
     for an appetizer, we should display the salmon appetizer prominently. When she
     is looking for a main dish, we should not display the salmon main dish prominently.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 详细说明一下，某些词可能跨越节点边界。在某个餐厅中，例如，*三文鱼*这个词出现在开胃菜的名称中，也出现在主菜的名称中。假设从某个用户的订单历史中，我们发现她喜欢三文鱼开胃菜但不喜欢三文鱼主菜。当她寻找开胃菜时，我们应该显著展示三文鱼开胃菜。当她寻找主菜时，我们则不应显著展示三文鱼主菜。
 - en: Now that we have decided to go ahead with this modeling enhancement, we’ll need
     to refactor *__init__*() to construct the node-specific *BagOfWords* instances
     and *act*(.) to update them suitably. Below is the refactored version.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们决定继续进行这种建模增强，我们需要重构*__init__*()以构造节点特定的*BagOfWords*实例，并适当地更新*act*(.)。以下是重构后的版本。
 - en: '[PRE11]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '**When To Score Off User Preferences Versus Order Frequencies**'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: '**何时基于用户偏好而非订单频率进行评分**'
 - en: Now let’s discuss the
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们讨论一下
 - en: '[PRE12]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: part.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 部分。
 - en: When the value of *self*.*counter*[*parent*] is sufficiently large it is better
     to base the scoring on order frequencies rather than user preferences. This is
     because actual orders should generally carry higher weight than user preferences.
     There may be something in a particular item not captured in its name that explains
     why a user has ordered it frequently. Or avoided it. Perhaps it's taste.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 当*自我*.*计数器*[*父项*]的值足够大时，基于订单频率来进行评分比基于用户偏好更好。这是因为实际订单通常应该比用户偏好具有更高的权重。某个特定项目中可能有些东西未被其名称捕捉到，从而解释了用户为何频繁订购它。或者避免它。也许是口味。
 - en: When the value of *self*.*counter*[*parent*] is not large enough, we have a
     couple of options. We could score off the combination of the taxonomy model and
     the user’s own order history. Or we could score off the user’s preferences.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 当*self*.*counter*[*parent*]的值不够大时，我们有几个选择。我们可以基于分类模型和用户的订单历史来打分。或者我们可以根据用户的偏好来打分。
 - en: In plain English, the options of the previous paragraph may be read as the following.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 用简单的语言来说，上一段的选项可以理解为以下内容。
 - en: Score an item or a category against its parent based on
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 对某个项目或类别与其父类别进行评分，依据
 - en: other people’s experiences at this restaurant with it.
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其他人在这家餐厅的体验。
 - en: the user’s own experiences, possibly combined with those of other users, of
     ordering items under this parent that share some of the words with this one.
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用户自己在这个父类下的体验，可能结合其他用户的体验，点了与这个词有一些相同的词的项目。
 - en: Let’s illustrate the two with an example. Imagine a user visiting a certain
     Thai restaurant for the first time. If the user is aware that a certain main dish
     is very popular, she might be interested in ordering it. If the user is aware
     that the main dishes with the word *curry* in them are popular in this restaurant,
     all such main dishes should score high for this user.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用一个例子来说明这两者。假设一个用户第一次访问某个泰国餐馆。如果用户知道某道主菜非常受欢迎，她可能会有兴趣点这道菜。如果用户知道餐馆中的主菜中含有*咖喱*这个词很受欢迎，那么所有这些主菜都应该为这个用户打高分。
 - en: '**The Score Method In BagOfWords**'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '**BagOfWords中的评分方法**'
 - en: 'Let’s first remind ourselves of the portion we added in *UserInteractionsWithTaxonomy*.*score*(.)
     that is of relevance here:'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们提醒自己我们在*UserInteractionsWithTaxonomy*.*score*(.)中添加的相关部分：
 - en: '[PRE13]'
+  id: totrans-114
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: We see that we need to add a method *score*() to *BagOfWords*. A call to *BagOfWords*.*score*(*bag_of_words*)
     will interpret the object on which it is being invoked as the parent and the bag
     of words that is being passed to it as a certain child.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到我们需要向*BagOfWords*添加一个*score*()方法。调用*BagOfWords*.*score*(*bag_of_words*)将把被调用的对象解释为父对象，把传递给它的词袋解释为某个子对象。
 - en: We are calling this out because there is an inherent asymmetry here. We are
     not trying to score two bags of words in a symmetric fashion. Rather we are seeking
     to score how well a particular child’s bag of words fits within its parent’s bag
     of words.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们之所以提到这一点，是因为这里存在固有的不对称性。我们不是试图以对称的方式对两个词袋进行评分。相反，我们寻求评分一个特定子词袋在其父词袋中的适配程度。
 - en: Let’s see an example that will explain this, while also giving some specific
     desiderata for our score function.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看一个例子来解释这一点，同时给出一些对我们评分函数的具体要求。
 - en: Consider a restaurant that has a category *beers* with several items under it.
     Say a particular user has visited the restaurant a couple of times and in each
     case ordered some light beer. Assume the words *light* and *beer* appear explicitly
     in these ordered items. The user’s bag of words under *beers* will now contain
     these two words.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑一个有*啤酒*类别并且有多个项目的餐厅。假设一个用户访问过餐厅几次，每次都点了淡啤酒。假设*淡*和*啤酒*这两个词在这些点过的项目中明确出现。用户在*啤酒*类别下的词袋现在将包含这两个词。
 - en: Say there is an item named *Coors Light* in the beers menu but the user did
     not order this on an earlier visit. This item should score high because it is
     a light beer. Even though the user has not yet ordered a beer with the word *Coors*
     in it.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设在啤酒菜单中有一个名为*Coors Light*的项目，但用户在之前的访问中没有点过这个项目。这个项目应该得高分，因为它是一种淡啤酒。即使用户还没有点过包含*Coors*这个词的啤酒。
 - en: Now consider a second item under beers named *Coors Beer*. It should not score
     as high as *Coors Light*. Why not? Because the word *beer* is not as informative
     in the category *beers* as the word *light*. Assuming both words have the same
     frequencies in the user’s bag of words for the category *beers* in this restaurant,
     *light* should win out.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑啤酒类别下的第二个项目，名为*Coors Beer*。它的评分不应该像*Coors Light*那么高。为什么呢？因为*啤酒*这个词在*啤酒*类别中的信息量不如*淡*。假设这两个词在用户的*啤酒*类别词袋中的频率相同，那么*淡*应该胜出。
 - en: Now let’s work towards a score function that will give us what we want.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们朝着一个能满足我们需求的评分函数努力。
 - en: The first decision we will make is to score only those words that are common
     to both the child’s bag of words and the parent’s. For our two examples, these
     are depicted below.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的第一个决定是仅对那些在子词袋和父词袋中都存在的词进行评分。对于我们的两个例子，如下所示。
 - en: '[PRE14]'
+  id: totrans-123
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Our second decision will be to score the words in this intersection independently
     and additively.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的第二个决定是独立并且加法地评分这个交集中的词。
 - en: Our third decision will be to score any single word *w* in this intersection
     as follows
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的第三个决定是对交集中的任何单词 *w* 进行如下评分
 - en: '*f*(*w*, *child*)*log *P*(*w*|*parent*, *user*)/*P*(*w*|*parent*, *uniform
     user*)'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: '*f*(*w*, *child*)*log *P*(*w*|*parent*, *user*)/*P*(*w*|*parent*, *uniform
+    user*)'
 - en: Here *f*(*w*, *child*, *user*) is the frequency of *w* in the child’s bag of
     words for the user.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里 *f*(*w*, *child*, *user*) 是用户的子词袋中 *w* 的频率。
 - en: '*P*(*w*|*parent*, *user*) is *f*(*w*, *parent*, *user*)/sum_{*w*’ in *parent*}
     *f*(*w*’, *parent*, *user*)'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(*w*|*parent*, *user*) 是 *f*(*w*, *parent*, *user*)/sum_{*w*’ in *parent*}
+    *f*(*w*’, *parent*, *user*)'
 - en: '*P*(*w*|*parent*, *uniform user*) is similar except that the user is what we
     are referring to as a “uniform user”. The uniform user is assumed to be equally
     likely to order any of the items under *child*.'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(*w*|*parent*, *uniform user*) 类似，只是用户是我们所说的“均匀用户”。均匀用户被假定为对 *child* 下的任何项都有相等的订购概率。'
 - en: In association rules mining, *P*(*w*|*parent*, *user*)/*P*(*w*|*parent*, *uniform
     user*) is a version of the so-called lift [3].
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 在关联规则挖掘中，*P*(*w*|*parent*, *user*)/*P*(*w*|*parent*, *uniform user*) 是所谓的提升
+    [3] 的一种版本。
 - en: Let’s see how this works out in our examples. The scores of the words *light*
     and *beer* for this user are depicted below. To simplify the expressions, the
     term *parent* is omitted.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这些在我们的示例中是如何工作的。下图展示了这个用户对单词 *light* 和 *beer* 的评分。为了简化表达，省略了术语 *parent*。
 - en: log *P*(*light*|*user*)/*P*(*light*|*uniform user*)
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: log *P*(*light*|*user*)/*P*(*light*|*uniform user*)
 - en: log *P*(*beer*|*user*)/*P*(*beer*|*uniform user*)
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: log *P*(*beer*|*user*)/*P*(*beer*|*uniform user*)
 - en: '*P*(*light*|*user*) and *P*(*beer*|*user*) are ½ each. Say there are more beers
     on the menu with the word *beer* in them than the word *light*. *P*(*light*|*uniform
     user*) will probably be significantly smaller than *P*(*beer*|*uniform user*).
     Consequently, log *P*(*light*|*user*)/*P*(*light*|*uniform user*) will probably
     be significantly larger than log *P*(*beer*|*user*)/*P*(*beer*|*uniform user*).
     As desired.'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P*(*light*|*user*) 和 *P*(*beer*|*user*) 各为 ½。假设菜单上包含单词 *beer* 的啤酒比包含单词 *light*
+    的啤酒多。*P*(*light*|*uniform user*) 可能会显著小于 *P*(*beer*|*uniform user*)。因此，log *P*(*light*|*user*)/*P*(*light*|*uniform
+    user*) 可能会显著大于 log *P*(*beer*|*user*)/*P*(*beer*|*uniform user*)。这是预期中的结果。'
 - en: 'Let’s see the score function in its full glory in pseudocode. One important
     subtlety in the implementation is that the scoring will get distributed over two
     classes: *BagOfWords* and *UserInteractionsWithTaxonomy*. First, let’s see the
     actual changes in both classes, then we will explain why this is the case.'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在伪代码中查看完整的得分函数。实现中的一个重要细节是评分将分布在两个类之间：*BagOfWords* 和 *UserInteractionsWithTaxonomy*。首先，让我们查看两个类中的实际更改，然后再解释原因。
 - en: Let’s start with the refactored *BagOfWords*. We’ll show the new version of
     the class in full here as the changes are not localized.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从重构后的 *BagOfWords* 开始。由于更改并不是局部的，我们将在这里全面展示类的新版本。
 - en: '[PRE15]'
+  id: totrans-137
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Now let’s bring in the refactored UserInteractionsWithTaxonomy class.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们引入重构后的 UserInteractionsWithTaxonomy 类。
 - en: '[PRE16]'
+  id: totrans-139
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '**Extending The User Likes Model**'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '**扩展用户喜好模型**'
 - en: Thus far, we have modeled user likes as bags of words. In many use cases, there
     may be additional attributes on the taxonomy’s leaves that may influence a user’s
     likes. Such as *price*.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经将用户喜好建模为词袋。在许多用例中，分类法的叶子上可能还有其他属性，这些属性可能会影响用户的喜好。例如 *price*。
 - en: To go beyond bags of words, it makes sense to model user likes into its own
     class, *UserLikes*. We’ll also need to refactor *UserInteractionsWithTaxonomy*
     to use *UserLikes*.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了超越词袋的模型，将用户喜好建模为一个独立的类 *UserLikes* 是合理的。我们还需要重构 *UserInteractionsWithTaxonomy*
+    以使用 *UserLikes*。
 - en: To get started, first, let’s review how *BagOfWords* is used in *UserInteractionsWithTaxonomy*
     as this is what we will need to generalize.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们回顾一下 *BagOfWords* 在 *UserInteractionsWithTaxonomy* 中的使用情况，因为这是我们需要推广的内容。
 - en: '[PRE17]'
+  id: totrans-144
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'It''s clear we need to make the following changes:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 很明显，我们需要进行以下更改：
 - en: '[PRE18]'
+  id: totrans-146
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Let’s assume these changes have been made.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设这些更改已经完成。
 - en: Now let’s discuss the implications for the class *UserLikes*.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们讨论一下对 *UserLikes* 类的影响。
 - en: It needs to support a method *add*(*leaf*) that extracts whatever attributes
     it needs to, from *leaf*, and adds them to its current user likes model.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 它需要支持一个方法 *add*(*leaf*)，该方法从 *leaf* 中提取所需的所有属性，并将它们添加到当前的用户喜好模型中。
 - en: It needs to support a method *score* to score any given child’s user likes against
     *self*, i.e. the parent.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 它需要支持一个方法 *score*，以根据 *self*（即父节点）对任何给定子节点的用户喜好进行评分。
 - en: We are almost ready to see the class *UserLikes*. Before doing so, let’s model
     one additional attribute, as that is why we are building this class in the first
     place.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们几乎准备好查看*UserLikes*类了。在此之前，让我们建模一个额外的属性，因为这就是我们首先构建此类的原因。
 - en: Let’s go with the price. First, we need to discuss its modeling aspects.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从价格开始。首先，我们需要讨论其建模方面。
 - en: '**Modeling Price Basics**'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '**价格基础建模**'
 - en: Imagine visiting a restaurant whose menu is as below. Only some are shown. For
     the items, only the prices are shown.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下访问一家餐馆，其菜单如下所示。这里只显示了部分。对于这些项目，仅显示价格。
 - en: '*Drinks*: $2, $3, $2, $**8**, $**9**, … *Main dishes*: $8, $9, $**22**, $**28**,
     $9, $8, …'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '*饮料*：$2, $3, $2, $**8**, $**9**, … *主菜*：$8, $9, $**22**, $**28**, $9, $8, …'
 - en: The ‘…’ is there to convey that in each category there are many more items.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: “…”是为了表示每个类别中还有许多其他项目。
 - en: The bolded items are the ones a particular user ordered in the past in this
     restaurant. From this, we can infer that at least in this restaurant this user
     prefers the relatively more expensive items in each category. (Of course, there
     may be something else going on, but that’s all we can tell from this data.)
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 加粗的项目是特定用户在这家餐馆过去订购的项目。由此，我们可以推断出至少在这家餐馆中，这位用户偏好每个类别中相对较贵的项目。（当然，可能还有其他因素，但这就是我们从这些数据中可以得出的结论。）
 - en: This information can be used to display certain items more prominently than
     others when the user visits this restaurant next. Perhaps presenting them in a
     different order, as below.
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些信息可以用来在用户下次访问这家餐馆时更显著地展示某些项目。也许以不同的顺序展示，如下所示。
 - en: '*Drinks*: $**8**, $**9**, $2, $3, $2, … *Main dishes*: $**22**, $**28**, $8,
     $9, $9, $8, …'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: '*饮料*：$**8**, $**9**, $2, $3, $2, … *主菜*：$**22**, $**28**, $8, $9, $9, $8, …'
 - en: '**Modeling Price Details**'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: '**价格详细建模**'
 - en: We can treat prices the same way we treated words in item names. This nicely
     fits into our current design. Each internal node can thus have its own bag of
     prices, just like it had its own bag of words.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以像处理项目名称中的单词一样处理价格。这很好地融入了我们当前的设计。每个内部节点都可以有自己的价格包，就像它有自己的单词包一样。
 - en: Node-specific bags of prices are even more strongly motivated than node-specific
     bags of words. This is because prices are even less specific than words, in terms
     of the categories they predict. It's plausible that a user would not spend $8
     on a drink but would spend that much on a main dish. Category-specific bags of
     prices will allow us to model such distinctions.
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 节点特定的价格包比节点特定的单词包更有动机。这是因为价格在预测的类别上比单词更不具体。用户可能不会在饮料上花费$8，但可能会在主菜上花费这么多。类别特定的价格包将允许我们建模这种区分。
 - en: For now, we’ll model a bag of prices as an instance of *BagOfWords*. It will
     be adequate for our basic needs. Them being, for each category, we are capturing
     the prices of the items the user ordered in that category along with their frequencies.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们将价格包建模为*BagOfWords*的一个实例。这将满足我们基本的需求。即，对于每个类别，我们记录用户在该类别中订购的项目价格及其频率。
 - en: '**UserLikes**'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '**UserLikes**'
 - en: Now the pseudocode.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是伪代码部分。
 - en: '[PRE19]'
+  id: totrans-166
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: Notice *leaf*.*price*.*as_bow*. The “as_bow” is meant to indicate that the price,
     a scalar, has been expressed as a bag of words with a single key (the price) with
     a frequency of 1 associated with it.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意*leaf*.*price*.*as_bow*。 “as_bow”是指价格（一个标量）已被表示为一个包含单一键（价格）及其频率为1的单词包。
 - en: '**UserLikes.score(.)**'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: '**UserLikes.score(.)**'
 - en: Consider this.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑一下这个。
 - en: '[PRE20]'
+  id: totrans-170
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: Noting that *self* is the parent’s *UserLikes*, the *user_likes* supplied in
     the parameter to *score*(.) is a particular child’s, and surfacing what’s happening
     within the two calls to *score*(.) we can express this as
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意到*自我*是父级的*UserLikes*，在*score*(.)的参数中提供的*user_likes*是特定子级的，通过观察两次调用*score*(.)中的发生情况，我们可以将其表示为
 - en: '[PRE21]'
+  id: totrans-172
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: Now factor in that
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑到
 - en: '*UserInteractionsWithTaxonomy*.*score_using_user_preferences*(*child*, *parent*)'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '*UserInteractionsWithTaxonomy*.*score_using_user_preferences*(*child*, *parent*)'
 - en: calls it twice, once as above, and once for a different user who does uniform
     interactions instead.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 它调用两次，一次如上所述，一次对不同的用户进行均匀交互。
 - en: The overall score function may thus be expressed as
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，整体评分函数可以表示为
 - en: '[PRE22]'
+  id: totrans-177
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: Let’s try to make sense of this in a scenario that is a slight refinement of
     one we saw earlier. There is a restaurant with a category *beers*. A particular
     user has visited this restaurant twice, each time ordering some light beer. (A
     different one in the two instances.) Assume that the words *light* and *beer*
     appear explicitly in the names of the beers that were ordered.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在一个稍作改进的场景中尝试理解这一点。假设有一家餐厅的分类为*啤酒*。一个特定的用户已经两次光顾这家餐厅，每次点的都是一些淡色啤酒。（两次点的啤酒不同。）假设“*淡色*”和“*啤酒*”这两个词显式出现在所点啤酒的名称中。
 - en: Now the refinement. Say the two ordered beers were priced at $5 and $6 respectively.
     Now consider the following two beers that are also on the beers menu. Neither
     is included in the two the user previously ordered.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在进行改进。假设两款点的啤酒分别定价为$5和$6。现在考虑菜单上另外两款啤酒。两者均不包括在用户之前点过的两款啤酒中。
 - en: '[PRE23]'
+  id: totrans-180
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: The above score function will score *Coors Light* higher. This is because while
     both contain the word light, the second one is priced significantly higher than
     the ones the user previously ordered.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述评分函数会给*Coors Light*更高的分数。这是因为虽然两者都包含“light”这个词，但第二款的价格显著高于用户之前点的啤酒。
 - en: We can improve this further by replacing
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过替换进一步改进这一点
 - en: '[PRE24]'
+  id: totrans-183
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: by
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 由
 - en: '[PRE25]'
+  id: totrans-185
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: We won’t say any more about this in this post.
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不会在这篇文章中再多说了。
 - en: '**Summary**'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结**'
 - en: In this post, we delved into optimizing a user’s browsing of a taxonomy to find
     items of interest on the leaves. We covered an algorithm that learns from feedback
     on which items the user acts on. (In the restaurant setting, which items the user
     actually orders.)
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们深入探讨了优化用户在分类体系中的浏览，以便在叶子节点中找到感兴趣的项目。我们介绍了一种从用户操作的项目反馈中学习的算法。（在餐厅环境中，即用户实际点的项目。）
 - en: The feedback is pushed up the taxonomy so that the internal nodes can benefit
     from it. This allows such nodes to be displayed more (or less) preferentially,
     to make it easier for the user to find the items of interest in the future.
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 反馈被推送到分类体系的上层，以便内部节点可以从中受益。这使得这些节点可以被更（或更少）优先显示，以便用户在未来更容易找到感兴趣的项目。
 - en: The term “items of interest” includes the items the user has acted on in the
     past, and items that are similar enough and are worth recommending.
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: “感兴趣的项目”包括用户过去操作过的项目，以及足够相似且值得推荐的项目。
 - en: The initial model is based on order frequencies aggregated up the taxonomy.
     Various cold start problems are also addressed by augmenting the model with mechanisms
     to simulate random acts and to use a taxonomy model continually learned from a
     collective of users engaging with the taxonomy.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 初始模型基于按分类体系聚合的订单频率。通过增强模型以模拟随机行为并使用从用户集体参与分类体系中不断学习的分类模型，也解决了各种冷启动问题。
 - en: The initial model is then enhanced to model and use user preferences which may
     be discerned from the words in the name of an item the user acts on, and its price.
     Like the initial model, user preferences are mapped onto the taxonomy. This accommodates
     nuanced learning in the context of the specific taxonomy. Such as
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 初始模型随后得到增强，以模拟和使用用户偏好，这些偏好可以从用户操作的项目名称中的词汇和其价格中辨别出来。像初始模型一样，用户偏好被映射到分类体系中。这适应了在特定分类体系中的细致学习。例如
 - en: the user will pay $8 for a main dish but not for a drink in this restaurant.
+  id: totrans-193
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用户愿意为这家餐厅的主菜支付$8，但不愿为饮料付费。
 - en: the user likes salmon appetizers but not salmon main dishes in this restaurant.
+  id: totrans-194
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用户喜欢这家餐厅的三文鱼开胃菜，但不喜欢三文鱼主菜。
 - en: Throughout this post, the modeling and scoring are built up as python pseudocode.
     At various junctures, the pseudocode is refactored when needed. In this post,
     the python pseudocode serves as a language for communicating and discussing ideas.
     It might also be useful to an interested reader who wants to practice implementing
     it. The pseudocode is modular enough that it can be implemented incrementally.
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，建模和评分是通过Python伪代码构建的。在各个阶段，当需要时，伪代码会进行重构。在这篇文章中，Python伪代码作为沟通和讨论想法的语言。它也可能对那些希望练习实现的读者有用。伪代码的模块化程度足够高，可以逐步实现。
 - en: '**References**'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '**参考文献**'
 - en: '[Vector space model — Wikipedia](https://en.wikipedia.org/wiki/Vector_space_model#:~:text=Vector%20space%20model%20or%20term,retrieval%2C%20indexing%20and%20relevancy%20rankings)'
+  id: totrans-197
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[向量空间模型 — 维基百科](https://en.wikipedia.org/wiki/Vector_space_model#:~:text=Vector%20space%20model%20or%20term,retrieval%2C%20indexing%20and%20relevancy%20rankings)'
 - en: '[Jaccard index — Wikipedia](https://en.wikipedia.org/wiki/Jaccard_index)'
+  id: totrans-198
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[杰卡德指数 — 维基百科](https://en.wikipedia.org/wiki/Jaccard_index)'
 - en: '[Association rule learning — Wikipedia](https://en.wikipedia.org/wiki/Association_rule_learning#Lift)'
+  id: totrans-199
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[关联规则学习 — 维基百科](https://en.wikipedia.org/wiki/Association_rule_learning#Lift)'
 - en: '[Cold start (recommender systems) — Wikipedia](https://en.wikipedia.org/wiki/Cold_start_(recommender_systems)#:~:text=Cold%20start%20is%20a%20potential,not%20yet%20gathered%20sufficient%20information)'
+  id: totrans-200
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[冷启动（推荐系统） — 维基百科](https://en.wikipedia.org/wiki/Cold_start_(recommender_systems)#:~:text=Cold%20start%20is%20a%20potential,not%20yet%20gathered%20sufficient%20information)'

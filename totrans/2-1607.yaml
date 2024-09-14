@@ -1,557 +1,833 @@
 - en: Optimizing Retrieval-Augmented Generation (RAG) by Selective Knowledge Graph
     Conditioning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 通过选择性知识图谱条件优化检索增强生成（RAG）
 - en: 原文：[https://towardsdatascience.com/optimizing-retrieval-augmented-generation-rag-by-selective-knowledge-graph-conditioning-97a4cf96eb69](https://towardsdatascience.com/optimizing-retrieval-augmented-generation-rag-by-selective-knowledge-graph-conditioning-97a4cf96eb69)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/optimizing-retrieval-augmented-generation-rag-by-selective-knowledge-graph-conditioning-97a4cf96eb69](https://towardsdatascience.com/optimizing-retrieval-augmented-generation-rag-by-selective-knowledge-graph-conditioning-97a4cf96eb69)
 - en: How SURGE substantially improves knowledge relevance through targeted augmentation
     while retaining language fluency
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何通过有针对性的增强来显著提高知识的相关性，同时保持语言流畅性
 - en: '[](https://medium.com/@alcarazanthony1?source=post_page-----97a4cf96eb69--------------------------------)[![Anthony
     Alcaraz](../Images/6a71a1752677bd07c384246fb0c7f7e8.png)](https://medium.com/@alcarazanthony1?source=post_page-----97a4cf96eb69--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97a4cf96eb69--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----97a4cf96eb69--------------------------------)
     [Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----97a4cf96eb69--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@alcarazanthony1?source=post_page-----97a4cf96eb69--------------------------------)[![Anthony
+    Alcaraz](../Images/6a71a1752677bd07c384246fb0c7f7e8.png)](https://medium.com/@alcarazanthony1?source=post_page-----97a4cf96eb69--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97a4cf96eb69--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----97a4cf96eb69--------------------------------)
+    [Anthony Alcaraz](https://medium.com/@alcarazanthony1?source=post_page-----97a4cf96eb69--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----97a4cf96eb69--------------------------------)
     ·7 min read·Dec 28, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----97a4cf96eb69--------------------------------)
+    ·7分钟阅读·2023年12月28日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '*Artificial intelligence software was used to enhance the grammar, flow, and
     readability of this article’s text.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使用人工智能软件来增强本文文本的语法、流畅性和可读性。*'
 - en: Generative pre-trained models have shown impressive fluency and coherence when
     used for dialogue agents. However, a key limitation they suffer from is the lack
     of grounding in external knowledge. Left to their pre-trained parameters alone,
     these models often generate plausible-sounding but factually incorrect responses,
     also known as hallucinations.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成预训练模型在作为对话代理使用时表现出令人印象深刻的流畅性和连贯性。然而，它们面临的一个关键限制是缺乏对外部知识的支撑。如果仅依赖预训练的参数，这些模型往往会生成看似合理但实际上不正确的回答，这也被称为幻觉。
 - en: 'Prior approaches to mitigate this have involved augmenting the dialogue context
     with entire knowledge graphs associated with entities mentioned in the chat. However,
     this indiscriminate conditioning on large knowledge graphs brings its own problems:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 以往缓解这一问题的方法涉及将整个知识图谱与对话中提到的实体相关联，从而增强对话上下文。然而，这种对大型知识图谱的不加选择的条件带来了自身的问题：
 - en: 'Limitations of Naive Knowledge Graph Augmentation:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 天真的知识图谱增强的局限性：
 - en: Much of the 1-hop context may be irrelevant to the dialogue, inserting unnecessary
     noise
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 很多1-hop上下文可能与对话无关，插入了不必要的噪音
 - en: Encoding entire knowledge subgraphs strains sequence length limits
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编码整个知识子图会给序列长度限制带来压力
 - en: No guarantee model will use the relevant facts for generation
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 无法保证模型会使用相关事实进行生成
 - en: Risk of hallucination still exists despite knowledge grounding
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 尽管有知识基础，幻觉的风险仍然存在
 - en: 'To overcome this, Kang et al. 2023 propose the SUbgraph Retrieval-augmented
     GEneration (SURGE) framework, with three key innovations:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了克服这一点，Kang等人2023年提出了SUbgraph Retrieval-augmented GEneration（SURGE）框架，具有三项关键创新：
 - en: '[](https://openreview.net/forum?id=WhWlYzUTJfP&source=post_page-----97a4cf96eb69--------------------------------)
     [## Knowledge-Consistent Dialogue Generation with Language Models and...'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://openreview.net/forum?id=WhWlYzUTJfP&source=post_page-----97a4cf96eb69--------------------------------)
+    [## 知识一致的对话生成与语言模型和...'
 - en: Knowledge-Consistent Dialogue Generation with Context-Relevant Subgraph Retrieval,
     Invariant Graph Encoding, and…
+  id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 知识一致的对话生成与上下文相关的子图检索、不变图编码和...
 - en: openreview.net](https://openreview.net/forum?id=WhWlYzUTJfP&source=post_page-----97a4cf96eb69--------------------------------)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: openreview.net](https://openreview.net/forum?id=WhWlYzUTJfP&source=post_page-----97a4cf96eb69--------------------------------)
 - en: 'Context-Relevant Subgraph Retriever: Retrieving the most relevant knowledge
     graph facts to the dialogue context using a graph neural network retriever.'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 上下文相关子图检索器：使用图神经网络检索器从图知识库中检索与对话上下文最相关的知识图事实。
 - en: 'Efficient Graph Encoding: Perturbing token embeddings based on relations while
     encoding just subgraph entities instead of all triplets. Maintains permutation
     and inversion invariance.'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 高效图编码：根据关系扰动标记嵌入，同时仅编码子图实体而非所有三元组。保持排列和反演不变性。
 - en: 'Graph-Text Contrastive Learning: Ensuring consistency between retrieved knowledge
     graph and generated response via contrastive loss.'
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 图-文本对比学习：通过对比损失确保检索到的知识图与生成响应之间的一致性。
 - en: This allows providing precisely the requisite factual context to the dialogue
     without dilution from irrelevant facts or model limitations. Experiments show
     SURGE reduces hallucination and improves grounding.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这使得能够为对话提供准确的事实背景，而不会因无关事实或模型限制而稀释。实验表明，SURGE减少了幻觉现象，并改善了基础知识。
 - en: The key insight is that selective conditioning on personalized subgraphs provides
     focused knowledge grounding without overwhelming pre-trained models.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键见解在于对个性化子图的选择性条件提供了聚焦的知识基础，而不会使预训练模型不堪重负。
 - en: '![](../Images/355f9ec12caf572abb74a894d9836a92.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/355f9ec12caf572abb74a894d9836a92.png)'
 - en: Generated by Dall-E-3
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 Dall-E-3 生成
 - en: 'Plan :'
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 计划：
 - en: '- Context-Relevant Knowledge Retrieval;'
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '- 上下文相关知识检索；'
 - en: '- Invariant Knowledge Encoding;'
+  id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '- 不变知识编码；'
 - en: '- Enforcing Knowledge Consistency;'
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '- 强化知识一致性；'
 - en: '- Results;'
+  id: totrans-29
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '- 结果；'
 - en: '- Conclusion.'
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '- 结论。'
 - en: 'Context-Relevant Knowledge Retrieval:'
+  id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 上下文相关知识检索：
 - en: Retrieval distribution modeled using similarity of context and triplet embeddings
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用上下文和三元组嵌入的相似性来建模检索分布
 - en: Triplet embeddings obtained from Graph Neural Networks to capture relational
     structure
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从图神经网络中获得的三元组嵌入用于捕捉关系结构
 - en: Enables focusing on most relevant facts instead of all knowledge graph facts
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使得可以集中于最相关的事实，而不是所有知识图事实
 - en: The key challenge SURGE addresses is retrieving only the most relevant facts
     from the knowledge graph rather than overwhelm the generator with all contextually
     associated entities. To enable this context-specific selection, the paper proposes
     modeling the retrieval as a distribution over knowledge graph triplets conditioned
     on the dialogue history.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: SURGE 解决的关键挑战是仅从知识图中检索最相关的事实，而不是用所有上下文相关的实体淹没生成器。为了实现这种特定于上下文的选择，本文建议将检索建模为一个基于对话历史的知识图三元组分布。
 - en: 'Mathematically, this context-conditional retrieval distribution is defined
     as:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 从数学上讲，这个上下文条件的检索分布定义为：
 - en: pφ(z|x) ∝ exp(d(z)^T s(x))
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: pφ(z|x) ∝ exp(d(z)^T s(x))
 - en: 'Where:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中：
 - en: x is the dialogue context
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: x 是对话上下文
 - en: z is a knowledge graph triplet
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: z 是一个知识图三元组
 - en: s(x) generates dense embeddings for the dialogue context
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: s(x) 为对话上下文生成稠密的嵌入
 - en: d(z) generates dense embeddings for the triplets
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: d(z) 为三元组生成稠密的嵌入
 - en: The key insight here is using the similarity between dialogue and triplet embeddings
     to model relevance.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的关键见解是利用对话和三元组嵌入之间的相似性来建模相关性。
 - en: Since the triplets contain both entities and relations structured as a graph,
     plain language model encoders are insufficient. Instead, Graph Neural Networks
     (GNNs) are uniquely positioned to capture both nodes and edges. GNNs can represent
     the relational dependencies between entities by propagating neighbouring embeddings.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于三元组包含作为图结构的实体和关系，普通语言模型编码器不够用。相反，图神经网络（GNNs）特别适合捕捉节点和边。GNNs 可以通过传播相邻嵌入来表示实体之间的关系依赖。
 - en: 'Specifically, node embeddings are generated using Graph Convolutional Networks:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，节点嵌入是通过图卷积网络生成的：
 - en: e = GNN(e0; G)
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: e = GNN(e0; G)
 - en: 'While relation embeddings use Edge Hypergraph Networks:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 而关系嵌入使用边超图网络：
 - en: r = GNN(r0; G∗)
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: r = GNN(r0; G∗)
 - en: Where G* denotes the dual hypergraph.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 G* 表示对偶超图。
 - en: By combining node and edge embeddings, full triplet embeddings can embed semantic
     relations and proximity. The similarity of these triplets with the dialogue context
     vectors from the encoder then provides the foundation for a context-relevant retrieval
     distribution.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过结合节点和边嵌入，完整的三元组嵌入可以嵌入语义关系和邻近性。这些三元组与编码器对话上下文向量的相似性提供了一个上下文相关的检索分布的基础。
 - en: 'Invariant Knowledge Encoding:'
+  id: totrans-51
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 不变知识编码：
 - en: Encodes retrieved subgraph into generator transformer efficiently
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 高效地将检索到的子图编码到生成器转换器中
 - en: Ensures encoding is invariant to order and direction of relations
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确保编码对关系的顺序和方向不变
 - en: Uniquely encodes entities and perturbs embeddings based on relations
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 唯一编码实体并根据关系扰动嵌入
 - en: The context-relevant subgraph retrieved in the previous stage needs to be encoded
     into the generator transformer model that will produce the dialogue response.
     However, naively encoding the symbolic triplets runs into issues around stability
     of the representations.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前一阶段检索到的上下文相关子图需要被编码到生成器变换器模型中，该模型将生成对话回应。然而，简单地编码符号三元组会遇到表示稳定性的问题。
 - en: 'Specifically, there are two desired invariance properties:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，有两个期望的不变性属性：
 - en: 'Permutation invariance: Order of triplets should not change overall meaning'
+  id: totrans-57
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 置换不变性：三元组的顺序不应改变整体意义
 - en: 'Relation inversion invariance: Forward and backward relations equivalent'
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 关系反转不变性：正向和反向关系等效
 - en: 'When encoding knowledge graphs into pre-trained language models for dialogue,
     there are a couple practical problems that come up:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 当将知识图谱编码到用于对话的预训练语言模型中时，会出现几个实际问题：
 - en: 'Long sequences: Encoding every single triplet fact as words results in extremely
     long input sequences. This strains the model’s context capacity.'
+  id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 长序列：将每个三元组事实编码为单词会导致极长的输入序列。这会给模型的上下文容量带来压力。
 - en: 'Order dependence: Shuffling the order of triplets changes the meaning seen
     by models like GPT-3, since they rely so much on word order and positioning. But
     triplets are by nature unordered — shuffling facts shouldn’t change overall meaning.'
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 顺序依赖：打乱三元组的顺序会改变像GPT-3这样的模型看到的意义，因为它们非常依赖单词的顺序和位置。但三元组本质上是无序的——打乱事实不应改变整体意义。
 - en: 'Directional difference: Relations can be inverted without changing the core
     meaning (X is-wife-of Y == Y has-husband X). But prefixed text makes these seem
     like completely different facts.'
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 方向差异：关系可以被反转而不改变核心意义（X是Y的妻子 == Y有丈夫X）。但前置文本使这些看起来像完全不同的事实。
 - en: The problems above cause unnecessary stress on the language models when encoding
     structured knowledge. The models get overwhelmed by huge numbers of tokens, and
     they struggle to grasp that jumbled or inverted triplets still convey the same
     concepts.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述问题在编码结构化知识时对语言模型造成了不必要的压力。模型被大量标记所压倒，它们难以理解混乱或反向的三元组仍然传达相同的概念。
 - en: 'So ideally, we need a way to encode knowledge compactly yet stably. The encoding
     should be:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，理想情况下，我们需要一种方法以紧凑而稳定的方式编码知识。编码应该是：
 - en: 'Efficient: Shouldn’t result in 1000s of prepended tokens blowing context space.'
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 高效的：不应导致成千上万的前置标记从而膨胀上下文空间。
 - en: 'Order-invariant: Shuffling subgraphs shouldn’t drastically alter meaning.'
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 顺序不变：打乱子图不应大幅改变意义。
 - en: 'Direction-invariant: Forward and backward relations should be treated equivalently.'
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 方向不变：正向和反向关系应被等同对待。
 - en: SURGE solves this by uniquely encoding only entities, then judiciously perturbing
     their embeddings based on relations detected via graph neural networks. This provides
     a compact, stable form for assimilation by the decoder.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: SURGE通过唯一编码实体，然后根据通过图神经网络检测到的关系明智地扰动它们的嵌入来解决这个问题。这为解码器提供了紧凑、稳定的形式。
 - en: 'A two-step embed and perturb approach is introduced:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 引入了一种两步嵌入和扰动的方法：
 - en: 'Unique entity embedding:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 独特的实体嵌入：
 - en: Extract set of unique entities ENT(Z) from triplets
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从三元组中提取独特的实体集 ENT(Z)
 - en: Embed these entities using dialogue encoder
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用对话编码器嵌入这些实体
 - en: This embed+sort provides permutation invariance
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这种嵌入+排序提供了置换不变性
 - en: 'Perturbation using relations:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用关系进行扰动：
 - en: Use Graph Neural Network over triplets
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对三元组使用图神经网络
 - en: GNN provides relation-aware node embeddings
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GNN提供关系感知的节点嵌入
 - en: 'Apply transformation β to entity embeddings:'
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 应用变换β到实体嵌入：
 - en: β(f(a), Z) = (1 + γ) ∗ f(a) + δ
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: β(f(a), Z) = (1 + γ) ∗ f(a) + δ
 - en: where γ, δ are learned perturbation factors based on relations.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 γ, δ 是基于关系学习到的扰动因子。
 - en: This step uses the relational information to directly influence the entity vector
     spaces while still keeping the efficient unique entity based encoding.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一步使用关系信息直接影响实体向量空间，同时保持高效的唯一实体基础编码。
 - en: 'Benefits:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 优势：
 - en: Vector space encoding fits generator requirements
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 向量空间编码符合生成器要求
 - en: Invariance provides stability and consistency
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不变性提供了稳定性和一致性
 - en: The insight is generating invariance through sets and perturbations rather than
     variable sequence encodings.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 见解是通过集合和扰动生成不变性，而不是通过可变序列编码。
 - en: 'Enforcing Knowledge Consistency:'
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 强制知识一致性：
 - en: Contrastive loss between knowledge graph and generated response
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 知识图谱与生成回应之间的对比损失
 - en: Pulls relevant knowledge representations closer to response representations
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将相关知识表示拉近到回应表示
 - en: Improves grounding of responses in retrieved facts
+  id: totrans-88
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 改善回应在检索事实中的基础
 - en: Even after context-relevant retrieval and efficient encoding, there is no guarantee
     the generator will actually utilize the relevant knowledge provided to it. The
     risk of hallucination persists.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使在上下文相关的检索和高效编码之后，仍然无法保证生成器会实际利用提供的相关知识。幻觉的风险依然存在。
 - en: 'To actively incorporate the encoded subgraph, the authors propose adding a
     cross-modal contrastive loss between graph and response representations:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了主动结合编码的子图，作者提议在图谱和回应表示之间添加一个跨模态对比损失：
 - en: Lcont = (1/2) * log (sim(ζ(z), ξ(h)) / ∑ξ(h’))
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: Lcont = (1/2) * log (sim(ζ(z), ξ(h)) / ∑ξ(h’))
 - en: (1/2) * log (sim(ζ(z), ξ(h)) / ∑ζ(z’))
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: (1/2) * log (sim(ζ(z), ξ(h)) / ∑ζ(z’))
 - en: 'Where:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中：
 - en: z is the encoded knowledge subgraph
+  id: totrans-94
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: z 是编码的知识子图
 - en: h is the decoder hidden state
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: h 是解码器的隐藏状态
 - en: ζ and ξ are projected embeddings
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ζ 和 ξ 是投影嵌入
 - en: Intuitively, this loss pulls an encoded knowledge graph closer to its corresponding
     response representation, while pushing it away from other random responses or
     knowledge graphs.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 直观上，这种损失将编码的知识图谱拉近到其对应的回应表示，同时将其推离其他随机回应或知识图谱。
 - en: This trains the model to actively distinguish between relevant knowledge-response
     pairs versus irrelevant ones. This discriminative pressure incentivizes the model
     to ground its responses in the encoded facts.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 这使得模型能够主动区分相关知识-回应对与无关的对。这种区分压力促使模型将其回应基于编码的事实。
 - en: 'Benefits:'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 好处：
 - en: Improves factual consistency
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 改善事实一致性
 - en: Reduces unsupported assertions
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 减少不支持的断言
 - en: Allows tracing hallucinations to retrieval errors
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 允许追踪幻觉到检索错误
 - en: The key insight is that without an explicit alignment objective, the vector
     spaces of both modalities may drift apart, limiting fact grounding. The contrastive
     loss acts as an inductive bias towards consistency.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键见解是，如果没有明确的对齐目标，两种模态的向量空间可能会分开，限制事实基础。对比损失作为一致性的归纳偏置。
 - en: 'Training end to end :'
+  id: totrans-104
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 端到端训练：
 - en: 'Objective Function: The overall training objective is to maximize the log likelihood
     of generating the correct responses summed over the latent knowledge subgraphs:'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标函数：整体训练目标是最大化生成正确回应的对数似然，求和于潜在知识子图：
 - en: L = Σp(Z|x) p(y|x,Z)
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: L = Σp(Z|x) p(y|x,Z)
 - en: Where p(Z|x) is the context-based retrieval distribution and p(y|x,Z) is the
     generator distribution.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 p(Z|x) 是基于上下文的检索分布，p(y|x,Z) 是生成器分布。
 - en: 'Training Process:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练过程：
 - en: Encode dialogue context x using encoder network
+  id: totrans-109
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用编码器网络编码对话上下文 x
 - en: Retrieve top-k subgraphs Z_i ~ p(Z|x) via similarity search
+  id: totrans-110
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过相似性搜索检索 top-k 子图 Z_i ~ p(Z|x)
 - en: Encode Z_i invariantly using GNN + perturbation
+  id: totrans-111
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 GNN + 扰动不变地编码 Z_i
 - en: Maximize p(y|x,Z_i) for each sample via decoder
+  id: totrans-112
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过解码器最大化每个样本的 p(y|x,Z_i)
 - en: Additionally minimize contrastive loss between Z_i and decoder states
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 另外，最小化 Z_i 和解码器状态之间的对比损失
 - en: So jointly across batches of dialogue, retrieval distribution and generation
     distribution are optimized through shared parameters.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在对话批次中，通过共享参数优化检索分布和生成分布。
 - en: 'Model Choice:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型选择：
 - en: In principle, any sequence-to-sequence language model like T5, BART or even
     GPT-3 can be used as the generator model by appending encoded knowledge to the
     input context tokens. The paper uses a T5 model in their experiments but this
     can be substituted.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 原则上，任何序列到序列的语言模型，如 T5、BART 或甚至 GPT-3，都可以作为生成模型，通过将编码的知识附加到输入上下文标记中。论文在实验中使用了
+    T5 模型，但可以进行替换。
 - en: 'Benefits:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 好处：
 - en: Unified end-to-end training tying components
+  id: totrans-118
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 统一的端到端训练将组件绑定在一起
 - en: Marginal likelihood aggregates overall retina performance
+  id: totrans-119
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 边际似然汇总了整体视网膜性能
 - en: Modular architecture allows model extensibility
+  id: totrans-120
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模块化架构允许模型扩展
 - en: 'Results:'
+  id: totrans-121
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结果：
 - en: Outperforms baselines in metrics measuring knowledge relevance
+  id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在衡量知识相关性的指标中优于基线
 - en: Qualitative examples show more factual responses grounded in relevant knowledge
+  id: totrans-123
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 定性示例显示了更多基于相关知识的事实回应
 - en: Ablations validate importance of each component
+  id: totrans-124
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 消融实验验证了每个组件的重要性
 - en: The authors evaluate SURGE on the OpendialKG and KOMODIS dialogue datasets which
     provide paired knowledge graphs.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者在 OpendialKG 和 KOMODIS 对话数据集上评估了 SURGE，这些数据集提供了配对的知识图谱。
 - en: 'Quantitative improvements:'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 定量改进：
 - en: SURGE outperforms all baselines in knowledge-relevance metrics like the proposed
     KQA (Knowledge-Verifying QA) metric which measures factual correctness through
     an extractor.
+  id: totrans-127
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SURGE在知识相关性指标上超越了所有基准，如提出的KQA（知识验证问答）指标，通过提取器测量事实正确性。
 - en: Achieves new state-of-the-art results on existing automatic metrics like BLEU,
     ROUGE and F1 which assess language fluency.
+  id: totrans-128
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在评估语言流利度的现有自动指标如BLEU、ROUGE和F1上取得了新的最先进结果。
 - en: 'Qualitative impacts:'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 定性影响：
 - en: Examples show SURGE generates more informative, factual responses grounded in
     relevant knowledge from selectively retrieved subgraphs.
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实例显示，SURGE生成了更具信息性和基于相关知识的事实性回应，这些回应来自于选择性检索的子图。
 - en: Baselines often omit key facts or even hallucinate irrelevant statements despite
     having access to the full context.
+  id: totrans-131
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基准方法通常遗漏关键事实，甚至在有完整上下文的情况下仍会幻觉出不相关的陈述。
 - en: 'Ablation studies:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 消融研究：
 - en: Removing components like contrastive learning significantly drops knowledge
     consistency metrics, showing the necessity of each module.
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 去除对比学习等组件会显著降低知识一致性指标，显示出每个模块的必要性。
 - en: SURGE substantially improves knowledge relevance through targeted augmentation
     while retaining language fluency. The gains over both knowledge-unaware and knowledge-intensive
     baselines validate the benefits of selective subgraph retrieval and grounding.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: SURGE通过针对性增强显著提高了知识相关性，同时保持了语言流利度。与知识无关和知识密集型基准相比的提升验证了选择性子图检索和基础的好处。

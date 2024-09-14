@@ -1,68 +1,104 @@
 - en: Optimizing LLMs with C, and Running GPT, Llama, and Whisper on Your Laptop
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 C 优化 LLM，并在您的笔记本电脑上运行 GPT、Llama 和 Whisper
 - en: 原文：[https://towardsdatascience.com/optimizing-llms-with-c-and-running-gpt-lama-whisper-on-your-laptop-460c8bdd047e](https://towardsdatascience.com/optimizing-llms-with-c-and-running-gpt-lama-whisper-on-your-laptop-460c8bdd047e)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/optimizing-llms-with-c-and-running-gpt-lama-whisper-on-your-laptop-460c8bdd047e](https://towardsdatascience.com/optimizing-llms-with-c-and-running-gpt-lama-whisper-on-your-laptop-460c8bdd047e)
 - en: In this first article, we’ll dive into `ggml`, the fantastic tensor library
     created by Georgi Gerganov. How does it work? How is the tensor creation process?
     Can we start with some simple examples?
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将深入了解由 Georgi Gerganov 创建的出色张量库`ggml`。它是如何工作的？张量创建过程是什么？我们可以从一些简单的例子开始吗？
 - en: '[](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)[![Stefano
     Bosisio](../Images/450d904024a4cbf1adf8a625886d852e.png)](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)
     [Stefano Bosisio](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)[![Stefano
+    Bosisio](../Images/450d904024a4cbf1adf8a625886d852e.png)](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)
+    [Stefano Bosisio](https://stefanobosisio1.medium.com/?source=post_page-----460c8bdd047e--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)
     ·15 min read·Sep 23, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----460c8bdd047e--------------------------------)
+    ·15 分钟阅读·2023年9月23日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/3de95b94179dd7cec4a2cc9abeefedba.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3de95b94179dd7cec4a2cc9abeefedba.png)'
 - en: Image by [Aryo Yarahmadi](https://unsplash.com/@aryo_yarahmadi) on [Unsplash](https://unsplash.com/photos/ylMP3TetKoQ)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[Aryo Yarahmadi](https://unsplash.com/@aryo_yarahmadi) 在 [Unsplash](https://unsplash.com/photos/ylMP3TetKoQ)
 - en: Table of content
+  id: totrans-8
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 目录
 - en: '[Implementing a simple mathematical function](#a6d9)'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[实现一个简单的数学函数](#a6d9)'
 - en: 1.1 [The definition of a context](#c2ca)
+  id: totrans-10
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 1.1 [上下文的定义](#c2ca)
 - en: 1.2 [Initialising tensors](#36c0)
+  id: totrans-11
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 1.2 [初始化张量](#36c0)
 - en: '[1.3 Forward computation and computation graph](#3427)'
+  id: totrans-12
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: '[1.3 前向计算和计算图](#3427)'
 - en: 1.4 [Compilation and run](#be10)
+  id: totrans-13
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 1.4 [编译和运行](#be10)
 - en: '[Final remarks on this first part](#0308)'
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[对第一部分的最终备注](#0308)'
 - en: '[Support my writing](#a985)'
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[支持我的写作](#a985)'
 - en: 'Large language models (LLMs) are on a hype everywhere. Newspapers are spending
     tons and tons of words to describe a new incoming world, assuring that “AI has
     finally arrived”. Although LLMs are bringing a tangible impact in our lives, we
@@ -72,8 +108,12 @@
     peaked in around 2018\. At that time, news were on hype again writing: “Data scientist:
     the $1M profession” or “The sexiest job of the 21st century” — do these titles
     sound familiar with LLMs’ ones?'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 大型语言模型（LLMs）正随处引起关注。报纸上充斥着大量的文字描述这个即将到来的新世界，保证“AI终于来了”。尽管 LLMs 对我们的生活产生了切实的影响，但我们必须保持冷静，并对整个情况进行批判性分析。LLMs
+    的炒作让我想起了几年前“数据科学家”职位的炒作。2014年，当我开始攻读博士学位时，我看到数据科学家职位的稳步增加，直到2018年左右达到顶峰。当时，新闻再次炒作，写道：“数据科学家：100万美元的职业”或“21世纪最性感的工作”——这些标题是否让你联想到
+    LLM 的标题？
 - en: On one side, LLMs are a GREAT technology and a step forward to a more general
     AI framework. These models are the starting point for a deeper journey into AI,
     and I am sure one day most of the apps and technologies will rely on these models.
@@ -83,8 +123,10 @@
     well before deciding any move in any strategic business direction. One of the
     most poignant points is the huge memory cost these models have the large infrastructure
     they do need for training and the costly infrastructure they need for inference.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 一方面，LLM（大语言模型）是一项伟大的技术，是迈向更通用AI框架的一步。这些模型是深入AI的起点，我相信有一天大多数应用程序和技术将依赖于这些模型。然而，我常常在Medium上看到，对于这些模型，有时缺乏明确性。尽管这些模型的能力和惊人的成果无可置疑，但它们过于庞大，不易运行或训练。因此，公司在决定任何战略业务方向之前，需要对LLM有非常透彻的了解。最尖锐的问题之一是这些模型的巨大内存成本、大规模基础设施需求以及推理时所需的昂贵基础设施。
 - en: If we think of the basic LLM structure, namely the transformer, we can recognize
     the classical encoder-decoder structure. At inference time, the decoder does need
     to have an in-memory mechanism to establish how much score attention to give to
@@ -94,8 +136,10 @@
     easy to eat up 3 TB of memory for simple models, with a context length of 2048\.
     To further speed up this calculation we do need to run things on GPUs. Finally,
     the entire decoder structure is hard to parallelize.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们考虑基本的LLM结构，即转换器，我们可以识别出经典的编码器-解码器结构。在推理时，解码器需要有一个内存机制来确定给特定输入标记分配多少注意力分数。这个分数基于标记在句子中的可能位置以及它与剩余上下文的一致性。这种机制称为KV缓存。鉴于这个矩阵的大小，对于简单模型而言，2048的上下文长度很容易就会占用3TB的内存。为了进一步加速计算，我们需要在GPU上运行。最后，整个解码器结构很难并行化。
 - en: Given this prelude, is it possible to find a compromise or a tradeoff solution
     that could allow us to run these calculations on a simpler infrastructure? This
     article shows you how Georgi Gerganov implemented a new optimised C-based tensor
@@ -104,81 +148,121 @@
     which dates back to September 2022, at the beginning of the `ggml` adventure.
     The rationale is to use a base code, to give you a strong understanding of the
     entire package.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于此前言，我们是否可以找到一种折衷或权衡的解决方案，使我们能够在更简单的基础设施上运行这些计算？本文展示了Georgi Gerganov如何实现一个新的优化的基于C的张量库，称为`ggml`。我在文中提到的提交是提交[0f4e99b](https://github.com/ggerganov/ggml/commit/0f4e99b1cc357cfff21178dfd5027e70162d7ed6)，这是2022年9月的提交，标志着`ggml`冒险的开始。其逻辑是使用基础代码，以便让你对整个包有一个强有力的理解。
 - en: Implementing a simple mathematical function
+  id: totrans-20
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实现一个简单的数学函数
 - en: 'Before jumping to LLMs, which will come in a second article soon, let’s try
     to decompose the key elements of the library, in order to compute values for a
     very simple function like: *f = ax²* .'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 在跳到LLM之前（它将在第二篇文章中介绍），让我们尝试分解库的关键元素，以便计算一个非常简单的函数，如：*f = ax²*。
 - en: The definition of a context
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 上下文的定义
 - en: 'Everything in `ggml`starts within a context. The context defines the memory
     requirements, to fit all the tensors in a given model. The context is created
     starting from a global state:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '`ggml`中的一切都始于一个上下文。上下文定义了内存要求，以适应给定模型中的所有张量。上下文是从全局状态开始创建的：'
 - en: '[PRE0]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The global state is built up as a `context_container` which is:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 全局状态构建为一个`context_container`，它是：
 - en: '[PRE1]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'In the container we can notice the presence of the central element for the
     first version of `ggml` which is the `ggml_context`:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在容器中，我们可以注意到`ggml`第一个版本的核心元素，即`ggml_context`的存在：
 - en: '[PRE2]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '`ggml_context` contains all the information about how much memory we can use
     as well as a memory buffer, so we can have sufficient memory in case we don’t
     know how many bytes a tensor can occupy.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '`ggml_context`包含了有关我们可以使用多少内存以及内存缓冲区的所有信息，以便在我们不知道张量可能占用多少字节的情况下，我们可以拥有足够的内存。'
 - en: 'The context is then used to initialise the entire process. `ggml_init` starts
     up the initialisation process and returns:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，上下文用于初始化整个过程。`ggml_init`启动初始化过程并返回：
 - en: '[PRE3]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '`*ctx` is a new context pointer. We can investigate over the input objects
     of `*ctx` by using `GGML_PRINT` within the source code, for example:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '`*ctx`是一个新的上下文指针。我们可以使用`GGML_PRINT`在源代码中调查`*ctx`的输入对象，例如：'
 - en: '[PRE4]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: On my Apple MacBook M2 Pro, the context has been initialised with 16 GB of memory,
     0 objects, and a fresh memory layout with an address 0x0 for `objects_begin` and
     `objects_end`
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的Apple MacBook M2 Pro上，上下文已经初始化为16 GB内存、0个对象，并且内存布局是`objects_begin`和`objects_end`的地址为0x0。
 - en: The `objects_begin` and `objects_end` are indeed the next step, namely the memory
     addresses for creating tensors within the `ggml_context`
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '`objects_begin`和`objects_end`确实是下一步，即在`ggml_context`中创建张量的内存地址。'
 - en: Initialising tensors
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 初始化张量
 - en: 'For all the functions within `ggml` will always find a protocol implementation,
     for example:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于`ggml`中的所有函数，总会找到一个协议实现，例如：
 - en: '`function_with_attribute` → `function_general` → `function_implementation`'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '`function_with_attribute` → `function_general` → `function_implementation`'
 - en: '`function_with_attribute` is a function with a specific task, for example,
     `ggml_new_tensor_1d` or `ggml_new_tensor_2d`, to generate a 1D or 2D tensor respectively.
     This specific function calls a`function_general` which is the general layout for
@@ -186,61 +270,90 @@
     Finally, `function_general` calls the implementation, `function_implementation`.
     In this way, every time we need to modify the code we just need to act on the
     implementation rather than modifying all the specific functions.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '`function_with_attribute`是具有特定任务的函数，例如`ggml_new_tensor_1d`或`ggml_new_tensor_2d`，分别生成1D或2D张量。这个特定函数调用`function_general`，即实现的通用布局，例如`ggml_new_tensor_Xd`将调用`ggml_new_tensor`。最后，`function_general`调用实现`function_implementation`。这样，每次需要修改代码时，我们只需对实现进行操作，而不是修改所有特定函数。'
 - en: 'To create a 1D tensor we can use `ggml_new_tensor1d`. From the implementation
     protocol, we can see that `ggml_new_tensor_1d` is coded as follows:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 要创建一个1D张量，我们可以使用`ggml_new_tensor1d`。从实现协议中，我们可以看到`ggml_new_tensor_1d`的代码如下：
 - en: '[PRE5]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'As you can see we have `ggml_new_tensor_1d` that calls `ggml_new_tensor` that
     calls the implementation `ggml_new_tensor_impl`. The creation of a new tensor
     resembles the creation of a list. As stated by Georgi, all the new tensors object
     will be placed *at the end of the current memory pool*, given a context the end
     of the context will be the position where the object will be pointing at, where
     `ggml_object` is defined as:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，我们有`ggml_new_tensor_1d`调用`ggml_new_tensor`，然后调用实现`ggml_new_tensor_impl`。新张量的创建类似于列表的创建。正如Georgi所述，所有的新张量对象将*放置在当前内存池的末尾*，给定一个上下文，上下文的末尾将是对象指向的位置，其中`ggml_object`定义为：
 - en: '[PRE6]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'At first, all the tensors are initialised with `data == NULL`. The core is
     the data type, which in `ggml` can be: `sizeof(int8_t), sizeof(int16_t), sizeof(int32_t)`
     or `sizeof(float)`. These sizes determine the amount of memory needed within the
     context, so each tensor is perfectly allocated within the memory segment.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 起初，所有张量都初始化为`data == NULL`。核心是数据类型，在`ggml`中可以是：`sizeof(int8_t), sizeof(int16_t),
+    sizeof(int32_t)`或`sizeof(float)`。这些大小决定了在上下文中所需的内存量，因此每个张量都在内存段中得到了完美分配。
 - en: 'Finally, the object is created with all the retrieved information:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，创建了一个包含所有检索信息的对象：
 - en: '[PRE7]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'Once the data buffer for the new tensor is computed `struct ggml_tensor* const
     result = (struct ggml_tensor*)(memb_buffer + obj_new-> offset);` the resulting
     allocated tensor is returned:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦计算出新张量的数据缓冲区`struct ggml_tensor* const result = (struct ggml_tensor*)(memb_buffer
+    + obj_new-> offset);`，就会返回分配的张量：
 - en: '[PRE8]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Let’s see a simple example for playing with 1D tensors, by defining a mathematical
     function *f = ax²* :'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看一个简单的示例，操作1D张量，通过定义一个数学函数*f = ax²*：
 - en: '[PRE9]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Before defining an input tensor we need to specify the memory parameters. In
     this case, we are assuming we want to use 16 GB of memory and this will be part
     of the context `ggml_context * ctx`. Then, we can start defining a first tensor,
     `x`, which will be the reference variable (e.g. we want to compute a gradient
     with respect to `x`). To make aware `ggml` that `x` is our main variable, we can
     add it as a parameter to the context `ggml_set_param(ctx, x);`
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 在定义输入张量之前，我们需要指定内存参数。在这种情况下，我们假设要使用16 GB的内存，并且这将成为上下文`ggml_context * ctx`的一部分。然后，我们可以开始定义第一个张量`x`，它将是参考变量（例如，我们想计算相对于`x`的梯度）。为了让`ggml`知道`x`是我们的主要变量，我们可以将其作为参数添加到上下文中`ggml_set_param(ctx,
+    x);`
 - en: At this moment we are not performing any calculations. We are just instructing
     `ggml` about our function (or model) and how the tensors interact with each other.
     The take-home message to grasp is that every tensor comes with a specific `.op`,
@@ -249,154 +362,232 @@
     computational graph so that a user can decide whether to compute a function’s
     value or a function’s gradient with respect to an input variable ( for example,
     in our case, we could ask to compute the gradient with respect to `x`).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前我们没有执行任何计算。我们只是指示 `ggml` 关于我们的函数（或模型）及张量如何相互作用。需要理解的是，每个张量都有一个特定的 `.op` 操作。所有新张量初始化时都为
+    `GGML_OP_NONE`。一旦我们对张量调用任何新操作，这一点会被修改。这会进入计算图，以便用户可以决定是否计算函数值或相对于输入变量的函数梯度（例如，在我们的案例中，我们可以要求计算相对于
+    `x` 的梯度）。
 - en: 'For example`ggml_mul` performs a variation of the input tensor operation. At
     first the `tensor -> op` is transformed from `GGML_NONE` to `GGML_OP_MUL` :'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，`ggml_mul` 执行输入张量操作的变体。最初，`tensor -> op` 从 `GGML_NONE` 转换为 `GGML_OP_MUL`：
 - en: '[PRE10]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: These calculations are encapsulated in a graph computation structure, that feeds
     the `forward` calculation at inference time for each model we’re dealing with.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些计算被封装在一个图计算结构中，该结构在推理时为我们处理的每个模型提供 `forward` 计算。
 - en: Forward computation and computation graph
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 前向计算和计算图
 - en: 'At the moment we just implemented the function *f = ax²*. To perform the real
     operation we need to create the graph computation. This is done as:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前我们只实现了函数 *f = ax²*。要执行实际操作，我们需要创建图计算。具体操作如下：
 - en: '[PRE11]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '`ggml_build_forward` builds up the forward computation graph. In the forward
     step we are building the real computational graph, that goes through all the nodes
     and return a structure `ggml_cgraph`:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '`ggml_build_forward` 构建前向计算图。在前向步骤中，我们正在构建实际的计算图，这个图遍历所有节点并返回一个结构 `ggml_cgraph`：'
 - en: '[PRE12]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'For the example above the code returns a graph with 3 nodes, given by `x`,
     `x^2` and `a*x^2`and 1 leaf. It’s possible to have a visual representation of
     the graph through `ggml_graph_dump_dot` function:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于上述示例，代码返回一个包含 3 个节点的图，分别是 `x`、`x^2` 和 `a*x^2` 以及 1 个叶子。可以通过 `ggml_graph_dump_dot`
+    函数获得图的可视化表示：
 - en: '[PRE13]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'wherer `&gf` is the reference to the graph structure, and “name_of_your_graph”
     refers to the name of the `dot` file that `ggml` produces. If you want to convert
     this to an image you just need to run:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 `&gf` 是对图结构的引用，“name_of_your_graph” 指代 `ggml` 生成的 `dot` 文件的名称。如果你想将其转换为图像，只需运行：
 - en: '[PRE14]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'For our example the graph is:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于我们的示例，图形为：
 - en: '![](../Images/9e0f4b84ff017c22c47d65375802853e.png)'
+  id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9e0f4b84ff017c22c47d65375802853e.png)'
 - en: 'Fig. 1: The computation graph for the function f=ax². The first node is the
     input parameter x, which is then multiply by itself, and, finally, it is multiplied
     by the variable a. The variable a is a leaf in the graph and its value is 3.00'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 1：函数 f=ax² 的计算图。第一个节点是输入参数 x，然后 x 乘以自身，最后与变量 a 相乘。变量 a 是图中的一个叶子，其值为 3.00
 - en: 'As we’ll see later, we can associate a value to our variables (e.g. in this
     case `a = 3.0`) and we can see the graph has the following:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 如后面所述，我们可以给变量赋值（例如在此情况下 `a = 3.0`），我们可以看到图形具有以下内容：
 - en: An initial yellow node, with `GGML_OP_NONE` operation to define `x`
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个初始的黄色节点，具有 `GGML_OP_NONE` 操作以定义 `x`
 - en: A `GGML_OP_MUL` operation, which is `x*x`
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个 `GGML_OP_MUL` 操作，即 `x*x`
 - en: A leaf, in pink, that refers to the value of another variable (`a`)
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个粉色的叶子，指代另一个变量的值 (`a`)
 - en: The final node, in green, that is another `GGML_OP_MUL` of `a*x^2`
+  id: totrans-72
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最终节点，绿色，另一个 `GGML_OP_MUL` 操作为 `a*x^2`
 - en: Now once all the tensors have been allocated we will have a final graph with
     all the operations to perform, starting from the parameters variables, `x` in
     our case.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦所有张量被分配，我们将拥有一个最终的图，其中包含所有操作，从参数变量 `x` 开始。
 - en: Compute operations in the graph
+  id: totrans-74
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算图中的操作
 - en: '`ggml_compute_forward` is where all the calculations are run.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '`ggml_compute_forward` 是所有计算运行的地方。'
 - en: 'The input parameters for this function is `struct ggml_compute_params * params,
     struct ggml_tensor * tensor`. The `params` specify the operation associated with
     the tensor within the graph. Through a `switch...case` cycle any forward operation
     is called:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 此函数的输入参数是 `struct ggml_compute_params * params, struct ggml_tensor * tensor`。`params`
+    指定了图中与张量相关联的操作。通过 `switch...case` 循环调用任何前向操作：
 - en: '[PRE15]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'Each single operation is encoded based on the input type of the tensor:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个操作都是根据张量的输入类型编码的：
 - en: '[PRE16]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: For the [0f4e99b](https://github.com/ggerganov/ggml/commit/0f4e99b1cc357cfff21178dfd5027e70162d7ed6)
     commit only the `GGML_TYPE_F32` was implemented. This calls the main multiplication
     implementation
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于[0f4e99b](https://github.com/ggerganov/ggml/commit/0f4e99b1cc357cfff21178dfd5027e70162d7ed6)提交，仅实现了`GGML_TYPE_F32`。这调用了主要的乘法实现。
 - en: '[PRE17]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'The core of the operation is in the `for` loop. In this loop we are dealing
     with the result tensor `x`, the multiplying term `src0`, and the multiplier `src1`.
     In particular:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 操作的核心在于`for`循环。在这个循环中，我们处理结果张量`x`、乘法项`src0`和乘数`src1`。特别是：
 - en: '`(char *) dst->data` converts the data pointer of `dst` to a `char*`. This
     is done because pointer arithmetic should be performed in bytes, and `char*` is
     the most flexible type for this purpose.'
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`(char *) dst->data`将`dst`的数据指针转换为`char*`。这样做是因为指针算术应以字节为单位进行，而`char*`是最灵活的类型。'
 - en: '`i * (dst->nb[1])` calculates the offset in bytes for the current row. Since
     `i` increments in each iteration, this effectively moves to the next row in memory,
     taking into account the striding information.'
+  id: totrans-84
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`i * (dst->nb[1])`计算当前行的字节偏移量。由于`i`在每次迭代中递增，这实际上是根据步幅信息移动到内存中的下一行。'
 - en: Finally, `(float *)` is used to cast the result back to a `float*` to ensure
     that these pointers are interpreted as pointers to floating-point values.
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，使用`(float *)`将结果强制转换回`float*`，以确保这些指针被解释为指向浮点值的指针。
 - en: In the context of numerical computing and tensor operations, striding refers
     to the step size, typically measured in bytes, between consecutive elements along
     a particular dimension of a tensor. Understanding and correctly handling striding
     is crucial for efficient tensor operations and memory management.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数值计算和张量操作的上下文中，步幅指的是沿张量的特定维度连续元素之间的步长，通常以字节为单位。理解和正确处理步幅对于高效的张量操作和内存管理至关重要。
 - en: 'The operation `ggml_vec_mul_f32` performs the final multiplication as:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 操作`ggml_vec_mul_f32`执行最终的乘法如下：
 - en: '[PRE18]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Inline functions are a mechanism provided by C (via the `inline` keyword) to
     suggest to the compiler that a particular function should be expanded "in place"
     at the call site rather than being called as a separate function. When you call
@@ -410,45 +601,67 @@
     see its code in the context of the caller and optimize accordingly. This might
     include constant folding, dead code elimination, and other optimizations that
     can lead to faster code.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 内联函数是C语言提供的一种机制（通过`inline`关键字），用于建议编译器在调用点“原地”展开特定函数，而不是作为单独的函数调用。当你调用一个常规函数时，会有一些开销。这包括将参数压入栈中、设置新的栈帧以及执行返回操作。对于非常小且频繁使用的函数，这些开销可能相对昂贵。内联消除了这些开销，因为代码直接插入调用点。内联允许编译器执行在正常调用情况下不可能进行的优化。例如，当函数被内联时，编译器可以在调用者的上下文中查看其代码并进行相应优化。这可能包括常量折叠、死代码消除和其他优化，从而使代码运行得更快。
 - en: A final simple code
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最终的简单代码
 - en: 'We’re now ready to implement a full code in `ggml`, computing the function
     *f = ax²* for some values. Under the folder `exapmles` we can create a new folder
     called `simple_example` There we’ll have the main file `main.cpp`:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在准备在`ggml`中实现一个完整的代码，计算某些值的函数*f = ax²*。在`examples`文件夹下，我们可以创建一个名为`simple_example`的新文件夹。在那里，我们将有主文件`main.cpp`：
 - en: '[PRE19]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'Within the same folder we’ll need a `CMakeLists.txt` file, so we can compile
     the code with the `ggml` library:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 在同一文件夹中，我们需要一个`CMakeLists.txt`文件，以便我们可以使用`ggml`库编译代码：
 - en: '[PRE20]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: 'Finally add the following line at the end of the file `examples/CMakeLists.txt`
     : `add_subdirectory(simple_example)`'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，在文件`examples/CMakeLists.txt`的末尾添加以下行：`add_subdirectory(simple_example)`
 - en: Now, everything is all interconnected and can be correctly compiled and run.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，一切都是相互关联的，并且可以正确编译和运行。
 - en: Compilation and run
+  id: totrans-97
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 编译和运行
 - en: 'Back to the `ggml` folder, as explained in the `README.md` file, create a folder
     called `build` and run the following commands:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到`ggml`文件夹，按照`README.md`文件中的说明，创建一个名为`build`的文件夹并运行以下命令：
 - en: '[PRE21]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: This will compile the `ggml` library and it will compile and create a binary
     file for the `simple_example` example code. We’re ready to run our code by simply
     typing `./bin/simple_example`. The code will execute the calculation, as well
@@ -456,56 +669,84 @@
     and their associated operation. For each operation an estimate of the computational
     time will be given. Remember, if you want to plot out the final graph you need
     to run `dot -Tpng final_graph -o final_graph.png && open final_graph.png`
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将编译`ggml`库，并生成一个`simple_example`示例代码的二进制文件。我们只需输入`./bin/simple_example`即可运行我们的代码。代码将执行计算，并打印出图形信息的形式，包括所有节点和叶子及其相关操作。对于每个操作，将给出计算时间的估算。记住，如果你想绘制最终图形，你需要运行`dot
+    -Tpng final_graph -o final_graph.png && open final_graph.png`
 - en: Final remarks on first part
+  id: totrans-101
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第一部分的最终说明
 - en: 'In this first article, we started to deeply understand how `ggml` works, and
     what’s its underlying philosophy. In particular, we had a deep dive in:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇第一篇文章中，我们开始深入了解`ggml`的工作原理及其基本理念。特别是，我们深入探讨了：
 - en: '`ggml_context` and how memory is initialised and used within the `ggml` library'
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`ggml_context`以及在`ggml`库中如何初始化和使用内存'
 - en: How to initialised a new 1D tensor and the protocol implementations within `ggml`
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如何初始化一个新的1D张量以及`ggml`中的协议实现
 - en: How the graph computation works, retrieve the graph computation and plot it
     out
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 图形计算如何工作，检索图形计算并绘制出来
 - en: A simple example, initialising a mathematical function and getting back its
     computational graph
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个简单的示例，初始化一个数学函数并获取其计算图
 - en: In the next post, we’ll be dealing with LLM, in particular GPT. We’ll see how
     to implement them and use them within `ggml` and, finally, run GPT models on our
     laptop.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一篇文章中，我们将处理LLM，特别是GPT。我们将看到如何在`ggml`中实现和使用它们，最后，在我们的笔记本电脑上运行GPT模型。
 - en: Support my writing
+  id: totrans-108
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 支持我的写作
 - en: If you enjoyed my article, please support my writing by joining Medium’s membership
     through the link below :)
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢我的文章，请通过以下链接支持我的写作，加入 Medium 的会员计划 :)
 - en: '[](https://stefanobosisio1.medium.com/membership?source=post_page-----460c8bdd047e--------------------------------)
     [## Join Medium with my referral link - Stefano Bosisio'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://stefanobosisio1.medium.com/membership?source=post_page-----460c8bdd047e--------------------------------)
+    [## 通过我的推荐链接加入 Medium - Stefano Bosisio'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-111
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为 Medium 会员，你的一部分会员费用会用于你阅读的作者，同时你可以获得对每个故事的完全访问权限…
 - en: stefanobosisio1.medium.com](https://stefanobosisio1.medium.com/membership?source=post_page-----460c8bdd047e--------------------------------)
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: stefanobosisio1.medium.com](https://stefanobosisio1.medium.com/membership?source=post_page-----460c8bdd047e--------------------------------)
