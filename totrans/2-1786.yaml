@@ -1,409 +1,628 @@
 - en: 'Retro-engineering a database schema and quality checks: GPT vs. Bard'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 逆向工程数据库模式和质量检查：GPT与Bard
 - en: 原文：[https://towardsdatascience.com/retro-engineering-a-database-schema-and-quality-checks-gpt-vs-bard-2e2776e8af86](https://towardsdatascience.com/retro-engineering-a-database-schema-and-quality-checks-gpt-vs-bard-2e2776e8af86)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/retro-engineering-a-database-schema-and-quality-checks-gpt-vs-bard-2e2776e8af86](https://towardsdatascience.com/retro-engineering-a-database-schema-and-quality-checks-gpt-vs-bard-2e2776e8af86)
 - en: Can LLMs retro-engineer a consolidated dataset to design the original database
     and suggest the corresponding data quality checks?
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 大型语言模型（LLMs）能否逆向工程一个整合的数据集，以设计原始数据库并建议相应的数据质量检查？
 - en: '[](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)[![Pierre-Louis
     Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)
     [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)[![Pierre-Louis
+    Bescond](../Images/bb236055962b420fb3ab22088ab28f11.png)](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)
+    [Pierre-Louis Bescond](https://pl-bescond.medium.com/?source=post_page-----2e2776e8af86--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)
     ·9 min read·Jul 25, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2e2776e8af86--------------------------------)
+    ·阅读时长9分钟·2023年7月25日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/9c745c0ff34a55794be637adf06abedc.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c745c0ff34a55794be637adf06abedc.png)'
 - en: Photo by [Jake Trotman](https://unsplash.com/@jake_t?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/wallpapers/design/pattern?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Jake Trotman](https://unsplash.com/@jake_t?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    提供，来源于 [Unsplash](https://unsplash.com/wallpapers/design/pattern?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: In the continuity of my previous posts on how to leverage Generative AI for
     Data Activities, I’d like to explore this use case where one Data team receives
     a consolidated dataset from a function (let’s say Human Resources) and needs to
     redesign a proper data model in their Data Platform to handle future queries.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我之前关于如何利用生成性AI进行数据活动的帖子之后，我想探索这样一个用例：一个数据团队从一个职能部门（比如人力资源）接收了一个整合的数据集，并需要在他们的数据平台上重新设计一个适当的数据模型，以处理未来的查询。
 - en: We’ll compare the answers from GPT-4 and Bard to determine which model offers
     the more relevant answers.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将比较GPT-4和Bard的回答，以确定哪个模型提供了更相关的答案。
 - en: '*(Note: the notebook and data source are available at the end of the article)*'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '*(注：笔记本和数据源在文章末尾提供)*'
 - en: The Initial (and Final) Dataset
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 初始（也是最终）数据集
 - en: Sometimes, business solutions only let you extract information from their proprietary
     system in the form of reports… and, if you are lucky, they might even be accessible
     through APIs.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时候，商业解决方案仅允许你以报告的形式从其专有系统中提取信息……如果运气好的话，它们甚至可能通过API进行访问。
 - en: This is the case at “MyCompany” where the HRIS legacy system can only provide
     one extract of all employees, containing many details regarding the company as
     well, some of them being confidential.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是“我的公司”的情况，其中HRIS遗留系统只能提供所有员工的一个提取，其中包含许多关于公司的详细信息，其中一些是机密的。
 - en: Following the Data Mesh principles, the Human Resources team would like to expose
     this data but they also understand that the report cannot be consumed as such,
     not even mentioning the confidentiality issues that trigger some of the columns
     like “Salary”, “Age”, or “Annual_Evaluation”.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据数据网格原则，人力资源团队希望公开这些数据，但他们也理解报告不能直接使用，更不用说像“薪水”、“年龄”或“年度评估”这样的列所引发的机密性问题。
 - en: '![](../Images/69c949a452847d131ca2e36b47242ebe.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/69c949a452847d131ca2e36b47242ebe.png)'
 - en: The Original Report from the Legacy HRIS System (Image by Author)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源于遗留HRIS系统的原始报告（作者提供的图片）
 - en: Retro-Engineering the Data Model
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据模型的逆向工程
 - en: When interacting with the Data Team, everyone around the table quickly understands
     that this dataset cannot be broadcasted to all functions/employees and that it
     needs to be split into multiple tables.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在与数据团队互动时，桌子周围的每个人很快明白这个数据集不能广播到所有功能/员工，并且需要拆分成多个表格。
 - en: 'Some of these tables could be leveraged by many for other analyses or use cases:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些表格中的一些可能会被许多人用于其他分析或用例：
 - en: the internal departments’ list
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 内部部门名单
 - en: the employees’ list with their email, department, country, and location
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 员工名单，包括他们的电子邮件、部门、国家和位置
 - en: etc.
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 等等。
 - en: Some others should remain confidential (salaries, age, evaluation)
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他一些应保持机密（薪资、年龄、评估）
 - en: One Data Analyst decides to test how GPT or Bard could help everyone retro-engineer
     the original relational database and save time 🕘.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 一位数据分析师决定测试 GPT 或 Bard 如何帮助每个人逆向工程原始关系数据库并节省时间🕘。
 - en: Creating a new environment and importing data
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建新环境并导入数据
 - en: It is always a good practice to create a dedicated environment in Python for
     every new project.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 在每个新项目中创建一个专用的 Python 环境始终是一个好习惯。
 - en: 'In the terminal, we launch the two commands below (we immediately ask for the
     two required packages: Pandas and Tabulate):'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在终端中，我们运行以下两个命令（我们立即请求两个所需的包：Pandas 和 Tabulate）：
 - en: '[PRE0]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'We switch to a Jupyter Notebook and import the CSV file:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们切换到 Jupyter Notebook 并导入 CSV 文件：
 - en: '[PRE1]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/07997339a16992c8cba95cf2bc2b2d4b.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/07997339a16992c8cba95cf2bc2b2d4b.png)'
 - en: df variable content in VS Code (Image by Author)
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: VS Code 中 df 变量内容（作者提供的图像）
 - en: The dataset of 7688 lines x 11 columns is well ingested, we can continue 😀
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集 7688 行 x 11 列被成功加载，我们可以继续😀
 - en: Formatting data for future prompting
+  id: totrans-34
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为未来的提示格式化数据
 - en: For most users, GPT models are accessible only through the chat interface and
     this is the case for our Data Analyst. She needs to find a way to “communicate”
     the dataset in a structured way to the LLMs.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于大多数用户而言，GPT 模型仅通过聊天界面访问，而这正是我们的数据分析师的情况。她需要找到一种“传达”数据集的结构化方式给 LLMs。
 - en: Markdown to the rescue! 🚀
+  id: totrans-36
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Markdown 来救援！🚀
 - en: 'Luckily, LLMs can perfectly handle tables in the Markdown format so we can
     print a sample of the rows directly in our Jupyter Notebook (and this is why the
     “tabulate” package was required during the environment creation😉):'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，LLM 可以完美处理 Markdown 格式的表格，因此我们可以直接在 Jupyter Notebook 中打印出行的示例（这也是为什么在环境创建过程中需要“tabulate”包😉）：
 - en: '[PRE2]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../Images/90c3a8916d190ba26754ada89b073ead.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/90c3a8916d190ba26754ada89b073ead.png)'
 - en: The Dataset sample in Markdown format (Image by Author)
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: Markdown 格式的数据集示例（作者提供的图像）
 - en: '*(Note: The reason we are choosing 50 rows is to keep a reasonable but still
     representative sample without exceeding the current tokens limitations of LLMs.)*'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '*（注：我们选择 50 行的原因是为了保持一个合理但仍具代表性的样本，而不超过 LLM 的当前令牌限制。）*'
 - en: Defining our prompt
+  id: totrans-42
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 定义我们的提示
 - en: 'We’d like the model to work on different tasks. To maximize the chances of
     getting relevant answers, we will explain the sequence we are expecting from it:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望模型处理不同的任务。为了最大化获得相关答案的机会，我们将解释我们期待的顺序：
 - en: '[PRE3]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Combined with the table in Markdown, this request will consume approx. 6K tokens,
     leaving us ~2K tokens for the different answers (as per GPT-4k limitations; the
     token limit from Bard is currently not being disclosed).
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 结合 Markdown 表格，这个请求将消耗大约 6K 令牌，剩下 ~2K 令牌用于不同的答案（根据 GPT-4k 的限制；Bard 的令牌限制目前未公开）。
 - en: '![](../Images/d840406d62ccdcec91cb318706e8ed0c.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d840406d62ccdcec91cb318706e8ed0c.png)'
 - en: Analyzing results (GPT-4k)
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析结果（GPT-4k）
 - en: Identifying Categorical and Confidential Data
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 识别分类和机密数据
 - en: 'GPT-4k (with a temperature of 0) understands well the data structure even if
     one might argue that:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: GPT-4k（温度为 0）对数据结构理解良好，即使有人可能会争辩：
 - en: within a company, the professional email address is not confidential,
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在公司内部，专业电子邮件地址不是机密的，
 - en: the age, on the contrary, might be kept secret at the HR level.
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 相反，年龄可能在HR层面被保密。
 - en: '[PRE4]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Suggesting a database model
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 提议一个数据库模型
 - en: 'GPT properly separates the Public and Confidential tables as instructed, keeping
     the Employee_ID as Primary Key and also creating “Department_ID”, “Country_ID”,
     “Location_ID”, and “Education_ID” in the “Employee_Details” table as Foreign Keys
     to link with categorical tables:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: GPT 按指示正确地分离公共和机密表格，保持 Employee_ID 作为主键，并在“Employee_Details”表中创建“Department_ID”、“Country_ID”、“Location_ID”和“Education_ID”作为外键，以连接分类表格：
 - en: '[PRE5]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: SQL Scripts to create tables
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 创建表格的 SQL 脚本
 - en: 'GPT produces a ready-to-use SQL scripts for categorical data:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: GPT 生成了适用于分类数据的即用 SQL 脚本：
 - en: '[PRE6]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'And the same goes for the two remaining tables:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 剩下的两个表也是如此：
 - en: '[PRE7]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'Let’s test the scripts in Snowflake and… “tada🎉”, all tables are created in
     a few seconds without any failure:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在 Snowflake 中测试脚本，结果是“tada🎉”，所有表格在几秒钟内创建成功，没有任何失败：
 - en: '![](../Images/6e4dff5805d5f1ff0c15c131c691e93d.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e4dff5805d5f1ff0c15c131c691e93d.png)'
 - en: Data Quality Checks
+  id: totrans-63
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据质量检查
 - en: 'Beyond “classic” searches of NULL, duplicates, or not existing keys, we can
     see some interesting suggestions:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了“经典”的 NULL、重复或不存在的键检查外，我们还可以看到一些有趣的建议：
 - en: Email proper formating
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 邮件格式化
 - en: Valid ranges for “Annual_Performance”(1–5) or “Age”(18–65)
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Annual_Performance”（1–5）或“Age”（18–65）的有效范围
 - en: Positive values for “Salary” (hopefully 😅)
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Salary”的正值（希望如此 😅）
 - en: '[PRE8]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Conclusion for GPT-4k:'
+  id: totrans-69
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: GPT-4k 的结论：
 - en: Identifying Categorical and Confidential Data ✅
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 识别分类数据和机密数据 ✅
 - en: Suggesting a database model ✅
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 建议数据库模型 ✅
 - en: SQL Scripts to create tables ✅
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建表的 SQL 脚本 ✅
 - en: Data Quality Checks ✅
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据质量检查 ✅
 - en: It’s a faultless one! 🥇
+  id: totrans-74
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 这是一个无可挑剔的教程！🥇
 - en: '![](../Images/2bd43dce9e6edca6587fc768ba463828.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2bd43dce9e6edca6587fc768ba463828.png)'
 - en: Analyzing results (Google Bard)
+  id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析结果（Google Bard）
 - en: Identifying Categorical and Confidential Data
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 识别分类数据和机密数据
 - en: '*(We will be using the very same prompt as with GPT-4k to ensure some consistency)*'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '*（我们将使用与 GPT-4k 相同的提示以确保一致性）*'
 - en: Quite surprisingly, Bard considers the “Employee_ID”, the “First_Name” and “Last_Name”
     columns as categorical (see below) whereas, according to me, they should be considered
     as simple strings’ columns.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 令人惊讶的是，Bard 将“Employee_ID”、“First_Name”和“Last_Name”列视为分类数据（见下文），而根据我看来，它们应该被视为简单字符串列。
 - en: Like GPT-4K, Bard also classifies the “Age” as public which I would personally
     consider confidential information.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 和 GPT-4K 一样，Bard 也将“Age”分类为公开信息，而我个人认为这是机密信息。
 - en: '[PRE9]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Suggesting a database model
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 建议数据库模型
 - en: 'Here, Bard fails to design a proper data model and only suggests creating two
     tables: “employees” and “confidential_data”, strongly influenced by its previous
     answer:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，Bard 未能设计适当的数据模型，仅建议创建两个表：“employees”和“confidential_data”，这受到其先前回答的强烈影响：
 - en: '[PRE10]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: SQL Scripts to create tables
+  id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 创建表的 SQL 脚本
 - en: Besides the use of “AUTO_INCREMENT” during the “employees” table creation (which
     is incompatible with Snowflake accepted syntax), the two tables are created properly.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了在“employees”表创建时使用“AUTO_INCREMENT”（这与 Snowflake 接受的语法不兼容），两个表创建正确。
 - en: Data Quality Checks
+  id: totrans-87
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据质量检查
 - en: 'Bard’s recommendations are more “limited” and some of the checks suggested
     by GPT-4k (email formatting, age within an acceptable range (18–65)) are missed:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: Bard 的建议更加“有限”，GPT-4k 提出的某些检查（如电子邮件格式、年龄在可接受范围内（18–65））被遗漏：
 - en: '[PRE11]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Conclusion for Bard:'
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Bard 的结论：
 - en: Identifying Categorical and Confidential Data ❌
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 识别分类数据和机密数据 ❌
 - en: Suggesting a database model ❌
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 建议数据库模型 ❌
 - en: SQL Scripts to create tables ✅
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建表的 SQL 脚本 ✅
 - en: Data Quality Checks 🔶
+  id: totrans-94
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据质量检查 🔶
 - en: Still room for improvement 🤔
+  id: totrans-95
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 仍有改进空间 🤔
 - en: Conclusion
+  id: totrans-96
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'GPT-4k really outperforms Bard when it comes to understanding a dataset, designing
     a proper data model (here under the 3rd Normal Form (3NF)), creating the corresponding
     SQL queries, and suggesting data quality checks:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: GPT-4k 在理解数据集、设计适当的数据模型（这里是第 3 正规形态 (3NF)）、创建相应的 SQL 查询和建议数据质量检查方面确实优于 Bard：
 - en: '![](../Images/84e5966c1ba93ffdc7baa5e61ed66624.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/84e5966c1ba93ffdc7baa5e61ed66624.png)'
 - en: Beyond the comparison of these two models, it is important to understand how
     LLMs can accelerate the work of Data Citizen and, as shown in this article, allow
     a first and quick in-depth analysis of a dataset to help model it efficiently.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了这两个模型的比较外，了解 LLM 如何加速数据公民的工作也很重要，正如本文所示，LLM 允许对数据集进行初步快速的深入分析，从而高效建模。
 - en: ⏩ Links to the corresponding [Jupyter Notebook](https://github.com/pierrelouisbescond/medium_articles/blob/main/medium_llm_db_retro_eng_load_and_format_data.ipynb)
     and [CSV Data Source](https://github.com/pierrelouisbescond/medium_articles/blob/main/Employees_Base.csv).
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: ⏩ 对应的 [Jupyter Notebook](https://github.com/pierrelouisbescond/medium_articles/blob/main/medium_llm_db_retro_eng_load_and_format_data.ipynb)
+    和 [CSV 数据源](https://github.com/pierrelouisbescond/medium_articles/blob/main/Employees_Base.csv)
+    的链接。
 - en: As usual, I tried to identify all required steps but do not hesitate to revert
     to me should there be any missing instructions in this tutorial!
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 和往常一样，我尽量识别所有必要的步骤，但如果这个教程中有任何遗漏的说明，请随时联系我！
 - en: 'And do not hesitate to browse through my other contributions on Medium:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 也请随时浏览我在 Medium 上的其他贡献：
 - en: '[](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----2e2776e8af86--------------------------------)
     [## Pierre-Louis Bescond’s articles on Medium'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## Pierre-Louis Bescond 在 Medium 上的文章'
 - en: Data Science, Machine Learning and Innovation
+  id: totrans-104
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 数据科学、机器学习与创新
 - en: pl-bescond.medium.com](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----2e2776e8af86--------------------------------)
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Pierre-Louis Bescond 在 Medium 上的文章](https://pl-bescond.medium.com/pierre-louis-besconds-articles-on-medium-f6632a6895ad?source=post_page-----2e2776e8af86--------------------------------)'
