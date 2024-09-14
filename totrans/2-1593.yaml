@@ -1,420 +1,664 @@
 - en: On using intermediary results in DAX Measures
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 DAX 度量中使用中间结果
 - en: 原文：[https://towardsdatascience.com/on-using-intermediary-results-in-dax-measures-9971efa72ae](https://towardsdatascience.com/on-using-intermediary-results-in-dax-measures-9971efa72ae)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/on-using-intermediary-results-in-dax-measures-9971efa72ae](https://towardsdatascience.com/on-using-intermediary-results-in-dax-measures-9971efa72ae)
 - en: '*We use table variables in DAX all the time. But what when we need to calculate
     intermediary results and reuse them later in a DAX Measure? This challenge sounds
     easy, but it’s not.*'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*我们在 DAX 中一直使用表变量。但当我们需要计算中间结果并在 DAX 度量中稍后重用它们时，该怎么办？这个挑战听起来简单，但实际上并不容易。*'
 - en: '[](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)[![Salvatore
     Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)
     [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)[![Salvatore
+    Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)
+    [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----9971efa72ae--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)
     ·8 min read·Mar 13, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9971efa72ae--------------------------------)
+    ·8 分钟阅读·2023年3月13日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/56e23375995cfedbed0a540dd53def90.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/56e23375995cfedbed0a540dd53def90.png)'
 - en: Photo by [Mika Baumeister](https://unsplash.com/@mbaumi?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Mika Baumeister](https://unsplash.com/@mbaumi?utm_source=medium&utm_medium=referral)
+    提供的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Introduction
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: We are using intermediary table variables all the time in DAX.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在 DAX 中一直使用中间表变量。
 - en: 'For example, look at the following Measure:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，查看以下度量：
 - en: '[PRE0]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In this case, we generate a Year-To-Date table based on the actual Filter context
     with the help of the [DATESYTD()](https://dax.guide/datesytd/) function containing
     all the dates from January 1st of the Year in the actual Filter Context up to
     the actual date (Based on the current Filter Context of course).
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们生成一个基于实际筛选上下文的年初至今表，借助于[DATESYTD()](https://dax.guide/datesytd/)函数，其中包含了从实际筛选上下文中的年初（即1月1日）到当前日期的所有日期（当然是基于当前的筛选上下文）。
 - en: But sometimes, we need to do more.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 但有时，我们需要做更多的事情。
 - en: For example, we need to query a table based on the current filter context and
     perform further calculations on the result.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我们需要根据当前的筛选上下文查询一个表，并对结果进行进一步计算。
 - en: In this case, we must generate an intermediary table and assign the result to
     a variable inside the Measure to perform the needed calculations.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们必须生成一个中间表，并将结果分配给度量中的一个变量，以进行所需的计算。
 - en: As we need the Filter Context, we cannot pre-create a table with these intermediary
     results, as this table would be huge to accommodate all possible filter combinations.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们需要筛选上下文，我们不能预先创建一个包含这些中间结果的表，因为这个表会非常庞大，以容纳所有可能的筛选组合。
 - en: So, let’s look at how we can do it.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，让我们来看看我们可以如何做到这一点。
 - en: Base Query
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基础查询
 - en: 'The Base query is the following:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 基础查询如下：
 - en: '[PRE1]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'The (truncated) result of this query is the following:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个查询的（截断）结果如下：
 - en: '![](../Images/fcb5f7a619471291932e62a9a536de3b.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fcb5f7a619471291932e62a9a536de3b.png)'
 - en: Figure 1 — Result of Base Query (Figure by the Author)
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 1 — 基础查询结果（图示作者提供）
 - en: But what happens if this is only a starting point, and we need to work on this
     result in a Measure to perform further calculations?
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是如果这仅仅是一个起点，我们还需要在一个度量中基于这个结果进行进一步的计算，会发生什么呢？
 - en: For example, we want to display the sum of all Rows for each Month.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我们想要显示每个月所有行的总和。
 - en: In this case, we would need to calculate the Average Sales Amount for each Month
     and sum the result.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们需要计算每个月的平均销售额，并对结果进行求和。
 - en: Let’s see how I would create a solution intuitively, which doesn’t work, and,
     afterward, how the solution will work.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看我将如何直观地创建一个解决方案，它不起作用，然后，之后这个解决方案将如何有效。
 - en: How not to do it — or how it doesn’t work
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 不应该这样做——或者说它不工作的原因
 - en: 'The first intuitive way to solve the requirement above would be to generate
     a Variable with the [ADDCOLUMNS()](dax.guide/addcolumns/) function to pre-calculate
     the table with the Average Sales. Then aggregate the rows to get the needed result:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 解决上述需求的第一种直观方法是使用[ADDCOLUMNS()](dax.guide/addcolumns/) 函数生成一个变量，预计算表格中的平均销售额。然后对行进行聚合以获得所需的结果：
 - en: '[PRE2]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'After executing this Query in [DAX Studio](https://www.sqlbi.com/tools/dax-studio/),
     I get the following error message:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[DAX Studio](https://www.sqlbi.com/tools/dax-studio/)中执行此查询后，我得到以下错误信息：
 - en: '![](../Images/32d97083929e60a6dfe7976e58312d2e.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/32d97083929e60a6dfe7976e58312d2e.png)'
 - en: Figure 2 — Error Message with the first try (Figure by the Author)
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2 — 第一次尝试的错误信息（作者提供的图）
 - en: The issue is that SUM() cannot work with table variables as we need it.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 问题在于 SUM() 无法与表变量一起使用。
 - en: Let’s try it in a slightly different way.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用稍微不同的方式尝试一下。
 - en: 'Let’s replace SUM() with [SUMX()](https://dax.guide/sumx/) after the RETURN
     statement:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在 RETURN 语句后用[SUMX()](https://dax.guide/sumx/) 替换 SUM()：
 - en: '[PRE3]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'The error message is the following:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 错误信息如下：
 - en: '![](../Images/16b8ecb1f882586ddff1073f20cded94.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/16b8ecb1f882586ddff1073f20cded94.png)'
 - en: Figure 3 — Error message with the second approach (Figure by the Author)
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3 — 使用第二种方法的错误信息（作者提供的图）
 - en: So, SUMX() cannot access columns in table variables either.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，SUMX() 也无法访问表变量中的列。
 - en: 'I tried other methods to get the needed result:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我尝试了其他方法来获得所需的结果：
 - en: Use [CALCULATETABLE()](https://dax.guide/calculatetable/) to generate the table
     which can be used by SUM() or SUMX()
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用[CALCULATETABLE()](https://dax.guide/calculatetable/) 生成可以被 SUM() 或 SUMX()
+    使用的表
 - en: But this function can also not access the column in the table variable.
+  id: totrans-44
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 但这个函数也无法访问表变量中的列。
 - en: Use of [FILTER()](https://dax.guide/filter/) to generate the table and use it
     in SUM()
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用[FILTER()](https://dax.guide/filter/) 生成表并在 SUM() 中使用
 - en: While FILTER() had no problem, SUM() couldn’t access the table variable.
+  id: totrans-46
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 尽管 FILTER() 没有问题，但 SUM() 无法访问表变量。
 - en: But wait … FILTER() doesn’t generate any error.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 但等等…… FILTER() 没有生成任何错误。
 - en: Can I use FILTER() with SUMX()?
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我可以将 FILTER() 与 SUMX() 一起使用吗？
 - en: Let’s see if this approach works.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这种方法是否有效。
 - en: Working Solution — FILTER() and SUMX()
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 有效解决方案 — FILTER() 和 SUMX()
 - en: 'The first working approach is the following Query:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个有效的方法是以下查询：
 - en: '[PRE4]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The first table variable AverageSalesPerCust is still the same.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个表变量 AverageSalesPerCust 仍然是一样的。
 - en: The second step is to use the FILTER() function to define the new table variable
     AvgSalesOver0.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二步是使用 FILTER() 函数来定义新的表变量 AvgSalesOver0。
 - en: 'UPDATE Januar 2024: As stated in the Comments by [AlexisOlson](https://medium.com/u/b20dbba0ee98?source=post_page-----9971efa72ae--------------------------------),
     FILTER() shouldn’t be needed. In another case, I used the same technique without
     FILTER(), which worked. At the moment, I don’t know why I need FILTER() here.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 更新 2024年1月：正如[AlexisOlson](https://medium.com/u/b20dbba0ee98?source=post_page-----9971efa72ae--------------------------------)的评论中所述，FILTER()
+    并不是必需的。在另一个案例中，我使用了相同的技巧而不使用 FILTER()，效果良好。目前，我不知道为什么在这里需要 FILTER()。
 - en: In this case, I use the FILTER() function to convert the table variable AverageSalesPerCust
     into a table variable usable by aggregation functions.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我使用 FILTER() 函数将表变量 AverageSalesPerCust 转换为可以被聚合函数使用的表变量。
 - en: As FILTER() needs at least two parameters, I have to add the “Filter” *[AverageSales]
     > 0* to make sure that the FILTER function works.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 FILTER() 需要至少两个参数，我必须添加“Filter” *[AverageSales] > 0* 以确保 FILTER 函数能正常工作。
 - en: Surprisingly, SUMX has no problems accessing a table variable constructed with
     the FILTER() function, and I can use this table variable to calculate the aggregation.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 出乎意料的是，SUMX 在访问使用 FILTER() 函数构建的表变量时没有问题，我可以使用这个表变量来计算聚合。
 - en: 'The (truncated) result of the query looks like this:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询的（截断）结果如下：
 - en: '![](../Images/c437046584344c9cf912b880cfbaf3ff.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c437046584344c9cf912b880cfbaf3ff.png)'
 - en: Figure 4 — Result of working solution (Figure by the Author)
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4 — 工作解决方案的结果（作者提供的图）
 - en: But the execution needs some time.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 但执行需要一些时间。
 - en: 'When I look at the performance metrics, I notice some issues:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我查看性能指标时，我注意到一些问题：
 - en: '![](../Images/cbe4d3520dfb745d91115733236fe816.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cbe4d3520dfb745d91115733236fe816.png)'
 - en: Figure 5 — Performance metrics for the first solution (Figure by the Author)
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5 — 第一个解决方案的性能指标（作者提供的图）
 - en: The total execution time is over three seconds, while over two seconds are spent
     in Formula Engine (FE) as it needs to process through three million rows.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 总执行时间超过三秒，其中超过两秒的时间花在了公式引擎（FE）上，因为它需要处理三百万行数据。
 - en: This needs to be more efficient, and we must try to find a more efficient solution.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 这需要更高效，我们必须尝试找到更高效的解决方案。
 - en: Optimization attempt with CALCULATETABLE()
+  id: totrans-68
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用`CALCULATETABLE()`的优化尝试
 - en: 'I combined CALCULATETABLE() with FILTER() to get the following solution:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将`CALCULATETABLE()`与`FILTER()`结合以获得以下解决方案：
 - en: '[PRE5]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The difference is that I enclosed ADDCOLUMNS() with a CALCULATETABLE() function.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 区别在于我用`CALCULATETABLE()`函数封装了`ADDCOLUMNS()`。
 - en: I added a Dummy filter, hoping the execution plan would change.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 我添加了一个虚拟筛选器，希望执行计划会有所改变。
 - en: But this version keeps everything the same.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这个版本保持了一切不变。
 - en: Let’s try something else.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试其他方法。
 - en: Optimization attempt with a Dummy Filter
+  id: totrans-75
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用虚拟筛选器的优化尝试
 - en: 'The next idea was to replace the Predicate in the FILTER function with a Dummy
     filter:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一个想法是用虚拟筛选器替换`FILTER`函数中的谓词：
 - en: '[PRE6]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: The assumption was that a predicate without reference to a column (1=1) could
     lead to more efficient execution.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设没有列引用的谓词（1=1）可能会导致更高效的执行。
 - en: Unfortunately, this didn’t change the outcome.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这并没有改变结果。
 - en: Is no optimization possible or necessary?
+  id: totrans-80
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 是否没有优化的可能或必要？
 - en: I tried other table functions to construct the first table variable, with the
     average sales per customer, but everything stayed the same.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 我尝试了其他表函数来构建第一个表变量，即每个客户的平均销售额，但一切保持不变。
 - en: After some thought, I realized this issue could not be solved within DAX.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 经过一番思考，我意识到这个问题无法在DAX中解决。
 - en: The Storage Engine (SE) is not able to work how we would need it, or I wasn’t
     able to find the correct solution.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 存储引擎（SE）无法按照我们需要的方式工作，或者我未能找到正确的解决方案。
 - en: Therefore, the DAX engine will resort to the capabilities of the Formula Engine,
     thus loading the three million rows into memory and aggregating the data there.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，DAX 引擎将依赖于公式引擎的能力，从而将三百万行数据加载到内存中并在其中汇总数据。
 - en: Sometimes there is no better solution than the one we’ve found.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时我们找到的解决方案已经是最好的了。
 - en: And three seconds is the maximum upper limit of what users are willing to wait
     for a result.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 三秒是用户愿意等待结果的最大时间限制。
 - en: We can consider this solution as good enough.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以认为这个解决方案已经足够好。
 - en: But wait a moment. I execute the Measure with the entire dataset containing
     data from over ten years. Is this a realistic scenario?
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 但等一下。我使用包含十多年数据的整个数据集执行度量。这是一个现实的场景吗？
 - en: A more realistic scenario is that the user will analyze only one or two years
     of data.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 更现实的情况是用户只会分析一两年的数据。
 - en: With a filter to restrict the query to only one year, the execution time plummets
     to less than two tents of a second.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用一个筛选器将查询限制为仅一年，执行时间骤降至不到两分之一秒。
 - en: '![](../Images/8d1d20868d21fd3faac2a2157608858b.png)'
+  id: totrans-91
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8d1d20868d21fd3faac2a2157608858b.png)'
 - en: Figure 6 — Performance Metrics for selecting only one year (Figure by the Author)
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 6 — 仅选择一年的性能指标（图由作者提供）
 - en: As this will be a common scenario in a report, the Solution is ready to use
     in reports.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这将是报告中的常见场景，因此解决方案已准备好在报告中使用。
 - en: '**Lessons learned:** Remember to use real-world scenarios and use cases when
     testing the performance of a complex measure.'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '**经验教训：** 记得在测试复杂度量的性能时使用实际场景和用例。'
 - en: '![](../Images/c4e000b2b0fd5db5cd67c3d6eea3df23.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c4e000b2b0fd5db5cd67c3d6eea3df23.png)'
 - en: Photo by [Lucas Santos](https://unsplash.com/@_staticvoid?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Lucas Santos](https://unsplash.com/@_staticvoid?utm_source=medium&utm_medium=referral)
+    拍摄，照片来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
 - en: Template for the Solution
+  id: totrans-97
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 解决方案模板
 - en: 'Based on these results, the template for the Solution looks like this:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据这些结果，解决方案的模板如下：
 - en: '[PRE7]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'Alternatively, we can use this form:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，我们可以使用这种形式：
 - en: '[PRE8]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The second form is shorter, and everything is contained in one variable.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二种形式更短，并且一切都包含在一个变量中。
 - en: I encourage you to add comments to explain why you’re adding a FILTER() to the
     Measure with a FILTER 1=1.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 我鼓励你添加注释以解释为什么要在包含`FILTER 1=1`的度量中添加`FILTER()`。
 - en: This would make no sense to someone who doesn’t know this technique.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于不了解这种技术的人来说，这毫无意义。
 - en: References
+  id: totrans-105
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: 'If you don’t know how to collect and interpret performance metrics in DAX Studio
     or are unsure about the interpretation of the Metrics shown there, read this article,
     where I dig into this feature:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你不知道如何在 DAX Studio 中收集和解释性能指标，或者对那里显示的指标解释不确定，请阅读这篇文章，我将在其中详细探讨这个功能：
 - en: '[](/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9?source=post_page-----9971efa72ae--------------------------------)
     [## How to get performance data from Power BI with DAX Studio'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '[如何使用 DAX Studio 从 Power BI 获取性能数据](https://wiki.example.org/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9?source=post_page-----9971efa72ae--------------------------------)'
 - en: Sometimes we have a slow Report, and we need to figure out why. We will see
     how to collect performance data and the…
+  id: totrans-108
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 有时我们会遇到报告运行缓慢的情况，我们需要找出原因。我们将看到如何收集性能数据以及…
 - en: towardsdatascience.com](/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9?source=post_page-----9971efa72ae--------------------------------)
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](https://wiki.example.org/how-to-get-performance-data-from-power-bi-with-dax-studio-b7f11b9dd9f9?source=post_page-----9971efa72ae--------------------------------)'
 - en: I use the Contoso sample dataset, like in my previous articles. You can download
     the ContosoRetailDW Dataset for free from Microsoft [here](https://www.microsoft.com/en-us/download/details.aspx?id=18279).
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用了 Contoso 示例数据集，就像我之前的文章中一样。你可以从 Microsoft [这里](https://www.microsoft.com/en-us/download/details.aspx?id=18279)
+    免费下载 ContosoRetailDW 数据集。
 - en: The Contoso Data can be freely used under the MIT License, as described [here](https://github.com/microsoft/Power-BI-Embedded-Contoso-Sales-Demo).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: Contoso 数据可以在 MIT 许可下自由使用，如 [这里](https://github.com/microsoft/Power-BI-Embedded-Contoso-Sales-Demo)
+    所述。
 - en: I enlarged the dataset to make the DAX engine work harder.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 我扩大了数据集，以使 DAX 引擎的工作负荷增加。
 - en: The Online Sales table contains 71 million rows (instead of 12.6 million rows),
     and the Retail Sales table contains 18.5 million rows (instead of 3.4 million
     rows).
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 在线销售表包含 7100 万行（而不是 1260 万行），零售销售表包含 1850 万行（而不是 340 万行）。
 - en: '[](https://medium.com/@salvatorecagliari/membership?source=post_page-----9971efa72ae--------------------------------)
     [## Join Medium with my referral link - Salvatore Cagliari'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[加入 Medium 并使用我的推荐链接 - Salvatore Cagliari](https://medium.com/@salvatorecagliari/membership?source=post_page-----9971efa72ae--------------------------------)'
 - en: Read every story from Salvatore Cagliari (and thousands of other writers on
     Medium). Your membership fee directly…
+  id: totrans-115
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读 Salvatore Cagliari（以及 Medium 上其他成千上万的作者）的每一个故事。您的会员费用直接…
 - en: medium.com](https://medium.com/@salvatorecagliari/membership?source=post_page-----9971efa72ae--------------------------------)
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@salvatorecagliari/membership?source=post_page-----9971efa72ae--------------------------------)'
