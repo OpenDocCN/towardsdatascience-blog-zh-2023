@@ -1,553 +1,838 @@
 - en: 'Python: __init__ is NOT a constructor: a deep dive in Python object creation'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Python：__init__ 不是构造函数：深入探讨 Python 对象创建
 - en: 原文：[https://towardsdatascience.com/python-init-is-not-a-constructor-a-deep-dive-in-python-object-creation-9134d971e334](https://towardsdatascience.com/python-init-is-not-a-constructor-a-deep-dive-in-python-object-creation-9134d971e334)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/python-init-is-not-a-constructor-a-deep-dive-in-python-object-creation-9134d971e334](https://towardsdatascience.com/python-init-is-not-a-constructor-a-deep-dive-in-python-object-creation-9134d971e334)
 - en: Tinkering with Python’s constructor to create fast, memory-efficient classes
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 Python 的构造函数创建快速且内存高效的类
 - en: '[](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)[![Mike
     Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)
     [Mike Huls](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)[![Mike
+    Huls](../Images/8f9f55a0d25db00799c5d37383b7f5b6.png)](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)
+    [Mike Huls](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)
     ·9 min read·Nov 27, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9134d971e334--------------------------------)
+    ·阅读时间 9 分钟·2023年11月27日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/50dee26173534a7a06708762a2ea94ac.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/50dee26173534a7a06708762a2ea94ac.png)'
 - en: How Python builds objects (image by ChatGPT)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: Python 如何构建对象（图像由 ChatGPT 提供）
 - en: Did you know that the `__init__` method is **not a constructor**? But if `__init__`
     doesn’t *create* the object, then what does? How do objects get created in Python?
     Does Python even have a constructor?
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 你知道`__init__`方法**不是构造函数**吗？但如果`__init__`不*创建*对象，那究竟是什么呢？对象在 Python 中是如何创建的？Python
+    甚至有构造函数吗？
 - en: The goal of this article is to **better understand how Python creates objects**
     and **manipulate this process to make better appplications**.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文的目标是**更好地理解 Python 如何创建对象**并**操控这一过程以构建更好的应用程序**。
 - en: First we’ll take a deep dive in how Python creates objects. Next we’ll apply
     this knowledge and discuss some interesting use cases with some practical examples.
     Let’s code!
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们将深入了解 Python 如何创建对象。接下来，我们将应用这些知识，讨论一些有趣的用例，并提供一些实际示例。让我们开始编码吧！
 - en: '1\. Theory: Creating objects in Python'
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 1\. 理论：在 Python 中创建对象
 - en: In this part we’ll figure out what Python does under the hood when you create
     an object. In the next part we’ll take this new knowledge and apply in in part
     2.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，我们将弄清楚在你创建对象时 Python 背后发生了什么。在下一部分，我们将运用这些新知识进行第二部分的实践。
 - en: How to create an object in Python?
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何在 Python 中创建对象？
 - en: 'This should be pretty simple; you just create an instance of a class. Alternatively
     you could create a new built-in type like a `str` or an `int`. In the code below
     an instance is created of a basic class. It just contains an `__init__` function
     and a `say_hello` method:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这应该很简单；你只需创建一个类的实例。或者，你可以创建一个新的内置类型，比如`str`或`int`。在下面的代码中，创建了一个基本类的实例。它只包含一个`__init__`函数和一个`say_hello`方法：
 - en: '[PRE0]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Notice the `__init__` method. It receives a `name` parameter and stores its
     value on the `greet_name` attribute of the `SimpleObject` instance. This allows
     our instance to keep *state*.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意`__init__`方法。它接收一个`name`参数，并将其值存储在`SimpleObject`实例的`greet_name`属性上。这允许我们的实例保持*状态*。
 - en: 'Now the question rises: in order to **save the state**, we need to have **something
     to save the state on**. Where does `__init__` get the object from?'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在问题出现了：为了**保存状态**，我们需要**有东西来保存状态**。`__init__` 从哪里得到对象？
 - en: So, is __init__ a constructor?
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 那么，__init__ 是构造函数吗？
 - en: 'The answer: technically no. Constructors actually *create* the new object;
     the `__init__` method is only responsible for setting the *state* of the object.
     It just receives values through it’s parameters and assigns them to the class
     attributes like `greet_name`.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案是：从技术上讲，没有。构造函数实际上*创建*新对象；`__init__`方法仅负责设置对象的*状态*。它只是通过参数接收值，并将这些值分配给像`greet_name`这样的类属性。
 - en: In Python, the actual *creation* of an object right before initialization. For
     **object creation, Python uses a method called** `**__new__**` that’s present
     on each object.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Python 中，对象的实际*创建*发生在初始化之前。对于**对象创建，Python 使用一个名为**`**__new__**`**的方法，该方法存在于每个对象上。
 - en: '[](/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=post_page-----9134d971e334--------------------------------)
     [## Creating and Publishing Your Own Python Package for Absolute Beginners'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=post_page-----9134d971e334--------------------------------)
+    [## 为绝对初学者创建和发布自己的 Python 包'
 - en: Create, build an publish a Python Package in 5 minutes
+  id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在 5 分钟内创建、构建和发布一个 Python 包
 - en: towardsdatascience.com](/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/creating-and-publishing-your-own-python-package-for-absolute-beginners-7656c893f387?source=post_page-----9134d971e334--------------------------------)
 - en: What does __new__ do?
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`__new__` 做了什么？'
 - en: '`__new__` is a **class method**, meaning it is called on the class itself,
     not on an instance of the class. It is **present on each object** and is **responsible
     for actually creating and returning** the object. The most important aspect of
     `__new__` is that it must return an instance of the class. We’ll tinker with this
     method later in this article.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '`__new__` 是一个**类方法**，意味着它是直接在类上调用的，而不是在类的实例上。它**存在于每个对象上**，并**负责实际创建和返回**对象。`__new__`
+    的最重要的方面是它必须返回一个类的实例。我们将在本文后面进一步研究这个方法。'
 - en: Where does the __new__ method come from?
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`__new__` 方法来自哪里？'
 - en: 'The short answer: **everything in Python is an object**, and the **object class
     has a** `**__new__**` **method**. You can think of this as *“each class inherits
     from the* `*object*` *class”*.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 简短的回答是：**Python 中的一切都是对象**，**object 类有一个** `**__new__**` **方法**。你可以把这看作是*“每个类都继承自*
+    `*object*` *类”*。
 - en: 'Notice that even though our `SimpleObject` class inherit from anything, we
     can still proof that it’s an instance of `object`:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，即使我们的 `SimpleObject` 类没有继承任何东西，我们仍然可以证明它是 `object` 的一个实例：
 - en: '[PRE1]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: In summary, everything is an object, `object` defines a `__new__` method thus
     everything in Python has a `__new__` method.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，一切都是对象，`object` 定义了 `__new__` 方法，因此 Python 中的一切都有一个 `__new__` 方法。
 - en: How does __new__ differ from __init__?
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`__new__` 和 `__init__` 有何不同？'
 - en: 'The `__new__` method is used for actually **creating the object**: allocating
     memory and returning the new object. Once the object is created we can **initialize**
     it with `__init__`; setting up the initial *state*.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '`__new__` 方法用于实际**创建对象**：分配内存并返回新对象。一旦对象创建完成，我们可以用 `__init__` 来**初始化**它；设置初始的*状态*。'
 - en: '[](/python-args-kwargs-and-all-other-ways-to-pass-arguments-to-your-function-bd2acdce72b5?source=post_page-----9134d971e334--------------------------------)
     [## Python args, kwargs, and All Other Ways to Pass Arguments to Your Function'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/python-args-kwargs-and-all-other-ways-to-pass-arguments-to-your-function-bd2acdce72b5?source=post_page-----9134d971e334--------------------------------)
+    [## Python 的 args、kwargs 和传递参数的所有其他方式'
 - en: Expertly design your function parameters in 6 examples
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 精巧地设计你的函数参数的 6 个示例
 - en: towardsdatascience.com](/python-args-kwargs-and-all-other-ways-to-pass-arguments-to-your-function-bd2acdce72b5?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/python-args-kwargs-and-all-other-ways-to-pass-arguments-to-your-function-bd2acdce72b5?source=post_page-----9134d971e334--------------------------------)
 - en: What does Python’s process of object creation look like?
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Python 对象创建的过程是什么样的？
 - en: 'Internally, the functions below get executed when you create a new object:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 内部，下面的函数在你创建新对象时会被执行：
 - en: '`__new__`: allocates memory and returns the new object'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`__new__`：分配内存并返回新对象'
 - en: '`__init__`: initialize newly created object; set state'
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`__init__`：初始化新创建的对象；设置状态'
 - en: 'In the code below we demonstrate this by **overriding** `**__new__**` **with
     our own function**. In the next part we’ll use this principle to do some interesting
     things:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的代码中，我们通过**重写**`**__new__**`**来展示这一点**。在下一部分我们将利用这一原则做一些有趣的事情：
 - en: '[PRE2]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '(*we’ll explain why and how this code works in the next parts).* This will
     print the following:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: （*我们将在接下来的部分解释为什么和如何工作*。）这将打印以下内容：
 - en: '[PRE3]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'This means that we have access to the function that initialized an instance
     of our class! We also see that `__new__` executes first. In the next part we’ll
     understand the behaviour of `__new__`: what does `super().__new__(cls)` mean?'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着我们可以访问初始化我们类的实例的函数！我们还看到 `__new__` 先执行。在下一部分我们将了解 `__new__` 的行为：`super().__new__(cls)`
+    是什么意思？
 - en: How does `__new__` work?
+  id: totrans-45
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`__new__` 是如何工作的？'
 - en: The default behaviour of `__new__` looks like the code below. In this part we’ll
     try to understand what’s going on so that we tinker with it in the practical examples
     in the next part.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '`__new__`的默认行为如下所示。在这一部分，我们将尝试理解发生了什么，以便在下一部分的实际示例中对其进行调整。'
 - en: '[PRE4]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Notice that `__new__` is being called on the `super()` method, which returns
     a “reference” *(it’s actually a proxy-object)* to the parent-class of `SimpleObject`.
     Remember that `SimpleObject` inherits from `object`, where the `__new__`method
     is defined.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，`__new__`是在`super()`方法上调用的，它返回一个“引用”*(实际上是一个代理对象)*到`SimpleObject`的父类。请记住，`SimpleObject`继承自`object`，其中定义了`__new__`方法。
 - en: '**Breaking it down:**'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '**分解：**'
 - en: we get a “reference” to the base class of the class we’re in. In the case of
     `SimpleObject` we get a “reference” to `object`
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们获得了我们所在类的基类的“引用”。以`SimpleObject`为例，我们获得了`object`的“引用”
 - en: We call `__new__` on the “reference” so `object.__new__`
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们在“引用”上调用`__new__`，因此`object.__new__`
 - en: We pass in `cls` as an argument.
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们将`cls`作为参数传递。
 - en: '*This is how class methods like* `*__new__*` *work; it’s a reference to the
     class itself*'
+  id: totrans-53
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: '*这就是像* `*__new__*` *这样的类方法的工作方式；它是对类本身的引用*'
 - en: '**Putting it all together**: we ask `SimpleObject`''s parent-class to create
     a new instance of `SimpleObject`.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '**综合起来**：我们请求`SimpleObject`的父类创建一个`SimpleObject`的新实例。'
 - en: This is the same as `my = object.__new__(SimpleObject)`
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 这与`my = object.__new__(SimpleObject)`是一样的
 - en: Can I then also create a new instance using __new__?
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 那么我可以使用`__new__`创建一个新实例吗？
 - en: 'Yes, remember that the default `__new__` implementation actually calls it directly:
     `return super().**__new__**(cls)`. So the approaches in the code below do the
     same:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的，请记住，默认的`__new__`实现实际上直接调用它：`return super().**__new__**(cls)`。因此，下面代码中的方法做了同样的事情：
 - en: '[PRE5]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'What happens in the *direct* method:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*直接*方法中发生的事情：
 - en: we call the `__new__` function on `SimpleObject`, passing it the `SimpleObject`
     type.
+  id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们在`SimpleObject`上调用`__new__`函数，传递`SimpleObject`类型。
 - en: '`SimpleObject.__new__` calls `__new__` on it’s parent class (`object`)'
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`SimpleObject.__new__` 在其父类（`object`）上调用`__new__`'
 - en: '`object.__new__` creates and returns a instance of `SimpleObject`'
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`object.__new__`创建并返回一个`SimpleObject`的实例'
 - en: '`SimpleObject.__new__` returns the new instance'
+  id: totrans-63
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`SimpleObject.__new__`返回新实例'
 - en: we call `__init__` to initialize it.
+  id: totrans-64
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们调用`__init__`来初始化它。
 - en: These things also happen in the non-direct method but they are handled under
     the hood so we don’t notice.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些事情在非直接方法中也会发生，但它们是在幕后处理的，所以我们没有注意到。
 - en: '[](/simple-trick-to-work-with-relative-paths-in-python-c072cdc9acb9?source=post_page-----9134d971e334--------------------------------)
     [## Simple trick to work with relative paths in Python'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/simple-trick-to-work-with-relative-paths-in-python-c072cdc9acb9?source=post_page-----9134d971e334--------------------------------)
+    [## 在Python中处理相对路径的简单技巧'
 - en: Calculate the file path at runtime with ease
+  id: totrans-67
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 轻松在运行时计算文件路径
 - en: towardsdatascience.com](/simple-trick-to-work-with-relative-paths-in-python-c072cdc9acb9?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/simple-trick-to-work-with-relative-paths-in-python-c072cdc9acb9?source=post_page-----9134d971e334--------------------------------)
 - en: 'Practical application 1: subclassing immutable types'
+  id: totrans-69
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实际应用 1：子类化不可变类型
 - en: Now that we know how `__new__` works we can use if to do some interesting things.
     We’ll put the theory to practice and subclass an immutable type. This way we can
     have our own, special type with it’s own methods defined on a very fast, built-in
     type.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们知道`__new__`是如何工作的，我们可以利用它做一些有趣的事情。我们将理论付诸实践，子类化一个不可变类型。这样，我们可以拥有自己的特殊类型，其方法定义在一个非常快速的内置类型上。
 - en: The goal
+  id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 目标
 - en: We have an application that processes many coordinates. For this reason we want
     our coordinates stored in tuples since they’re small and memory-efficient.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个处理许多坐标的应用程序。因此，我们希望将坐标存储在元组中，因为它们很小且内存高效。
 - en: 'We will create our own `Point`` class that inherits from `tuple``. This way
     `Point`` is a `tuple`` so it’s very fast and small and we can add functionalities
     like:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将创建自己的`Point`类，继承自`tuple`。这样，`Point`是一个`tuple`，因此它非常快速且小巧，并且我们可以添加如下功能：
 - en: control over object creation (only create a new object if all coordinates are
     positive e.g.)
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对对象创建的控制（例如，只在所有坐标都是正数时创建新对象）
 - en: additional methods like calculating the distance between two coordinates.
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 额外的方法，例如计算两个坐标之间的距离。
 - en: '[](/cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------)
     [## Cython for absolute beginners: 30x faster code in two simple steps'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '[cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------](/cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------)
+    [## Cython的绝对初学者指南：两步实现代码30倍加速'
 - en: Easy Python code compilation for blazingly fast applications
+  id: totrans-77
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 为闪电般快速的应用程序提供简单的Python代码编译
 - en: towardsdatascience.com](/cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/cython-for-absolute-beginners-30x-faster-code-in-two-simple-steps-bbb6c10d06ad?source=post_page-----9134d971e334--------------------------------)'
 - en: The Point class with a __new__ override
+  id: totrans-79
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 带有__new__重写的Point类
 - en: In our first try we just create a `Point` class that inherits from tuple and
     tries to initialize the tuple with a `x,y` coordinate. **This won’t work:**
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第一次尝试中，我们仅创建一个继承自元组的`Point`类，并尝试使用`x, y`坐标初始化元组。**这不会成功：**
 - en: '[PRE6]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: The reason that this fails is because our class is a subclass of the `tuple`,
     which are **immutable**. Remember that the `tuple` is created by `__new__`, after
     which `__init__` runs. At the time of initialization, the tuple is already created
     and cannot be altered anymore since they are immutable.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 失败的原因是因为我们的类是`tuple`的子类，而`tuple`是**不可变的**。记住，`tuple`是通过`__new__`创建的，然后`__init__`运行。在初始化时，元组已经被创建，不能再被修改，因为它们是不可变的。
 - en: 'We **can fix this** by overriding `__new__`:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们**可以通过重写`__new__`来解决这个问题：**
 - en: '[PRE7]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: This works because in `__new__` we use `super()` to get a reference to the parent
     of `Point`, which is `tuple`. Next we use `tuple.__new__` and pass it an iterable
     (`(x, y)`) create a new tuple. This is the same as `tuple((1, 2))`.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 这之所以有效，是因为在`__new__`中，我们使用`super()`来获取`Point`的父类引用，即`tuple`。接下来，我们使用`tuple.__new__`并传递一个可迭代对象（`(x,
+    y)`）来创建一个新元组。这与`tuple((1, 2))`是一样的。
 - en: Controlling instance creation and additional methods
+  id: totrans-86
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 控制实例创建和附加方法
 - en: 'The result is a `Point` class that is a `tuple` under the hood but we can add
     all kinds of extras:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是一个`Point`类，底层是一个`tuple`，但我们可以添加各种额外功能：
 - en: '[PRE8]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Notice that we’ve added a method for calculating distances between `Point`s,
     as well as some input validation. We now check in `__new__` if the provided `X`and
     `y` values are positive and prevent object creation altogether when this is not
     the case.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意我们添加了一个计算`Point`之间距离的方法，以及一些输入验证。我们现在在`__new__`中检查提供的`X`和`y`值是否为正，并在不符合条件时完全阻止对象创建。
 - en: '[](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----9134d971e334--------------------------------)
     [## A complete guide to using environment variables and files with Docker and
     Compose'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----9134d971e334--------------------------------)
+    [## 使用Docker和Compose的环境变量和文件的完整指南'
 - en: Keep your containers secure and flexible with this easy tutorial
+  id: totrans-91
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过这个简单的教程保持你的容器安全和灵活
 - en: towardsdatascience.com](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/a-complete-guide-to-using-environment-variables-and-files-with-docker-and-compose-4549c21dc6af?source=post_page-----9134d971e334--------------------------------)'
 - en: 'Practical application 2: adding metadata'
+  id: totrans-93
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实际应用 2：添加元数据
 - en: In this example we’re creating a subclass from an immutable `float` and add
     some metadata. The class below will produce a true `float` but we’ve added some
     extra information about the symbol to use.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个示例中，我们从不可变的`float`创建了一个子类，并添加了一些元数据。下面的类将生成一个真正的`float`，但我们添加了一些关于符号的额外信息。
 - en: '[PRE9]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: As you see we inherit from `float` , which makes an instance of `Currency` an
     actual `float`. As you see, we also have access to metadata like a symbol for
     pretty printing.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你所见，我们继承自`float`，这使得`Currency`的实例实际上是一个`float`。如你所见，我们还可以访问诸如用于美观打印的符号等元数据。
 - en: 'Also notice that this is an actual float; we can perform `float` operations
     without a problem:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 还要注意这是一个实际的浮点数；我们可以毫无问题地执行`float`操作：
 - en: '[PRE10]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----9134d971e334--------------------------------)
     [## Args vs kwargs: which is the fastest way to call a function in Python?'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----9134d971e334--------------------------------)
+    [## 参数与关键字参数：哪种方式在Python中调用函数最快？'
 - en: A clear demonstration of the timeit module
+  id: totrans-100
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: '`timeit`模块的清晰演示'
 - en: towardsdatascience.com](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/args-vs-kwargs-which-is-the-fastest-way-to-call-a-function-in-python-afb2e817120?source=post_page-----9134d971e334--------------------------------)
 - en: 'Practical application 3: Singleton pattern'
+  id: totrans-102
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实际应用 3：单例模式
 - en: 'There are cases when you don’t want to return a *new* object every time you
     instantiate a class. A database connection for example. A singleton **restricts
     the instantiation of a class to one single instance**. This pattern is used to
     ensure that a class has only one instance and provides a **global point** of access
     to that instance:'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 有些情况下你不想每次实例化类时都返回一个*新的*对象。例如，一个数据库连接。单例模式**将类的实例化限制为唯一实例**。该模式用于确保一个类只有一个实例，并提供一个**全局访问点**来访问该实例：
 - en: '[PRE11]'
+  id: totrans-104
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: This code creates an instance of the `Singleton` class if it doesn’t exist yet
     and saves it as an attribute on the `cls`. When `Singleton` is called once more
     it returns the instance that is has stored before.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码创建一个`Singleton`类的实例（如果它尚不存在），并将其作为属性保存在`cls`上。当`Singleton`再次被调用时，它返回之前存储的实例。
 - en: '[](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----9134d971e334--------------------------------)
     [## Run Code after Your Program Exits with Python’s AtExit'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----9134d971e334--------------------------------)
+    [## 使用 Python 的 AtExit 在程序退出后运行代码'
 - en: Register cleanup functions that run after your script ends or errors
+  id: totrans-107
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注册在脚本结束或出错后运行的清理函数
 - en: towardsdatascience.com](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/run-code-after-your-program-exits-with-pythons-atexit-82a0069b486a?source=post_page-----9134d971e334--------------------------------)
 - en: Other Practical applications
+  id: totrans-109
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 其他实际应用
 - en: 'Some other applications include:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他一些应用包括：
 - en: '**Controlling instance creation**'
+  id: totrans-111
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**控制实例创建**'
 - en: 'We’ve seen this in the `Point` example: add additional logic *before* creating
     an instance. This can include input validation, modification, or logging.'
+  id: totrans-112
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 我们在`Point`示例中已经看到过：在创建实例之前添加额外的逻辑。这可以包括输入验证、修改或日志记录。
 - en: '**Factory Methods**'
+  id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**工厂方法**'
 - en: Determine in `__new__` which class will be returned, based on inputs.
+  id: totrans-114
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 根据输入在`__new__`中确定将返回哪个类。
 - en: '**Caching**'
+  id: totrans-115
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**缓存**'
 - en: For resource-intensive object creation. Like with the Singleton pattern, we
     can store previously created objects on the class itself. We can check in `__new__`if
     an equivalent object already existst and return it instead of creating a new one.
+  id: totrans-116
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 对于资源密集型对象创建。像单例模式一样，我们可以在类本身上存储之前创建的对象。我们可以在`__new__`中检查是否已经存在等效的对象，并返回它，而不是创建一个新的。
 - en: '[](/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893?source=post_page-----9134d971e334--------------------------------)
     [## Create Your Custom, private Python Package That You Can PIP Install From Your
     Git Repository'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893?source=post_page-----9134d971e334--------------------------------)
+    [## 从你的 Git 仓库创建可以用 PIP 安装的自定义私有 Python 包'
 - en: Share your self-built Python package using your git repo.
+  id: totrans-118
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用你的 git 仓库分享你自己构建的 Python 包。
 - en: towardsdatascience.com](/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893?source=post_page-----9134d971e334--------------------------------)
 - en: Conclusion
+  id: totrans-120
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article we took a deep dive into Python object creation, learnt a lot
     about how and why it works. Then we looked at some practical examples that demonstrate
     that we can do a lot of interesting things with our newly acquired knowledge.
     Controlling object creation can enable you to create efficient classes and professionalize
     your code significantly.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们深入探讨了 Python 对象创建，了解了它是如何工作的以及为什么这样工作。然后我们看了一些实际示例，演示了我们可以用新获得的知识做很多有趣的事情。控制对象创建可以使你创建高效的类，并显著提高你的代码的专业性。
 - en: To improve your code even further, I think the most important part is to truly
     understand your code, how Python works and apply the right data structures. For
     this, check out my [**other articles here**](https://mikehuls.com/articles?tags=fast)or
     this [**this presentation**](https://www.youtube.com/watch?v=N7cgUnW-tZQ).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了进一步改进你的代码，我认为最重要的是真正理解你的代码，了解 Python 的工作原理并应用合适的数据结构。为此，请查看我的[**其他文章**](https://mikehuls.com/articles?tags=fast)或这[**个演示**](https://www.youtube.com/watch?v=N7cgUnW-tZQ)。
 - en: 'I hope this article was as clear as I hope it to be but if this is not the
     case please let me know what I can do to clarify further. In the meantime, check
     out my [other articles](https://mikehuls.com/articles) on all kinds of programming-related
     topics like these:'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章能像我期望的那样清晰，但如果不清楚，请告诉我可以进一步澄清的内容。同时，请查看我在 [其他文章](https://mikehuls.com/articles)
+    上关于各种编程相关主题的文章：
 - en: '[Git for absolute beginners: understanding Git with the help of a video game](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
+  id: totrans-124
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[绝对初学者的 Git：通过视频游戏理解 Git](https://mikehuls.medium.com/git-for-absolute-beginners-understanding-git-with-the-help-of-a-video-game-88826054459a)'
 - en: '[Create and publish your own Python package](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[创建并发布你自己的 Python 包](https://mikehuls.medium.com/create-and-publish-your-own-python-package-ea45bee41cdc)'
 - en: '[Create a fast auto-documented, maintainable, and easy-to-use Python API in
     5 lines of code with FastAPI](https://mikehuls.medium.com/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e)'
+  id: totrans-126
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[使用 FastAPI 在 5 行代码中创建快速的自动文档、可维护且易于使用的 Python API](https://mikehuls.medium.com/create-a-fast-auto-documented-maintainable-and-easy-to-use-python-api-in-5-lines-of-code-with-4e574c00f70e)'
 - en: Happy coding!
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 祝编码愉快！
 - en: — Mike
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: — Mike
 - en: '*P.S: like what I’m doing?* [*Follow me*](https://mikehuls.medium.com)*!*'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言：喜欢我做的事吗？* [*关注我*](https://mikehuls.medium.com)*！*'
 - en: '[](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)
     [## Mike Huls - Medium'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)
+    [## Mike Huls - Medium'
 - en: Read writing from Mike Huls on Medium. I'm a full-stack developer with a passion
     for programming, technology and…
+  id: totrans-131
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读 Mike Huls 在 Medium 上的文章。我是一名全栈开发者，对编程、技术充满热情，…
 - en: mikehuls.medium.com](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: mikehuls.medium.com](https://mikehuls.medium.com/?source=post_page-----9134d971e334--------------------------------)
