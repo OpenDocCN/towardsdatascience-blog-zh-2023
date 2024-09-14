@@ -1,421 +1,640 @@
 - en: 'Mastering Synchronization Primitives in Python Asyncio: A Comprehensive Guide'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 精通 Python Asyncio 中的同步原语：全面指南
 - en: 原文：[https://towardsdatascience.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de](https://towardsdatascience.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de](https://towardsdatascience.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide-ae1ae720d0de)
 - en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
 - en: Best practices for asyncio.Lock, asyncio.Semaphore, asyncio.Event and asyncio.Condition
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: asyncio.Lock、asyncio.Semaphore、asyncio.Event 和 asyncio.Condition 的最佳实践
 - en: '[](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)[![Peng
     Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)
     [Peng Qian](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)
     ·8 min read·May 29, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ae1ae720d0de--------------------------------)
+    ·8 分钟阅读·2023年5月29日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/251106288dbd9d21a2c3fc7e21ad3d1d.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/251106288dbd9d21a2c3fc7e21ad3d1d.png)'
 - en: 'Photo Credit: Created by Author, [Canva](https://www.canva.com/)'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：由作者创建，[Canva](https://www.canva.com/)
 - en: This is one of my articles under the Python Concurrency series, and if you find
     it useful, you can read the rest from [here](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我在 Python Concurrency 系列中的一篇文章，如果你觉得有用，可以从[这里](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)阅读其余部分。
 - en: Introduction
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: In this article, I will introduce why you need synchronization primitives in
     Python’s asyncio and best practices for several synchronization primitives. And
     in the last part of the article, I will walk you through an example of synchronization
     primitives in action.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我将介绍为什么在 Python 的 asyncio 中需要同步原语，以及几种同步原语的最佳实践。在文章的最后部分，我将带你通过一个实际的同步原语示例进行讲解。
 - en: Why do you need synchronization primitives in asyncio
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么你需要 asyncio 中的同步原语
 - en: Anyone who has used Python multithreading knows that multiple threads share
     the same memory block. So when multiple threads perform non-atomic operations
     on the same area simultaneously, a thread-safe problem occurs.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 任何使用过 Python 多线程的人都知道多个线程共享相同的内存块。因此，当多个线程同时对相同区域执行非原子操作时，会发生线程安全问题。
 - en: Since asyncio runs on a single thread, does it not have similar thread-safe
     issues? The answer is no.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 asyncio 运行在单线程上，是否没有类似的线程安全问题？答案是否定的。
 - en: Concurrent tasks in asyncio are executed asynchronously, which means that there
     may be alternating execution of multiple tasks in time. A concurrency bug is triggered
     when one task accesses a particular memory area and waits for an IO operation
     to return, another task is also accessing this memory simultaneously.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: asyncio 中的并发任务是异步执行的，这意味着可能会有多个任务在时间上交替执行。当一个任务访问特定的内存区域并等待 IO 操作返回时，另一个任务也同时访问该内存区域，就会触发并发错误。
 - en: To avoid such bugs, Python asyncio introduces a synchronization primitive feature
     similar to multithreading.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免此类错误，Python asyncio 引入了一种类似于多线程的同步原语功能。
 - en: Also, to avoid too many tasks accessing a resource concurrently, asyncio’s synchronization
     primitives provide the ability to protect the resource by limiting the number
     of tasks accessing it simultaneously.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，为了避免过多任务同时访问资源，asyncio 的同步原语通过限制同时访问资源的任务数量来提供保护资源的能力。
 - en: Next, let’s take a look at what synchronization primitives are available in
     asyncio.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们看看 asyncio 中有哪些同步原语可供使用。
 - en: Python asyncio’s synchronization primitives
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Python asyncio 的同步原语
 - en: Lock
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 锁
 - en: 'Before we introduce this API, let’s look at a situation:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 在介绍这个API之前，让我们看看一种情况：
 - en: Suppose we have a concurrent task that needs a copy of the website data. It
     will first check if it’s in the cache; if it is, it will fetch it from the cache,
     and if not, it will read it from the website.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个并发任务需要一份网站数据。它会首先检查缓存中是否有数据；如果有，它会从缓存中获取数据；如果没有，它会从网站中读取数据。
 - en: 'Since it takes some time to read the website data to return and update the
     cache, when multiple concurrent tasks are executed at the same time, they all
     assume that this data does not exist in the cache and launch remote requests at
     the same time, as shown in the following code:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于读取网站数据以返回并更新缓存需要一些时间，当多个并发任务同时执行时，它们都假设这些数据不在缓存中，并同时发起远程请求，如下代码所示：
 - en: '![](../Images/cde3733f3dc4858fb66ff0d5981c8f61.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cde3733f3dc4858fb66ff0d5981c8f61.png)'
 - en: Both tasks think there is no data in the cache, thus accessing the remote site.
     Image by Author
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个任务都认为缓存中没有数据，从而访问远程网站。作者提供的图片
 - en: Which is not in line with our original design intent, so `asyncio.Lock` comes
     in handy.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这不符合我们最初的设计意图，因此`asyncio.Lock`派上了用场。
 - en: We can check if there is data in the cache when concurrent tasks need to get
     a lock first, and other tasks that do not get a lock will wait. Until the task
     that gets the lock finishes updating the cache and releases the lock, the other
     tasks can continue to execute.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 当并发任务需要首先获取锁时，我们可以检查缓存中是否有数据，其他未获取锁的任务将等待。直到获取锁的任务完成更新缓存并释放锁，其他任务才能继续执行。
 - en: 'The entire flowchart is shown below:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 整个流程图如下所示：
 - en: '![](../Images/51c0871bb81b3888604eb3119ffbd307.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/51c0871bb81b3888604eb3119ffbd307.png)'
 - en: Image by Author
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'Let’s see how to write the code:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看如何编写代码：
 - en: '![](../Images/dd1a36768aa16511094586a5e7cde0f0.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dd1a36768aa16511094586a5e7cde0f0.png)'
 - en: Only the first task needs to update the cache. Image by Author
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 只有第一个任务需要更新缓存。作者提供的图片
 - en: Problem solved, isn’t it simple?
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 问题解决了，是不是很简单？
 - en: Semaphore
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 信号量
 - en: Sometimes, we need to access a resource with limited concurrent requests. For
     example, a particular database only allows five connections to be opened simultaneously.
     Or depending on the type of subscription you have, a web API only supports a certain
     number of concurrent requests at the same time.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，我们需要访问一个有限并发请求的资源。例如，一个特定的数据库只允许同时打开五个连接。或者根据你拥有的订阅类型，某个Web API仅支持一定数量的并发请求。
 - en: In this case, you need to use `asyncio.Semaphore`. `asyncio.Semaphore` uses
     an internal counter that decrements by one each time a Semaphore lock is acquired
     until it reaches zero.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，你需要使用`asyncio.Semaphore`。`asyncio.Semaphore`使用一个内部计数器，每次获取Semaphore锁时计数器减少1，直到计数器变为零。
 - en: '![](../Images/63854ad79766fe71fbaac455157de246.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/63854ad79766fe71fbaac455157de246.png)'
 - en: Semaphore will limit the number of concurrent tasks. Image by Author
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 信号量将限制并发任务的数量。作者提供的图片
 - en: When the counter of `asyncio.Semaphore` is zero, other tasks that need the lock
     will wait. When calling the release method after the execution of other tasks,
     the counter will be increased by one. The waiting tasks can continue to execute.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 当`asyncio.Semaphore`的计数器为零时，其他需要锁的任务将会等待。在执行其他任务后调用释放方法时，计数器会增加1，等待的任务可以继续执行。
 - en: 'The code example is as follows:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码示例如下：
 - en: In this way, we can limit the number of connections that can be accessed concurrently.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，我们可以限制同时访问的连接数量。
 - en: BoundedSemaphore
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 有界信号量
 - en: Sometimes, due to code limitations, we can’t use `async with` to manage the
     acquire and release of semaphore locks, so we might call `acquire` somewhere and
     `release` somewhere else.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，由于代码的限制，我们不能使用`async with`来管理获取和释放信号量锁，因此我们可能会在某处调用`acquire`，在另一处调用`release`。
 - en: What happens if we accidentally call the `asyncio.Semaphore` `release` method
     multiple times?
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们不小心多次调用`asyncio.Semaphore`的`release`方法，会发生什么？
 - en: As the code shows, we are limited to running two tasks simultaneously, but because
     we called release more than once, we can run three tasks at the same time next
     time.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 如代码所示，我们限制同时运行两个任务，但由于我们调用了多次释放，我们可以在下次同时运行三个任务。
 - en: To solve this problem, we can use `asyncio.BoundedSemaphore` .
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，我们可以使用`asyncio.BoundedSemaphore`。
 - en: 'As we know from the source code, when calling the `release`, a `ValueError`
     is thrown if the counter value is greater than the value set during initialization:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 从源代码中我们可以知道，当调用`release`时，如果计数器的值大于初始化时设置的值，将抛出`ValueError`。
 - en: '![](../Images/fced96224eb387b31f241903ccbe361c.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fced96224eb387b31f241903ccbe361c.png)'
 - en: When we call the release method multiple times, a ValueError is thrown. Image
     by Author
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们多次调用释放方法时，会抛出 ValueError 异常。图片来源于作者
 - en: Therefore, the problem is being solved.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，问题正在得到解决。
 - en: Event
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 事件
 - en: '`Event` maintains an internal boolean variable as a flag. `asyncio.Event` has
     three common methods: `wait`, `set`, and `clear`.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Event`维护一个内部布尔变量作为标志。`asyncio.Event`有三个常用方法：`wait`、`set`和`clear`。'
 - en: When the task runs to `event.wait()`, the task is in wait. At this point, you
     can call `event.set()` to set the internal marker to True, and all the waiting
     tasks can continue to execute.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 当任务运行到`event.wait()`时，任务处于等待状态。此时，可以调用`event.set()`将内部标记设置为 True，所有等待的任务可以继续执行。
 - en: When the task is finished, you need to call `event.clear()` method to reset
     the value of the marker to False, to restore the event to its initial state, and
     you can continue to use the event next time.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 当任务完成时，需要调用`event.clear()`方法将标记的值重置为 False，以将事件恢复到初始状态，并且下次可以继续使用事件。
 - en: Instead of the sample code, I will show you how to use `Event` to implement
     an event bus at the end of the article.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将展示如何使用`Event`在文章末尾实现一个事件总线，而不是示例代码。
 - en: Condition
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 条件
 - en: '`asyncio.Condition` is similar to `asyncio.Lock` and `asyncio.Event` combined.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '`asyncio.Condition`类似于`asyncio.Lock`和`asyncio.Event`的结合体。'
 - en: First, we will use `async with` to ensure that the condition lock is acquired,
     and then we call `condition.wait()` to release the condition lock and make the
     task wait temporarily. When `condition.wait()` passes, we regain the condition
     lock to ensure that only one task executes simultaneously.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们将使用`async with`确保获取条件锁，然后调用`condition.wait()`释放条件锁，使任务暂时等待。当`condition.wait()`返回时，我们重新获取条件锁，以确保只有一个任务同时执行。
 - en: While a task temporarily releases the lock and goes into wait by `condition.wait()`,
     another task can either `async with` to the condition lock and notify all waiting
     tasks to continue execution by the `condition.notify_all()` method.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 当一个任务通过`condition.wait()`暂时释放锁并进入等待状态时，另一个任务可以通过`async with`获取条件锁，并通过`condition.notify_all()`方法通知所有等待的任务继续执行。
 - en: 'The flowchart is shown below:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 流程图如下：
 - en: '![](../Images/6caa99a220d9de39f31f674777e80e82.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6caa99a220d9de39f31f674777e80e82.png)'
 - en: The workflow of asyncio.Condition. Image by Author
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: asyncio.Condition 的工作流程。图片来源于作者
 - en: 'We can demonstrate the effect of `asyncio.Condition` with a piece of code:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过一段代码演示`asyncio.Condition`的效果：
 - en: Sometimes, we need `asyncio.Condition` to wait for a specific event to occur
     before proceeding to the next step. We can call the `condition.wait_for()` method
     and pass a method as an argument.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，我们需要`asyncio.Condition`等待特定事件发生后才能继续执行下一步。我们可以调用`condition.wait_for()`方法，并将一个方法作为参数传递。
 - en: Each time `condition.notify_all` is called, `condition.wait_for` checks the
     result of the execution of the parameter method and ends the wait if it is True,
     or continues to wait if it is False.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 每次调用`condition.notify_all`时，`condition.wait_for`会检查参数方法的执行结果，如果结果为 True，则结束等待；如果结果为
+    False，则继续等待。
 - en: 'We can demonstrate the effect of `wait_for` with an example. In the following
     code, we will simulate a database connection. Before executing the SQL statement,
     the code will check if the database connection is initialized and execute the
     query if the connection initialization is completed, or wait until the connection
     is completed initializing:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过一个示例来演示`wait_for`的效果。在以下代码中，我们将模拟一个数据库连接。在执行 SQL 语句之前，代码会检查数据库连接是否已经初始化，如果连接初始化完成，则执行查询；否则，等待直到连接初始化完成：
 - en: Some tips for using synchronization primitives
+  id: totrans-68
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用同步原语的一些提示
 - en: Remember to use timeout or cancelation when needed.
+  id: totrans-69
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 记得在需要时使用超时或取消。
 - en: When using synchronization primitives, we are generally waiting for the completion
     of a specific IO operation. However, due to network fluctuations or other unknown
     reasons, the IO operation of a task may take longer than others.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 在使用同步原语时，我们通常是在等待特定 IO 操作的完成。然而，由于网络波动或其他未知原因，任务的 IO 操作可能比其他任务花费更长时间。
 - en: In this case, we should set a timeout for the operation, so that when the execution
     time is too long, we can release the lock and allow other tasks to execute in
     time.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们应该为操作设置一个超时，以便在执行时间过长时，能够释放锁并允许其他任务及时执行。
 - en: In another case, we may loop through a task. It may keep some tasks waiting
     in the background and prevent the program from ending properly. At this point,
     remember to use cancel to terminate the cyclic execution of the task.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在另一个情况下，我们可能会循环执行一个任务。它可能会使一些任务在后台等待，阻止程序正确结束。这时，记得使用 cancel 来终止任务的循环执行。
 - en: Avoid using synchronization primitives or locking only the fewest resources
+  id: totrans-73
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 避免使用同步原语或只锁定最少的资源
 - en: We all know that the advantage of asyncio is that a task can switch to another
     task to execute while waiting for IO to return.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们都知道 asyncio 的优势在于任务可以在等待 IO 返回时切换到另一个任务执行。
 - en: But an asyncio task often contains both IO-bound operations and CPU-bound operations.
     If we lock too much code on the task, it will not be able to switch to another
     task in time, which will affect the performance.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 但一个 asyncio 任务通常同时包含 IO 绑定操作和 CPU 绑定操作。如果我们在任务上锁定了太多代码，它将无法及时切换到另一个任务，从而影响性能。
 - en: Therefore, if not necessary, try not to use synchronization primitives or only
     lock the least amount of resources.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，如果没有必要，尽量不要使用同步原语或仅锁定最少的资源。
 - en: To avoid some other competitive locking situations
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为了避免一些其他竞争锁定的情况
 - en: There is no RLock in asyncio, so don’t use locks in recursive code.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: asyncio 中没有 RLock，因此在递归代码中不要使用锁。
 - en: As with multithreading, asyncio also has the possibility of deadlocks, so try
     to avoid using multiple locks simultaneously.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 与多线程一样，asyncio 也有死锁的可能性，因此尽量避免同时使用多个锁。
 - en: 'Advanced Techniques in Action: asyncio-based Event Bus'
+  id: totrans-80
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实践中的高级技术：基于 asyncio 的 Event Bus
 - en: After the introduction earlier in the article, I believe you have a clear understanding
     of how to use asyncio’s synchronization primitives properly.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 在文章前面的介绍之后，我相信你对如何正确使用 asyncio 的同步原语有了清晰的理解。
 - en: Next, I will teach you how to use the synchronization primitives in real projects
     by taking you through the implementation of an event bus.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我将通过带你实现一个事件总线，教你如何在实际项目中使用同步原语。
 - en: As usual, the first step as an architect is to design the EventBus API.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 像往常一样，作为架构师的第一步是设计 EventBus API。
 - en: 'Since `EventBus` communicates using strings and internally, I intend to use
     `asyncio.Event` to implement the events corresponding to each string, we’ll start
     by implementing a `_get_event` method:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 `EventBus` 使用字符串进行通信，并且在内部，我打算使用 `asyncio.Event` 来实现与每个字符串对应的事件，我们将从实现一个
+    `_get_event` 方法开始：
 - en: 'The `on` method will bind a callback function to a specific event:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '`on` 方法将回调函数绑定到特定事件上：'
 - en: 'The `trigger` method can manually trigger an event and pass in the corresponding
     data:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '`trigger` 方法可以手动触发事件并传入相应的数据：'
 - en: 'Finally, let’s write a `main` method to test the effect of EventBus:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，让我们编写一个 `main` 方法来测试 EventBus 的效果：
 - en: At the end of the main method, remember to use timeout to prevent the program
     from executing all the time, as I warned before.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 在主方法结束时，记得使用超时来防止程序一直执行，就像我之前警告的那样。
 - en: '![](../Images/0b9ddc729f4589a233c171e72f65af9e.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0b9ddc729f4589a233c171e72f65af9e.png)'
 - en: The code is executed as expected. Image by Author
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码按预期执行。图片来自作者
 - en: As you can see, the code is executed as expected. Isn’t it easy?
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，代码按预期执行了。是不是很简单？
 - en: Conclusion
+  id: totrans-92
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: This article first introduced why Python asyncio needs synchronization primitives.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文首先介绍了为什么 Python asyncio 需要同步原语。
 - en: Then, I introduced the best practices for Lock, Semaphore, Event, and Condition,
     and gave some tips on how to use them correctly.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 接着，我介绍了 Lock、Semaphore、Event 和 Condition 的最佳实践，并给出了一些正确使用它们的提示。
 - en: Finally, I have completed a small project with hands-on training on asyncio
     synchronization primitives, which I hope will help you better use synchronization
     primitives in real projects.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我完成了一个关于 asyncio 同步原语的动手训练的小项目，希望能帮助你更好地在实际项目中使用同步原语。
 - en: Feel free to comment, share, or discuss topics about asyncio with me.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 随时评论、分享或与我讨论关于 asyncio 的话题。
 - en: 'You can get more knowledge about Python Concurrency through my list of articles:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以通过我的文章列表获取更多关于 Python 并发的知识：
 - en: '![Peng Qian](../Images/fa6bd24b4781f623be8ea40c4e6bdb78.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![Peng Qian](../Images/fa6bd24b4781f623be8ea40c4e6bdb78.png)'
 - en: '[Peng Qian](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Peng Qian](https://qtalen.medium.com/?source=post_page-----ae1ae720d0de--------------------------------)'
 - en: Python Concurrency
+  id: totrans-100
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Python 并发
 - en: '[View list](https://qtalen.medium.com/list/python-concurrency-2c979347da3b?source=post_page-----ae1ae720d0de--------------------------------)10
     stories![Supercharge Your Python Asyncio With Aiomultiprocess: A Comprehensive
     Guide](../Images/9c366de04067cd0ec1b30d9ce223011b.png)![Unleashing the Power of
     Python Asyncio’s Queue](../Images/aa5886c47ef891be14eb17f9a2ed3d0d.png)![](../Images/d5b38ed916e599eb0673eb311f95348d.png)[](https://qtalen.medium.com/membership?source=post_page-----ae1ae720d0de--------------------------------)
     [## Join Medium with my referral link - Peng Qian'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: '[查看列表](https://qtalen.medium.com/list/python-concurrency-2c979347da3b?source=post_page-----ae1ae720d0de--------------------------------)
+    10 个故事！[用 Aiomultiprocess 超级充实你的 Python Asyncio：全面指南](../Images/9c366de04067cd0ec1b30d9ce223011b.png)![释放
+    Python Asyncio 队列的力量](../Images/aa5886c47ef891be14eb17f9a2ed3d0d.png)![](../Images/d5b38ed916e599eb0673eb311f95348d.png)[](https://qtalen.medium.com/membership?source=post_page-----ae1ae720d0de--------------------------------)
+    [## 通过我的推荐链接加入 Medium - Peng Qian'
 - en: Read every story from Peng Qian (and thousands of other writers on Medium).
     Your membership fee directly supports Peng…
+  id: totrans-102
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读 Peng Qian（以及 Medium 上成千上万其他作者）的每一个故事。你的会员费直接支持 Peng…
 - en: qtalen.medium.com](https://qtalen.medium.com/membership?source=post_page-----ae1ae720d0de--------------------------------)
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: qtalen.medium.com](https://qtalen.medium.com/membership?source=post_page-----ae1ae720d0de--------------------------------)
 - en: 'This article was originally published at: [https://www.dataleadsfuture.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide/](https://www.dataleadsfuture.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide/)'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章最初发布于：[https://www.dataleadsfuture.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide/](https://www.dataleadsfuture.com/mastering-synchronization-primitives-in-python-asyncio-a-comprehensive-guide/)
