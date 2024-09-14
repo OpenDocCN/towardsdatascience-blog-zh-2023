@@ -1,125 +1,192 @@
 - en: Host Hundreds of NLP Models Utilizing SageMaker Multi-Model Endpoints Backed
     By GPU Instances
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 利用 SageMaker 多模型端点和 GPU 实例托管数百个 NLP 模型
 - en: 原文：[https://towardsdatascience.com/host-hundreds-of-nlp-models-utilizing-sagemaker-multi-model-endpoints-backed-by-gpu-instances-1ec215886248](https://towardsdatascience.com/host-hundreds-of-nlp-models-utilizing-sagemaker-multi-model-endpoints-backed-by-gpu-instances-1ec215886248)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/host-hundreds-of-nlp-models-utilizing-sagemaker-multi-model-endpoints-backed-by-gpu-instances-1ec215886248](https://towardsdatascience.com/host-hundreds-of-nlp-models-utilizing-sagemaker-multi-model-endpoints-backed-by-gpu-instances-1ec215886248)
 - en: Integrate Triton Inference Server With Amazon SageMaker
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将 Triton 推理服务器与 Amazon SageMaker 集成
 - en: '[](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)[![Ram
     Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)
     [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)[![Ram
+    Vegiraju](../Images/07d9334e905f710d9f3c6187cf69a1a5.png)](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)
+    [Ram Vegiraju](https://ram-vegiraju.medium.com/?source=post_page-----1ec215886248--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)
     ·7 min read·Sep 22, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1ec215886248--------------------------------)
+    ·阅读时间 7 分钟·2023年9月22日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/a0b73ef0eb92e36d0a4cc5bd7159c302.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a0b73ef0eb92e36d0a4cc5bd7159c302.png)'
 - en: Image from [Unsplash](https://unsplash.com/photos/6b5uqlWabB0)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源于 [Unsplash](https://unsplash.com/photos/6b5uqlWabB0)
 - en: In the past we’ve explored [SageMaker Multi-Model Endpoints (MME)](/deploy-multiple-tensorflow-models-to-one-endpoint-65bea81c3f2f)
     as a cost effective option to host multiple models behind a singular endpoint.
     While hosting smaller models is possible on MME with CPU based instances, as these
     models get larger and more complex in nature sometimes GPU compute may be necessary.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 过去，我们曾探索过[**SageMaker 多模型端点 (MME)**](/deploy-multiple-tensorflow-models-to-one-endpoint-65bea81c3f2f)作为在单一端点后面托管多个模型的经济有效的选项。虽然在
+    MME 上托管较小的模型可以使用基于 CPU 的实例，但随着这些模型变得越来越大和复杂，有时可能需要 GPU 计算。
 - en: '[MME backed by GPU](https://aws.amazon.com/about-aws/whats-new/2022/10/amazon-sagemaker-cost-effectively-host-1000s-gpu-multi-model-endpoint/)
     based instances is a specific SageMaker Inference feature that we will harness
     in this article to showcase how we can host hundreds of NLP models efficiently
     on a single endpoint. Note that at the time of this article, MME GPU on SageMaker
     currently supports the following single GPU based instance families: p2, p3, g4dn,
     and g5.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[MME 由 GPU](https://aws.amazon.com/about-aws/whats-new/2022/10/amazon-sagemaker-cost-effectively-host-1000s-gpu-multi-model-endpoint/)
+    支持的实例是一项特定的 SageMaker 推理功能，我们将在本文中利用它展示如何在单个端点上高效托管数百个 NLP 模型。请注意，在本文发布时，SageMaker
+    上的 MME GPU 目前支持以下单 GPU 基于的实例系列：p2、p3、g4dn 和 g5。'
 - en: 'MME GPU is currently also powered by two model serving stacks:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: MME GPU 目前还由两个模型服务堆栈提供支持：
 - en: '[Nvidia Triton Inference Server](https://aws.amazon.com/blogs/machine-learning/run-multiple-deep-learning-models-on-gpu-with-amazon-sagemaker-multi-model-endpoints/)'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Nvidia Triton 推理服务器](https://aws.amazon.com/blogs/machine-learning/run-multiple-deep-learning-models-on-gpu-with-amazon-sagemaker-multi-model-endpoints/)'
 - en: '[TorchServe](https://aws.amazon.com/blogs/machine-learning/run-multiple-generative-ai-models-on-gpu-using-amazon-sagemaker-multi-model-endpoints-with-torchserve-and-save-up-to-75-in-inference-costs/)'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[TorchServe](https://aws.amazon.com/blogs/machine-learning/run-multiple-generative-ai-models-on-gpu-using-amazon-sagemaker-multi-model-endpoints-with-torchserve-and-save-up-to-75-in-inference-costs/)'
 - en: For the purpose of this article we will be utilizing Triton Inference Server
     with a PyTorch backend to host BERT based models on our GPU instance. If you are
     new to Triton, we will have a slight primer, but I would recommend referencing
     my starter article [here](/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了本文的目的，我们将利用 Triton 推理服务器和 PyTorch 后端，在我们的 GPU 实例上托管基于 BERT 的模型。如果你对 Triton
+    不太熟悉，我们会稍作介绍，但我建议参考我的入门文章 [这里](/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387)。
 - en: '**NOTE**: This article assumes an intermediate understanding of SageMaker Deployment
     and Real-Time Inference in particular. I would suggest following this [article](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
     for understanding Deployment/Inference more in depth. We will also overview Multi-Model
     Endpoints, but to understand further please reference this [documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/multi-model-endpoints.html).'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意**：本文假设你对 SageMaker 部署和实时推理有中级理解。我建议你参考这篇 [文章](https://aws.amazon.com/blogs/machine-learning/part-2-model-hosting-patterns-in-amazon-sagemaker-getting-started-with-deploying-real-time-models-on-sagemaker/)
+    以深入了解部署/推理。我们也会概述多模型端点，但要进一步了解，请参考这份 [文档](https://docs.aws.amazon.com/sagemaker/latest/dg/multi-model-endpoints.html)。'
 - en: '**DISCLAIMER**: I am a Machine Learning Architect at AWS and my opinions are
     my own.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '**免责声明**：我是 AWS 的机器学习架构师，我的观点仅代表我个人。'
 - en: What is MME? Solution Overview
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是 MME？解决方案概述
 - en: 'Why Multi-Model Endpoints and when would you use them? MME is a cost and management
     effective hosting option. A traditional SageMaker Endpoint setup will look like
     the following:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么使用多模型端点（MME），以及何时使用它们？MME 是一种成本和管理上有效的托管选项。传统的 SageMaker 端点设置将如下所示：
 - en: '![](../Images/f71e9966193967b59f4847d9aed6a7c5.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f71e9966193967b59f4847d9aed6a7c5.png)'
 - en: Image by Author
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'When you have hundreds or even thousands of models, it becomes hard to manage
     so many different endpoints and you have to pay for the hardware behind each persistent
     endpoint. With MME this becomes simplified as you have one endpoint and one set
     of hardware behind it for you to manage:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你有数百或甚至数千个模型时，管理如此多的不同端点变得困难，而且你需要为每个持久端点背后的硬件付费。使用 MME，这变得简单，因为你只需要管理一个端点和一组硬件：
 - en: '![](../Images/ab1e589097260a422fc18cced36d56fc.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab1e589097260a422fc18cced36d56fc.png)'
 - en: Image by Author
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'You can capture these different models in a model tarball (model.tar.gz). This
     model tarball will essentially contain all your model metadata in the format that
     the model serving solution expects. In this case we are using Triton as our model
     server so our model.tar.gz will look like the following:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以将这些不同的模型打包成一个模型 tarball（model.tar.gz）。这个模型 tarball 实质上会包含所有模型元数据，格式符合模型服务解决方案的要求。在这个例子中，我们使用
+    Triton 作为我们的模型服务器，所以我们的 model.tar.gz 将如下所示：
 - en: '[PRE0]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'For this example, we will make 200 copies of our model tarball to showcase
     how we can host multiple models on a singular endpoint. For real-world use-cases
     these tarballs will differ depending on the models you are pushing behind your
     endpoint. These tarballs are all captured in a common S3 path for SageMaker to
     understand:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们将制作 200 份我们的模型 tarball，以展示如何在单个端点上托管多个模型。对于实际应用，这些 tarballs 会根据你推送到端点后的模型有所不同。这些
+    tarballs 都被捕获在 SageMaker 能理解的一个通用 S3 路径中：
 - en: '![](../Images/35de9236cb5faa9a94d852feb2bf5645.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/35de9236cb5faa9a94d852feb2bf5645.png)'
 - en: MME Bucketing (Image by Author)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: MME 分桶（作者提供的图片）
 - en: How are models behind MME managed? SageMaker MME will receive a request and
     dynamically load and cache the specific model that you have invoked. In the case
     that you are expecting high traffic for your endpoint it’s also essential to either
@@ -128,32 +195,49 @@
     model will be loaded onto another instance to be able to serve the additional
     traffic. To further understand load testing SageMaker MME, please reference this
     [guide](/load-testing-sagemaker-multi-model-endpoints-f0db7b305770).
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: MME 背后的模型如何管理？SageMaker MME 将接收请求并动态加载和缓存你调用的特定模型。如果你期望你的端点会有大量流量，最好在端点后面配置多个初始实例或设置自动扩展。例如，如果单个模型接收了大量调用，这个模型将被加载到另一个实例上，以处理额外的流量。要进一步了解
+    SageMaker MME 的负载测试，请参考这个 [指南](/load-testing-sagemaker-multi-model-endpoints-f0db7b305770)。
 - en: Local Setup & Testing
+  id: totrans-29
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 本地设置与测试
 - en: For this example, we will be working in a SageMaker Classic Notebook Instance
     with a conda_python3 kernel and a g4dn.4xlarge instance. We use a GPU based instance
     to locally test Triton before deploying to SageMaker Real-Time Inference.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们将在一个 SageMaker Classic Notebook 实例中工作，使用 conda_python3 内核和 g4dn.4xlarge
+    实例。我们使用基于 GPU 的实例在本地测试 Triton，然后再部署到 SageMaker 实时推理中。
 - en: In this example, we work with the popular [BERT model](https://huggingface.co/bert-base-uncased).
     We want to first create our local model artifact, so we use PyTorch to trace and
     then save the serialized model artifact.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们使用了流行的 [BERT 模型](https://huggingface.co/bert-base-uncased)。我们首先要创建本地模型文件，因此我们使用
+    PyTorch 进行跟踪，然后保存序列化的模型文件。
 - en: '[PRE1]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We can confirm our saved model infers properly by loading it and running a sample
     inference with the tokenized text.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过加载保存的模型并用标记化的文本运行示例推理来确认模型推理是否正常。
 - en: '[PRE2]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: We can now focus on setting up Triton to host this specific model. Why is it
     important to [test Triton locally](/debugging-sagemaker-endpoints-with-docker-7a703fae3a26)
     before implementing with SageMaker? We want to capture any issues with our setup
@@ -162,132 +246,197 @@
     what’s wrong with your setup even if it is as small as a scripting error or improper
     structuring of your model tarball. By locally testing Triton first we can quickly
     iterate on our configuration and model files to capture any errors.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以专注于设置 Triton 来托管这个特定的模型。为什么在实现 SageMaker 之前需要 [本地测试 Triton](/debugging-sagemaker-endpoints-with-docker-7a703fae3a26)？我们希望在创建
+    SageMaker 端点之前捕获任何设置问题。创建 SageMaker 端点可能需要几分钟，直到你在日志中看到失败之前，你无法知道你的设置中出现了什么问题，即使是一个小的脚本错误或模型
+    tarball 的不当结构。通过首先本地测试 Triton，我们可以快速迭代我们的配置和模型文件，以捕获任何错误。
 - en: For Triton we first need a config.pbtxt file. This captures our input and output
     dimensions as well as other Triton Server properties you want to tune. In this
     case we can grab the input and output shapes from the transformers library describing
     the BERT architecture.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 Triton，我们首先需要一个 config.pbtxt 文件。这捕获了我们的输入和输出维度以及其他你希望调整的 Triton 服务器属性。在这种情况下，我们可以从描述
+    BERT 架构的 transformers 库中获取输入和输出形状。
 - en: '[PRE3]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: We can use these values to then create our config.pbtxt file.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用这些值来创建我们的 config.pbtxt 文件。
 - en: '[PRE4]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: We then start our Triton Inference Server with the following Docker command
     pointing towards our model repository.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们用以下 Docker 命令启动 Triton 推理服务器，指向我们的模型库。
 - en: '[PRE5]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Once the container has been started you can make sample requests to ensure that
     we are able to successfully conduct inference with our existing model artifacts.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦容器启动，你可以进行示例请求以确保我们能够成功地使用现有模型文件进行推理。
 - en: '[PRE6]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Once this is working successfully, we can focus on our SageMaker MME deployment.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦这项工作成功进行，我们可以专注于 SageMaker MME 部署。
 - en: SageMaker MME GPU Deployment
+  id: totrans-45
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SageMaker MME GPU 部署
 - en: Now that we have our model artifacts in a format that our model server understands,
     we can encapsulate this into a model.tar.gz that is expected for SageMaker.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经将模型文件转换为模型服务器所理解的格式，我们可以将其封装成 SageMaker 预期的 model.tar.gz 格式。
 - en: '[PRE7]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: We also create 200 copies of this model in a common S3 path to back our MME.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还在一个公共 S3 路径中创建了 200 个模型副本，以支持我们的 MME。
 - en: '[PRE8]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Along with our model artifacts location, we also need to specify the managed
     Triton container that we are utilizing for SageMaker deployment.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了模型文件的位置，我们还需要指定我们用于 SageMaker 部署的管理 Triton 容器。
 - en: '[PRE9]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'The next few steps are the usual SageMaker Endpoint creation flow:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来的几个步骤是常见的 SageMaker 端点创建流程：
 - en: '[SageMaker Model](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateModel.html):
     Points towards our model data and container.'
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[SageMaker 模型](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateModel.html)：指向我们的模型数据和容器。'
 - en: '[SageMaker Endpoint Configuration](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpointConfig.html):
     Specifies our instance type and count.'
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[SageMaker 端点配置](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpointConfig.html)：指定我们的实例类型和数量。'
 - en: '[SageMaker Endpoint](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html):
     REST Endpoint to invoke.'
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[SageMaker 端点](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html)：用于调用的
+    REST 端点。'
 - en: 'In our EndpointConfiguration object we specify a GPU based instance: g4dn.4xlarge
     in this instance.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的 EndpointConfiguration 对象中，我们指定了基于 GPU 的实例：在本例中为 g4dn.4xlarge。
 - en: '[PRE10]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: The endpoint may take a few minutes to create, but after it has you should be
     able to run sample inference. In the TargetModel header you can specify any model
     from 1–200 as we made that the delimiter for our different model.tar.gz artifacts.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 端点可能需要几分钟来创建，但创建完成后，你应该能够运行示例推理。在 TargetModel 头部，你可以指定 1 到 200 之间的任何模型，因为我们将这个范围设定为不同
+    model.tar.gz 文件的分隔符。
 - en: '[PRE11]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: As you run inference you can also monitor hardware and invocation metrics via
     CloudWatch. Specifically as this is a GPU based endpoint, you can monitor GPU
     Utilization via API or the SageMaker console.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5f0bfb6f07494571531b0059638ac3d1.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
 - en: Monitor Tab SageMaker Console (Screenshot by Author)
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/9efdfa132b4a7e3f60ddd54213680246.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
 - en: Hardware GPU Metrics (Screenshot by Author)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: To understand all other MME CloudWatch metrics please reference the following
     [documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/monitoring-cloudwatch.html#cloudwatch-metrics-multimodel-endpoints).
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
 - en: Additional Resources & Conclusion
+  id: totrans-66
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '[](https://github.com/RamVegiraju/SageMaker-Deployment/blob/master/RealTime/Multi-Model-Endpoint/Triton-MME-GPU/mme-gpu-bert.ipynb?source=post_page-----1ec215886248--------------------------------)
     [## SageMaker-Deployment/RealTime/Multi-Model-Endpoint/Triton-MME-GPU/mme-gpu-bert.ipynb
     at master ·…'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: Compilation of examples of SageMaker inference options and other features. …
+  id: totrans-68
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: github.com](https://github.com/RamVegiraju/SageMaker-Deployment/blob/master/RealTime/Multi-Model-Endpoint/Triton-MME-GPU/mme-gpu-bert.ipynb?source=post_page-----1ec215886248--------------------------------)
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: The entire code for the example can found at the link above. MME was already
@@ -298,13 +447,16 @@
     refer to the following [link](https://github.com/RamVegiraju/SageMaker-Deployment).
     If you are interested in understanding Triton better please refer to my [starter
     guide with PyTorch models](/deploying-pytorch-models-with-nvidia-triton-inference-server-bb139066a387).
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
 - en: As always thank you for reading and feel free to leave any feedback.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: '*If you enjoyed this article feel free to connect with me on* [*LinkedIn*](https://www.linkedin.com/in/ram-vegiraju-81272b162/)
     *and subscribe to my Medium* [*Newsletter*](https://ram-vegiraju.medium.com/subscribe)*.
     If you’re new to Medium, sign up using my* [*Membership Referral*](https://ram-vegiraju.medium.com/membership)*.*'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
