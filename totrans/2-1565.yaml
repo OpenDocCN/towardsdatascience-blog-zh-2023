@@ -1,375 +1,577 @@
 - en: How can XGBoost support natively categories?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: XGBoost如何原生支持类别特征？
 - en: 原文：[https://towardsdatascience.com/native-support-of-categories-in-xgboost-how-does-it-work-d359096bd003](https://towardsdatascience.com/native-support-of-categories-in-xgboost-how-does-it-work-d359096bd003)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/native-support-of-categories-in-xgboost-how-does-it-work-d359096bd003](https://towardsdatascience.com/native-support-of-categories-in-xgboost-how-does-it-work-d359096bd003)
 - en: '[](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)[![Saupin
     Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)
     [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)[![Saupin
+    Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)
+    [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----d359096bd003--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)
     ·6 min read·Mar 22, 2023
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----d359096bd003--------------------------------)
+    ·6分钟阅读·2023年3月22日
 - en: --
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/58e881d68aca5ae4452f0262d11dbeb4.png)'
+  id: totrans-5
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/58e881d68aca5ae4452f0262d11dbeb4.png)'
 - en: Photo by [Jon Tyson](https://unsplash.com/fr/@jontyson?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Jon Tyson](https://unsplash.com/fr/@jontyson?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: XGBoost and others decision tree-based methods trained using gradient Boosting
     use comparison for decision. It’s not trivial to mathematically define a comparison
     operator for categories.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: XGBoost和其他基于决策树的方法通过梯度提升进行训练，使用比较来做出决策。为类别定义一个比较操作符在数学上并不简单。
 - en: In this article, we are going to explain what are the options available, detail
     what are their pros and cons, and focus on the native support for categorical
     features that have been recently introduced in XGBoost (and LightGBM).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将解释可用的选项，详细说明它们的优缺点，并重点关注最近在XGBoost（以及LightGBM）中引入的对分类特征的原生支持。
 - en: 'If you’re interested in Gradient Boosting and its application to Decision Tree
     training, please consider my book:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对梯度提升及其在决策树训练中的应用感兴趣，请考虑我的书：
 - en: '[](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
     [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+    [## 实用梯度提升：深入了解Python中的梯度提升'
 - en: This book on Gradient Boosting methods is intended for students, academics,
     engineers, and data scientists who wish …
+  id: totrans-11
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这本关于梯度提升方法的书面向希望深入了解的学生、学者、工程师和数据科学家……
 - en: amzn.to](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: amzn.to](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
 - en: Decision trees
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 决策树
 - en: 'As shown in the figure below, decision trees base their decision on comparison:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 如下图所示，决策树基于比较来做出决策：
 - en: '![](../Images/84da55d5e84bba3b2cd7d8818c6eb606.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/84da55d5e84bba3b2cd7d8818c6eb606.png)'
 - en: A simple decision tree. Figure by the author.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个简单的决策树。图由作者提供。
 - en: For instance, in this simple example, if the input is a row of data, with two
     columns `A=21` and `B=111`, then the output value will be the weight `4`.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，在这个简单的例子中，如果输入是一行数据，包含两列`A=21`和`B=111`，则输出值将是权重`4`。
 - en: The limitation of this kind of decision tree is that it can only handle numbers
     as features.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种决策树的局限性在于它只能处理数字作为特征。
 - en: Standard ways of handling categorical features
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 处理分类特征的标准方法
 - en: However, it is ubiquitous in data science to be confronted with features that
     are categorical. Let’s see what are the options at hand.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在数据科学中，经常会遇到分类特征。让我们看看现有的选项。
 - en: One hot encoding
+  id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一热编码
 - en: One commonly encountered way to handle categorical values is to use ***one hot
     encoding***. The idea here is to convert the non-numerical categorical values
     into numerical values by creating a column for each possible category.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理类别值的一种常见方法是使用 ***独热编码***。这里的想法是通过为每个可能的类别创建一列，将非数值类别值转换为数值值。
 - en: When the category applies to the current line of the dataset, the corresponding
     columns are set to 1 and 0 otherwise.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 当类别适用于数据集的当前行时，相应的列被设置为 1，否则为 0。
 - en: 'The snippet of code below shows the standard way to make one hot encoding with
     pandas:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码片段展示了使用 pandas 进行独热编码的标准方法：
 - en: One hot encoding with Pandas. Code by the author.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Pandas 进行独热编码。由作者编写的代码。
 - en: One of the main limitations of one hot encoding is that you will add as many
     columns in your dataset as they are distinct categorical values.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 独热编码的主要限制之一是，你将为数据集中每个不同的类别值添加相应的列。
 - en: It’s also important to note that you must have the same distinct values when
     training and predicting, otherwise some columns will be missing during prediction.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样重要的是，在训练和预测时必须使用相同的离散值，否则在预测过程中会缺少某些列。
 - en: GLMM encoding
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: GLMM 编码
 - en: Another option is to use encoding, and more specifically GLMM encoding. The
     idea here is to convert non-numerical categories to numbers, using a model.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种选择是使用编码，更具体地说是 GLMM 编码。这里的想法是通过模型将非数值类别转换为数字。
 - en: The conversion is done using GLMM, aka ***Generalized Linear Mixed Models***.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 转换是通过 GLMM 完成的，即 ***广义线性混合模型***。
 - en: Here *generalized* states that GLMMs are simply a generalization of linear models
     where the target variable can be transformed using a function like a logarithm.
     Hence, using the same mathematical framework, standard linear regression as well
     as logistic regression can be modeled.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里 *广义* 表示 GLMM 只是线性模型的一种推广，其中目标变量可以通过对数等函数进行变换。因此，利用相同的数学框架，可以对标准线性回归和逻辑回归进行建模。
 - en: And *mixed* indicates that the models can integrate fixed and random effects,
     i.e. that the mean of the variable to predict is rather fixed or random for a
     set of observations.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 而 *混合* 表示这些模型可以整合固定效应和随机效应，即预测变量的均值在一组观测中要么是固定的，要么是随机的。
 - en: 'Applied to the case of categorical encoding, GLMMs will capture the random
     effect of each category fitting this kind of model:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 应用于类别编码的情况时，GLMM 将捕捉每个类别的随机效应，并适配这种模型：
 - en: '![](../Images/6b592943e1597960daf8abbac1d04c64.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6b592943e1597960daf8abbac1d04c64.png)'
 - en: Mixed Model predicting Y for the category I. Formula by the author.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 混合模型预测类别 I 的 Y。由作者提供的公式。
 - en: Where `Y_i` is the value predicted by the Mixel Model for the target `Y` and
     the category `i` . μ is the global mean of `Y` and is the fixed effect, while
     `RE_ci` is the random effect due to the category `i.`
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 `Y_i` 是 Mixel 模型为目标 `Y` 和类别 `i` 预测的值。μ 是 `Y` 的全局均值，表示固定效应，而 `RE_ci` 是由于类别
+    `i` 引起的随机效应。
 - en: Hence `RE_ci` captures the effect of the category, and this is the encoded value
     of the category.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此 `RE_ci` 捕捉了类别的效应，这就是类别的编码值。
 - en: 'Using `pandas` and the library `caregorical_encoders` , all this theory subsumes
     to these few lines of code:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 `pandas` 和 `categorical_encoders` 库，所有这些理论可以归纳为以下几行代码：
 - en: GLMM encoding with Pandas. Code by the author.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: GLMM 编码与 Pandas。由作者编写的代码。
 - en: 'And if you’re curious, the important line in the `categorical_encoders` library
     is:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你感兴趣，`categorical_encoders` 库中的重要代码行是：
 - en: Code by the auhor.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 由作者编写的代码。
 - en: This exactly trains a model has described by the formula above.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 这正好训练了一个由上面的公式描述的模型。
 - en: XGBoost Native support
+  id: totrans-43
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: XGBoost 原生支持
 - en: As seen above, it’s possible to alter the property of categorical values by
     either converting them to real values (glmm encoding) or by changing the dataset's
     structure and introducing a column for each possible category (one hot encoding).
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上所述，可以通过将类别值转换为实际值（glmm 编码）或通过更改数据集结构并为每个可能的类别引入一列（独热编码）来改变类别值的属性。
 - en: 'But this does not seem to be the best way to integrate the support for categories
     in the standard structure of Gradient Boosting: decision tree.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这似乎不是在标准的梯度提升结构中整合类别支持的最佳方式：决策树。
 - en: Inclusion instead of comparison
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 包括而非比较
 - en: Indeed, it would seem natural to replace comparison with inclusion as the decision
     operation. I.e. instead of checking whether a value is greater or lesser than
     a given threshold, we could check for the inclusion of the value in a given set
     of categories.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 确实，似乎自然地将比较替换为包含作为决策操作。即，与检查一个值是否大于或小于给定阈值不同，我们可以检查该值是否在给定的类别集合中。
 - en: This means that we can replace the comparison with a threshold
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着我们可以用一个阈值来替代比较。
 - en: '![](../Images/4b5fa8ac89baf4463893a7410c69fef3.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4b5fa8ac89baf4463893a7410c69fef3.png)'
 - en: Formula by the author
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者公式
 - en: by
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者
 - en: '![](../Images/4a8f7681f96bd4e7fd18bc2b02b521ad.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4a8f7681f96bd4e7fd18bc2b02b521ad.png)'
 - en: Formula by the author
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者公式
 - en: 'Based on the code of my previous article:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于我上一篇文章中的代码：
 - en: '[](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----d359096bd003--------------------------------)
     [## DIY XGBoost library in less than 200 lines of python'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----d359096bd003--------------------------------)
+    [## DIY XGBoost 库，少于 200 行 Python'
 - en: XGBoost explained as well as gradient boosting method and HP tuning by building
     your own gradient boosting library for…
+  id: totrans-56
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: XGBoost 解释以及梯度提升方法和超参数调整，通过构建你自己的梯度提升库来实现...
 - en: towardsdatascience.com](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----d359096bd003--------------------------------)
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----d359096bd003--------------------------------)
 - en: 'This can be done by updating the method creating the node condition function
     to support inclusion instead of comparison:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过更新创建节点条件函数的方法来实现，以支持包含而不是比较：
 - en: Create an inclusion condition when using categories. Code by the author.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用类别时创建一个包含条件。作者代码。
 - en: Exhaustive generation possible lists of categories
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 穷尽生成可能的类别列表
 - en: In the standard method, which uses value as the splitting condition, the candidates
     splits are generated by ordering the values in the column being considered and
     keeping unique values.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 在标准方法中，使用值作为分割条件，通过对考虑的列中的值进行排序并保持唯一值来生成候选分割。
 - en: Based on this splitting value, the gain is evaluated for the left and right
     nodes resulting from this splitting.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据这个分割值，评估左节点和右节点的增益。
 - en: When using categories, ordering is no longer relevant, and candidate conditions
     for splitting are no longer a single value, but a list of categories.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 当使用类别时，排序不再相关，候选分割条件不再是单一值，而是类别列表。
 - en: As we have no previous knowledge on the best way to regroup categories in sets
     that would optimize gain, one option is to generate all the possible combinations
     of categories.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们对优化增益的最佳类别分组方式没有先验知识，一种选择是生成所有可能的类别组合。
 - en: 'Hence again, based on the code of my previous article, we extract the code
     that creates threshold-based splitting for numerical values in `_numerical_split`
     and we introduce a new method `_categorical_split` to generate possible combinations:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，根据我上一篇文章中的代码，我们提取了创建基于阈值的数值分割的`_numerical_split`代码，并引入了一个新方法`_categorical_split`来生成可能的组合：
 - en: Generate candidate splits for numerical and categorical types. Code by the author.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 为数值和类别类型生成候选分割。作者代码。
 - en: Note that pandas masks are a very convenient way to handle both cases similarly.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，pandas 掩码是一种非常方便的方式来类似地处理这两种情况。
 - en: Putting it all together
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将所有内容汇总
 - en: 'The complete code, that implements from scratch Gradient Boosting for decision
     trees, and support categorical as well as numerical data can be found below:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整代码，从头实现了决策树的梯度提升，并支持类别数据和数值数据，见下文：
 - en: Complete code by the author.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者的完整代码。
 - en: Except for the two main changes presented above, it's mainly the same code as
     in my previous article, but slightly more generic so that numerical as well as
     categorical data can be supported.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了上述两个主要更改外，代码基本与我上一篇文章中的相同，但稍微更通用，以便同时支持数值数据和类别数据。
 - en: 'In the basic example provided, using categorical or numerical splitting give
     the same results. The code is simply slower when using categorical support, has
     the number of combinations explored is important:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在提供的基本示例中，使用类别分割或数值分割得到相同的结果。当使用类别支持时，代码只会稍微慢一些，因为探索的组合数量很重要：
 - en: Combinations explored. Code by the author.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 探索的组合。作者代码。
 - en: Note that we are using the internal pandas code `category` to distinguish between
     numerical and categorical data.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，我们使用内部 pandas 代码 `category` 来区分数值数据和分类数据。
 - en: Performance issues
+  id: totrans-75
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 性能问题
 - en: The implementation presented above works as expected and do support categorical
     values.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述实现按预期工作，并支持分类值。
 - en: However, as we are exhaustively exploring all the possible combinations of categories,
     using python `itertools.combinations` , the code will become very slow when there
     are more than a few unique categories.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，由于我们正在全面探索所有可能的类别组合，使用 python `itertools.combinations` 时，当唯一类别超过几个时，代码会变得非常慢。
 - en: 'Indeed the number of `k`possible combinations for a set of `n` categorical
     values is given by:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，对于一组 `n` 个分类值，`k` 的可能组合数由以下公式给出：
 - en: '![](../Images/f382f0e0eb55001c7a1b85c1164d69ef.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f382f0e0eb55001c7a1b85c1164d69ef.png)'
 - en: The number of possible combinations. Formula by the author.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 可能的组合数。公式由作者提供。
 - en: 'This is why XGBoost and LightGBM use a heuristic to reduce this number drastically.
     More details can be found here:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是为什么 XGBoost 和 LightGBM 使用启发式方法来大幅减少这个数量。更多细节可以在这里找到：
 - en: '[](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html?source=post_page-----d359096bd003--------------------------------#optimal-partitioning)
     [## Categorical Data - xgboost 1.7.4 documentation'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html?source=post_page-----d359096bd003--------------------------------#optimal-partitioning)
+    [## 分类数据 - xgboost 1.7.4 文档'
 - en: Note As of XGBoost 1.6, the feature is experimental and has limited features
     Starting from version 1.5, XGBoost has…
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意：截至 XGBoost 1.6，此功能仍为实验性，功能有限。从 1.5 版本开始，XGBoost 具备了...
 - en: xgboost.readthedocs.io](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html?source=post_page-----d359096bd003--------------------------------#optimal-partitioning)
     [![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: xgboost.readthedocs.io](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html?source=post_page-----d359096bd003--------------------------------#optimal-partitioning)
+    [![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)
 - en: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
 - en: Conclusion
+  id: totrans-86
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: I strongly advise using internal support for categorical data when using XGBoost
     or LightGBM. It’s not only a more memory and computation-efficient method, but
     it also provides good precisions.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我强烈建议在使用 XGBoost 或 LightGBM 时使用对分类数据的内部支持。这不仅是一种更高效的内存和计算方法，而且提供了良好的精度。
 - en: It also simplifies the data preparation pipeline, and natively supports missing
     values when training and prediction sets are disjoint.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 它还简化了数据准备流程，并在训练和预测集不重叠时原生支持缺失值。
 - en: 'If you’re interested in Gradient Boosting and its application to Decision Trees,
     please consider my book:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对梯度提升及其在决策树中的应用感兴趣，请考虑阅读我的书：
 - en: '[](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
     [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+    [## 实用梯度提升：深入探讨 Python 中的梯度提升'
 - en: This book on Gradient Boosting methods is intended for students, academics,
     engineers, and data scientists who wish to…
+  id: totrans-91
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这本关于梯度提升方法的书旨在为希望...
 - en: amzn.to](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
     [](https://www.buymeacoffee.com/guillaumes0?source=post_page-----d359096bd003--------------------------------)
     [## Guillaume Saupin
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: amzn.to](https://amzn.to/3LDmbKM?source=post_page-----d359096bd003--------------------------------)
+    [](https://www.buymeacoffee.com/guillaumes0?source=post_page-----d359096bd003--------------------------------)
+    [## Guillaume Saupin
 - en: Guillaume Saupin, a PhD holder and an expert in applied mathematics, stands
     out in the mathematical community for his…
+  id: totrans-93
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Guillaume Saupin，博士学位持有者及应用数学专家，在数学界因其...
 - en: www.buymeacoffee.com](https://www.buymeacoffee.com/guillaumes0?source=post_page-----d359096bd003--------------------------------)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: www.buymeacoffee.com](https://www.buymeacoffee.com/guillaumes0?source=post_page-----d359096bd003--------------------------------)
