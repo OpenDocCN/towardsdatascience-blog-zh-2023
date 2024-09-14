@@ -1,148 +1,220 @@
 - en: Variational Autoencoder (VAE) with Discrete Distribution using Gumbel Softmax
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Gumbel Softmax 的离散分布变分自编码器（VAE）
 - en: 原文：[https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e](https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e](https://towardsdatascience.com/variational-autoencoder-vae-with-discrete-distribution-using-gumbel-softmax-b3f749b3417e)
 - en: Theory and PyTorch Implementation
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 理论与 PyTorch 实现
 - en: '[](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[![Alexey
     Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)
     [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[![Alexey
+    Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)
+    [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----b3f749b3417e--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)
     ·17 min read·Aug 9, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b3f749b3417e--------------------------------)
+    ·17 分钟阅读·2023年8月9日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/596f70c179f4ea59a15aa4591018200b.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/596f70c179f4ea59a15aa4591018200b.png)'
 - en: '[https://unsplash.com/photos/sbVu5zitZt0](https://unsplash.com/photos/sbVu5zitZt0)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://unsplash.com/photos/sbVu5zitZt0](https://unsplash.com/photos/sbVu5zitZt0)'
 - en: 'Since this article is going to be extensive, I will provide the reader with
     an index for better navigation:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这篇文章将会很详尽，我将为读者提供一个索引以便更好地导航：
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Brief Introduction to Variational Autoencoders (VAEs)
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变分自编码器（VAEs）简要介绍
 - en: Kullback–Leibler (KL) divergence
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: Kullback–Leibler (KL) 散度
 - en: VAE loss
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: VAE 损失
 - en: Reparameterization Trick
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重参数化技巧
 - en: Sampling from a categorical distribution & the Gumbel-Max Trick
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从分类分布中采样与 Gumbel-Max 技巧
 - en: Implementation
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 实现
 - en: Introduction
+  id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Generative models have become very popular nowadays thanks to their ability
     to generate novel samples with inherent variability by learning and capturing
     the underlying probability distribution of the training data.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成模型如今变得非常流行，这要归功于它们能够通过学习和捕捉训练数据的基础概率分布来生成具有固有变异性的全新样本。
 - en: We can identify two prominent families of generative models that are Generative
     Adversarial Networks (GANs), Variational Autoencoders (VAEs) and Diffusion models.
     In this article, we are going to dive deep into VAEs with a particular focus on
     VAEs with categorical latent space.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以识别出两大主要的生成模型家族：生成对抗网络（GANs）、变分自编码器（VAEs）和扩散模型。在这篇文章中，我们将深入探讨 VAEs，特别是关注具有分类潜在空间的
+    VAEs。
 - en: Brief Introduction to Variational Autoencoders (VAEs)
+  id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 变分自编码器（VAEs）简要介绍
 - en: Variational Autoencoders (VAEs) are a type of deep neural network used in unsupervised
     machine learning. They belong to the family of autoencoders, which are neural
     networks designed to learn efficient representations of data by compressing and
     then reconstructing it.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 变分自编码器（VAEs）是一种用于无监督机器学习的深度神经网络。它们属于自编码器家族，自编码器是设计用于通过压缩然后重构数据来学习高效数据表示的神经网络。
 - en: The main idea behind VAEs is to learn a probability distribution of the data
     in a **latent space**. This latent space is a lower-dimensional representation
     of the input data, where each point corresponds to a particular data sample. For
     example, given a vector in the latent space of dimension 3, we can think that
     the first dimension to represent the eyes shape, 2nd the amount of beard and 3rd
     the tan on a face of a generated picture of a person.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: VAEs 的主要思想是学习**潜在空间**中的数据概率分布。这个潜在空间是输入数据的低维表示，其中每个点对应于一个特定的数据样本。例如，给定一个维度为
+    3 的潜在空间中的向量，我们可以认为第一个维度表示眼睛的形状，第二个维度表示胡须的多少，第三个维度表示生成的人的脸上的肤色。
 - en: 'VAEs have two key components:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: VAEs 具有两个关键组件：
 - en: '**Encoder**: The encoder network takes in the input data and maps it to the
     *parameters* of a probability distribution (usually Gaussian) in the latent space.
     Instead of directly producing a single point in the latent space, the encoder
     outputs the mean and variance of the distribution.'
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**编码器**：编码器网络接收输入数据，并将其映射到潜在空间中一个概率分布的*参数*（通常是高斯分布）。编码器不是直接在潜在空间中产生一个单一的点，而是输出分布的均值和方差。'
 - en: Outputting a distribution instead of a single point in the latent space acts
     as regularization, so that when we pick a random point in the latent space, we
     always have a meaningful image once this data point is decoded.
+  id: totrans-24
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 输出一个分布而不是潜在空间中的单个点作为正则化，这样当我们在潜在空间中选择一个随机点时，解码这个数据点后我们总能得到一个有意义的图像。
 - en: '**Decoder**: The decoder network takes samples from the latent space and reconstructs
     them back into the original data space. It converts the latent representation
     back to the data space using a process similar to that of the encoder but in reverse.'
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**解码器**：解码器网络从潜在空间中采样，并将其重建回原始数据空间。它使用类似于编码器的过程但相反，将潜在表示转换回数据空间。'
 - en: 'Let’s illustrate this process:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们来说明这个过程：
 - en: '![](../Images/745da0cc208b7e5fa82197ca2ab10402.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/745da0cc208b7e5fa82197ca2ab10402.png)'
 - en: VAE encoder-decoder diagram, Image by Author (1)
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: VAE编码器-解码器图示，图片由作者提供 (1)
 - en: Where *x* is the input image, *z* is a sampled vector in the latent space, μ
     and σ are latent space parameters where μ is the means vector and σ is the standard
     deviations vector. Finally, *x’* is the reconstructed image from the latent variable.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *x* 是输入图像，*z* 是潜在空间中的一个采样向量，μ 和 σ 是潜在空间参数，其中μ是均值向量，σ是标准差向量。最后，*x’* 是从潜在变量重建的图像。
 - en: 'We want this **latent space to have 2 properties**:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望这个**潜在空间具备两个特性**：
 - en: Close points in the latent space should output similarly looking pictures.
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 潜在空间中接近的点应输出相似的图片。
 - en: Any sampled point from the latent space should produce something similar to
     the training data, i.e., if we train on peoples faces it should not produce any
     face with 3 eyes or 4 ears.
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从潜在空间中采样的任何点都应产生与训练数据相似的东西，即，如果我们训练的是人的面孔，它不应产生任何有3只眼睛或4只耳朵的面孔。
 - en: To enforce the first, we need the encoder to map similar pictures to close latent
     space parameters and then the decoder to map them back to similarly looking pictures
     — this is achieved via image reconstruction loss. To enforce the second, we need
@@ -154,12 +226,16 @@
     variances very small) that would lead to overfitting. If this happened, sampling
     a value far away from any training point in the latent space would not produce
     a meaningful image.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 要实现第一个目标，我们需要让编码器将相似的图片映射到接近的潜在空间参数，然后解码器将它们映射回看起来相似的图片——这通过图像重建损失来实现。为了实现第二个目标，我们需要添加一个正则化项。这个正则化项是编码器返回的参数与均值为0、方差为1的标准高斯分布——N(0,1)之间的Kullback–Leibler（KL）散度。通过保持潜在空间接近N(0,1)，我们确保编码器不会为每个样本产生相距过远的分布（通过使均值非常不同和方差非常小），这会导致过拟合。如果发生这种情况，在潜在空间中采样一个远离任何训练点的值将无法产生有意义的图像。
 - en: Kullback–Leibler (KL) divergence
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Kullback–Leibler (KL) 散度
 - en: 'KL divergence, short for Kullback-Leibler divergence, is a measure of how one
     probability distribution differs from another. Given two probability distributions
     P(X) and Q(X), where X is a random variable, the KL divergence from Q to P, denoted
@@ -167,180 +243,276 @@
     lost when using Q to approximate P. It is not a symmetric measure, meaning KL(Q
     || P) is generally different from KL(P || Q). The formula for continuous and discrete
     variables are given by:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: KL散度，简称Kullback-Leibler散度，是衡量一个概率分布与另一个分布的不同程度的指标。给定两个概率分布P(X)和Q(X)，其中X是随机变量，KL(Q
+    || P)表示从Q到P的KL散度，是一个非负值，表示使用Q来近似P时信息的丧失程度。它不是对称度量，即KL(Q || P)通常不同于KL(P || Q)。连续和离散变量的公式如下：
 - en: '![](../Images/d925d61babf5602d7c28342fe39e0162.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d925d61babf5602d7c28342fe39e0162.png)'
 - en: KL divergence, discrete case (2)
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: KL散度，离散情况 (2)
 - en: '![](../Images/f1da2cc52851d5249b2f4572ed7ee776.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f1da2cc52851d5249b2f4572ed7ee776.png)'
 - en: KL divergence, continuous case (3)
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: KL散度，连续情况 (3)
 - en: But what is the intuition behind this formula and how is it derived?
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是这个公式的直觉是什么？它是如何推导出来的？
 - en: 'Suppose we have a dataset with observations **sampled from a distribution P(x)**
     — {x1, x2, …, xn}, and we want to compare how likely these observations are generated
     under the true distribution P(x) versus the approximation distribution Q(x). The
     likelihood of observing the entire dataset under a probability distribution can
     be calculated as the product of the individual probabilities of each observation:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个包含 **从分布 P(x) 中抽样得到的观察数据** — {x1, x2, …, xn} 的数据集，我们想要比较这些观察数据在真实分布 P(x)
+    和近似分布 Q(x) 下的生成可能性。在概率分布下观察整个数据集的可能性可以通过每个观察数据的个体概率的乘积来计算：
 - en: 'Likelihood of the data under P(x): L_P = P(x1) * P(x2) * … * P(xn)'
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 P(x) 下的数据似然：L_P = P(x1) * P(x2) * … * P(xn)
 - en: 'Likelihood of the data under Q(x): L_Q = Q(x1) * Q(x2) * … * Q(xn)'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 Q(x) 下的数据似然：L_Q = Q(x1) * Q(x2) * … * Q(xn)
 - en: Taking the ratio L_P / L_Q, we can compare how similar they are. If the ratio
     is close to 1, the approximation distribution is similar to the true one, while
     if this ratio is high, which means that the likelihood of a sequence sampled from
     the true distribution according to the approximate distribution is significantly
     lower, the two distributions are different. Obviously, it cannot be less than
     1 because the data are sampled from the true distribution P(x).
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过比较比率 L_P / L_Q，我们可以比较它们的相似度。如果比率接近 1，则近似分布与真实分布相似；而如果这个比率很高，意味着根据近似分布从真实分布中抽样的序列的可能性显著较低，则两个分布不同。显然，这个比率不能小于
+    1，因为数据是从真实分布 P(x) 中抽样的。
 - en: 'Taking the logarithm of this ratio on both sides, we get:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 对这个比率两边取对数，我们得到：
 - en: '![](../Images/37a19f28e5644d510762a16d5cbb911d.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/37a19f28e5644d510762a16d5cbb911d.png)'
 - en: Log of the ratio L_P / L_Q (4)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 比率 L_P / L_Q 的对数 (4)
 - en: 'Now, if we take the expectation of this logarithm with respect to the true
     distribution P(x) over the dataset, we get the expected log-likelihood ratio:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，如果我们对数据集上真实分布 P(x) 的对数进行期望计算，我们得到期望对数似然比：
 - en: '![](../Images/1bd1eeab67eb14b2f85429f027752773.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1bd1eeab67eb14b2f85429f027752773.png)'
 - en: The expectation of the log of the ratio L_P / L_Q (5)
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 比率 L_P / L_Q 的期望对数 (5)
 - en: This is nothing else but the KL divergence! As a bonus, let’s now dive a bit
     deeper to also understand how KL divergence is linked to cross-entropy. An attentive
     reader has probably recognized that
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 这不过是 KL 散度！作为额外的内容，让我们深入了解 KL 散度如何与交叉熵相关联。细心的读者可能已经认识到：
 - en: 'Σ P(x) * log(P(x)) in the formula is the **negative** **of the** **entropy**
     of P(x), while — Σ P(x) * log(Q(x)) is the **cross-entropy** between P(x) and
     Q(x). So, we have:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 公式中的 Σ P(x) * log(P(x)) 是 **P(x) 的熵的负值**，而 Σ P(x) * log(Q(x)) 是 **P(x) 和 Q(x)
+    之间的交叉熵**。所以，我们有：
 - en: '![](../Images/3eeec6f0f9318a43e40865df35097504.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3eeec6f0f9318a43e40865df35097504.png)'
 - en: KL divergence as the difference between cross-entropy and entropy (6)
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: KL 散度作为交叉熵和熵之间的差异 (6)
 - en: Now, the entropy of the true data distribution P(x) is a constant that does
     not depend on the approximation distribution Q(x). Therefore, **minimizing the
     expected log-likelihood ratio E[log(L_P / L_Q)] is equivalent to minimizing the
     cross-entropy H(P, Q)** between the true distribution P(x) and the approximation
     distribution Q(x).
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，真实数据分布 P(x) 的熵是一个不依赖于近似分布 Q(x) 的常数。因此，**最小化期望对数似然比 E[log(L_P / L_Q)] 等同于最小化真实分布
+    P(x) 和近似分布 Q(x) 之间的交叉熵 H(P, Q)**。
 - en: VAE loss
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: VAE 损失
 - en: In the “Brief Introduction to Variational Autoencoders (VAEs)” section, we provided
     some intuition about how VAEs are optimized and that the latent space should satisfy
     2 properties to generate meaningful images when we sample **any** random data
     point from the latent space that is enforced by the reconstruction loss and KL
     divergence regularization. In this section, we are going to dive into the mathematics
     of these two.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在“变分自编码器（VAEs）简介”部分，我们提供了关于如何优化 VAEs 的一些直觉，并且潜在空间应该满足 2 个属性，以在从潜在空间抽样 **任何**
+    随机数据点时生成有意义的图像，这由重构损失和 KL 散度正则化强制执行。在本节中，我们将深入探讨这两个方面的数学。
 - en: 'Given some training data x = {x1, x2, …, xn} generated from a latent variable
     z, our goal is to maximize the likelihood of this data to train our Variational
     Autoencoder model. The likelihood of the data is given by:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一些从潜在变量 z 生成的训练数据 x = {x1, x2, …, xn}，我们的目标是最大化这些数据的似然，以训练我们的变分自编码器模型。数据的似然由以下公式给出：
 - en: '![](../Images/8f98b29c80a96f7f1e29681632ad2c9a.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8f98b29c80a96f7f1e29681632ad2c9a.png)'
 - en: Data likelihood (7)
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据似然 (7)
 - en: We integrated out the latent variable because its not observable.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将潜在变量积分出去，因为它是不可观察的。
 - en: 'Now, *p(x|z)* can be easily computed with the decoder network, and *p(z)* was
     assumed to be a Gaussian. However, we have one big problem here — computing this
     integral is actually impossible in the finite amount of time because we need to
     integrate over all the latent space. Thus, we use the Bayesian rule to compute
     our *p(x)* differently:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，*p(x|z)*可以通过解码器网络轻松计算，而*p(z)*被假定为高斯分布。然而，我们面临一个大问题——在有限的时间内计算这个积分实际上是不可能的，因为我们需要在所有潜在空间上进行积分。因此，我们使用贝叶斯规则以不同的方式计算我们的*p(x)*：
 - en: '![](../Images/a095bb9c8190c00a58ea3acda96b43d1.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a095bb9c8190c00a58ea3acda96b43d1.png)'
 - en: Bayesian rule for p(x) (8)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: p(x)的贝叶斯规则 (8)
 - en: 'Now, *p(z|x)* is intractable. The intractability of *p*(*z*∣*x*) arises because
     we need to compute the integral of *p*(*z*∣*x*) over all possible values of *z*
     for each data point *x*. Formally, this integral can be expressed as:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，*p(z|x)*是难以处理的。*p*(*z*∣*x*)的难处理性源于我们需要对每个数据点*x*的所有可能值*z*计算*p*(*z*∣*x*)的积分。形式上，这个积分可以表示为：
 - en: '![](../Images/5c6a7e03a33344edff066e8d510cb7d5.png)'
+  id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5c6a7e03a33344edff066e8d510cb7d5.png)'
 - en: Bayesian rule for p(z|x) (9)
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: p(z|x)的贝叶斯规则 (9)
 - en: 'Because of this intractability, in VAEs, we resort to using an approximate
     distribution (Gaussian in our case) *q*(*z*∣*x*) that is easier to work with and
     is computationally tractable. This approximate distribution is learned through
     the encoder network:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这种难处理性，在VAE中，我们 resort 使用一个近似分布（在我们情况下是高斯分布）*q*(*z*∣*x*)，这更容易处理且计算上可行。这个近似分布是通过编码器网络学习的：
 - en: '![](../Images/c34075d614ffec6788852560fd3b6af3.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c34075d614ffec6788852560fd3b6af3.png)'
 - en: Approximated distribution of p(z|x) (10)
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: p(z|x)的近似分布 (10)
 - en: 'Now we have all the elements in place and we can approximate *p(x)* with *p(x|z)*
     computed with the decoder network and *p(z|x)* approximated by the encoder *q*.
     Applying the log to both sides of equation 9 and doing some algebraic manipulations,
     we get:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经准备好所有元素，可以用解码器网络计算的*p(x|z)*来近似*p(x)*，以及由编码器*q*近似的*p(z|x)*。对方程9的两边应用对数并进行一些代数变换，我们得到：
 - en: '![](../Images/a67fee274a602f33d0ead044f9567330.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a67fee274a602f33d0ead044f9567330.png)'
 - en: log probability of p(x) (11)
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: p(x)的对数概率 (11)
 - en: 'Now, applying the Expectation operator on both sides :'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，对两边应用期望算子：
 - en: '![](../Images/95fe391e4083a11e2668293d20855f46.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/95fe391e4083a11e2668293d20855f46.png)'
 - en: Expectation of log probability of p(x) (12)
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: p(x)的对数概率的期望 (12)
 - en: 'Which is equal to:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 这等于：
 - en: '![](../Images/b88ef402aaa0d9bc5ad6bafc1ca00bb7.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b88ef402aaa0d9bc5ad6bafc1ca00bb7.png)'
 - en: Expectation of log probability of p(x) — different form (13)
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: p(x)的对数概率的期望 — 不同形式 (13)
 - en: 'In the above figure, the first term is the reconstruction term, i.e., how well
     our model can reconstruct the training data *x* from the latent variable. The
     second term is the KL divergence between the prior of *z* — *N(0,1)* and the samples
@@ -348,26 +520,38 @@
     the posterior of the decoder, which is intractable. If we drop the last term,
     we get the lower bound on the data likelihood as KL is always ≥ 0 which is called
     Evidence Lower Bound (ELBO). Thus we finally have:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上图中，第一个项是重建项，即我们的模型从潜在变量重建训练数据*x*的效果。第二个项是*z*的先验——*N(0,1)*与来自编码器的样本之间的KL散度。第三个项是编码器和解码器后验之间的KL散度，这是难以处理的。如果我们忽略最后一项，我们得到数据似然的下界，因为KL总是≥0，这称为证据下界（ELBO）。因此，我们最终得到：
 - en: '![](../Images/39c838302f2a69166a13a8911c5db4e2.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/39c838302f2a69166a13a8911c5db4e2.png)'
 - en: Evidence Lower Bound (ELBO) (14)
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 证据下界（ELBO） (14)
 - en: So when training VAE, we are trying to maximize ELBO, which is equivalent to
     maximizing the probability of our data.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在训练VAE时，我们尝试最大化ELBO，这等同于最大化我们数据的概率。
 - en: Reparameterization Trick
+  id: totrans-84
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 重参数化技巧
 - en: Let’s start with understanding what the reparameterization trick is, as it will
     be crucial to understand that Gumbel-Softmax uses something similar.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先了解重参数化技巧，因为理解这一点对于理解Gumbel-Softmax使用类似的东西至关重要。
 - en: As we have seen in the first section, the encoder outputs the mean and the variance
     parameters of the Normal distribution, then we sample a random vector from the
     Normal variable with those parameters and pass this latent vector through the
@@ -377,51 +561,73 @@
     a Gaussian is not differentiable**. Think about it — how can you differentiate
     a sample? Thus, we cannot use back-propagation. The solution to this is to use
     the reparameterization trick.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在第一部分中所看到的，编码器输出正态分布的均值和方差参数，然后我们从具有这些参数的正态变量中抽取一个随机向量，并通过解码器传递这个潜在向量以重建初始图像。为了最小化重建损失并使网络学习，我们需要从这个重建损失中进行反向传播，但存在一个问题——**潜在变量Z，即从高斯中抽样的变量，是不可微分的**。想一想——你如何对一个样本进行求导？因此，我们不能使用反向传播。解决方案是使用重新参数化技巧。
 - en: 'To make the random variable *Z* differentiable, we need to split it into a
     deterministic part which is differentiable, and a stochastic part which is not
     differentiable. Any sample from a random Normal *Z ~ N(μ, σ)* can be written as:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使随机变量*Z*可微分，我们需要将其分为一个可微分的确定性部分和一个不可微分的随机部分。任何来自随机正态分布的样本 *Z ~ N(μ, σ)* 可以写成：
 - en: '*Z = μ + N(0,1) = σ = μ +* ***ε*** *σ* where ***ε ~*** *N(0,1)*'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Z = μ + N(0,1) = σ = μ +* ***ε*** *σ* 其中 ***ε ~*** *N(0,1)*'
 - en: 'So **μ and σ are deterministic,** and we can use back-propagation on it, while
     **ε is the stochastic part** which we cannot backpropagate. Thus, we can differentiate
     with respect to μ and σ:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以**μ和σ是确定的**，我们可以对其进行反向传播，而**ε是随机部分**，我们不能对其进行反向传播。因此，我们可以对μ和σ进行求导：
 - en: '![](../Images/d9b9b06ced534d58c16a07b86cb1633b.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d9b9b06ced534d58c16a07b86cb1633b.png)'
 - en: Derivatives of random variable Z wrt mean and std (15)
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机变量Z对均值和标准差的导数 (15)
 - en: …to **learn the mean and the standard deviation of the Normal distribution in
     the latent space we sample from**.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: …以**学习潜在空间中正态分布的均值和标准差**。
 - en: Sampling from a categorical distribution & the Gumbel-Max Trick
+  id: totrans-93
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 从分类分布中进行抽样 & Gumbel-Max技巧
 - en: What if, instead of having a continuous latent distribution, we want to model
     the latent space as a Categorical distribution? What is even the reason someone
     wants to do this, you will ask? Well, discrete representations can be useful in
     many cases, for example sampling discrete action in reinforcement learning problems,
     generation of discrete tokens in text, and so on.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们希望将潜在空间建模为分类分布，而不是具有连续潜在分布的情况，会怎么样？你会问，为什么有人要这样做？好吧，离散表示在许多情况下是有用的，例如在强化学习问题中采样离散动作、生成离散文本标记等等。
 - en: So how can we sample from a categorical distribution and learn its parameters,
     making it differentiable? We can reuse the idea of the reparameterization trick,
     adapting it to this problem!
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们如何从分类分布中进行抽样并学习其参数，使其可微分？我们可以重复使用重新参数化技巧的想法，将其调整到这个问题上！
 - en: 'Firstly though, let’s try to understand how to sample from a categorical distribution.
     Say we have the following vector of probabilities:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们尝试理解如何从分类分布中进行抽样。假设我们有以下概率向量：
 - en: '*theta* = [0.05, 0.25, 0.7] that represent the following categories — [Red,
     Blue, White]. To sample, we need a source of randomness where Uniform distribution
     between 0 and 1 is normally used. Recall that with a Uniform distribution, sampling
@@ -429,94 +635,146 @@
     it to Categorical, we can slice it according to our probabilities *theta.* Let’s
     define a cumulative sum vector *theta_cum* = [0.05, 0.3, 1] which represents the
     graph below.'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: '*theta* = [0.05, 0.25, 0.7] 代表以下类别——[红色, 蓝色, 白色]。为了进行抽样，我们需要一个随机源，通常使用0到1之间的均匀分布。请记住，在均匀分布中，0到1之间的抽样是同样可能的。因此，我们从均匀分布中抽样，并将其转换为分类分布，我们可以根据我们的概率*theta*进行切片。我们定义一个累计和向量
+    *theta_cum* = [0.05, 0.3, 1]，它代表下面的图。'
 - en: Given this sample from a Uniform distribution, e.g., 0.31, we choose the category
     whose cumulative probability exceeds the generated random number.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定来自均匀分布的样本，例如0.31，我们选择累计概率超过生成随机数的类别。
 - en: '*argmax(theta_cum ≥ U(0,1)) = argmax([False, True, True])* Which corresponds
     to “Blue” in the example as argmax takes the first index corresponding to *True*.'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '*argmax(theta_cum ≥ U(0,1)) = argmax([False, True, True])* 这对应于示例中的“蓝色”，因为argmax选择第一个对应于*True*的索引。'
 - en: '![](../Images/78639204643d738e3d159d9df564b1e3.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/78639204643d738e3d159d9df564b1e3.png)'
 - en: Cumulative probability categorical distribution, Image by Author (16)
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 累积概率分类分布，图像作者提供 (16)
 - en: 'Now, there is another way we can sample from a categorical distribution — instead
     of using Uniform distribution, we use Gumbel distribution defined as:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以用另一种方式从分类分布中采样 — 不是使用均匀分布，而是使用定义为的 Gumbel 分布：
 - en: '![](../Images/1204860db192dcdbb6204338cf568cdf.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1204860db192dcdbb6204338cf568cdf.png)'
 - en: Gumbel distribution (17)
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: Gumbel 分布 (17)
 - en: Assuming we have a vector of (log) probabilities like before
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个 (log) 概率向量，如之前所示
 - en: '*theta = [log(alpha1), log(alpha2), log(alpha3)],* which are parameters that
     we want to estimate using backpropagation. To use backpropagation, we replicate
     what was done in the reparameterization trick section — have a deterministic part,
     i.e., class log probabilities that are our parameters and a stochastic part given
     by a random standard Gumbel noise.'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '*theta = [log(alpha1), log(alpha2), log(alpha3)],* 这些是我们希望通过反向传播估计的参数。为了使用反向传播，我们复现了重新参数化技巧部分中所做的
+    — 拥有一个确定性部分，即作为我们参数的类别对数概率和一个由随机标准 Gumbel 噪声给出的随机部分。'
 - en: 'To sample from a categorical distribution using Gumbel, we do the following:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 要使用 Gumbel 从分类分布中采样，我们可以按以下步骤操作：
 - en: '*argmax([log(alpha1) + G1, log(alpha2) + G2, log(alpha3) + G3])*'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '*argmax([log(alpha1) + G1, log(alpha2) + G2, log(alpha3) + G3])*'
 - en: 'Where *theta* is the deterministic part, and Gumbel noise is the stochastic
     part. We can propagate through this sum of deterministic and stochastic parts.
     However, **argmax is not a differentiable** function. Thus we replace it with
     **Softmax** with a temperature **τ** to make everything differentiable. So the
     probability of a category *yi* becomes:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *theta* 是确定性部分，Gumbel 噪声是随机部分。我们可以通过这两个部分的和进行传播。然而，**argmax 不是一个可微的** 函数。因此，我们用具有温度
+    **τ** 的 **Softmax** 替代它，以使一切可微。于是，类别的概率 *yi* 变成：
 - en: '![](../Images/246ae82a400b4a423d499e52ab89d585.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/246ae82a400b4a423d499e52ab89d585.png)'
 - en: Sample with Gumbel-Softmax distribution (18)
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Gumbel-Softmax 分布采样 (18)
 - en: Low **τ** will make the Softmax more similar to argmax, while higher **τ** will
     make it closer to the Uniform distribution. Indeed, as we decrease the temperature
     to very low values like 1e-05, the probabilities become almost like selecting
     an argmax, i.e., we basically sample from a discrete distribution.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 低 **τ** 会使 Softmax 更接近 argmax，而较高的 **τ** 会使其更接近均匀分布。实际上，当我们将温度降低到如 1e-05 这样的非常低的值时，概率几乎像选择
+    argmax，即我们基本上是从离散分布中采样。
 - en: Implementation
+  id: totrans-113
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 实现
 - en: 'We take as an example the MNIST dataset (License: Public Domain / Source: [http://yann.lecun.com/exdb/mnist/](http://yann.lecun.com/exdb/mnist/),
     also available in *torchvision.datasets*) with the objective of learning a generative
     model assuming binary images. The latent variable size is assumed to be 20 with
     10 categorical variables (10 numbers). The prior is a categorical distribution
     over 10 categories with a Uniform prior probability of 1/10.'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们以 MNIST 数据集为例 (许可：公共领域 / 来源：[http://yann.lecun.com/exdb/mnist/](http://yann.lecun.com/exdb/mnist/)，也可以在
+    *torchvision.datasets* 中找到)，目标是学习一个生成模型，假设图像是二值的。潜在变量大小假设为 20，包含 10 个分类变量（10 个数字）。先验是一个包含
+    10 个类别的分类分布，均匀先验概率为 1/10。
 - en: '**1.** Let’s start from implementing the Gumbel softmax function `gumbel_softmax`.
     As we said previously, this is given by the sum of log probabilities (logits)
     of each category + some randomness given by the Gumbel distribution. In case of
     3 categories we have:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1.** 首先实现 Gumbel softmax 函数 `gumbel_softmax`。如前所述，这由每个类别的对数概率（logits）之和加上
+    Gumbel 分布给出的随机性构成。在 3 个类别的情况下，我们有：'
 - en: '*softmax([log(alpha1) + G1, log(alpha2) + G2, log(alpha3) + G3])* Softmax is
     used instead instead of argmax for differentiability.'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '*softmax([log(alpha1) + G1, log(alpha2) + G2, log(alpha3) + G3])* 使用 Softmax
+    替代 argmax 以实现可微性。'
 - en: '[PRE0]'
+  id: totrans-117
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '**One additional note:**'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '**附注：**'
 - en: 'We can notice one small trick in `gambel_softmax` function — if the parameter
     `hard` is True, we take *argmax* instead of softmax. When evaluating, we normally
     take the *argmax* (this is what we do in. `model.samle_img`), while during training,
@@ -524,171 +782,272 @@
     However, this is not necessary, and we can take *argmax* during training too,
     by **skipping** the gradient of `y_hard` in `gumbel_softmax` function and differentiating
     w.r.t. softmax `y`. A short example will clarify:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以注意到 `gambel_softmax` 函数中的一个小技巧——如果参数 `hard` 为 True，我们使用 *argmax* 而不是 softmax。在评估时，我们通常使用
+    *argmax*（这是我们在 `model.sample_img` 中所做的），而在训练期间，我们使用 softmax，因为 *argmax* 操作是不可微分的。然而，这不是必需的，我们也可以在训练期间使用
+    *argmax*，通过 **跳过** `y_hard` 在 `gumbel_softmax` 函数中的梯度并对 softmax `y` 进行微分。一个简短的示例会有所阐明：
 - en: '[PRE1]'
+  id: totrans-120
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'When *skip_d = False* we have:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 *skip_d = False* 时，我们有：
 - en: dl/df = 3
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/df = 3
 - en: dl/dd = dl/df * df/dd = (3) * (4) = 12
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/dd = dl/df * df/dd = (3) * (4) = 12
 - en: dl/dc = dl/df * df/dd * dd/dc = (3) * (4) * (2 * c) = 144
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/dc = dl/df * df/dd * dd/dc = (3) * (4) * (2 * c) = 144
 - en: dl/da = dl/df * df/dd * dd/dc * dc/da = (3) * (4) * (2 * c) * (2) = 288
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/da = dl/df * df/dd * dd/dc * dc/da = (3) * (4) * (2 * c) * (2) = 288
 - en: dl/db = dl/df * df/dd * dd/dc * dc/db = (3) * (4) * (2 * c) * (2) = 288
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/db = dl/df * df/dd * dd/dc * dc/db = (3) * (4) * (2 * c) * (2) = 288
 - en: While when *skip_d = True:* dl/df = 3
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 *skip_d = True:* dl/df = 3
 - en: dl/dd = dl/df * df/dd = (3) * (4) = 12
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/dd = dl/df * df/dd = (3) * (4) = 12
 - en: dl/dc = dl/df * df/dd = (3) * (4) = 12
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/dc = dl/df * df/dd = (3) * (4) = 12
 - en: From now on we skip dd/dc, i.e. we set the gradient dl/dc = dl/dd.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 从现在开始，我们跳过 dd/dc，即我们将梯度 dl/dc = dl/dd。
 - en: dl/da = dl/df * df/dd * dc/da = (3) * (4) * (2) = 24
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/da = dl/df * df/dd * dc/da = (3) * (4) * (2) = 24
 - en: dl/db = dl/df * df/dd * dc/db = (3) * (4) * (2) = 24
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: dl/db = dl/df * df/dd * dc/db = (3) * (4) * (2) = 24
 - en: In the example above, the value of the *loss* is the same but the gradients
     are different. In our model the value will not be the same though as we are setting
     `latent_z` equal to `y_hard` when `hard=True` and equal to softmax `y` when `hard=False`,
     but the backpropagated gradients of `y` will be the same in both cases.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述示例中，*loss* 的值是相同的，但梯度却不同。在我们的模型中，值不会相同，因为当 `hard=True` 时我们将 `latent_z` 设置为
+    `y_hard`，而当 `hard=False` 时设置为 softmax `y`，但 `y` 的反向传播梯度在两种情况下都是相同的。
 - en: '**2.** Now let’s define our VAE model. The encoder, which takes an image and
     maps it to the log probabilities of the categorical variables, is given by 3 linear
     layers with ReLU non-linearities. The decoder, that maps back the latent space
     vector to the image space, is given by 3 linear layers with 2 ReLU non-linearities
     and last sigmoid non-linearity. Sigmoid outputs directly the probability, which
     is convenient as we model our MNIST images (each pixel) as a Bernoulli variable.'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2.** 现在让我们定义我们的 VAE 模型。编码器将图像映射到分类变量的对数概率，由 3 个线性层和 ReLU 非线性层组成。解码器将潜在空间向量映射回图像空间，由
+    3 个线性层、2 个 ReLU 非线性层和最后一个 sigmoid 非线性层组成。Sigmoid 直接输出概率，这很方便，因为我们将 MNIST 图像（每个像素）建模为
+    Bernoulli 变量。'
 - en: '[PRE2]'
+  id: totrans-135
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'In the forward function, we first compute the logits from the encoder with
     the Gumbel Softmax:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前向函数中，我们首先通过编码器计算 logits，使用 Gumbel Softmax：
 - en: '[PRE3]'
+  id: totrans-137
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Then, we decode them that gives us the probability of a Bernoulli for each
     pixel. We can then sample from it to generate an image with the probabilities
     parameters:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们解码它们，给出每个像素的 Bernoulli 概率。我们可以从中采样，以生成具有概率参数的图像：
 - en: '[PRE4]'
+  id: totrans-139
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Next, let’s compute the ELBO loss
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们计算 ELBO 损失
 - en: '![](../Images/032116c92edcb9705e44c512e2016738.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/032116c92edcb9705e44c512e2016738.png)'
 - en: EBLO loss (19)
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: EBLO 损失 (19)
 - en: 'For first term (reconstruction loss), we need to compute the log-likelihood
     of the real data under our estimated model, which this tells us how likely is
     the real image under our model. We have computed before `dist_x` from the decoder,
     which is what we are going to use to estimate this probability:'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于第一项（重建损失），我们需要计算在我们估计的模型下真实数据的对数似然，这告诉我们真实图像在我们模型下的可能性。我们之前从解码器计算了 `dist_x`，这就是我们用来估计该概率的：
 - en: '[PRE5]'
+  id: totrans-144
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Then we compute the regularization given by the KL divergence between the prior
     given by categorical distribution over 10 categories with a Uniform prior probability
     1/10 and the latent space categorical parameters:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们计算由 KL 散度给出的正则化，该散度是由 10 类别的分类分布与均匀先验概率 1/10 之间的差异和潜在空间的分类参数给出的：
 - en: '[PRE6]'
+  id: totrans-146
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The full code, including the training function and plotting utilities are given
     below:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 包括训练函数和绘图工具在内的完整代码如下：
 - en: '[PRE7]'
+  id: totrans-148
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'At the beginning of the training we have high loss and bad reconstruction:'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练开始时，我们有较高的损失和糟糕的重建效果：
 - en: '![](../Images/a6eea522101524ea859835100680bee4.png)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a6eea522101524ea859835100680bee4.png)'
 - en: Reconstruction vs Real, **start** of training, Image by Author (20)
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 重建与真实，训练的**开始**，作者图像（20）
 - en: Towards the end of the training, we get quite a good reconstruction and much
     lower loss. Obviously, we could train for longer to get even better reconstruction.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练接近尾声时，我们得到了相当好的重建效果和显著降低的损失。显然，我们可以继续训练更长时间，以获得更好的重建效果。
 - en: '![](../Images/ab7e7a269ee0d79347bb11222c85e9be.png)'
+  id: totrans-153
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab7e7a269ee0d79347bb11222c85e9be.png)'
 - en: Reconstruction vs Real, **end** of training, Image by Author (21)
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 重建与真实，训练的**结束**，作者图像（21）
 - en: Conclusions
+  id: totrans-155
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article, we discovered that VAE can also be modeled with categorical
     latent space. This becomes very useful when we want to sample discrete actions
     in reinforcement learning problems or generate discrete tokens for text. We encountered
     a problem when trying to differentiate the *argmax* operation to select the categorical
     variable, as *argmax* is not differentiable, but this was solved thanks to the
     Gumbel Softmax inspired by the reparameterization trick.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们发现 VAE 也可以用分类潜在空间来建模。当我们想在强化学习问题中采样离散动作或生成文本的离散标记时，这非常有用。在尝试对 *argmax*
+    操作进行微分以选择分类变量时，我们遇到了一个问题，因为 *argmax* 是不可微分的，但 thanks to Gumbel Softmax 和重新参数化技巧的启发，解决了这个问题。
 - en: '[](https://medium.com/@alexml0123/membership?source=post_page-----b3f749b3417e--------------------------------)
     [## Join Medium with my referral link — Alexey Kravets'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@alexml0123/membership?source=post_page-----b3f749b3417e--------------------------------)
+    [## 使用我的推荐链接加入 Medium — Alexey Kravets'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-158
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为 Medium 的会员，你的部分会员费会分配给你阅读的作者，并且你可以完全访问所有故事…
 - en: medium.com](https://medium.com/@alexml0123/membership?source=post_page-----b3f749b3417e--------------------------------)
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@alexml0123/membership?source=post_page-----b3f749b3417e--------------------------------)
 - en: References
+  id: totrans-160
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考资料
 - en: '[1] [https://jhui.github.io/2017/03/06/Variational-autoencoders/](https://jhui.github.io/2017/03/06/Variational-autoencoders/)'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [https://jhui.github.io/2017/03/06/Variational-autoencoders/](https://jhui.github.io/2017/03/06/Variational-autoencoders/)'
 - en: '[2] [https://blog.evjang.com/2016/11/tutorial-categorical-variational.html](https://blog.evjang.com/2016/11/tutorial-categorical-variational.html)'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [https://blog.evjang.com/2016/11/tutorial-categorical-variational.html](https://blog.evjang.com/2016/11/tutorial-categorical-variational.html)'
 - en: '[3] [https://www.youtube.com/watch?v=Q3HU2vEhD5Y&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=19](https://www.youtube.com/watch?v=Q3HU2vEhD5Y&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=19)'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [https://www.youtube.com/watch?v=Q3HU2vEhD5Y&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=19](https://www.youtube.com/watch?v=Q3HU2vEhD5Y&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=19)'
 - en: '[4] [https://arxiv.org/pdf/1611.01144.pdf](https://arxiv.org/pdf/1611.01144.pdf)'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] [https://arxiv.org/pdf/1611.01144.pdf](https://arxiv.org/pdf/1611.01144.pdf)'
 - en: '[5] [https://github.com/shaabhishek/gumbel-softmax-pytorch](https://github.com/shaabhishek/gumbel-softmax-pytorch)'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] [https://github.com/shaabhishek/gumbel-softmax-pytorch](https://github.com/shaabhishek/gumbel-softmax-pytorch)'

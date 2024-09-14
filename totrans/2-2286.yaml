@@ -1,131 +1,201 @@
 - en: Variance Reduction with Importance Sampling
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 重要性采样的方差减少
 - en: 原文：[https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7](https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7](https://towardsdatascience.com/variance-reduction-with-importance-sampling-4e5ca4b1c5a7)
 - en: Mathematical explanation and Python implementation
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数学解释和 Python 实现
 - en: '[](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[![Oliver
     S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)
     [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[![Oliver
+    S](../Images/b5ee0fa2d5fb115f62e2e9dfcb92afdd.png)](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)
+    [Oliver S](https://medium.com/@hrmnmichaels?source=post_page-----4e5ca4b1c5a7--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)
     ·6 min read·Jan 23, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e5ca4b1c5a7--------------------------------)
+    ·阅读时长 6 分钟 ·2023年1月23日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/08c4a7efaed06bcd1a42a2a74b87d3d5.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/08c4a7efaed06bcd1a42a2a74b87d3d5.png)'
 - en: Photo by [Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/uKlneQRwaxY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[Edge2Edge Media](https://unsplash.com/@edge2edgemedia?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    在[Unsplash](https://unsplash.com/photos/uKlneQRwaxY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: 'In a previous post I introduced [different numerical sampling techniques](https://medium.com/towards-data-science/introduction-to-sampling-methods-c934b64b6b08),
     one of them being importance sampling. In that post we used this technique to
     allow sampling from complex distributions, sampling from which would otherwise
     be infeasible. However, importance sampling is frequently used for another reason,
     namely variance reduction: that is, by choosing a suited proposal distribution
     we can reduce the variance of our estimator — which we will cover here.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前的文章中，我介绍了[不同的数值采样技术](https://medium.com/towards-data-science/introduction-to-sampling-methods-c934b64b6b08)，其中之一是重要性采样。在那篇文章中，我们使用了这一技术来允许从复杂的分布中采样，而从这些分布中采样在其他情况下是不切实际的。然而，重要性采样还有另一个常见用途，即方差降低：通过选择合适的建议分布，我们可以降低估计量的方差——这就是我们在这里要讨论的内容。
 - en: Recap of Importance Sampling
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 重要性采样回顾
 - en: 'Assume we don’t just want to calculate the expectation `E[X]` of a random variable
     `X`, but instead the expectation of a function of that variable, `f[X]`. In a
     continuous setting this is calculated as:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们不仅仅想计算随机变量 `X` 的期望 `E[X]`，而是该变量函数的期望 `f[X]`。在连续情况下，这可以计算为：
 - en: '![](../Images/a2277abaf1b807134e3d468a6746f55c.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a2277abaf1b807134e3d468a6746f55c.png)'
 - en: 'We can approximate this expectation using numerical approximation, also known
     as Monte Carlo methods, by sampling `n` random values from the distribution `p`
     and then calculate the sample mean:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过数值近似，即蒙特卡洛方法，来近似这个期望，通过从分布 `p` 中采样 `n` 个随机值，然后计算样本均值：
 - en: '![](../Images/0d71a510166f12a531ba446bebc91553.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0d71a510166f12a531ba446bebc91553.png)'
 - en: The idea behind importance sampling now is to use a simple re-formulation trick
     and write the expectation as
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 重要性采样背后的想法是使用一个简单的重新表述技巧，将期望写为
 - en: '![](../Images/7e934ad8311d1eebee46f1ea8f8b3475.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7e934ad8311d1eebee46f1ea8f8b3475.png)'
 - en: '— giving the expectation of `f(x)p(x)/q(x)` over the distribution `q`! And
     with that, allowing us to calculate the sample mean by sampling from q:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: — 给出 `f(x)p(x)/q(x)` 在分布 `q` 下的期望！通过这种方式，我们可以通过从 `q` 中采样来计算样本均值：
 - en: '![](../Images/bba9896d6d48eea3800081219a66f457.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bba9896d6d48eea3800081219a66f457.png)'
 - en: Variance Reduction
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 方差减少
 - en: 'The variance of the standard Monte Carlo estimator is given by:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 标准蒙特卡洛估计量的方差为：
 - en: '![](../Images/2b0a2d4c62b7d885309f51612c9ad053.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2b0a2d4c62b7d885309f51612c9ad053.png)'
 - en: 'The variance for the reformulated importance sampling estimator is:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 改编后的重要性采样估计器的方差为：
 - en: '![](../Images/96c5b4150dc04f404bc82ce766aaa920.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/96c5b4150dc04f404bc82ce766aaa920.png)'
 - en: 'So as a first step we definitely observe a difference in variance, meaning
     with high probability we can also find a way to reduce this. And indeed it is
     relatively easy to see that this variance can be reduced to 0 by choosing `q`
     as:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，作为第一步，我们确实观察到方差的差异，这意味着我们很有可能找到减少方差的方法。实际上，选择`q`可以将方差减少到0：
 - en: '![](../Images/a1335f282bee4556dbe3531421a9cfb0.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a1335f282bee4556dbe3531421a9cfb0.png)'
 - en: (Insert this term in the equation above, and picture `f(x)p(x)` cancelling each
     other out — leaving `Var[E[f(X)]]=0`.)
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: （将这个术语插入上述方程中，并设想`f(x)p(x)`互相抵消——留下`Var[E[f(X)]]=0`。）
 - en: Naturally, we don’t know `E[f(X)]`, as the reason we are doing this sampling
     after all is to find the expectation of `f`.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然地，我们不知道`E[f(X)]`，毕竟我们进行采样的原因是为了找到`f`的期望值。
 - en: 'However, we can think of `E[f(X)]` as some normalisation constant, and at least
     take one essential insight away from this: we should construct `q` s.t. it has
     high density wherever `f(x)p(x)` is high. And with this, let’s dive into a practical
     example and apply this learning.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们可以将`E[f(X)]`视为某种归一化常数，并从中获得一个重要的见解：我们应该构造`q`，使其在`f(x)p(x)`较高的地方具有高密度。有了这些，我们进入一个实际例子并应用这一学习。
 - en: Practical Example
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实际例子
 - en: 'For the sake of demonstration, we want a pointy function `f`, and a probability
     distribution `p` which do not overlap too well. Thus for simplicity let us set
     both to be normal distributions, e.g. `f = N(5, 1)` and `p = N(9, 2)`:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了演示，我们选择一个尖锐的函数`f`和一个与其重叠不太好的概率分布`p`。为简化起见，我们将两者都设置为正态分布，例如`f = N(5, 1)`和`p
+    = N(9, 2)`：
 - en: '![](../Images/d5d099c84af14d9dc5aeed23aae07bff.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5d099c84af14d9dc5aeed23aae07bff.png)'
 - en: Image by Author
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: 'I hope choosing a normal distribution for both does not confuse the reader,
     so let’s re-iterate what we’re trying to do here: we want to compute `E[f(X)]`,
     where `X` is a random variable which follows the distribution `p` — i.e. we want
@@ -133,89 +203,134 @@
     to a normal distribution (which is a value on the x-axis, namely the mode of the
     distribution), but now we are after the mean of the y-values under `p`: in this
     example it is ~0.36 — a much lesser known and used value.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望选择两个正态分布不会让读者感到困惑，因此让我们重申一下我们要做的事情：我们想计算`E[f(X)]`，其中`X`是遵循分布`p`的随机变量——也就是说，我们想计算`p`下`f`的均值。注意，这个均值不是通常与正态分布相关的均值（这是x轴上的一个值，即分布的众数），而是我们现在关注的`p`下y值的均值：在这个例子中是~0.36——这是一个鲜为人知且使用较少的值。
 - en: To approximate this numerically, as stated above we would now sample values
     `x` from the distribution `p`, and compute the empirical mean of `f(x)`.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在数值上近似这一点，如上所述，我们现在将从分布`p`中抽样值`x`，并计算`f(x)`的经验均值。
 - en: 'Intuitively one can see why sampling from this distribution is a bad idea,
     hopefully amplified by the previous section: for most values sampled from `p`,
     `f` will be close to 0 — but for a few sampled values `f` will be very large —
     thus we obtain a large variance.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 从直觉上可以理解为什么从这个分布中采样是不好的，希望前面的部分能够对此有更好的解释：对于从`p`中抽样的大多数值，`f`将接近0——但对于一些抽样值，`f`将非常大——因此我们得到一个大的方差。
 - en: 'Therefore, following above introduced ideas we now propose a new distribution
     `q = N(5.8, 1)`, which satisfies the derived criterion that its density is high
     in regions where `f(x)p(x)` is high:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，按照上述介绍的思路，我们现在提出了一个新的分布`q = N(5.8, 1)`，它满足推导出的标准，即在`f(x)p(x)`较高的区域其密度也较高：
 - en: '![](../Images/80427c90aea2528b35de4eb2edd03e05.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/80427c90aea2528b35de4eb2edd03e05.png)'
 - en: Image by Author
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: Note it’s not trivial to find this function, and certainly there are much more
     difficult real-word scenarios. We have to try and satisfy the criterion as well
     as possible, but also take care of satisfying the importance sampling requirement
     of `p` covering `q`, etc. For this example I actually plotted `p(x)f(x)` and then
     picked a `q` which resembled it best.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，找到这个函数并不是很简单，现实世界中还有许多更复杂的情况。我们必须尽量满足标准，同时还要注意满足重要性采样要求，即`p`覆盖`q`等。对于这个例子，我实际上绘制了`p(x)f(x)`，然后选择了最接近的`q`。
 - en: Python Implementation
+  id: totrans-39
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Python 实现
 - en: 'Let’s code this in Python. First, we introduce the necessary functions and
     distributions, and for convenience use `functools.partials` to obtain a function
     representing a normal distribution with fixed mean / standard deviation:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用 Python 进行编码。首先，我们引入必要的函数和分布，为了方便使用 `functools.partials` 来获得一个表示具有固定均值/标准差的正态分布的函数：
 - en: '[PRE0]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Then, we generate the plot from above for orientation:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们生成上述图表以供参考：
 - en: '[PRE1]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Finally, we come to the (importance) sampling part. First, we compute the direct
     Monte Carlo Estimator for `E[f(X)]`. We generate random samples `x` from `p`,
     and calculate the mean of `f(x)`:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们进入（重要性）采样部分。首先，我们计算 `E[f(X)]` 的直接蒙特卡罗估计器。我们从 `p` 中生成随机样本 `x`，并计算 `f(x)`
+    的均值：
 - en: '[PRE2]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Now we apply importance sampling, i.e. sample from `q`and correct via the importance
     weights:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们应用重要性采样，即从 `q` 中抽样并通过重要性权重进行修正：
 - en: '[PRE3]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Putting it all together:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 综合起来：
 - en: '[PRE4]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The output will be something like:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出结果将类似于：
 - en: '`Original mean / variance: 0.036139 / 0.007696 Importance sampling mean / variance:
     0.036015 / 0.000027`'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '`原始均值 / 方差: 0.036139 / 0.007696 重要性采样均值 / 方差: 0.036015 / 0.000027`'
 - en: Thus, we still obtain the correct mean, but have reduced variance by ~100x!
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们仍然获得了正确的均值，但方差减少了约 100 倍！
 - en: Conclusion
+  id: totrans-53
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Importance sampling is a clever reformulation trick, allowing us to compute
     expectations and other moments by sampling from a different proposal distribution.
     This not only allows sampling from complex, otherwise hard-to-sample distributions,
@@ -224,19 +339,30 @@
     that selecting a proposal distribution with high probability in regions where
     `p(x)f(x)` (product of original distribution and function in question) is high,
     yields best results.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 重要性采样是一个巧妙的重构技巧，使我们能够通过从不同的提案分布中采样来计算期望值和其他矩。它不仅允许从复杂的、否则难以采样的分布中采样，还改变了结果估计器的方差。在这篇文章中，我们展示了如何利用这一点来减少方差。特别地，我们证明并展示了在
+    `p(x)f(x)`（原始分布和问题函数的乘积）高的区域选择具有高概率的提案分布可以获得最佳结果。
 - en: Thanks for reading!
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！
 - en: 'This post is Part 2 of a series about sampling. You can find the others here:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文是关于采样系列的第2部分。你可以在这里找到其他部分：
 - en: 'Part 1: [Introduction to Sampling Methods](https://medium.com/towards-data-science/introduction-to-sampling-methods-c934b64b6b08)'
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '第1部分: [采样方法介绍](https://medium.com/towards-data-science/introduction-to-sampling-methods-c934b64b6b08)'
 - en: 'Part 3: [Introduction to Markov chain Monte Carlo (MCMC) Methods](https://medium.com/towards-data-science/introduction-to-markov-chain-monte-carlo-mcmc-methods-b5bad18bc243)'
+  id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '第3部分: [马尔可夫链蒙特卡罗（MCMC）方法介绍](https://medium.com/towards-data-science/introduction-to-markov-chain-monte-carlo-mcmc-methods-b5bad18bc243)'
