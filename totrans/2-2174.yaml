@@ -1,484 +1,769 @@
 - en: Uncovering the secrets of KEEPFILTERS in DAX
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 揭示DAX中KEEPFILTERS的秘密
 - en: 原文：[https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0](https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0](https://towardsdatascience.com/uncovering-the-secrets-of-kepfilters-in-dax-6d268e3565d0)
 - en: '*The KEEPFILTERS() function in DAX is an underestimated function. So, I decided
     to go into the rabbit hole of this function and provide you with some interesting
     details about this function and one surprising effect.*'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*DAX中的KEEPFILTERS()函数是一个被低估的函数。因此，我决定深入研究这个函数，并为你提供一些有趣的细节以及一个惊人的效果。*'
 - en: '[](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[![Salvatore
     Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)
     [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[![Salvatore
+    Cagliari](../Images/a24b0cefab6e707cfee06cde9e857559.png)](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)
+    [Salvatore Cagliari](https://medium.com/@salvatorecagliari?source=post_page-----6d268e3565d0--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)
     ·8 min read·Jul 13, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d268e3565d0--------------------------------)
+    ·8分钟阅读·2023年7月13日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/d3f91fccfe4690bda82bbb16d3e42861.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d3f91fccfe4690bda82bbb16d3e42861.png)'
 - en: Photo by [Ian Tuck](https://unsplash.com/@iantuck?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由[Ian Tuck](https://unsplash.com/@iantuck?utm_source=medium&utm_medium=referral)拍摄，刊登于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Introduction
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引言
 - en: 'When we use the CALCULATE() function in DAX, we usually add a simple filter
     like this:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们在DAX中使用CALCULATE()函数时，我们通常会添加这样一个简单的筛选器：
 - en: Product[Color] = “Green”
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 产品[Color] = “绿色”
 - en: This filter replaces any existing filter on the column [Color] with the value
     “Green”.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 此筛选器用“绿色”值替换[Color]列上的任何现有筛选器。
 - en: But sometimes, we need to go the extra step and preserve an existing filter
     on a table or a column to perform some interesting calculations.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 但有时，我们需要额外一步，保留表格或列上的现有筛选器，以执行一些有趣的计算。
 - en: And sometimes, we get the wrong result from our Measures, and we can’t understand
     why this happens.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，我们的度量值会得到错误的结果，我们无法理解为何会发生这种情况。
 - en: These are the situations where the [KEEPFILTERS()](https://dax.guide/keepfilters/)
     function can help us.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这些情况下，[KEEPFILTERS()](https://dax.guide/keepfilters/)函数可以帮助我们。
 - en: Source Query
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 源查询
 - en: First, let’s define the Query on which we want to work.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们定义我们想要操作的查询。
 - en: 'I want to get a List of Online Sales by Color:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想获取按颜色分类的在线销售列表：
 - en: '[PRE0]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: I use SUMX to multiply [UnitPrice] by [SalesQuantity].
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用SUMX将[UnitPrice]乘以[SalesQuantity]。
 - en: 'The result looks like this:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果如下：
 - en: '![](../Images/8f774d89f319c79dc75aafc50c21db7a.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8f774d89f319c79dc75aafc50c21db7a.png)'
 - en: Figure 1 — Base Result (Figure by the Author)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1 — 基础结果（作者图）
 - en: The query looks like this when I add a filter with CALCULATE(), as described
     above.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我添加筛选器并使用CALCULATE()时，查询如下所示，如上所述。
 - en: '[PRE1]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'And the result looks like this:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果如下：
 - en: '![](../Images/14ad36096c6972958e1790d60a770378.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/14ad36096c6972958e1790d60a770378.png)'
 - en: Figure 2 — Green Sales on all rows (Figure by the Author)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2 — 所有行的绿色销售（作者图）
 - en: This happens because we replace the filter on the [Color] column with “Green”.
     Consequently, the Measure returns the same value for the Sales with [Color] =
     “Green” on all rows.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是因为我们将[Color]列上的筛选器替换为“绿色”。因此，度量值在所有行上返回相同的值，其中[Color] = “绿色”。
 - en: Introducing KEEPFILTERS()
+  id: totrans-29
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍KEEPFILTERS()
 - en: OK, what can we do with KEEPFILTER()?
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，我们可以用KEEPFILTER()做些什么？
 - en: 'When we add KEEPFILTERS() to our Measure, CALCULATE will retain the filter
     context on each row and will add the filter in the expression:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们在度量值中添加KEEPMFILTERS()时，CALCULATE将保留每行的筛选上下文，并在表达式中添加筛选器：
 - en: '[PRE2]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'This is the new result:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是新的结果：
 - en: '![](../Images/003b91e09510ee621cc533ec11b2cd54.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/003b91e09510ee621cc533ec11b2cd54.png)'
 - en: Figure 3 — Green Sales with KEEPFILTERS() (Figure by the Author)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3 — 使用 KEEPFILTERS() 的绿色销售（作者绘制的图）
 - en: OK, great.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，很棒。
 - en: And what’s now?
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 那现在呢？
 - en: Being Fancy
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 时尚
 - en: Now we can add some logic to our Measures. For example, we can perform calculations
     only in Sales for Green products.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以向我们的测量中添加一些逻辑。例如，我们可以仅对绿色产品进行销售计算。
 - en: 'For example, let’s double the Sales for Green products:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我们将绿色产品的销售额加倍：
 - en: '[PRE3]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: I use [IF()](https://dax.guide/if/) and [ISBLANK()](https://dax.guide/isblank/)
     to check if the Sales are for Green products.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用[IF()](https://dax.guide/if/)和[ISBLANK()](https://dax.guide/isblank/)来检查销售是否为绿色产品。
 - en: I return the [Online Sales] Measure result if the Measure for Green Sales is
     blank.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果绿色销售的测量结果为空，我将返回[在线销售]测量的结果。
 - en: If not, I double the result of the [Online Sales] Measure.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果没有，我将[在线销售]测量的结果加倍。
 - en: 'Look at the results:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 看看结果：
 - en: '![](../Images/d25bc8aa8c5be9e4453ff3111b68f648.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d25bc8aa8c5be9e4453ff3111b68f648.png)'
 - en: Figure 4 — Result of Dynamic Sales (Figure by the Author)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4 — 动态销售结果（作者绘制的图）
 - en: But how can we use this mechanism in Power BI?
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我们如何在 Power BI 中使用这个机制呢？
 - en: For example, I want to be able to select a Color and perform a specific calculation
     for the Sales with this color.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我希望能够选择一种颜色，并对这种颜色的销售进行特定的计算。
 - en: 'First, I add a new table to the Data model, but I do not add any new Relationships
     to the Data model:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我向数据模型中添加了一个新表，但没有在数据模型中添加任何新的关系：
 - en: '[PRE4]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The table looks like this:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 表格如下所示：
 - en: '![](../Images/04dca46161017b2d903146c235736bc5.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/04dca46161017b2d903146c235736bc5.png)'
 - en: Figure 5 — All Colors table (Figure by the Author)
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 5 — 所有颜色表（作者绘制的图）
 - en: Now, I add this column as a Slicer to my report.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我将这个列添加到我的报告中的切片器中。
 - en: 'Next, My Measure must get the selected color and add it as a Filter:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我的测量必须获取选择的颜色并将其作为筛选器添加：
 - en: '[PRE5]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'This way, I can perform my calculation based on the selected color in the new
     table:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，我可以根据新表中选择的颜色执行计算：
 - en: '![](../Images/eecd04fe86d8d5566ba9abb627f7e9b7.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/eecd04fe86d8d5566ba9abb627f7e9b7.png)'
 - en: Figure 6 — Result of calculation based on selected color (Figure by the Author)
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 6 — 基于选择颜色的计算结果（作者绘制的图）
 - en: This technique opens up many possibilities with our calculations, as we can
     perform calculations for one row without affecting the result of all other rows.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种技术为我们的计算开辟了许多可能性，因为我们可以对某一行进行计算而不影响其他行的结果。
 - en: Work with Context Transition
+  id: totrans-62
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用上下文转换
 - en: 'But there are situations where it is vital to understand the value of KEEPFILTER():
     Context transition.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 但在某些情况下，理解 KEEPFILTER() 的值是至关重要的：上下文转换。
 - en: 'You can learn more about Context transition by reading my article on this topic:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以通过阅读我关于这个话题的文章来了解更多关于上下文转换的内容：
 - en: '[](/whats-fancy-about-context-transition-in-dax-efb5d5bc4c01?source=post_page-----6d268e3565d0--------------------------------)
     [## What’s fancy about context transition in DAX'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/whats-fancy-about-context-transition-in-dax-efb5d5bc4c01?source=post_page-----6d268e3565d0--------------------------------)
+    [## DAX 中上下文转换的时尚之处'
 - en: Row and filter context are well-known concepts in DAX. But we can switch between
     these two with context transition.
+  id: totrans-66
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 行和筛选上下文是 DAX 中的常见概念。但我们可以通过上下文转换在这两者之间切换。
 - en: towardsdatascience.com](/whats-fancy-about-context-transition-in-dax-efb5d5bc4c01?source=post_page-----6d268e3565d0--------------------------------)
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/whats-fancy-about-context-transition-in-dax-efb5d5bc4c01?source=post_page-----6d268e3565d0--------------------------------)'
 - en: The situation is tricky when we use Context Transition in a Measure together
     with a so-called arbitrarily shaped set (More on this in a bit).
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们在测量中使用上下文转换与所谓的任意形状集一起时，情况会很复杂（稍后会详细说明）。
 - en: 'To show this, I change our example a little bit:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了展示这一点，我稍微修改了我们的例子：
 - en: I want to create a Slicer to filter the Product table by all combinations of
     Brands and Colors.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想创建一个切片器，通过品牌和颜色的所有组合来筛选产品表。
 - en: Then I want to calculate the Average Sales for each Brand and color.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我想计算每个品牌和颜色的平均销售额。
 - en: For this example, I don’t use the columns from the Product table. I want a separate
     table for this example to simulate a real-world scenario.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我不使用产品表中的列。我想要一个单独的表来模拟实际场景。
 - en: To achieve this, I use Power Query to extract a table from the original Product
     table to get a list of all Brands with all Colors. In Addition, I add a key column,
     consisting of the combination of the columns Brand and Color.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了实现这一点，我使用 Power Query 从原始产品表中提取一个表，获取所有品牌和所有颜色的列表。此外，我添加了一个包含品牌和颜色列组合的关键列。
 - en: 'Here an extract from the resulting table:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是结果表的摘录：
 - en: '![](../Images/f59b5945a9fcdf394c190983368c577c.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f59b5945a9fcdf394c190983368c577c.png)'
 - en: Figure 7 — Table with Brands and Colors and the key columns (Figure by the Author)
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7 — 带有品牌和颜色及关键列的表格（图示由作者提供）
 - en: I add the same key column to the product table.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将相同的关键列添加到产品表中。
 - en: 'Now I can add a Relationship between these two tables:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我可以在这两张表之间添加一个关系：
 - en: '![](../Images/804343e64c2f7daf9182ee620826a593.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/804343e64c2f7daf9182ee620826a593.png)'
 - en: Figure 8 — Expanded Data-Model (Figure by the Author)
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8 — 扩展的数据模型（图示由作者提供）
 - en: 'Now, I create the following Measure:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我创建了以下度量：
 - en: '[PRE6]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: But when we try to validate the result, we will have a hard time.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是当我们尝试验证结果时，我们会遇到困难。
 - en: The reason is that it’s difficult to understand if the result is correct without
     any control result.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 原因在于没有任何控制结果时很难理解结果是否正确。
 - en: So either we recalculate the results in Excel, or wherever possible, or change
     the Measure to use SUMX().
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们要么在 Excel 中重新计算结果（或其他可能的地方），要么更改度量以使用 SUMX()。
 - en: This makes life easier as we will be able to compare the results with the existing
     Online Sales Measure.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 这使得生活更轻松，因为我们将能够将结果与现有的在线销售度量进行比较。
 - en: 'Here is the result in Power BI:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是 Power BI 中的结果：
 - en: '![](../Images/2a4d26247f623a3b7fd74ca3cec46533.png)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2a4d26247f623a3b7fd74ca3cec46533.png)'
 - en: Figure 9 — Result of new Measure with a complex filter (Figure by the Author)
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9 — 复杂过滤器的新度量结果（图示由作者提供）
 - en: If you carefully look at the result, something is wrong.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你仔细查看结果，会发现有些问题。
 - en: The Subtotals and the Total are much higher than the sum of the results per
     line.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 小计和总计远高于每行结果的总和。
 - en: The reason for this is how the filter is applied in this case.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 原因在于过滤器的应用方式。
 - en: 'For the table, we expect a filter like this:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这个表，我们期望有如下的过滤器：
 - en: '[PRE7]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Such a set is called an “Arbitrarily shaped set”, as we mix different values
     from two separate columns.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样的集合被称为“任意形状的集合”，因为我们混合了来自两个独立列的不同值。
 - en: 'When we look at each Sub-total, we would expect two filters:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们查看每个小计时，我们会期望有两个过滤器：
 - en: 'For Adventure Works, we expect the following:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 Adventure Works，我们期望如下：
 - en: '[PRE8]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'For A. Datum we expect:'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 A. Datum，我们期望：
 - en: '[PRE9]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'In fact, we get two completely different filters:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我们得到了两个完全不同的过滤器：
 - en: 'For the Subtotal for Adventure Works, we have the following filter:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 Adventure Works 的小计，我们有如下过滤器：
 - en: '[PRE10]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'For the Subtotal for A. Datum we have the following filter:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 A. Datum 的小计，我们有如下过滤器：
 - en: '[PRE11]'
+  id: totrans-105
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: This means that the Measure calculates the sum of all Sales for the selected
     colors but includes both selected brands in the result.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着度量计算所选颜色的所有销售总和，但结果中包括了两个选定品牌。
 - en: 'We can prove that something strange is going on when we add a new Matrix Visual
     and add the Brand and Color Columns from the Product tables and compare the Result
     with the Standard Online Sales Measure:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们添加新的矩阵可视化并从产品表中添加品牌和颜色列，并将结果与标准在线销售度量进行比较时，我们可以证明存在一些奇怪的情况：
 - en: '![](../Images/8d296a327c960eb69f40360672fcfdee.png)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8d296a327c960eb69f40360672fcfdee.png)'
 - en: Figure 10 — Validate the result with the Base Measure (Figure by the Author)
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 10 — 用基础度量验证结果（图示由作者提供）
 - en: As you can see, the results are different between these two examples, which
     makes this effect extremely confusing.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，这两个示例之间的结果不同，这使得这一效果极其令人困惑。
 - en: 'The applied filter is now the following:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前应用的过滤器如下：
 - en: '[PRE12]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: The SQLBI articles mentioned in the References section below explain this effect
     in more detail.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 参考文献部分提到的 SQLBI 文章更详细地解释了这一效果。
 - en: 'To solve this issue, we can use KEEPFILTERS() to enforce the complete filter
     context from the Slicer:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，我们可以使用 KEEPFILTERS() 来强制从切片器中获取完整的过滤上下文：
 - en: '[PRE13]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'Now the result is as expected:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在结果如预期一样：
 - en: '![](../Images/fa69cec19c98f0002a0e69ff385ac739.png)'
+  id: totrans-117
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa69cec19c98f0002a0e69ff385ac739.png)'
 - en: Figure 11 — Result after adding KEEPFILTERS() (Figure by the Author)
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11 — 添加 KEEPFILTERS() 后的结果（图示由作者提供）
 - en: '![](../Images/0c7aa9a4e756612c100101b36e0f492a.png)'
+  id: totrans-119
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0c7aa9a4e756612c100101b36e0f492a.png)'
 - en: Photo by [Akhilesh Sharma](https://unsplash.com/@fotonium?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Akhilesh Sharma](https://unsplash.com/@fotonium?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral) 上提供
 - en: Conclusion
+  id: totrans-121
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: The DAX functions KEEPFILTERS() can be very useful, sometimes a vital function.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: DAX 函数 KEEPFILTERS() 非常有用，有时是关键功能。
 - en: It’s not my intention to suggest always using KEEPFILTER() when you use Context
     transition.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 我并不是建议在使用上下文转换时总是使用 KEEPFILTER()。
 - en: But you need to be aware of the consequences of using context transition and
     of the possibility that you users create arbitrarily shaped sets when they use
     the Slicer on their reports.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 但您需要意识到使用上下文转换的后果，以及用户在报告中使用切片器时创建任意形状集的可能性。
 - en: At the time of this writing, I’m unaware of any drawbacks when adding KEEPFILTERS()
     using Context transition.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 在撰写本文时，我不知道使用上下文转换添加KEEPCFILTERS()是否有任何缺点。
 - en: But I’m a fan of keeping things simple and not adding any stuff if it’s not
     necessary.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我喜欢保持简单，不必要的东西就不添加。
 - en: Anyway, the most important lesson of this article should be “trust only the
     result that you can prove and validate”.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论如何，这篇文章最重要的教训应该是“只相信您可以证明和验证的结果”。
 - en: There are some functions out there that can be very challenging to validate.
     Two of them are AVERAGE and COUNTDISTINCT. These two can return results that are
     difficult to prove.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一些函数在验证时可能非常具有挑战性。其中两个是AVERAGE和COUNTDISTINCT。这两个函数返回的结果可能难以证明。
 - en: But this is a different story.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这是另一个故事。
 - en: References
+  id: totrans-130
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考资料
 - en: 'Introduction to KEEPFILTERS() by SQLBI: [https://www.sqlbi.com/articles/using-keepfilters-in-dax-updated/](https://www.sqlbi.com/articles/using-keepfilters-in-dax-updated/)'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: SQLBI的KEEPCFILTERS()介绍：[https://www.sqlbi.com/articles/using-keepfilters-in-dax-updated/](https://www.sqlbi.com/articles/using-keepfilters-in-dax-updated/)
 - en: 'Read this article written by SQLBI with some interesting details: [https://www.sqlbi.com/articles/keepfilters-a-new-dax-feature-to-correctly-compute-over-arbitrary-shaped-sets/](https://www.sqlbi.com/articles/keepfilters-a-new-dax-feature-to-correctly-compute-over-arbitrary-shaped-sets/)'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 阅读SQLBI撰写的这篇文章，了解一些有趣的细节：[https://www.sqlbi.com/articles/keepfilters-a-new-dax-feature-to-correctly-compute-over-arbitrary-shaped-sets/](https://www.sqlbi.com/articles/keepfilters-a-new-dax-feature-to-correctly-compute-over-arbitrary-shaped-sets/)
 - en: 'When we use Iterators, we use Context Transition. Here is another SQLBI Article
     about this topic: [https://www.sqlbi.com/articles/when-to-use-keepfilters-over-iterators/](https://www.sqlbi.com/articles/when-to-use-keepfilters-over-iterators/)'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们使用迭代器时，我们使用上下文转换。这里有另一篇SQLBI文章，关于这个话题：[https://www.sqlbi.com/articles/when-to-use-keepfilters-over-iterators/](https://www.sqlbi.com/articles/when-to-use-keepfilters-over-iterators/)
 - en: I use the Contoso sample dataset, like in my previous articles. You can download
     the ContosoRetailDW Dataset for free from Microsoft [here](https://www.microsoft.com/en-us/download/details.aspx?id=18279).
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用了Contoso样本数据集，就像在我之前的文章中一样。您可以从Microsoft [这里](https://www.microsoft.com/en-us/download/details.aspx?id=18279)免费下载ContosoRetailDW数据集。
 - en: The Contoso Data can be freely used under the MIT License, as described [here](https://github.com/microsoft/Power-BI-Embedded-Contoso-Sales-Demo).
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: Contoso 数据可以根据MIT许可自由使用，详见[这里](https://github.com/microsoft/Power-BI-Embedded-Contoso-Sales-Demo)。
 - en: '[](https://medium.com/@salvatorecagliari/subscribe?source=post_page-----6d268e3565d0--------------------------------)
     [## Get an email whenever Salvatore Cagliari publishes.'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@salvatorecagliari/subscribe?source=post_page-----6d268e3565d0--------------------------------)
+    [## 每当Salvatore Cagliari发布新内容时，您将收到电子邮件。'
 - en: Get an email whenever Salvatore Cagliari publishes. By signing up, you will
     create a Medium account if you don't…
+  id: totrans-137
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 每当Salvatore Cagliari发布新内容时，您将收到电子邮件。通过注册，如果您还没有，您将创建一个Medium帐户…
 - en: medium.com](https://medium.com/@salvatorecagliari/subscribe?source=post_page-----6d268e3565d0--------------------------------)
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@salvatorecagliari/subscribe?source=post_page-----6d268e3565d0--------------------------------)
