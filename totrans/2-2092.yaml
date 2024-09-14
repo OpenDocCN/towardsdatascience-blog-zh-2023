@@ -1,557 +1,828 @@
 - en: Thread Summarization Using NLP
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 NLP 进行线程总结
 - en: 原文：[https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4](https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4](https://towardsdatascience.com/thread-summarization-using-nlp-d5bed9bf0eb4)
 - en: Extractive summarization using POS tagging, NER, and sentiment analysis
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 POS 标记、NER 和情感分析进行抽取式总结
 - en: '[](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Arun
     Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
     [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Arun
+    Jagota](../Images/3c3eb142f671b5fb933c2826d8ed78d9.png)](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
+    [Arun Jagota](https://jagota-arun.medium.com/?source=post_page-----d5bed9bf0eb4--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
     ·13 min read·Jan 7, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5bed9bf0eb4--------------------------------)
+    ·13 分钟阅读·2023年1月7日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/2df0e0ffea8820634c8b6f6285b32460.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2df0e0ffea8820634c8b6f6285b32460.png)'
 - en: Image by [Holger](https://pixabay.com/users/hodihu-84128/) from [Pixabay](https://pixabay.com/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Holger](https://pixabay.com/users/hodihu-84128/) 提供，来自 [Pixabay](https://pixabay.com/)
 - en: Consider a thread of text (or email) messages involving multiple people. Below
     is a sample involving two people planning a trip together. Individual messages
     are separated by empty lines.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 设想一个包含多个参与者的短信（或电子邮件）线程。下面是一个涉及两个人共同规划旅行的示例。每条消息之间由空行分隔。
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The back-and-forth can surface a lot of information, albeit spread out over
     the various text messages. When this thread unfolds over a text messaging app
     on a smartphone, the back-and-forth scrolling to stay looped into the conversation,
     as more messages keep streaming in can be a challenge.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 反复的对话可能会产生大量的信息，尽管这些信息分散在不同的短信中。当这个线程在智能手机的短信应用上展开时，随着更多消息的持续流入，滚动浏览以保持跟进对话可能会是一个挑战。
 - en: Wouldn’t it be great if an NLP bot could read all the messages in the thread,
     and summarize them into a single new message? Which can then be posted as a new
     message on the same thread.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果有一个 NLP 机器人能够阅读线程中的所有消息，并将它们总结成一条新的消息，那岂不是很好？然后这条新消息可以作为新消息发布在同一个线程中。
 - en: This post addresses this problem.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文解决了这个问题。
 - en: First let’s observe the recurring patterns in this thread, some of which may
     generalize to other threads.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先让我们观察这个线程中的重复模式，其中一些可能会推广到其他线程。
 - en: Person A suggests some specific places to stay. Person B gives some opinions.
     And suggests another. One of them asks a question about food. The other responds
     with specific restaurants. The conversation then moves to bars. Some specific
     suggestions are offered. Followed by opinions. And a follow-up question. And responses.
     And opinions.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: A 先生建议了一些特定的住宿地点。B 先生给出了一些意见，并建议了另一个地方。其中一人询问关于食物的问题。另一人回应了具体的餐馆。对话接着转到酒吧。提出了一些具体建议。随后是意见。接着是后续问题。然后是回应和意见。
 - en: '**NLP Approaches**'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '**NLP 方法**'
 - en: Is there an existing NLP approach that lends itself to this use case? At a high
     level, yes. It’s called *extractive summarization*.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 是否有现有的 NLP 方法适用于这个用例？从总体上看，有的。这被称为*抽取式总结*。
 - en: Let’s first understand it at a basic level.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先从基本层面理解它。
 - en: '[PRE1]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The approach does not necessarily attempt to make the summary readable, only
     to have it capture the key pieces of information in the text.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法并不一定试图使总结具有可读性，而是旨在捕捉文本中的关键信息。
 - en: Before we dive into extractive summarization, there is a second summarization
     approach from NLP called *abstractive summarization* that deserves consideration.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入了解抽取式总结之前，还有一种 NLP 总结方法叫做*抽象式总结*，值得考虑。
 - en: The summary this approach produces is a summarized paraphrase of the original
     text.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法产生的总结是对原始文本的总结性改述。
 - en: Extractive summarization seems a better fit for our use case because our primary
     aim is to create an abbreviated version of the text in the thread with all the
     key content preserved. Not a paraphrase.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 提取式摘要似乎更适合我们的用例，因为我们的主要目标是创建一个线程文本的简化版本，并保留所有关键内容。不是改写。
 - en: Also, note that abstractive summarization is a more challenging problem to solve
     as it seems to involve deeper natural language understanding and generation.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，请注意，抽象摘要是一个更具挑战性的问题，因为它似乎涉及更深入的自然语言理解和生成。
 - en: '**Extractive Summarization In Our Setting**'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在我们的设置中进行提取式摘要**'
 - en: Let’s consider the following basic approach, described in [1].
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑以下基本方法，如[1]所述。
 - en: Tokenize the text into sentences.
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将文本标记化为句子。
 - en: Tokenize each sentence into words.
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将每个句子标记化为词语。
 - en: Remove stopwords. Words such as *is*, *a*, *an*, *the*, *to*, *for*, *of*,
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 删除停用词。像*is*、*a*、*an*、*the*、*to*、*for*、*of*这样的词，
 - en: Somehow score the remaining text in each sentence using word frequencies.
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 以某种方式根据词频对每个句子的剩余文本进行评分。
 - en: In our thread setting, we will replace “sentences” with “messages”. That is,
     tokenizing the text into sentences will mean tokenizing it into messages.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的线程设置中，我们将用“消息”替换“句子”。也就是说，将文本标记化为句子意味着将其标记化为消息。
 - en: How well might this approach work on our thread?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法在我们的线程中可能效果如何？
 - en: Tokenizing into words helps for sure. To identify and drop the stop words.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 词语标记化确实有帮助。它有助于识别和删除停用词。
 - en: That said, later we will see a different extractive approach that avoids removing
     stopwords at all.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 也就是说，稍后我们将看到一种不同的提取方法，完全避免删除停用词。
 - en: '**Our Thread Tokenized**'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们的线程已标记化**'
 - en: First, we will tokenize the thread into a sequence of messages, and next each
     message into a sequence of words. In python terms, this is just a list of lists.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们将把线程标记化为消息序列，然后将每条消息标记化为词语序列。在python术语中，这只是一个列表的列表。
 - en: Most importantly, in this representation, we are not retaining the identity
     of the person who sent a particular message.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 最重要的是，在这种表示中，我们没有保留发送特定消息的人的身份。
 - en: '**Is Removing Stopwords Effective Enough?**'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**去除停用词的效果是否足够？**'
 - en: Below is a version of the text with stopwords struck out. In doing so, we had
     to decide what was a stopword and what was not. We followed common practice, which
     tends to err on the conservative side.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是去除停用词后的文本版本。在这样做时，我们必须决定什么是停用词，什么不是。我们遵循了常见的做法，这通常偏向保守。
 - en: The stopwords to be removed are demarcated in /…/.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 要删除的停用词在/…/中标记。
 - en: '[PRE2]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The words in italics and bold are the stopwords we dropped. Clearly, this didn’t
     help much. Also, note that the *at the* in the lodge name *Inn at the Pier* got
     dropped.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 斜体和粗体中的词是我们删除的停用词。显然，这帮助不大。此外，请注意，旅馆名称*Inn at the Pier*中的*at the*也被删除了。
 - en: '**Towards A Better Solution**'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '**朝着更好的解决方案**'
 - en: As we just saw, removing stopwords alone is ineffective. First, it doesn’t remove
     enough words. Second, it sometimes removes stopwords that appear inside entity
     names.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们刚刚看到的，单独去除停用词是无效的。首先，它没有删除足够的词。其次，它有时会删除出现在实体名称中的停用词。
 - en: Let’s think a bit more generally. It would be great if there were some way to
     figure out which words to drop and which words to keep. One might say, well isn’t
     this just restating the problem description?
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们更一般地考虑一下。如果有某种方法来确定哪些词应该删除，哪些词应该保留，那就太好了。有人可能会说，这不就是在重新描述问题吗？
 - en: Well, yes. However, looking at it this way opens up new ways of thinking.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的。不过，以这种方式来看，打开了新的思维方式。
 - en: In our case, the NLP method we cover next, part-of-speech tagging, will lead
     to a significant improvement over removing stopwords alone. In fact, it will obviate
     the need for removing stopwords.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的情况下，接下来我们介绍的自然语言处理方法——词性标注，将比单独去除停用词带来显著改善。事实上，它将消除对去除停用词的需求。
 - en: '**Part-of-speech Analysis**'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '**词性分析**'
 - en: An NLP method that has found widespread use is to tag each word in the text
     with its part-of-speech category. Such as *nouns*, *verbs*, *adjectives*, …
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种广泛使用的自然语言处理方法是为文本中的每个词标记其词性类别。例如*nouns*、*verbs*、*adjectives*等。
 - en: So why do we think this will help with our thread summarization needs? This
     is because we think that the part of speech of a word will serve as a good predictor
     of whether we should keep it in the summary or drop it. We would expect to want
     to drop verbs, articles, and pronouns. We would expect to want to retain nouns.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们为什么认为这会对我们的线程摘要需求有所帮助呢？这是因为我们认为一个词的词性将作为是否应该在摘要中保留该词的良好预测因素。我们期望删除动词、冠词和代词。我们期望保留名词。
 - en: Let’s test this idea out on our example.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在示例中测试这个想法。
 - en: We applied the part-of-speech tagger service at [https://parts-of-speech.info/](https://parts-of-speech.info/)
     on the text of our thread. (All messages are concatenated, with message boundaries
     represented as para breaks.)
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在[https://parts-of-speech.info/](https://parts-of-speech.info/)上应用了词性标注服务于我们的线程文本。（所有消息被串联，消息边界以段落分隔符表示。）
 - en: Below is what we got.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是我们得到的结果。
 - en: '![](../Images/15f2fbdd1c195cc230d404ae3358c9de.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/15f2fbdd1c195cc230d404ae3358c9de.png)'
 - en: The map from color to part-of-speech tag is below.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 颜色到词性标签的映射如下。
 - en: '![](../Images/d6544fa4cfa8074a6ed2b8ad28c44751.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d6544fa4cfa8074a6ed2b8ad28c44751.png)'
 - en: The POS tags of the various words do indeed seem useful for summarization. We’d
     want to keep all the nouns in. Perhaps also the adjectives, as two of the four
     carry definitive sentiment (price, good).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 各种词的词性标签确实对总结很有用。我们希望保留所有名词，也许还包括形容词，因为四个中有两个携带明确的情感（价格，好）。
 - en: That said, while an improvement over removing only the stopwords, simple filtering
     based on the POS tags alone is likely not enough. For the following reasons.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 也就是说，虽然相对于仅仅去除停用词已有所改进，但仅仅基于词性标签的简单过滤可能还不够。原因如下。
 - en: First, even if we retain only nouns, too many words still remain.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，即使我们仅保留名词，仍然有太多的词语。
 - en: Second, as happened when we were dropping stopwords, we ended up dropping *at
     the* in the lodge name *Inn at the Pier*. This is not good. We obscured the name
     of a lodge potentially worth researching further.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 其次，就像我们在去除停用词时发生的情况一样，我们最终删除了旅馆名称*Inn at the Pier*中的*at the*。这不好。我们遮蔽了一个可能值得进一步研究的旅馆名称。
 - en: Third, the adjective POS tag, while offering some signal towards sentiment is
     not sufficiently strongly correlated with it.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三，形容词词性标签虽然提供了一些情感信号，但与情感的相关性并不足够强。
 - en: '**A Different Approach**'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '**另一种方法**'
 - en: 'We begin with the observation that nearly all of the salient information in
     the thread falls into one of three NLP categories: *named entities*, *sentiment*,
     and *salient phrases*.'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先观察到，线程中的几乎所有显著信息都属于三种NLP类别之一：*命名实体*、*情感*和*显著短语*。
 - en: As we will see soon, being able to tell these apart will help improve our thread
     summarizer.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们将很快看到的，能够区分这些将有助于改善我们的线程摘要器。
 - en: We’ll start with named entities as that is the dominant category in this thread.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从命名实体开始，因为这是该线程中的主要类别。
 - en: '**Named Entities**'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '**命名实体**'
 - en: In NLP, any short piece of text, usually one-to-three words, that is (i) a “thing”
     and (ii) can be named is called a *named entity*. Examples are person names, country
     names, restaurant names, hotel names, and many, many more. For a detailed post
     on named entity recognition in NLP, see [2].
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 在NLP中，任何短小的文本，通常是一到三个词，（i）是一个“事物”并且（ii）可以命名的，都称为*命名实体*。例子包括人名、国家名、餐厅名、酒店名等等。有关NLP中命名实体识别的详细帖子，请参见[2]。
 - en: Armed with a named entity recognizer that can recognize city names, restaurant
     names, and hotel names, we would be able to summarize better. We could make this
     happen by training an off-the-shelf named entity recognizer so long as we could
     assemble a rich enough set of city names, restaurant names, and hotel names.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 拥有能够识别城市名称、餐厅名称和酒店名称的命名实体识别器，我们将能够更好地进行摘要。只要我们能够组装出足够丰富的城市名称、餐厅名称和酒店名称集合，就可以通过训练现成的命名实体识别器实现这一点。
 - en: Here is what the summarized text would look like with the aforementioned named
     entities recognized and the rest of the text dropped. We’ve also dropped the para
     breaks, adding periods where needed. (The para breaks add no value to the summarized
     text.)
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是识别了上述命名实体并删除了其余文本后的摘要文本样式。我们还删除了段落分隔符，并在需要的地方添加了句号。（段落分隔符对摘要文本没有价值。）
 - en: '[PRE3]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Since our text summarizer does named entity recognition, we could take advantage
     of this to present the summary with named entities annotated if that is preferable.
     Something like:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们的文本摘要器进行命名实体识别，如果需要的话，我们可以利用这一点，通过标注命名实体来呈现摘要。像这样：
 - en: '[PRE4]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Not bad. That said, I’m not sure that adding the entity names adds value or
     adds clutter in this thread. It does inform us that this is possible. On longer
     threads, this may work better.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 还不错。不过，我不确定添加实体名称是否增加了价值，或者在这个线程中是否造成了杂乱。这确实告诉我们这是一种可能性。在较长的线程中，这可能效果更好。
 - en: Still, there is room for improvement. We’ll group the improvements into the
     types below. In no particular order.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，仍然有改进的空间。我们将改进分为以下几种类型，顺序不分先后。
 - en: '*Oyster loft* is mentioned twice. Fortunately, deduping it is easy (in this
     exact case) as it has already been recognized as a named entity.'
+  id: totrans-74
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*牡蛎阁*被提到两次。幸运的是，去重很容易（在这个具体的情况下），因为它已经被识别为一个命名实体。'
 - en: The sentiments have not been picked up. Such as *looks good*, *a bit pricey*,
     +1, and *Not close enough to where we are going*.
+  id: totrans-75
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 情感没有被提取出来。例如*看起来不错*、*有点贵*、+1 和*离我们要去的地方不够近*。
 - en: The salient phrases, aka tags, have not been picked up. Specifically, *seafood
     restaurants, bars, breweries, lodge (lodging)*.
+  id: totrans-76
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 显著短语，即标签，也没有被提取出来。具体而言，*海鲜餐厅、酒吧、啤酒厂、旅馆（住宿）*。
 - en: Nothing more to say on 1).
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于1)没有更多要说的。
 - en: '**Sentiments**'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '**情感**'
 - en: On 2), this falls in the NLP category of sentiment analysis. More specifically,
     of aspect-based sentiment analysis, which is the problem of detecting which sentiment
     applies to which portions of the text. As opposed to sentiment classification,
     which is the problem of determining whether the overall sentiment in the text
     is positive, negative, or neutral.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于2)，这属于NLP情感分析的范畴。更具体地说，是基于方面的情感分析，即检测哪些情感适用于文本的哪些部分。与情感分类不同，情感分类是确定文本中的整体情感是积极、消极还是中性的任务。
 - en: See [3] for a detailed post on sentiment analysis in NLP. It covers both aspect-based
     sentiment analysis and sentiment classification in considerable detail, with illustrative
     examples.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 详细的情感分析帖子请参见[3]。它详细介绍了基于方面的情感分析和情感分类，并提供了说明性例子。
 - en: That said, in the context of our specific thread, let’s try to better understand
     what we really need, what assumptions we can make, and think about how far we
     might take them. In short, let’s (i) examine our specific use case and (ii) proceed
     incrementally.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 话虽如此，在我们具体的讨论中，让我们尝试更好地理解我们真正需要什么，能够做出哪些假设，并考虑我们可能将它们推进多远。简而言之，让我们(i) 检查我们的具体用例，并(ii)
+    逐步推进。
 - en: First, let’s narrow our focus to the messages that have the sentiments we want
     to extract and the messages that immediately precede them. We pick the latter
     because the sentiment in a message might be on the message that is just before
     it. We’ve annotated the sentiment-carrying regions within /…/
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们将焦点缩小到我们想要提取的情感的消息和紧接在其后的消息。我们选择后者，因为消息中的情感可能在前一条消息中。我们已经在/…/中标注了携带情感的区域。
 - en: '[PRE5]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: First, let’s imagine that we detected the sentiment-carrying terms. Even a dictionary-based
     approach would be a good starting point here, though how well it scales is an
     open question.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们假设我们检测到了携带情感的术语。即使是基于词典的方法在这里也是一个很好的起点，尽管它的扩展性仍然是一个未解的问题。
 - en: Our first thought is to keep the detected terms in the summary in exactly the
     positions they are. Let’s see what the end result looks like. As before, the sentiment-carrying
     terms are demarcated in /…/
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的第一个想法是保持检测到的术语在总结中的位置不变。让我们看看最终结果是什么样的。与之前一样，携带情感的术语用/…/标记。
 - en: '[PRE6]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Good.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的。
 - en: The first point to make, a small one, is that since we know which chunks of
     text are the sentiment-carrying terms, we could visually distinguish them from
     the entities. This is illustrated above in /…/.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一点，一个小点是，由于我们知道哪些文本块是携带情感的术语，我们可以将它们与实体视觉区分开来。这在/…/中有所说明。
 - en: The second point is that we could more explicitly link a sentiment-carrying
     term, specifically to the entity that immediately precedes it. Sure there is some
     risk our linkage is wrong. Let’s see how the result would look.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二点是我们可以更明确地将携带情感的术语与紧接其前的实体关联起来。当然，这样做有一定的风险。让我们看看结果会是什么样的。
 - en: '[PRE7]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Good in this case.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下很好。
 - en: '**Salient Phrases**'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '**显著短语**'
 - en: Let’s now focus on the salient phrases we want to be detected and added to the
     summary. In our thread, these are *seafood restaurants, bars, breweries, lodge
     (lodging)*. Again, let’s imagine these have somehow been detected and see the
     result with them. This time we demarcate the detected salient phrases in /…/.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们关注我们希望被检测并添加到总结中的显著短语。在我们的讨论中，这些是*海鲜餐厅、酒吧、啤酒厂、旅馆（住宿）*。再次，我们假设这些短语已被检测到，并查看包含它们的结果。这次我们用/…/标记检测到的显著短语。
 - en: '[PRE8]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Hmm. The injected salient phrases don’t add as much value as the injected sentiments
     did.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 嗯。注入的显著短语没有像注入的情感那样增加太多价值。
 - en: What’s the difference? Let’s analyze. First, adding the sentiments enriches
     the summary as sentiments are not predictable from the surrounding text.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 差别在哪里？让我们分析一下。首先，添加情感丰富了总结，因为情感不能从周围的文本中预测。
 - en: In our thread, the detected salient phrases don’t add as much information. For
     example, the reader can see the entities close to *lodging* are hotels, so adding
     that word does not enrich the summary. The same point applies to *seafood restaurants*,
     *bars*, and *breweries*.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的线程中，检测到的突出的短语并没有提供太多信息。例如，读者可以看到接近*住宿*的实体是酒店，因此添加该词并不会丰富总结。同样的观点也适用于*海鲜餐馆*、*酒吧*和*酿酒厂*。
 - en: In the language of data science, we can say that the information gained from
     adding sentiments to the summary is higher than that from adding the salient phrases.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 用数据科学的语言，我们可以说，将情感添加到总结中获得的信息比添加突出的短语获得的信息要高。
 - en: A second point is that in the setting of threads of text messages at least,
     sentiment will tend to be about the entity that was just mentioned prior to it,
     in the same message or the preceding message. Salient phrases by contrast are
     more open-ended. In our thread, the salient phrases appear in questions, whose
     answers come later and may be spread out.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二点是，在文本消息的线程设置中，情感通常会集中在刚刚提到的实体上，无论是在同一消息中还是在之前的消息中。相比之下，突出的短语更为开放。在我们的线程中，突出的短语出现在问题中，这些问题的答案稍后会出现，可能会分散在不同的位置。
 - en: A third point is from the perspective of readers of such summaries. These will
     generally be some of the participants in the thread. The sentiments of other people
     on the thread on the specific entities will be important to them.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三点是从读者的角度来看这些总结。这些读者通常是线程中的一些参与者。他们对线程中特定实体的其他人的情感将对他们很重要。
 - en: That said, the issue is not black-and-white as one could make the case that
     adding in the salient phrases does add some information. Consider *seafood restaurants*.
     We now know that someone in the conversation is interested in seafood restaurants.
     Should there have been sentiment from someone else on this suggestion, the information
     carried by this phrase would only increase.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 话虽如此，问题并非非黑即白，因为可以认为添加突出的短语确实增加了一些信息。考虑*海鲜餐馆*。我们现在知道对话中的某人对海鲜餐馆感兴趣。如果其他人对此建议有情感反馈，那么这一短语所传递的信息只会增加。
 - en: That said, we can still say that relatively speaking the named entities and
     the sentiments are more important to retain in the summary than the salient phrases.
     We could use this as follows. Retain the salient phrases initially but drop them
     if the summary becomes too long.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 话虽如此，我们仍然可以说，相对而言，命名实体和情感比突出的短语更值得保留在总结中。我们可以这样做：最初保留突出的短语，但如果总结变得过长，则将其删除。
 - en: '**Retrospective**'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '**回顾**'
 - en: Let’s now look back and reflect on POS Tagging versus the combination of named
     entity recognition, sentiment analysis, and salient phrase extraction.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们回顾并反思POS标记与命名实体识别、情感分析和突出的短语提取的组合。
 - en: Dropping stopwords alone is very coarse. Deciding which words to drop and which
     to retain based on their part of speech is finer. Replacing POS analysis with
     the combination of named entity recognition, sentiment analysis, and salient phrase
     extraction is even finer.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 单独去除停用词非常粗略。根据词性决定去除哪些词和保留哪些词则更细致。用命名实体识别、情感分析和突出的短语提取的组合替代POS分析则更为精细。
 - en: So the quality of the summary improves as we progress from the simplest to the
     most elaborate of these approaches. Of course, the effort also increases. For
     the third approach, we need to use or train a suitable named entity recognizer.
     Plus use a sentiment analyzer and possibly improve it further. Recognizing salient
     phrases is another issue. We didn’t dive into this in our post as somewhere along
     the way the case for retaining such phrases in the summary weakened.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，随着我们从最简单的方法进展到最复杂的方法，总结的质量会提高。当然，工作量也会增加。对于第三种方法，我们需要使用或训练合适的命名实体识别器。此外，还需要使用情感分析器，并可能进一步改进它。识别突出的短语是另一个问题。我们在本文中没有深入探讨这一点，因为在某个阶段，保留这些短语在总结中的理由减弱了。
 - en: '**Post-publishing Update**'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '**出版后的更新**'
 - en: In threads such as the one in our example, a recurring theme we missed out on
     previously is a discussion of the times that work for the various people involved.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们示例中的线程中，一个之前遗漏的反复出现的主题是讨论各个相关人员的工作时间。
 - en: In our thread example, let’s add the below as the first few messages.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的线程示例中，让我们将下面的内容作为前几个消息添加进去。
 - en: '[PRE9]'
+  id: totrans-110
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The “…” in the above is an indicator that there are other messages between the
     two flanking it.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述的“…”是一个指示，表示在两个包夹消息之间还有其他消息。
 - en: Now let’s work towards integrating the key pieces of information from the above
     messages into our summary.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们致力于将上述消息中的关键信息整合到我们的总结中。
 - en: First, we would want to extend our named entity recognizer to recognize dates.
     Below are the same messages, with the chunks we want to recognize as dates highlighted
     in bold.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们希望扩展我们的命名实体识别器以识别日期。下面是相同的消息，我们希望识别为日期的部分已用粗体标出。
 - en: What days work for you all? For me, **April 10–11**, **17–18**, or **May 21–22**
     work. None of these work for me. How about **April 2–3**? Yup, **Apr 2–3** works.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 大家都能工作哪些天？对我来说，**4月10–11日**、**17–18日**或**5月21–22日**都可以。这些日期对我来说都不行。**4月2–3日**怎么样？是的，**4月2–3日**可以。
 - en: Recognizing *date* entities as they appear in the above messages is not hard.
     A hybrid of dictionary-based, sequence-based, and pattern-based mechanisms would
     be an effective start and could be refined over time.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 识别*日期*实体在上述消息中并不难。字典基础、序列基础和模式基础机制的混合将是一个有效的开始，并可以随着时间的推移进行优化。
 - en: For instance, the pattern <*month*> <*num*>-<*num*> would catch some of the
     above dates. <*month*> from a dictionary, including fuzzy entries such as *Apr*,
     and <*num*> could be to match a one or two-digit number using a regex.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，模式<*month*> <*num*>-<*num*>将捕捉到上述一些日期。<*month*>来自字典，包括模糊条目如*Apr*，<*num*>可以通过正则表达式匹配一位或两位数字。
 - en: This won’t detect that the *17–18* inside *April 10–11, 17–18, or May 21–22*
     is a date.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将无法检测到*17–18*在*4月10–11日、17–18日或5月21–22日*中是一个日期。
 - en: Detecting dates as named entities also suggests the following idea. We can take
     those messages that have date entities detected in them and group them in a separate
     section of the summary, which we can aptly call *Dates*.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 将日期作为命名实体检测也提出了以下想法。我们可以将那些检测到日期实体的消息归入总结的一个单独部分，我们可以恰当地称之为*日期*。
 - en: Below is a version of the summary enhanced with this information injected.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个增强了这些信息的总结版本。
 - en: '[PRE10]'
+  id: totrans-120
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: It would be even better if we could infer that *Apr* *2*–*3* works for everyone.
     We won’t pursue it here.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们能够推断出*4月2日*–*3日*适用于每个人，那就更好了。我们在这里不会追求这一点。
 - en: '**Summary**'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结**'
 - en: In this post, we discussed the problem of constructing a summary text message
     that summarizes the content of the various messages in a particular conversation
     thread.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们讨论了构建一个总结文本消息的问题，该消息概述了特定对话线程中各个消息的内容。
 - en: We took a realistic example of such a thread and discussed some NLP methods
     that might help here.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们取了一个现实的例子，并讨论了一些可能在这里有用的 NLP 方法。
 - en: We observed that removing stop-words combined with scoring based on word frequencies
     is not adequate.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们观察到，去除停用词并基于词频评分是不够的。
 - en: From here, we progressed to using part-of-speech information on the various
     words in the text. This worked better, but still not well enough.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里，我们进展到了使用文本中各种词汇的词性信息。这效果更好，但仍不够理想。
 - en: We progressed from here to using named entity recognition and sentiment analysis.
     This worked out fairly well on our thread, which was packed with threads named
     entities. We were able to recognize these named entities and include them in the
     summary. Together with the sentiments attached to them.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里我们进展到了使用命名实体识别和情感分析。在我们的线程中，这效果相当好，因为该线程充满了命名实体。我们能够识别这些命名实体并将其纳入总结中，并附上相关的情感。
 - en: Finally, while we saw that the named entities and the sentiments attached to
     them are essential to detect and add to the summary, at least on our thread, expanding
     this to detecting additional salient phrases and adding them to the summary has
     less value. We also explained why this is the case.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，虽然我们看到命名实体及其附带的情感对于检测和添加到总结中是至关重要的，至少在我们的线程中，将此扩展到检测额外的显著短语并将其添加到总结中的价值较小。我们也解释了原因。
 - en: '**References**'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '**参考文献**'
 - en: '[Extractive Text Summarization using NLTK in Python](https://www.mygreatlearning.com/blog/text-summarization-in-python/)'
+  id: totrans-130
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[使用 NLTK 在 Python 中进行提取式文本摘要](https://www.mygreatlearning.com/blog/text-summarization-in-python/)'
 - en: '[Named Entity Recognition in NLP. Real-world use cases, models, methods…](/named-entity-recognition-in-nlp-be09139fa7b8)'
+  id: totrans-131
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[NLP 中的命名实体识别。实际用例、模型、方法……](/named-entity-recognition-in-nlp-be09139fa7b8)'
 - en: '[Text Sentiment Analysis in NLP. Problems, use-cases, and methods](/text-sentiment-analysis-in-nlp-ce6baba6d466)'
+  id: totrans-132
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[NLP 中的文本情感分析。问题、用例和方法](/text-sentiment-analysis-in-nlp-ce6baba6d466)'
