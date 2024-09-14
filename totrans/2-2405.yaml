@@ -1,364 +1,549 @@
 - en: 'XGBoost: How Deep Learning Can Replace Gradient Boosting and Decision Trees
     — Part 2: Training'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: XGBoost：深度学习如何替代梯度提升和决策树 — 第2部分：训练
 - en: 原文：[https://towardsdatascience.com/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-part-2-training-b432620750f8](https://towardsdatascience.com/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-part-2-training-b432620750f8)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-part-2-training-b432620750f8](https://towardsdatascience.com/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-part-2-training-b432620750f8)
 - en: '[](https://medium.com/@guillaume.saupin?source=post_page-----b432620750f8--------------------------------)[![Saupin
     Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----b432620750f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b432620750f8--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b432620750f8--------------------------------)
     [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----b432620750f8--------------------------------)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@guillaume.saupin?source=post_page-----b432620750f8--------------------------------)[![Saupin
+    Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----b432620750f8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b432620750f8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b432620750f8--------------------------------)
+    [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----b432620750f8--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b432620750f8--------------------------------)
     ·6 min read·Sep 21, 2023
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----b432620750f8--------------------------------)
+    ·阅读时间6分钟·2023年9月21日
 - en: --
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/528a94d279856509bbfad323f8112359.png)'
+  id: totrans-5
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/528a94d279856509bbfad323f8112359.png)'
 - en: Photo by [Simon Wilkes](https://unsplash.com/@simonfromengland?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Simon Wilkes](https://unsplash.com/@simonfromengland?utm_source=medium&utm_medium=referral)提供，来源于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: A world without *if*
+  id: totrans-7
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个没有*if*的世界
 - en: 'In a previous article:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一篇文章中：
 - en: '[](/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-291dc9365656?source=post_page-----b432620750f8--------------------------------)
     [## XGBoost: How Deep Learning Can Replace Gradient Boosting and Decision Trees
     — Part 1'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-291dc9365656?source=post_page-----b432620750f8--------------------------------)
+    [## XGBoost：深度学习如何替代梯度提升和决策树 — 第1部分'
 - en: In this article, you will learn about rewriting decision trees using a Differentiable
     Programming approach, as proposed…
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在这篇文章中，你将了解如何使用可微编程方法重写决策树，如提议的…
 - en: towardsdatascience.com](/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-291dc9365656?source=post_page-----b432620750f8--------------------------------)
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/xgboost-how-deep-learning-can-replace-gradient-boosting-and-decision-trees-291dc9365656?source=post_page-----b432620750f8--------------------------------)
 - en: you have learned about rewriting decision trees using a Differentiable Programming
     approach, as suggested by the NODE paper. The idea of this paper is to replace
     XGBoost by a Neural Network.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 你已经了解了如何使用可微编程方法重写决策树，这一方法由NODE论文提出。这篇论文的理念是用神经网络替代XGBoost。
 - en: 'More specifically, after explaining why the process of building Decision Trees
     is not differentiable, it introduced the necessary mathematical tools to regularize
     the two main elements associated with a decision node:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 更具体地说，在解释了为什么构建决策树的过程不可微之后，介绍了用于正则化与决策节点相关的两个主要元素所需的数学工具：
 - en: Feature Selection
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 特征选择
 - en: Branch detection
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分支检测
 - en: The NODE paper shows that both can be handled using the entmax function.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: NODE论文表明，这两者都可以通过entmax函数来处理。
 - en: To summarize, we have shown how to create a binary tree **without using comparison
     operators**.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，我们展示了如何创建一个**不使用比较运算符**的二叉树。
 - en: The previous article ended with open questions regarding training a regularized
     decision tree. It’s time to answer these questions.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前的文章以关于训练正则化决策树的开放问题结尾。现在是时候回答这些问题了。
 - en: 'If you’re interested in a deep dive in Gradient Boosting Methods, have a look
     at my book:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对梯度提升方法感兴趣，可以看看我的书：
 - en: '[](https://amzn.to/3EKdKsC?source=post_page-----b432620750f8--------------------------------)
     [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 实用梯度提升：深入探讨Python中的梯度提升](https://amzn.to/3EKdKsC?source=post_page-----b432620750f8--------------------------------)'
 - en: This book on Gradient Boosting methods is intended for students, academics,
     engineers, and data scientists who wish to…
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这本关于梯度提升方法的书籍是为那些希望深入了解此方法的学生、学术人士、工程师和数据科学家们准备的……
 - en: amzn.to](https://amzn.to/3EKdKsC?source=post_page-----b432620750f8--------------------------------)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '[amzn.to](https://amzn.to/3EKdKsC?source=post_page-----b432620750f8--------------------------------)'
 - en: A smooth decision node
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 平滑决策节点
 - en: 'First, based on what we presented in the previous article, let’s create a new
     Python class: `SmoothBinaryNode` .'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，基于我们在上一篇文章中介绍的内容，我们创建一个新的Python类：`SmoothBinaryNode`。
 - en: 'This class encodes the behavior of a smooth binary node. There are two key
     parts in its code :'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个类编码了平滑二叉节点的行为。其代码中有两个关键部分：
 - en: The selection of the features, handled by the function `_choices`
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 特征的选择，由函数`_choices`处理
 - en: 'The evaluation of these features, with respect to a given threshold, and the
     identification of the path to follow: `left` or `right` . All this is managed
     by the methods `left` and `right` .'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这些特征的评估、相对于给定的阈值的评估，以及路径选择：`left`还是`right`。所有这些都由`left`和`right`方法管理。
 - en: Smooth binary node. Code by the author.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 平滑二叉节点。代码由作者提供。
 - en: As explained in the previous article, the key to regularize a binary node (and
     hence to allow its training) is to use the `entmax` function.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如在上一篇文章中所解释的，规范化一个二叉节点（从而允许其训练）的关键是使用`entmax`函数。
 - en: The almighty dot product
+  id: totrans-30
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 全能的点积
 - en: Please note that both feature selection and left and right branch selection
     is done thanks to a `dot product.` The dot product is a simple operation, as long
     as one only considers its implementation, but in reality, it is very powerful.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，特征选择以及左分支和右分支的选择都是通过`点积`完成的。点积是一个简单的操作，只要只考虑其实现，但实际上它非常强大。
 - en: It can be used to make projections, compute `cosinus` , find the intersection
     between rays and triangles, … But this is another story.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 它可以用于做投影、计算`cosinus`、找到光线和三角形之间的交点……但这另当别论。
 - en: A simple binary node
+  id: totrans-33
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个简单的二叉节点
 - en: 'Let’s see with a few lines of code how we can use this new class on a very
     basic binary tree with only one node:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用几行代码看看如何在一个只有一个节点的非常基础的二叉树上使用这个新类：
 - en: Using the smooth binary node. Code by the author.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用平滑二叉节点。代码由作者提供。
 - en: In this snippet, we configure our node so that its left leave contains a `1`
     and the right one a `1` . This is defined by the parameter `leaves` . We also
     set the threshold to 50, as you can see in the parameter `biais` . Finally, the
     feature selection is done through the weights defined by `weights`.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个片段中，我们配置了我们的节点，使得其左侧包含一个`1`，右侧也包含一个`1`。这由参数`leaves`定义。我们还将阈值设置为50，如参数`biais`中所示。最后，特征选择是通过`weights`定义的权重完成的。
 - en: 'Here is another slightly more complex example, with a two-level tree:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是另一个稍微复杂一点的示例，有一个两层的树：
 - en: 2 levels binary tree. Code by the author.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 2层二叉树。代码由作者提供。
 - en: The principle is similar to the previous example, except that 2 nodes are added
     to the root.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 原则与之前的示例类似，只是根节点添加了2个节点。
 - en: Parameters to learn
+  id: totrans-40
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 需要学习的参数
 - en: 'In the previous example, we have manually define three parameters:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前的示例中，我们手动定义了三个参数：
 - en: The **weights** are used to select features. Thanks to the `entmax` function,
     the features with the highest weight with respect to the other will be chosen.
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**权重**用于选择特征。借助`entmax`函数，权重最高的特征将被选择。'
 - en: Once the feature is selected, we need to find the best **threshold** to split
     data into two subsets.
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一旦特征被选择，我们需要找到最佳的**阈值**来将数据分成两个子集。
 - en: Finally, we have to define the value attached to the leaves of the tree, here
     the parameter `leaves` .
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，我们必须定义树叶子上附加的值，这里是参数`leaves`。
 - en: Those are the parameters that will be learned during the training process.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些是在训练过程中将被学习的参数。
 - en: Defining the objective
+  id: totrans-46
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 定义目标
 - en: As always when doing Machine Learning, the goal is to find the combination of
     parameters that minimize some cost functions.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 和往常一样，在进行机器学习时，目标是找到最小化某些成本函数的参数组合。
 - en: 'The most current one is the `Mean Squared Error` , which is quite simple to
     compute and can be written in Python as follows:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 当前最常用的是`均方误差`，它计算起来相当简单，可以在Python中如下编写：
 - en: Mean Squared Error. Code by the author.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 均方误差。代码由作者提供。
 - en: Note that there is a little subtlety in the code above, as the `mse`function
     creates a closure that captures the tree object.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，以上代码中有一个小的微妙之处，因为`mse`函数创建了一个闭包，捕获了树对象。
 - en: 'We can apply this function to the simple, one-level tree defined below:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将此函数应用于下面定义的简单单层树：
 - en: The error is null, as expected. Code by the author.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 误差如预期般为零。代码由作者提供。
 - en: As expected, the error is null.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 如预期般，误差为零。
 - en: Learning with Gradient Descent
+  id: totrans-54
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 梯度下降学习
 - en: If there is one mathematical tool that is associated with Machine Learning,
     it’s Gradient Descent. Deep Learning, simple Neural Networks, and even Gradient
     Boosting (but in a functional space) use Gradient Descent to minimize some kind
     of cost function to train a model.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果有一种数学工具与机器学习相关，那就是梯度下降。深度学习、简单的神经网络，甚至梯度提升（但在功能空间中）都使用梯度下降来最小化某种成本函数以训练模型。
 - en: The main difficulty in this process is to compute the gradient for a complex
     function, which is the mathematical composition of linear function (layer inputs)
     and non-linear function (activation functions).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一过程的主要困难是计算复杂函数的梯度，该函数是线性函数（层输入）和非线性函数（激活函数）的数学组合。
 - en: 'Even though this difficulty has prevented the success of Neural Network methods
     for a few decades, the underlying mathematical principles have been known for
     many years: differentiation rules.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管这种困难阻碍了神经网络方法的成功已有几十年，但基础的数学原理——微分规则——早已为人所知。
 - en: Nowadays, computing the gradient of a complex function, being the composition
     of many linear and non-linear base functions can be done in a simple **and** efficient
     way with a single line of code, using automatic differentiation.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 如今，计算复杂函数的梯度，这些函数由许多线性和非线性基础函数组合而成，可以通过一行代码简单**且**高效地完成，使用自动微分。
 - en: As you can see in the code for the class `SmoothBinaryNode` , we have isolated
     these 3 parameters, `weights, bias, leaves` in the variable `params` .
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 如您在`SmoothBinaryNode`类的代码中看到的，我们已将这 3 个参数`weights, bias, leaves`隔离到变量`params`中。
 - en: Using the Gradient Descent method is the standard way to optimize the parameters
     to minimize the error.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用梯度下降法是优化参数以最小化误差的标准方法。
 - en: 'Both Automatic Differentiation and Gradient Descent are concepts that I explore
     in my book ***70 mathematical concepts***:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 自动微分和梯度下降是我在我的书***70个数学概念***中探讨的概念：
 - en: '[](https://amzn.to/3ZpI8lm?source=post_page-----b432620750f8--------------------------------)
     [## Unveiling 70 Mathematical Concepts with Python: A Practical Guide to Exploring
     Mathematics Through…'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://amzn.to/3ZpI8lm?source=post_page-----b432620750f8--------------------------------)
+    [## 揭示 Python 中的 70 个数学概念：通过 Python 探索数学的实用指南'
 - en: 'Buy Unveiling 70 Mathematical Concepts with Python: A Practical Guide to Exploring
     Mathematics Through Python on…'
+  id: totrans-63
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 购买《揭示 Python 中的 70 个数学概念：通过 Python 探索数学的实用指南》…
 - en: amzn.to](https://amzn.to/3ZpI8lm?source=post_page-----b432620750f8--------------------------------)
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: amzn.to](https://amzn.to/3ZpI8lm?source=post_page-----b432620750f8--------------------------------)
 - en: As its name implies, Gradient Descent requires computing the Gradient of the
     error function, with respect to the parameters we want to optimize.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如其名称所示，梯度下降要求计算误差函数的梯度，相对于我们要优化的参数。
 - en: Thanks to the library `jax` , it’s damned simple to compute the gradient of
     any function, using `grad` function.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 多亏了库`jax`，计算任何函数的梯度变得异常简单，使用`grad`函数。
 - en: 'Jax use `automatic differentiation` to automatically and efficiently compute
     derivative. If you’re interested in this compelling method, have a look at my
     introductory article on the subject :'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: Jax 使用`自动微分`来自动且高效地计算导数。如果你对这种引人入胜的方法感兴趣，可以查看我关于该主题的介绍文章：
 - en: '[](/differentiable-programming-from-scratch-abba0ebebc1c?source=post_page-----b432620750f8--------------------------------)
     [## Differentiable Programming from Scratch'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/differentiable-programming-from-scratch-abba0ebebc1c?source=post_page-----b432620750f8--------------------------------)
+    [## 从零开始的可微分编程'
 - en: Last year I had the great opportunity to attend a talk with Yann Lecun, at the
     Facebook Artificial Intelligence…
+  id: totrans-69
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 去年我有幸参加了 Yann Lecun 在 Facebook 人工智能会议上的演讲…
 - en: towardsdatascience.com](/differentiable-programming-from-scratch-abba0ebebc1c?source=post_page-----b432620750f8--------------------------------)
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/differentiable-programming-from-scratch-abba0ebebc1c?source=post_page-----b432620750f8--------------------------------)
 - en: 'One of the ways to implement it is shown in this piece of code:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 实现它的一种方法在这段代码中展示了：
 - en: Training a Smooth Binary Node with Gradient Descent. Code by the author.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用梯度下降法训练平滑二叉节点。代码由作者提供。
 - en: This code uses the library `jax` first to compute the gradient of the error
     for a set of parameters that is optimal, i.e. a set of parameters for which the
     error is zero. Hence we ensure that as expected the gradient is null in this case.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码首先使用库`jax`计算误差的梯度，以获得一个最优的参数集，即误差为零的参数集。因此，我们可以确保在这种情况下梯度确实为零。
 - en: Then we slightly perturb the `leaves` parameter and ensure that the gradient
     is non-null in the direction of this parameter. This is hopefully the case. Same
     when modifying the `bias` parameter.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们稍微扰动`leaves`参数，并确保该参数的方向上的梯度非零。希望是这样。同样，修改`bias`参数时也是如此。
 - en: Finally, starting from a perturbated, non-optimal set of parameters, we use
     the Gradient Descent method to iteratively update them.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，从一个扰动过的、非最优的参数集开始，我们使用梯度下降法来迭代更新这些参数。
 - en: After an arbitrary 1000 iterations, the parameters converge to another set that
     minimizes the error.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在经过任意1000次迭代后，参数会收敛到另一个最小化误差的参数集。
 - en: Vanishing Gradient
+  id: totrans-77
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 梯度消失
 - en: I must confess that I cheated a little in the example above. I deliberately
     chose parameters in a non-flat region of the error function.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 我必须坦白，在上面的例子中我有点作弊。我故意选择了误差函数中的非平坦区域的参数。
 - en: If you remember the shape of the entmax function, when using a high `alpha`
     the transition from 0 to 1 is very steep. This means that for any values slightly
     distant from 0, the curve of the function is completely flat.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你记得`entmax`函数的形状，当使用高`alpha`时，从0到1的过渡是非常陡峭的。这意味着对于任何稍微偏离0的值，函数的曲线都是完全平坦的。
 - en: As the gradient is by definition the slope of a curve, the gradient is null
     in this region.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于梯度定义上是曲线的斜率，因此在这个区域梯度为零。
 - en: As the Gradient Descent method updates the parameters by adding a small increment
     being the product of the `learning rate` and the gradient, the optimization fails.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于梯度下降法通过添加一个小的增量（即`learning rate`和梯度的乘积）来更新参数，因此优化会失败。
 - en: One option to avoid this annoying limitation is to perform batch normalization
     to ensure that the feature remains in a region where the `entmax` function is
     not flat
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 避免这种烦人的限制的一种方法是执行批量归一化，以确保特征保持在`entmax`函数不平坦的区域。
 - en: '[![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)'
 - en: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
 - en: Conclusion
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: We have seen in this series of two articles how to regularize decision trees.
     We have shown how to replace feature selection and branch selection with the `entmax`
     function and a `dot product.`
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这两篇文章系列中，我们已经看到如何对决策树进行正则化。我们展示了如何用`entmax`函数和`dot product`替换特征选择和分支选择。
 - en: This regularization allows to use `smooth decision trees` in the mathematical
     framework of `differentiable programming.`
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种正则化允许在`可微编程`的数学框架中使用`平滑决策树`。
 - en: Being able to use this formalism is very powerful, as it allows us to mix any
     kind of Neural Network (a complex differentiable function) with decision trees.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 能够使用这种形式主义是非常强大的，因为它允许我们将任何类型的神经网络（一个复杂的可微函数）与决策树混合使用。
