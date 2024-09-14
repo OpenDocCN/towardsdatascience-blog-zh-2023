@@ -1,345 +1,508 @@
 - en: Towards Understanding the Mixtures of Experts Model
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 理解专家混合模型
 - en: 原文：[https://towardsdatascience.com/towards-understanding-the-mixtures-of-experts-model-45d11ee5d50d](https://towardsdatascience.com/towards-understanding-the-mixtures-of-experts-model-45d11ee5d50d)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/towards-understanding-the-mixtures-of-experts-model-45d11ee5d50d](https://towardsdatascience.com/towards-understanding-the-mixtures-of-experts-model-45d11ee5d50d)
 - en: New research reveals what happens under the hood when we train MoE models
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 新研究揭示了训练 MoE 模型时的内部机制
 - en: '[](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)[![Samuel
     Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)
     [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)[![Samuel
+    Flender](../Images/390d82a673de8a8bb11cef66978269b5.png)](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)
+    [Samuel Flender](https://medium.com/@samuel.flender?source=post_page-----45d11ee5d50d--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)
     ·8 min read·Nov 14, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----45d11ee5d50d--------------------------------)
+    ·8 分钟阅读·2023年11月14日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/84a6c24700294b529c1ea0523bea9a2a.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/84a6c24700294b529c1ea0523bea9a2a.png)'
 - en: Image created by the author with Midjourney
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者使用 Midjourney 创建
 - en: '[Mixtures of Expert (MoE) models](/machine-learning-with-expert-models-a-primer-6c74585f223f)
     have rapidly become one of the most powerful technologies in modern ML applications,
     enabling breakthroughs such as the Switch Transformer and GPT-4\. Really, we’re
     just starting to see their full impact!'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '[专家混合 (MoE) 模型](/machine-learning-with-expert-models-a-primer-6c74585f223f)
+    迅速成为现代机器学习应用中最强大的技术之一，促进了如 Switch Transformer 和 GPT-4 等突破。实际上，我们才刚刚开始看到它们的全面影响！'
 - en: However, surprisingly little is known about why exactly MoE works in the first
     place. When does MoE work? Why does the gate not simply send all training examples
     to the same expert? Why does the model not collapse into a state in which all
     experts are identical? How exactly do the experts specialize, and in what? What
     exactly does the gate learn?
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，关于 MoE 为什么能工作的具体原因，仍然知之甚少。MoE 什么时候有效？为什么门控网络不会简单地将所有训练示例发送给同一个专家？为什么模型不会崩溃到所有专家都相同的状态？专家如何具体地专业化？门控网络究竟学到了什么？
 - en: Luckily, research has started to shed some light into these questions. Let’s
     take a look.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，研究开始为这些问题提供一些解答。让我们来看看。
 - en: MoE models — a lighting primer
+  id: totrans-11
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MoE 模型——基础入门
 - en: '![](../Images/6243d227d3ea0a06796504c80d1766a8.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6243d227d3ea0a06796504c80d1766a8.png)'
 - en: 'Image source: [Adaptive Mixtures of Local Experts](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[自适应局部专家混合](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)
 - en: As a brief reminder, MoE was invented in the 1991 paper “[Adaptive Mixtures
     of Local Experts](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)”, co-authored
     by none other than the godfather of AI himself, Geoffrey Hinton. The key idea
     in MoE is to model an output y given an input x by combining a number of “experts”
     E, the weight of each is being controlled by a “gating network” G,
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单提醒一下，MoE 是在 1991 年的论文 “[自适应局部专家混合](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)”
+    中首次提出的，由人工智能领域的奠基人 Geoffrey Hinton 共同作者。MoE 的核心思想是通过结合多个“专家” E 来对给定输入 x 的输出 y
+    进行建模，每个专家的权重由“门控网络” G 控制，
 - en: '![](../Images/33ad77c8a93a0cd9e48dc9fbcc6050e9.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/33ad77c8a93a0cd9e48dc9fbcc6050e9.png)'
 - en: where the gating network G is given a simple linear model,
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中门控网络 G 被赋予一个简单的线性模型，
 - en: '![](../Images/0750b269485499fe93bfa9f468f750d3.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0750b269485499fe93bfa9f468f750d3.png)'
 - en: 'where W is a learnable matrix that assigns training examples to experts. When
     training MoE models, the learning objective is therefore two-fold:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 W 是一个可学习的矩阵，用于将训练示例分配给专家。因此，训练 MoE 模型的学习目标是双重的：
 - en: the experts will learn to process the input they’re given into the best possible
     output (i.e., a prediction), and
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 专家将学习处理他们收到的输入，以获得最佳的输出（即预测），并且
 - en: the gate will learn to “route” the right training examples to the right experts,
     that is, learn the routing matrix W.
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 门控机制将学习如何“路由”正确的训练示例到正确的专家，即学习路由矩阵W。
 - en: MoE has been shown to be particularly powerful when we run the computation over
     just the single expert with the largest gating value, that is, we approximate
     y as
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 已经显示，MoE在仅对具有最大门控值的单个专家进行计算时特别强大，即，我们将y近似为
 - en: '![](../Images/fa24fac900e196cc948008b72ece8c54.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa24fac900e196cc948008b72ece8c54.png)'
 - en: 'where *I* is the index of the maximum value of G. We call this “hard routing”
     or “sparse gating”, and it has been the key technique behind breakthroughs such
     as the Switch Transformer: it allows us to scale models with a computational complexity
     of O(1)!'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *I* 是G的最大值的索引。我们称之为“硬路由”或“稀疏门控”，这是像Switch Transformer这样的突破性技术背后的关键技术：它使我们能够扩展具有O(1)计算复杂度的模型！
 - en: With that background, let’s next take a look at a few particular use-cases and
     what the experts actually learned.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了这些背景，接下来我们来看一些具体的应用案例，以及专家们实际学到了什么。
 - en: MoE in vowel discrimination
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MoE 在元音辨别中的应用
 - en: In order to get a better understanding of what exactly the experts are learning,
     let’s first go back to the original 1991 MoE paper, which indeed has some clues.
     Here, the authors build a 4-expert MoE model on a vower discrimination task, that
     is, distinguish [A] from [a] and [I] from [i] in voice recordings.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地理解专家们到底在学习什么，我们先回到最初的1991年MoE论文，这确实有一些线索。在这里，作者在一个元音辨别任务上构建了一个4专家的MoE模型，即区分语音记录中的[A]与[a]以及[I]与[i]。
 - en: 'The following plot shows their data (i and I in the top left, a and A in the
     bottom right) as a function of [formant values](https://en.wikipedia.org/wiki/Formant)
     (acoustic features that describe the sound of the vowel):'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下图表展示了他们的数据（左上角的 i 和 I，右下角的 a 和 A），作为[共振峰值](https://en.wikipedia.org/wiki/Formant)（描述元音声音的声学特征）的函数：
 - en: '![](../Images/8eb5fdd7572a95dddf6933e1e1f8ef01.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8eb5fdd7572a95dddf6933e1e1f8ef01.png)'
 - en: 'Image source: [Adaptive Mixtures of Local Experts](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[自适应局部专家混合](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)
 - en: 'How to read this plot:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何读取这个图：
 - en: 'The “points” plotted are the data: i, I, a, and A. (It’s a little hard to read
     because this is an old paper.)'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 绘制的“点”是数据：i、I、a和A。（这有点难读，因为这是篇旧论文。）
 - en: The lines “Net 0”, “Net 1”, and “Net 2” show the decision boundaries that are
     learned by 3 of the 4 experts. What about the 4th expert? The authors report that
     it failed to learn any useful decision boundary!
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Net 0”、“Net 1”和“Net 2”这几条线展示了4位专家中3位所学到的决策边界。那么第4位专家呢？作者报告称，它未能学到任何有用的决策边界！
 - en: The line “Gate 0:2” shows the gate’s decision boundary between sending inputs
     to expert 0 (to left) vs expert 2 (to the right).
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “Gate 0:2”这一行展示了门控机制在将输入分配到专家0（向左）与专家2（向右）之间的决策边界。
 - en: See what’s happening here? Expert 1 specialized in discriminating [i] from [I],
     while both experts 0 and 2 specialized in [a] vs [A], probably because that data
     was a bit harder to classify and not as easily separable as [i] vs [I].
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 看到这里发生了什么吗？专家1专注于区分[i]和[I]，而专家0和2则专注于[a]与[A]，可能是因为这些数据更难分类，且不像[i]与[I]那么容易分开。
 - en: 'The take-away: the gate learns to cluster the data, and the experts learn the
     decision boundaries within a cluster. More difficult regions of the data will
     end up with more experts allocated to them. Some experts, though, may bring not
     much to the table.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 结论是：门控机制学习如何对数据进行聚类，专家们则学习每个聚类中的决策边界。数据中更困难的区域将分配更多的专家。然而，一些专家可能贡献不大。
 - en: MoE in translation
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MoE 在翻译中的应用
 - en: Let’s consider another example that demonstrates pretty well what the experts
     are actually learning. This examples comes from the 2017 paper “[Outrageously
     large neural networks](https://arxiv.org/abs/1701.06538)”, again from Hinton’s
     lab, this time at Google Brain.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑另一个例子，这个例子很好地展示了专家们实际在学习什么。这个例子来自2017年的论文“[极其庞大的神经网络](https://arxiv.org/abs/1701.06538)”，同样来自Hinton的实验室，这次在Google
+    Brain。
 - en: 'Here, the authors apply MoE to a natural language problem: translation of sentences
     from English to French. Technically, they add an MoE layer with 2048 experts in
     between a stack of 2 LSTM modules, hypothesizing that different experts would
     end up specializing on different kinds of inputs.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，作者将MoE应用于自然语言问题：将句子从英语翻译成法语。技术上，他们在两个LSTM模块的堆叠之间添加了一个有2048位专家的MoE层，假设不同的专家将会专门处理不同类型的输入。
 - en: 'And indeed, that’s what appears to be happening. The following table lists
     the top input tokens, ranked by gate value, for 3 of the 2048 experts:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 确实，这似乎是正在发生的事情。下表列出了 2048 个专家中的 3 个专家的顶级输入标记，按门控值排名：
 - en: '![](../Images/f62613d6b52074c10817e1ad5da48f8d.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f62613d6b52074c10817e1ad5da48f8d.png)'
 - en: Screenshot from [Outrageously large neural networks](https://arxiv.org/abs/1701.06538)
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自[极大型神经网络](https://arxiv.org/abs/1701.06538)的截图
 - en: 'Again, we see the same sort of clustering behavior that we’ve seen earlier:
     Expert 381 specializes in a word cluster spanned by words like “research”, “innovation”,
     science”, while Expert 2004 specializes in a word cluster spanned by words like
     “rapid”, “static”, “fast”, and so on.'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我们看到与之前类似的聚类行为：专家 381 专注于一个由“research”、“innovation”、“science”等词汇构成的词簇，而专家
+    2004 专注于由“rapid”、“static”、“fast”等词汇构成的词簇。
 - en: And again, just like in the previous example, there’s at least one expert that
     doesn’t appear to add much to the table, Expert 752, which (who?) exclusively
     looks at the token “a”.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，和之前的例子一样，有至少一个专家似乎贡献不大，专家 752，它（他？）专注于“a”这个标记。
 - en: 'This is fascinating behavior: we didn’t teach the model that these are related
     words, nor did we ask the model cluster words, nor did we specifically allocate
     experts to certain words. All of this is *emerging* behavior, and the only things
     that we specified ahead of time were the number of experts and the learning objective.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个引人入胜的现象：我们没有教模型这些是相关的词，也没有要求模型对词进行聚类，更没有专门分配专家给某些词。所有这些都是*自发*行为，我们提前指定的唯一内容是专家的数量和学习目标。
 - en: MoE in synthetic data
+  id: totrans-45
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MoE 在合成数据中的表现
 - en: Finally, let’s take a look at a very recent paper that did a lot to help understand
     what happens inside the MoE layer, “[Towards Understanding the Mixture-of-Experts
     Layer in Deep Learning](https://arxiv.org/abs/2208.02813)” by researchers Zixiang
     Chen et al from UCLA.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，让我们看看一篇非常近期的论文，它在帮助理解 MoE 层内部发生的事情方面做了很多工作，题为“[深入理解深度学习中的专家混合层](https://arxiv.org/abs/2208.02813)”，由
+    UCLA 的研究人员 Zixiang Chen 等人完成。
 - en: Here, the authors apply a very simple 4-expert MoE model on a synthetic toy
     dataset consisting of 4 clusters of datapoints that belong to either of 2 classes.
     The learning objective is simply to separate these classes across all 4 clusters.
     The experts in this model are 2-layer CNNs with either linear or non-linear (cubic)
     activation function.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，作者在一个合成玩具数据集上应用了一个非常简单的 4 专家 MoE 模型，该数据集由 4 个属于 2 个类别的数据点簇组成。学习目标仅仅是将这些类别分开。该模型中的专家是具有线性或非线性（立方）激活函数的
+    2 层 CNN。
 - en: Below is a visualization of what happens during the training process, showing
     the MoE model with nonlinear activation at the top, and linear activation at the
     bottom. This graph shows the datapoints consisting of the two classes (crosses
     and circles), which of the 4 experts the datapoint is being routed to by the gate
     (yellow, blue, green, red), and the model’s learned decision boundaries (jagged
     lines).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是训练过程中发生的事情的可视化，显示了上面的 MoE 模型具有非线性激活，下面的是线性激活。该图显示了包含两个类别（交叉和圆圈）的数据点，数据点通过门控被路由到
+    4 个专家中的哪个（黄色、蓝色、绿色、红色），以及模型学习的决策边界（锯齿线）。
 - en: '![](../Images/3b3dad7e32ac35306cf24882ae2f2aa0.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3b3dad7e32ac35306cf24882ae2f2aa0.png)'
 - en: Plot from the paper [Towards Understanding the Mixture-of-Experts Layer in Deep
     Learning](https://arxiv.org/abs/2208.02813)
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自论文“[深入理解深度学习中的专家混合层](https://arxiv.org/abs/2208.02813)”的图
 - en: 'The take-aways:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 收获：
 - en: '**Specialization takes time.** In the beginning of model training, there’s
     no specialization at all! All experts are everywhere all over the place. As the
     training progresses, slowly the clusters get allocated to certain experts.'
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**专业化需要时间。** 在模型训练的开始阶段，完全没有专业化！所有专家到处都是。随着训练的进行，慢慢地，簇被分配给某些专家。'
 - en: '**Expert allocation is random**. There is no particular rule as to which clusters
     get assigned to which expert — it’s random. If you look closely, you see that
     the top right cluster happens to have a few more datapoints that are being routed
     to the “blue” expert, and that random perturbation may be the reason that the
     entire cluster ends up blue.'
+  id: totrans-53
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**专家分配是随机的**。没有特定的规则来决定哪些簇分配给哪些专家——这完全是随机的。如果你仔细观察，你会发现右上角的簇恰好有更多的数据点被路由到“蓝色”专家，而这种随机扰动可能是整个簇最终变为蓝色的原因。'
 - en: '**Non-linear beats linear.** Linear experts don’t work as well, as seen by
     comparing the top right (non-linear) to the bottom right (linear) plot: the decision
     boundaries from the linear experts aren’t as good, and the clusters are also not
     as well segregated. This shows that expert non-linearity is one of the keys to
     make MoE work.'
+  id: totrans-54
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**非线性优于线性。** 线性专家效果不好，通过比较右上角（非线性）和右下角（线性）的图表可以看出：线性专家的决策边界不如非线性专家好，聚类也没有被很好地分隔。这表明专家的非线性是使
+    MoE 工作的关键之一。'
 - en: 'It is also insightful to track the “dispatch entropy” of the gate, which is
     largest if each expert receives training example from all clusters, and lowest
     (0) if each expert only receives training examples from a single cluster. As training
     progresses (from left to right in the plot below), dispatch entropy drops until
     it reaches a stable point — the point with a near-1:1 correspondence between clusters
     and experts:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 追踪门控器的“调度熵”也很有洞察力，熵最大时每个专家接收来自所有聚类的训练样本，熵最低（为 0）时每个专家仅接收来自单一聚类的训练样本。随着训练的进展（在下面的图中从左到右），调度熵下降，直到达到稳定点——即聚类和专家之间接近
+    1:1 对应的点：
 - en: '![](../Images/f4e7383f35c8d1d6c88b25c6ed64a0b7.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f4e7383f35c8d1d6c88b25c6ed64a0b7.png)'
 - en: Plot from the paper [Towards Understanding the Mixture-of-Experts Layer in Deep
     Learning](https://arxiv.org/abs/2208.02813)
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自论文 [Towards Understanding the Mixture-of-Experts Layer in Deep Learning](https://arxiv.org/abs/2208.02813)
+    的图表
 - en: 'Which is, once again, telling us the same story: the gate learns to segregate
     the data into clusters, and the experts specialize in their (randomly assigned)
     clusters.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 这再次告诉我们同样的故事：门控器学习将数据分割成多个聚类，专家在其（随机分配的）聚类中专门化。
 - en: 3 papers, 3 decades, 1 story.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 3 篇论文，3 个十年，1 个故事。
 - en: Take-aways
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关键点
 - en: 'With all that context, let’s revisit — and answer — the questions we asked
     earlier:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了这些背景，让我们回顾并回答之前提出的问题：
 - en: 'Q: When does MoE work?'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Q: MoE 在什么时候有效？'
 - en: 'A: MoE works best when the data is naturally clustering — we saw that in the
     vowel problem, the translation problem, and in the synthetic data.'
+  id: totrans-63
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 'A: 当数据自然聚类时，MoE 效果最佳——我们在元音问题、翻译问题和合成数据中都看到了这一点。'
 - en: 'Q: Why does the gate not simply send all training examples to the same expert?'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Q: 为什么门控器不简单地将所有训练样本发送到同一个专家？'
 - en: 'A: Because the performance would be bad: a single expert cannot learn each
     of the cluster’s decision boundaries equally well. And, as in all neural networks,
     bad performance creates large gradients to pull the model in the opposite way.'
+  id: totrans-65
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 'A: 因为性能会很差：一个专家无法同样好地学习每个聚类的决策边界。而且，与所有神经网络一样，糟糕的性能会产生大的梯度，拉动模型朝相反的方向。'
 - en: 'Q: Why does the model not collapse into a state in which all experts are identical?'
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Q: 为什么模型不会崩溃成所有专家都相同的状态？'
 - en: 'A: Again, this is because the performance in this case would be bad: we get
     better performance when different experts specialize in different regions of the
     data.'
+  id: totrans-67
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 'A: 再次说明，因为这种情况下性能会很差：当不同专家在数据的不同区域专门化时，我们的性能更好。'
 - en: 'Q: How exactly do the experts specialize, and in what?'
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Q: 专家是如何专门化的，专门化的内容是什么？'
 - en: 'A: Experts specialize in different regions of the data, and that specialization
     is random: it depends on the (random) initialization of the gate.'
+  id: totrans-69
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 'A: 专家在数据的不同区域专门化，而这种专门化是随机的：它取决于门控器的（随机）初始化。'
 - en: 'Q: What exactly does the gate learn?'
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Q: 门控器究竟学到了什么？'
 - en: 'A: The gate learns to cluster the data, and to assign each cluster to one (or
     more) experts.'
+  id: totrans-71
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 'A: 门控器学习将数据进行聚类，并将每个聚类分配给一个（或多个）专家。'
 - en: MoE remains one of the most scientifically interesting and practically useful
     modeling paradigms in ML, and we’re just starting to see its implications on modern
     ML applications. Understanding what exactly happens under the hood is a critical
     step to make them even better.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: MoE 仍然是机器学习中最具科学趣味和实际用途的建模范式之一，我们才刚开始看到它对现代机器学习应用的影响。了解其内部机制是使其变得更好的关键步骤。
 - en: '*Want to impress your peers with in-depth knowledge of the latest ML technologies
     and breakthroughs?* [*Subscribe to my Newletter.*](https://mlfrontiers.substack.com)'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '*想通过深入了解最新的 ML 技术和突破来打动你的同事吗？* [*订阅我的通讯。*](https://mlfrontiers.substack.com)'
