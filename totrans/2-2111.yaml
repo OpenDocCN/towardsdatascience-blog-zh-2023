@@ -1,35 +1,53 @@
 - en: Time Series Transformations (and Reverting) Made Easy
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 时间序列转换（及还原）变得简单
 - en: 原文：[https://towardsdatascience.com/time-series-transformations-and-reverting-made-easy-f4f768c18f63](https://towardsdatascience.com/time-series-transformations-and-reverting-made-easy-f4f768c18f63)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/time-series-transformations-and-reverting-made-easy-f4f768c18f63](https://towardsdatascience.com/time-series-transformations-and-reverting-made-easy-f4f768c18f63)
 - en: Exploring transformations for time series and how to revert them with scalecast
     in Python
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 探索时间序列的转换及如何在 Python 中使用 scalecast 进行还原
 - en: '[](https://mikekeith52.medium.com/?source=post_page-----f4f768c18f63--------------------------------)[![Michael
     Keith](../Images/4ebd39b25a1faae3586eb25ec83d3e91.png)](https://mikekeith52.medium.com/?source=post_page-----f4f768c18f63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f4f768c18f63--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f4f768c18f63--------------------------------)
     [Michael Keith](https://mikekeith52.medium.com/?source=post_page-----f4f768c18f63--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://mikekeith52.medium.com/?source=post_page-----f4f768c18f63--------------------------------)[![迈克尔·基思](../Images/4ebd39b25a1faae3586eb25ec83d3e91.png)](https://mikekeith52.medium.com/?source=post_page-----f4f768c18f63--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f4f768c18f63--------------------------------)[![数据科学之道](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f4f768c18f63--------------------------------)
+    [迈克尔·基思](https://mikekeith52.medium.com/?source=post_page-----f4f768c18f63--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f4f768c18f63--------------------------------)
     ·5 min read·Jan 26, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [数据科学之道](https://towardsdatascience.com/?source=post_page-----f4f768c18f63--------------------------------)
+    ·5 分钟阅读·2023年1月26日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/6ce1d41146609f8ca174df859a6cde91.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6ce1d41146609f8ca174df859a6cde91.png)'
 - en: Image by Author
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: When forecasting time series data, stationarity is an important factor to consider.
     Some models — ARIMA, Holt-Winters, Exponential Smoothing, and others — are specialized
     for time series and do not necessarily require stationary data. A series’ stationarity
@@ -37,14 +55,18 @@
     series introduces a trend into a dataset that can lead to functions that rely
     on that trend too heavily, leading to spurious results (results that appear deceptively
     good).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在预测时间序列数据时，平稳性是一个重要因素。某些模型——如 ARIMA、Holt-Winters、指数平滑等——专门用于时间序列，并不一定要求数据是平稳的。序列的平稳性指的是其随时间回到均值的倾向。非平稳序列会在数据集中引入趋势，这可能导致过度依赖这些趋势的函数，从而产生虚假的结果（看起来过于理想的结果）。
 - en: Exponential smoothing models smooth out recent trends to account for non-stationarity
     and ARIMA will difference data when the factor for integration (the middle term
     in a standard ARIMA order) is set to above 0\. Other time-series models deal with
     stationarity in different ways.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数平滑模型平滑最近的趋势以应对非平稳性，而 ARIMA 会在积分因子（标准 ARIMA 顺序中的中间项）设置为大于 0 时对数据进行差分。其他时间序列模型以不同的方式处理平稳性。
 - en: However, a popular machine learning model like XGBoost has no regards for a
     series’ stationarity because it was not developed to consider the quirks of time
     series data. That doesn’t necessarily mean you shouldn’t forecast with it, but
@@ -54,139 +76,217 @@
     predict on. Some are hesitant to take transformations because it adds another
     step to data preparation and makes reverting results, so that the forecasts produce
     usable information, difficult. But that doesn’t have to be the case.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，像 XGBoost 这样流行的机器学习模型并不考虑序列的平稳性，因为它并未开发来处理时间序列数据的特殊性。这并不一定意味着你不应该用它进行预测，但在这样做之前，处理潜在的非平稳性是一个好主意。这通常意味着应用一种转换——以某种方式操控原始值——以剥离趋势并使其更适合模型进行预测。有些人对进行转换持保留态度，因为这增加了数据准备的步骤，并使还原结果（以便预测产生可用的信息）变得困难。但情况不一定是这样的。
 - en: 'Today I will overview how transforming, forecasting, and reverting a time series
     can easily be performed in Python. The following installation is necessary:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天，我将概述如何在 Python 中轻松进行时间序列的转换、预测和还原。以下安装是必需的：
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Basic Syntax
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基本语法
 - en: The syntax for applying transformations using the scalecast package is simple.
     First, we import the necessary packages and extract the time series data. I’m
     using the airlines dataset, available on [Kaggle](https://www.kaggle.com/rakannimer/air-passengers)
     with an Open Database license.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 scalecast 包应用转换的语法很简单。首先，我们导入必要的包并提取时间序列数据。我使用的是 [Kaggle](https://www.kaggle.com/rakannimer/air-passengers)
+    上的航空公司数据集，具有开放数据库许可证。
 - en: '[PRE1]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Then we create a Forecaster object:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们创建一个 Forecaster 对象：
 - en: '[PRE2]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Use the Forecaster object to feed a SeriesTransformer object:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Forecaster 对象来提供一个 SeriesTransformer 对象：
 - en: '[PRE3]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'That’s it. Now, many different transformations, including custom transformations,
     are available for you. These include first differencing, second differencing and
     beyond, seasonal differencing, linear detrending, polynomial detrending, logarithmic
     detrending, scaling, boxcox transformations, and more. All transformations are
     stackable and fully revertible. For instance, if I want to apply a seasonal difference
     and then detrend my series, I can do this:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这样。现在，许多不同的转换，包括自定义转换，已经可供使用。这些转换包括一阶差分、二阶差分及以上、季节性差分、线性去趋势、多项式去趋势、对数去趋势、缩放、boxcox
+    转换等等。所有转换都是可堆叠且完全可还原的。例如，如果我想先应用季节性差分，然后去趋势我的系列，我可以这样做：
 - en: '[PRE4]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/85473e41c82b55e1c674b2a2fceb758c.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/85473e41c82b55e1c674b2a2fceb758c.png)'
 - en: Image by author
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'I’ll then call a forecast model using XGBoost:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我会使用 XGBoost 调用一个预测模型：
 - en: '[PRE5]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/27f705adb8533953294b6c60fbafcdf4.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/27f705adb8533953294b6c60fbafcdf4.png)'
 - en: 'To revert the applied transformations, I call the revert functions in the opposite
     order as their transforming counterparts:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 要撤销已应用的转换，我会按照其转换对应函数的相反顺序调用还原函数：
 - en: '[PRE6]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![](../Images/d7f3742153c3de24c748b816823e70aa.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d7f3742153c3de24c748b816823e70aa.png)'
 - en: Image by author
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Auto-Transforming
+  id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自动转换
 - en: 'With so many transformation options, wouldn’t it be nice to get a custom recommendation
     based on what might maximize forecast accuracy for a given series? That is also
     possible with scalecast ([doc](https://scalecast.readthedocs.io/en/latest/Forecaster/Util.html#find-optimal-transformation)):'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 有这么多转换选项，如果能基于可能最大化预测准确性的自定义推荐，岂不是很好？这也是 scalecast 的一个功能 ([doc](https://scalecast.readthedocs.io/en/latest/Forecaster/Util.html#find-optimal-transformation))：
 - en: '[PRE7]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'This function loops through many possible transformations in a given order
     and returns the set of transformations it believes creates the best chance for
     accurate forecasts, monitoring an out-of-sample metric to make that determination.
     We can see from the output that it chose a boxcox transformation followed by a
     first difference and a first seasonal difference:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个函数按照给定的顺序循环许多可能的转换，并返回它认为能够提供最佳预测机会的转换集合，通过监控一个样本外度量来做出这个判断。从输出中我们可以看到，它选择了
+    boxcox 转换，随后是一次差分和一次季节性差分。
 - en: '[PRE8]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'The returned objects can then be fed into a pipeline where other auto-ML methods
     are applied:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 返回的对象可以被输入到一个管道中，在那里应用其他自动机器学习方法：
 - en: '[PRE9]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '![](../Images/672bc6e8d6e4adf694dd74dc72910715.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/672bc6e8d6e4adf694dd74dc72910715.png)'
 - en: Image by author
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: The resulting code is easy-to-read and easy-to-maintain. Much more customization
     is available or the automatic approach can be used with normally good results.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成的代码易于阅读和维护。还可以进行更多的自定义，或者使用自动方法通常会得到不错的结果。
 - en: Conclusion
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Today, I overviewed transformations for time series in Python using scalecast.
     The approach was extended to incorporate auto-ML techniques and the transformations,
     as well as the corresponding revert functions, were placed in a pipeline for a
     streamlined application. Thank you for following along! Be sure to give [scalecast](https://github.com/mikekeith52/scalecast)
     a star on GitHub. Here is the complete [code](https://github.com/mikekeith52/scalecast-examples/blob/main/transforming/medium_code.ipynb)
     used in this publication.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天，我概述了使用 scalecast 进行 Python 时间序列转换的方法。该方法扩展了自动机器学习技术，转换以及相应的还原函数被放入管道中以简化应用。感谢您的关注！确保在
+    GitHub 上为 [scalecast](https://github.com/mikekeith52/scalecast) 点赞。这里是本发布中使用的完整
+    [代码](https://github.com/mikekeith52/scalecast-examples/blob/main/transforming/medium_code.ipynb)。
 - en: '[](https://github.com/mikekeith52/scalecast?source=post_page-----f4f768c18f63--------------------------------)
     [## GitHub - mikekeith52/scalecast: The practitioner''s forecasting library'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/mikekeith52/scalecast?source=post_page-----f4f768c18f63--------------------------------)
+    [## GitHub - mikekeith52/scalecast: 实践者的预测库'
 - en: Scalecast is a light-weight time-series forecasting procedure, wrapper, and
     results container built by and for applied…
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Scalecast 是一个轻量级的时间序列预测程序、封装器和结果容器，专为应用而构建。
 - en: github.com](https://github.com/mikekeith52/scalecast?source=post_page-----f4f768c18f63--------------------------------)
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '[github.com](https://github.com/mikekeith52/scalecast?source=post_page-----f4f768c18f63--------------------------------)'
