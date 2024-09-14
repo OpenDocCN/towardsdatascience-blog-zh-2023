@@ -1,48 +1,73 @@
 - en: 'Memory Management in Apache Spark: Disk Spill'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**Apache Spark中的内存管理：磁盘溢出**'
 - en: 原文：[https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c](https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c](https://towardsdatascience.com/memory-management-in-apache-spark-disk-spill-59385256b68c)
 - en: What it is and how to handle it
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 它是什么以及如何处理
 - en: '[](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[![Tom
     Corbin](../Images/e410c9b88920cd3a221538e08eebe6f0.png)](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)
     [Tom Corbin](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[![Tom
+    Corbin](../Images/e410c9b88920cd3a221538e08eebe6f0.png)](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)
+    [Tom Corbin](https://medium.com/@tomhcorbin?source=post_page-----59385256b68c--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)
     ·12 min read·Sep 15, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----59385256b68c--------------------------------)
+    ·阅读时间12分钟·2023年9月15日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/96049b2bcf518a5a2922df320a077a51.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/96049b2bcf518a5a2922df320a077a51.png)'
 - en: Photo by [benjamin lehman](https://unsplash.com/@benjaminlehman?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [benjamin lehman](https://unsplash.com/@benjaminlehman?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: In the world of big data, Apache Spark is loved for its ability to process massive
     volumes of data extremely quickly. Being the number one big data processing engine
     in the world, learning to use this tool is a cornerstone in the skillset of any
     big data professional. And an important step in that path is understanding Spark’s
     memory management system and the challenges of “disk spill”.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在大数据领域，Apache Spark因其极快的数据处理能力而备受喜爱。作为世界上排名第一的大数据处理引擎，学习使用这个工具是任何大数据专业人士技能组合中的基石。而这一路径中的一个重要步骤是了解Spark的内存管理系统及“磁盘溢出”的挑战。
 - en: Disk spill is what happens when Spark can no longer fit its data in memory,
     and needs to store it on disk. One of Spark’s major advantages is its in-memory
     processing capabilities, which is much faster than using disk drives. So, build
     applications that spill to disk somewhat defeats the purpose of Spark.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 磁盘溢出是指当Spark无法将数据全部存储在内存中时，需要将其存储到磁盘上。Spark的主要优势之一是其内存处理能力，这比使用磁盘驱动器要快得多。因此，构建会溢出到磁盘的应用程序在一定程度上违背了Spark的目的。
 - en: Disk spill has a number of undesirable consequences, so learning how to deal
     with it is an important skill for a Spark developer. And that’s what this article
     aims to help with. We’ll delve into what disk spill is, why it happens, what its
@@ -50,362 +75,511 @@
     to identify signs of disk spill and understand its metrics. Finally, we’ll explore
     some actionable strategies for mitigating disk spill, such as effective data partitioning,
     appropriate caching, and dynamic cluster resizing.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 磁盘溢出有许多不良后果，因此学习如何处理它是Spark开发者的重要技能。这就是本文旨在帮助的内容。我们将深入了解磁盘溢出是什么，为什么会发生，它的后果是什么，以及如何解决它。通过使用Spark的内置UI，我们将学习如何识别磁盘溢出的迹象并理解其指标。最后，我们将探讨一些减轻磁盘溢出的可操作策略，例如有效的数据分区、适当的缓存和动态集群调整。
 - en: Memory Management in Spark
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**Spark中的内存管理**'
 - en: Before diving into disk spill, it’s useful to understand how memory management
     works in Spark, as this plays a crucial role in how disk spill occurs and how
     it is managed.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入探讨磁盘溢出之前，了解Spark中的内存管理如何工作是非常有用的，因为这在磁盘溢出的发生和管理中起着至关重要的作用。
 - en: Spark is designed as an in-memory data processing engine, which means it primarily
     uses RAM to store and manipulate data rather than relying on disk storage. This
     in-memory computing capability is one of the key features that makes Spark fast
     and efficient.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark被设计为一个内存数据处理引擎，这意味着它主要使用RAM来存储和处理数据，而不是依赖磁盘存储。这种内存计算能力是使Spark快速高效的关键特性之一。
 - en: 'Spark has a limited amount of memory allocated for its operations, and this
     memory is divided into different sections, which make up what is known as Unified
     Memory:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark 为其操作分配了有限的内存，这些内存被分为不同的部分，这些部分组成了所谓的统一内存：
 - en: '![](../Images/cb9b64d711552c03f8bb0613d9002cab.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cb9b64d711552c03f8bb0613d9002cab.png)'
 - en: Image by Author
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Storage Memory
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 存储内存
 - en: This is where Spark stores data to be reused later, like [cached data](https://medium.com/me/stats/post/31a2bd7be277)
     and broadcast variables. By keeping this data readily available, Spark can improve
     the performance of data processing tasks by retrieving it quickly.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是 Spark 存储将来要重用的数据的地方，比如[缓存的数据](https://medium.com/me/stats/post/31a2bd7be277)和广播变量。通过将这些数据保持在随时可用的状态，Spark
+    可以通过快速检索数据来提高数据处理任务的性能。
 - en: Instead of reading the sales data from disk for each separate analysis, you
     can cache a DataFrame in Storage Memory after the first read. This way, for subsequent
     analyses, Spark can quickly access the cached data, making the entire process
     more efficient.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在第一次读取后将 DataFrame 缓存到存储内存中，而不是每次单独分析时从磁盘读取销售数据。这样，对于后续的分析，Spark 可以快速访问缓存的数据，从而提高整个过程的效率。
 - en: Execution Memory
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 执行内存
 - en: 'This part of the memory is what Spark uses for computation. So when you perform
     a join or aggregation, Spark uses the Execution Memory. For example, to calculate
     the average value of a column in a DataFrame, Spark would:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这部分内存是 Spark 用于计算的。因此，当你执行连接或聚合时，Spark 使用执行内存。例如，要计算 DataFrame 中一列的平均值，Spark
+    会：
 - en: Load the relevant portions of the DataFrame into Execution Memory (perhaps taking
     it from a cached DataFrame in Storage Memory).
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 DataFrame 的相关部分加载到执行内存中（可能从存储内存中的缓存 DataFrame 中提取）。
 - en: Perform the aggregation, storing intermediate sums and counts in Execution Memory.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 执行聚合，将中间的和和计数存储在执行内存中。
 - en: Calculate the final average, still using Execution Memory for the computation.
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算最终的平均值，仍然使用执行内存进行计算。
 - en: Output the final result, freeing up the Execution Memory used for the operation.
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 输出最终结果，释放用于操作的执行内存。
 - en: User Memory
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用户内存
 - en: This is used for custom data structures or variables that you create but are
     not directly managed by Spark. It’s like a workspace for your own use within the
     Spark application. Where Execution Memory is used for data that is actively being
     processed by Spark, User Memory typically contains metadata, custom hash tables,
     or other structures you might need.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是用于你创建的自定义数据结构或变量的地方，但这些不由 Spark 直接管理。这就像是你在 Spark 应用程序中的工作区。执行内存用于 Spark 主动处理的数据，而用户内存通常包含元数据、自定义哈希表或其他你可能需要的结构。
 - en: Imagine you have a DataFrame with a column of ages, and you want to keep track
     of the maximum age for some custom logic later in your application. You would
     read in the DataFrame, calculate the max age, and then store that age as a variable,
     which would be stored in User Memory. This variable is a piece of information
     you’ll use later, but it’s not being actively processed by Spark’s built-in operations,
     so it therefore belongs in User Memory.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你有一个包含年龄列的 DataFrame，并且你想在应用程序中稍后的自定义逻辑中跟踪最大年龄。你会读取 DataFrame，计算最大年龄，然后将该年龄存储为一个变量，该变量会存储在用户内存中。这个变量是你稍后会使用的信息，但它并没有被
+    Spark 的内置操作主动处理，因此它属于用户内存。
 - en: Unlike Storage Memory which primarily stores cached DataFrames/RDDs, User Memory
     isn’t managed by Spark. That means it’s up to you to ensure that you aren’t using
     more User Memory than allocated to avoid Out Of Memory (OOM) errors.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 与主要存储缓存 DataFrame/RDD 的存储内存不同，用户内存不由 Spark 管理。这意味着你需要确保你使用的用户内存不会超过分配的内存，以避免内存不足（OOM）错误。
 - en: Reserved Memory
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 保留内存
 - en: Reserved Memory is set aside for system-level operations and Spark’s internal
     objects. Unlike Execution Memory, Storage Memory, or User Memory, which are used
     for specific tasks or data within your Spark application, Reserved Memory is used
     by Spark itself for its own internal operations.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 保留内存用于系统级操作和 Spark 的内部对象。与执行内存、存储内存或用户内存不同，这些内存用于 Spark 应用程序中的特定任务或数据，保留内存用于
+    Spark 自身的内部操作。
 - en: The memory is “reserved” in the sense that it’s not available for your data
     or tasks. It’s like the operating system on your computer that reserves some disk
     space for system files and operations — you can’t use that space for your own
     files.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种内存是“保留”的，因为它不能用于你的数据或任务。这就像你计算机上的操作系统保留了一些磁盘空间用于系统文件和操作——你不能将这些空间用于自己的文件。
 - en: Dynamic Allocation Between Storage and Execution Memory
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 存储与执行内存之间的动态分配
 - en: In Spark, the relationship between Storage Memory and Execution Memory is like
     two people sharing a pie. The pie represents the total available memory, and each
     type of memory — Storage and Execution — wants a slice of this pie.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Spark 中，存储内存和执行内存之间的关系就像两个人分享一个派。这个派代表了总的可用内存，而每种内存——存储和执行——都想要这块派的一部分。
 - en: 'If Execution Memory has more tasks to perform and needs more resources, it
     can take a larger slice of the pie, leaving a smaller slice for Storage Memory.
     Conversely, if Storage Memory needs to cache more data, it can take a larger slice,
     leaving less for Execution Memory. Like this:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果执行内存有更多任务需要处理并且需要更多资源，它可以占用更大的内存份额，留下较小的份额给存储内存。相反，如果存储内存需要缓存更多数据，它可以占用更大的份额，留下更少的份额给执行内存。就像这样：
 - en: '![](../Images/e1a6ba97c3d0741ac2a4b00b122e631b.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e1a6ba97c3d0741ac2a4b00b122e631b.png)'
 - en: Image by Author
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Both Execution Memory and Storage Memory can potentially eat the whole pie (total
     available memory) if the other doesn’t need it. However, Execution Memory has
     “first dibs” on taking slices from Storage Memory’s portion when it needs more.
     But there’s a limit — it can’t take so much that Storage Memory is left with less
     than a minimum slice size.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果另一个不需要，执行内存和存储内存都可能占用整个派（总的可用内存）。然而，执行内存在需要更多时对存储内存的份额有“优先权”。但有个限制——它不能占用过多，以至于存储内存留下的份额小于最低限度。
 - en: In more technical terms, Execution Memory and Storage Memory share a unified
     memory region, where either can occupy the entire region if the other is unused;
     however, Execution Memory can evict data from Storage Memory up to a certain threshold,
     beyond which eviction is disallowed, while Storage Memory cannot evict Execution
     Memory.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 更技术性的说，执行内存和存储内存共享一个统一的内存区域，其中任何一个可以占用整个区域，如果另一个未使用；然而，执行内存可以从存储内存中驱逐数据，直到某个阈值，超过该阈值则不允许驱逐，而存储内存不能驱逐执行内存。
 - en: The eviction of data from Storage Memory is generally governed by a Least Recently
     Used (LRU) policy. This means that when Execution Memory needs more space and
     decides to evict data from Storage Memory, it will typically remove the data that
     has been accessed least recently. The idea is that the data you haven’t used in
     a while is probably less likely to be needed immediately compared to data that
     was recently accessed.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据从存储内存中的驱逐通常是由最近最少使用（LRU）策略来管理的。这意味着，当执行内存需要更多空间并决定从存储内存中驱逐数据时，它通常会移除那些最近被访问最少的数据。其想法是，你很久没有使用的数据相比最近访问的数据，可能不太容易立即需要。
 - en: Disk Spill in Spark
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Spark 中的磁盘溢出
 - en: Spark likes to do most of its work in memory, since this is the fastest way
     to process data. But what happens when your data is bigger than your memory? What
     happens when your total memory is 100GB, but your DataFrame is 110GB? Well, when
     data is too large to fit in memory, it gets written to disk. This is known as
     disk spill.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark 喜欢在内存中进行大部分工作，因为这是处理数据的最快方式。但当你的数据比内存大时会发生什么？当你的总内存是 100GB，但你的 DataFrame
+    是 110GB 时会发生什么？当数据过大而无法放入内存时，它将被写入磁盘。这被称为磁盘溢出。
 - en: 'Disk spill can come from either Storage Memory (when the cached DataFrames
     are too big) or Execution Memory (when operations require significant amounts
     of intermediate data storage). Recall that when Execution Memory needs additional
     space for tasks like joins or shuffles, it can borrow from Storage Memory — but
     only up to a certain limit. If the Execution Memory reaches this limit and still
     needs more space, Spark will spill the excess data to disk:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 磁盘溢出可以来自存储内存（当缓存的 DataFrame 太大时）或执行内存（当操作需要大量的中间数据存储时）。回想一下，当执行内存需要额外的空间用于诸如连接或洗牌等任务时，它可以从存储内存中借用——但仅限于一定的限制。如果执行内存达到这个限制仍然需要更多空间，Spark
+    将会将多余的数据溢出到磁盘：
 - en: '![](../Images/779044b6ecd5788c9f538231fc4431db.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/779044b6ecd5788c9f538231fc4431db.png)'
 - en: Image by Author
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: 'The same is true when Storage Memory requires more space but hits the limit
     it can borrow from Execution Memory:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 当存储内存需要更多空间但达到从执行内存借用的限制时，也会发生同样的情况：
 - en: '![](../Images/02390fa1d0a8e083951948847ead62d5.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/02390fa1d0a8e083951948847ead62d5.png)'
 - en: Image by Author
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: The Impact of Partition Size on Disk Spill
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分区大小对磁盘溢出的影响
 - en: When you load a table into Spark, it gets broken down into manageable chunks
     called partitions which are divided among the worker nodes. Spark will automatically
     divide your data into 200 partitions, but you can also tell Spark how many partitions
     to split your data into. Understanding how many partitions to use is an important
     thing to understand about Spark in general, but it also has implications for disk
     spill.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你将一个表加载到Spark中时，它会被拆分成可管理的块，称为分区，这些分区会被分配到工作节点上。Spark会自动将数据拆分成200个分区，但你也可以指定Spark将数据拆分成多少个分区。了解需要使用多少个分区是理解Spark的一件重要事情，它也与磁盘溢出有关。
 - en: The Unified Memory we discussed in the previous section exists on a per-node
     basis. Each worker node has its Unified Memory, comprised of Storage Memory, Execution
     Memory, User Memory, and Reserved Memory. And each worker node fits as many partitions
     into its Unified Memory as it can. But if these partitions are too big, you some
     of them spill to disk.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在前一节中讨论的统一内存是以每个节点为基础存在的。每个工作节点都有自己的统一内存，包括存储内存、执行内存、用户内存和保留内存。每个工作节点会将尽可能多的分区装入其统一内存中。但是，如果这些分区太大，部分分区会溢出到磁盘上。
 - en: Imagine you are working with a DataFrame that’s 160GB in size, and you’ve told
     Spark to divide it into 8 partitions. Each partition would therefore be 20GB in
     size. Now, if you have 10 worker nodes in your cluster, each with 16GB of memory
     in total, then not a single partition would be able to fit in the memory of a
     single node. We could fit 16GB of a partition at most in memory, and the other
     4GB would have to be spilled to disk.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下你正在处理一个160GB大小的DataFrame，并且你告诉Spark将其分成8个分区。因此，每个分区将为20GB。现在，如果你的集群中有10个工作节点，每个节点总共有16GB内存，那么没有一个分区能完全适应单个节点的内存。我们最多能在内存中放入16GB的分区，其余4GB将被溢出到磁盘。
 - en: However, if we increased the number of partitions to 10, then each partition
     would be 16GB in size — precisely enough to fit in memory! Understanding partitioning
     is crucial to understanding disk spill, as well as Spark more generally. Choosing
     the right number of partitions for your Spark jobs is essential to speedy execution
     times.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，如果我们将分区数增加到10，那么每个分区将为16GB —— 恰好能适应内存！了解分区对于理解磁盘溢出至关重要，也有助于更全面地理解Spark。为Spark任务选择合适的分区数对于快速执行至关重要。
 - en: The Cost of Disk Spill
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 磁盘溢出的成本
 - en: 'Disk spill is very inefficient. Not only does Spark have to spend time writing
     the data to disk, but it also has to spend more time reading it back in when the
     data is needed again. These read/write operations are expensive and can impact
     your Spark applications significantly:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 磁盘溢出非常低效。Spark不仅需要花时间将数据写入磁盘，还需要花费更多时间在需要数据时将其读回。这些读写操作是昂贵的，可能会对你的Spark应用产生重大影响。
 - en: '**Performance Impact** Disk I/O (read/write) is significantly slower than memory
     access, which can lead to slower job completion times.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '**性能影响** 磁盘I/O（读写）比内存访问显著慢，这可能导致作业完成时间变长。'
 - en: '**Resource Utilisation** Disk spill can lead to inefficient use of resources.
     CPU cycles that could be used for computations are instead spent on read/write
     operations to disk.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '**资源利用** 磁盘溢出可能导致资源的低效使用。本可以用于计算的CPU周期被浪费在读写操作上。'
 - en: '**Operational Complexity** Managing a Spark application that frequently spills
     to disk can be more complex. You’ll need to monitor not just CPU and memory usage,
     but also disk usage, adding another layer to your operational considerations.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '**操作复杂性** 频繁发生磁盘溢出的Spark应用程序可能更复杂。你不仅需要监控CPU和内存使用情况，还要监控磁盘使用情况，为你的操作考虑增加了另一层复杂性。'
 - en: '**Cost Implications** In cloud-based environments, you’re generally billed
     for the compute resources you use, which includes storage, CPU, memory, and sometimes
     network utilisation. If disk spill is causing your Spark tasks to run more slowly,
     you’ll need to run your cloud instances for a longer period to complete the same
     amount of work, which will increase your costs.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '**成本影响** 在基于云的环境中，你通常会按使用的计算资源计费，包括存储、CPU、内存，有时还包括网络利用。如果磁盘溢出导致Spark任务运行变慢，你将需要更长时间运行云实例才能完成相同的工作，这会增加你的成本。'
 - en: Causes of Disk Spill
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 磁盘溢出的原因
 - en: 'Here are some common scenarios that cause a lack of available memory, and therefore,
     disk spill:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 造成内存不足进而导致磁盘溢出的常见场景有：
 - en: '**Large Datasets:** When the data being processed is larger than the available
     memory, Spark will spill the excess data to disk.'
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**大数据集：** 当处理的数据超过可用内存时，Spark 会将多余的数据溢出到磁盘。'
 - en: '**Complex Operations:** Tasks that require a lot of intermediate data, such
     as joins, aggregations, and shuffles, can cause disk spill if the Execution Memory
     is insufficient.'
+  id: totrans-63
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**复杂操作：** 需要大量中间数据的任务，如连接、聚合和洗牌，如果执行内存不足，可能会导致磁盘溢出。'
 - en: '**Inappropriate Partitioning:** When you have too few partitions, and the partition
     sizes are larger than the available memory, Spark will spill the parts of the
     partitions that don’t fit to disk.'
+  id: totrans-64
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**不适当的分区：** 当你有太少的分区，而分区大小大于可用内存时，Spark 会将不适合的分区部分溢出到磁盘。'
 - en: '**Multiple Cached DataFrames/RDDs:** If you’re caching multiple large DataFrames
     or RDDs and the Storage Memory fills up, the least recently used data will be
     spilled to disk.'
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**多个缓存的 DataFrames/RDDs：** 如果你缓存了多个大型 DataFrames 或 RDDs，而存储内存已满，则最近最少使用的数据会被溢出到磁盘。'
 - en: '**Concurrent Tasks:** Running multiple tasks that each require a large amount
     of memory can lead to disk spill as they compete for limited memory resources.'
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**并发任务：** 运行多个每个需要大量内存的任务可能会导致磁盘溢出，因为它们争夺有限的内存资源。'
 - en: '**Skewed Data:** Data skew can cause some partitions to have a lot more data
     than others. The worker nodes responsible for these “heavy” partitions can run
     out of memory, forcing them to write excess data to disk.'
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**数据倾斜：** 数据倾斜可能导致某些分区的数据远多于其他分区。负责这些“重”分区的工作节点可能会耗尽内存，迫使它们将多余的数据写入磁盘。'
 - en: '**Inadequate Configuration:** Sometimes, the default or user-defined Spark
     configurations don’t allocate enough memory for certain operations, leading to
     disk spill.'
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**配置不足：** 有时候，默认或用户定义的 Spark 配置没有为某些操作分配足够的内存，导致磁盘溢出。'
 - en: Identifying Disk Spill
+  id: totrans-69
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 识别磁盘溢出
 - en: The easiest way to identify disk spill is through the Spark UI. Head to the
     “Stages” tab, and click on a stage. In the below image I have ordered the stages
     by ‘Duration’ and selected the stage with the longest duration. A long duration
     doesn’t necessarily mean that disk spill is happening, but long-running stages
     are often a good place to start investigating in general, as these can indicate
     long shuffle operations or data skew.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 识别磁盘溢出的最简单方法是通过 Spark UI。进入“Stages”选项卡，然后点击一个阶段。在下面的图片中，我按“Duration”排序阶段，并选择了持续时间最长的阶段。长时间运行不一定意味着磁盘溢出，但长时间运行的阶段通常是开始调查的好地方，因为这些阶段可能表示长时间的洗牌操作或数据倾斜。
 - en: '![](../Images/99bd0168da8714b081959cbf30452255.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/99bd0168da8714b081959cbf30452255.png)'
 - en: Image by Author
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片作者
 - en: 'Here we can see various metrics about this stage, including the amount of disk
     spill (if any):'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里我们可以看到关于这个阶段的各种指标，包括磁盘溢出的量（如果有的话）：
 - en: '![](../Images/41b716deaf07b21cbf4b6e89d66035b8.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/41b716deaf07b21cbf4b6e89d66035b8.png)'
 - en: Image by Author
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片作者
 - en: “Spill (Memory)” displays the size of the data in memory before it gets spilled
     to disk. “Spill (Disk)”, on the other hand, displays the size of the spilled data
     as it exists on disk *after* being spilled.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: “溢出（内存）”显示了数据在溢出到磁盘之前的内存大小。而“溢出（磁盘）”则显示了溢出到磁盘后的数据大小，*在溢出之后*。
 - en: The reason “Spill (Disk)” is smaller than “Spill (Memory)” is because when the
     data is written to disk, it is serialised and compressed. Serialisation is the
     process of converting data objects into a byte stream so that they can be easily
     stored or transmitted, while compression involves reducing the size of data to
     save storage space or speed up transmission.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: “溢出（磁盘）”比“溢出（内存）”小的原因是数据写入磁盘时，会进行序列化和压缩。序列化是将数据对象转换为字节流，以便于存储或传输，而压缩则涉及减少数据大小，以节省存储空间或加快传输速度。
 - en: Mitigating Disk Spill
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 缓解磁盘溢出
 - en: Once you have identified disk spill, the next step is to mitigate it. How you
     deal with disk spill will depend on your particular case and what is causing the
     spill. Here are some general recommendations for common causes of disk spill.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦识别了磁盘溢出，下一步是缓解它。你如何处理磁盘溢出将取决于你的具体情况和造成溢出的原因。以下是针对常见磁盘溢出原因的一些一般建议。
 - en: '**Understand the root cause** Before taking any action to mitigate disk spill,
     you need to understand why it’s happening in the first place. Use the Spark UI
     to identify the operations causing the spill, looking at metrics like “Spill (Disk)”
     and “Spill (Memory)” in the “Stages” tab. Once you have identified the root cause,
     proceed to administer the appropriate solution.'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '**了解根本原因** 在采取任何措施来减轻磁盘溢出之前，你需要了解它发生的原因。使用 Spark UI 识别导致溢出的操作，查看“Stages”选项卡中的“Spill
+    (Disk)”和“Spill (Memory)”等指标。一旦确定了根本原因，采取适当的解决方案。'
 - en: '**Partition your data effectively** Effective data partitioning is a key strategy
     to minimize disk spill in Spark, particularly because of shuffle operations. Shuffling
     is an expensive operation that redistributes data across partitions and often
@@ -413,124 +587,180 @@
     data in memory it will spill to disk. Better partitioning of your data can reduce
     the need for shuffling (which is a computationally expensive operation even if
     there is no disk spill).'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '**有效地划分数据** 有效的数据划分是最小化 Spark 中磁盘溢出的关键策略，特别是由于 shuffle 操作。Shuffle 是一种昂贵的操作，它会在分区间重新分配数据，并且通常需要大量的中间存储。如果无法在内存中存储这些中间数据，它将溢出到磁盘。更好的数据划分可以减少对
+    shuffle 的需求（即使没有磁盘溢出，shuffle 也是一种计算上昂贵的操作）。'
 - en: By optimising the way data is partitioned and reducing the need for data to
     be moved around during tasks like joins or aggregations, you can reduce the risk
     of disk spill.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过优化数据的划分方式并减少在任务如连接或聚合过程中数据移动的需求，你可以降低磁盘溢出的风险。
 - en: You can’t always avoid shuffling, but you can partition effectively. The recommended
     partition size is less than 1GB — any bigger and you may encounter long shuffles
     and disk spill.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 你不能总是避免 shuffle，但你可以有效地划分数据。推荐的分区大小应小于 1GB——如果更大，可能会遇到长时间的 shuffle 和磁盘溢出。
 - en: 'For strategies to optimise partition shuffling in Spark, see this guide:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 有关优化 Spark 中分区 shuffle 的策略，请参见此指南：
 - en: '[](https://medium.com/@tomhcorbin/boosting-efficiency-in-pyspark-a-guide-to-partition-shuffling-9a5af77703ea?source=post_page-----59385256b68c--------------------------------)
     [## PySpark: A Guide to Partition Shuffling'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## PySpark: 分区 shuffle 指南](https://medium.com/@tomhcorbin/boosting-efficiency-in-pyspark-a-guide-to-partition-shuffling-9a5af77703ea?source=post_page-----59385256b68c--------------------------------)'
 - en: Boost your Spark performance by employing effective shuffle partition strategies
+  id: totrans-86
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过采用有效的 shuffle 分区策略来提升你的 Spark 性能
 - en: medium.com](https://medium.com/@tomhcorbin/boosting-efficiency-in-pyspark-a-guide-to-partition-shuffling-9a5af77703ea?source=post_page-----59385256b68c--------------------------------)
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@tomhcorbin/boosting-efficiency-in-pyspark-a-guide-to-partition-shuffling-9a5af77703ea?source=post_page-----59385256b68c--------------------------------)'
 - en: '**Cache your data appropriately** Caching data in Spark can significantly speed
     up iterative algorithms by keeping the most frequently accessed data in memory.
     However, it’s a double-edged sword. Caching too much data can quickly fill up
     your Storage Memory, leaving less room for Execution Memory and increasing the
     likelihood of disk spill.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '**适当缓存数据** 在 Spark 中缓存数据可以通过将最常访问的数据保留在内存中来显著加快迭代算法。然而，这是一把双刃剑。缓存过多的数据会迅速填满你的存储内存，减少执行内存的空间，并增加磁盘溢出的可能性。'
 - en: Knowing when to cache data and when not to is crucial. Be selective about what
     you cache and consider the trade-offs of caching versus recomputing data.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 知道何时缓存数据以及何时不缓存数据是至关重要的。选择性地缓存，并考虑缓存与重新计算数据的权衡。
 - en: 'For more on caching, read this article:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 想了解更多关于缓存的信息，请阅读这篇文章：
 - en: '[](https://medium.com/@tomhcorbin/unlocking-faster-spark-operations-caching-in-pyspark-31a2bd7be277?source=post_page-----59385256b68c--------------------------------)
     [## Unlocking Faster Spark Operations: Caching in PySpark'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 解锁更快的 Spark 操作：PySpark 中的缓存](https://medium.com/@tomhcorbin/unlocking-faster-spark-operations-caching-in-pyspark-31a2bd7be277?source=post_page-----59385256b68c--------------------------------)'
 - en: Bridging the Gap Between Heavy Computations and Speedy Results in Apache Spark
+  id: totrans-92
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在 Apache Spark 中弥合重计算与快速结果之间的差距
 - en: medium.com](https://medium.com/@tomhcorbin/unlocking-faster-spark-operations-caching-in-pyspark-31a2bd7be277?source=post_page-----59385256b68c--------------------------------)
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@tomhcorbin/unlocking-faster-spark-operations-caching-in-pyspark-31a2bd7be277?source=post_page-----59385256b68c--------------------------------)'
 - en: '**Address data skew** Data skew occurs when a disproportionate amount of data
     is concentrated in a few partitions, causing an imbalance in memory usage across
     the cluster. This can lead to disk spill as those few overloaded partitions may
     not fit into memory.'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '**解决数据倾斜** 数据倾斜发生在数据不成比例地集中在少数几个分区中，导致集群内存使用不均衡。这可能导致磁盘溢出，因为那些过载的分区可能无法完全放入内存中。'
 - en: Strategies like salting can help redistribute data more evenly across partitions,
     reducing the risk of spill.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 像加盐这样的策略可以帮助更均匀地重新分配数据到各个分区，从而降低溢出的风险。
 - en: 'To learn how to fix data skew and stop it causing disk spill, see:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 要了解如何解决数据倾斜并防止它导致磁盘溢出，请参见：
 - en: '[](https://medium.com/@tomhcorbin/taming-data-skew-in-pyspark-a-simple-guide-2dfdf9fc1e1b?source=post_page-----59385256b68c--------------------------------)
     [## Taming Data Skew in PySpark: A Simple Guide'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 驯服 PySpark 中的数据倾斜：简单指南](https://medium.com/@tomhcorbin/taming-data-skew-in-pyspark-a-simple-guide-2dfdf9fc1e1b?source=post_page-----59385256b68c--------------------------------)'
 - en: Strategies and Techniques for Handling Skewed Data in PySpark
+  id: totrans-98
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 处理 PySpark 中数据倾斜的策略和技术
 - en: medium.com](https://medium.com/@tomhcorbin/taming-data-skew-in-pyspark-a-simple-guide-2dfdf9fc1e1b?source=post_page-----59385256b68c--------------------------------)
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@tomhcorbin/taming-data-skew-in-pyspark-a-simple-guide-2dfdf9fc1e1b?source=post_page-----59385256b68c--------------------------------)'
 - en: '**Resizing your cluster** Adding more memory to your cluster can help reduce
     disk spill since Execution Memory and Storage Memory have more room to work in.
     This is an easy but expensive solution — it can immediately alleviate memory pressure
     but will increase your compute costs, which may or may not be worth it depending
     on how bad the disk spill is.'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '**调整集群规模** 向集群中添加更多内存可以帮助减少磁盘溢出，因为执行内存和存储内存有更多的操作空间。这是一个简单但昂贵的解决方案——它可以立即缓解内存压力，但会增加计算成本，具体是否值得取决于磁盘溢出的严重程度。'
 - en: An alternative to simply adding more memory to the cluster is to enable dynamic
     scaling, which allows Spark to add or remove nodes as needed. This means that
     when Spark needs more memory, it can add an extra worker node, and then remove
     it once it is no longer needed.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 替代简单地增加集群内存的方法是启用动态扩展，这允许 Spark 根据需要添加或移除节点。这意味着当 Spark 需要更多内存时，它可以添加一个额外的工作节点，然后在不再需要时将其移除。
 - en: However, it’s best to identify the cause of the spill and resolve it with the
     appropriate solution. Only consider sizing up your cluster if this isn’t possible
     — sometimes you just need more memory.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，最好是确定溢出的原因并使用适当的解决方案来解决它。如果这不可行，才考虑扩大你的集群——有时你确实需要更多内存。
 - en: Conclusion
+  id: totrans-103
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Disk spill in Spark is a complex issue that can significantly impact the performance,
     cost, and operational complexity of your Spark applications. Understanding what
     it is, why it happens, and how to mitigate it is an important skill for a Spark
     developer.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark 中的磁盘溢出是一个复杂的问题，可能会显著影响 Spark 应用程序的性能、成本和操作复杂性。了解它是什么、为何发生以及如何缓解是 Spark
+    开发者的重要技能。
 - en: Monitor your applications in the Spark UI and keep an eye out for spill. When
     you spot it, diagnose the cause, and from there you can apply the appropriate
     solutions, whether it involves salting for data skew or repartitioning for large
     shuffle operations.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Spark UI 中监视你的应用程序，并注意溢出情况。当你发现它时，诊断原因，然后你可以应用适当的解决方案，无论是对数据倾斜进行加盐处理还是对大规模洗牌操作进行重新分区。
 - en: It might be tempting to simply add more memory to your cluster or enabling dynamic
     scaling, as these can be quick fixes. However, they often come with increased
     costs. It’s therefore important to identify the root cause of disk spill and address
     that specific problem. For more information on how to deal with a particular cause
     of disk spill discussed, read the posts suggested throughout this article.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 可能很诱人直接增加集群内存或启用动态扩展，因为这些可以是快速的解决方案。然而，它们通常伴随着增加的成本。因此，识别磁盘溢出的根本原因并解决那个具体问题是很重要的。有关如何处理本文中讨论的特定磁盘溢出原因的更多信息，请阅读文中推荐的帖子。
 - en: By taking a proactive approach to managing disk spill, you can make sure that
     your Spark applications run as efficiently as possible, saving money and time
     in the long run.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过采取积极的磁盘溢出管理方法，你可以确保你的 Spark 应用程序以尽可能高效的方式运行，从长远来看节省金钱和时间。
