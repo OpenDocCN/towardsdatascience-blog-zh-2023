@@ -1,321 +1,492 @@
 - en: Use These Methods to Make Your Python Concurrent Tasks Perform Better
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用这些方法使你的 Python 并发任务表现更佳
 - en: 原文：[https://towardsdatascience.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1](https://towardsdatascience.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1](https://towardsdatascience.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better-b693b7a633e1)
 - en: '[PYTHON CONCURRENCY](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[PYTHON 并发](https://medium.com/@qtalen/list/python-concurrency-2c979347da3b)'
 - en: Best practices for asyncio.gather, asyncio.as_completed, and asyncio.wait
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: asyncio.gather、asyncio.as_completed 和 asyncio.wait 的最佳实践
 - en: '[](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)[![Peng
     Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)
     [Peng Qian](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)[![Peng
+    Qian](../Images/9ce9aeb381ec6b017c1ee5d4714937e2.png)](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)
+    [Peng Qian](https://qtalen.medium.com/?source=post_page-----b693b7a633e1--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)
     ·6 min read·Apr 18, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b693b7a633e1--------------------------------)
+    ·6 分钟阅读·2023 年 4 月 18 日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/c24747b6b245e92b0b50f2dd4c219345.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c24747b6b245e92b0b50f2dd4c219345.png)'
 - en: Photo by [Aleksandr Popov](https://unsplash.com/@5tep5?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Aleksandr Popov](https://unsplash.com/@5tep5?utm_source=medium&utm_medium=referral)
+    提供，来自 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Where the Problem Lies
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 问题所在
 - en: It has always been the case that Python’s multi-threaded performance has never
     lived up to expectations because of GIL.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: Python 的多线程性能一直未能如预期那样，因为 GIL 的存在。
 - en: So since version 3.4, Python has introduced the asyncio package to execute IO-bound
     tasks through concurrency concurrently. After several iterations, the asyncio
     APIs have worked very well, and the performance of concurrent tasks has improved
     dramatically compared to the multi-threaded version.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 自从版本 3.4 起，Python 引入了 asyncio 包，通过并发执行 IO 绑定任务。经过几次迭代，asyncio API 的表现非常出色，与多线程版本相比，并发任务的性能显著提高。
 - en: 'However, there are still many mistakes that programmers make when using asyncio:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，程序员在使用 asyncio 时仍然会犯许多错误：
 - en: One mistake, as shown in the figure below, is to use the await coroutine method
     directly in a way that changes the call to a concurrent task from asynchronous
     to synchronous, ultimately losing the concurrency feature.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个错误如图所示，是直接使用 await 协程方法，这种方式将并发任务的调用从异步变为同步，最终丧失了并发特性。
 - en: Another mistake is shown in the figure below, although the programmer realizes
     that he needs to use `create_task` to create a task to be executed in the background.
     However, the following way of waiting for tasks one by one turns the tasks with
     different timings into an orderly wait.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个错误如图所示，虽然程序员意识到需要使用 `create_task` 来创建后台执行的任务。但是，下面这种逐个等待任务的方式，将具有不同时间的任务转变为有序等待。
 - en: This code will wait for *task_1* to finish first, regardless of whether *task_2*
     finishes first.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码将会等到 *task_1* 先完成，而不管 *task_2* 是否先完成。
 - en: What is concurrent task execution?
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是并发任务执行？
 - en: 'So, what is a real concurrent task? Let’s use a diagram to illustrate:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，什么是实际的并发任务？让我们用图示来说明：
 - en: '![](../Images/00c4c527290894e6279454a09b38a22c.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/00c4c527290894e6279454a09b38a22c.png)'
 - en: No matter how many tasks we spawn, we will eventually need to join back. Image
     by Author
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 不管我们启动了多少任务，最终都需要等待它们完成。图源：作者
 - en: 'As the diagram shows, a concurrent process should consist of two parts: starting
     the background task, rejoining the background task back to the main function,
     and getting the result.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如图所示，一个并发过程应该包括两个部分：启动后台任务，将后台任务重新加入主函数，并获取结果。
 - en: Most readers will already know how to use `create_task` to start a background
     task. Today, I will introduce a few ways to wait for a background task to complete
     and the best practices for each.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数读者已经知道如何使用 `create_task` 来启动后台任务。今天，我将介绍几种等待后台任务完成的方法以及每种方法的最佳实践。
 - en: Getting Started
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 入门
 - en: 'Before we start introducing today’s main character, we need to prepare a sample
     async method to simulate an IO-bound method call, as well as a custom AsyncException
     that can be used to kindly prompt an exception message when the test throws an
     exception:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们开始介绍今天的主要内容之前，我们需要准备一个示例异步方法来模拟一个 IO 绑定的方法调用，并且还需要一个自定义的 AsyncException，用于在测试抛出异常时友好地提示异常消息：
 - en: Comparison of methods for concurrent execution
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 并发执行方法的比较
 - en: Once we have done the preparations, it’s time to start the day’s journey and
     fasten your seat belt.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们完成了准备工作，就该开始今天的旅程，系好安全带。
 - en: 1\. asyncio.gather
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. asyncio.gather
 - en: '`asyncio.gather` can be used to start a set of background tasks, wait for them
     to finish executing, and get a list of results:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '`asyncio.gather` 可用于启动一组后台任务，等待它们执行完毕，并获取结果列表：'
 - en: '`asyncio.gather`, although it forms a group of background tasks, cannot accept
     a list or collection as an argument directly. If you need to pass in a list containing
     background tasks, please unpack it.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '`asyncio.gather` 尽管可以形成一组后台任务，但不能直接接受列表或集合作为参数。如果你需要传递包含后台任务的列表，请解包它。'
 - en: '`asyncio.gather` takes a `return_exceptions` argument. When the value of `return_exception`
     is False, if any background task throws an exception, it will be thrown to the
     caller of the gather method. And the result list of the gather method is empty.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '`asyncio.gather` 接受一个 `return_exceptions` 参数。当 `return_exceptions` 的值为 False
+    时，如果任何后台任务抛出异常，该异常将抛给调用 gather 方法的函数，并且 gather 方法的结果列表将为空。'
 - en: '![](../Images/0a35c538442a7306186f5706da5eb4ca.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0a35c538442a7306186f5706da5eb4ca.png)'
 - en: Screenshot. Image by Author
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 截图。图像由作者提供
 - en: When the value of `return_exception` is True, exceptions thrown by background
     tasks will not affect the execution of other tasks and will eventually be merged
     into the result list and returned together.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 `return_exceptions` 的值为 True 时，后台任务抛出的异常不会影响其他任务的执行，最终会被合并到结果列表中一起返回。
 - en: '[PRE0]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '![](../Images/92df4b411370c61d2d4b8fdf5e16d1d5.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/92df4b411370c61d2d4b8fdf5e16d1d5.png)'
 - en: Screenshot. Image by Author
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 截图。图像由作者提供
 - en: 'Next, let’s see why the `gather` method can’t accept a list directly, but has
     to unpack the list. Because when a list is filled and executed, it is difficult
     to add new tasks to the list while we wait for them to finish. However, the `gather`
     method can use nested groups to mix existing tasks with new ones, which solves
     the problem of not being able to add new tasks in the middle:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们看看为什么 `gather` 方法不能直接接受列表，而必须解包列表。因为当列表被填充并执行时，在等待它们完成的同时，很难向列表中添加新任务。然而，`gather`
+    方法可以使用嵌套组将现有任务与新任务混合，这解决了在中间无法添加新任务的问题：
 - en: However, `gather` cannot set the timeout parameter directly. If you need to
     set a timeout for all running tasks, use this pose, which is not elegant enough.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，`gather` 无法直接设置超时参数。如果需要为所有正在运行的任务设置超时，请使用这种方式，这样的方式并不够优雅。
 - en: 2\. asyncio.as_completed
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. asyncio.as_completed
 - en: Sometimes, we must start the following action immediately after completing one
     background task. For example, when we crawl some data and immediately call the
     machine learning model for computation, the `gather` method cannot meet our needs,
     but we can use the `as_completed` method.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时候，我们必须在完成一个后台任务后立即开始后续操作。例如，当我们抓取一些数据并立即调用机器学习模型进行计算时，`gather` 方法不能满足我们的需求，但我们可以使用
+    `as_completed` 方法。
 - en: Before using `asyncio.as_completed` method, let’s look at this method’s source
     code.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在使用 `asyncio.as_completed` 方法之前，我们先来看一下这个方法的源代码。
 - en: '[PRE1]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'The source code shows that `as_completed` is not a concurrent method, and returns
     an iterator with a `yield` statement. So we can directly iterate over each completed
     background task, and we can handle exceptions for each task individually without
     affecting the execution of other tasks:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 源代码显示，`as_completed` 不是一个并发方法，而是返回一个带有 `yield` 语句的迭代器。因此，我们可以直接遍历每个完成的后台任务，并且可以对每个任务分别处理异常，而不会影响其他任务的执行：
 - en: '`as_completed` accepts the `timeout` argument, and the currently iterated task
     after the timeout occurs will throw `asyncio.TimeoutError`:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '`as_completed` 接受 `timeout` 参数，并且在超时发生时，当前迭代的任务将会抛出 `asyncio.TimeoutError`。'
 - en: '![](../Images/232f6dffaabbd688413e01e60ae6f97a.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/232f6dffaabbd688413e01e60ae6f97a.png)'
 - en: Screenshot. Image by Author
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 截图。图片来源：作者
 - en: '`as_completed`is much more flexible than `gather` in terms of handling the
     results of task execution, but it is difficult to add new tasks to the original
     task list while waiting.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '`as_completed` 在处理任务执行结果方面比 `gather` 灵活得多，但在等待时很难将新任务添加到原任务列表中。'
 - en: 3\. asyncio.wait
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3\. asyncio.wait
 - en: '`asyncio.wait` is called in the same way as `as_completed`, but returns a tuple
     with two sets: `done` and `pending`. `done` holds the tasks that have finished
     executed, and `pending` holds the still-running tasks.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '`asyncio.wait` 的调用方式与 `as_completed` 相同，但返回一个包含两个集合的元组：`done` 和 `pending`。`done`
+    包含已经完成的任务，`pending` 包含仍在运行的任务。'
 - en: '`asyncio.wait` accepts a `return_when` parameter, which can take three enumerated
     values:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '`asyncio.wait` 接受一个 `return_when` 参数，该参数可以取三个枚举值：'
 - en: When `return_when` is `asyncio.ALL_COMPLETED`, `done` stores all completed tasks,
     and `pending` is empty.
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当 `return_when` 为 `asyncio.ALL_COMPLETED` 时，`done` 存储所有已完成的任务，而 `pending` 为空。
 - en: When `return_when` is `asyncio.FIRST_COMPLETED`, `done` holds all completed
     tasks, and `pending` holds the still-running tasks.
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当 `return_when` 为 `asyncio.FIRST_COMPLETED` 时，`done` 包含所有已完成的任务，而 `pending`
+    包含仍在运行的任务。
 - en: '![](../Images/fcc9b4b37202c6cf31a8a0c8c8e6b47b.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fcc9b4b37202c6cf31a8a0c8c8e6b47b.png)'
 - en: Screenshot. Image by Author
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 截图。图片来源：作者
 - en: When `return_when` is `asyncio.FIRST_EXCEPTION`, `done` stores the tasks that
     have thrown exceptions and completed execution, and `pending` holds the still-running
     tasks.
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当 `return_when` 为 `asyncio.FIRST_EXCEPTION` 时，`done` 存储那些抛出异常并完成执行的任务，而 `pending`
+    包含仍在运行的任务。
 - en: When `return_when` is `asyncio.FIRST_COMPLETED` or `asyncio.FIRST_EXECEPTION`,
     we can call `asyncio.wait` recursively, so that we can add new tasks and keep
     waiting for all tasks to finish, depending on the situation.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 `return_when` 为 `asyncio.FIRST_COMPLETED` 或 `asyncio.FIRST_EXECEPTION` 时，我们可以递归调用
+    `asyncio.wait`，以便根据情况添加新任务并继续等待所有任务完成。
 - en: '![](../Images/e305dc4155286df263756382e9196dac.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e305dc4155286df263756382e9196dac.png)'
 - en: Screenshot. Image by Author
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 截图。图片来源：作者
 - en: '[4\. asyncio.TaskGroup](https://docs.python.org/3/library/asyncio-task.html#task-groups)'
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[4\. asyncio.TaskGroup](https://docs.python.org/3/library/asyncio-task.html#task-groups)'
 - en: 'In Python 3.11, asyncio introduced the new `TaskGroup` API, which officially
     enables Python to support [**Structured Concurrency**](https://en.wikipedia.org/wiki/Structured_concurrency).
     This feature allows you to manage the life cycle of concurrent tasks in a more
     Pythonic way. For the sake of space, I won’t go into too much detail here, but
     interested readers can refer to my article:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Python 3.11 中，`asyncio` 引入了新的 `TaskGroup` API，这使得 Python 正式支持 [**结构化并发**](https://en.wikipedia.org/wiki/Structured_concurrency)。这一特性允许你以更
+    Pythonic 的方式管理并发任务的生命周期。由于篇幅限制，我不会在这里详细讨论，但有兴趣的读者可以参考我的文章：
 - en: '[](/why-taskgroup-and-timeout-are-so-crucial-in-python-3-11-asyncio-c424bcc88b89?source=post_page-----b693b7a633e1--------------------------------)
     [## Why Taskgroup and timeout Are so Crucial in Python 3.11 Asyncio'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/why-taskgroup-and-timeout-are-so-crucial-in-python-3-11-asyncio-c424bcc88b89?source=post_page-----b693b7a633e1--------------------------------)
+    [## 为什么 Taskgroup 和超时 在 Python 3.11 Asyncio 中如此重要'
 - en: Embracing Structured Concurrency in Python 3.11
+  id: totrans-61
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在 Python 3.11 中拥抱结构化并发
 - en: towardsdatascience.com](/why-taskgroup-and-timeout-are-so-crucial-in-python-3-11-asyncio-c424bcc88b89?source=post_page-----b693b7a633e1--------------------------------)
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/why-taskgroup-and-timeout-are-so-crucial-in-python-3-11-asyncio-c424bcc88b89?source=post_page-----b693b7a633e1--------------------------------)
 - en: Conclusion
+  id: totrans-63
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: This article introduced the `asyncio.gather`, `asyncio.as_completed`, and `asyncio.wait`
     APIs, and also reviewed the new `asyncio.TaskGroup` feature introduced in Python
     3.11.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文介绍了 `asyncio.gather`、`asyncio.as_completed` 和 `asyncio.wait` API，并回顾了 Python
+    3.11 中引入的新 `asyncio.TaskGroup` 特性。
 - en: Using these background task management methods according to actual needs can
     make our asyncio concurrent programming more flexible.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据实际需要使用这些后台任务管理方法，可以使我们的 `asyncio` 并发编程更加灵活。
 - en: Due to experience, there are inevitably omissions in the exposition of this
     article, so please feel free to leave comments during the reading process, and
     I will reply actively.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于经验限制，本文的阐述不可避免地存在遗漏，请在阅读过程中随时留下评论，我会积极回复。
 - en: 'In the following article, I’ll describe how to make tqdm work with asyncio
     to indicate concurrent tasks’ progress with a progress bar:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在以下文章中，我将描述如何让 tqdm 与 asyncio 配合使用，以通过进度条指示并发任务的进度：
 - en: '[](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----b693b7a633e1--------------------------------)
     [## Using Tqdm with Asyncio in Python'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----b693b7a633e1--------------------------------)
+    [## 在 Python 中使用 Tqdm 和 Asyncio'
 - en: An Efficient Way to Monitor Concurrent Tasks Progress
+  id: totrans-69
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 监控并发任务进度的高效方法
 - en: towardsdatascience.com](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----b693b7a633e1--------------------------------)
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/using-tqdm-with-asyncio-in-python-5c0f6e747d55?source=post_page-----b693b7a633e1--------------------------------)
 - en: 'And if you are interested in how to use asyncio for datasets processing tasks
     in the real world, you can read this article of mine:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对如何在实际应用中使用 asyncio 处理数据集任务感兴趣，可以阅读我的这篇文章：
 - en: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----b693b7a633e1--------------------------------)
     [## Combining Multiprocessing and Asyncio in Python for Performance Boosts'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----b693b7a633e1--------------------------------)
+    [## 在 Python 中结合多进程和 Asyncio 以提升性能'
 - en: Using a Real-world Example to Explain the run_in_executor APIs
+  id: totrans-73
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用实际案例来解释 `run_in_executor` APIs
 - en: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----b693b7a633e1--------------------------------)
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/combining-multiprocessing-and-asyncio-in-python-for-performance-boosts-15496ffe96b?source=post_page-----b693b7a633e1--------------------------------)
 - en: By [joining Medium](https://medium.com/@qtalen/membership), you’ll have unlimited
     access to all of my posts and those of thousands of other authors. It only costs
     you the price of a cup of coffee, but it’s a great encouragement to me.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过 [加入 Medium](https://medium.com/@qtalen/membership)，你将可以无限制访问我所有的文章以及成千上万其他作者的文章。它只需花费你一杯咖啡的钱，但对我来说是极大的鼓励。
 - en: 'This article was originally published at: [https://www.dataleadsfuture.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better/](https://www.dataleadsfuture.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better/)'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章最初发布于：[https://www.dataleadsfuture.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better/](https://www.dataleadsfuture.com/use-these-methods-to-make-your-python-concurrent-tasks-perform-better/)
