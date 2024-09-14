@@ -1,134 +1,203 @@
 - en: Simplify Data Cleaning With BigQuery SQL User-Defined Functions
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 BigQuery SQL 用户定义函数简化数据清洗
 - en: 原文：[https://towardsdatascience.com/simplify-data-cleaning-with-bigquery-sql-user-defined-functions-41c0560ea6](https://towardsdatascience.com/simplify-data-cleaning-with-bigquery-sql-user-defined-functions-41c0560ea6)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/simplify-data-cleaning-with-bigquery-sql-user-defined-functions-41c0560ea6](https://towardsdatascience.com/simplify-data-cleaning-with-bigquery-sql-user-defined-functions-41c0560ea6)
 - en: Introduction and use cases
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 介绍及用例
 - en: '[](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)[![Vicky
     Yu](../Images/54a32f45ebd13a18811912877f60f2f7.png)](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)
     [Vicky Yu](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)[![Vicky
+    Yu](../Images/54a32f45ebd13a18811912877f60f2f7.png)](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)
+    [Vicky Yu](https://madfordata.medium.com/?source=post_page-----41c0560ea6--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)
     ·5 min read·Apr 20, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----41c0560ea6--------------------------------)
+    ·阅读时间 5 分钟·2023年4月20日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/e4af66655e15b1d6abe99b4aae5a16c3.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e4af66655e15b1d6abe99b4aae5a16c3.png)'
 - en: Photo by [Brooke Cagle](https://unsplash.com/@brookecagle?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Brooke Cagle](https://unsplash.com/@brookecagle?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: A large portion of any data-related job is data cleaning but often times writing
     SQL statements can be tedious, especially coding the same SQL logic over multiple
     columns in a table. This is until I discovered I could create [user-defined functions
     (UDFs) in BigQuery](https://cloud.google.com/bigquery/docs/reference/standard-sql/user-defined-functions)
     to meet my specific data cleaning use case. Today I’d like to share a few data
     cleaning use cases where you can apply UDFs to simplify your SQL queries.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据清洗是任何与数据相关的工作中占比很大的部分，但编写 SQL 语句往往是乏味的，尤其是在表中的多个列上编写相同的 SQL 逻辑。直到我发现可以创建 [BigQuery
+    中的用户定义函数 (UDFs)](https://cloud.google.com/bigquery/docs/reference/standard-sql/user-defined-functions)
+    来满足我特定的数据清洗用例。今天，我想分享一些数据清洗用例，在这些用例中，你可以应用 UDF 来简化你的 SQL 查询。
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Since database permissions differ across companies, I’ll be discussing data
     cleaning examples using temporary UDFs because permanent ones may require additional
     access not allowed by your database administrator. Temporary UDFs expire when
     the SQL query is completed while persistent UDFs are saved in the database and
     can be used across multiple SQL queries.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于不同公司对数据库权限的管理有所不同，我将讨论使用临时 UDF 的数据清洗示例，因为永久性 UDF 可能需要数据库管理员不允许的额外访问权限。临时 UDF
+    在 SQL 查询完成时会过期，而持久性 UDF 会保存在数据库中，可以在多个 SQL 查询中使用。
 - en: I’ll be using fake movie data I created and uploaded into [BigQuery sandbox](https://cloud.google.com/bigquery/docs/sandbox)that’s
     free to anyone with a Google account. I received similar data for a data analyst
     interview take-home assignment a few years ago and will use data cleaning examples
     I performed in the assignment but using UDFs.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将使用我创建并上传到 [BigQuery 沙箱](https://cloud.google.com/bigquery/docs/sandbox) 的虚拟电影数据，该沙箱对任何拥有
+    Google 账户的人都是免费的。我几年前在一次数据分析师面试的家庭作业中收到了类似的数据，并将使用在作业中执行的数据清洗示例，但这次使用 UDFs。
 - en: 'Use Case 1: Grouping Values For Reporting'
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用例 1：用于报告的值分组
 - en: I started by counting movies grouped by year but that was not useful since there
     were many movies prior to 1980 with a count of less than 5\. I decided to group
     the movies by decade instead to get a better idea of the frequency distribution
     of movies.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我开始时是按年份统计电影数量，但这并没有什么用，因为在 1980 年之前有许多电影的数量不到 5 部。我决定改为按十年分组电影，以更好地了解电影的频率分布。
 - en: In the temporary UDF below **ReleaseYearCategory (** rows 1 to 10 ), the **CASE**
     statement in rows 3 to 8 groups movies into 5 categories based on the field **release_year**.
     Note the prefix I added to the **CASE** statement in rows 3 to 7, i.e. **1\. <
     1980**. The numeric prefix will force the **release_year_category** to be ordered
     from the earlier to the most recent decade.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的临时 UDF **ReleaseYearCategory** 中（第 1 到 10 行），第 3 到 8 行的 **CASE** 语句根据 **release_year**
+    字段将电影分为 5 类。注意我在第 3 到 7 行的 **CASE** 语句前缀，即 **1\. < 1980**。数字前缀将强制 **release_year_category**
+    从较早的年代到最近的年代排序。
 - en: While this was a one-time assignment, using a UDF still has many advantages.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这是一次性的任务，但使用 UDF 仍然有许多优点。
 - en: The **release_year** field is a string but needs to be numeric for the date
     range check. Instead of casting to integer in every reference to the **release_year**
     field, I just need to pass in ***cast(*release_year *as int)*** once to the UDF
     and the **field** variable will be replaced with ***cast(*release_year *as int).***
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**release_year** 字段是字符串，但需要是数字以进行日期范围检查。与其在每次引用 **release_year** 字段时进行类型转换，不如一次性将
+    ***cast(*release_year *as int)*** 传递给 UDF，然后 **field** 变量将被替换为 ***cast(*release_year
+    *as int).***'
 - en: If the **release_year** field is changed to an integer, I just need to remove
     the cast statement when calling the **ReleaseYearCategory** UDF.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果 **release_year** 字段被更改为整数类型，我只需在调用 **ReleaseYearCategory** UDF 时去掉 cast 语句。
 - en: The UDF is reusable ( assuming it’s saved as a persistent UDF ). If I want to
     apply the same year grouping logic to another table, I just need to pass a different
     field name to the UDF.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: UDF 是可重用的（假设它被保存为持久性 UDF）。如果我想将相同的年份分组逻辑应用于另一张表，只需将不同的字段名称传递给 UDF。
 - en: If I want to group by 5-year increments instead of by decade, I just need to
     modify one UDF instead of changing multiple SQL statements.
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果我想按 5 年的增量分组，而不是按十年分组，我只需修改一个 UDF，而不是更改多个 SQL 语句。
 - en: '![](../Images/9e552ec635ff53828c4c55ef13c541a0.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9e552ec635ff53828c4c55ef13c541a0.png)'
 - en: Screenshot of temporary UDF ReleaseYearCategory example created by author
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者创建的临时 UDF ReleaseYearCategory 示例截图
 - en: Grouping the movies into 5 categories shows most were released after 2000\.
     If you have too many rows of data when grouping by a field, consider collapsing
     the data into fewer rows as I did above. A common example is grouping data by
     week or month instead of daily.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 将电影分成 5 个类别显示大多数电影是在 2000 年后发布的。如果在按字段分组时数据行过多，考虑像我上面做的那样将数据折叠到更少的行中。一个常见的例子是按周或月而不是按日分组数据。
 - en: '**Use Case 2: Converting String Values to Numeric**'
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**用例 2：将字符串值转换为数字**'
 - en: I wanted to see the count of movies by the number of genres each movie was assigned
     to. An easy way was to sum the genre fields and use that as the field to group
     by but the genre fields had to be converted from **TRUE** to **1** and **FALSE**
     to **0**. For example, in the data example below **Movie Title 355** in row 1
     would add up to 3 because the TRUE values for action, adventure, and scifi genre
     fields would be converted to 1.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想查看按每部电影分配的类别数量来统计电影数量。一种简单的方法是对类别字段求和并以此作为分组字段，但类别字段必须从 **TRUE** 转换为 **1**，从
+    **FALSE** 转换为 **0**。例如，在下面的数据示例中，第 1 行的 **Movie Title 355** 将累加为 3，因为动作、冒险和科幻类别字段的
+    TRUE 值将被转换为 1。
 - en: '![](../Images/12a033ddb87d0f6a6d275cacdffd0466.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12a033ddb87d0f6a6d275cacdffd0466.png)'
 - en: Screenshot example of movie genre fields with TRUE and FALSE values created
     by author
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者创建的具有 TRUE 和 FALSE 值的电影类别字段的截图示例
 - en: A UDF makes the conversion easier to code because I won’t need to type a CASE
     statement for each genre field. I just need to pass the field name to the UDF.
     In the **ConvertTrueFalse** UDF below ( rows 1 to 8 ), I have an **ELSE -1** statement
@@ -137,98 +206,156 @@
     only TRUE or FALSE values in the genre fields but as a best practice, you can
     add an ELSE statement in case you map to an unintended value. For example, if
     a genre field was NULL I would’ve set it to 0 without the ELSE statement.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: UDF 使得编码转换变得更容易，因为我不需要为每个类别字段输入 CASE 语句。我只需将字段名称传递给 UDF。在下面的 **ConvertTrueFalse**
+    UDF 中（第 1 到 8 行），我在第 6 行有一个 **ELSE -1** 语句，以捕捉任何不匹配 **TRUE** 或 **FALSE** 预期值的值。由于我之前确认了类别字段中只有
+    TRUE 或 FALSE 值，因此 ELSE 不是必需的，但作为最佳实践，您可以添加一个 ELSE 语句以防映射到意外值。例如，如果类别字段为 NULL，我将会在没有
+    ELSE 语句的情况下将其设置为 0。
 - en: I also added the UPPER function in rows 4 and 5 in case **TRUE** or **FALSE**
     were spelled with mixed cases such as **True** or **false**. It’s good practice
     to add an UPPER function in case you have mixed cased string. If the field had
     a value of **True** I would’ve set it to 0 without the UPPER function and caused
     an error in my analysis. Although this was a one-time assignment, see how the
     UDF calls in rows 11 to 15 reduce the SQL code and make it easier to read.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还在第 4 和第 5 行中添加了 UPPER 函数，以防**TRUE**或**FALSE**被拼写为混合大小写，如**True**或**false**。在处理混合大小写字符串时，添加
+    UPPER 函数是一种良好的做法。如果字段的值为**True**，如果没有 UPPER 函数，我会将其设置为 0，这会导致分析错误。尽管这是一次性的任务，但可以看到第
+    11 到第 15 行中的 UDF 调用减少了 SQL 代码，使其更易于阅读。
 - en: '![](../Images/9b3b6dffaf115b452841be0ec1c99a96.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9b3b6dffaf115b452841be0ec1c99a96.png)'
 - en: Screenshot of temporary UDF ConvertTrueFalse example created by author
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者创建的临时 UDF ConvertTrueFalse 示例截图
 - en: 'Use Case 3: Calculating Returns'
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用例 3：计算收益
 - en: I wanted to analyze the returns of each movie by genre to see what kind of movies
     were more profitable. To calculate returns, I needed to use the **movie_gross**
     and **movie_budget** fields that were type string. Instead of writing the cast
     statement multiple times, I just needed to pass in the cast statement to the **CalcReturn**
     UDF shown in row 10.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想通过类型来分析每部电影的收益，以了解哪些类型的电影更有利可图。为了计算收益，我需要使用类型为字符串的**movie_gross**和**movie_budget**字段。为了避免多次编写
+    cast 语句，我只需将 cast 语句传递给第 10 行中显示的**CalcReturn** UDF。
 - en: Although this was a one-time calculation if you often have to calculate returns
     or other common calculations in your analysis, consider using UDFs to simplify
     your coding.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这是一次性计算，但如果你经常需要计算收益或其他常见计算，考虑使用 UDF 来简化编码。
 - en: '![](../Images/ab03a02571e6a7c58d224a7906e8d1a2.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab03a02571e6a7c58d224a7906e8d1a2.png)'
 - en: Screenshot of temporary UDF CalcReturn example created by author
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者创建的临时 UDF CalcReturn 示例截图
 - en: Final Thoughts
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最后想法
 - en: While data cleaning may not be your favorite activity as a data professional,
     I hope you see how creating UDFs can help simplify your SQL coding.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然数据清理可能不是你作为数据专业人士最喜欢的活动，但我希望你能看到创建 UDF（用户自定义函数）如何帮助简化你的 SQL 编码。
 - en: While I’ve only discussed temporary UDFs, saving frequently used SQL logic as
     persistent UDFs can help centralize code and allow reusability across SQL queries.
     This may require discussion with your database administrator depending on database
     permissions for UDF creation and usage for SQL users. Documentation will be helpful
     as well to view the UDF code and usage instructions.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我只讨论了临时 UDF，但将经常使用的 SQL 逻辑保存为持久 UDF 可以帮助集中代码，并允许在 SQL 查询中重复使用。这可能需要与你的数据库管理员讨论，以了解关于
+    UDF 创建和 SQL 用户使用的数据库权限。查看文档也会有帮助，以查看 UDF 代码和使用说明。
 - en: I’ve given a brief introduction to UDFs and highly recommend you review the
     [documentation](https://cloud.google.com/bigquery/docs/reference/standard-sql/user-defined-functions)
     to learn more.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已简要介绍了 UDF，并强烈建议你查看 [文档](https://cloud.google.com/bigquery/docs/reference/standard-sql/user-defined-functions)
+    以了解更多信息。
 - en: '*Note: All queries above were run on* [*BigQuery sandbox*](https://cloud.google.com/bigquery/docs/sandbox)
     *that’s free to anyone with a Google account.*'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：上述所有查询均在* [*BigQuery sandbox*](https://cloud.google.com/bigquery/docs/sandbox)
+    *上运行，任何拥有 Google 帐号的人都可以免费使用。*'
 - en: You might also like…
+  id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 你可能还会喜欢…
 - en: '[](/bigquery-functions-for-data-cleaning-4b96181fbc3?source=post_page-----41c0560ea6--------------------------------)
     [## BigQuery SQL Functions For Data Cleaning'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/bigquery-functions-for-data-cleaning-4b96181fbc3?source=post_page-----41c0560ea6--------------------------------)
+    [## BigQuery SQL 数据清理函数'
 - en: Use cases and functions to apply
+  id: totrans-43
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用案例和应用函数
 - en: towardsdatascience.com](/bigquery-functions-for-data-cleaning-4b96181fbc3?source=post_page-----41c0560ea6--------------------------------)
     [](/bigquery-sql-procedural-language-to-simplify-data-engineering-66ecfc47f3ac?source=post_page-----41c0560ea6--------------------------------)
     [## BigQuery SQL Procedural Language to Simplify Data Engineering
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/bigquery-functions-for-data-cleaning-4b96181fbc3?source=post_page-----41c0560ea6--------------------------------)
+    [](/bigquery-sql-procedural-language-to-simplify-data-engineering-66ecfc47f3ac?source=post_page-----41c0560ea6--------------------------------)
+    [## BigQuery SQL 过程语言简化数据工程'
 - en: An introduction
+  id: totrans-45
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 简介
 - en: towardsdatascience.com](/bigquery-sql-procedural-language-to-simplify-data-engineering-66ecfc47f3ac?source=post_page-----41c0560ea6--------------------------------)
     [](/6-bigquery-sql-functions-every-user-should-know-9ed97b1cf72e?source=post_page-----41c0560ea6--------------------------------)
     [## 6 BigQuery SQL Functions Every User Should Know
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/bigquery-sql-procedural-language-to-simplify-data-engineering-66ecfc47f3ac?source=post_page-----41c0560ea6--------------------------------)
+    [](/6-bigquery-sql-functions-every-user-should-know-9ed97b1cf72e?source=post_page-----41c0560ea6--------------------------------)
+    [## 每个用户都应该知道的6个BigQuery SQL函数'
 - en: Check if your database has them too
+  id: totrans-47
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 检查你的数据库是否也包含这些函数
 - en: towardsdatascience.com](/6-bigquery-sql-functions-every-user-should-know-9ed97b1cf72e?source=post_page-----41c0560ea6--------------------------------)
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/6-bigquery-sql-functions-every-user-should-know-9ed97b1cf72e?source=post_page-----41c0560ea6--------------------------------)'

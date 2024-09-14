@@ -3,16 +3,19 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 提高零-shot CLIP性能的简单方法
 - en: 原文：[https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447](https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447](https://towardsdatascience.com/simple-way-of-improving-zero-shot-clip-performance-4eae474cb447)
 - en: Part 1 — Customized Prompts via Language Models (CuPL)
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第1部分 — 通过语言模型定制提示（CuPL）
 - en: '[](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[![Alexey
     Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)
@@ -20,15 +23,22 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[![Alexey
+    Kravets](../Images/3b31f9b3c73c6c7ca709f845e6f70023.png)](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)
+    [Alexey Kravets](https://medium.com/@alexml0123?source=post_page-----4eae474cb447--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)
     ·12 min read·Nov 3, 2023
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4eae474cb447--------------------------------)
+    ·12分钟阅读·2023年11月3日
 - en: --
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: Unimodal models are designed to work with data from a single mode, which can
     be either text or images. These models specialize in understanding and generating
     content specific to their chosen mode. For example, GPT are excellent at generating
@@ -43,45 +53,54 @@
   id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 单模态模型旨在处理来自单一模态的数据，这可以是文本或图像。这些模型专注于理解和生成特定于其选择模态的内容。例如，GPT在生成类似人类的文本方面表现出色。它们已被用于语言翻译、文本生成和问题回答等任务。卷积神经网络（CNNs）是图像模型的例子，擅长于图像分类、对象检测和图像生成等任务。目前，许多有趣的任务，如视觉问答（VQA）和图像-文本检索等，需要多模态能力。是否可以结合文本和图像处理？可以！CLIP是最初几个高度成功的图像-文本模型之一，展示了在图像识别和文本理解方面的能力。
 - en: 'We will divide this article into the following sections:'
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将把这篇文章分为以下几个部分：
 - en: Introduction
   id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 引言
 - en: Architecture
   id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 架构
 - en: Training process and Contrastive loss
   id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练过程和对比损失
 - en: Zero-shot capability
   id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 零-shot能力
 - en: CuPL
   id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: CuPL
 - en: Conclusions
   id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 结论
 - en: Introduction
   id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引言
 - en: The CLIP model is an impressive zero-shot predictor, enabling predictions on
     tasks it hasn’t explicitly been trained for. As we will see more in detail in
     the next sections, by using natural language prompts to query images, CLIP can
@@ -94,11 +113,13 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: CLIP模型是一种令人印象深刻的零-shot预测器，使其能够在没有明确训练的任务上进行预测。正如我们将在接下来的部分中详细了解的，通过使用自然语言提示来查询图像，CLIP可以在没有任务特定训练数据的情况下执行图像分类。然而，通过一些技巧，可以显著提高其性能。在这一系列文章中，我们将探讨利用大型语言模型（LLM）生成的额外提示或少量示例的几种方法，而无需涉及任何参数训练。这些方法具有显著优势，因为它们计算负担较轻，不需要微调额外的参数。
 - en: Architecture
   id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 架构
 - en: 'CLIP is a dual encoder model with two separate encoders for visual and textual
     modalities that encode images and texts independently. Such architecture is different
     from the fusion encoder that enables the interaction between visual and textual
@@ -113,19 +134,23 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: CLIP 是一个双编码器模型，具有两个独立的编码器用于视觉和文本模态，分别独立编码图像和文本。这种架构不同于融合编码器，它通过交叉注意力实现视觉和文本模态之间的交互，涉及学习注意力权重，帮助模型在处理两种模态时关注图像的特定区域和文本的相应部分。这个想法类似于自注意力，它允许每个标记关注同一模态中的其他标记。交叉注意力扩展了这个概念，允许一种模态中的标记（例如，代表图像特征的标记或补丁）关注另一种模态中的标记（例如，代表文本描述的标记）。双编码器和融合编码器的概念可以总结如下：
 - en: '![](../Images/af4ed5e93601bd8b0932379f9726485c.png)'
   id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/af4ed5e93601bd8b0932379f9726485c.png)'
 - en: Image by Author — Dual vs Fusion encoders
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者插图 — 双编码器与融合编码器
 - en: Encoders
   id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 编码器
 - en: '**Text Encoder**: Responsible for processing input text, the text encoder transforms
     it into a vector representation. Within CLIP, the model uses a standard that we
     thoroughly explored in [this](https://medium.com/towards-data-science/deep-dive-into-the-code-of-bert-model-9f618472353e)
@@ -134,6 +159,7 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '**文本编码器：** 负责处理输入文本，文本编码器将其转换为向量表示。在CLIP中，模型使用一种标准，我们在[这篇](https://medium.com/towards-data-science/deep-dive-into-the-code-of-bert-model-9f618472353e)文章中进行了详细探讨。文本编码器为提供的文本生成嵌入，封装与输入相关的语义信息。'
 - en: '**Image Encoder:** The image encoder processes images to derive their vector
     representations. The visual encoder can either be a Convolutional Neural Network
     like the ResNet model or a ViT Transformer (see [here](https://medium.com/towards-data-science/a-deep-dive-into-the-code-of-the-visual-transformer-vit-model-1ce4cc05ca8d)
@@ -141,6 +167,7 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图像编码器：** 图像编码器处理图像以获取其向量表示。视觉编码器可以是像ResNet模型这样的卷积神经网络，或者是ViT Transformer（请参见[这里](https://medium.com/towards-data-science/a-deep-dive-into-the-code-of-the-visual-transformer-vit-model-1ce4cc05ca8d)以刷新你的知识），用于生成图像向量表示。'
 - en: These two vectors share the same dimensions enabling the computation of similarity
     between a given text and image. If you have always worked with one modality you
     wonder how is it even possible that we can compare image and text embeddings?
@@ -150,11 +177,13 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个向量具有相同的维度，从而能够计算给定文本和图像之间的相似性。如果你一直只使用一种模态，你可能会想，图像和文本嵌入如何能够进行比较呢？关键在于训练过程和损失函数，这使得CLIP能够学习一个统一的图像-文本空间，促进来自不同模态的向量比较。
 - en: Training process and Contrastive loss
   id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 训练过程与对比损失
 - en: CLIP was trained via a large-scale, multimodal objective on an extensive dataset
     of image-text pairs. When I say large-scale it means a LOT of data — approximately
     0.4 billion image-text pairs. These were collected from publicly available sources
@@ -162,6 +191,7 @@
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: CLIP通过在一个包含图像-文本对的大规模数据集上进行多模态目标训练。当我说大规模时，意味着数据量非常庞大——约为4亿对图像-文本。这些数据来自互联网上公开的来源，并经过自动筛选以确保高质量。
 - en: 'Once image-text pairs are collected the model is trained via a contrastive
     loss. Contrastive loss enables the model to learn a shared image-text space by
     aligning the representations of images and text maximizing the similarity between
@@ -170,15 +200,18 @@
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦图像-文本对被收集，模型通过对比损失进行训练。对比损失使模型能够通过对齐图像和文本的表示来学习共享的图像-文本空间，最大化匹配对嵌入之间的相似性，同时最小化不匹配对嵌入之间的相似性。该过程如下图所示：
 - en: '![](../Images/f5f49fd0b58455c356cfbc620a36d475.png)'
   id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f5f49fd0b58455c356cfbc620a36d475.png)'
 - en: Image from [CLIP](https://arxiv.org/pdf/2103.00020.pdf) paper — Contrastive
     loss
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来自[CLIP](https://arxiv.org/pdf/2103.00020.pdf)论文 — 对比损失
 - en: The image embedding I_i corresponds to the text embedding T_i (i.e., on the
     diagonal) forming the matching pair, while all other texts T_j (j ≠ i) (off-diagonal)
     are considered to be non-matching pairs. Similarly, for T_i only I_i is regarded
@@ -191,17 +224,21 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像嵌入I_i对应于文本嵌入T_i（即在对角线上）形成匹配对，而所有其他文本T_j（j ≠ i）（非对角线）被视为不匹配对。同样地，对于T_i，只有I_i被认为是匹配的图像，而所有其他图像I_j（j
+    ≠ i）则不被视为T_i的描述。然而，这种假设可能是有限的，因为可能存在其他文本对有效地描述一个图像，反之亦然。挖掘困难负例是解决这一挑战的潜在方案。尽管如此，CLIP凭借其32,768的巨大批量大小成功克服了这一限制。
 - en: After pre-training on this diverse dataset, CLIP’s learned embeddings can be
     used for many downstream applications — one of them that is truly impressive is
     the zero-shot image classification.
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个多样化的数据集上预训练之后，CLIP学习到的嵌入可以用于许多下游应用 — 其中一个真正令人印象深刻的是零-shot图像分类。
 - en: Zero-Shot capability
   id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 零-shot能力
 - en: 'What does zero-shot mean in the first place? As mentioned in the introduction,
     zero-shot classification refers to the ability of a model to correctly classify
     unseen classes without the need for any specific examples or training data for
@@ -212,29 +249,35 @@
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么零-shot到底是什么意思呢？如介绍中提到的，零-shot分类指的是模型在没有特定类别示例或训练数据的情况下，正确分类未见过的类别的能力。CLIP在一个大型数据集上进行了训练，它学会了在广泛的概念中进行泛化，使其能够根据语义关系识别和分类类别。让我们看看这在实践中是如何实现的：
 - en: Assume we only know the class names for a particular dataset like
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们只知道特定数据集的类别名，比如
 - en: '*[“dog”, “cat”, “horse”]*. As CLIP was trained to match image and text, we
     can compute the cosine similarity between a given test image and prompt *“Picture
     of a {class name}”* which becomes in our case:'
   id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '*[“狗”、 “猫”、 “马”]*。由于CLIP被训练来匹配图像和文本，我们可以计算给定测试图像与提示*“一个{类别名}的图片”*之间的余弦相似度，这在我们的情况下变成：'
 - en: '*“Picture of a {dog}”, “Picture of a {cat}”, “Picture of a {horse}”*.'
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*“一个{狗}的图片”、 “一个{猫}的图片”、 “一个{马}的图片”*。'
 - en: The prompt with the highest cosine similarity represents the predicted class.
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 具有最高余弦相似度的提示代表预测的类别。
 - en: Improving Zero-Shot CLIP via Customized Prompts via Language Models (CuPL)
   id: totrans-37
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 通过定制提示改进Zero-Shot CLIP（CuPL）
 - en: 'Now, Zero-Shot CLIP has achieved quite an impressive performance already, however,
     we can squeeze some more out of it with a few simple tricks. CLIP’s zero-shot
     performance is very sensitive to the textual prompts it’s fed with. This is why
@@ -245,11 +288,13 @@
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，Zero-Shot CLIP已经取得了相当令人印象深刻的表现，不过，我们仍然可以通过一些简单的技巧进一步挖掘其潜力。CLIP的零-shot性能对其输入的文本提示非常敏感。这就是为什么对于不同的数据集如ImageNet，人们提出了不同的文本提示，如*“一个折纸{类别名}”*、*“一个视频游戏中的{类别名}”*等。这些手动设计的提示比简单的*“一个{类别名}的图片”*要好，但它们仍然存在一些主要的限制：
 - en: Hand-written prompts require a lot of human effort
   id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 手动编写的提示需要大量的人力
 - en: Hand-written prompts must be general — we cannot use a template like *“a photo
     of a {platypus}, a type of aquatic mammal”* as it would apply only to aquatic
     mammals and not to other categories. This is limiting, as descriptive details
@@ -258,6 +303,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 手动编写的提示必须是通用的 — 我们不能使用像*“一个{鸭嘴兽}的照片，一种水生哺乳动物”*这样的模板，因为这只适用于水生哺乳动物，而不适用于其他类别。这是一个限制，因为描述性细节对细粒度分类是有用的。
 - en: Writing high-performing prompt templates requires prior information about the
     contents of the dataset. So in the case of ImageNet, we must know in advance that
     the dataset of interest contains origami, video game images, and so on.
@@ -265,27 +311,32 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编写高效的提示模板需要对数据集内容的事先了解。因此，对于 ImageNet，我们必须提前知道感兴趣的数据集包含折纸、视频游戏图像等。
 - en: 'So what can we do? Let’s just ask a Large Language Model (LLM) to generate
     for us such prompts that can be easily scaled to any number of classes and datasets!
     We can ask a LLM the following questions:'
   id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 那我们能做什么呢？我们只需请求一个大型语言模型 (LLM) 为我们生成这样的提示，这些提示可以轻松扩展到任何数量的类别和数据集！我们可以向 LLM 提出以下问题：
 - en: '*Describe what a/the {class name} looks like:*'
   id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*描述一个/该类别名称的外观：*'
 - en: '*Describe a/the {class name}:*'
   id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*描述一个/该类别名称：*'
 - en: '*What are the identifying characteristics of a/the {class name}?*'
   id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*一个/该类别名称的识别特征是什么？*'
 - en: Why should this be better than simple prompts? The hypothesis is that prompts
     that LLM generates will contain very detailed descriptions of the given classes
     and enable CLIP to place more importance on image regions that are most relevant
@@ -293,6 +344,7 @@
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么这应该比简单提示更好？假设是 LLM 生成的提示将包含非常详细的类别描述，并使 CLIP 更加重视对正确分类最相关的图像区域。
 - en: 'Let’s now jump into coding and see what we can get. We are going to use CLIP
     from the Transformers library from [Hugging Face](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&cd=&ved=2ahUKEwiu6cr-kKGCAxXk_7sIHYoVCdMQFnoECB0QAQ&url=https%3A%2F%2Fhuggingface.co%2Fdocs%2Ftransformers&usg=AOvVaw1c0CbHgKUDJPUj-n5H3rT8&opi=89978449).
     So let’s import the model — we are going to use ViT with a patch of size 32 and
@@ -300,6 +352,8 @@
   id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们跳入编码中看看我们能得到什么。我们将使用 [Hugging Face](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&cd=&ved=2ahUKEwiu6cr-kKGCAxXk_7sIHYoVCdMQFnoECB0QAQ&url=https%3A%2F%2Fhuggingface.co%2Fdocs%2Ftransformers&usg=AOvVaw1c0CbHgKUDJPUj-n5H3rT8&opi=89978449)
+    的 Transformers 库中的 CLIP。因此，让我们导入模型——我们将使用 ViT，patch 大小为 32，以及处理文本和预处理图像的管道：
 - en: '[PRE0]'
   id: totrans-48
   prefs: []
@@ -313,15 +367,20 @@
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将从 *freeimages* 网站下载一张 *“树蛙”* 的图片，该网站对下方的图片有开放许可。然后，我们将使用 CLIP 和简单提示 *“{类别}
+    的照片”* 来预测它是 *“树蛙”* 还是 *“有尾蛙”*（它们在视觉上相似，主要在于大眼睛的大小）：
 - en: '![](../Images/9037e72ae26b1b0d153353991c8fcfa3.png)'
   id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9037e72ae26b1b0d153353991c8fcfa3.png)'
 - en: 'Tree Frog image from [FreeImages](https://images.freeimages.com/images/large-previews/342/green-tree-frog2-1616738.jpg)
     (license: [https://www.freeimages.com/license](https://www.freeimages.com/license))'
   id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自 [FreeImages](https://images.freeimages.com/images/large-previews/342/green-tree-frog2-1616738.jpg)
+    的树蛙图像（许可： [https://www.freeimages.com/license](https://www.freeimages.com/license)）
 - en: '[PRE1]'
   id: totrans-52
   prefs: []
@@ -332,10 +391,12 @@
   id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型通过选择 *“有尾蛙”* 以 0.68 的概率做出了错误预测。
 - en: 'Let’s now ask a LLM (e.g. ChatGPT) to generate the prompts for us:'
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们请求一个 LLM（例如 ChatGPT）为我们生成提示：
 - en: '[PRE2]'
   id: totrans-55
   prefs: []
@@ -349,11 +410,13 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这些提示对类别的描述更加详细，这应该能指导模型识别正确的类别。例如，许多“树蛙”的提示强调它有“很大的眼睛”，这是像“树蛙的图片”这样的简单提示所无法捕捉的。
 - en: 'Using the above prompts and after some manipulation, we form the final prompt
     for a class with the average vector embedding:'
   id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用上述提示并经过一些操作，我们为一个类别形成最终的提示，带有平均向量嵌入：
 - en: '[PRE3]'
   id: totrans-58
   prefs: []
@@ -363,11 +426,13 @@
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 LLM 提供的提示可以给出正确的分类答案——*“树蛙”*。
 - en: Conclusions
   id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article, we have seen how easily we can improve CLIP zero-shot prediction
     using a LLM. The advantage of this solution is not only higher accuracy but also
     its scalability as we do not need any human effort to generate prompts. In the
