@@ -1,398 +1,599 @@
 - en: How to Set Up a Simple ETL Pipeline with AWS Lambda for Data Science
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何使用 AWS Lambda 为数据科学设置一个简单的 ETL 流水线
 - en: 原文：[https://towardsdatascience.com/how-to-setup-a-simple-etl-pipeline-with-aws-lambda-for-data-science-89e5b96c7017](https://towardsdatascience.com/how-to-setup-a-simple-etl-pipeline-with-aws-lambda-for-data-science-89e5b96c7017)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-setup-a-simple-etl-pipeline-with-aws-lambda-for-data-science-89e5b96c7017](https://towardsdatascience.com/how-to-setup-a-simple-etl-pipeline-with-aws-lambda-for-data-science-89e5b96c7017)
 - en: How to setup a simple ETL pipeline with AWS Lambda that can be triggered via
     an API Endpoint or Schedule and write the results to an S3 Bucket for ingestion
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何使用 AWS Lambda 设置一个简单的 ETL 流水线，该流水线可以通过 API 端点或计划触发，并将结果写入 S3 桶中进行摄取
 - en: '[](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)[![Brian
     Roepke](../Images/0b7ef72cbfc9acda69fde14127d65dcf.png)](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)
     [Brian Roepke](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)[![Brian
+    Roepke](../Images/0b7ef72cbfc9acda69fde14127d65dcf.png)](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)
+    [Brian Roepke](https://medium.com/@broepke?source=post_page-----89e5b96c7017--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)
     ·10 min read·Feb 4, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e5b96c7017--------------------------------)
+    ·10分钟阅读·2023年2月4日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/4c63b13a67b5fb8d990da76038c2922d.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4c63b13a67b5fb8d990da76038c2922d.png)'
 - en: Photo by [Rod Long](https://unsplash.com/@rodlong?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源 [Rod Long](https://unsplash.com/@rodlong?utm_source=medium&utm_medium=referral)
+    于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: '**Introduction to ETL with AWS Lambda**'
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**AWS Lambda 的 ETL 简介**'
 - en: 'When it comes time to build an ETL pipeline, many options exist. You can use
     a tool like [Astronomer](https://www.dataknowsall.com/astrointro.html) or [Prefect](http://prefect.io)
     for Orchestration, but you will also need somewhere to run the compute. With this,
     you have a few options:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你需要构建 ETL 流水线时，有许多选择。你可以使用像 [Astronomer](https://www.dataknowsall.com/astrointro.html)
+    或 [Prefect](http://prefect.io) 这样的工具进行编排，但你还需要有地方来运行计算。对此，你有几个选择：
 - en: Virtual Machine (VM) like AWS EC2
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类似 AWS EC2 的虚拟机（VM）
 - en: Container services like AWS ECS or AWS Fargate
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类似 AWS ECS 或 AWS Fargate 的容器服务
 - en: Apache Spark like AWS EMR (Elastic Map Reduce)
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类似 AWS EMR（弹性映射减少）的 Apache Spark
 - en: Serverless Computing like AWS Lambda
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 无服务器计算，如 AWS Lambda
 - en: Each of these has its advantages. If you’re looking for simplicity in setup,
     maintenance, and cost, you can run *simple* jobs with **AWS Lambdas** or Serverless
     Computing.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 每种选择都有其优点。如果你追求设置、维护和成本上的简便，可以使用**AWS Lambda**或无服务器计算来运行*简单*的任务。
 - en: Notice I said **simple**. AWS Lambdas are not meant for compute-intensive or
     long-running jobs. They’re suitable for executing small amounts of code that take
     minutes versus hours.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，我说的是**简单**。AWS Lambda 不适合计算密集型或长时间运行的任务。它们适合执行耗时几分钟而非几小时的小量代码。
 - en: What are AWS Lambda and Serverless Computing?
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是 AWS Lambda 和无服务器计算？
 - en: 'A Lambda function in AWS is a piece of code that is executed in response to
     an event. The event can be a request to an API endpoint, a file being uploaded
     to an S3 bucket, or a scheduled event. The code is executed, and the results are
     returned. Here is a great description of how it works from [AWS](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html):'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: AWS 中的 Lambda 函数是一段响应事件的代码。事件可以是对 API 端点的请求、文件上传到 S3 桶中，或计划事件。代码被执行，结果被返回。以下是
+    [AWS](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html) 对其工作原理的很好的描述：
 - en: '*Lambda runs your function only when needed and scales automatically, from
     a few daily requests to thousands per second. You pay only for the computing time
     you consume-there is no charge when your code is not running. For more information,
     see AWS Lambda Pricing.*'
+  id: totrans-18
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*Lambda 仅在需要时运行你的函数，并自动扩展，从每天几次请求到每秒几千次。你只需为你消耗的计算时间付费——当你的代码没有运行时不会收费。更多信息，请参见
+    AWS Lambda 定价。*'
 - en: A Lambda function is a wonderful way to think about ETL for smaller jobs that
     need to run frequently. Such as on a trigger, like an API call, or nightly on
     a schedule. It also allows you to orchestrate multiple Lambda functions to create
     a more complex ETL pipeline.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: Lambda 函数是一种很好的方式，用于考虑需要频繁运行的小型 ETL 作业。例如在触发时，如 API 调用，或按照计划每晚运行。它还允许你协调多个 Lambda
+    函数，以创建更复杂的 ETL 管道。
 - en: Let’s dive into creating our first Lambda function.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们深入创建第一个 Lambda 函数。
 - en: Creating Your Lamba Function
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建你的 Lambda 函数
 - en: From the AWS Console, navigate to the Lambda service. Press the **Create Function**
     button to get started. You will be prompted to select a blueprint. For this example,
     we will select **Author from scratch**. Give your name an appropriate name and
     select **Python 3.9** as the runtime. Select the **architecture** you prefer or
     typically develop locally; this makes it easier to upload new libraries compatible
     with your Lambda function.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 AWS 控制台中，导航到 Lambda 服务。点击**创建函数**按钮开始。系统会提示你选择一个蓝图。对于这个例子，我们将选择**从头开始创建**。给你的名称一个合适的名字，并选择**Python
+    3.9**作为运行时。选择你偏好的**架构**或通常在本地开发的架构；这使得上传与 Lambda 函数兼容的新库更容易。
 - en: '![](../Images/a3bb76b7513536e40e6ed71cb2c960e6.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a3bb76b7513536e40e6ed71cb2c960e6.png)'
 - en: Image by Author
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: You can create a **new role** or choose an **existing** one. We’ll cover that
     in the next section.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以创建一个**新角色**或选择一个**现有的角色**。我们将在下一节中讲解。
 - en: Lamba Role
+  id: totrans-26
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Lambda 角色
 - en: A critical part of creating a Lambda function is the **role**. The **role**
     allows the function to access other AWS services. For this example, we will need
     to give the function access to the **Lambda** and **S3**. I also gave access to
     **VPC**, but that’s not necessary for this setup.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建 Lambda 函数的一个关键部分是**角色**。**角色**允许函数访问其他 AWS 服务。对于这个例子，我们需要授予函数访问**Lambda**和**S3**的权限。我还授予了**VPC**访问权限，但这个设置中并不是必要的。
 - en: It’s a good practice to create a new role to help you isolate only the permissions
     needed for this function. Or, if you will create multiple lambda functions for
     ETL use cases, consider a more generic naming like **Lamba-ETL-Role**.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建新角色是一个好习惯，这可以帮助你隔离仅需要的权限。如果你要为 ETL 用例创建多个 Lambda 函数，可以考虑更通用的名称，如**Lambda-ETL-Role**。
 - en: '![](../Images/f751f6647a33da08e6473c902418741a.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f751f6647a33da08e6473c902418741a.png)'
 - en: Image by Author
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Set Your Function’s Timeout
+  id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 设置函数的超时时间
 - en: Next is configuring the function’s timeout. Depending on how long the function
     will take to execute, you can increase it to 15 minutes. For this example, we
     will set it to **1 minute**. You could see in your CloudWatch logs if the timeout
     was reached.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来是配置函数的超时时间。根据函数执行所需的时间，你可以将其增加到15分钟。对于这个例子，我们将其设置为**1分钟**。你可以在 CloudWatch
+    日志中查看是否达到了超时。
 - en: Click on the **Configuration** tab, and under **General Configuration**, set
     the timeout to 1 minute.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 点击**配置**选项卡，在**常规配置**下，将超时时间设置为 1 分钟。
 - en: '![](../Images/83666ef72182247457a2c4f8dd360832.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/83666ef72182247457a2c4f8dd360832.png)'
 - en: Image by Author
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Using the Parameters and Secrets Extension
+  id: totrans-36
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用参数和密钥扩展
 - en: Next — this isn’t 100% necessary, but it’s a great practice when you want to
     ensure that you’re handling sensitive data safely and not exposing it in your
     code. In the past, I’ve written about how to use [Environment Variables](https://www.dataknowsall.com/envvar.html)
     to do this locally; however, in AWS, we’ll use the **Parameters and Secrets Extension**.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来——这并不是 100% 必要的，但当你想确保安全地处理敏感数据而不在代码中暴露它时，这是一个很好的做法。过去，我写过关于如何使用[环境变量](https://www.dataknowsall.com/envvar.html)来在本地实现这一点；然而，在
+    AWS 中，我们将使用**参数和密钥扩展**。
 - en: 'The **Parameters and Secrets Extension** allows you to store sensitive data
     in the AWS Secrets Manager and access it in your Lambda function, a great way
     to store API keys, database credentials, etc. You can also use it to store non-sensitive
     data like configuration settings. You can read up more on this functionality here:
     [Configure the Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_lambda.html)'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '**参数和密钥扩展**允许你将敏感数据存储在 AWS Secrets Manager 中，并在 Lambda 函数中访问这些数据，这是一种存储 API
+    密钥、数据库凭证等的好方法。你也可以用它来存储非敏感数据，如配置设置。你可以在这里了解更多关于此功能的信息：[配置 Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_lambda.html)'
 - en: We’ll start by adding a Layer to our Lambda function, allowing us to access
     the extension. From the **Code** tab, scroll to the bottom and click on **Add
     a Layer**. Select **AWS Layers** and then choose **AWS-Parameters-and-Secrets-Lambda-Extension-Arm64**
     and the latest version of that layer.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将通过添加一个层到我们的 Lambda 函数开始，这样我们就可以访问扩展。从**代码**标签页，滚动到最底部并点击**添加层**。选择**AWS 层**，然后选择**AWS-Parameters-and-Secrets-Lambda-Extension-Arm64**和该层的最新版本。
 - en: '![](../Images/1755e481b7d646c541c3d98fa692f7bf.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1755e481b7d646c541c3d98fa692f7bf.png)'
 - en: Next, we need to add code to help us access the secrets. I’ve added this to
     a small function that will look up my **API Key** for [The Movie Database](https://www.themoviedb.org)
     (TMDB) and return it. You can see the full code below. TMDB is a great API for
     getting movie and TV show information, and it’s free to use for non-commercial
     purposes.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们需要添加代码来帮助我们访问秘密。我将其添加到一个小函数中，该函数将查找我的**API 密钥**以获取 [The Movie Database](https://www.themoviedb.org)
+    (TMDB) 并返回它。你可以在下面看到完整代码。TMDB 是一个获取电影和电视节目信息的绝佳 API，且对于非商业用途免费使用。
 - en: As shown below, we’ll create a `headers` variable with the JSON object. We'll
     then pass that into our API call to the **secrets_extension_endpoint** as shown.
     The response will be a JSON object with the secret string. We'll then parse that
     string and return the API key.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 如下所示，我们将创建一个`headers`变量，其中包含 JSON 对象。然后将其传递到我们对**secrets_extension_endpoint**的
+    API 调用中。响应将是一个包含秘密字符串的 JSON 对象。我们将解析该字符串并返回 API 密钥。
 - en: Where my code says **<< your secrets ARN >>**, you’ll need to replace that with
     the **ARN** of your secret. You can find that in the **AWS Secrets Manager console**.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的代码中显示**<< your secrets ARN >>**的地方，你需要将其替换为你的**ARN**。你可以在**AWS Secrets Manager
+    控制台**中找到它。
 - en: '**Note:** *You will need to go back and modify your role to allow access to
     the secret you created. You can find instructions on how to do that in the* [*AWS
     Documentation*](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html)*.
     Follow the example in the section “Example Read one secret (attach to an identity)”.*'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：** *你需要回到并修改你的角色，以允许访问你创建的秘密。你可以在* [*AWS 文档*](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html)*中找到如何做的说明。请按照“示例读取一个秘密（附加到身份）”部分中的示例操作。*'
 - en: '[PRE0]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Add Support for Pandas
+  id: totrans-46
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 添加对 Pandas 的支持
 - en: Next, our example and many other ETL use cases will require using Pandas. We’ll
     need to add a layer to our Lambda function to support this. From the **Code**
     tab, scroll to the bottom and click on **Add a Layer**. Select **Custom Layers**
     and then choose **AWSSDKPandas-Python39-Arm64** and the latest layer version.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们的示例以及许多其他 ETL 用例将需要使用 Pandas。我们需要在 Lambda 函数中添加一个层来支持这一点。从**代码**标签页，滚动到最底部并点击**添加层**。选择**自定义层**，然后选择**AWSSDKPandas-Python39-Arm64**和最新的层版本。
 - en: After enabling this layer, you can `import pandas` in your code *without* having
     to upload the package to your lambda function.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 启用此层后，你可以在代码中`import pandas` *而无需* 将包上传到 Lambda 函数。
 - en: '![](../Images/49f83a45d6eaf60fd4ab379101971ce8.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49f83a45d6eaf60fd4ab379101971ce8.png)'
 - en: Image by Author
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: Writing Files to an S3 Bucket
+  id: totrans-51
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 写入 S3 存储桶中的文件
 - en: One very powerful workflow with modern Data Warehouses / Platforms is the ability
     to work directly with JSON data. We’ll take advantage of this by outputting data
     to **JSON files** in an **S3 bucket**.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 现代数据仓库/平台中一个非常强大的工作流是直接处理 JSON 数据的能力。我们将通过将数据输出到**JSON 文件**中的**S3 存储桶**来利用这一点。
 - en: We’ll create a function that will take a **DataFrame** and write it to a **JSON
     file** in an S3 bucket. We’ll use the `boto3` library to do this. We'll create
     a JSON string using Pandas `to_json` method, encode it as `utf-8`, and then write
     it to the S3 bucket.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将创建一个函数，该函数将接收一个**DataFrame**并将其写入 S3 存储桶中的**JSON 文件**。我们将使用`boto3`库来完成这项工作。我们将使用
+    Pandas 的`to_json`方法创建一个 JSON 字符串，将其编码为`utf-8`，然后写入 S3 存储桶。
 - en: '[PRE1]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We call this function when we’re ready to output our DataFrame to S3 with a
     few parameters such as the **DataFrame** itself, the **type** of data we’re writing,
     and the **IMDB ID** of the movie or TV show. The type is here for convenience
     so we can write different data types with a single function while creating a unique
     file name for each movie lookup.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们准备将 DataFrame 输出到 S3 时，我们会调用这个函数，并传入一些参数，例如**DataFrame**本身、我们要写入的数据**类型**以及电影或电视节目的**IMDB
+    ID**。类型在这里是为了方便，这样我们可以使用单个函数写入不同的数据类型，同时为每个电影查找创建一个唯一的文件名。
 - en: '[PRE2]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Deploying Your Lambda Function
+  id: totrans-57
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 部署您的 Lambda 函数
 - en: There are multiple ways to deploy your function, and the easiest is to use the
     AWS Console and upload a zip file. However, adding a little bit of automation
     here will simplify your life when making changes to your code.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 部署你的函数有多种方法，其中最简单的是使用 AWS 控制台并上传一个 zip 文件。然而，在这里添加一点自动化可以简化你在代码更改时的工作。
 - en: The first step you’ll need to do is set up the AWS CLI. You can find instructions
     on how to do that in the AWS Documentation [Getting started with the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
     You’ll want to **create a new IAM user** with the appropriate permissions to write
     to the Lambda service.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一步是设置 AWS CLI。你可以在 AWS 文档 [Getting started with the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html)
+    中找到如何操作的说明。你需要 **创建一个新的 IAM 用户** 并赋予其适当的权限以写入 Lambda 服务。
 - en: Next, I wrote a simple `bash` script that I can call from my local terminal,
     which does all the work needed. One very important step is to zip up your python
     libraries at the correct level and package them with the zip file. The script
     shows you the process of changing to the `sites-packages` directory and zipping
     the contents of the libraries you want to keep. Explicitly name the libraries
     you want here so you don't end up uploading unnecessary files.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我写了一个简单的 `bash` 脚本，可以从本地终端调用，该脚本完成所有所需的工作。一个非常重要的步骤是将你的 Python 库以正确的层级压缩，并与
+    zip 文件一起打包。脚本展示了更改到 `sites-packages` 目录并压缩你想保留的库内容的过程。在这里明确命名你想要的库，以免上传不必要的文件。
 - en: '**Note:** *This also assumes that I’ve created a local virtual environment
     and have my function code local. I prefer to build my Lambdas this way so that
     I can version control everything in GitHub*'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：** *这也假设我已经创建了本地虚拟环境并且函数代码在本地。我更喜欢以这种方式构建我的 Lambdas，以便可以在 GitHub 上进行版本控制*'
 - en: '[PRE3]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: After your function successfully deploys, you can head back to the console and
     see your code and the supplied packages. Notice the structure. The packages are
     in folders at the root level, allowing them to be imported like any other package
     as if you were developing locally.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 在你的函数成功部署后，你可以返回控制台查看你的代码和提供的包。注意结构。这些包位于根目录的文件夹中，使它们能够像其他包一样被导入，就像你在本地开发时一样。
 - en: '![](../Images/073915b939a6f2ebac762a90686aef91.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/073915b939a6f2ebac762a90686aef91.png)'
 - en: Image by Author
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: Trigger the Lambda Function with an API Endpoint
+  id: totrans-66
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 API 端点触发 Lambda 函数
 - en: As the final step to our function, we will trigger it with an API Endpoint using
     the AWS API Gateway and pass the function parameters as a query string, an ultra-powerful
     way to trigger specific events to fire for the exact data you want to process.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为我们函数的最终步骤，我们将通过 AWS API Gateway 使用 API 端点触发它，并将函数参数作为查询字符串传递，这是一种极其强大的方式，可以触发特定事件以处理你想要的确切数据。
 - en: Navigate to the **Configuration** tab and click the **Add Trigger** button.
     Scroll to API Gateway and select the option for **Create New API**. Additionally,
     select the option for **HTTP API** and set the security to **Open**.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 进入 **Configuration** 选项卡，点击 **Add Trigger** 按钮。滚动到 API Gateway 并选择 **Create
+    New API** 选项。此外，选择 **HTTP API** 选项，并将安全设置为 **Open**。
 - en: '![](../Images/a619d3d507c03121f3ca6507ef93e9b1.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a619d3d507c03121f3ca6507ef93e9b1.png)'
 - en: Image by Author
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: After the endpoint is created, you will have a URL with which you can trigger
     your Lambda. We’ll pass a list of IDs as a query string parameter allowing us
     to pass multiple IDs to the function and process them all at once. Triggering
     your API with query string parameters is a very powerful way to process data in
     bulk.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 端点创建后，你将获得一个可以触发 Lambda 的 URL。我们将传递一个 ID 列表作为查询字符串参数，使我们能够将多个 ID 传递给函数并一次性处理它们。使用查询字符串参数触发你的
+    API 是处理批量数据的一种非常强大的方式。
 - en: 'We construct the URL as follows:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们按如下方式构建 URL：
 - en: '[PRE4]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: And now, in our function, we can access the list of query string parameters
     via the event object that is part of all Lambda functions. We’ll access it through
     the `multiValueQueryStringParameters` key. And then, using the name of the query
     string parameter, we want to access, in this case, `ids`.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，在我们的函数中，我们可以通过事件对象访问查询字符串参数列表，所有 Lambda 函数都会包含这个对象。我们将通过 `multiValueQueryStringParameters`
+    键来访问它。然后，使用我们想要访问的查询字符串参数的名称，在这种情况下是 `ids`。
 - en: '[PRE5]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Monitoring the Lambda Function with CloudWatch When Using an API Gateway
+  id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 API Gateway 监控 Lambda 函数
 - en: By default, you will get CloudWatch monitoring for your function. I’ve run into
     a few errors where I needed extended logging. You must add the following to your
     **Log Format** for the API Gateway Stage.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，你将获得对函数的CloudWatch监控。我遇到过一些错误，需要扩展日志记录。你必须在**日志格式**中添加以下内容，以适应API网关阶段。
 - en: '[PRE6]'
+  id: totrans-78
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Read the full instructions here [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-troubleshooting-lambda.html)
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里阅读完整的说明 [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-troubleshooting-lambda.html)
 - en: '![](../Images/91b4314c168e0b8f4d803543ffd062db.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/91b4314c168e0b8f4d803543ffd062db.png)'
 - en: Image by Author
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: Function Code
+  id: totrans-82
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 函数代码
 - en: We will put this all together for the finale into our `lambda_handler` function.
     We retrieve the IDs from the Query string, then call our function, `get_tmdb_api_key,`
     to get the API key from the Secrets Store. Finally, we loop through our IDs and
     build a data frame, writing it to S3 with the function `write_to_s3`.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将把所有这些整合到最终的`lambda_handler`函数中。我们从查询字符串中检索ID，然后调用我们的函数`get_tmdb_api_key`从密钥存储中获取API密钥。最后，我们循环遍历这些ID，构建数据框，并使用`write_to_s3`函数将其写入S3。
 - en: '[PRE7]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Orchestrating and Processing the Data in your Warehouse
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在数据仓库中协调和处理数据
 - en: The final step is to trigger the API Endpoint in a workflow and then process
     the data in your warehouse. An example of how JSON works with snowflake can be
     found in my article [Getting Started with Snowflake and the Rise of ELT Workflows
     in the Cloud](https://www.dataknowsall.com/snowflakestart.html), and I’ll cover
     orchestration in a future article.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后的步骤是触发工作流中的API端点，然后处理你仓库中的数据。关于JSON如何与Snowflake协作的示例可以在我的文章[与Snowflake入门及云中ELT工作流的崛起](https://www.dataknowsall.com/snowflakestart.html)中找到，我将在未来的文章中介绍协调部分。
 - en: You can find the full code for this project on [GitHub](https://github.com/broepke/LambdaTMDB)
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在[GitHub](https://github.com/broepke/LambdaTMDB)上找到这个项目的完整代码
 - en: Conclusion
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: When building ETL pipelines, you have many options to choose from when it comes
     to computing. For simple jobs, an AWS Lambda function can be a wonderful way to
     enrich your data or process quickly and efficiently. We started by showing you
@@ -402,11 +603,17 @@
     deployment using the AWS CLI. Finally, we triggered the function with an API Gateway
     and monitored it with CloudWatch. I hope this article shows how wonderful Lambdas
     can be and how you can add Lambda to your ETL toolbelt.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 在构建ETL管道时，你有许多计算选项可以选择。对于简单的任务，AWS Lambda函数可以是丰富数据或快速高效处理的绝佳方式。我们从展示如何创建Lambda开始，包括设置运行它的角色。然后我们介绍了几个建议，比如利用参数和密钥扩展安全存储API密钥等信息。接着我们探讨了如何使用AWS
+    CLI自动化部署。最后，我们通过API网关触发了函数，并用CloudWatch监控了它。我希望这篇文章能展示出Lambda的精彩之处，以及如何将Lambda添加到你的ETL工具包中。
 - en: '*If you enjoy reading stories like these and want to support me as a writer,
     consider signing up to become a Medium member. It’s $5 a month, with unlimited
     access to thousands of articles. If you sign up using* [*my link*](https://medium.com/@broepke/membership)*,
     I’ll earn a small commission at no extra cost.*'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果你喜欢阅读这样的故事并想支持我作为作者，考虑注册成为Medium会员。每月5美元，可以无限访问数千篇文章。如果你通过* [*我的链接*](https://medium.com/@broepke/membership)
+    *注册，我将获得少量佣金，但不会额外产生费用。*'

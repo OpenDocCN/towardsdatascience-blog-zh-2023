@@ -1,35 +1,54 @@
 - en: Fine-Tune Your Own Open-Source LLM Using the Latest Techniques
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用最新技术微调你的开源LLM
 - en: 原文：[https://towardsdatascience.com/how-to-efficiently-fine-tune-your-own-open-source-llm-using-novel-techniques-code-provided-03a4e67d1b48](https://towardsdatascience.com/how-to-efficiently-fine-tune-your-own-open-source-llm-using-novel-techniques-code-provided-03a4e67d1b48)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-efficiently-fine-tune-your-own-open-source-llm-using-novel-techniques-code-provided-03a4e67d1b48](https://towardsdatascience.com/how-to-efficiently-fine-tune-your-own-open-source-llm-using-novel-techniques-code-provided-03a4e67d1b48)
 - en: In this article, I tune a base LLama2 LLM to output SQL code. I use Parameter
     Efficient Fine-Tuning techniques to optimise the process.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我调整了一个基础的LLama2 LLM，以输出SQL代码。我使用了参数高效微调技术来优化这一过程。
 - en: '[](https://medium.com/@christopher_karg?source=post_page-----03a4e67d1b48--------------------------------)[![Christopher
     Karg](../Images/9d163d59e0c3167732f55d497caf9db2.png)](https://medium.com/@christopher_karg?source=post_page-----03a4e67d1b48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----03a4e67d1b48--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----03a4e67d1b48--------------------------------)
     [Christopher Karg](https://medium.com/@christopher_karg?source=post_page-----03a4e67d1b48--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@christopher_karg?source=post_page-----03a4e67d1b48--------------------------------)[![Christopher
+    Karg](../Images/9d163d59e0c3167732f55d497caf9db2.png)](https://medium.com/@christopher_karg?source=post_page-----03a4e67d1b48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----03a4e67d1b48--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----03a4e67d1b48--------------------------------)
+    [Christopher Karg](https://medium.com/@christopher_karg?source=post_page-----03a4e67d1b48--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----03a4e67d1b48--------------------------------)
     ·13 min read·Dec 15, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[数据科学前沿](https://towardsdatascience.com/?source=post_page-----03a4e67d1b48--------------------------------)
+    ·13分钟阅读·2023年12月15日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/389987bb764f9aceba43b821ecf0128e.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/389987bb764f9aceba43b821ecf0128e.png)'
 - en: 'Source: [https://www.pexels.com/photo/calm-body-of-lake-between-mountains-346529/](https://www.pexels.com/photo/calm-body-of-lake-between-mountains-346529/)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '来源: [https://www.pexels.com/photo/calm-body-of-lake-between-mountains-346529/](https://www.pexels.com/photo/calm-body-of-lake-between-mountains-346529/)'
 - en: 'In [a previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb),
     I began to make a case for why you would consider training your own LLM. I also
     provided a brief introduction to the hardware requirements, as well as methods
@@ -38,30 +57,44 @@
     along and reproduce the results. We will tune a Llama2–7B model to provide us
     with SQL output based on natural language input — in other words, the model will
     convert a question we ask in natural language:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)中，我开始阐述为何你应该考虑训练自己的LLM。我还简要介绍了硬件要求以及优化训练和推理的方法。在本文中，我将详细介绍如何微调一个开源LLM，并提供代码片段供你跟随和重现结果。我们将调整一个Llama2–7B模型，使其根据自然语言输入提供SQL输出——换句话说，模型将把我们用自然语言提出的问题转换为SQL查询：
 - en: '*“How many customers decided to buy eggs in the month of November?”*'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*“在11月份，有多少客户决定购买鸡蛋？”*'
 - en: 'To a SQL query that fetches the corresponding result:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 到一个SQL查询，该查询获取相应的结果：
 - en: '[PRE0]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'In each case, the schema of the database (DB) will be provided as the context
     for the LLM to work with:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在每种情况下，数据库（DB）的架构将作为LLM的工作上下文提供：
 - en: '[PRE1]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We will be using [this dataset](https://huggingface.co/datasets/knowrohit07/know_sql)
     in the tuning process. Whilst this article is focussed primarily on achieving
     the above task, the methodology will be provided in such a way that you can adapt
     the tuning process to suit your requirements.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在调整过程中使用[这个数据集](https://huggingface.co/datasets/knowrohit07/know_sql)。虽然这篇文章主要集中在实现上述任务上，但方法将以一种你可以调整以满足你要求的方式提供。
 - en: In this article I will be using [Google Colab](https://colab.google/) to fine-tune
     the LLM. We will be using the [know_sql dataset](https://huggingface.co/datasets/knowrohit07/know_sql)
     (OpenRAIL license) that I mentioned previously. We will also be using the [axolotl
@@ -72,8 +105,10 @@
     model we are looking to fine-tune. I will be running through the exact process
     in this article but I would suggest reading through the axolotl documentation
     if anything is unclear.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我将使用[Google Colab](https://colab.google/)来微调LLM。我们将使用之前提到的[know_sql数据集](https://huggingface.co/datasets/knowrohit07/know_sql)（OpenRAIL许可证）。我们还将使用[axolotl框架](https://github.com/OpenAccess-AI-Collective/axolotl)来处理微调过程。他们在GitHub页面上有一些很好的文档。与其编写约100行代码来手动处理微调过程，axolotl允许我们简单地编辑相应模型的YAML配置文件。我将在本文中详细介绍具体过程，但如果有任何不清楚的地方，建议查看axolotl文档。
 - en: The process of fine-tuning an LLM is more computationally expensive than simply
     running inference on an existing LLM (again [here is the link](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
     to my previous article going over the various stages of running inference and
@@ -82,8 +117,12 @@
     (or later). This architecture is available via the “A100 GPU” runtime type on
     Google Colab. For further info on interacting with runtime types, I would suggest
     checking out my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 微调LLM的过程比仅在现有LLM上运行推理要计算密集得多（再此提供[链接](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)到我的上一篇文章，涵盖了运行推理和优化现有LLM的各个阶段）。因此，我们无法使用Google
+    Colab的免费版，因为任务需要[NVIDIA的Ampere GPU架构](https://www.nvidia.com/en-us/data-center/ampere-architecture/)（或更高版本）。此架构可通过Google
+    Colab上的“A100 GPU”运行时类型获得。有关与运行时类型交互的更多信息，我建议查看我的[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)。
 - en: At this stage, I should mention that Google offers the A100 GPU on a first come,
     first served basis or “subject to availability”. I have at times found it tedious
     to get access to the A100 GPU’s as they do not often become available. If unavailable,
@@ -91,66 +130,101 @@
     for completing this task. Your mileage may vary. If you do not wish to wait for
     the correct GPUs to become available, I would suggest exploring some of the hardware
     suggestions I made in my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb).
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个阶段，我应该提到Google提供A100 GPU是“先到先得”或“视情况而定”。我发现有时获取A100 GPU的访问权限比较麻烦，因为它们不常有。如果不可用，你将自动切换到一个较旧的架构，这不足以完成这个任务。你的体验可能会有所不同。如果你不想等待正确的GPU变得可用，我建议你查看我在[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)中提到的一些硬件建议。
 - en: 'The workflow will run as follows:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 工作流程如下：
 - en: · Set up Google Colab and mount GDrive (we need to mount the GDrive as we need
     to access certain files from within the Colab notebook).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: · 设置Google Colab并挂载GDrive（我们需要挂载GDrive，因为需要从Colab笔记本中访问某些文件）。
 - en: · Install dependencies
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: · 安装依赖项
 - en: · Authenticate via HuggingFace CLI (if you have never received authorisation
     from Meta to use the Llama-2 LLMs, I again suggest reviewing my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
     that covers the process of gaining access).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: · 通过HuggingFace CLI进行身份验证（如果你从未获得Meta授权使用Llama-2 LLMs，我再次建议你查看我的[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)，该文章涵盖了获取访问权限的过程）。
 - en: · Load dataset
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: · 加载数据集
 - en: · Clone axolotl repo into Gdrive
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: · 将axolotl仓库克隆到Gdrive
 - en: · Update axolotl config file
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: · 更新axolotl配置文件
 - en: · Fine-tune Llama-7B model (this took about 2hrs. Again your mileage may vary).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: · 微调Llama-7B模型（这大约需要2小时。你的体验可能会有所不同）。
 - en: · Run inference on fine-tuned model
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: · 在微调后的模型上运行推理
 - en: Before jumping into the code, I wish to clarify exactly what fine-tuning is
     and when you may want to consider fine-tuning your LLM.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进入代码之前，我希望澄清微调到底是什么，以及你可能何时考虑微调你的 LLM。
 - en: Fine-tuning can be carried out in a variety of ways. The method you choose comes
     down to your available resources and the task you want to achieve. It could be
     that a ‘base’ model yields satisfactory results, in which case you can skip the
     process entirely.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 微调可以通过多种方式进行。你选择的方法取决于你可用的资源和你想要实现的任务。可能‘基础’模型已经能产生令人满意的结果，这种情况下你可以完全跳过微调过程。
 - en: 'Again, my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
     goes over why you may want to use an open-source LLM rather than offerings such
     as OpenAI’s ChatGPT. A general rule of thumb I use when considering if I should
     fine-tune an LLM for my task is as follows:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我的 [上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
+    讨论了为什么你可能会选择使用开源的 LLM，而不是像 OpenAI 的 ChatGPT 这样的产品。考虑是否应微调 LLM 的一个通用原则如下：
 - en: · Does my task require domain specific knowledge/expertise?
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: · 我的任务是否需要领域特定的知识/专业技能？
 - en: · Will I be feeding proprietary data to my LLM?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: · 我是否会向我的 LLM 输入专有数据？
 - en: · Do I have a significant amount of domain specific data to train/tune my model?
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: · 我是否有足够的领域特定数据来训练/调整我的模型？
 - en: · Do I have the time and compute resources available to complete the task?
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: · 我是否有足够的时间和计算资源来完成任务？
 - en: 'If you answered yes to one or more of the above questions, you should consider
     fine-tuning an LLM. If you answered yes to all of the above questions, it may
     be worth training an LLM from scratch. It may be worth using a step-by-step approach:
@@ -160,46 +234,69 @@
     if your current LLM does not yield satisfactory results. The process of training
     an LLM from scratch is outside the scope of this article but I’m happy to answer
     any questions you have on the topic.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对一个或多个以上的问题回答是，你应该考虑微调 LLM。如果你对所有问题都回答是，可能值得从头开始训练一个 LLM。可以采用逐步的方法：初始使用一个‘基础’
+    LLM，然后尝试一个微调过的 LLM，再尝试一个你从头训练的 LLM。每一步的成本（时间和计算资源）逐渐增加，只有当你当前的 LLM 未能产生令人满意的结果时，才会进入下一步。训练
+    LLM 从零开始的过程超出了本文的范围，但我很乐意回答你关于这个话题的任何问题。
 - en: Now that we have decided whether to fine-tune our LLM, I’ll cover what the process
     actually entails.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经决定是否微调我们的 LLM，我将详细介绍这个过程实际上包括什么。
 - en: Our ‘base’ LLM is a pre-trained model that has an existing set of weights and
     biases from its initial training. These weights and biases allow the model to
     have ‘learned’ a broad range of basic language patterns and general knowledge.
     In the fine-tuning process we are updating these weights and biases using our
     labelled dataset.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的‘基础’ LLM 是一个预训练模型，拥有来自初始训练的一组权重和偏置。这些权重和偏置使得模型能够‘学习’到广泛的基本语言模式和一般知识。在微调过程中，我们使用标记的数据集来更新这些权重和偏置。
 - en: 'Previously, a typical fine-tuning process looked like this:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前，典型的微调过程如下：
 - en: '**Forward Pass**'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '**前向传播**'
 - en: · The model tries to make predictions based on input data
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: · 模型尝试基于输入数据进行预测
 - en: '**Loss calculation** · The model calculates how far off the predictions were.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '**损失计算** · 模型计算预测结果的偏差。'
 - en: '**Backward Pass (backpropagation)** · The model is essentially figuring out
     how much each of the model’s parameters contributed to the loss.'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '**反向传播** · 模型基本上是在弄清楚每个参数对损失的贡献程度。'
 - en: '**Update Parameters** · In this step, the parameters will be updated and adjusted
     to reduce the loss. The size of the update (learning rate) is a hyperparameter
     that can be adjusted.'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新参数** · 在这一步，参数将被更新和调整以减少损失。更新的大小（学习率）是一个可以调整的超参数。'
 - en: '**Repeat** · The above steps are repeated for a given number of iterations
     (epochs). Often this is very low. Common LLM’s such as BERT perform best after
     a fine-tuning of 2 epochs. In this article we will only be using 1 epoch to fine-tune
     a Llama2–7B model.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '**重复** · 上述步骤会重复进行一定次数（训练轮次）。通常这个次数非常少。像 BERT 这样的常见 LLM 在经过 2 个轮次的微调后表现最佳。在本文中，我们将仅使用
+    1 个轮次来微调 Llama2–7B 模型。'
 - en: With the advent of very large LLMs, new strategies have been identified to make
     this process much more efficient. Introducing LoRA (Low Rank Adaptation) and QLoRA
     (Quantised LoRA). We’ll be using LoRA in our SQL example later on so I’ll concentrate
@@ -207,18 +304,25 @@
     Fine-Tuning (PEFT). The techniques allow us to successfully fine-tune very large
     language models but also minimise the computational requirements to do so. It
     does this by reducing the number of trainable parameters during the tuning process.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着非常大型 LLM 的出现，已经确定了使这一过程更加高效的新策略。引入 LoRA（低秩适配）和 QLoRA（量化 LoRA）。我们将在后续的 SQL
+    示例中使用 LoRA，所以我将重点介绍它。这两种策略可以归入参数高效微调（PEFT）的范畴。这些技术使我们能够成功地微调非常大的语言模型，同时最小化执行所需的计算要求。它通过减少微调过程中的可训练参数数量来实现这一点。
 - en: Whilst reduced memory usage, storage cost and inference latency are benefits
     of using a PEFT approach, it is important to note the training time may be increased
     during this process and performance can be more sensitive to hyperparameter choices.
+  id: totrans-45
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 尽管减少内存使用、存储成本和推理延迟是使用 PEFT 方法的好处，但需要注意的是，在此过程中训练时间可能会增加，性能可能对超参数选择更加敏感。
 - en: There are various PEFT techniques available to us. For further reading on these
     techniques, I highly recommend [this blog post](https://www.leewayhertz.com/parameter-efficient-fine-tuning/).
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用各种 PEFT 技术。有关这些技术的更多阅读，我强烈推荐[这篇博客文章](https://www.leewayhertz.com/parameter-efficient-fine-tuning/)。
 - en: In using LoRA, an assumption is made that existing model’s weights are close
     to the optimum solution. These weights are then frozen so they can no longer be
     updated in the fine-tuning process. Instead, low-rank matrices are introduced
@@ -229,26 +333,36 @@
     matrices due to redundancy in the original parameters and correlation between
     the original parameters and low-rank matrices. This is identified in what is called
     ‘Rank-Deficiency’ — the paper to which can be found [here](https://arxiv.org/abs/2106.09685).
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 LoRA 时，假设现有模型的权重接近最优解。这些权重随后被固定，因此在微调过程中不能再更新。相反，低秩矩阵被引入到我们的大型语言模型（LLM）的每一层中。这些矩阵作为适配器，替代了我们冻结的可训练参数。更新这些低秩矩阵的计算要求显著低于如果我们仍使用原始参数时的计算要求。换句话说，由于原始参数中的冗余以及原始参数与低秩矩阵之间的相关性，原始参数可以被低秩矩阵很好地近似。这在所谓的‘Rank-Deficiency’中得到了体现——相关论文可以在[这里](https://arxiv.org/abs/2106.09685)找到。
 - en: All this results in reduced parameter overhead which leads to the advantages
     I listed earlier. A big one to note is the reduced inference latency. We are essentially
     creating a linear design by introducing these low-rank matrices into our model.
     The inference latency is significantly reduced when compared to a fully fine-tuned
     model. This makes the approach suitable for real-time applications.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有这些结果减少了参数开销，从而带来了我之前列出的优势。值得注意的一点是减少了推理延迟。通过将这些低秩矩阵引入我们的模型，我们实际上创建了一个线性设计。与完全微调的模型相比，推理延迟显著减少。这使得该方法适用于实时应用。
 - en: We can further optimise inference times by introducing quantisation — a topic
     I covered extensively in my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过引入量化进一步优化推理时间——这是我在[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)中广泛讨论的主题。
 - en: '[Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl) provides a very
     easy to use tool that allows us to implement all the above features.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl)提供了一个非常易于使用的工具，使我们能够实现上述所有功能。'
 - en: Let’s get to it.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧。
 - en: First we’ll set up our [colab notebook](https://colab.google/). You now want
     to select the A100 GPU runtime type. If you are running the free version, you
     will need to upgrade to a paid tier. Please note, the A100 GPUs may be unavailable.
@@ -257,35 +371,53 @@
     for one to become available (I unfortunately could not establish peak and off-peak
     times for when GPU availability was high). Or you can explore the other hardware
     options listed in my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先我们将设置我们的 [colab notebook](https://colab.google/)。你现在需要选择 A100 GPU 运行时类型。如果你使用的是免费版本，你需要升级到付费版本。请注意，A100
+    GPUs 可能不可用。我建议运行一个包含“hello world”示例的单元，以确保你不会被转移到较旧的 V100 GPU。如果 A100 GPU 不可用，你可以等待一个可用的
+    GPU（我不幸的是无法确定 GPU 可用性的高峰和低峰时间）。或者你可以查看我[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)中列出的其他硬件选项。
 - en: 'Next let’s mount our Gdrive. You can do so by entering the following code:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来让我们挂载 Gdrive。你可以通过输入以下代码来完成：
 - en: '[PRE2]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: You will then receive a pop-up where you have to authenticate via your google
     account. We are mounting the drive as we need to work with files that we’ll be
     storing within our Gdrive.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后你会收到一个弹出窗口，需要通过你的 Google 账户进行身份验证。我们正在挂载驱动器，因为我们需要处理存储在 Gdrive 中的文件。
 - en: Next, we’ll authenticate our access to the Llama2–7B via the HuggingFace CLI.
     This will be our base model that we will fine-tune. Again, if you have never before
     requested access to the model via Meta’s official page, please follow instructions
     in my previous article.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将通过 HuggingFace CLI 进行 Llama2–7B 的访问认证。这将是我们将要微调的基础模型。如果你之前从未通过 Meta 的官方网站申请过该模型的访问权限，请参阅我之前的文章中的说明。
 - en: 'To authenticate, enter the following code in a new cell:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 要进行认证，请在一个新单元中输入以下代码：
 - en: '[PRE3]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: You will then be asked to enter your access key (I explain how to access this
     key in my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)).
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后系统会要求你输入访问密钥（我在我的[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)中解释了如何获取此密钥）。
 - en: Next, we’ll handle our installs. I have found this to often be the biggest hurdle
     in running experiments with LLMs. Certain packages are built to run on specific
     hardware, if you do not have that specific hardware, it can be tedious to unpick
@@ -293,35 +425,55 @@
     very descriptive so you should be able to track down any compatibility issues
     fairly easily. If you follow the instructions on the axolotl readme you should
     be good to go. Let me know if you get stuck.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将处理我们的安装。我发现这通常是运行 LLM 实验时最大的障碍。某些包是为特定硬件构建的，如果你没有该特定硬件，可能会很麻烦地处理安装和更新。幸运的是，axolotl
+    错误输出非常详细，你应该能够相对容易地跟踪任何兼容性问题。如果你按照 axolotl readme 中的说明操作，你应该可以顺利进行。如果你遇到困难，请告诉我。
 - en: 'Lets run the installs, we’ll be installing the correct version of the cuda
     drivers as well as dependencies for the axolotl library. We’ll also be installing
     HuggingFace’s datasets library to gain access to our SQL training set:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们运行安装，我们将安装正确版本的 CUDA 驱动程序以及 axolotl 库的依赖项。我们还将安装 HuggingFace 的数据集库，以访问我们的
+    SQL 训练集：
 - en: '[PRE4]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Next we’ll clone the axolotl repo into our Gdrive. If you get errors stating
     the directories do not exist, simply create them using the Gdrive UI:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我们将把 axolotl 仓库克隆到我们的 Gdrive。如果出现目录不存在的错误，只需使用 Gdrive UI 创建这些目录即可：
 - en: '[PRE5]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Run some further installs:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行一些进一步的安装：
 - en: '[PRE6]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Next we’ll grab our dataset and check it is loaded correctly:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我们将获取数据集并检查其是否正确加载：
 - en: '[PRE7]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Great, at this point we have installed all dependencies, we’ve cloned the axolotl
     repo, and are authorised to access the Llama-2 7B model. At this stage we need
     to do some further configuration in the form of updating our YAML file. Axolotl
@@ -330,130 +482,200 @@
     the axolotl directory that was created when you cloned the repo. It will give
     you a feel for what settings we can change and what hyperparameters we can work
     with. Again, the readme of the repo is very helpful here.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好，目前我们已经安装了所有依赖项，克隆了 axolotl 仓库，并获得了访问 Llama-2 7B 模型的授权。在这个阶段，我们需要进一步配置，更新
+    YAML 文件。Axolotl 使用这个 YAML 文件作为微调模型的指令集。我建议查看一些 Axolotl 提供的示例，这些示例位于克隆仓库时创建的 axolotl
+    目录中。这将帮助你了解可以更改哪些设置以及可以使用哪些超参数。同样，仓库的 readme 对这里非常有帮助。
 - en: 'Below is a copy of my final YAML config file:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是我最终的 YAML 配置文件副本：
 - en: '[PRE8]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'You’ll notice we are able to update parameters that were discussed in my previous
     article (fp16: true) as a means of optimising the training process and limiting
     memory requirements for the tuning of this model. If you are using different hardware,
     I’d suggest reading through the docs and checking any error messages you get from
     when we initialise the tuning process later on. Depending on your goal, axolotl
     has lots of example config files for you to use and adapt.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '你会注意到我们可以更新之前文章中讨论的参数（fp16: true），以优化训练过程并限制该模型微调所需的内存。如果你使用的是不同的硬件，建议查看文档和初始化微调过程时的任何错误信息。根据你的目标，axolotl
+    提供了许多示例配置文件供你使用和调整。'
 - en: 'Save the config file into the fine_tune_llm directory that you created earlier
     as *sql.yml*. A further python script is required for handling tokenisation strategies.
     This should also be saved in your fine_tune_llm directory as *context_qa2.py*.
     Here is the script:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 将配置文件保存到之前创建的 fine_tune_llm 目录中，命名为 *sql.yml*。还需要一个额外的 Python 脚本来处理分词策略。这个脚本也应该保存在
+    fine_tune_llm 目录中，命名为 *context_qa2.py*。这是脚本：
 - en: '[PRE9]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Great — now we should have everything ready to initialise the fine-tuning process.
     Our dependencies are installed, our config files are in their respective places
     in our Gdrive. You should have a fine_tune_llm folder that looks like this:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好——现在我们应该已经准备好初始化微调过程。我们的依赖项已经安装好，配置文件也都在 Gdrive 的各自位置中。你应该有一个看起来像这样的 fine_tune_llm
+    文件夹：
 - en: '![](../Images/7b32d36201feb8026a300dcb86f28e5c.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7b32d36201feb8026a300dcb86f28e5c.png)'
 - en: Directory layout for fine-tuning LLama2–7B using Axolotl
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Axolotl 微调 LLama2–7B 的目录布局
 - en: The *.yml* file is our config file. The *.py* file is our script that handles
     tokenisation. The axolotl directory is the one we cloned from the repo earlier.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '*.yml* 文件是我们的配置文件。*.py* 文件是处理分词的脚本。axolotl 目录是我们之前从仓库克隆的目录。'
 - en: 'Now all we need to do is run:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们需要做的就是运行：
 - en: '[PRE10]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'This will initialise the process of fine-tuning our specified model using the
     *sql.yml* config file. This process took circa 2hrs for me. Your mileage may vary.
     If you receive any errors at this stage, it will most likely be due to dependency
     errors. I ran into an issue a few times where I had to manually install the correct
     cuda drivers and flash_attn again:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将初始化使用 *sql.yml* 配置文件来微调我们指定的模型。这个过程对我来说大约花了 2 小时。你的情况可能会有所不同。如果此阶段出现任何错误，很可能是由于依赖错误。我遇到过几次问题，需要手动安装正确的
+    cuda 驱动程序和 flash_attn：
 - en: '[PRE11]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Great — we used fairly straightforward configurations provided by axolotl to
     initialise the fine-tuning of our LLM.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好——我们使用了 Axolotl 提供的相当简单的配置来初始化我们 LLM 的微调。
 - en: Let’s run inference on our tuned model to see how it performs.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们对微调后的模型进行推理，看看它的表现如何。
 - en: 'As the data we used to tune the model has a fairly specific layout, we will
     need to manually create some prompts that the model can work with. Let’s create
     a question that we want answered based on an existing DB schema. We’ll use the
     same example as when we checked our dataset loaded correctly but we’ll overwrite
     the question:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于用于调整模型的数据具有相当特定的布局，我们需要手动创建一些模型可以处理的提示词。让我们创建一个基于现有数据库模式的问题。我们将使用之前检查数据集是否正确加载时的相同示例，但我们将覆盖问题：
 - en: '[PRE12]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Now we need to ensure the formatting is correct:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们需要确保格式正确：
 - en: '[PRE13]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'We’ll also create a quick function to handle this formatting:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还将创建一个快速函数来处理这些格式：
 - en: '[PRE14]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'Let’s check the above:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查一下以上内容：
 - en: '[PRE15]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Great, now our prompt is ready to be fed into the model.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好，现在我们的提示词已经准备好可以输入到模型中。
 - en: 'Now we need to run inference on our model that was saved in our qlora-out directory
     (as specified in our yaml config file). Let’s first install the dependencies required
     to run inference on our model and tokenise our prompt so the model can work with
     it. We’ll need to the Llama2–7B tokeniser from HuggingFace. The workflow will
     be very similar to what we covered in my [previous article](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb).
     Here is the code:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们需要对保存在qlora-out目录中的模型进行推断（如yaml配置文件中指定的）。首先，我们需要安装运行推断所需的依赖项，并对提示进行分词，以便模型可以处理它。我们需要从HuggingFace获取Llama2–7B分词器。工作流程将与我在[上一篇文章](https://medium.com/towards-data-science/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)中介绍的非常相似。以下是代码：
 - en: '[PRE16]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Awesome! As you can see from the ASSISTANT output, it provided the correct answer.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 太棒了！正如你从助手的输出中看到的，它提供了正确的答案。
 - en: Whilst this is arguably a very straightforward query, you can see we’ve successfully
     trained a base LLM that could only be used for general language queries on a very
     specific task. It now writes SQL code!
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这可以说是一个非常简单的问题，但你可以看到我们成功训练了一个基础LLM，这个LLM之前只能用于一般语言查询，现在它可以写SQL代码了！
 - en: By familiarising yourself with the above and checking through the axolotl documentation,
     you’ll hopefully be able to see how one may adapt my approach to different LLM
     tasks such as Q&A for example. Simply feed in a dataset of questions on a specific
     topic along with their respective answers, update your yaml config file using
     the examples provided by axolotl and begin another fine-tuning experiment 
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过熟悉以上内容并查看axolotl文档，你将能够了解如何将我的方法适应到不同的LLM任务中，例如问答。只需输入一个特定主题的问题数据集及其相应答案，使用axolotl提供的示例更新你的yaml配置文件，然后开始另一个微调实验😊
 - en: I hope you enjoyed reading the article as much as I did writing it. As always,
     please contact me if you have any questions.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望你阅读这篇文章时的感受与我写作时一样愉快。像往常一样，如果你有任何问题，请随时联系我。
 - en: '*All images belong to the author unless otherwise stated.*'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '*除非另有说明，否则所有图像均属于作者。*'

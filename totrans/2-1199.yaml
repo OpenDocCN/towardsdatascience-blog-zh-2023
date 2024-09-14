@@ -1,1480 +1,2171 @@
 - en: How to Improve Clustering Accuracy with Bayesian Gaussian Mixture Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何利用贝叶斯高斯混合模型提高聚类准确性
 - en: 原文：[https://towardsdatascience.com/how-to-improve-clustering-accuracy-with-bayesian-gaussian-mixture-models-2ef8bb2d603f](https://towardsdatascience.com/how-to-improve-clustering-accuracy-with-bayesian-gaussian-mixture-models-2ef8bb2d603f)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-improve-clustering-accuracy-with-bayesian-gaussian-mixture-models-2ef8bb2d603f](https://towardsdatascience.com/how-to-improve-clustering-accuracy-with-bayesian-gaussian-mixture-models-2ef8bb2d603f)
 - en: Clustering
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 聚类
 - en: A more advanced clustering technique for real world data
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一种用于现实世界数据的更高级的聚类技术
 - en: '[](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)[![Mike
     Clayton](../Images/2d37746b13b7d2ff1c6515893914da97.png)](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)
     [Mike Clayton](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)[![Mike
+    Clayton](../Images/2d37746b13b7d2ff1c6515893914da97.png)](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)
+    [Mike Clayton](https://medium.com/@maclayton?source=post_page-----2ef8bb2d603f--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)
     ·27 min read·Feb 15, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----2ef8bb2d603f--------------------------------)
+    ·阅读时长 27 分钟·2023年2月15日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/4dfa3e01cd737d3436bde521a650137a.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4dfa3e01cd737d3436bde521a650137a.png)'
 - en: Photo by [Tima Miroshnichenko](https://www.pexels.com/photo/mixture-of-paint-on-palette-5034000/)
     from [Pexels](https://www.pexels.com/)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Tima Miroshnichenko](https://www.pexels.com/photo/mixture-of-paint-on-palette-5034000/)
+    提供，来自 [Pexels](https://www.pexels.com/)
 - en: '**In the real world you will often find that data follows a certain probability
     distribution. Whether it is a Gaussian (or normal) distribution, Weibull distribution,
     Poisson distribution, exponential distribution etc., will depend on the specific
     data.**'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在现实世界中，你常常会发现数据遵循某种概率分布。无论是高斯（或正态）分布、韦布尔分布、泊松分布、指数分布等，取决于具体的数据。**'
 - en: '**Being aware of which distribution describes your data, or likely best describes
     your data, allows you to take advantage of that fact, and improve your inference
     and/or predictions.**'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**了解哪个分布描述了你的数据，或者哪个分布可能最能描述你的数据，可以让你利用这一点，从而改善你的推断和/或预测。**'
 - en: '**This article will look at how leveraging knowledge of an underlying probability
     distribution of a dataset can improve the fit of a bog standard K-Means clustering
     model, and even allow for automatic selection of the number of appropriate clusters,
     directly from the underlying data.**'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '**本文将探讨如何利用数据集的潜在概率分布来改善标准 K-Means 聚类模型的拟合效果，甚至允许从数据中直接自动选择合适的簇数。**'
 - en: Introduction
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: A lot of the headline grabbing machine / deep learning techniques tend to involve
     ***supervised*** machine / deep learning i.e. the data has been labelled, and
     the models are given the correct answers to learn from. The trained model is then
     applied to future data to make predictions.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多引人注目的机器学习/深度学习技术往往涉及***有监督***的机器学习/深度学习，即数据已经被标记，模型从中学习正确的答案。然后，将训练好的模型应用于未来的数据以进行预测。
 - en: This is all very useful, but the reality is that data is constantly being produced
     by businesses and people around the world, and the majority of it is not labelled.
     It is actually quite expensive and time consuming to label data in the vast majority
     of cases. This is where ***unsupervised*** learning comes in.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些都非常有用，但现实是数据是由全球的企业和个人不断产生的，其中大多数数据是未标记的。在绝大多数情况下，标记数据实际上是非常昂贵和耗时的。这就是***无监督***学习派上用场的地方。
 - en: …data is constantly being produced by businesses and people around the world,
     and the majority of it is not labelled.
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: …数据是由全球的企业和个人不断产生的，其中大多数数据是未标记的。
 - en: Finding the best way to infer meaning from unlabelled data is a very important
     pursuit for many businesses. It allows the unearthing of potentially unknown,
     or less obvious, trends or groupings. It is then possible to assign resources,
     target specific groups of customers, or just instigate additional research and
     development.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 找到从未标记数据中推断意义的最佳方法是许多企业非常重要的追求。这可以发现潜在的未知或不明显的趋势或分组。然后可以分配资源、针对特定客户群体，或只是进行额外的研究和开发。
 - en: Further to this, a large majority of the time, the data involves people or natural
     processes in one form or other. Natural processes, and the behaviour of people
     are, more often than not, captured and described well by a Gaussian distribution.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，大多数情况下，数据涉及某种形式的人或自然过程。自然过程和人类行为通常由高斯分布很好地捕捉和描述。
 - en: With this in mind, this article will take a look into how a Gaussian distribution,
     in the form of both a Gaussian Mixture Model (GMM) and a Bayesian Gaussian Mixture
     Model (BGMM), can be utilised to improve the clustering accuracy of a dataset
     that represents ‘natural processes’ encountered in real world datasets.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于此，本文将探讨如何利用高斯分布，包括高斯混合模型（GMM）和贝叶斯高斯混合模型（BGMM），来提高表示现实世界数据集中的“自然过程”的数据集的聚类准确性。
 - en: As a comparison and base for judgement, the ubiquitous K-Means clustering algorithm
     will be used.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为比较和判断的基础，将使用普遍的K均值聚类算法。
 - en: The plan
+  id: totrans-20
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 计划
 - en: '![](../Images/563f971fc8b592a6744b15fcb3a0e363.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/563f971fc8b592a6744b15fcb3a0e363.png)'
 - en: Photo by [Christina Morillo](https://www.pexels.com/photo/man-standing-infront-of-white-board-1181345/)
     from [Pexels](https://www.pexels.com/)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Christina Morillo](https://www.pexels.com/photo/man-standing-infront-of-white-board-1181345/)
+    提供，来源于 [Pexels](https://www.pexels.com/)
 - en: This article will cover quite a lot of ground, and also incorporate examples
     from a comprehensive Jupyter notebook.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文将涵盖相当广泛的内容，并包含来自综合Jupyter笔记本的示例。
 - en: This section should give you some guidance on what is covered and where to skip
     to should you need access to specific information.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节应为您提供一些关于涵盖内容的指导，并指出如果需要访问特定信息应跳过的位置。
 - en: Initially the article will cover the “what” and “why” questions in regard to
     the use of Gaussian Mixture Models in general.
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最初，文章将涵盖关于一般使用高斯混合模型的“什么”和“为什么”问题。
 - en: As there are two readily available implementations of Gaussian Mixture Models
     within the scikit-learn library, a discussion of the key differences between a
     plain [Gaussian Mixture Model](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html)
     and [Bayesian Gaussian Mixture Model](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html#sklearn.mixture.BayesianGaussianMixture)
     will follow.
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于scikit-learn库中有两个现成的高斯混合模型实现，接下来将讨论普通 [高斯混合模型](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html)
+    和 [贝叶斯高斯混合模型](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html#sklearn.mixture.BayesianGaussianMixture)
+    之间的主要区别。
 - en: The article will then dive into using Gaussian Mixture Models to cluster a real
     world multi-featured dataset. All examples will be implemented using K-Means,
     a plain Gaussian Mixture Model and a Bayesian Gaussian Mixture Model.
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 文章将深入探讨如何使用高斯混合模型对现实世界的多特征数据集进行聚类。所有示例将使用K均值算法、普通高斯混合模型和贝叶斯高斯混合模型来实现。
 - en: There will then be two additional sections primarily focused on clearer visualisation
     of the algorithms. Complexity of the data will be reduced by a) using a two component
     principle component analysis (PCA) and b) analysing only two features from the
     dataset
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随后将有两个额外的部分，主要集中于算法的更清晰可视化。数据的复杂性将通过a) 使用两个组件的主成分分析（PCA）和b) 仅分析数据集中的两个特征来减少。
 - en: '***Note:*** *the dataset chosen is in fact labelled. This has been done deliberately
     so that the performance of the clustering can be compared to the 100% correct
     and known primary clustering.*'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '***注意：*** *选择的数据集实际上是有标签的。这是故意为之，以便将聚类的性能与100%正确且已知的主要聚类进行比较。*'
 - en: The Explanations
+  id: totrans-30
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 解释
 - en: '![](../Images/9a2591d5a3de758c76a2b5a4140b25c8.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9a2591d5a3de758c76a2b5a4140b25c8.png)'
 - en: Photo by [Polina Zimmerman](https://www.pexels.com/photo/notes-on-board-3782142/)
     from [Pexels](https://www.pexels.com/)
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Polina Zimmerman](https://www.pexels.com/photo/notes-on-board-3782142/)
+    提供，来源于 [Pexels](https://www.pexels.com/)
 - en: Here we cover the “what” and “why” type questions before getting stuck into
     the data to see it all in action.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进入数据并查看实际效果之前，我们先讨论“是什么”和“为什么”类型的问题。
 - en: Before we get started, it is worth noting that there will be no discussion of
     what a Gaussian / Normal distribution is, or even what K-Means clustering is.
     There are plenty of great resources out there, and there just isn’t the space
     to cover it in this article. Therefore, a basic understanding of those concepts
     is assumed from this point on.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们开始之前，值得注意的是，本文章不会讨论什么是高斯/正态分布，或者什么是K-Means聚类。市面上有很多很好的资源可以参考，本文章没有足够的空间来覆盖这些内容。因此，从这一点起，假设你对这些概念有基本了解。
 - en: '***Note:*** *the phrases “Gaussian distribution” and “Normal distribution”
     mean one and the same thing, and will be used interchangeably throughout this
     article.*'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '***注意：*** *“高斯分布”和“正态分布”这两个短语指的是同一个东西，本文中将交替使用。*'
 - en: What is a Gaussian Mixture Model?
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 什么是高斯混合模型？
 - en: In simple terms, the algorithm assumes that the data you provide it can be approximated
     with an unspecified mixture of different Gaussian distributions.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，该算法假设你提供的数据可以用未指定的不同高斯分布的混合来近似。
 - en: The algorithm will try to extract and separate this mixture of Gaussian distributions
     and pass them back to you as separate clusters.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法会尝试提取和分离这些高斯分布的混合，并将它们作为单独的簇返回给你。
 - en: That’s it really.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 就是这样。
 - en: So in essence, it is like K-Means clustering, but it has the added advantage
     of being able to apply additional statistical constraints on the data. This gives
     more flexibility to the shape of the clusters it can capture. In addition, it
     allows closely spaced, or slightly conjoined, clusters to be separated more precisely,
     as the algorithm has access to the statistical probabilities generated by the
     assumed Gaussian distributions.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以本质上，它就像K-Means聚类，但它有一个额外的优点，即能够对数据应用额外的统计约束。这使得它能更灵活地捕捉簇的形状。此外，它允许更精确地分离紧密或稍微连接的簇，因为算法可以访问由假设的高斯分布生成的统计概率。
 - en: In a visual sense, if the analysis is restricted to two or three dimensions,
     the K-Means algorithm pins down cluster centres and applies a ‘circular’ or ‘spherical’
     distribution around those centres.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 从视觉上看，如果分析局限于二维或三维，K-Means算法会确定簇中心，并在这些中心周围应用“圆形”或“球形”分布。
 - en: However, if the underlying data is Gaussian it is perfectly possible, and even
     expected, that the distribution will be elongated to some extent due to the tails
     of a Gaussian distribution. This would be the equivalent of an ‘ellipse’ or ‘ellipsoid’
     in terms of shape. These elongated ‘ellipse’ or ‘ellipsoid’ type shapes are something
     K-Means cannot model accurately, but the Gaussian Mixture Models can.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，如果底层数据是高斯的，那么由于高斯分布的尾部，分布被拉伸到某种程度是完全可能的，甚至是预期的。这在形状上相当于一个“椭圆”或“椭球体”。这些拉伸的“椭圆”或“椭球体”形状是K-Means无法准确建模的，但高斯混合模型可以。
 - en: On the other side of the coin, if you pass the Gaussian Mixture Models data
     that is definitely nowhere near Gaussian, the algorithm will still assume it is
     Gaussian. You will therefore likely end up with, at best, something that is no
     better than K-Means.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，如果你向高斯混合模型提供的数据明显远离高斯分布，算法仍会假设它是高斯的。因此，你可能最终得到的，充其量，也不比K-Means更好。
 - en: '***Side note:*** *the Gaussian Mixture Model and Bayesian Gaussian Mixture
     Model can use the K-Means clustering algorithm to generate some of the initial
     parameters of the model (it is in fact the default setting in scikit-learn).*'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '***附注：*** *高斯混合模型和贝叶斯高斯混合模型可以使用K-Means聚类算法来生成模型的一些初始参数（实际上，这是scikit-learn中的默认设置）。*'
 - en: Which begs the question…
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就引出了一个问题……
 - en: What type of data could Gaussian Mixture Models be used for?
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 高斯混合模型可以用于什么类型的数据？
 - en: 'Natural processes are usually a good place to start. The reason for this is
     mainly due to the Central Limit Theorem (CLT):'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然过程通常是一个很好的起点。原因主要是由于中心极限定理（CLT）：
 - en: In probability theory, the **central limit theorem** (**CLT**) establishes that,
     in many situations, when independent random variables are summed up, their properly
     normalized sum tends toward a normal distribution even if the original variables
     themselves are not normally distributed.
+  id: totrans-48
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在概率论中，**中心极限定理**（**CLT**）确定了在许多情况下，当独立随机变量相加时，它们经过适当标准化的和趋向于正态分布，即使原始变量本身不是正态分布。
 - en: ''
+  id: totrans-49
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '[-wikipedia.org](https://en.wikipedia.org/wiki/Central_limit_theorem)'
+  id: totrans-50
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[-wikipedia.org](https://en.wikipedia.org/wiki/Central_limit_theorem)'
 - en: In very simple terms, what this essentially means with natural processes is
     that although the particular variable (a humans height for example) is caused
     by many factors that may, or may not, be normally distributed (diet, lifestyle,
     environment, genes etc.) the normalised sum of those parts (the human height)
     will be (approximately) normally distributed. That is why we tend to see natural
     processes appearing to be normally distributed so regularly.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单来说，这本质上意味着，在自然过程中，虽然特定变量（例如人的身高）是由许多可能是或不是正态分布的因素（饮食、生活方式、环境、基因等）引起的，但这些部分的标准化总和（人的身高）将会是（大致上）正态分布的。这就是为什么我们经常看到自然过程呈现正态分布的原因。
 - en: '![](../Images/d3e28ba209ef19938dd728233aaa7674.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d3e28ba209ef19938dd728233aaa7674.png)'
 - en: Photo by [Ivan Samkov](https://www.pexels.com/photo/person-holding-black-pen-and-an-x-ray-4989192/)
     from [Pexels](https://www.pexels.com/)
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Ivan Samkov](https://www.pexels.com/photo/person-holding-black-pen-and-an-x-ray-4989192/)
+    提供，来自 [Pexels](https://www.pexels.com/)
 - en: 'As such, there are a surprisingly large amount of real world instances where
     it is necessary to deal with Gaussian distributions, making Gaussian Mixture Models
     a very useful tool if it used in the appropriate setting:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，现实中有大量需要处理高斯分布的实例，这使得高斯混合模型在适当的场景下非常有用：
 - en: '**Customer behaviour** — this could be in terms of purchases made, amounts
     spent, attention span, churn etc.'
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**客户行为** —— 这可以指购买行为、消费金额、注意力跨度、流失率等。'
 - en: '**Human characteristics** — height, weight, shoe size, IQ (or educational performance)
     etc.'
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**人体特征** —— 身高、体重、鞋码、智商（或教育表现）等。'
 - en: '**Natural phenomena** — recognition of patterns / groups in the medical field
     (cancers, diseases, genes etc.) or other scientific fields'
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**自然现象** —— 在医学领域（癌症、疾病、基因等）或其他科学领域识别模式/群体'
 - en: There are obviously many other examples, and other situations where a Gaussian
     distribution may arise for other reasons.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，还有许多其他例子，以及其他原因导致高斯分布的情况。
 - en: There may of course be cases where you cannot discern the underlying structure
     of the data, and this will of course warrant investigation, but is also one of
     the reasons why domain experts can be so important.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，也可能有些情况下你无法辨别数据的潜在结构，这自然需要进一步调查，但这也是领域专家如此重要的原因之一。
 - en: Why use a Gaussian Mixture Model?
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么使用高斯混合模型？
 - en: The main reason is that if you are fairly confident that your data is Gaussian
     (or more precisely a mixture of Gaussian data) then you will give yourself a much
     better chance of separating out real clusters with much more accuracy.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 主要原因是，如果你比较确定你的数据是高斯分布（或更准确地说，是高斯数据的混合），那么你将能更准确地分离出真正的聚类，从而大大提高准确性。
 - en: The algorithm not only looks for basic clusters, but also considers the most
     appropriate shape, or distribution, of each cluster. This allows for tightly spaced,
     or even slightly conjoined, clusters to be separated out more accurately and easily.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法不仅寻找基本聚类，还考虑每个聚类最合适的形状或分布。这使得紧密分布或稍微连在一起的聚类能够更准确和轻松地分离出来。
 - en: Furthermore, where there are cases that the separation is not clear (or maybe
     just for more in depth analysis) it is possible to produce, and analyse, the probability
     that each data point belongs to each cluster. This gives you a better understanding
     of what are core reliable data points, and those that are perhaps marginal, or
     unclear.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，在分离不清晰的情况下（或可能只是为了更深入的分析），可以生成并分析每个数据点属于每个聚类的概率。这让你更好地了解哪些是核心可靠的数据点，哪些可能是边缘的或不清楚的数据点。
 - en: With Bayesian Gaussian Mixture models it is also possible to let the algorithm
     infer from the data the most appropriate number of clusters. Rather than having
     to rely on the [elbow method](https://en.wikipedia.org/wiki/Elbow_method_(clustering))
     or produce [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
     / [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) curves.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用贝叶斯高斯混合模型，算法也可以从数据中推断出最合适的聚类数量。这比依赖于 [肘部法则](https://en.wikipedia.org/wiki/Elbow_method_(clustering))
+    或生成 [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion) / [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion)
+    曲线要好。
 - en: How does a Gaussian Mixture Model work?
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 高斯混合模型是如何工作的？
 - en: It is basically using an iterative updating process to gradually optimise the
     fit of a number of Gaussian distributions to the data. I suppose in a similar
     way to gradient decent.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本上，这个方法使用迭代更新过程来逐渐优化多个高斯分布与数据的拟合。我想这与梯度下降有些类似。
 - en: Check the fit — adjust — check the fit again — adjust…and repeat until converged.
+  id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 检查拟合——调整——再次检查拟合——调整……并重复，直到收敛。
 - en: 'In this case the algorithm is called the [expectation-maximisation](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)
     (EM) algorithm. More specifically this is what happens:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，算法被称为[期望最大化](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)（EM）算法。更具体地说，情况是这样的：
 - en: One of the input parameters to the model is the number of clusters, so this
     is a known quantity. For example, if two clusters are set, then an initial set
     of two Gaussian distributions will have their parameters assigned. The parameters
     could be assigned by a K-Means analysis (the default in scikit-learn), or just
     randomly. The parameters could even be specified specifically for every data point,
     if you have a very specific case. Now on to the iteration…
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 模型的一个输入参数是簇的数量，所以这是一个已知的量。例如，如果设置了两个簇，那么初始的两个高斯分布将有其参数被分配。参数可以通过 K-Means 分析（scikit-learn
+    的默认设置）来分配，或者随机分配。如果有非常具体的情况，参数甚至可以为每个数据点指定。现在进入迭代部分……
 - en: '**Expectation** — now there are two Gaussian distributions that are defined
     with specific parameters. The algorithm first assigns each data point to one of
     the two Gaussian distributions. It does this based on the **probability** that
     it fits into that particular distribution, compared to the other.'
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**期望**——现在有两个高斯分布定义了特定的参数。算法首先将每个数据点分配给两个高斯分布中的一个。它是根据数据点适合特定分布的**概率**来进行分配的，相对于另一个分布。'
 - en: '**Maximisation** — once all the points are assigned, the parameters of each
     Gaussian distribution are adjusted slightly to better fit the data as a whole,
     based on the information generated from the previous step.'
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**最大化**——一旦所有点都被分配，每个高斯分布的参数会稍作调整，以更好地拟合整个数据，基于从上一步生成的信息。'
 - en: repeat steps 2 and 3 until convergence.
+  id: totrans-72
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复步骤 2 和 3，直到收敛。
 - en: The above is overly simplified, and I haven’t detailed the exact mathematical
     mechanism (or equations) that are optimised at each point in time. However, it
     should give you at least a conceptual understanding of how the algorithm operates.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述内容过于简化，我没有详细说明每个时刻优化的确切数学机制（或方程）。然而，它至少应能给你对算法操作的概念理解。
 - en: As ever, there are plenty of mathematics heavy articles out there explaining
     in much more detail the exact mechanisms should that interest you.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 一如既往，网上有许多数学较重的文章更详细地解释了确切机制，如果你感兴趣的话。
 - en: What is the difference between a normal Gaussian Mixture Model and a Bayesian
     Gaussian Mixture Model?
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 普通高斯混合模型和贝叶斯高斯混合模型之间有什么区别？
 - en: I’m going to start by saying that, to explain the additional processes used
     by the Bayesian Gaussian Mixture Model over and above the standard Gaussian Mixture
     Model is actually quite involved. It requires an understanding of a few different,
     and complicated, mathematical concepts at the same time, and there certainly isn’t
     space in this article to do it justice.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 我要说的是，解释贝叶斯高斯混合模型相较于标准高斯混合模型所使用的额外过程实际上相当复杂。它需要同时理解一些不同且复杂的数学概念，而本文的篇幅显然不足以充分说明。
 - en: What I will aim to do here is point you in the right direction, and outline
     the advantages and disadvantages. You will also gather further information as
     you pass through the rest of the article while the dataset is analysed.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将旨在引导你找到正确的方向，并概述优缺点。你还将随着文章的深入，在数据集分析过程中收集更多信息。
 - en: '***Practical Differences***'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '***实际差异***'
 - en: The standout difference is that the standard Gaussian Mixture Model uses the
     [expectation-maximisation](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)
     (EM) algorithm, whereas the Bayesian Gaussian Mixture Model uses variational inference
     (VI).
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 突出的区别在于，标准高斯混合模型使用[期望最大化](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)（EM）算法，而贝叶斯高斯混合模型使用变分推断（VI）。
 - en: Unfortunately, variational inference is not mathematically straight forward,
     but if you want to get your hands dirty I suggest [this excellent article](https://jonathan-hui.medium.com/machine-learning-variational-inference-273d8e6480bb)
     by [Jonathan Hui](https://medium.com/u/bd51f1a63813?source=post_page-----2ef8bb2d603f--------------------------------).
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，变分推断在数学上并不直观，但如果你想深入了解，我建议阅读 [Jonathan Hui](https://medium.com/u/bd51f1a63813?source=post_page-----2ef8bb2d603f--------------------------------)
+    的 [这篇优秀文章](https://jonathan-hui.medium.com/machine-learning-variational-inference-273d8e6480bb)。
 - en: 'The main take-aways are these:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 主要的结论有这些：
 - en: variational inference is an extension of the expectation-maximisation algorithm.
     Both aim to find Gaussian distributions within your data (in this instance at
     least)
+  id: totrans-82
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变分推断是期望最大化算法的一个扩展。两者都旨在在数据中找到高斯分布（至少在这个实例中）。
 - en: Bayesian Gaussian Mixture Models require more input parameters to be provided,
     which is potentially more involved / cumbersome
+  id: totrans-83
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型需要提供更多的输入参数，这可能更加复杂/繁琐。
 - en: variational inference inherently has a form of regularisation built in
+  id: totrans-84
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变分推断本质上内置了一种正则化形式。
 - en: variational inference is less likely to generate ‘unstable’ or ‘marginal’ solutions
     to the problem. This makes it more likely that the algorithm will tend towards
     a solidly backed ‘real’ solution. Or as s[cikit-learn’s documentation](https://scikit-learn.org/stable/modules/mixture.html)
     puts it “*due to the incorporation of prior information, variational solutions
     have less pathological special cases than expectation-maximization solutions.*”
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变分推断不太可能产生“不稳定”或“边缘”解决方案。这使得算法更有可能趋向于一个有坚实支持的“真实”解决方案。或者正如 [scikit-learn 的文档](https://scikit-learn.org/stable/modules/mixture.html)
+    所述，"*由于纳入了先验信息，变分解决方案比期望最大化解决方案具有更少的病态特殊情况。*"
 - en: Bayesian Gaussian Mixture Models can directly estimate the most appropriate
     amount of clusters for the input data (no elbow methods required!)
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型可以直接估计输入数据的最合适的聚类数量（无需肘部方法！）
 - en: '…so to summarise:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: …所以总结一下：
 - en: Variational inference is a more advanced **extension** to the idea behind expectation-maximisation.
     It should in theory be more accurate and more resistant to messy data or outliers.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 变分推断是期望最大化的更高级的**扩展**。理论上，它应该更准确，并且对杂乱数据或异常值更具抵抗力。
 - en: '***Resources and further reading***'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '***资源与进一步阅读***'
 - en: 'As a start I would point you to the excellent overview provided in the literature
     for scikit-learn:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我建议你查看 scikit-learn 文献中提供的优秀概述：
 - en: '[](https://scikit-learn.org/stable/modules/mixture.html?source=post_page-----2ef8bb2d603f--------------------------------)
     [## 2.1\. Gaussian mixture models'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://scikit-learn.org/stable/modules/mixture.html?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## 2.1. 高斯混合模型'
 - en: sklearn.mixture is a package which enables one to learn Gaussian Mixture Models
     (diagonal, spherical, tied and full…
+  id: totrans-92
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: sklearn.mixture 是一个包，可以用来学习高斯混合模型（对角线、球形、绑定和完整…）
 - en: scikit-learn.org](https://scikit-learn.org/stable/modules/mixture.html?source=post_page-----2ef8bb2d603f--------------------------------)
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '[scikit-learn.org](https://scikit-learn.org/stable/modules/mixture.html?source=post_page-----2ef8bb2d603f--------------------------------)'
 - en: 'For further reading, some relevant subjects to look up are:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 进一步阅读时，可以查阅的一些相关主题包括：
 - en: Expectation-Maximisation (EM)
+  id: totrans-95
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 期望最大化（EM）
 - en: Variational Inference (VI)
+  id: totrans-96
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变分推断（VI）
 - en: The Dirichlet distribution and Dirichlet process
+  id: totrans-97
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 狄利克雷分布和狄利克雷过程
 - en: Now for some real data
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 现在来看一些真实数据
 - en: '![](../Images/f0fb3cecf09aa609211f0dbf9bd5ffc4.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f0fb3cecf09aa609211f0dbf9bd5ffc4.png)'
 - en: Photo by [Cup of Couple](https://www.pexels.com/photo/a-glass-of-red-wine-on-a-wooden-bench-8473214/)
     from [Pexels](https://www.pexels.com/)
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Couple of Cup](https://www.pexels.com/photo/a-glass-of-red-wine-on-a-wooden-bench-8473214/)
+    提供，来自 [Pexels](https://www.pexels.com/)
 - en: 'Discussion and theory are great, but I often find exploring a real implementation
     can clarify a great deal. With that in mind, the following sections will make
     a comparison of the performance of each of the following clustering methods on
     a real world dataset:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 讨论和理论很好，但我经常发现探索真实实现可以澄清很多。因此，以下部分将比较以下聚类方法在真实世界数据集上的表现：
 - en: K-Means (the baseline)
+  id: totrans-102
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: K均值（基准）
 - en: Gaussian Mixture Model
+  id: totrans-103
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 高斯混合模型
 - en: Bayesian Gaussian Mixture Model
+  id: totrans-104
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型
 - en: The Data
+  id: totrans-105
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据
 - en: The [real world dataset](https://archive-beta.ics.uci.edu/dataset/109/wine)¹
     that will be used describes the chemical composition of three different varieties
     of wine from the same region of Italy.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 将要使用的[真实世界数据集](https://archive-beta.ics.uci.edu/dataset/109/wine)¹ 描述了来自意大利同一地区的三种不同葡萄酒的化学成分。
 - en: This dataset is labelled, so although all the clustering analysis that follows
     will not use the labels in the analysis, it will allow a comparison to a known
     correct answer. The three methods of clustering can therefore be compared fairly
     and without bias.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个数据集已经标注，因此尽管以下所有的聚类分析不会在分析中使用这些标签，但它将允许与已知的正确答案进行比较。因此，这三种聚类方法可以公平且无偏差地进行比较。
 - en: Furthermore, the dataset meets the criterion of being a “natural” dataset, which
     should be a good fit for the Gaussian methods that are the intended test target.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，数据集符合“自然”数据集的标准，这应该适合于高斯方法，这是预期的测试目标。
 - en: 'To ease the ability to load the data I have made the raw data available in
     CSV format in my GitHub repository:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了方便加载数据，我已将原始数据以 CSV 格式在我的 GitHub 仓库中提供：
 - en: '[](https://github.com/thetestspecimen/notebooks/tree/main/datasets/wine?source=post_page-----2ef8bb2d603f--------------------------------)
     [## notebooks/datasets/wine at main · thetestspecimen/notebooks'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/thetestspecimen/notebooks/tree/main/datasets/wine?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## notebooks/datasets/wine at main · thetestspecimen/notebooks'
 - en: These data are the results of a chemical analysis of wines grown in the same
     region in Italy but derived from three…
+  id: totrans-111
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这些数据是对来自意大利同一地区的葡萄酒的化学分析结果，但来源于三...
 - en: github.com](https://github.com/thetestspecimen/notebooks/tree/main/datasets/wine?source=post_page-----2ef8bb2d603f--------------------------------)
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/thetestspecimen/notebooks/tree/main/datasets/wine?source=post_page-----2ef8bb2d603f--------------------------------)
 - en: Reference Notebooks
+  id: totrans-113
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考笔记本
 - en: All the analysis that follows has been made available in a comprehensive Jupyter
     notebook.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有后续的分析都已在一个全面的 Jupyter notebook 中提供。
 - en: 'The raw notebook can be found here for your local environment:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始笔记本可以在这里找到，适用于你的本地环境：
 - en: '[](https://github.com/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb?source=post_page-----2ef8bb2d603f--------------------------------)
     [## notebooks/bayesian_gaussian_mixture_model.ipynb at main · thetestspecimen/notebooks'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## notebooks/bayesian_gaussian_mixture_model.ipynb at main · thetestspecimen/notebooks'
 - en: You can't perform that action at this time. You signed in with another tab or
     window. You signed out in another tab or…
+  id: totrans-117
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 目前无法执行该操作。你在另一个标签页或窗口中登录了。你在另一个标签页或窗口中已登出...
 - en: github.com](https://github.com/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb?source=post_page-----2ef8bb2d603f--------------------------------)
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb?source=post_page-----2ef8bb2d603f--------------------------------)
 - en: '…or get kickstarted in either Deepnote or Colab if you want an online solution:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: …或者如果你需要一个在线解决方案，可以在 Deepnote 或 Colab 中开始：
 - en: '[![](../Images/23c9a383e533919051f0579081cff99b.png)](https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2Fthetestspecimen%2Fnotebooks%2Fblob%2Fmain%2Fbayesian_gaussian_mixture_model.ipynb)[![](../Images/f8d7c9abab0134f402cd7732c7eaff36.png)](https://colab.research.google.com/github/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb)'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/23c9a383e533919051f0579081cff99b.png)](https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2Fthetestspecimen%2Fnotebooks%2Fblob%2Fmain%2Fbayesian_gaussian_mixture_model.ipynb)[![](../Images/f8d7c9abab0134f402cd7732c7eaff36.png)](https://colab.research.google.com/github/thetestspecimen/notebooks/blob/main/bayesian_gaussian_mixture_model.ipynb)'
 - en: There are some functions that are used within the notebooks that require certain
     libraries to be reasonably up to date (specifically scikit-learn and matplotlib),
     so the following sections will describe what is needed.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 笔记本中使用的一些函数需要特定库的版本较新（特别是 scikit-learn 和 matplotlib），因此接下来的部分将描述所需的内容。
 - en: Environment Setup — Local or Deepnote
+  id: totrans-122
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 环境设置 — 本地或 Deepnote
 - en: Whether using a local environment, or Deepnote, all that is needed is to ensure
     that the appropriate version of scikit-learn and matplotlib is available. The
     easiest way to achieve this is to add it to your “requirements.txt” file.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论是使用本地环境还是 Deepnote，只需确保可用的 scikit-learn 和 matplotlib 的版本正确即可。实现这一点最简单的方法是将其添加到你的“requirements.txt”文件中。
 - en: 'For Deepnote you can create a file called “requirements.txt” in the files section
     in the right pane, and add the lines:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 Deepnote，你可以在右侧窗格的文件部分创建一个名为“requirements.txt”的文件，并添加以下内容：
 - en: '[PRE0]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: (more recent versions are also ok).
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: （更新版本也可以）。
 - en: Environment Setup — Colab
+  id: totrans-127
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 环境设置 — Colab
 - en: 'As there is no access to something like a “requirements.txt” file in Colab
     you will need to explicitly install the correct versions of scikit-learn and matplotlib.
     To do this run the following code in a blank cell to install the appropriate versions:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于在Colab中没有类似“requirements.txt”文件的访问权限，你需要显式安装正确版本的scikit-learn和matplotlib。为此，在空白单元格中运行以下代码以安装适当版本：
 - en: '[PRE1]'
+  id: totrans-129
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: (more recent versions are also ok).
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: （更新版本也可以）。
 - en: Then refresh the web page before trying to run any code, so the libraries are
     properly loaded.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后在尝试运行任何代码之前刷新网页，以确保库正确加载。
 - en: Data Exploration
+  id: totrans-132
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据探索
 - en: Before running the actual clustering it might be worth just getting a rough
     overview of the data.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进行实际聚类之前，可能值得对数据进行粗略概览。
 - en: 'There are 13 features and 178 examples for each feature (no missing or null
     data):'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个特征有13个特征和178个示例（没有缺失或空数据）：
 - en: …so a nice clean numerical dataset to get started with.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: …因此这是一个不错的干净数字数据集，可以开始使用。
 - en: The only thing that really needs changing is the scale. The range of numbers
     within each of the features varies quite a bit, so a simple [MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
     will be applied to the features so that they all sit between 0 and 1.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 唯一真正需要更改的是刻度。每个特征中的数字范围差异较大，因此将应用简单的[MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)将特征缩放到0和1之间。
 - en: Data Distribution
+  id: totrans-137
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据分布
 - en: As previously mentioned, it would be ideal if the data was at least approximately
     Gaussian to allow the Gaussian Mixture Model to work effectively. So how does
     it look?
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，理想情况下数据应该至少大致呈高斯分布，以便高斯混合模型有效工作。那么它的表现如何？
 - en: '![](../Images/7327b5fe92d14d1d0251d64d5cc27bb6.png)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7327b5fe92d14d1d0251d64d5cc27bb6.png)'
 - en: Feature data distribution — Image by author
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征数据分布 — 图片由作者提供
 - en: Now some of those look quite Gaussian (e.g. alkalinity of ash), but the reality
     is most do not. Is this a problem? Well not necessarily, as what really exists
     in a lot of cases is a ***mixture***of Gaussian distributions (or approximate
     Gaussian distributions).
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在其中一些看起来相当高斯（例如，灰分的碱度），但实际上大多数并不是。这是问题吗？不一定，因为在许多情况下，实际上存在***高斯分布混合***（或近似高斯分布）。
 - en: The whole point of the Gaussian Mixture Model is that it can find and separate
     out the individual Gaussian distributions from a mixture of more than one Gaussian
     distribution.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 高斯混合模型的关键在于它可以从多个高斯分布的混合中找到并分离出各个高斯分布。
 - en: 'In a real clustering problem you would not be able to achieve this next step,
     as you wouldn’t know the real clustering of the data. However, just for illustration
     purposes it is possible (as we know the labels) to plot each individual ‘real’
     clusters distribution:'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 在真实的聚类问题中，你无法实现下一步，因为你不会知道数据的真实聚类。然而，仅为说明目的，实际上是可以（因为我们知道标签）绘制每个“真实”簇的分布：
 - en: '![](../Images/2957b6337e73e1ea1f40b78374d2196b.png)'
+  id: totrans-144
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2957b6337e73e1ea1f40b78374d2196b.png)'
 - en: Feature data distribution by label — Image by author
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 按标签划分的特征数据分布 — 图片由作者提供
 - en: As you can now see the real clusters are in most cases approximately Gaussian.
     This is not the case across the board, but it will never be the case with real
     data. As expected, due to the data being based on “natural” data we are indeed
     dealing with approximately Gaussian data.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 如今你可以看到，真实的簇在大多数情况下大致呈高斯分布。虽然不是所有情况都是如此，但在真实数据中这种情况是不可避免的。由于数据基于“自然”数据，我们确实在处理大致高斯分布的数据。
 - en: This very basic investigation of the distribution of the raw data illustrates
     the importance of being aware of the type of data you are dealing with, and which
     tools would be best suited to the analysis. This is also a good case for the importance
     of domain experts, where appropriate.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 对原始数据分布的这一基本调查说明了了解所处理数据类型的重要性，以及哪个工具最适合分析。这也是领域专家重要性的一个很好的案例。
 - en: Feature relations
+  id: totrans-148
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 特征关系
 - en: 'Finally, a few examples of how some of the variables are distributed in relation
     to each other (if you want a more comprehensive plot please take a look at the
     Jupyter notebook):'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，展示了一些变量之间如何分布的例子（如果你想要更全面的图示，请查看Jupyter笔记本）：
 - en: '![](../Images/e3285596aa5d60f468bf2d77eaf594e7.png)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e3285596aa5d60f468bf2d77eaf594e7.png)'
 - en: An example of the distribution of data between components — Image by author
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 组件之间的数据分布示例 — 图片由作者提供
 - en: As can be seen from the scatter plots above, some features show reasonable separation.
     However, there is also quite a lot of mixing with some features, and more so on
     the periphery of each cluster. The shape (circular, elongated etc.) also varies
     quite widely.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 从上面的散点图可以看出，一些特征显示出合理的分离。然而，也有许多特征之间存在混合，尤其是在每个簇的边缘。形状（圆形、长条形等）也变化很大。
 - en: The Analysis
+  id: totrans-153
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析
 - en: '![](../Images/e1cc2074a9677a86fae0bae305924800.png)'
+  id: totrans-154
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e1cc2074a9677a86fae0bae305924800.png)'
 - en: Photo by [Artem Podrez](https://www.pexels.com/photo/a-chemist-analyzing-chemicals-on-test-tubes-in-a-laboratory-8532827/)
     from [Pexels](https://www.pexels.com/)
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Artem Podrez](https://www.pexels.com/photo/a-chemist-analyzing-chemicals-on-test-tubes-in-a-laboratory-8532827/)
+    提供，来自 [Pexels](https://www.pexels.com/)
 - en: 'As mentioned earlier, there will be three different algorithms compared:'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，将比较三种不同的算法：
 - en: K-Means (the baseline)
+  id: totrans-157
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: K-Means（基准）
 - en: Gaussian Mixture Model
+  id: totrans-158
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 高斯混合模型
 - en: Bayesian Gaussian Mixture Model
+  id: totrans-159
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型
 - en: 'There will also be three phases to the exploration:'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 探索过程将分为三个阶段：
 - en: All of the raw data analysed at once
+  id: totrans-161
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 所有原始数据一起分析
 - en: All of the data analysed after reducing complexity / features with a Principle
     Component Analysis (PCA)
+  id: totrans-162
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在通过主成分分析（PCA）降低复杂性/特征后分析所有数据
 - en: An analysis using just two features (mainly to allow easier illustration than
     using the full dataset)
+  id: totrans-163
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用仅两个特征进行的分析（主要为了比使用完整数据集更容易进行说明）
 - en: Analysis 1 — the full dataset
+  id: totrans-164
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析 1 — 完整数据集
 - en: To keep the comparison consistent, and reduce the complexity of this article
     I am going to skip a thorough investigation into how many components is the correct
     number.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了保持比较的一致性，并减少本文的复杂性，我将跳过对正确组件数量的深入调查。
 - en: 'However, just for completeness you should be aware that a crucial step in performing
     any clustering is gaining an understanding of the appropriate amount of clusters
     to use. Some common examples of how to achieve this are the [elbow method](https://en.wikipedia.org/wiki/Elbow_method_(clustering)),
     the [Bayesian Information Criterion (BIC)](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
     and the [Akaike information criterion](https://en.wikipedia.org/wiki/Akaike_information_criterion).
     As an example here are the BIC and AIC for the whole raw dataset:'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，为了完整性，你应该知道，进行任何聚类时的关键步骤是了解使用适当数量的簇。一些实现这一点的常见方法包括 [肘部法则](https://en.wikipedia.org/wiki/Elbow_method_(clustering))、[贝叶斯信息准则
+    (BIC)](https://en.wikipedia.org/wiki/Bayesian_information_criterion) 和 [赤池信息量准则](https://en.wikipedia.org/wiki/Akaike_information_criterion)。以下是整个原始数据集的
+    BIC 和 AIC 示例：
 - en: '![](../Images/42cda83eb5b83991b996464814d58c50.png)'
+  id: totrans-167
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/42cda83eb5b83991b996464814d58c50.png)'
 - en: The BIC and AIC curves for this dataset — Image by Author
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 该数据集的 BIC 和 AIC 曲线 — 图片由作者提供
 - en: The BIC would suggest two components is appropriate, but I’m not going to go
     further into this result for now. However, it will come up in discussion later
     in the article.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: BIC 结果建议两个组件是合适的，但我现在不打算进一步讨论这一结果。然而，这将在本文后续讨论中出现。
 - en: Three clusters will be assumed from now on for consistency and ease of comparison.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 从现在开始，将假设三个簇，以保持一致性和便于比较。
 - en: Let’s get stuck in!
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧！
 - en: K-Means
+  id: totrans-172
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: K-Means
 - en: '![](../Images/1245574f17b17241104524497823a9f8.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1245574f17b17241104524497823a9f8.png)'
 - en: K-Means confustion matrix — Image by author
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: K-Means 混淆矩阵 — 图片由作者提供
 - en: Well that is a fairly impressive result.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 嗯，这确实是一个相当令人印象深刻的结果。
 - en: With all data taken together there is apparently very good separation between
     clusters 1 and 3\. However, as cluster 2 generally sits between clusters 1 and
     3 (refer back to the four example scatter plots in the previous section) it would
     appear that the points on the periphery of cluster 2 are being wrongly assigned
     to clusters 1 and 3 (i.e. the boundaries between those clusters are likely incorrectly
     defined).
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 将所有数据一起考虑时，簇 1 和簇 3 之间显然有很好的分离。然而，由于簇 2 通常位于簇 1 和簇 3 之间（参考前一部分的四个示例散点图），因此簇
+    2 边缘的点可能被错误地分配到簇 1 和簇 3（即这些簇之间的边界可能定义不准确）。
 - en: Let’s see if this improves with a Gaussian Mixture Model.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看使用高斯混合模型是否有所改善。
 - en: Gaussian Mixture Model
+  id: totrans-178
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 高斯混合模型
 - en: '![](../Images/fc2196ef094c37b1773bb0e7c45bbad8.png)'
+  id: totrans-179
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fc2196ef094c37b1773bb0e7c45bbad8.png)'
 - en: Gaussian Mixture Model confusion matrix — Image by author
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 高斯混合模型混淆矩阵 — 图片由作者提供
 - en: An improvement. The Gaussian Mixture Model has managed to pick up three extra
     points and assign them correctly to cluster 2.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 有所改进。高斯混合模型成功地识别出三个额外的点，并将它们正确地分配到簇 2。
 - en: Although that doesn’t seem like a big deal, it is worth bearing in mind that
     the dataset is quite small, and using a more comprehensive dataset would likely
     yield a more impressive number of points.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然这看起来不是什么大问题，但值得注意的是数据集相当小，使用更全面的数据集可能会得到更令人印象深刻的结果。
 - en: Bayesian Gaussian Mixture Model
+  id: totrans-183
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型
 - en: 'Before producing the result, and as this is the main focus of the article,
     I think it is worth taking a little time to explain some of the relevant parameters
     that can be specified:'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 在产生结果之前，鉴于这是文章的主要焦点，我认为值得花一点时间来解释一些可以指定的相关参数：
 - en: '**n_components** — this is the number of clusters that you want the algorithm
     to consider. However, the algorithm may return, or prefer, less clusters than
     set here, which is one of the main advantages of this algorithm (we will see this
     in action soon)'
+  id: totrans-185
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**n_components** — 这是你希望算法考虑的簇数。然而，算法可能返回或更倾向于少于这里设置的簇数，这也是该算法的主要优势之一（我们很快会看到这一点）。'
 - en: '**covariance_type** — there are four options here *full*, *tied*, *diag* and
     *spherical*. The most ‘accurate’ and typically preferred is *full*. This parameter
     essentially decides the limitation of the distribution fit shape, a great illustration
     is provided [here](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html#sphx-glr-auto-examples-mixture-plot-gmm-covariances-py).'
+  id: totrans-186
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**covariance_type** — 这里有四个选项：*full*、*tied*、*diag* 和 *spherical*。最‘准确’且通常首选的是
+    *full*。这个参数本质上决定了分布拟合形状的限制，[这里](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html#sphx-glr-auto-examples-mixture-plot-gmm-covariances-py)提供了一个很好的说明。'
 - en: '**weight_concentration_prior_type** — this can either be *dirichlet_process*
     (infinite mixture model) or d*irichlet_distribution* (finite mixture model). In
     general, it is better to opt for the Dirichlet process as it is less sensitive
     to parameter changes, and does not tend to divide natural clusters into unnecessary
     sub-components as the Dirichlet distribution can sometimes do.'
+  id: totrans-187
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**weight_concentration_prior_type** — 这可以是 *dirichlet_process*（无限混合模型）或 *dirichlet_distribution*（有限混合模型）。一般来说，选择Dirichlet过程更好，因为它对参数变化不那么敏感，并且不容易将自然簇划分为不必要的子组件，而Dirichlet分布有时可能会这样做。'
 - en: '**weight_concentration_prior** — specifying a low value (e.g. 0.01) will cause
     the model to set a larger number of components to zero leaving just a few components
     remaining with significant value. High values (e.g. 100000) will tend to allow
     a larger number of components to remain active with relevant values i.e. less
     components will be set to zero.'
+  id: totrans-188
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**weight_concentration_prior** — 指定一个低值（例如0.01）将使模型将更多的组件设置为零，只留下几个具有显著值的组件。高值（例如100000）则倾向于保留更多的活动组件并具有相关值，即较少的组件被设置为零。'
 - en: As there are quite a lot of extra parameters it may be wise to perform cross
     validation analysis in some cases. For example, in this initial run covariance_type
     will be set to ‘diag’ rather than ‘full’ as the suggested cluster number is more
     convincing. I suspect in this specific case this is due to a combination of a
     smaller dataset, and a large number of features causing the ‘full’ covariance
     type to over-fit.
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于额外参数较多，在某些情况下进行交叉验证分析可能是明智的。例如，在这次初步运行中，covariance_type 将设置为‘diag’而非‘full’，因为建议的簇数更具说服力。我怀疑在这种特定情况下，这可能是由于数据集较小以及特征数量较多，导致‘full’协方差类型出现过拟合。
 - en: 'It is now possible to review what the algorithm has decided in terms of relevant
     clusters. This is possible by extracting the weights from the fitted model:'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在可以审查算法在相关簇方面所做的决定。这可以通过从拟合模型中提取权重来实现。
 - en: 'A bit more clearly in graph form:'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 更清晰地以图形形式展示：
 - en: '![](../Images/17cad7c7d61780fedb0aac10ae7bda39.png)'
+  id: totrans-192
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/17cad7c7d61780fedb0aac10ae7bda39.png)'
 - en: Bayesian Gaussian Mixture Model group weights — Image by author
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型组权重 — 图片由作者提供
 - en: To be honest, not very convincing.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 老实说，这并不是很有说服力。
 - en: It is clear that there are three clusters ahead of the rest, but this is only
     intuitive because the answer is known. The truth is it is not very clear. So why
     is this?
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 很明显，前面有三个簇领先于其他簇，但这只是因为答案已知才直观。事实上，这并不是很清楚。那么为什么会这样呢？
 - en: The main reason is likely due to a combination of lack of data, and a high number
     of features (at least compared to the amount of data).
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 主要原因可能是数据缺乏和特征数量过多（至少相比于数据量）的结合。
 - en: Lack of data will cause items such as outliers to have a much larger effect
     on the overall distribution, but also reduce the models ability to generate a
     distribution in the first place.
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据不足会导致像异常值这样的项对整体分布产生更大的影响，同时也减少了模型生成分布的能力。
 - en: In the sections that follow we will look at a way to potentially combat this,
     and also at analysing a smaller selection of features to see what result we get
     in those circumstances.
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的部分，我们将探讨可能的解决方案，并分析更小的特征选择，以查看在这些情况下的结果。
 - en: For now, as we know the correct number of components is three we will push on.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前，既然我们知道正确的组件数量是三个，我们将继续前进。
 - en: '![](../Images/498a7e4d4b5f3b24923485b83caa147a.png)'
+  id: totrans-200
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/498a7e4d4b5f3b24923485b83caa147a.png)'
 - en: Bayesian Gaussian Mixture Model confusion matrix — Image by author
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型混淆矩阵 — 作者提供的图片
 - en: Almost perfect clustering. Only two points remain incorrectly assigned.
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: 几乎完美的聚类。仅有两个点仍被错误分配。
 - en: Let’s take a quick look at an overall comparison.
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们快速查看一下总体比较。
 - en: '![](../Images/753353ed02cca979e6d5d3d84d5e99e3.png)'
+  id: totrans-204
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/753353ed02cca979e6d5d3d84d5e99e3.png)'
 - en: Accuracy comparison of the different clustering methods — Image by author
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同聚类方法的准确性比较 — 作者提供的图片
 - en: Discussion
+  id: totrans-206
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 讨论
 - en: As can be seen from the accuracy results, there is a gradual improvement from
     one method to the next. This goes to show that understanding the structure of
     the underlying data is important, as it allows a more accurate representation
     of the patterns within the raw data, in our case Gaussian distributions.
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 从准确率结果可以看出，从一种方法到另一种方法有逐渐改进。这表明理解数据的基本结构很重要，因为它可以更准确地表示原始数据中的模式，在我们这里是高斯分布。
 - en: Even within the realm of Gaussian Mixture Models, it is also clear (at least
     in this case) that the use of variational inference in the Bayesian Gaussian Mixture
     Model can yield more accurate results than expectation-maximisation.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使在高斯混合模型的范围内，也可以清楚地看到（至少在这种情况下），贝叶斯高斯混合模型中使用变分推断可以比期望最大化方法获得更准确的结果。
 - en: All of this was expected, but it is interesting to see nonetheless.
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有这些都是预期中的，但看到这些结果仍然很有趣。
 - en: Visualisation
+  id: totrans-210
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化
 - en: To give a general overview of what exactly the Gaussian algorithms are doing,
     I have plotted the feature “alcohol” against each of the other features, and also
     included the confidence ellipses of the Bayesian Gaussian Mixture Model on each
     plot for each of the three clusters.
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了概述高斯算法究竟在做什么，我将特征“酒精”与其他每个特征进行了对比，并在每个图上为每个三簇包含了贝叶斯高斯混合模型的置信椭圆。
 - en: '***Note:*** *the algorithm used to draw the confidence ellipses is adapted
     from* [*this algorithm*](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm.html)
     *provided in the scikit-learn documentation.*'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: '***注意：*** *绘制置信椭圆所使用的算法改编自* [*这个算法*](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm.html)
+    *，该算法在 scikit-learn 文档中提供。*'
 - en: '![](../Images/0a66fef771997685b32ef8fdb07c49b9.png)'
+  id: totrans-213
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0a66fef771997685b32ef8fdb07c49b9.png)'
 - en: Although this is interesting to look at, and does do a good job of showing how
     the algorithm can account for the various shapes of the clusters (i.e. round,
     of more elongated ellipses) it doesn’t allow any sort of understanding as to what
     factors may have influenced the outcome.
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管这很有趣，且很好地展示了算法如何处理不同形状的簇（即圆形或更长的椭圆形），但它并没有提供任何关于可能影响结果的因素的理解。
 - en: This is mainly due to the fact that there are too many dimensions to deal with
     (i.e. too many features) in terms of representing the output as something interpretable.
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: 这主要是因为在将输出表示为可解释的内容时，需要处理的维度（即特征）过多。
 - en: Better visualisation and further investigation
+  id: totrans-216
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更好的可视化和进一步的调查
 - en: It would be interesting to visualise and compare the distributions produced
     by the various methods in a clear and concise way, so that it is possible to see
     exactly what is going on under the hood.
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: 将各种方法生成的分布以清晰简洁的方式进行可视化和比较，将是很有趣的，这样可以准确地看到背后发生了什么。
 - en: However, due to the large amount of features (and therefore dimensions) the
     model is processing, it is not possible to represent what is going on in a simple
     2D graph, as has just been illustrated in the previous section.
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，由于模型正在处理大量特征（因此维度也很多），无法用简单的2D图形来表示正在发生的情况，正如前一节所示。
 - en: 'With this in mind the aim of the next two sections of this article is to simplify
     the analysis by reducing the dimensions. The following two sections of this article
     will therefore look into:'
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于此，本文接下来的两个部分的目标是通过减少维度来简化分析。因此，接下来的两个部分将关注：
 - en: the use of a two component Principle Component Analysis (PCA). This will allow
     all of the thirteen features to be distilled into two features, whilst keeping
     the ***majority*** of the important information embedded in the data.
+  id: totrans-220
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用两个组件的主成分分析（PCA）。这将允许将所有十三个特征提炼为两个特征，同时保留数据中嵌入的***大部分***重要信息。
 - en: specifically using only two features to run the analysis.
+  id: totrans-221
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 专门仅使用两个特征进行分析。
 - en: Both of these investigations will allow a direct visualisation of the clusters
     as there are only two components, and therefore it is then possible to plot them
     on a standard 2D graph.
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两项调查将允许对这些簇进行直接可视化，因为只有两个组件，因此可以将它们绘制在标准的2D图上。
 - en: Furthermore, these approaches will potentially make it easier to use the Bayesian
     Gaussian Mixture Model’s automatic cluster selection more effectively, as the
     amount of features in relation to the number of examples is more in balance.
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，这些方法将可能使得贝叶斯高斯混合模型的自动簇选择更加有效，因为特征数量与示例数量的关系更加平衡。
 - en: Analysis 2 — Principle Component Analysis (PCA)
+  id: totrans-224
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析2 — 主成分分析（PCA）
 - en: By running a two component Principle Component Analysis (PCA) the 13 features
     can be compressed down to 2 components.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过运行两个组件的主成分分析（PCA），13个特征可以压缩为2个组件。
 - en: 'The main aims for this section are as follows:'
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节的主要目标如下：
 - en: Gain insights into the data distribution from the reduced complexity afforded
     by the PCA before analysis.
+  id: totrans-227
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从PCA降低复杂性所提供的数据分布中获取见解。
 - en: Review the automatic component selection generated by the Baysian Gaussian Mixture
     Model from the PCA dataset.
+  id: totrans-228
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 审查由贝叶斯高斯混合模型从PCA数据集中生成的自动组件选择。
 - en: Run the Bayesian Gaussian Mixture Model on the two PCA components, and review
     the clustering result in 2D graph form.
+  id: totrans-229
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在两个PCA组件上运行贝叶斯高斯混合模型，并以2D图形形式审查聚类结果。
 - en: The result of the PCA
+  id: totrans-230
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: PCA的结果
 - en: '![](../Images/51c1da959333213c5eaca7385b619c4e.png)'
+  id: totrans-231
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/51c1da959333213c5eaca7385b619c4e.png)'
 - en: The two components of the PCA on all the data with distributions (colours are
     real label clusters) — Image by Author
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: PCA对所有数据的两个组件及其分布（颜色为实际标签簇）— 图片由作者提供
 - en: The result of the PCA is interesting for quite a few reasons.
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: PCA的结果因多种原因而有趣。
 - en: Firstly, the distribution of the primary PCA component (and to some degree the
     secondary PCA component) is very close to a Gaussian distribution for all three
     components. Mirroring what we have discovered from the data investigation earlier
     in the article.
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，主要PCA组件（以及在某种程度上次要PCA组件）的分布与高斯分布非常接近，所有三个组件均如此。这与我们在文章早期数据调查中发现的情况相吻合。
 - en: Remembering for a second that the PCA is a distillation of all of the features,
     it is interesting to see that there is good separation between the three real
     clusters. This means there is a very good possibility that a clustering algorithm
     that targets the data well (regardless of the PCA) has the potential to achieve
     a good and accurate separation of the clusters.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住PCA是所有特征的提炼，看到三个真实簇之间有很好的分离是有趣的。这意味着有很大的可能性，一个针对数据良好的聚类算法（不管PCA如何）有潜力实现簇的良好和准确分离。
 - en: However, the clusters are close enough, that if the clustering algorithm does
     not represent the distribution, or shape, of the clusters correctly, there is
     no guarantee that the boundary between the clusters will be found accurately.
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这些簇距离足够近，如果聚类算法不能正确表示簇的分布或形状，则不能保证簇之间的边界会被准确找到。
 - en: For example, the distribution of cluster 1 is quite clearly elongated along
     the y-axis. Any algorithm would need to mimic this elongated shape to represent
     that particular cluster correctly.
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，簇1的分布沿y轴明显拉长。任何算法都需要模仿这种拉长的形状，以正确表示该簇。
 - en: Automatic Clusters
+  id: totrans-238
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自动簇
 - en: In the initial analysis the automatic estimation of the correct number of clusters
     was a little ambiguous. Now that the data complexity has been reduced let’s see
     if there is any improvement.
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: 在初步分析中，自动估计正确的簇数有些模糊。现在数据复杂性已降低，我们来看看是否有所改善。
 - en: 'Again, the inputs request 8 components:'
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，输入请求8个组件：
 - en: '![](../Images/437868a7c7cd34a4e34812c293cae83d.png)'
+  id: totrans-241
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/437868a7c7cd34a4e34812c293cae83d.png)'
 - en: The weights of each of the 8 requested clusters — Image by Author
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: 8 个请求簇的权重 — 作者提供的图像
 - en: …and there we are. A very clear indication that even though the model was set
     up to consider up to 8 clusters, the algorithm clearly thinks that the actual
     appropriate number of clusters is 3\. Which we of course know to be correct.
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: …我们到此为止。非常清楚的表明，尽管模型设置为考虑多达 8 个簇，算法显然认为实际合适的簇数是 3。这一点我们当然知道是正确的。
 - en: This goes some way to indicate that for the Bayesian Gaussian Mixture Model
     to work effectively, in terms of automatic cluster selection, it is necessary
     to consider whether the dataset is large enough to generate a reasonable and definitive
     result if the number of clusters is not already known.
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: 这在一定程度上表明，为了让贝叶斯高斯混合模型有效工作，在自动簇选择方面，有必要考虑数据集是否足够大，以生成合理和明确的结果，如果簇的数量尚未确定。
 - en: The result
+  id: totrans-245
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结果
 - en: For completeness let’s see how the clustering for the Bayesian Gaussian Mixture
     Model of the PCA went.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了完整性，让我们看看 PCA 的贝叶斯高斯混合模型的聚类结果如何。
 - en: '![](../Images/c9b0c1bff6bc78e738c7554e48f4efde.png)'
+  id: totrans-247
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c9b0c1bff6bc78e738c7554e48f4efde.png)'
 - en: Bayesian Gaussian Mixture Model (PCA) confusion matrix — Image by author
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型 (PCA) 混淆矩阵 — 作者提供的图像
 - en: A definite accuracy drop when compared to using the raw data. This is of course
     expected. By running a PCA we are definitely losing data, there is no avoiding
     that, and in this case it is enough to introduce an additional 5 misassigned data
     points.
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: 与使用原始数据相比，准确度明显下降。这是可以预期的。通过运行 PCA，我们确实会丢失数据，这一点无法避免，在这种情况下，足以引入额外的 5 个错误分配的数据点。
 - en: Let’s look at this visually in a little more detail.
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从视觉上更详细地看一下。
 - en: '![](../Images/796ddef9ed81b7c82c0acd49d35e9b1a.png)'
+  id: totrans-251
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/796ddef9ed81b7c82c0acd49d35e9b1a.png)'
 - en: Bayesian Gaussian Mixing of a two component PCA (mismatched points ringed red)
     — Mismatched points from original analysis of all data ringed in blue — Image
     by Author
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合的两个成分 PCA（错误匹配的点被红色圈出） — 原始分析中的错误匹配点被蓝色圈出 — 作者提供的图像
 - en: 'The graph above has a lot going on, so let’s break this down:'
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的图表信息量很大，所以让我们逐步解析：
 - en: the coloured dots are the clusters that the PCA data was assigned to by the
     algorithm.
+  id: totrans-254
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 彩色点表示的是 PCA 数据被算法分配到的簇。
 - en: the large shaded ellipses are the confidence ellipses, which essentially state
     the shape of the underlying distribution generated by the algorithm (co-variances).
+  id: totrans-255
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 大的阴影椭圆是置信椭球体，它们基本上表示了由算法生成的底层分布的形状（协方差）。
 - en: the red circles are the data points that have been misassigned by the Bayesian
     Gaussian Mixing Model from the PCA analysis.
+  id: totrans-256
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 红色圆圈表示的是在 PCA 分析中，由贝叶斯高斯混合模型错误分配的数据点。
 - en: the blue circles are the data points that were misassigned by the Bayesian Gaussian
     Mixing Model in the original analysis that used all of the raw data.
+  id: totrans-257
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 蓝色圆圈表示的是在原始分析中，由贝叶斯高斯混合模型错误分配的数据点，这些原始分析使用了所有的原始数据。
 - en: What is particularly interesting is that by running the PCA analysis, and likely
     due to the inherent loss of data, it forces some data points to be shifted well
     within the clusters / confidence ellipses that are generated (look at the orange
     point labelled with text, and dot circled blue within the green confidence ellipsoid).
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别有趣的是，通过运行 PCA 分析，并且可能由于数据固有的损失，它迫使一些数据点被移动到生成的簇/置信椭球体内部（查看带有文本标注的橙色点和在绿色置信椭球体内被蓝色圆圈圈出的点）。
 - en: In the case of the blue circled green point it helped, it is an improvement
     over the original ‘all raw data’ analysis. However, it is quite clear the orange
     point that is misassigned would never be correctly assigned, as it too well embedded
     within the orange cluster, when in fact it should be in the green cluster. However,
     the original analysis correctly assigned this data point to the green cluster.
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于被蓝色圆圈标出的绿色点来说，它有所帮助，相比原始的“所有原始数据”分析有所改进。然而，橙色点明显被错误分配，它永远不会被正确分配，因为它过于嵌入在橙色簇中，而实际上它应该在绿色簇中。然而，原始分析正确地将此数据点分配到绿色簇中。
 - en: PCA Summary
+  id: totrans-260
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: PCA 摘要
 - en: In this particular case, it was useful with a smaller dataset to run a PCA to
     help the Bayesian Gaussian Mixture Model fix on an appropriate number of clusters.
     Even as an aid in getting a good visual grasp of how the dataset is distributed,
     it is potentially very useful.
+  id: totrans-261
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种特定情况下，使用较小的数据集运行PCA有助于贝叶斯Gaussian混合模型确定适当的簇数量。即使作为帮助更好地可视化数据集的分布，这也是非常有用的。
 - en: However, it would not be an optimal solution to use the data generated by the
     PCA as a final input into the analysis. It is clear that the data shift / loss
     is sufficient enough as to potentially make some data points permanently wrongly
     assigned, and the overall accuracy is also reduced.
+  id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，使用PCA生成的数据作为分析的最终输入并不是最佳解决方案。数据的偏移/丢失足以使某些数据点永久性地错误分配，并且整体准确性也降低。
 - en: Analysis 3 — Fewer features
+  id: totrans-263
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析3—较少的特征
 - en: To take a closer look at the differences between the three clustering algorithms
     two specific features will be extracted, and the clustering algorithms run on
     only those features.
+  id: totrans-264
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更仔细地查看三种聚类算法之间的差异，将提取两个特定特征，并仅在这些特征上运行聚类算法。
 - en: The advantage of this in terms of reviewing the methods, is that it becomes
     possible to visualise what is going on a 2D-plane (i.e. a normal 2D graph).
+  id: totrans-265
   prefs: []
   type: TYPE_NORMAL
+  zh: 从审查方法的角度来看，这种优势在于可以在二维平面上（即普通的二维图表）可视化发生了什么。
 - en: An added bonus, is that the available data has much less information than the
     whole dataset. This both reduces the discrepancy between the small number of samples
     and the number of features, whilst also forcing the clustering algorithms to work
     much harder to achieve an appropriate fit due to the reduced information.
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: 附加的好处是，现有的数据比整个数据集包含的信息要少得多。这不仅减少了样本数量少与特征数量之间的差异，还迫使聚类算法在减少信息的情况下更努力地工作以实现适当的拟合。
 - en: A closer look at the data
+  id: totrans-267
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更详细地查看数据
 - en: '![](../Images/5f8ed9534f61d43a3cbab46607faced8.png)'
+  id: totrans-268
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5f8ed9534f61d43a3cbab46607faced8.png)'
 - en: Colour intensity vs OD280/OD315 of diluted wines (raw data with labels) — Image
     by author
+  id: totrans-269
   prefs: []
   type: TYPE_NORMAL
+  zh: 稀释酒的颜色强度与OD280/OD315（原始数据带标签）— 作者提供的图像
 - en: The reason for picking this pair (colour intensity and OD280/OD315 of diluted
     wines) is due to the challenges the dataset throws up for the different clustering
     algorithms.
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择这一对（颜色强度和稀释酒的OD280/OD315）的原因是数据集对不同的聚类算法提出了挑战。
 - en: As you can see there are two clusters that are fairly intermingled (1 & 2).
     In addition, clusters 2 & 3 have quite elongated distributions compared to cluster
     1, which is more rounded, or circular.
+  id: totrans-271
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，有两个相当交织的簇（1和2）。此外，与更加圆形的簇1相比，簇2和簇3的分布较为拉长。
 - en: In theory, the Gaussian mixing methods should fair quite a bit better than K-Means
     as they have the ability to accurately mould their distribution characteristics
     to the elongated distributions, whereas K-Means cannot, as it is limited to a
     circular representation.
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: 理论上，Gaussian混合方法应该比K均值表现得更好，因为它们能够准确地调整其分布特征以适应拉长的分布，而K均值则不能，因为它仅限于圆形表示。
 - en: Furthermore, from the KDE plots at each side of the graph it is possible to
     see that the data distribution is reasonably Gaussian as we have confirmed a few
     times before in this article.
+  id: totrans-273
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，从图表两侧的KDE图中可以看到，数据分布是相当接近高斯分布的，正如我们在本文中之前确认过的那样。
 - en: K-Means — Results
+  id: totrans-274
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: K均值—结果
 - en: '![](../Images/9c36810830ac0f34a12dffa3c045ce4d.png)'
+  id: totrans-275
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c36810830ac0f34a12dffa3c045ce4d.png)'
 - en: Confusion matrix for the K-Means - Reduced features — Image by author
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: K均值的混淆矩阵—减少特征—作者提供的图像
 - en: Gaussian Mixture Model — Results
+  id: totrans-277
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Gaussian混合模型—结果
 - en: '![](../Images/a03a45755258f45732976454846c20e8.png)'
+  id: totrans-278
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a03a45755258f45732976454846c20e8.png)'
 - en: Confusion matrix for the Gaussian Mixture Model — Reduced features — Image by
     author
+  id: totrans-279
   prefs: []
   type: TYPE_NORMAL
+  zh: Gaussian混合模型的混淆矩阵—减少特征—作者提供的图像
 - en: Bayesian Gaussian Mixture Model — Component selection
+  id: totrans-280
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝叶斯Gaussian混合模型—组件选择
 - en: Before diving straight into the results, as the Bayesian Gaussian Mixture Model
     has the ability to auto-select the appropriate number of components we will again
     ‘request’ 8 components and see what the model suggests.
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: 在直接进入结果之前，由于贝叶斯Gaussian混合模型有能力自动选择适当的组件数量，我们将再次‘请求’8个组件，并查看模型的建议。
 - en: '![](../Images/a20ad9ed4481170344df5ff3cb58d8f8.png)'
+  id: totrans-282
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a20ad9ed4481170344df5ff3cb58d8f8.png)'
 - en: Component selection for the Bayesian Gaussian Mixture Model with two features
     only — Image by author
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅使用两个特征的贝叶斯Gaussian混合模型的组件选择—作者提供的图像
 - en: As previously seen with the reduced complexity of the PCA analysis, the model
     has found it much easier to distinguish the 3 clusters that are known to exist.
+  id: totrans-284
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如之前在降维PCA分析中看到的那样，模型发现区分已知存在的3个簇要容易得多。
 - en: 'This would fairly conclusively confirm that:'
+  id: totrans-285
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以相当明确地确认：
 - en: it is necessary to have sufficient data samples to ensure that the model can
     stand a decent chance of offering the correct suggestion for number of clusters.
     This is likely due to the need to have enough data to properly represent the underlying
     distribution. In this case Gaussian.
+  id: totrans-286
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 必须拥有足够的数据样本，以确保模型能够有一定的机会提供正确的簇数建议。这可能是由于需要足够的数据来正确表示底层分布。在这种情况下是高斯分布。
 - en: a potential way to combat lack of samples is to in some way simplify or generalise
     the data to try and extract the appropriate number of clusters, and then revert
     to the full dataset for a final full clustering analysis
+  id: totrans-287
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对抗样本不足的一种潜在方法是以某种方式简化或概括数据，以尝试提取适当数量的簇，然后再回到完整数据集进行最终的全面聚类分析。
 - en: Bayesian Gaussian Mixture Model — Results
+  id: totrans-288
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型 — 结果
 - en: '![](../Images/1b7904fef6da253611770b634d724c61.png)'
+  id: totrans-289
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1b7904fef6da253611770b634d724c61.png)'
 - en: Confusion matrix for the Bayesian Gaussian Mixture Model — Reduced features
     — Image by author
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯高斯混合模型的混淆矩阵 — 降维特征 — 图片由作者提供
 - en: Final results comparison
+  id: totrans-291
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最终结果比较
 - en: '![](../Images/6de741d5d4023807dcda878d84a6807e.png)'
+  id: totrans-292
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6de741d5d4023807dcda878d84a6807e.png)'
 - en: The accuracy of each clustering method for features colour intensity and OD280/OD315
     of diluted wines — Image by author
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
+  zh: 每种聚类方法在特征颜色强度和OD280/OD315的稀释酒中的准确性 — 图片由作者提供
 - en: As expected, the accuracy is a lot lower than when using the full dataset. However,
     regardless of this fact, there are some stark differences between the accuracy
     of the various methods.
+  id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如预期的那样，准确率远低于使用完整数据集时的准确率。然而，尽管如此，各种方法的准确率之间存在一些明显的差异。
 - en: Let’s dig a little deeper by comparing everything side-by-side.
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过并排比较进一步探讨。
 - en: '![](../Images/c5a4729c50f0f7fc725ad35a7efe9763.png)'
+  id: totrans-296
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c5a4729c50f0f7fc725ad35a7efe9763.png)'
 - en: A comparison of the assignment of clusters for each of the three clustering
     methods — Cluster 1 (red) / Cluster 2 (orange/green) / Cluster 3 (grey/blue) —
     Image by author
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
+  zh: 对三种聚类方法中每种簇的分配进行比较 — 簇1（红色）/ 簇2（橙色/绿色）/ 簇3（灰色/蓝色） — 图片由作者提供
 - en: The first thing to note is that the real labels show that there is a certain
     amount of fairly deep mixing / crossover between the clusters in some instances,
     so 100% accuracy is out of the question.
+  id: totrans-298
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先要注意的是，真实标签显示在某些情况下簇之间存在相当深的混合/交叉，因此100%的准确率是不可能的。
 - en: 'Reference for the following discussion:'
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下讨论的参考：
 - en: Cluster 1 — Red
+  id: totrans-300
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 簇1 — 红色
 - en: Cluster 2 — Orange/Green
+  id: totrans-301
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 簇2 — 橙色/绿色
 - en: Cluster 3 — Grey/Blue
+  id: totrans-302
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 簇3 — 灰色/蓝色
 - en: '***K-means***'
+  id: totrans-303
   prefs: []
   type: TYPE_NORMAL
+  zh: '***K-means***'
 - en: K-means does a reasonable job of splitting out the clusters, but due to the
     fact that the distributions must ultimately be limited to a circular shape, there
     was never any hope of accurately capturing clusters 2 or 3 precisely.
+  id: totrans-304
   prefs: []
   type: TYPE_NORMAL
+  zh: K-means在分离簇方面表现尚可，但由于分布必须最终限制为圆形，因此从未有准确捕捉簇2或簇3的希望。
 - en: However, as cluster 3 is quite well separated from the other two, the elongated
     shape is less of a hindrance. A circular representation of the lower cluster is
     actually sufficient, and gives a comparable representation to the Gaussian methods.
+  id: totrans-305
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，由于第3簇与其他两个簇有很好的分离，延长的形状成为的障碍较小。实际上，对下部簇的圆形表示就足够了，并且与高斯方法提供了类似的表示。
 - en: When considering clusters 1 and 2 the K-Means method fails to sufficiently represent
     the data. It has an inherent inability to properly represent the elliptical shape
     of cluster 2\. This causes cluster 2 to be ‘squashed’ down in between clusters
     1 and 3 as the real extension upwards cannot be sufficiently described by the
     K-Mean algorithm.
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
+  zh: 在考虑簇1和簇2时，K-Means方法未能充分表示数据。它固有地无法正确表示簇2的椭圆形状。这导致簇2在簇1和簇3之间被“压缩”，因为K-Means算法无法充分描述真实的向上扩展。
 - en: '***Gaussian Mixture Model***'
+  id: totrans-307
   prefs: []
   type: TYPE_NORMAL
+  zh: '***高斯混合模型***'
 - en: The basic Gaussian Mixture Model is only a slight improvement in this case.
+  id: totrans-308
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本的高斯混合模型在这种情况下只是略有改进。
 - en: As discussed in the previous section for K-Means, even though the distribution
     of cluster 3 is better suited to an elliptical rather than circular distribution,
     it is of no advantage in this particular scenario.
+  id: totrans-309
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如上一节对K均值算法的讨论，即使集群3的分布更适合椭圆形而非圆形分布，在这个特定场景中也没有优势。
 - en: However, when looking at the representation of cluster 1 and 2, which are significantly
     more intertwined, the ability of the Gaussian Mixture Model to represent the underlying
     elliptical distribution (i.e. better capturing the underlying tails of the Gaussian
     distribution) of cluster 2 more accurately, results in a slight increase in accuracy.
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，当查看集群1和集群2的表示时，由于集群2的底层椭圆分布（即更好地捕捉高斯分布的尾部）能够更准确地表示，从而导致准确性略微提高。
 - en: '***Bayesian Gaussian Mixture Model***'
+  id: totrans-311
   prefs: []
   type: TYPE_NORMAL
+  zh: '***贝叶斯高斯混合模型***'
 - en: For a start, the more than 10% improvement in accuracy of the Bayesian Gaussian
     Mixture Model compared to the other methods is certainly impressive as a lone
     statistic.
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，贝叶斯高斯混合模型相比其他方法在准确性上的提高超过了10%，这作为一个单一统计数字确实令人印象深刻。
 - en: On review of the confidence ellipsoids it becomes clear why this is the case.
     Cluster 2 has been represented both in terms of shape, tilt and size just about
     as perfectly as it could be. This has allowed for a very accurate representation
     of the real clusters.
+  id: totrans-313
   prefs: []
   type: TYPE_NORMAL
+  zh: 在审视置信椭球体时，变得清晰明了为何会如此。集群2在形状、倾斜度和大小方面几乎被完美表示。这使得实际集群的表示非常准确。
 - en: Although the exact reasons for this will always be slightly opaque, it is most
     definitely down to the differences between the expectation-maximisation algorithm
     used by the standard Gaussian Mixture Model, and the variational inference used
     by the Bayesian Gaussian Mixture Model.
+  id: totrans-314
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管确切原因总是略显模糊，但这无疑与标准高斯混合模型使用的期望最大化算法和贝叶斯高斯混合模型使用的变分推断之间的差异有关。
 - en: 'As discussed earlier in the article, the main differences are:'
+  id: totrans-315
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如文章前面所讨论的，主要区别在于：
 - en: the in built regularisation
+  id: totrans-316
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 内置正则化
 - en: less tendency for variational inference to generate ‘marginally correct’ solutions
     to the problem
+  id: totrans-317
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 变分推断产生“边际正确”解决方案的倾向较小
 - en: Conclusion
+  id: totrans-318
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: It is quite clear that the use of Gaussian Mixture Models can help to elevate
     the accuracy of the clustering of data that is likely to have Gaussian distributions
     as it’s underpinning.
+  id: totrans-319
   prefs: []
   type: TYPE_NORMAL
+  zh: 很明显，使用高斯混合模型可以帮助提升聚类的准确性，特别是对于那些可能以高斯分布为基础的数据。
 - en: This is particularly relevant and useful for natural processes, including human
     processes, which make this analytical approach relevant to a large number of industries,
     across a wide variety of fields.
+  id: totrans-320
   prefs: []
   type: TYPE_NORMAL
+  zh: 这对于自然过程，包括人类过程尤其相关且有用，使得这种分析方法在大量行业中具有广泛的适用性。
 - en: Furthermore, the introduction of variational inference in the Bayesian Gaussian
     Mixture Model can, with very little difference in overhead, return further improved
     accuracy in clustering. There is even the, not so insignificant bonus, of the
     algorithm having the ability to suggest the appropriate amount of clusters for
     the underlying data.
+  id: totrans-321
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，在贝叶斯高斯混合模型中引入变分推断，可以在几乎没有额外开销的情况下，进一步提高聚类的准确性。算法甚至有一个不容忽视的额外好处，即它能够建议底层数据的适当聚类数量。
 - en: I hope this article has provided you with a decent insight into what Gaussian
     Mixing Models and Bayesian Gaussian Mixture Models are, and whether they may help
     with data you are working with.
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章能为你提供对高斯混合模型和贝叶斯高斯混合模型的良好理解，以及它们是否能帮助你处理的数据。
 - en: They really are a powerful tool if used appropriately.
+  id: totrans-323
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果使用得当，它们确实是一种强大的工具。
 - en: If you found this article interesting or useful, remember to follow me, or [sign
     up for my newsletter](https://medium.com/@maclayton/subscribe) for more content
     like this.
+  id: totrans-324
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你觉得这篇文章有趣或有用，记得关注我，或[订阅我的新闻通讯](https://medium.com/@maclayton/subscribe)，获取更多类似内容。
 - en: If you haven’t already, you could also consider [subscribing to Medium](https://medium.com/@maclayton/membership).
     Your membership fee directly supports, not just me, but other writers you read
     too. You’ll also get full unrestricted access to every story on Medium.
+  id: totrans-325
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你还没有，你也可以考虑[订阅 Medium](https://medium.com/@maclayton/membership)。你的会员费用不仅直接支持我，还支持你阅读的其他作家。你还将获得对
+    Medium 上每个故事的全面无限制访问权限。
 - en: Using my referral link to sign up will grant me a small kickback with zero effect
     on your membership, so thank you if you choose to do so.
+  id: totrans-326
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用我的推荐链接注册将使我获得少量佣金，而不会对你的会员资格产生任何影响，所以如果你选择这样做，我会非常感谢。
 - en: '[](https://medium.com/@maclayton/membership?source=post_page-----2ef8bb2d603f--------------------------------)
     [## Join Medium with my referral link - Mike Clayton'
+  id: totrans-327
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@maclayton/membership?source=post_page-----2ef8bb2d603f--------------------------------)
+    [## 使用我的推荐链接加入Medium - Mike Clayton'
 - en: Read every story from Mike Clayton (and thousands of other writers on Medium).
     Your membership fee directly supports…
+  id: totrans-328
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读Mike Clayton的每一篇故事（以及Medium上成千上万其他作家的作品）。你的会员费用直接支持……
 - en: medium.com](https://medium.com/@maclayton/membership?source=post_page-----2ef8bb2d603f--------------------------------)
+  id: totrans-329
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@maclayton/membership?source=post_page-----2ef8bb2d603f--------------------------------)
 - en: References
+  id: totrans-330
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考资料
 - en: '[1] Riccardo Leardi, [Wine](https://archive-beta.ics.uci.edu/dataset/109/wine)
     (1991), UC Irvine Machine Learning Repository, License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode)'
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Riccardo Leardi, [Wine](https://archive-beta.ics.uci.edu/dataset/109/wine)
+    (1991), UC Irvine机器学习库, 许可协议: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode)'

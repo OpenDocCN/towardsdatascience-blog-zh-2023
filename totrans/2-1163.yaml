@@ -1,35 +1,55 @@
 - en: How to Detect Data Drift with Hypothesis Testing
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何通过假设检验检测数据漂移
 - en: 原文：[https://towardsdatascience.com/how-to-detect-data-drift-with-hypothesis-testing-1a3be3f8e625](https://towardsdatascience.com/how-to-detect-data-drift-with-hypothesis-testing-1a3be3f8e625)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-detect-data-drift-with-hypothesis-testing-1a3be3f8e625](https://towardsdatascience.com/how-to-detect-data-drift-with-hypothesis-testing-1a3be3f8e625)
 - en: MLOps
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MLOps
 - en: 'Hint: forget about the p-values'
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 提示：忘记p值吧
 - en: '[](https://michaloleszak.medium.com/?source=post_page-----1a3be3f8e625--------------------------------)[![Michał
     Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----1a3be3f8e625--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a3be3f8e625--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a3be3f8e625--------------------------------)
     [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----1a3be3f8e625--------------------------------)'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://michaloleszak.medium.com/?source=post_page-----1a3be3f8e625--------------------------------)[![Michał
+    Oleszak](../Images/61b32e70cec4ba54612a8ca22e977176.png)](https://michaloleszak.medium.com/?source=post_page-----1a3be3f8e625--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a3be3f8e625--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a3be3f8e625--------------------------------)
+    [Michał Oleszak](https://michaloleszak.medium.com/?source=post_page-----1a3be3f8e625--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a3be3f8e625--------------------------------)
     ·18 min read·May 17, 2023
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a3be3f8e625--------------------------------)
+    ·18分钟阅读·2023年5月17日
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/11cc327d0c01a9d68a28e474497e8023.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/11cc327d0c01a9d68a28e474497e8023.png)'
 - en: 'Data drift is a concern to anyone with a machine learning model serving live
     predictions. The world changes, and as the consumers’ tastes or demographics shift,
     the model starts receiving feature values different from what it has seen in training,
@@ -37,222 +57,318 @@
     simple: we just need to decide whether the training and serving distributions
     of the feature in question are the same or not. There are statistical tests for
     this, right? Well, there are, but are you sure you are using them correctly?'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据漂移是任何使用机器学习模型进行实时预测的人的一个担忧。世界在不断变化，随着消费者的口味或人口统计特征的变化，模型开始接收到与训练时不同的特征值，这可能导致意外的输出。检测特征漂移看起来很简单：我们只需确定训练和服务中相关特征的分布是否相同即可。确实有统计测试可以进行，但你确定你使用它们的方式是正确的吗？
 - en: '![](../Images/0e223b010cb77a6c9f520150ae48d186.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0e223b010cb77a6c9f520150ae48d186.png)'
 - en: Univariate drift detection
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 单变量漂移检测
 - en: Monitoring the post-deployment performance of a machine learning model is a
     crucial part of its life cycle. As the world changes and the data drifts, [many
     models tend to show diminishing performance over time](https://www.nature.com/articles/s41598-022-15245-z).
     The best approach to staying alert is to calculate the performance metrics in
     real time or to [estimate them](https://medium.com/towards-artificial-intelligence/estimating-model-performance-without-ground-truth-453b850dad9a)
     when the ground truth is not available.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 监控机器学习模型的部署后性能是其生命周期的关键部分。随着世界的变化和数据的漂移，[许多模型往往会随着时间的推移表现出性能下降](https://www.nature.com/articles/s41598-022-15245-z)。保持警觉的最佳方法是实时计算性能指标，或者在地面真实数据不可用时[进行估算](https://medium.com/towards-artificial-intelligence/estimating-model-performance-without-ground-truth-453b850dad9a)。
 - en: 'A likely cause of an observed degraded performance is data drift. [Data drift](https://medium.com/towards-data-science/dont-let-your-model-s-quality-drift-away-53d2f7899c09)
     is a change in the distribution of the model’s inputs between training and production
     data. Detecting and analyzing the nature of data drift can help to bring a degraded
     model back on track. With respect to how (and how many) features are affected,
     data drift can take one of two forms: one should distinguish between multivariate
     and univariate data drift.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 观察到的性能下降的一个可能原因是数据漂移。[数据漂移](https://medium.com/towards-data-science/dont-let-your-model-s-quality-drift-away-53d2f7899c09)是指模型输入在训练数据和生产数据之间分布的变化。检测和分析数据漂移的性质可以帮助将降级的模型恢复到正常状态。根据受影响的特征的数量和方式，数据漂移可以分为两种形式：应区分多变量数据漂移和单变量数据漂移。
 - en: Multivariate drift is a situation in which the distributions of the individual
     features don’t necessarily change, but their joint distribution does. It’s tricky
     to spot since observing each model feature in isolation will not uncover it. If
     you are interested in detecting multivariate drift, check out [this piece on how
     to do it based on PCA reconstruction errors](https://medium.com/towards-data-science/detecting-covariate-shift-a-guide-to-the-multivariate-approach-c099bd1891b9).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 多变量漂移是指单个特征的分布不一定发生变化，但它们的联合分布发生了变化。这种情况很难察觉，因为单独观察每个模型特征无法发现它。如果你对检测多变量漂移感兴趣，可以查看[这篇关于如何基于
+    PCA 重构误差进行检测的文章](https://medium.com/towards-data-science/detecting-covariate-shift-a-guide-to-the-multivariate-approach-c099bd1891b9)。
 - en: Today, we focus on univariate data drift, a scenario in which the distribution
     of one or more features shifts in the live production environment compared to
     what it was in the model’s training data.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天，我们关注单变量数据漂移，这是一种在生产环境中一个或多个特征的分布与模型训练数据中的分布发生变化的情况。
 - en: 'Univariate data drift seems to be the simpler to detect of the two: you don’t
     need to account for complex statistical relationships between multiple variables.
     Rather, for each of the features, you simply compare two data samples — training
     and serving — to check whether they are distributed in a similar fashion. Let’s
     take a look at how this is typically performed in a hypothesis-testing framework.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 单变量数据漂移似乎比多变量漂移更容易检测：你不需要考虑多个变量之间的复杂统计关系。相反，对于每个特征，你只需比较两个数据样本——训练和服务——以检查它们是否以类似的方式分布。让我们看看在假设检验框架中通常如何执行这一操作。
 - en: '![](../Images/22951758bd6bd883c64e0d54316b355c.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/22951758bd6bd883c64e0d54316b355c.png)'
 - en: Hypothesis Testing Primer
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 假设检验入门
 - en: To keep things concrete, let’s focus on the chi-squared test, frequently used
     to compare the distributions of categorical variables. The chi-squared test finds
     widespread application in [A/B/C testing](https://medium.com/towards-data-science/6-useful-probability-distributions-with-applications-to-data-science-problems-2c0bee7cef28),
     where it is used to verify whether users subjected to different treatments (e.g.
     are shown advertisement A, B, or C) show different behavior patterns (e.g. purchase
     frequency).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了让内容更具体，我们关注卡方检验，它经常用于比较分类变量的分布。卡方检验广泛应用于[A/B/C 测试](https://medium.com/towards-data-science/6-useful-probability-distributions-with-applications-to-data-science-problems-2c0bee7cef28)，用于验证用户在不同处理下（例如，展示广告
+    A、B 或 C）是否表现出不同的行为模式（例如，购买频率）。
 - en: The same test is often applied in univariate data drift detection to check if
     a categorical variable measured in two regimes (training and serving, which correspond
     to purchase and non-purchase in the marketing setting) shows the same category
     frequencies. If it doesn’t, the data might have drifted. Let’s take a look at
     a specific example.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样的检验通常应用于单变量数据漂移检测，以检查在两个状态（训练和服务，即市场设置中的购买和非购买）下测量的分类变量是否具有相同的类别频率。如果不相同，数据可能已经漂移。让我们来看一个具体的例子。
 - en: 'Imagine a machine learning model responsible for suggesting content to your
     users. Let’s assume that one of the model inputs is the user’s device. Let the
     device be a categorical variable with two categories: desktop and mobile. Here
     are the category counts from the training and serving data.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设一个机器学习模型负责向用户推荐内容。假设模型的一个输入是用户的设备。假设设备是一个具有两个类别的分类变量：桌面和移动。以下是训练数据和服务数据中的类别计数。
 - en: '![](../Images/356c20411856e2bc86ddb0d544305653.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/356c20411856e2bc86ddb0d544305653.png)'
 - en: Since the serving sample is much smaller than the training set, let’s express
     the category counts as relative frequencies for easier comparison.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于服务样本远小于训练集，因此我们将类别计数表示为相对频率，以便于比较。
 - en: '![](../Images/c4a6be2de068bc1ac9a3623704bd687a.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c4a6be2de068bc1ac9a3623704bd687a.png)'
 - en: The category frequencies are definitely very similar between the training and
     serving sets but they are not exactly the same. Naturally, due to random sampling,
     we rarely observe the exact same frequencies even in the absence of data drift.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别频率在训练集和服务集之间确实非常相似，但它们并不完全相同。由于随机抽样，即使在没有数据漂移的情况下，我们也很少观察到完全相同的频率。
 - en: 'And so the question becomes: are the differences in class frequencies we observed
     caused by random sampling variation, or by the structural shift in the *device*
     variable? The latter would mean we are dealing with data drift.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以问题变成了：我们观察到的类别频率差异是由随机抽样变异造成的，还是由*设备*变量的结构性变化造成的？后者意味着我们正在处理数据漂移。
 - en: In order to answer this question, we can employ the statistical hypothesis testing
     framework.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了回答这个问题，我们可以使用统计假设检验框架。
 - en: Chi-2 test
+  id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 卡方检验
 - en: We start by defining the hypotheses, namely two of them. The null hypothesis
     claims that the differences between training and serving we observed are caused
     by random chance alone — both samples of data come from the same underlying distribution
     (population). The alternative hypothesis, on the other hand, claims that the differences
     are not driven by randomness but rather are caused by data drift.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先定义假设，即两个假设。原假设声称我们观察到的训练与服务之间的差异仅由随机机会造成——两个数据样本来自相同的基础分布（总体）。另一方面，备择假设则声称这些差异不是由随机性驱动的，而是由数据漂移造成的。
 - en: '**H₀: Training/serving differences are a result of random noise.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '**H₀：训练/服务之间的差异是随机噪声的结果。'
 - en: 'H₁: Training/serving differences are a result of data drift.**'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: H₁：训练/服务之间的差异是数据漂移的结果。**
 - en: We will now use the data to test the null hypothesis. If we can reject it, we
     will state that data drift has happened. If we can’t, we’ll say that since the
     differences could have been produced by random chance, there is no evidence for
     the presence of data drift.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在将使用数据来检验原假设。如果我们可以拒绝原假设，我们将声明数据漂移已经发生。如果不能，我们将说由于差异可能是由随机机会产生的，没有数据漂移的证据。
 - en: The traditional testing approach in our case relies on the fact that under the
     null hypothesis, a certain quantity is known to follow the chi-2 distribution.
     This quantity is fittingly referred to as the chi-2 statistic.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的案例中，传统的测试方法依赖于这样一个事实：在原假设下，某个量被知道遵循卡方分布。这个量被恰当地称为卡方统计量。
 - en: Chi-2 statistic
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 卡方统计量
 - en: The chi-2 statistic is defined as the normalized sum of squared differences
     between the expected and observed frequencies. Let’s unpack this statement now.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 卡方统计量被定义为期望频率和观察频率之间平方差的标准化总和。现在让我们解读这个声明。
 - en: The expected frequencies are what we would have observed under the null hypothesis
     of no data drift. They are defined as the marginal sums of the contingency table
     multiplied by each other and scaled by the total count.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 期望频率是我们在没有数据漂移的原假设下会观察到的频率。它们被定义为列联表的边际和相乘，并按总数进行缩放。
 - en: The following contingency table represents the frequencies of our *device* variable
     for testing and serving data as defined before.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下列联表表示我们*设备*变量在测试和服务数据中的频率，如之前定义的。
 - en: '[PRE0]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We can then calculate the marginal sums along both axes as follows.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们可以沿着两个轴计算边际和，如下所示。
 - en: '[PRE1]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Finally, we multiply them (we need to transpose the first element to make the
     multiplication possible) and scale by the global sum.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们将它们相乘（我们需要转置第一个元素以使乘法可能），并按全局总和进行缩放。
 - en: '[PRE2]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: In our special case with only two categories of the variable under test, the
     test will have just one degree of freedom. This calls for an adjustment of the
     observed values known as [Yates’ correction for continuity](https://en.wikipedia.org/wiki/Yates%27s_correction_for_continuity).
     With more categories, you can skip the following four lines of code.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的特殊情况下，变量下只有两个类别，检验将只有一个自由度。这要求对观察值进行调整，这被称为[耶茨连续性校正](https://en.wikipedia.org/wiki/Yates%27s_correction_for_continuity)。如果有更多类别，你可以跳过以下四行代码。
 - en: '[PRE3]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Knowing the expected values, we can calculate the chi-2 statistic from the
     definition we stated earlier: as the sum of squared differences between the expected
     and observed frequencies, normalized by the expected ones.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 知道了期望值，我们可以根据之前定义的方式计算卡方统计量：即期望频率和观察频率之间的平方差的总和，经过期望频率的标准化。
 - en: '[PRE4]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: This gives us 4.23 and we also know that this statistic follows a chi-2 distribution.
     This is all we need to verify our null hypothesis.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 这给出了4.23，我们也知道这个统计量遵循卡方分布。这就是验证我们原假设所需的全部信息。
 - en: Verifying the hypothesis
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 验证假设
 - en: Let’s plot the theoretical chi-2 distribution our test statistic follows. It’s
     a chi-2 with one degree of freedom. The red line indicates the observed values
     of the test statistic.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们绘制出我们的测试统计量遵循的理论卡方分布。这是一个自由度为1的卡方分布。红线表示测试统计量的观察值。
 - en: '![](../Images/036c1c2f2510c0a178ce4c64f94bb303.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/036c1c2f2510c0a178ce4c64f94bb303.png)'
 - en: The blue-shaded area shows the distribution the test statistic is known to follow
     under the null hypothesis, that is in the absence of data drift. We have just
     observed the value marked with the red line. Is this observation strong enough
     evidence to reject the null hypothesis?
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 蓝色阴影区域显示了在原假设下，即在没有数据漂移的情况下，检验统计量所遵循的分布。我们刚刚观察到的是红线标记的值。这一观察是否足够强烈以拒绝原假设？
 - en: A chi-2 value of, say, 10, would have been very, very unlikely to see under
     the null. If we saw it, we would probably conclude that the null hypothesis must
     be false and the data have drifted.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 比如说，卡方值为10，在原假设下是非常不可能出现的。如果我们看到了这个值，我们可能会得出结论，认为原假设必须是错误的，数据已经发生了漂移。
 - en: If we got a chi-2 value of 0.5, on the other hand, we would argue that this
     observed value is not really surprising under the null hypothesis, or in other
     words, the differences in *device* frequencies between training and serving data
     could have been produced by chance alone. In general, this means no grounds to
     reject the null.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，如果我们得到了0.5的卡方值，我们会认为在原假设下这个观察值并不令人惊讶，换句话说，训练数据和服务数据之间的*设备*频率差异可能只是偶然产生的。一般来说，这意味着没有理由拒绝原假设。
 - en: But we got 4.23\. How do we decide whether to reject the null hypothesis or
     not?
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我们得到了4.23。我们如何决定是否拒绝原假设呢？
 - en: p-value
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: p值
 - en: 'Enters the infamous p-value. It’s a number that answers the question: what’s
     the probability of observing the chi-2 value we got or an even more extreme one,
     given that the null hypothesis is true? Or, using some notation, the p-value represents
@@ -261,72 +377,103 @@
     T is the chosen threshold for the test statistic). Notice how this is different
     from what we are actually interested in, which is the probability that our hypothesis
     is true given the data we have observed: P(H₀|data).'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 引入了臭名昭著的p值。它是一个回答以下问题的数字：在原假设为真的情况下，观察到我们获得的卡方值或更极端值的概率是多少？或者，使用某种符号，p值表示在假设原假设为真的情况下观察到数据的概率：P(数据|H₀)（准确地说，p值定义为P(test_static(数据)
+    > T | H₀)，其中T是选择的检验统计量阈值）。请注意，这与我们实际感兴趣的内容不同，我们关心的是在给定我们观察到的数据的情况下，原假设为真的概率：P(H₀|数据)。
 - en: '**what p-value represents: P(data|H₀)'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '**p值表示的内容：P(数据|H₀)'
 - en: 'what we usually want: P(H₀|data)**'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通常希望的：P(H₀|数据)**
 - en: Graphically speaking, the p-value is the sum of the blue probability density
     to the right of the red line. The easiest way to compute it is to calculate one
     minus the cumulative distribution at the observed value, that is one minus the
     probability mass on the left side.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 从图形上讲，p值是红线右侧的蓝色概率密度的总和。计算它的最简单方法是计算观察值的累积分布的一减，即左侧的概率质量减去1。
 - en: '[PRE5]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: This gives us 0.0396\. If there was no data drift, we would get the test statistic
     we’ve got or an even larger one in roughly 4% of the cases. Not that seldom, after
     all. In most use cases, the p-value is conventionally compared to the significance
     level of 1% or 5%. If it’s lower than that, one rejects the null. Let’s be conservative
     and follow the 1% significance threshold. In our case with a p-value of almost
     4%, there is not enough evidence to reject it. Hence, no data drift was detected.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这给我们带来了0.0396。如果没有数据漂移，我们在大约4%的情况下会得到我们所获得的检验统计量或更大的统计量。毕竟，这并不那么少见。在大多数使用情况下，p值通常与1%或5%的显著性水平进行比较。如果它低于这个水平，则拒绝原假设。让我们保守一点，遵循1%的显著性阈值。在我们这个接近4%的p值的情况下，没有足够的证据来拒绝它。因此，没有检测到数据漂移。
 - en: To ensure that our test was correct, let’s confirm it with scipy’s built-in
     test function.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了确保我们的检验是正确的，让我们用scipy的内置测试函数确认一下。
 - en: '[PRE6]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '`4.232914541135393 0.03964730311588313`'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '`4.232914541135393 0.03964730311588313`'
 - en: This is how hypothesis testing works. But how relevant is it for data drift
     detection in a production machine learning system?
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是假设检验的工作原理。但这对生产环境中的机器学习系统的数据漂移检测有多重要？
 - en: '![](../Images/e1affbf905f44d2de851bb48965e66ff.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e1affbf905f44d2de851bb48965e66ff.png)'
 - en: Statistical Significance vs. Monitoring Significance
+  id: totrans-66
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 统计显著性与监控显著性
 - en: Statistics, in its broadest sense, is the science of making inferences about
     entire populations based on small samples. When the famous t-test was first published
     at the beginning of the 20th century, all calculations were made with pen and
     paper. Even today, students in STATS101 courses will learn that a “large sample”
     starts from 30 observations.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 从广义上讲，统计学是基于小样本对整个总体做出推断的科学。当著名的t检验在20世纪初首次发布时，所有的计算都是用笔和纸完成的。即使在今天，STATS101课程的学生也会了解到，“大样本”从30个观察值开始。
 - en: Back in the days when data was hard to collect and store, and manual calculations
     were tedious, statistically rigorous tests were a great way to answer questions
     about the broader populations. Nowadays, however, with often abundant data, many
     tests diminish in usefulness.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数据难以收集和存储且手动计算繁琐的时代，统计上严谨的测试是回答有关广泛总体问题的好方法。然而，如今，随着数据的丰富，许多测试的实用性减少了。
 - en: The characteristic is that many statistical tests treat the amount of data as
     evidence. With less data, the observed effect is more prone to random variation
     due to sampling error, and with a lot of data, its variance decreases. Consequently,
     the exact same observed effect is stronger evidence against the null hypothesis
     with more data than with less.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 特点是许多统计测试将数据量视为证据。数据越少，观察到的效应更容易受到采样误差的随机变动的影响，而数据越多，其方差则减少。因此，相同的观察效应在数据更多时对零假设的证据更为强烈。
 - en: To illustrate this phenomenon, consider comparing two companies, A and B, in
     terms of the gender ratio among their employees. Let’s imagine two scenarios.
     First, let’s take random samples of 10 employees from each company. At company
@@ -335,14 +482,18 @@
     at B, it’s 400\. In both scenarios, the gender ratios were the same. However,
     more data seems to offer stronger evidence for the fact that company A employs
     proportionally more women than company A, doesn’t it?
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了说明这一现象，考虑比较两家公司A和B在员工性别比例上的差异。让我们设想两个情境。首先，随机抽取每家公司10名员工。在公司A中，10人中有6人为女性，而在公司B中，10人中有4人为女性。其次，增加我们的样本量到1000。在公司A中，1000人中有600人为女性，而在公司B中，1000人中有400人为女性。在这两个情境中，性别比例是相同的。然而，更多的数据似乎为公司A雇佣比例上更多女性提供了更强的证据，不是吗？
 - en: This phenomenon often manifests in hypothesis testing with large data samples.
     The more data, the lower the p-value, and so the more likely we are to reject
     the null hypothesis and declare the detection of some kind of statistical effect,
     such as data drift.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种现象通常在大数据样本的假设检验中表现出来。数据越多，p值越低，因此我们更有可能拒绝零假设，并声明发现某种统计效应，例如数据漂移。
 - en: 'Let’s see whether this holds for our chi-2 test for the difference in frequencies
     of a categorical variable. In the original example, the serving set was roughly
     ten times smaller than the training set. Let’s multiply the frequencies in the
@@ -350,96 +501,134 @@
     chi-2 statistic and the test’s p-value each time. Notice that multiplying all
     frequencies in the serving set by the same constant does not impact their distribution:
     the only thing we are changing is the size of one of the sets.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这是否适用于我们的类别变量频率差异的卡方检验。在原始示例中，服务集的大小大约是训练集的十分之一。让我们将服务集中的频率乘以1/100到10之间的一组缩放因子，并每次计算卡方统计量和检验的p值。请注意，将服务集中的所有频率乘以相同的常数不会影响它们的分布：我们唯一改变的只是其中一个集合的大小。
 - en: '[PRE7]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/02b04ece629beb8ba665d59ec1779792.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/02b04ece629beb8ba665d59ec1779792.png)'
 - en: 'The values at the multiplier equal to one are the ones we’ve calculated before.
     Notice how with a serving size just 3 times larger (marked with a vertical dashed
     line) our conclusion changes completely: we get the chi-2 statistic of 11 and
     the p-value of almost zero, which in our case corresponds to indicating data drift.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 乘数等于一的值是我们之前计算的值。注意，当服务规模增加到仅为原来的3倍（标记为垂直虚线）时，我们的结论完全改变：我们得到的卡方统计量为11，p值接近零，在我们的案例中这对应于指示数据漂移。
 - en: The consequence of this is the increasing amount of false alarms. Even though
     these effects will be statistically significant, they will not necessarily be
     significant from the performance monitoring point of view. With a large enough
     data set, even the tiniest of data drifts will be indicated even if it is so weak
     that it doesn’t deteriorate the model’s performance.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 这导致了虚假警报的数量增加。尽管这些效果在统计上可能显著，但从性能监控的角度来看，它们不一定具有重要意义。拥有足够大的数据集，即使是微小的数据漂移也会被指示出来，即使它的强度不足以恶化模型的性能。
 - en: Having learned this, you might be tempted to suggest dividing the serving data
     into a number of chunks and running multiple tests with smaller data sets. Unfortunately,
     this is not a good idea either. To understand why, we need to deeply understand
     what the p-value really means.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习到这一点后，你可能会想建议将服务数据划分为多个块，并对较小的数据集进行多次测试。不幸的是，这也不是一个好主意。要理解原因，我们需要深入理解 p 值的真正含义。
 - en: '![](../Images/461190bd49868efabe1484664573463c.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/461190bd49868efabe1484664573463c.png)'
 - en: The meaning of p
+  id: totrans-79
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: p值的含义
 - en: We have already defined the p-value as the probability of observing the test
     statistic at least as unlikely as the one we have actually observed, given that
     the null hypothesis is true. Let’s try to unpack this mouthful.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经将 p 值定义为在原假设为真的情况下，观察到至少与我们实际观察到的统计量一样不太可能的测试统计量的概率。让我们尝试解读这个复杂的表述。
 - en: 'The null hypothesis means no effect, in our case: no data drift. This means
     that whatever differences there are between the training and serving data, they
     have emerged as a consequence of random sampling. The p-value can therefore be
     seen as the probability of getting the differences we got, given that they only
     come from randomness.'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 原假设意味着没有效果，在我们的例子中：没有数据漂移。这意味着，无论训练数据和服务数据之间存在什么差异，它们都是随机抽样的结果。因此，p 值可以视为在这些差异仅来源于随机性的前提下，得到我们所观察到的差异的概率。
 - en: 'Hence, our p-value of roughly 0.1 means that in the complete absence of data
     drift, 10% of tests will erroneously signal data drift due to random chance. This
     stays consistent with the notation for what the p-value represents which we introduced
     earlier: P(data|H₀). If this probability is 0.1, then given that H₀ is true (no
     drift), we have a 10% chance of observing the data at least as different as what
     we observed (according to the test statistic)'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们的 p 值大约为 0.1，这意味着在完全没有数据漂移的情况下，10% 的测试将由于随机机会错误地发出数据漂移信号。这与我们之前介绍的 p 值表示的符号一致：P(data|H₀)。如果这个概率是
+    0.1，那么在 H₀ 为真（无漂移）的情况下，我们有 10% 的机会观察到的数据至少与我们观察到的数据一样不同（根据测试统计量）。
 - en: 'This is the reason why running more tests on smaller data samples is not a
     good idea: if instead of testing the serving data from the entire day each day,
     we would split it into 10 chunks and run 10 tests each day, we would end up with
     one false alarm every day, on average! This may lead to the so-called alert fatigue,
     a situation in which you are bombarded by alerts to the extent that you stop paying
     attention to them. And when data drift really does happen, you might miss it.'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是为什么在较小的数据样本上进行更多测试不是一个好主意的原因：如果我们不是对每天的整个服务数据进行测试，而是将其分为 10 个块，每天进行 10 次测试，我们每天平均会出现一个虚假警报！这可能导致所谓的警报疲劳，即你被大量警报轰炸到停止关注它们的程度。当数据漂移真的发生时，你可能会错过它。
 - en: '![](../Images/b97a40fade9325f824504d1d314f73a0.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b97a40fade9325f824504d1d314f73a0.png)'
 - en: Bayes to the rescue
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 贝叶斯来拯救我们
 - en: We have seen that detecting data drift based on a test’s p-value can be unreliable,
     leading to many false alarms. How can we do better? One solution is to go 180
     degrees and resort to Bayesian testing, which allows us to directly estimate what
     we need, P(H₀|data), rather than the p-value, P(data|H₀).
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经看到，根据测试的 p 值检测数据漂移可能不可靠，从而导致许多虚假警报。我们该如何做得更好？一个解决方案是完全转变思路，采用贝叶斯测试，这让我们能够直接估计我们需要的
+    P(H₀|data)，而不是 p 值 P(data|H₀)。
 - en: What is Bayes
+  id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝叶斯是什么
 - en: 'Bayesian statistics is a different approach to making inferences compared to
     traditional, classical statistics. While the founding assumptions of Bayesian
     methods [deserve separate treatment](https://medium.com/towards-data-science/the-gentlest-of-introductions-to-bayesian-data-analysis-74df448da25),
     for the sake of our discussion on data drift, let’s consider the most important
     feature of the Bayesian approach: *statistical parameters are random variables*.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯统计方法与传统的经典统计方法不同。在贝叶斯方法的基本假设[值得单独讨论](https://medium.com/towards-data-science/the-gentlest-of-introductions-to-bayesian-data-analysis-74df448da25)的情况下，为了讨论数据漂移，我们先考虑贝叶斯方法的最重要特征：*统计参数是随机变量*。
 - en: Parameters are random variables
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参数是随机变量
 - en: A parameter is an unknown value that we are interested in that describes a population.
     In our earlier example, the proportion of our model’s users using a mobile device
     is a parameter. If we knew what it amounts to within any given time frame, we
@@ -447,297 +636,440 @@
     Unfortunately, we don’t know the devices of all possible users who might end up
     as the model’s inputs; we have to work with a sample of serving data that the
     model has received.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 参数是我们感兴趣的未知值，用于描述一个总体。在我们之前的例子中，我们模型用户使用移动设备的比例就是一个参数。如果我们知道在任何给定时间段内这个比例，我们就能自信地声明设备变量是否随时间漂移。不幸的是，我们不知道所有可能成为模型输入的用户的设备；我们必须使用模型所接收到的服务数据样本。
 - en: The classical approach regards our parameter of interest as a fixed value. We
     don’t know it, but it exists. Based on sample data, we can try to estimate it
     as well as possible but any such estimate will have some variance caused by the
     sampling bias. In a nutshell, we are trying to estimate what we consider to be
     an unknown fixed value with a random variable that has some bias and variance.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 经典方法将我们感兴趣的参数视为一个固定值。我们不知道它的具体值，但它是存在的。基于样本数据，我们可以尽量估计它，但任何这样的估计都会因采样偏差而有一定的方差。简而言之，我们正在尝试用一个具有偏差和方差的随机变量来估计我们认为是未知的固定值。
 - en: The Bayesian approach regards our parameter of interest as a random variable
     described by some probability distribution. What we are trying to estimate are
     the parameters of this distribution. Once we do this, we are entitled to make
     probabilistic statements about the parameter, such as “the probability that the
     proportion of our model’s users using mobile devices is between 0.2 and 0.6 is
     55%”, for instance.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯方法将我们感兴趣的参数视为由某种概率分布描述的随机变量。我们尝试估计的是这个分布的参数。一旦完成这些，我们就可以对参数做出概率性的陈述，比如“我们的模型用户使用移动设备的比例在0.2到0.6之间的概率是55%”。
 - en: 'This approach is perfect for data drift detection: instead of relying on murky
     p-values, P(data|H₀), with a Bayesian test, we can directly calculate the probability
     and magnitude of data drift, P(H₀|data)!'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法非常适合数据漂移检测：与依赖模糊的p值，P(data|H₀)不同，使用贝叶斯检验，我们可以直接计算数据漂移的概率和幅度，即P(H₀|data)！
 - en: '![](../Images/67bd92fa4d4dea9382877c925ce6e60a.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/67bd92fa4d4dea9382877c925ce6e60a.png)'
 - en: Bayesian test for data drift
+  id: totrans-95
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据漂移的贝叶斯检验
 - en: Let’s try to test whether the frequency of users using a mobile device has drifted
     between our training and serving data using a Bayesian approach.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试使用贝叶斯方法测试用户使用移动设备的频率是否在训练数据和服务数据之间发生了漂移。
 - en: Getting the probability we need
+  id: totrans-97
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 获取我们需要的概率
 - en: 'So, how does one get the probability of the data drift? It can be done using
     the so-called Bayes rule, a neat probability axiom allowing us to calculate the
     probability of something conditioned on something else if we know the reverse
     relation. For example, if we know what P(B|A) is, we can compute P(A|B) as:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，如何获得数据漂移的概率呢？可以使用所谓的贝叶斯规则，这是一条整洁的概率公理，允许我们在知道反向关系的情况下计算某事的条件概率。例如，如果我们知道P(B|A)，我们可以计算P(A|B)：
 - en: '*P(A|B) = P(B|A) * P(A) / P(B)*'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P(A|B) = P(B|A) * P(A) / P(B)*'
 - en: 'We can use this formula to estimate the probability distribution of the frequency
     of mobile users, *freq*:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用这个公式来估计移动用户的频率的概率分布，*freq*：
 - en: '*P(freq|data) = P(data|freq) * P(freq) / P(data)*'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P(freq|data) = P(data|freq) * P(freq) / P(data)*'
 - en: 'In the Bayesian jargon, all elements in the above equation have their names:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 在贝叶斯术语中，上述方程中的所有元素都有其名称：
 - en: P(freq|data) is what we are after — the posterior, or the probability distribution
     of the mobile users' fraction after having seen the data;
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: P(freq|data) 是我们追求的目标——即移动用户比例在看到数据后的后验分布或概率分布；
 - en: P(data|freq) is the likelihood or the probability of observing the data given
     a particular mobile users frequency;
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: P(data|freq) 是似然或在给定特定移动用户频率的情况下观察到数据的概率；
 - en: 'P(freq) is the prior: what we believe about the proportion of mobile users
     before seeing any data;'
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: P(freq) 是先验：我们在看到任何数据之前对移动用户比例的信念；
 - en: P(data) can be considered a scaling factor that ensures the right-hand-side
     sums up to one as a probability distribution should.
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: P(data) 可以看作是一个缩放因子，确保右边的结果作为概率分布总和为一。
 - en: 'If we apply the above formula twice, once for the training data and then for
     the serving data, we will obtain two distributions for the frequency parameter:
     one based on the analysis data and the other based on the reference data. We can
     then check how the two distributions compare the test our hypothesis:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将上述公式应用两次，一次用于训练数据，另一次用于服务数据，我们将获得两个频率参数的分布：一个基于分析数据，另一个基于参考数据。然后我们可以检查这两个分布如何比较以测试我们的假设：
 - en: '*P(H₀|data) = P(freq_ref|data) == P(freq_anal|data)*'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '*P(H₀|data) = P(freq_ref|data) == P(freq_anal|data)*'
 - en: So, in order to compute the posterior, we need to multiply the prior with the
     likelihood and scale them to sum up to one. Arithmetics on probability distributions
     is not a trivial task. How do we go about it?
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，为了计算后验，我们需要将先验与似然相乘，并将它们缩放到总和为一。概率分布上的算术运算不是一个简单的任务。我们该如何进行呢？
 - en: 'In some specific cases, when the two distributions match nicely, their formulas
     cancel out and the output of their multiplication is a known distribution. In
     more complex cases, Markov Chain Monte Carlo simulation methods are used to sample
     the values from the posterior rather than try to compute its distributional form.
     There is also a third way: in simple cases like ours, we can use a method called
     grid approximation.'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 在某些特定情况下，当两个分布匹配得很好时，它们的公式会相互抵消，结果是一个已知的分布。在更复杂的情况下，使用马尔科夫链蒙特卡洛模拟方法来从后验分布中抽样值，而不是尝试计算其分布形式。还有第三种方法：在像我们这样简单的情况下，我们可以使用一种称为网格近似的方法。
 - en: Data drift probability
+  id: totrans-111
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据漂移概率
 - en: Let’s start with defining our data. In the training data, we have 65 551 observations,
     30 299 of which are mobile users.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从定义数据开始。在训练数据中，我们有65,551个观察值，其中30,299个是移动用户。
 - en: '[PRE8]'
+  id: totrans-113
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'The parameter we are interested in is the frequency of mobile users. In theory,
     it could be any value between 0% and 100%. We will approximate it on a grid from
     0.0001 to 1:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们感兴趣的参数是移动用户的频率。从理论上讲，它可以是0%到100%之间的任何值。我们将在从0.0001到1的网格上进行近似：
 - en: '[PRE9]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'We can now create a grid of all combinations of the mobile users'' frequency
     and their observed number:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以创建一个包含所有移动用户频率及其观察数量的网格：
 - en: '[PRE10]'
+  id: totrans-117
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'It’s time to define a prior: what do we know or assume about our parameter
     before seeing any data. It could be that we know nothing, or we don’t want to
     impact the results too much with our beliefs. In this case, we would adopt an
     uninformative prior, such as a uniform distribution. This corresponds to setting
     the prior to all ones, expressing the same prior probability for each possible
     percentage of mobile users.'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 是时候定义先验了：在看到任何数据之前，我们对我们的参数知道或假设了什么。可能是我们什么也不知道，或者我们不想用我们的信念过多地影响结果。在这种情况下，我们会采用无信息先验，例如均匀分布。这对应于将先验设置为全1，表示对每个可能的移动用户百分比表达相同的先验概率。
 - en: '[PRE11]'
+  id: totrans-119
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Next, our last building block, the likelihood. In our problem statement, a user
     can either be a mobile user or not. This calls for binomial distribution. For
     each row in our data frame, we will compute the likelihood as the binomial probability
     mass for a given number of observed mobile users, the total users, and the assumed
     frequency of mobile users.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们的最后一个构建块，似然。在我们的问询中，用户可以是移动用户或非移动用户。这需要使用二项分布。对于数据框中的每一行，我们将计算给定观察到的移动用户数量、总用户数量和假设的移动用户频率的二项概率质量。
 - en: '[PRE12]'
+  id: totrans-121
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'All we are left with is to follow the Bayes formula: we multiply the prior
     with the likelihood and scale the result to sum up to one to get the posterior.'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们剩下的就是遵循贝叶斯公式：将先验与似然相乘，并将结果缩放到总和为一，以得到后验。
 - en: '[PRE13]'
+  id: totrans-123
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Let’s slice the grid to select the posterior that matches the number of mobile
     users we have observed.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们切分网格，选择与我们观察到的移动用户数量相匹配的后验分布。
 - en: '[PRE14]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: We can now plot the posterior probability of the frequency of mobile users for
     the training data.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以绘制训练数据中移动用户频率的后验概率。
 - en: '![](../Images/53a4931efb20c598eba40016d95b1c5c.png)'
+  id: totrans-127
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53a4931efb20c598eba40016d95b1c5c.png)'
 - en: 'We can now do the exact same thing for our serving data. While we are at it,
     we will add one more thing to the code: in a dictionary called *samples,* we will
     store draws from the posterior distributions, both training and serving. Here
     is a code snipped that does the job.'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以对我们的服务数据做完全相同的操作。在此过程中，我们将向代码中添加一项内容：在一个名为*samples*的字典中，我们将存储来自后验分布的样本，包括训练和服务数据。以下是实现这一任务的代码片段。
 - en: '[PRE15]'
+  id: totrans-129
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '![](../Images/7eeba59da0e321a2eae2d6d0264d39e2.png)'
+  id: totrans-130
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7eeba59da0e321a2eae2d6d0264d39e2.png)'
 - en: Test time
+  id: totrans-131
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 测试时间
 - en: For both training and serving data, we have estimated the probability distributions
     for the proportion of mobile users. Is this proportion different? If so, we have
     some data drift going on. It seems it is different since the two distributions
     overlap just a little in the plot above. Nevertheless, let’s try to get a quantitative
     confirmation.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于训练和服务数据，我们已经估计了移动用户比例的概率分布。这个比例有不同吗？如果有，我们就有一些数据漂移发生。由于上图中两个分布仅有少量重叠，它们似乎不同。不过，让我们尝试获得定量确认。
 - en: 'We can do it using the draws we have taken from both distributions: we can
     just check how often the serving data’s proportion is larger than the one from
     training data. This is our estimate of the probability of data drift.'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用从两个分布中获取的样本进行此操作：我们只需检查服务数据的比例比训练数据中的比例更大多少次。这是我们对数据漂移概率的估计。
 - en: '[PRE16]'
+  id: totrans-134
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '`0.977`'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '`0.977`'
 - en: The probability that the *device* variable has drifted is 97.7%. The drift has
     almost certainly happened! But how large is it?
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '*device* 变量发生漂移的概率为97.7%。漂移几乎肯定已经发生！但其规模有多大呢？'
 - en: '[PRE17]'
+  id: totrans-137
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: '`0.013`'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '`0.013`'
 - en: The proportion of mobile users in the serving data is larger by 1.3 percentage
     points than the corresponding proportion in training data, in expectation.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 服务数据中移动用户的比例比训练数据中的相应比例高出1.3个百分点，期望值如此。
 - en: '![](../Images/73601710b8046755007b9d897e32e275.png)'
+  id: totrans-140
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/73601710b8046755007b9d897e32e275.png)'
 - en: Takeaways
+  id: totrans-141
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 收获
 - en: 'Univariate data drift detection methods relying on hypothesis testing are not
     always reliable: the outcome might depend on the sample size and the p-value does
     not actually measure data drift probability or magnitude directly.'
+  id: totrans-142
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 依赖假设检验的单变量数据漂移检测方法并不总是可靠：结果可能依赖于样本大小，而p值实际上并不能直接测量数据漂移的概率或大小。
 - en: Relying on such hypothesis tests tends to lead to many false alarms and alert
     fatigue.
+  id: totrans-143
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 依赖这种假设检验往往会导致许多虚假警报和警报疲劳。
 - en: An alternative approach is to use Bayesian methods, which allow us to directly
     estimate the probability and magnitude of data drift without many drawbacks of
     classical testing.
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一种替代方法是使用贝叶斯方法，这允许我们直接估计数据漂移的概率和大小，而没有传统测试的许多缺陷。
 - en: '*This article was also published on* [*the NannyML blog*](http://www.nannyml.com/blog/hypothesis-testing-for-ml-performance)*.*'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: '*本文也发表在* [*NannyML博客*](http://www.nannyml.com/blog/hypothesis-testing-for-ml-performance)*上。*'
 - en: '![](../Images/076801f083cf0f6fb8955dcdd1334529.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/076801f083cf0f6fb8955dcdd1334529.png)'
 - en: Thanks for reading!
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！
 - en: If you liked this post, why don’t you [**subscribe for email updates**](https://michaloleszak.medium.com/subscribe)
     on my new articles? And by [**becoming a Medium member**](https://michaloleszak.medium.com/membership),
     you can support my writing and get unlimited access to all stories by other authors
     and yours truly.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢这篇文章，为什么不[**订阅电子邮件更新**](https://michaloleszak.medium.com/subscribe)以获取我新文章的通知呢？通过[**成为Medium会员**](https://michaloleszak.medium.com/membership)，你可以支持我的写作，并获得对其他作者及我的所有故事的无限访问权限。
 - en: Need consulting? You can ask me anything or book me for a 1:1 [**here**](https://topmate.io/michaloleszak).
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要咨询？你可以随时问我任何问题或[**在这里**](https://topmate.io/michaloleszak)预约一对一咨询。
 - en: 'You can also try one of [my other articles](https://michaloleszak.github.io/blog/).
     Can’t choose? Pick one of these:'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 你还可以尝试阅读[我其他的文章](https://michaloleszak.github.io/blog/)。不知道选择哪个？可以从这些中选一个：
 - en: '[](/model-optimization-with-tensorflow-629342d1a96f?source=post_page-----1a3be3f8e625--------------------------------)
     [## Model Optimization with TensorFlow'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/model-optimization-with-tensorflow-629342d1a96f?source=post_page-----1a3be3f8e625--------------------------------)
+    [## TensorFlow的模型优化'
 - en: Reduce your models' latency, storage, and inference costs with quantization
     and pruning
+  id: totrans-152
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用量化和剪枝减少模型的延迟、存储和推断成本
 - en: towardsdatascience.com](/model-optimization-with-tensorflow-629342d1a96f?source=post_page-----1a3be3f8e625--------------------------------)
     [](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----1a3be3f8e625--------------------------------)
     [## Forget About ChatGPT
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/model-optimization-with-tensorflow-629342d1a96f?source=post_page-----1a3be3f8e625--------------------------------)
+    [](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----1a3be3f8e625--------------------------------)
+    [## 忘掉 ChatGPT'
 - en: Bard, Sparrow, and multimodal chatbots will render it obsolete soon, and here
     is why.
+  id: totrans-154
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Bard、Sparrow 和多模态聊天机器人很快将使其过时，原因如下。
 - en: pub.towardsai.net](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----1a3be3f8e625--------------------------------)
     [](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----1a3be3f8e625--------------------------------)
     [## Self-Supervised Learning in Computer Vision
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '[pub.towardsai.net](https://pub.towardsai.net/forget-about-chatgpt-f17a7f5089c3?source=post_page-----1a3be3f8e625--------------------------------)
+    [](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----1a3be3f8e625--------------------------------)
+    [## 自监督学习在计算机视觉中的应用'
 - en: How to train models with only a few labeled examples
+  id: totrans-156
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如何仅用少量标记示例来训练模型
 - en: towardsdatascience.com](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----1a3be3f8e625--------------------------------)
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/self-supervised-learning-in-computer-vision-fd43719b1625?source=post_page-----1a3be3f8e625--------------------------------)'
 - en: All images, unless otherwise noted, are by the author.
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有图片，除非另有说明，均由作者提供。

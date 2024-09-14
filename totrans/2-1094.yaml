@@ -1,504 +1,766 @@
 - en: How Reliable Is a Ratio?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 比率的可靠性如何？
 - en: 原文：[https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d](https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d](https://towardsdatascience.com/how-reliable-is-a-ratio-1467f50e943d)
 - en: Learn how to assess how reliable a ratio really is using Empirical Bayes Analysis
     in Python
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 学习如何使用Python中的经验贝叶斯分析评估比率的可靠性
 - en: '[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[![Gustavo
     Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)
     [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[![Gustavo
+    Santos](../Images/a19a9f4525cdeb6e7a76cd05246aa622.png)](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)
+    [Gustavo Santos](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)
     ·9 min read·Dec 8, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----1467f50e943d--------------------------------)
+    ·9分钟阅读·2023年12月8日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/101cda4d83b516311142c34ced48fec5.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/101cda4d83b516311142c34ced48fec5.png)'
 - en: Photo by [rupixen.com](https://unsplash.com/@rupixen?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
     on [Unsplash](https://unsplash.com/photos/person-using-laptop-computer-holding-card-Q59HmzK38eQ?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：[rupixen.com](https://unsplash.com/@rupixen?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    在 [Unsplash](https://unsplash.com/photos/person-using-laptop-computer-holding-card-Q59HmzK38eQ?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
 - en: Introduction
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: One of my references in the Data Science field is [Julia Silge](https://juliasilge.com/).
     On her *Tidy Tuesday* videos she always makes a code-along type of video teaching/
     showing a given technique, helping other analysts to upskill and incorporate that
     to their repertoire.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数据科学领域，我的一位参考对象是[Julia Silge](https://juliasilge.com/)。在她的*干净星期二*视频中，她总是制作代码跟随类型的视频，教授/展示给定的技术，帮助其他分析师提升技能并将其纳入自己的技能库。
 - en: Last Tuesday, the topic was Empirical Bayes (her [blog post](https://juliasilge.com/blog/doctor-who-bayes/)),
     which caught my attention.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 上周二的话题是经验贝叶斯（她的[博客文章](https://juliasilge.com/blog/doctor-who-bayes/)），引起了我的注意。
 - en: But, what is that?
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 那是什么呢？
 - en: Empirical Bayes
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 经验贝叶斯
 - en: Empirical Bayes is a statistical method used when we work with ratios like *[success]/[total
     tries]*. When we are working with such variables, many are the times when we face
     a 1/2 success, which translates to a 50% success percentage, or 3/4 (75%), 0/1
     (0%).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 经验贝叶斯是一种统计方法，用于处理像*成功/总尝试数*这样的比率。当我们处理这些变量时，常常会遇到1/2的成功率，这转化为50%的成功百分比，或者3/4（75%），0/1（0%）。
 - en: Those extreme percentages do not represent the long term reality because there
     were so little tries that it makes it very hard to tell if there is a trend there,
     and most times these cases are just ignored or deleted. It takes more tries to
     tell what the real success rate is, like 30/60, 500/100, or whatever makes sense
     for a business.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些极端百分比并不代表长期的现实，因为尝试次数太少，很难判断是否存在趋势，大多数情况下这些案例被忽略或删除。需要更多的尝试来确定真实的成功率，比如30/60，500/100，或其他对业务有意义的数据。
 - en: Using Empirical Bayes, though, we are able to use the current data distribution
     to calculate an estimate for its own data in earlier or later stages, as we will
     see next in this post.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，使用经验贝叶斯，我们能够利用当前的数据分布来计算其自身数据在早期或晚期阶段的估计值，正如我们将在本文接下来的部分看到的那样。
 - en: We use the data distribution to estimate earlier and later stages of each observation’s
     ratio.
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们使用数据分布来估计每个观察值在早期和晚期阶段的比率。
 - en: Analysis
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 分析
 - en: 'Let’s jumps to the analysis. The steps to follow are:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们跳到分析部分。需要遵循的步骤是：
 - en: Load the data
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 加载数据
 - en: Define success and calculate the success ratio
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义成功并计算成功比率
 - en: Determine the distribution’s parameters
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确定分布的参数
 - en: Calculate Bayes estimates
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算贝叶斯估计
 - en: Calculate the Credible Interval
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算可信区间
 - en: Let’s move on.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们继续。
 - en: '**Imports**'
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**导入**'
 - en: '[PRE0]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Dataset
+  id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据集
 - en: The dataset to be used in this post is a log of customers and their quantities
     of e-commerce orders and brick and mortar orders. It was generated based on real
     numbers, but all the dataset was reduced, randomized and modified in proportions
     to become anonymized to be used publicly.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文中使用的数据集是客户及其电子商务订单和实体店订单的日志。它是基于真实数字生成的，但所有数据集都经过了缩减、随机化和修改，以使其匿名化以供公开使用。
 - en: 'The variables are:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 变量如下：
 - en: '*customer:* Customer ID'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*customer:* 客户ID'
 - en: '*brick_mortar:* How many transactions have happened in physical store .'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*brick_mortar:* 实体店发生了多少次交易。'
 - en: '*ecomm*: How many e-commerce transactions have happened online.'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*ecomm*: 发生了多少次电子商务交易。'
 - en: '![](../Images/d5c3ec6ee85de8f53f51e4a23b0f2a98.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5c3ec6ee85de8f53f51e4a23b0f2a98.png)'
 - en: Head of the data. Image by the author.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据的头部。图像由作者提供。
 - en: Success Ratio
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 成功比例
 - en: Suppose our company is willing to increase their online penetration. Therefore,
     for this analysis, our success is defined as ***when the customer purchases online.***
     The customer bought online [success], bought brick and mortar [not success].
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们的公司愿意增加其在线渗透率。因此，在这个分析中，我们的成功定义为***当客户在线购买时。*** 客户在线购买[成功]，实体店购买[不成功]。
 - en: 'This way, our metric can be a simple ecommerce transactions over the total
     *[ecomm]/[ecomm + brick_mortar]*. It will give us a ratio. Our question now becomes:
     how different are these two customers: 808 *vs.* 672.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，我们的指标可以是简单的电子商务交易占总数的*[ecomm]/[ecomm + brick_mortar]*。这将给我们一个比例。我们现在的问题是：这两个客户：808
+    *vs.* 672有多大不同。
 - en: 808 has a ratio of 1/11 (9%) and 672 has a ratio of 1/2 (50%). Which one is
     better? Where should I invest more time for growth? Well, customer 672 has 50%
     of penetration, but it’s just 2 transactions total with us. Customer 808 has a
     longer history with the company, but has just started buying online.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 808的比例是1/11（9%），而672的比例是1/2（50%）。哪个更好？我应该把更多时间投资在哪里以促进增长？好吧，客户672的渗透率为50%，但总共只有2次交易。客户808与公司有更长的历史，但刚刚开始在线购买。
 - en: '![](../Images/d3419fa3425d2382ec0171c1231c2a3e.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d3419fa3425d2382ec0171c1231c2a3e.png)'
 - en: 808 or 671? Where to invest? Image by the author.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 808还是671？投资在哪里？图像由作者提供。
 - en: Let’s calculate all the ratios. Here, we are going to discard the customers
     that never bought online, simply because it is not possible to calculate an estimate
     out of that.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们计算所有的比例。在这里，我们将忽略那些从未在线购买过的客户，因为无法从中计算出估计值。
 - en: '[PRE1]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: And we have the result.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们得出了结果。
 - en: '![](../Images/8e3b2a8620d4b4dfd280062b5f892abe.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8e3b2a8620d4b4dfd280062b5f892abe.png)'
 - en: Ratio calculated. Image by the author.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算出的比例。图像由作者提供。
 - en: Next, let’s find out the distribution parameters.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们找出分布参数。
 - en: Find Out the Distribution Parameters
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 找出分布参数
 - en: The next step here is to calculate the parameters of the distribution of our
     ratios. But before we jump into that, let’s build our intuition on why we even
     need to perform this step.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的下一步是计算我们比例的分布参数。但在深入之前，让我们建立对为什么需要执行这一步骤的直觉。
 - en: Well, the Thomas Bayes theorem says that **probability is conditional**. So,the
     likelihood of something occurring should be based on a previous outcome having
     occurred in similar circumstances.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，托马斯·贝叶斯定理说**概率是条件性的**。因此，某事发生的可能性应该基于在类似情况下发生的先前结果。
 - en: If something happened 10 times, it is more likely to happen an 11th time than
     something that failed to happen 10 times to happen on the 11th try.
+  id: totrans-50
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果某事发生了10次，那么它在第11次发生的可能性比某事在第10次未发生的情况下发生的可能性要大。
 - en: We will use the beta distribution to represent our *prior expectations*, or
     what has been happening so far. It is like looking at our data and understanding
     the pattern to be able to give a more precise estimate for any data point in any
     stage, considering it would follow that same distribution.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用贝塔分布来表示我们的*先验期望*，或到目前为止发生的情况。这就像观察我们的数据并理解模式，以便能够对任何阶段的任何数据点给出更精确的估计，考虑到它会遵循相同的分布。
 - en: To know which α and β makes the beta distribution to fit our data, we will use
     the module `distfit` in Python.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了知道哪个α和β使得贝塔分布适合我们的数据，我们将使用Python中的`distfit`模块。
 - en: Looking at the distribution, we can just plot a histogram.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 看看分布，我们可以直接绘制直方图。
 - en: '[PRE2]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../Images/7414e4a085c8be2fa6ee3c438f6bcd41.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7414e4a085c8be2fa6ee3c438f6bcd41.png)'
 - en: Ratio distribution. Image by the author.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 比例分布。图像由作者提供。
 - en: Now, let’s see which parameters make the beta distribution fit the data.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们看看哪些参数使得贝塔分布适合数据。
 - en: '[PRE3]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'I marked this line `>>>arg: (0.850939343634336, 1.4553354599535102),<<<` ,
     that are the α and β we need.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '我标记了这行`>>>arg: (0.850939343634336, 1.4553354599535102),<<<`，这些是我们需要的α和β。'
 - en: In case we want to see the fit, use this code, where we are just creating a
     figure with 3 subplots and adding the Probability Density Function, the Cumulative
     Density Function and the QQ Plot.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们想查看拟合情况，可以使用这段代码，其中我们创建了一个包含3个子图的图形，并添加了概率密度函数、累积分布函数和QQ图。
 - en: '[PRE4]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/658dfecb4f3f51ef6aeebd12a0170f94.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/658dfecb4f3f51ef6aeebd12a0170f94.png)'
 - en: Plots from DistFit. Image by the author.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: DistFit生成的图表。图片由作者提供。
 - en: Ok. Time to calculate our estimates.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的。现在来计算我们的估计值。
 - en: Bayes Estimates
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝叶斯估计
 - en: To calculate the estimates, we need to set the alpha (a) and beta(b) as just
     discovered.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了计算估计值，我们需要设置刚刚发现的alpha（a）和beta（b）。
 - en: '[PRE5]'
+  id: totrans-67
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: With the estimated parameters of the Beta Distribution, let’s model our ratio
     of e-Commerce transactions with Empirical Bayes. We’ll start with our overall
     prior, and update based on the individual evidence. *The calculation is simply
     adding* ***a*** *to the number of successes (e-Comm orders) , and* ***a+b*** *to
     the total number of orders.*
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用Beta分布的估计参数，我们将用经验贝叶斯方法对电子商务交易比例进行建模。我们将从总体先验开始，然后根据个体证据进行更新。*计算方法很简单，就是将*
+    ***a*** *添加到成功次数（电子商务订单）中，再将* ***a+b*** *添加到订单总数中。*
 - en: '[PRE6]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Nice! Now we can already plot the simple ratio against the estimated ratio and
     see how the model is working.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好！现在我们已经可以绘制简单比例与估计比例的图表，看看模型的效果如何。
 - en: '[PRE7]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Which results in the graphic.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果如图所示。
 - en: '![](../Images/f7c66acd534e37878dd884bb19e41cd5.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f7c66acd534e37878dd884bb19e41cd5.png)'
 - en: The model estimates vs. simple ratio. Image by the author.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型估计值与简单比例的对比。图片由作者提供。
 - en: Here, the more the dots get close to the red line, the more reliable that ratio
     is. It means that the simple ratio [success]/[total] is very close to the Bayes
     estimate, which already takes in account the prior probability.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，点越接近红线，比例就越可靠。这意味着简单比例[成功]/[总数]非常接近贝叶斯估计，贝叶斯估计已经考虑了先验概率。
 - en: Look at some numbers in the table.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 看一下表中的一些数字。
 - en: '![](../Images/a55b074f206bf295feb33f61b936ab5e.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a55b074f206bf295feb33f61b936ab5e.png)'
 - en: Estimates. Image by the author.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 估计值。图片由作者提供。
 - en: Looking at the table, we notice that the higher the number of e-commerce transactions
     and total transactions, the closer the Bayes estimate is from the real ratio.
     This means that those 1/2 cases will be really off the mark, therefore, much less
     reliable as a trend.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看表格，我们发现电子商务交易数量和总交易数量越高，贝叶斯估计值与实际比例越接近。这意味着那些1/2的情况将大大偏离目标，因此作为趋势的可靠性较低。
 - en: We can also calculate the confidence interval for the estimates. That’s what
     we will do next.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以计算估计值的置信区间。这就是我们接下来要做的。
 - en: Confidence Interval
+  id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 置信区间
 - en: The confidence interval is an extra step to make our analysis even more complete.
     We can give the decision maker a range of trust.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 置信区间是使我们的分析更为完整的一步。我们可以给决策者提供一个信任范围。
 - en: First, let’s calculate the alpha 1 and beta 1 for each observation, which are
     the *posterior* shape parameters for the beta distribution, after the prior has
     been updated.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们计算每个观察值的alpha 1和beta 1，这些是更新先验后的Beta分布的*后验*形状参数。
 - en: '[PRE8]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Then, the next task can be performed with `scipy.stats.beta` module, using the
     method `interval`. The output for a 95% confidence interval is a tuple with two
     numbers, where the index `[0]` is the low boundary and the `[1]` is the high.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们可以使用`scipy.stats.beta`模块，通过`interval`方法进行计算。95%置信区间的输出是一个包含两个数字的元组，其中索引`[0]`是下界，`[1]`是上界。
 - en: '[PRE9]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: And, finally, plotting the interval by observation. We create a figure, then
     a scatterplot for the middle point and two bar graphics, one for the low range,
     which is white (so it disappears on white background) and the other one for the
     high range.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，通过观察绘制区间图。我们创建一个图形，然后为中点绘制散点图和两个条形图，一个表示低范围，颜色为白色（在白色背景上看不见），另一个表示高范围。
 - en: '[PRE10]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Here is the result.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是结果。
 - en: '![](../Images/7b052af61c8daca065a365f2ce9945b2.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7b052af61c8daca065a365f2ce9945b2.png)'
 - en: Confidence Intervals ordered by qty of ecomm orders. The more ecomm, the smaller
     the interval.Image by the author.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 按电子商务订单数量排序的置信区间。电子商务订单越多，区间越小。图片由作者提供。
 - en: This graphic is ordered by decreasing quantity of e-comm orders. From more (left)
     to less (right), we notice that the size of the confidence interval only gets
     bigger, showing that when we have too little number of e-comm transactions, it
     is really difficult to predict a reliable estimate.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个图表按电子商务订单数量递减排序。从多（左）到少（右），我们注意到置信区间的大小只会变大，这显示出当电子商务交易数量过少时，预测可靠估计真的很困难。
 - en: 'Coming back to one of our questions: should I invest more time in growing e-comm
     for customer 672 or 808, here are the intervals.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到我们的问题之一：我应该投入更多时间在客户672还是808的电子商务增长上，以下是这些区间。
 - en: '![](../Images/4613b83f0cc414aba4a5fc1b5e0f312c.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4613b83f0cc414aba4a5fc1b5e0f312c.png)'
 - en: Estimates for customers 808 and 672\. Image by the author.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 客户808和672的估计。图像由作者提供。
 - en: The customer 672 has a much larger CI, so it is less reliable. We should spend
     more time developing customer 808, which aligns with the history of relationship
     with the brand.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 客户672的置信区间要大得多，因此不够可靠。我们应该花更多时间在开发客户808上，这与品牌的历史关系一致。
 - en: '![](../Images/d45844bb36d163cd8a2a95a546dc128b.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d45844bb36d163cd8a2a95a546dc128b.png)'
 - en: Intervals for customers 808 and 672\. Image by the author.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 客户808和672的区间。图像由作者提供。
 - en: Before You Go
+  id: totrans-99
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在你离开之前
 - en: Well, this tool shows itself as powerful. We see that it brought good results
     for our comparison case here. Many times, we will just discard customers with
     little transactions. But many other times, that may not be possible. Furthermore,
     we may want to in fact analyze the tiny clients. Or yet, it will help us comparing
     two clients that are ordering a lot too, looking at their potential, based on
     the CI.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，这个工具表现出强大的功能。我们看到它在我们的比较案例中带来了良好的结果。很多时候，我们会直接淘汰交易少的客户。但很多时候，这可能不太可能。此外，我们实际上可能希望分析小型客户。或者，它也可以帮助我们比较两个下单量大的客户，基于CI查看他们的潜力。
 - en: '![](../Images/40027cfab5f877a40d9149d7d5a0155a.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/40027cfab5f877a40d9149d7d5a0155a.png)'
 - en: The customer 2360 is could get to 78% vs 75% of the customer 361\. Image by
     the author.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 客户2360的置信区间可能达到78%，而客户361的置信区间为75%。图像由作者提供。
 - en: Empirical Bayes is a good idea for larger data, it is an extra variable for
     other models, maybe.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 经验贝叶斯对于较大的数据集是一个不错的主意，它可能是其他模型的额外变量。
 - en: Well, I bet you are probably already thinking about the utility of this in your
     job. So, we end here.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，我敢打赌你可能已经在考虑这在你工作中的实用性了。那么，我们到此为止。
 - en: If you liked this content, follow my blog, subscribe to my page and get the
     posts once they’re published.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢这些内容，请关注我的博客，订阅我的页面，并在发布后获取帖子。
 - en: '[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
     [## Gustavo Santos - Medium'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
+    [## Gustavo Santos - Medium]'
 - en: Read writing from Gustavo Santos on Medium. Data Scientist. I extract insights
     from data to help people and companies…
+  id: totrans-107
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在Medium上阅读 Gustavo Santos 的文章。数据科学家。我从数据中提取洞察，帮助人们和公司…
 - en: gustavorsantos.medium.com](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: gustavorsantos.medium.com](https://gustavorsantos.medium.com/?source=post_page-----1467f50e943d--------------------------------)
 - en: Also, find me on [LinkedIn](https://www.linkedin.com/in/gurezende/).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 也可以在 [LinkedIn](https://www.linkedin.com/in/gurezende/) 上找到我。
 - en: Here is the complete code, for reference.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是完整的代码，供参考。
 - en: '[](https://github.com/gurezende/Studying/blob/master/Python/statistics/Empirical_Bayes.ipynb?source=post_page-----1467f50e943d--------------------------------)
     [## Studying/Python/statistics/Empirical_Bayes.ipynb at master · gurezende/Studying'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/gurezende/Studying/blob/master/Python/statistics/Empirical_Bayes.ipynb?source=post_page-----1467f50e943d--------------------------------)
+    [## Studying/Python/statistics/Empirical_Bayes.ipynb at master · gurezende/Studying]'
 - en: This is a repository with my tests and studies of new packages - Studying/Python/statistics/Empirical_Bayes.ipynb
     at…
+  id: totrans-112
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这是一个包含我的测试和新包研究的库 - Studying/Python/statistics/Empirical_Bayes.ipynb 在…
 - en: github.com](https://github.com/gurezende/Studying/blob/master/Python/statistics/Empirical_Bayes.ipynb?source=post_page-----1467f50e943d--------------------------------)
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/gurezende/Studying/blob/master/Python/statistics/Empirical_Bayes.ipynb?source=post_page-----1467f50e943d--------------------------------)
 - en: Reference
+  id: totrans-114
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考
 - en: '[](https://juliasilge.com/blog/doctor-who-bayes/?source=post_page-----1467f50e943d--------------------------------)
     [## Empirical Bayes for #TidyTuesday Doctor Who episodes | Julia Silge'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://juliasilge.com/blog/doctor-who-bayes/?source=post_page-----1467f50e943d--------------------------------)
+    [## 经验贝叶斯用于 #TidyTuesday 《神秘博士》剧集 | Julia Silge]'
 - en: A data science blog
+  id: totrans-116
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 数据科学博客
 - en: juliasilge.com](https://juliasilge.com/blog/doctor-who-bayes/?source=post_page-----1467f50e943d--------------------------------)
     [](http://varianceexplained.org/r/empirical_bayes_baseball/?source=post_page-----1467f50e943d--------------------------------)
     [## Understanding empirical Bayes estimation (using baseball statistics)
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 理解经验贝叶斯估计（使用棒球统计）](http://varianceexplained.org/r/empirical_bayes_baseball/?source=post_page-----1467f50e943d--------------------------------)'
 - en: 'Which of these two proportions is higher: 4 out of 10, or 300 out of 1000?
     This sounds like a silly question. Obviously…'
+  id: totrans-118
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这两个比例哪个更高：10中4，还是1000中300？这听起来像是个愚蠢的问题。显然……
 - en: varianceexplained.org](http://varianceexplained.org/r/empirical_bayes_baseball/?source=post_page-----1467f50e943d--------------------------------)
     [](http://varianceexplained.org/r/credible_intervals_baseball/?source=post_page-----1467f50e943d--------------------------------)
     [## Understanding credible intervals (using baseball statistics)
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 理解可信区间（使用棒球统计）](http://varianceexplained.org/r/credible_intervals_baseball/?source=post_page-----1467f50e943d--------------------------------)'
 - en: Previously in this series
+  id: totrans-120
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 本系列之前
 - en: varianceexplained.org](http://varianceexplained.org/r/credible_intervals_baseball/?source=post_page-----1467f50e943d--------------------------------)
     [](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution?source=post_page-----1467f50e943d--------------------------------)
     [## What is the intuition behind beta distribution?
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 贝塔分布的直觉是什么？](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution?source=post_page-----1467f50e943d--------------------------------)'
 - en: 'Disclaimer: I''m not a statistician but a software engineer. Most of my knowledge
     in statistics comes from…'
+  id: totrans-122
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 免责声明：我不是统计学家，而是软件工程师。我对统计学的大部分知识来自于……
 - en: stats.stackexchange.com](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution?source=post_page-----1467f50e943d--------------------------------)  [##
     scipy.stats.beta - SciPy v1.11.4 Manual
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## scipy.stats.beta - SciPy v1.11.4 手册](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution?source=post_page-----1467f50e943d--------------------------------)'
 - en: A beta continuous random variable. As an instance of the rv_continuous class,
     beta object inherits from it a collection…
+  id: totrans-124
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一个贝塔连续随机变量。作为rv_continuous类的一个实例，beta对象从中继承了一个集合……
 - en: docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.beta.html?source=post_page-----1467f50e943d--------------------------------)
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '[docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.beta.html?source=post_page-----1467f50e943d--------------------------------)'

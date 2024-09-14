@@ -1,63 +1,95 @@
 - en: How I Built A Cascading Data Pipeline Based on AWS (Part 2)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何基于AWS构建级联数据管道（第二部分）
 - en: 原文：[https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4](https://towardsdatascience.com/how-i-built-a-cascading-data-pipeline-based-on-aws-part-2-217622c65ee4)
 - en: Automatic, scalable, and powerful
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自动化、可扩展和强大
 - en: '[](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[![Memphis
     Meng](../Images/5a2b214eb5d5ab884b18224c471662c0.png)](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)
     [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[![Memphis
+    Meng](../Images/5a2b214eb5d5ab884b18224c471662c0.png)](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)
+    [Memphis Meng](https://anzhemeng.medium.com/?source=post_page-----217622c65ee4--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)
     ·10 min read·Aug 25, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----217622c65ee4--------------------------------)
+    ·10分钟阅读·2023年8月25日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/527158d227cde2bf33b0286a233784ff.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/527158d227cde2bf33b0286a233784ff.png)'
 - en: Photo by [Mehmet Ali Peker](https://unsplash.com/@mrpeker?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/hfiym43qBpk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由[Mehmet Ali Peker](https://unsplash.com/@mrpeker?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)拍摄，发布在[Unsplash](https://unsplash.com/photos/hfiym43qBpk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 - en: '[Previously](https://medium.com/p/997b212a84d2), I shared my experience in
     developing a data pipeline using AWS CloudFormation technology. It is not an optimal
     approach, though, because it leaves behind 3 more issues awaiting resolution:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '[之前](https://medium.com/p/997b212a84d2)，我分享了使用AWS CloudFormation技术开发数据管道的经验。然而，这不是一个最优的方法，因为它留下了3个待解决的问题：'
 - en: The deployment has to be imposed manually which could increase the chances of
     errors;
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 部署必须手动进行，这可能增加错误的机会；
 - en: All resources are created in one single stack, without proper boundaries and
     layers; as the development cycle goes on, the resource stack will be heavier,
     and managing it will be a disaster;
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 所有资源都创建在一个单一的堆栈中，没有适当的边界和层次；随着开发周期的进行，资源堆栈会变得越来越重，管理它将会是一场灾难；
 - en: Many resources are supposed to be sustained and reused in other projects.
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 许多资源应当在其他项目中持续使用和重用。
 - en: In short, we are going to increase the manageability and reusability of this
     project, in an agile manner.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，我们将以敏捷的方式增加该项目的可管理性和重用性。
 - en: Solution
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 解决方案
 - en: 'AWS enables users to implement 2 types of CloudFormation structural patterns:
     cross-stack reference and nested stacking. Cross-stack reference stands for a
     designing style of developing cloud stacks separately, and usually independently,
@@ -66,26 +98,37 @@
     means a CloudFormation stack composed of other stacks. It is achieved by using
     the `[AWS::CloudFormation::Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html)`
     resource.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: AWS使用户能够实现2种CloudFormation结构模式：跨堆栈引用和嵌套堆叠。跨堆栈引用代表了一种单独且通常独立地开发云堆栈的设计风格，而所有堆栈之间的资源可以根据引用关系相互关联。[嵌套堆叠](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html)指的是由其他堆栈组成的CloudFormation堆栈。这是通过使用`[AWS::CloudFormation::Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html)`资源实现的。
 - en: '![](../Images/2ff043977326ddfcf62a296a186bd9f0.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2ff043977326ddfcf62a296a186bd9f0.png)'
 - en: 'A nested stack in real life: a nest full of nests/eggs (Photo by [Giorgi Iremadze](https://unsplash.com/@apollofotografie?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/lbCsrVgJ0z8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText))'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 现实生活中的嵌套堆栈：一个充满巢穴/蛋的巢（照片由 [Giorgi Iremadze](https://unsplash.com/@apollofotografie?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    拍摄，来源于 [Unsplash](https://unsplash.com/photos/lbCsrVgJ0z8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)）
 - en: Because one of our missions we aim to achieve is to come up with better project
     management, the project is going to be broken down by layered separation and nested
     stacking is the one to help. However, in regard to the intrinsic interrelationship
     between the artifacts of the existing stack, we would also need to take a drop
     of cross-stack reference.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为我们旨在实现更好的项目管理，所以项目将通过分层分离来拆分，而嵌套堆栈将对此提供帮助。然而，鉴于现有堆栈工件之间的内在关系，我们还需要进行跨堆栈引用。
 - en: Implementation
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实现
 - en: We created 3 Lambda functions, 3 DynamoDB tables, 1 IAM role along with its
     policies attached, several SQS queues, and several Cloudwatch alarms. Due to the
     complexity of the functions themselves, in this version, they are going to be
@@ -94,56 +137,85 @@
     nested stack and so will the DynamoDB tables, in order to maintain their reusability.
     The SQS queues that deliver messages between lambda functions will be a different
     stack too. All these nested stacks will be put in a new directory called `/templates`.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们创建了 3 个 Lambda 函数，3 个 DynamoDB 表，1 个 IAM 角色及其附加策略，几个 SQS 队列和几个 Cloudwatch
+    警报。由于这些功能本身的复杂性，在这个版本中，它们将被定义在不同的模板中，服务仅供自己使用，包括警报和死信队列。除此之外，IAM 资源将是另一个嵌套堆栈，DynamoDB
+    表也是，为了保持其可重用性。用于在 Lambda 函数之间传递消息的 SQS 队列也将是一个不同的堆栈。这些嵌套堆栈将被放在一个新的目录中，称为 `/templates`。
 - en: '[PRE0]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The coding part is quite light in this session compared to the previous one,
     since mostly we only need to move these original codes from one file to another.
     For example, when configuring the DynamoDB table stack, what I did is only copying
     the snippet and pasting it to a new file:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 与之前相比，这一部分的编码工作相对轻松，因为我们主要只需将这些原始代码从一个文件移动到另一个文件。例如，在配置 DynamoDB 表堆栈时，我所做的仅是复制代码片段并粘贴到新文件中：
 - en: '[PRE1]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Cross-nested-stack References
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 跨嵌套堆栈引用
 - en: It’s worth noting that there are still some modifications in need. If we need
     to make sure the resources defined within a stack can be referenced by others
     outside the stack, those exporting stacks need a new section called `Outputs`
     to output the values for references. In our case, the IAM role is going to be
     in use globally, so right after its definition, we output its ARN so that it’s
     going to be visible within a certain scope.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 值得注意的是，还有一些修改是必要的。如果我们需要确保堆栈内定义的资源可以被堆栈外部的其他资源引用，那么那些导出堆栈需要一个新的部分，称为 `Outputs`，以输出引用值。在我们的案例中，IAM
+    角色将被全球使用，因此在其定义之后，我们会输出其 ARN，以便在一定范围内可见。
 - en: '[PRE2]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Similarly, the messenger queues are exported in the same way:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，消息队列也以相同的方式导出：
 - en: '[PRE3]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: In the meantime, the stacks importing the resources from others also need a
     minor change. AWS supports this functionality by providing an intrinsic function
     `[Fn::ImportValue](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html)`
     . Take “Branch Collector” as an example. It involves the IAM role and a messenger
     queue which aren’t created in the same stack. Thus, whenever the resources mentioned
     above occur, I replace them with the value of the function `Fn::ImportValue` .
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，从其他地方导入资源的堆栈也需要做些许调整。AWS 通过提供一个内置函数 `[Fn::ImportValue](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html)`
+    来支持此功能。以“分支收集器”为例。它涉及到 IAM 角色和一个消息队列，这些都不是在同一堆栈中创建的。因此，每当出现上述资源时，我将它们替换为 `Fn::ImportValue`
+    函数的值。
 - en: '[PRE4]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Root Stack
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 根堆栈
 - en: Now that all nested stacks are defined and created, there should be a root stack
     to integrate the entire infrastructure altogether. Consider the infrastructure
     that utilizes nested stack style as a hierarchy, the root stack is a parent that
@@ -151,130 +223,188 @@
     too). In our case, it’s quite as easy as to replace the existing snippets that
     define individual resources with the references to the nested stack CloudFormation
     templates in the predefined `template.yml` .
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在所有嵌套堆栈都已定义并创建，应该有一个根堆栈将整个基础设施集成在一起。考虑到使用嵌套堆栈风格的基础设施是一个层次结构，根堆栈是所有嵌套堆栈所归属的父级（尽管嵌套堆栈也可以作为其他堆栈的父级）。在我们的案例中，替换定义单个资源的现有片段为对预定义的
+    `template.yml` 中嵌套堆栈 CloudFormation 模板的引用非常简单。
 - en: '[PRE5]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: From here, it’s safe to say that the CloudFormation upgrade is complete!
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里开始，可以放心地说 CloudFormation 升级已经完成！
 - en: But wait, does it mean that we need to rebuild and redeploy it? Sadly speaking,
     yeah, and that’s what the next section is going to address.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 等等，这是否意味着我们需要重建和重新部署？遗憾的是，是的，这正是下一节将要解决的问题。
 - en: Auto Deployment
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自动部署
 - en: Since I always store everything I code in the GitHub repo, I am going to leverage
     [GitHub Actions](https://github.com/features/actions). GitHub Actions is a feature
     of GitHub to automate the workflows stored on any GitHub repos so as to seamlessly
     support building, testing, and deployment. There are pre-defined workflows though,
     owing to the uniqueness and the complexity of our mission, we need to customize
     one that meets our needs.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我总是将我编写的所有代码存储在 GitHub 仓库中，我打算利用 [GitHub Actions](https://github.com/features/actions)。GitHub
+    Actions 是 GitHub 的一个功能，用于自动化存储在任何 GitHub 仓库中的工作流，从而无缝支持构建、测试和部署。尽管有预定义的工作流，但由于我们任务的独特性和复杂性，我们需要自定义一个满足我们需求的工作流。
 - en: 'Generally speaking, the workflow should mimic what we do manually in the cloud
     environment during the software build & deployment stage. Namely, it includes
     the following steps:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 一般来说，工作流应该模拟我们在软件构建和部署阶段在云环境中手动执行的操作。即包括以下步骤：
 - en: Assign values to the parameters, e.g.`environment`
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为参数分配值，例如 `environment`
 - en: Set up AWS configuration, e.g. inputting the default AWS credentials and service
     region code
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设置 AWS 配置，例如输入默认的 AWS 凭证和服务区域代码
 - en: '[Install SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)'
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[安装 SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)'
 - en: Grant the AWS role access to the permissions of the services/resources that
     will be utilized
+  id: totrans-41
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 授予 AWS 角色访问将要使用的服务/资源的权限
 - en: Create a S3 bucket as the Cloudformation storage location
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个 S3 桶作为 CloudFormation 存储位置
 - en: Clone the common code base to every independent directory
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将通用代码库克隆到每个独立目录
 - en: Build & deploy the Serverless Application Model (SAM)
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 构建和部署无服务器应用程序模型（SAM）
 - en: 'To wrap them all up in a workflow file, it will be like:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在工作流文件中将它们全部包装起来，格式如下：
 - en: '[PRE6]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Here I include one job called “deploy”. It’s containerized by the image `lambci/lambda:build-python3.8`
     and run on the Ubuntu System, which is defined within this job. A variable called
     `BUCKET_NAME` is created to store the string value of the name that we are going
     to name the S3 bucket to be built.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里我包括了一个名为“deploy”的任务。它通过 `lambci/lambda:build-python3.8` 镜像进行容器化，并在 Ubuntu
+    系统上运行，这在此任务中进行了定义。创建了一个名为 `BUCKET_NAME` 的变量，用于存储我们将要命名的 S3 桶的字符串值。
 - en: 'Step 1 is to create a new parameter `env_name` which stores the value of the
     working environment name. It depends on the branch by which the workflow is triggered:
     unless the workflow is running on the main branch, it’s called `prod` ; otherwise,
     it’s `dev` .'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 1 步是创建一个新的参数 `env_name`，用于存储工作环境名称的值。它取决于触发工作流的分支：除非工作流在主分支上运行，否则称为 `prod`；否则为
+    `dev`。
 - en: Step 2 records the repository name in another output value. This is going to
     be part of the prefix of the location of the template file in the S3 bucket.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 2 步在另一个输出值中记录仓库名称。这将成为 S3 桶中模板文件位置前缀的一部分。
 - en: Step 3 is similar to step 2, getting the name of the branch to be used later
     as another part of the prefix.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 3 步类似于第 2 步，获取将来作为前缀另一部分使用的分支名称。
 - en: Step 4 simply uses [actions/checkout](https://github.com/actions/checkout),
     a package to check out the current repo under a different workspace so the workflow
     is able to access it.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 4 步简单地使用 [actions/checkout](https://github.com/actions/checkout)，这是一个软件包，用于在不同的工作区中检出当前的仓库，以便工作流能够访问它。
 - en: Step 5 also uses a package. With the help of [aws-actions/configure-aws-credentials@v1](https://github.com/aws-actions/configure-aws-credentials),
     we can effortlessly configure the AWS working environment by only providing the
     AWS access key ID, AWS secret access key, and region. Note that it’s recommended
     to keep your sensitive credentials (AWS access key ID and AWS secret access key)
     in secret.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 第5步还使用了一个包。在[aws-actions/configure-aws-credentials@v1](https://github.com/aws-actions/configure-aws-credentials)的帮助下，我们可以轻松配置AWS工作环境，只需提供AWS访问密钥ID、AWS秘密访问密钥和区域即可。请注意，建议将你的敏感凭证（AWS访问密钥ID和AWS秘密访问密钥）保存在秘密中。
 - en: Step 6~11 is executed in the bash command line. In this order, the rest of the
     workflow installs SAM CLI; then attaches all necessary policy ARNs to the IAM
     user; creates an S3 bucket with the bucket name provided as an environmental parameter,
     if it doesn't exist; last but not least, a CloudFormation stack will be built,
     packaged and deployed by SAM commands.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 第6~11步在bash命令行中执行。按照这个顺序，工作流的其余部分安装SAM CLI；然后将所有必要的策略ARN附加到IAM用户；如果S3桶不存在，则使用作为环境参数提供的桶名称创建一个S3桶；最后但同样重要的是，将通过SAM命令构建、打包和部署CloudFormation堆栈。
 - en: Using workflows, developers will be saved from constantly rerunning part of,
     if not all of, the steps personally. Instead, as long as a pull request is made,
     any new commit will trigger a new workflow run with the codes on a non-main branch;
     when the pull request is merged, the most recent workflow will also be triggered
     along with the resources on the main branch.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用工作流，开发人员将避免不断重新运行部分步骤（如果不是全部步骤的话）。相反，只要创建了拉取请求，任何新的提交都会触发一个新的工作流运行，代码在非主分支上；当拉取请求合并时，最近的工作流也会被触发，同时处理主分支上的资源。
 - en: Before you leave
+  id: totrans-55
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 离开之前
 - en: Thanks for making it here. In this post, I talked about one of the major upgrades
     to improve the manageability and reusability of the codes, while introducing a
     solution to automating the stack building and deployment. If you are interested
     in the details, feel free to check out [my repo](https://github.com/MemphisMeng/Cascading-ETL-pipeline/tree/main)!
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢你读到这里。在这篇文章中，我讨论了一个主要的升级，以提高代码的可管理性和重用性，同时介绍了一个自动化堆栈构建和部署的解决方案。如果你对细节感兴趣，随时查看[我的仓库](https://github.com/MemphisMeng/Cascading-ETL-pipeline/tree/main)!
 - en: By the way, the approach that I organized the resources and artifacts in the
     stack can also be a good start to kicking off [microservices](https://en.wikipedia.org/wiki/Microservices).
     If you are interested in microservices, don’t forget to subscribe to follow my
     next articles!
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 顺便说一下，我组织资源和工件的方式也可以是启动[微服务](https://en.wikipedia.org/wiki/Microservices)的一个很好的开端。如果你对微服务感兴趣，别忘了订阅以跟踪我的下一篇文章！

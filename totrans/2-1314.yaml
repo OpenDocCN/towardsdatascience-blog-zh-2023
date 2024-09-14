@@ -1,144 +1,214 @@
 - en: Multi-GPU Training on a single GPU System in 3 Minutes
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 3 分钟内在单个 GPU 系统上进行多 GPU 训练
 - en: 原文：[https://towardsdatascience.com/implement-multi-gpu-training-on-a-single-gpu-e9b6b775456a](https://towardsdatascience.com/implement-multi-gpu-training-on-a-single-gpu-e9b6b775456a)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/implement-multi-gpu-training-on-a-single-gpu-e9b6b775456a](https://towardsdatascience.com/implement-multi-gpu-training-on-a-single-gpu-e9b6b775456a)
 - en: An Advanced Guide for TensorFlow
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: TensorFlow 高级指南
 - en: '[](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)[![Sascha
     Kirch](../Images/a0d45da9dc9c602075b2810786c660c9.png)](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)
     [Sascha Kirch](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)[![Sascha
+    Kirch](../Images/a0d45da9dc9c602075b2810786c660c9.png)](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)
+    [Sascha Kirch](https://medium.com/@SaschaKirch?source=post_page-----e9b6b775456a--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)
     ·3 min read·May 15, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9b6b775456a--------------------------------)
+    ·阅读时间 3 分钟·2023年5月15日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/dbabbc57ed819e80bd93ba392243de25.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dbabbc57ed819e80bd93ba392243de25.png)'
 - en: Photo by [Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Chris Liverani](https://unsplash.com/@chrisliverani?utm_source=medium&utm_medium=referral)提供，[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: I want to share with you a neat little trick on how I test my multi GPU training
     code on a single GPU.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想和你分享一个有趣的小技巧，关于如何在单个 GPU 上测试我的多 GPU 训练代码。
 - en: Motivation
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 动机
 - en: I guess the problem is obvious and you probably experienced it yourself. You
     want to train a deep learning model and you want to take advantage of multiple
     GPUs, a TPU or even multiple workers for some extra speed or larger batch size.
     But of course you cannot (let’s say should not because I’ve seen it quite often
     😅) block the usually shared hardware for debugging or even spend a ton of money
     on a paid cloud instance.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想问题很明显，你可能自己也经历过。你想训练一个深度学习模型，并希望利用多个 GPU、TPU 或甚至多个工作节点来获得额外的速度或更大的批量大小。但当然，你不能（或者说不应该，因为我见过很多
+    😅）占用通常共享的硬件进行调试，甚至在付费云实例上花费大量金钱。
 - en: 'Let me tell you, it is not important how many physical GPUs your system has
     but rather how many your software thinks it does have. The keyword is: ***(device)
     virtualization***.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我告诉你，重要的不是你的系统有多少个物理 GPU，而是你的软件认为它有多少个。关键词是：***（设备）虚拟化***。
 - en: Let’s implement it
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 让我们实现它
 - en: 'First lets have a look on how you would usually **detect and connect to your
     GPU**:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们来看看你通常如何**检测和连接到你的 GPU**：
 - en: 'Code 1: Detect all available GPUs, initialize the respective scope and initialize
     your model, optimizer and checkpoints within the scope of the strategy.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码 1：检测所有可用的 GPU，初始化相应的作用域，并在策略作用域内初始化你的模型、优化器和检查点。
 - en: You would first list all devices available, then select a suitable strategy
     and the initialize your model, optimizer and checkpoint within the scope of the
     strategy. If you would use a standard training loop with ***model.fit()*** you
     would be done. If you would use a custom training loop you would need to implement
     some extra steps.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 你首先需要列出所有可用的设备，然后选择合适的策略，并在策略作用域内初始化你的模型、优化器和检查点。如果你使用标准训练循环中的***model.fit()***，你就完成了。如果你使用自定义训练循环，你需要实现一些额外的步骤。
 - en: Check out my tutorial on [Accelerated Distributed Training with TensorFlow on
     Google’s TPU](/accelerated-distributed-training-with-tensorflow-on-googles-tpu-52f1fe21da33?sk=b713cd3cf705bae60c523b26cfe25b3f)
     for more details an distributed training with custom training loops.
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 查看我关于[使用 Google 的 TPU 进行加速分布式训练的教程](/accelerated-distributed-training-with-tensorflow-on-googles-tpu-52f1fe21da33?sk=b713cd3cf705bae60c523b26cfe25b3f)，了解更多关于自定义训练循环的分布式训练细节。
 - en: 'There is one important detail in the code above. Did you noticed I used the
     function ***list_logical_devices(“GPU”)*** rather then ***list_physical_devices(“GPU”)***?
     Logical devices are all devices visible to the software but these are not always
     associated with an actual physical device. If we run the code block right now
     this could be an output you would see:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述代码中有一个重要细节。你注意到我用了函数 ***list_logical_devices(“GPU”)*** 而不是 ***list_physical_devices(“GPU”)***
+    吗？逻辑设备是所有对软件可见的设备，但这些设备不一定与实际的物理设备关联。如果我们现在运行代码块，这可能是你会看到的输出：
 - en: '![](../Images/4d0a65689a23f310b1f78f3fce32ab08.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4d0a65689a23f310b1f78f3fce32ab08.png)'
 - en: 'Figure 1: Screenshot of output after running Code 1\. and connecting to a single
     logical GPU with one associated physical GPU. Taken by author.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 1：运行 Code 1 之后的输出截图，并连接到一个逻辑 GPU 和一个相关的物理 GPU。由作者拍摄。
 - en: 'We will use the logical device definition to our advantage and define some
     logical devices, before we list all logical devices and connect to them. To be
     precise, we will define 4 logical GPUs associated with a single physical GPU.
     This is how it is done:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将利用逻辑设备定义来定义一些逻辑设备，然后列出所有逻辑设备并连接到它们。具体来说，我们将定义 4 个逻辑 GPU 与一个物理 GPU 相关联。这是操作步骤：
 - en: 'Code 2: Create multiple logical GPU devices associated with a single physical
     GPU.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: Code 2：创建与单个物理 GPU 相关联的多个逻辑 GPU 设备。
 - en: 'If we would again print the number of logical vs. physical devices you’ll see:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们再次打印逻辑设备与物理设备的数量，你会看到：
 - en: '![](../Images/e1724aa8e47fc229bf375fbce66810d9.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e1724aa8e47fc229bf375fbce66810d9.png)'
 - en: 'Figure 2: Screenshot of output after running Code 2\. before Code 1\. and connecting
     to four logical GPU with one associated physical GPU. Taken by author.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 2：运行 Code 2 之后的输出截图。在 Code 1 之前，并连接到四个逻辑 GPU 和一个相关的物理 GPU。由作者拍摄。
 - en: And voilà, you can now test your code on a single GPU as if you would be performing
     distributed training on 4 GPUs.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这样，你现在可以像在 4 个 GPU 上进行分布式训练一样，在单个 GPU 上测试你的代码。
 - en: 'There are several things to keep in mind:'
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 有几点需要注意：
 - en: You are not actually performing distributed training, hence there is now performance
     gain through parallelization
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你实际上并没有进行分布式训练，因此没有通过并行化获得性能提升。
 - en: You need to assign the logical devices, before you connect to your hardware,
     otherwise an exception is raised.
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你需要在连接硬件之前分配逻辑设备，否则会引发异常。
 - en: It only tests the correct implementation of your algorithm and you can check
     if the output shapes and values are as expected. It will not guarantee that all
     drivers and hardware in a multi-GPU setup is correct.
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它只测试算法的正确实现，你可以检查输出的形状和值是否符合预期。它不能保证多 GPU 配置中的所有驱动程序和硬件都是正确的。
 - en: Let me know in the comments if this trick is useful for you and if you already
     knew about this feature! For me it was a game changer.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果这个技巧对你有用，或者你已经知道这个功能，请在评论中告诉我！对我来说，这真是一个游戏改变者。
 - en: Happy testing!💪
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 祝你测试愉快！💪

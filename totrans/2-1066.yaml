@@ -1,502 +1,751 @@
 - en: How Does a Decision Tree Know the Next Best Question to Ask from the Data?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 决策树如何知道从数据中询问下一个最佳问题？
 - en: 原文：[https://towardsdatascience.com/how-does-a-decision-tree-know-the-next-best-question-to-ask-from-the-data-0d44c9433b06](https://towardsdatascience.com/how-does-a-decision-tree-know-the-next-best-question-to-ask-from-the-data-0d44c9433b06)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-does-a-decision-tree-know-the-next-best-question-to-ask-from-the-data-0d44c9433b06](https://towardsdatascience.com/how-does-a-decision-tree-know-the-next-best-question-to-ask-from-the-data-0d44c9433b06)
 - en: Build your own decision tree classifier (from scratch in Python) and understand
     how it uses entropy to split a node
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 从零开始构建你自己的决策树分类器（使用Python），并理解它如何使用熵来分裂节点
 - en: '[](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)[![Gurjinder
     Kaur](../Images/d5c6746466025dad06077b1a89a789d1.png)](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)
     [Gurjinder Kaur](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)[![Gurjinder
+    Kaur](../Images/d5c6746466025dad06077b1a89a789d1.png)](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)
+    [Gurjinder Kaur](https://medium.com/@gurjinderkaur95?source=post_page-----0d44c9433b06--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)
     ·14 min read·Nov 17, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----0d44c9433b06--------------------------------)
+    ·14分钟阅读·2023年11月17日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/4f9f5b9174a45c2bfe56d92a8282fcbc.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4f9f5b9174a45c2bfe56d92a8282fcbc.png)'
 - en: Photo by [Daniele Levis Pelusi](https://unsplash.com/@yogidan2012?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由[Daniele Levis Pelusi](https://unsplash.com/@yogidan2012?utm_source=medium&utm_medium=referral)拍摄，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Introduction
+  id: totrans-8
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Decision trees are versatile machine learning algorithms that can perform both
     classification and regression tasks. They make decisions by asking questions about
     the data based on its features, using an IF-ELSE structure to follow a path, that
     ultimately leads to the final prediction. The challenge is to find out what question
     to ask at each step of the decision-making process, which is also equivalent to
     asking how to determine the best split at each decision node.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 决策树是多用途的机器学习算法，能够执行分类和回归任务。它们通过询问有关数据的特征的问题，使用IF-ELSE结构来跟随路径，最终得出预测结果。挑战在于确定在每一步决策过程中需要询问什么问题，这也等同于确定在每个决策节点上最佳分裂的方式。
 - en: In this article, we will attempt to build a decision tree for a simple binary
     classification task. The objective of this article is to understand how an impurity
     measure (*e.g. entropy*) is used at each node to determine the best split, eventually
     constructing a tree-like structure that uses a rule-based approach to get to the
     final prediction.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将尝试构建一个用于简单二分类任务的决策树。本文的目的是理解在每个节点上如何使用不纯度度量（*例如熵*）来确定最佳分裂，最终构建一个基于规则的树状结构以获得最终预测结果。
 - en: To gain intuition behind entropy and gini impurity (another metric used to measure
     randomness and determine the quality of split in decision trees), quickly check
     out this [article](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了获得关于熵和基尼不纯度（用于测量随机性并确定决策树中分裂质量的另一种度量）的直觉，可以快速查看这篇[文章](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe)。
 - en: Problem definition and data
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 问题定义和数据
 - en: '**Problem:** Given its length and weight measurements, predict whether a fish
     is tuna or salmon.'
+  id: totrans-13
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**问题：** 根据鱼的长度和重量预测它是金枪鱼还是鲑鱼。'
 - en: The challenge is to predict the *type* (target variable) of fish given its *weight*
     and *length*. This is an example of a binary classification task since there are
     two possible values of our target variable *type* i.e., *tuna* and *salmon.*
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 挑战在于根据鱼的*重量*和*长度*预测鱼的*类型*（目标变量）。这是一个二分类任务的示例，因为我们的目标变量*类型*有两个可能的值，即*tuna*和*salmon*。
 - en: You can download the dataset from [here](https://github.com/gurjinderbassi/Machine-Learning/blob/main/fish.csv).
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以从[这里](https://github.com/gurjinderbassi/Machine-Learning/blob/main/fish.csv)下载数据集。
 - en: It’s highly encouraged to code along as you’re reading this article to get the
     maximum understanding :)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 强烈建议你在阅读本文时进行编码，以获得最大理解 :)
 - en: Code-along prerequisites
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 代码跟随前提条件
 - en: Let’s make sure you have everything to get started (I bet you already do, but
     just in case).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们确保你有一切准备好开始（我敢打赌你已经准备好了，但以防万一）。
 - en: '[***Python***](https://www.python.org/downloads/)'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[***Python***](https://www.python.org/downloads/)'
 - en: Any ***code editor*** that lets you work with Python (.ipynb extension) notebooks,
     [Visual Studio Code](https://code.visualstudio.com/), [Jupyter Notebook](https://jupyter.org/install),
     and [Google Colab](https://colab.research.google.com/?utm_source=scs-index) to
     name a few.
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任何允许你使用 Python (.ipynb 扩展名) 笔记本的***代码编辑器***，例如 [Visual Studio Code](https://code.visualstudio.com/)、[Jupyter
+    Notebook](https://jupyter.org/install) 和 [Google Colab](https://colab.research.google.com/?utm_source=scs-index)
+    等等。
 - en: '***Libraries*:** [pandas](https://pandas.pydata.org/docs/getting_started/install.html)
     and [numpy](https://numpy.org/install/) for data manipulation; [plotly](https://plotly.com/python/getting-started/)
     for visualization. (Feel free to use any other data viz library of your choice
     if you want).'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '***库*:** [pandas](https://pandas.pydata.org/docs/getting_started/install.html)
+    和 [numpy](https://numpy.org/install/) 用于数据处理；[plotly](https://plotly.com/python/getting-started/)
+    用于可视化。（如果你愿意，可以使用任何其他的数据可视化库。）'
 - en: '[***Data***](https://github.com/gurjinderbassi/Machine-Learning/blob/main/fish.csv),
     of course.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[***数据***](https://github.com/gurjinderbassi/Machine-Learning/blob/main/fish.csv)，当然。'
 - en: That’s all we need, and most probably you are already good to go. Now let’s
     start coding!
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是我们需要的一切，很可能你已经准备好了。现在让我们开始编码吧！
 - en: A step-by-step solution
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一步步解决方案
 - en: '**Create a new .ipynb file and import the libraries first.**'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**创建一个新的 .ipynb 文件并首先导入库。**'
 - en: '[PRE0]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '**Read the data into a pandas data frame.**'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**将数据读入 pandas 数据框。**'
 - en: '[PRE1]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '`Cell Output:`'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '`单元输出：`'
 - en: '![](../Images/0e8d1c7256af0d8151f6de75bdcf5596.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0e8d1c7256af0d8151f6de75bdcf5596.png)'
 - en: There are 1000 rows and 3 columns in our data frame. ‘length’ and ‘weight’ are
     the features and ‘type’ is the target variable. Since the ‘type’ column has values
     — ‘tuna’ and ‘salmon’, let’s label encode them.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的数据框中有 1000 行和 3 列。‘length’ 和 ‘weight’ 是特征，‘type’ 是目标变量。由于‘type’ 列有值——‘tuna’
+    和 ‘salmon’，让我们对它们进行标签编码。
 - en: '**Label encoding our target column:**'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**对目标列进行标签编码：**'
 - en: '[PRE2]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'We have labeled our classes as: `{salmon: 0 and tuna: 1}`'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '我们将类别标记为：`{salmon: 0 和 tuna: 1}`'
 - en: Now, let’s **plot a scatter plot to visualize our classes.**
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们**绘制一个散点图来可视化我们的类别。**
 - en: '[PRE3]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '`Cell Output:`'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '`单元输出：`'
 - en: '![](../Images/de8ddf4c7f4f68e80ce4cfa22beea6a4.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de8ddf4c7f4f68e80ce4cfa22beea6a4.png)'
 - en: Image by Author
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: We can now clearly see our two classes marked in red and blue colors. This was
     all about data preparation, let’s get into the decision tree now. Assign the feature
     column names to a list that we will use later.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以清楚地看到用红色和蓝色标记的两个类别。这一切都是关于数据准备的，让我们进入决策树的部分。将特征列名称分配给一个列表，我们稍后会使用到。
 - en: '[PRE4]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '**Finding our first split**'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '**找到我们的第一个划分**'
 - en: A **split** at a node in decision tree refers to the (feature, value) pair that
     divides the data into two (or more) partitions.
+  id: totrans-43
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在决策树中的**划分**指的是将数据分为两个（或更多）分区的 (特征, 值) 对。
 - en: ''
+  id: totrans-44
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: In case of numerical feature, the split will cause two partitions of data —
     one with **feature ≤ value** and the other with **feature > value**.
+  id: totrans-45
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在数值特征的情况下，划分将导致数据的两个分区——一个是**特征 ≤ 值**，另一个是**特征 > 值**。
 - en: ''
+  id: totrans-46
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: In case of categorical feature, the split will cause two partitions of data
     — one with **feature=value** and the other with **feature not equal value**.
+  id: totrans-47
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在分类特征的情况下，划分将导致数据的两个分区——一个是**特征=值**，另一个是**特征不等于值**。
 - en: '[PRE5]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Running this cell will produce an error because we haven’t defined the function
     `compute_impurity` yet. We need this function to compare the impurity in data
     before making the split and after making the split. The (feature, value) pair
     that results in the lowest impurity after splitting will be chosen as the best
     split at the current node and we will update the *best_params* accordingly.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行此单元将产生错误，因为我们还没有定义函数 `compute_impurity`。我们需要这个函数来比较在划分之前和之后数据的杂质。结果在划分后杂质最低的
+    (特征, 值) 对将被选为当前节点的最佳划分，我们将相应地更新*best_params*。
 - en: 'Define the function as follows:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 定义函数如下：
 - en: '[PRE6]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'This function uses another helper function `compute_entropy` that gives us
     the entropy of a given list of classes. Let’s define this as well:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 此函数使用另一个辅助函数 `compute_entropy`，它为给定类别列表提供熵。让我们也定义这个函数：
 - en: '[PRE7]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Now as both of our helper functions are defined, run the cell again which previously
     led to an error, it should run successfully now. Print the *best_params* dictionary
     to check if it got updated or not.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经定义了两个辅助函数，再次运行之前导致错误的单元格，现在应该可以成功运行了。打印 *best_params* 字典以检查它是否已更新。
 - en: '[PRE8]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '`Cell Output:`'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '`单元格输出：`'
 - en: '![](../Images/989ee647c08e6b66d676165d687d6ea0.png)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/989ee647c08e6b66d676165d687d6ea0.png)'
 - en: Voila! We got our first best split at `length = 3` which means we will split
     our data into two partitions now — `data['length']<=3` and `data['length']>3.`
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 完美！我们在 `length = 3` 处得到了第一个最佳分割，这意味着我们现在将数据分为两个分区——`data['length']<=3` 和 `data['length']>3`。
 - en: '***Note:*** *Here we are going with the split that results in the minimum entropy.
     Decision trees can vary in terms of this split criterion, for example,* ***ID3
     uses******Information Gain*** *(which is the difference in entropy of data before
     split and the weighted sum of entropy of branches after split), and* ***CART uses
     the Gini index*** *as their respective split criteria.*'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '***注意：*** *在这里，我们选择结果熵最小的分割。决策树可以在此分割标准上有所不同，例如，* ***ID3 使用******信息增益*** *(即分割前数据的熵与分割后分支熵加权和的差值)，而*
+    ***CART 使用基尼指数*** *作为它们各自的分割标准。*'
 - en: Following is how our decision tree looks right now. Since the data at the left
     branch consists of a single class, we will make it a leaf node; so any data point
     with `length<=3` will be predicted as *tuna.*
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是我们当前决策树的样子。由于左侧分支的数据只包含一个类别，我们将其设为叶节点；因此，任何 `length<=3` 的数据点都将被预测为 *金枪鱼*。
 - en: '(***Reminder:*** according to our color_map, we have assigned blue color to
     tuna and red color to salmon):'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: (***提醒：*** 根据我们的 color_map，我们将蓝色分配给金枪鱼，将红色分配给鲑鱼)：
 - en: '[PRE9]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: For the data at the right branch, we can recursively follow the same process
     and find the best split, repeat for subsequent branches until we reach a maximum
     depth or no further splitting is possible.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于右侧分支的数据，我们可以递归地遵循相同的过程，找到最佳分割，并对后续分支重复此过程，直到达到最大深度或不再可能进行进一步分割。
 - en: '![](../Images/358412cd61839e3cf75d0089b273a6d1.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/358412cd61839e3cf75d0089b273a6d1.png)'
 - en: Visualizing decision tree after making first split (Image by Author)
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第一次分割后可视化决策树（图像作者提供）
 - en: This process then gets repeated for each of the partitions until a stopping
     condition is met (such as the maximum depth of the tree is reached, or the number
     of samples in a leaf node is below a threshold, etc.). This is what *hyperparameters*
     allow us to define when we use classifiers or regressors from packages such as
     scikit-learn.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个过程会对每个分区重复，直到满足停止条件（例如，树的最大深度达到，或者叶节点中的样本数量低于阈值等）。这就是当我们使用如 scikit-learn 等包中的分类器或回归器时，*超参数*
+    允许我们定义的内容。
 - en: '**Generalize the code using recursion**'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用递归来泛化代码**'
 - en: We will wrap the above code in a function `build_tree`that can be called recursively
     to build the decision tree.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将把上述代码封装到一个函数 `build_tree` 中，该函数可以递归调用来构建决策树。
 - en: '**Helper functions:**'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**辅助函数：**'
 - en: '`compute_entropy:` Returns the entropy of a dataset with two classes. Defined
     above.'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '`compute_entropy:` 返回具有两个类别的数据集的熵。上述定义。'
 - en: '`compute_gini:` Returns the gini index of a dataset with two classes. We can
     choose between entropy and gini index as our impurity measures.'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '`compute_gini:` 返回具有两个类别的数据集的基尼指数。我们可以选择使用熵或基尼指数作为我们的 impurity 衡量标准。'
 - en: '[PRE10]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '`compute_impurity:` An extension of compute_impurity function defined above,
     it returns the *impurity* of the dataset. It uses `compute_entropy` and `compute_gini`
     functions to calculate the entropy and the Gini index at the given split point,
     according to the criterion specified.'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '`compute_impurity:` 是上述 compute_impurity 函数的扩展，它返回数据集的 *impurity*。它使用 `compute_entropy`
+    和 `compute_gini` 函数根据指定的标准计算给定分割点的熵和基尼指数。'
 - en: '[PRE11]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '`get_best_params:` Returns the *best_params* dictionary containing the feature
     and value to use for split at the current node.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '`get_best_params:` 返回包含当前节点分割所用特征和值的 *best_params* 字典。'
 - en: '[PRE12]'
+  id: totrans-76
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '**Main function**'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '**主函数**'
 - en: '`build_tree:` It is the main driver function that makes use of helper functions
     to build the decision tree recursively for the given data. I have also added additional
     statements in an attempt to print the decision tree in an interpretable format
     as it is created.'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '`build_tree:` 这是主要的驱动函数，它利用辅助函数递归地为给定的数据构建决策树。我还添加了一些额外的语句，试图在创建过程中以可解释的格式打印决策树。'
 - en: '[PRE13]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Now, we can pass our fish dataset and test the output of our code as follows.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以传递我们的鱼数据集并测试代码的输出，如下所示。
 - en: '[PRE14]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '`Cell Output:`'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '`单元格输出：`'
 - en: '![](../Images/1a6cdb5c5b8311c3319f4849f90e4075.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1a6cdb5c5b8311c3319f4849f90e4075.png)'
 - en: 'Following is what our final decision tree looks like:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是我们最终决策树的样子：
 - en: '![](../Images/7f2c327a26b137d97f75628fa60f6327.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7f2c327a26b137d97f75628fa60f6327.png)'
 - en: Image by Author
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: 'This corresponds to the following decision boundaries:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这对应于以下决策边界：
 - en: '![](../Images/868c6d0d1b4dbae53e9e139286993b98.png)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/868c6d0d1b4dbae53e9e139286993b98.png)'
 - en: Image by Author
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: '**Note:** What happens if the leaf node is not pure i.e., there is more than
     one class in a leaf node partition? *Simply go for the majority class.*'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：** 如果叶节点不是纯净的，即叶节点分区中有多个类别，会发生什么？*只需选择多数类别。*'
 - en: Link to Code
+  id: totrans-91
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 代码链接
 - en: You can get the final code notebook from [here.](https://github.com/gurjinderbassi/Machine-Learning/blob/main/Decision%20Tree%20-%20Fish%20dataset.ipynb)
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以从[这里](https://github.com/gurjinderbassi/Machine-Learning/blob/main/Decision%20Tree%20-%20Fish%20dataset.ipynb)获取最终的代码笔记本。
 - en: Takeaways
+  id: totrans-93
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 主要收获
 - en: If you’ve come so far, you will now be much more comfortable making sense out
     of a lot of important things related to decision trees such as *interpretability*
     being an advantage, and *overfitting* being a top disadvantage — that you might
     already come across during your previous encounter with decision trees. And it
     will be unfair if we leave out these topics here, so touching briefly on them
     below.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你已经读到这里，你会对许多与决策树相关的重要问题有更清晰的认识，比如*可解释性*作为优点，以及*过拟合*作为主要缺点——你可能在之前接触决策树时已经遇到过。我们不能在这里忽略这些话题，所以简单提及一下。
 - en: Let’s first look at the advantages. There are more, but we are sticking with
     the most important ones.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先来看看优点。还有更多，但我们只列出最重要的几个。
 - en: What are the (top) advantages of a decision tree?
+  id: totrans-96
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 决策树的（主要）优点是什么？
 - en: '***Interpretability****:* A decision tree prediction is easier to interpret
     as compared to other machine learning models since we can take a visual look at
     the path that was followed to get to the final prediction.'
+  id: totrans-97
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '***可解释性：*** 决策树的预测相较于其他机器学习模型更易于解释，因为我们可以直观地查看达到最终预测所遵循的路径。'
 - en: A decision tree is intuitive, and can be explained easily, even to a non-technical
     person.
+  id: totrans-98
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 决策树直观且易于解释，即使对非技术人员也是如此。
 - en: For example, let’s say a bank is using a decision tree to predict whether it
     should grant a loan to a customer based on their attributes such as income, bank
     balance, age, profession, etc. If the classification system suggests that the
     bank should not grant a loan to a customer, then the bank needs to draft a proper
     response stating the reasons for rejection. Otherwise, it can harm their business
     and reputation.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，假设一家银行使用决策树预测是否应根据客户的属性（如收入、银行余额、年龄、职业等）向客户授予贷款。如果分类系统建议银行不应向客户提供贷款，那么银行需要制定适当的回应，说明拒绝的理由。否则，这可能会损害他们的业务和声誉。
 - en: '***No need for heavy-duty preprocessing:*** Decision trees don’t expect the
     data to be normalized (or standardized) as opposed to some other machine learning
     models.'
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '***无需重度预处理：*** 与其他一些机器学习模型不同，决策树不要求数据进行归一化（或标准化）。'
 - en: You do minimal data pre-processing and the decision tree won’t mind much.
+  id: totrans-101
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 你只需进行最少的数据预处理，决策树也不会太在意。
 - en: Moreover, it can intrinsically handle categorical features and we don’t need
     to worry about one-hot encoding (or other solutions) as distinct categories will
     simply be considered as different branches during a split.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，它可以自然地处理分类特征，我们不需要担心独热编码（或其他解决方案），因为不同的类别在分裂时会被视为不同的分支。
 - en: And that major drawback —> Overfitting
+  id: totrans-103
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 主要缺点——> 过拟合
 - en: Overfitting is when our model is toooo good to be real i.e., the model adapts
     to the training data so closely that it loses its ability to generalize and fails
     to show similar level of accuracy when presented with test data.
+  id: totrans-104
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 过拟合是指我们的模型好得不真实，即模型对训练数据的适应过于紧密，以至于丧失了泛化能力，无法在面对测试数据时表现出类似的准确度。
 - en: '**Decision trees when not controlled properly are highly prone to overfitting.**
     Notice in our example above that if we keep splitting the training data without
     defining any limit then the decision tree would keep creating more decision boundaries,
     learning the noise in training data.'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '**决策树如果控制不当，非常容易过拟合。** 注意在我们上述的例子中，如果我们不断地分裂训练数据而不设定任何限制，那么决策树将不断创建更多的决策边界，学习训练数据中的噪声。'
 - en: In order to retain the model’s generalizability property, it’s important to
     follow measures to avoid overfitting. In the case of decision trees, we can take
     the following **steps to prevent overfitting:**
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了保持模型的泛化能力，采取措施避免过拟合是非常重要的。在决策树的情况下，我们可以采取以下**防止过拟合的步骤：**
 - en: '*Pre-pruning:* Pruning refers to preventing the decision tree from growing
     at its full capacity. It can be done proactively by:'
+  id: totrans-107
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*预剪枝：* 剪枝指的是防止决策树达到其最大容量。可以通过以下方式主动进行：'
 - en: Setting *max_depth:* Don’t allow the tree to grow beyond a pre-defined depth.
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 设置*max_depth:* 不允许树的深度超过预定义的深度。
 - en: Setting *min_samples_split:* Don’t allow the split to happen if the number of
     samples is below this value at a decision node
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 设置*min_samples_split:* 如果决策节点处的样本数量低于此值，则不允许分裂发生。
 - en: Setting *min_samples_leaf:* Don’t allow the split to happen if the number of
     samples at any of the resulting leaf nodes is lower than this value.
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 设置*min_samples_leaf:* 如果任何结果叶节点处的样本数量低于此值，则不允许分裂发生。
 - en: These (plus many others) are the ***hyperparameters*** that we can tune as per
     our needs when we implement decision trees via packages such as scikit-learn.
     You can find all the hyperparameters and their definitions in this [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些（以及许多其他的）是我们在通过诸如 scikit-learn 这样的包实现决策树时可以根据需要调整的***超参数***。你可以在这个[文档](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)中找到所有超参数及其定义。
 - en: '*2\. Post-pruning:* It refers to letting the decision tree grow at its full
     capacity and then discarding some sections/branches afterward that seem unnecessary
     or are leading to high variance.'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '*2\. 后剪枝：* 指的是让决策树在其最大容量下生长，然后丢弃一些看起来不必要或导致高方差的部分/分支。'
 - en: '3\. Another possible solution is: *don’t use decision trees!* But rather opt
     for their advanced versions — such as *random forests or gradient-boosted trees
     :)* which still requires you to have basic knowledge of their predecessors, so
     reading this article is not a waste of time at all!'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. 另一种可能的解决方案是：*不要使用决策树！* 而是选择它们的高级版本——比如*随机森林或梯度提升树 :)* 这仍然需要你对前者有基本了解，因此阅读这篇文章绝对不会浪费时间！
 - en: Bonus Points
+  id: totrans-114
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 奖励积分
 - en: 'There are some other properties of decision trees that are worth noting:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一些决策树的其他特性值得注意：
 - en: '**Non-parametric**: Decision trees are non-parametric machine learning models,
     which means that they do not make assumptions about the training data related
     to its distribution, independence of features, etc.'
+  id: totrans-116
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**非参数**：决策树是非参数机器学习模型，这意味着它们对训练数据的分布、特征的独立性等不做假设。'
 - en: '**Greedy approach**: Decision trees follow a greedy approach, which means that
     they opt for the split that they think is the best at the given node (*i.e.*,
     locally optimal solution) and cannot backtrack, leading to a sub-optimal solution.'
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**贪心算法**：决策树遵循贪心算法，这意味着它们选择在给定节点处认为最好的分裂（*即*，局部最优解），且无法回溯，从而可能导致次优解。'
 - en: Conclusion
+  id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In this article, we learned to build a decision tree for a binary classification
     task without making use of any packages to get strong at the conceptual level.
     We went through a step-by-step process to understand how a decision rule is generated
@@ -504,80 +753,122 @@
     a recursive algorithm in Python to output the final decision tree. The goal of
     this article was to get the fundamentals of the decision tree by looking under
     the hood.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们学习了如何在没有使用任何包的情况下为二分类任务构建决策树，以在概念层面上打下坚实的基础。我们通过逐步过程理解了如何使用数据不纯度度量（如熵）在每个节点生成决策规则，然后在
+    Python 中实现了递归算法以输出最终的决策树。这篇文章的目的是通过深入了解决策树的基本原理。
 - en: In practice, however, when dealing with real-life data and challenges at hand,
     we will never have the need to do this from scratch as there are numerous packages
     available that make things far more convenient and robust for us. But having a
     strong background is going to help us better utilize those packages, and we will
     be more confident while leveraging them.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，当处理现实世界的数据和面临挑战时，我们通常不需要从零开始做这些工作，因为有许多现成的包可以使事情变得更方便和稳健。但拥有扎实的基础会帮助我们更好地利用这些包，同时在使用时也会更有信心。
 - en: Hopefully, next time we go on to build our next Decision Tree or Random Forest
     (which is an ensemble of multiple decision trees), we will be more thoughtful
     while configuring our models (and there will be less struggle to understand what
     a hyperparameter really means 😺).
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望下次当我们构建下一个决策树或随机森林（这是一组决策树的集成）时，我们能在配置模型时更加周到（并且更容易理解超参数的真正含义 😺）。
 - en: I hope this was helpful. Open to any feedback or suggestions.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望这些内容对你有所帮助。欢迎提供任何反馈或建议。
 - en: I’d like to acknowledge [Ritvik Kharkar](https://medium.com/u/ddca178f703?source=post_page-----0d44c9433b06--------------------------------)
     for his amazing YouTube video that helped me better understand decision trees
     conceptually. I’ve taken inspiration from his video to write this article, using
     the same example he used, and taking the solution a step ahead by adding recursive
     implementation and logic to print the decision tree. The link to his video is
     in the references below.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想感谢 [Ritvik Kharkar](https://medium.com/u/ddca178f703?source=post_page-----0d44c9433b06--------------------------------)
+    的精彩 YouTube 视频，帮助我更好地理解了决策树的概念。我从他的录像中获得了灵感，写了这篇文章，使用了他用的相同例子，并通过添加递归实现和打印决策树的逻辑将解决方案推进了一步。他的视频链接在下面的参考文献中。
 - en: '**Related Reading**'
+  id: totrans-124
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**相关阅读**'
 - en: '**Want to get the intuition behind impurity measures?** Check out this article
     related to Entropy and Gini index:'
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**想要理解 impurity measures 背后的直觉？** 请查看这篇关于熵和基尼指数的文章：'
 - en: '[](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe?source=post_page-----0d44c9433b06--------------------------------)
     [## Entropy and Gini Index'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe?source=post_page-----0d44c9433b06--------------------------------)
+    [## 熵和基尼指数'
 - en: Understanding how these measures help us quantify uncertainty in a dataset
+  id: totrans-127
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 理解这些指标如何帮助我们量化数据集中的不确定性
 - en: medium.com](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe?source=post_page-----0d44c9433b06--------------------------------)
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@gurjinderkaur95/entropy-and-gini-index-c04b7452efbe?source=post_page-----0d44c9433b06--------------------------------)
 - en: '**How to evaluate a decision tree classifier?** Check out the article below
     to learn about different evaluation metrics for classification models:'
+  id: totrans-129
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**如何评估决策树分类器？** 请查看下面的文章，了解不同的分类模型评价指标：'
 - en: '[](https://medium.com/@gurjinderkaur95/evaluation-metrics-for-classification-beyond-accuracy-1e20d8c76ba0?source=post_page-----0d44c9433b06--------------------------------)
     [## Evaluation Metrics for Classification- beyond Accuracy'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@gurjinderkaur95/evaluation-metrics-for-classification-beyond-accuracy-1e20d8c76ba0?source=post_page-----0d44c9433b06--------------------------------)
+    [## 分类的评价指标 - 超越准确率'
 - en: Unfolding Confusion Matrix, Precision, Recall, F1 Score, and ROC Curve
+  id: totrans-131
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 展开混淆矩阵、精准率、召回率、F1 分数和 ROC 曲线
 - en: medium.com](https://medium.com/@gurjinderkaur95/evaluation-metrics-for-classification-beyond-accuracy-1e20d8c76ba0?source=post_page-----0d44c9433b06--------------------------------)
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@gurjinderkaur95/evaluation-metrics-for-classification-beyond-accuracy-1e20d8c76ba0?source=post_page-----0d44c9433b06--------------------------------)
 - en: References
+  id: totrans-133
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Aurélien Géron, (2019). *Hands-on machine learning with Scikit-Learn, Keras
     and TensorFlow: concepts, tools, and techniques to build intelligent systems*
     (2nd ed.). O’Reilly.'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Aurélien Géron, (2019). *Hands-on machine learning with Scikit-Learn, Keras
+    and TensorFlow: concepts, tools, and techniques to build intelligent systems*
+    (第2版). O’Reilly.'
 - en: '[2] ritvikmath’s YouTube [video](https://youtu.be/dCez6oGZilY?si=slDWXQG5ZJgSv36W)'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] ritvikmath 的 YouTube [视频](https://youtu.be/dCez6oGZilY?si=slDWXQG5ZJgSv36W)'
 - en: '[3] [StatQuest](https://www.youtube.com/watch?v=_L39rN6gz7Y&ab_channel=StatQuestwithJoshStarmer)'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [StatQuest](https://www.youtube.com/watch?v=_L39rN6gz7Y&ab_channel=StatQuestwithJoshStarmer)'

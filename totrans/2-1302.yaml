@@ -1,511 +1,767 @@
 - en: 'Image Classification with PyTorch and SHAP: Can you Trust an Automated Car?'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用PyTorch和SHAP进行图像分类：你能信任自动驾驶汽车吗？
 - en: 原文：[https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea](https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea](https://towardsdatascience.com/image-classification-with-pytorch-and-shap-can-you-trust-an-automated-car-4d8d12714eea)
 - en: Build an object detection model, compare it to intensity thresholds, evaluate
     it and explain it using DeepSHAP
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 构建一个目标检测模型，将其与强度阈值进行比较，评估并使用DeepSHAP解释它
 - en: '[](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[![Conor
     O''Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)
     [Conor O''Sullivan](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[![Conor
+    O''Sullivan](../Images/2dc50a24edb12e843651d01ed48a3c3f.png)](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)
+    [Conor O''Sullivan](https://conorosullyds.medium.com/?source=post_page-----4d8d12714eea--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)
     ·14 min read·Mar 21, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----4d8d12714eea--------------------------------)
+    ·阅读时间14分钟·2023年3月21日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/e0f878484110a05545a3b8a001d4b868.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e0f878484110a05545a3b8a001d4b868.png)'
 - en: '(source: author)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: （来源：作者）
 - en: If the world was less chaotic self-driving cars would be simple. But it’s not.
     To avoid serious harm, AI has to consider many variables — speed limits, traffic
     and obstacles in the road (such as a distracted human). AI needs to be able to
     detect these obstacles and take appropriate actions when encountered.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果世界不那么混乱，自驾车将会简单。但事实并非如此。为了避免严重的伤害，AI必须考虑许多变量——速度限制、交通情况和路上的障碍物（例如分心的人）。AI需要能够检测这些障碍物，并在遇到时采取适当的行动。
 - en: Thankfully, our application is not as complicated. Even more, thankfully, we
     will be using tin cans instead of humans. We will build a model used to detect
     this obstacle in front of a mini-automated car. The car should **STOP** if the
     obstacle gets too close or **GO** otherwise.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，我们的应用并没有那么复杂。更幸运的是，我们将使用锡罐而不是人类。我们将建立一个模型，用于检测迷你自动驾驶汽车前方的障碍物。如果障碍物过于接近，汽车应该**停下**，否则**前进**。
 - en: 'At the end of the day, this is a binary classification problem. To tackle it,
     we will:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 到头来，这是一个二分类问题。为了解决它，我们将：
 - en: Create a benchmark using an intensity threshold
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用强度阈值创建基准
 - en: Build a CNN using PyTorch
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用PyTorch构建CNN
 - en: Evaluate the model using accuracy, precision and recall
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用准确率、精确率和召回率评估模型
 - en: Interpret the model using SHAP
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用SHAP解释模型
 - en: We will see that the model not only performs well but the *way it makes predictions*
     also seems reasonable. Along the way, we will discuss the Python code and you
     can find the full project on [GitHub](https://github.com/conorosully/medium-articles/blob/master/src/image_tools/pytorch_image_classification.ipynb).
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将看到模型不仅表现良好，而且*其预测方式*也似乎合理。在此过程中，我们将讨论Python代码，你可以在[GitHub](https://github.com/conorosully/medium-articles/blob/master/src/image_tools/pytorch_image_classification.ipynb)上找到完整的项目。
 - en: Imports and Dataset
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 导入和数据集
 - en: '[PRE0]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In Figure 1 you can see examples of the images in our dataset. These are all
     of dimension 224 x 224\. If there is no black can or if the can is far away the
     image is classified as GO. If the can gets too close, the image is classified
     as STOP. You can find the full dataset on [Kaggle](https://www.kaggle.com/datasets/conorsully1/jatracer-images).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图1中，你可以看到我们数据集中图像的示例。这些图像的尺寸都是224 x 224。如果没有黑色罐子或者罐子距离较远，图像被分类为GO。如果罐子过于接近，图像被分类为STOP。你可以在[Kaggle](https://www.kaggle.com/datasets/conorsully1/jatracer-images)上找到完整的数据集。
 - en: '![](../Images/9c97bfc3b7fd98e5ba65bfc0a2eadf47.png)'
+  id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c97bfc3b7fd98e5ba65bfc0a2eadf47.png)'
 - en: 'Figure 1: example images (source: author)'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1：示例图像（来源：作者）
 - en: We display the above images using the code below. Notice the names of the images.
     It will always start with a number. This is the **target variable**. We have 0
     for GO and 1 for STOP.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用下面的代码显示上述图像。注意图像的名称。它总是以一个数字开头。这是**目标变量**。我们用0表示GO，用1表示STOP。
 - en: '[PRE1]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Benchmark
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基准
 - en: Before we get to the modelling, it is worth creating a benchmark. This can provide
     some insight into our problem. More importantly, it gives us something to compare
     our model results to. Our more complicated deep learning model should outperform
     the simple benchmark.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在建模之前，值得创建一个基准。这可以提供一些对我们问题的见解。更重要的是，它为我们提供了一个比较模型结果的标准。我们更复杂的深度学习模型应该会优于简单的基准。
 - en: 'In Figure 1 we can see that the tin can is darker than it’s surroundings. We’re
     going to take advantage of this when creating our benchmark. That is we will classify
     an image as STOP if it has many dark pixels. Getting to that point will require
     a few steps. For each image, we will:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图1中，我们可以看到锡罐比周围环境更暗。我们将在创建基准时利用这一点。即，如果图像中有许多暗像素，我们将其分类为STOP。达到这一点需要几个步骤。对于每个图像，我们将：
 - en: Greyscale so each pixel has a value between 0 (black) and 255 (white)
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 进行灰度化，使每个像素的值在0（黑色）和255（白色）之间。
 - en: Using a cutoff, convert each pixel to a binary value — 1 for dark pixels and
     0 for light
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用截止值，将每个像素转换为二进制值——深色像素为1，浅色像素为0。
 - en: Calculate average intensity — the percentage of dark pixels
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算平均强度——暗像素的百分比
 - en: If the average intensity is above a certain percentage, we classify the image
     as STOP
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果平均强度超过某个百分比，我们将图像分类为STOP。
 - en: 'Combined steps 1 and 2 is a type of feature engineering method for image data.
     It is known as an **intensity threshold**. You can read more about this and other
     feature engineering methods in this article:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 合并步骤1和2是一种图像数据的特征工程方法，称为**强度阈值**。你可以在这篇文章中阅读更多关于此及其他特征工程方法的信息：
 - en: '[](/feature-engineering-with-image-data-14fe4fcd4353?source=post_page-----4d8d12714eea--------------------------------)
     [## Feature Engineering with Image Data'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/feature-engineering-with-image-data-14fe4fcd4353?source=post_page-----4d8d12714eea--------------------------------)
+    [## 图像数据的特征工程'
 - en: Cropping, grayscale, RGB channels, intensity thresholds, edge detection and
     colour filters
+  id: totrans-32
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 裁剪、灰度化、RGB通道、强度阈值、边缘检测和颜色滤镜
 - en: towardsdatascience.com](/feature-engineering-with-image-data-14fe4fcd4353?source=post_page-----4d8d12714eea--------------------------------)
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/feature-engineering-with-image-data-14fe4fcd4353?source=post_page-----4d8d12714eea--------------------------------)
 - en: We apply the intensity threshold using the function below. After scaling, a
     pixel will have a value of either 0 (black) and 1 (white). For our application,
     it makes sense to invert this. That is so pixels that are originally dark will
     be given a value of 1.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用下面的函数应用强度阈值。缩放后，一个像素将具有0（黑色）或1（白色）的值。对于我们的应用，颠倒这一点是有意义的。也就是说，原本深色的像素将被赋值为1。
 - en: '[PRE2]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: In Figure 2, you can see some examples of when we apply the intensity threshold.
     We are able to vary the cutoff. A smaller cutoff means we include less background
     noise. The downside is we capture less of the tin can. In this case, we’ll go
     with a cutoff of 60.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图2中，你可以看到我们应用强度阈值的一些示例。我们可以调整截止值。较小的截止值意味着我们包括的背景噪声更少。缺点是我们捕捉到的锡罐较少。在这种情况下，我们将使用截止值60。
 - en: '![](../Images/53f27a71b447255ad4b9407909dd5557.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53f27a71b447255ad4b9407909dd5557.png)'
 - en: 'Figure 2: feature engineering with an intensity threshold (source: author)'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2：使用强度阈值的特征工程（来源：作者）
 - en: We load all our images (line 5) and target variables (line 6). We then apply
     the intensity threshold to each of these images (line 9). Note that we have set
     **invert=True**. Finally, we calculate the average intensity of each of the processed
     images (line 10). In the end, each of the images is represented by a single number
     — average intensity. This can be interpreted as the **percentage of dark pixels.**
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们加载了所有的图像（第5行）和目标变量（第6行）。然后，我们对这些图像应用强度阈值（第9行）。请注意，我们设置了**invert=True**。最后，我们计算每个处理过的图像的平均强度（第10行）。最终，每个图像由一个单一的数字——平均强度来表示。这可以解释为**暗像素的百分比**。
 - en: '[PRE3]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Figure 3 gives the box plots of the average intensity for all the images labelled
     as GO and STOP. In general, we can see the values are higher for STOP. This makes
     sense — the can is closer and so we will have more dark pixels. The red line is
     at 6.5%. This seems to separate the image classes well.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3 给出了所有标记为 GO 和 STOP 的图像的平均强度箱线图。通常，我们可以看到 STOP 的值更高。这是有道理的——罐子离得更近，因此我们会有更多的暗像素。红线在
+    6.5% 处。这似乎能很好地分离图像类别。
 - en: '![](../Images/6bbee980983566b9bd4f150e16fa3a23.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6bbee980983566b9bd4f150e16fa3a23.png)'
 - en: 'Figure 3: average intensity by target variable (source: author)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3：目标变量的平均强度（来源：作者）
 - en: '[PRE4]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: We use a cutoff of 6.5% to make predictions (line 2). That is if the percentage
     of dark pixels is above 6.5% it is predicted as STOP (1) otherwise we predict
     GO (0). The remaining code is used to evaluate these predictions.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用 6.5% 作为预测的截断值（第 2 行）。即如果暗像素的百分比超过 6.5%，则预测为 STOP（1），否则预测为 GO（0）。其余的代码用于评估这些预测。
 - en: '[PRE5]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: In the end, we have an accuracy of 82%, a precision of 77.1% and a recall of
     82.96%. Not bad! In the confusion matrix, we can see that most of the errors are
     due to false positives. These are images predicted as STOP when we should GO.
     This corresponds to the box plot in Figure 3\. See the long tail for the GO intensity
     values that are above the red line. This could potentially be caused by background
     pixels increasing the number of dark pixels in the image.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，我们的准确率为 82%，精确率为 77.1%，召回率为 82.96%。不错！在混淆矩阵中，我们可以看到大多数错误是由于假阳性。这些是被预测为 STOP
+    的图像，而实际上我们应该 GO。这对应于图 3 的箱线图。查看 GO 强度值在红线以上的长尾。这可能是由于背景像素增加了图像中的暗像素数量。
 - en: '![](../Images/9ff7962fb40f317ad80e85ae5e87da27.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ff7962fb40f317ad80e85ae5e87da27.png)'
 - en: 'Figure 4: confusion matrix of benchmark predictions (source: author)'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4：基准预测的混淆矩阵（来源：作者）
 - en: Convolutional Neural Network
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 卷积神经网络
 - en: If an AI car was only 82% accurate you’d probably be a bit concerned. So let’s
     move on to the more complicated solution.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一辆 AI 汽车的准确率只有 82%，你可能会有点担心。那么我们来看看更复杂的解决方案。
 - en: Loading dataset
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载数据集
 - en: We start by defining the **ImageDataset** class. This is used to load our images
     and target variables. As parameters, we need to pass in the list of all image
     paths and methods used to transform the images. Our target variables will be tensors
     — [1,0] for GO and [0,1] for STOP.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先定义**ImageDataset**类。这用于加载我们的图像和目标变量。作为参数，我们需要传入所有图像路径的列表和用于转换图像的方法。我们的目标变量将是张量——[1,0]
+    代表 GO 和 [0,1] 代表 STOP。
 - en: '[PRE6]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We will use common image transformations. To help create a more robust model,
     we will Jitter the color (line 2). This will randomly vary the brightness, contrast,
     saturation and hue of the image. We also normalise the pixel values (line 4).
     This will help the model converge.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用常见的图像转换。为了帮助创建一个更强大的模型，我们将对颜色进行抖动（第 2 行）。这将随机改变图像的亮度、对比度、饱和度和色调。我们还会对像素值进行归一化（第
+    4 行）。这将帮助模型收敛。
 - en: '[PRE7]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: We load all our image paths (line 1) and randomly shuffle them (line 4). We
     then create **ImageDataset** objects for our training (line 8) and validation
     data (line 9). To do this we’ve used an 80/20 split (line 7). In the end, we will
     have **3,892** images in the training set and **974** images in the validation
     set.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们加载了所有图像路径（第 1 行）并随机打乱它们（第 4 行）。然后我们为训练数据（第 8 行）和验证数据（第 9 行）创建**ImageDataset**对象。为此我们使用了
+    80/20 的划分（第 7 行）。最终，我们将在训练集中拥有**3,892**张图像，在验证集中拥有**974**张图像。
 - en: '[PRE8]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: At this point, there is actually no data loaded to memory. Before we can use
     the data to train PyTorch models, we need to create **DataLoader** objects. For
     the **train_loader**, we have set **batch_size=128**. This allows us to iterate
     over all the training images loading 128 of them at a time. For the validation
     images, we set the batch size to the full length of the validation set. This allows
     us to load all 974 images at once.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，实际上还没有数据加载到内存中。在我们能够使用数据训练 PyTorch 模型之前，我们需要创建**DataLoader**对象。对于**train_loader**，我们设置了**batch_size=128**。这允许我们迭代所有训练图像，每次加载
+    128 张。对于验证图像，我们将批处理大小设置为验证集的完整长度。这允许我们一次加载所有 974 张图像。
 - en: '[PRE9]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Model architecture
+  id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型架构
 - en: Next we define our CNN architecture. You can see a diagram of this in Figure
     5\. We start with 224x224x3 image tensors. We have 3 convolutional and max pooling
     layers. This leaves us with 28x28x64 tensors. This is followed by a drop-out layer
     and two fully connected layers. We use ReLu activation functions for all hidden
     layers. For the output nodes, we use the sigmoid function. This is so our predictions
     will be between 0 and 1.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们定义我们的 CNN 架构。你可以在图5中看到这个架构的图示。我们从224x224x3的图像张量开始。我们有3个卷积层和最大池化层。这将我们缩减到28x28x64的张量。接下来是一个drop-out层和两个全连接层。我们对所有隐藏层使用
+    ReLu 激活函数。对于输出节点，我们使用 sigmoid 函数。这是为了使我们的预测值在0和1之间。
 - en: '![](../Images/3c6789b10af43a4c11133cccbecc3dcf.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3c6789b10af43a4c11133cccbecc3dcf.png)'
 - en: 'Figure 5: CNN architecture (source: author)'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5：CNN 架构（来源：作者）
 - en: We capture this architecture in the **Net** class below. One thing to point
     out is the use of **nn.Sequential()** functions. You must use this method of defining
     PyTorch models otherwise the SHAP package will not work.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在下面的**Net**类中捕捉了这种架构。需要指出的一点是使用了**nn.Sequential()**函数。必须使用这种定义 PyTorch 模型的方法，否则
+    SHAP 包将无法工作。
 - en: '[PRE10]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: We create a model object (line 2). We move this to a GPU (lines 6–7). I am using
     an Apple M1 laptop. You will have to set the device that is appropriate for your
     machine.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们创建一个模型对象（第2行）。我们将其移动到 GPU 上（第6–7行）。我使用的是苹果 M1 笔记本电脑。你需要设置适合你机器的设备。
 - en: '[PRE11]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: We define our loss function (line 2). As our target variable is binary, we will
     use binary cross-entropy loss. Lastly, we use Adam as our optimizer (line 5).
     This is the algorithm used to minimize the loss.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们定义我们的损失函数（第2行）。由于我们的目标变量是二元的，我们将使用二元交叉熵损失。最后，我们使用 Adam 作为我们的优化器（第5行）。这是用来最小化损失的算法。
 - en: '[PRE12]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: Training model
+  id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练模型
 - en: Now for the fun part! We train our model for 20 epochs and select the one that
     had the lowest validation loss. The model is available in the same [GitHub Repo](https://github.com/conorosully/medium-articles/tree/master/models).
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是有趣的部分！我们训练我们的模型20个周期，并选择验证损失最低的那个。模型可以在同一个[GitHub Repo](https://github.com/conorosully/medium-articles/tree/master/models)中找到。
 - en: '[PRE13]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: One thing to mention is the **optimizer.zero_grad()** line. This sets the gradients
     of all parameters to 0\. For each training iteration, we want to update the parameters
     using the gradients from only that batch. If we do not zero the gradients they
     will accumulate. This means we will update the parameters using a combination
     of the gradients from the new and old batches.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要提到的一点是**optimizer.zero_grad()**行。这将所有参数的梯度设置为0。在每次训练迭代中，我们希望使用仅来自该批次的梯度来更新参数。如果不将梯度清零，它们会积累。这意味着我们将使用新批次和旧批次的梯度组合来更新参数。
 - en: Model Evaluation
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型评估
 - en: Now lets see how well this model has done. We start by loading our saved model
     (line 2). It is important to switch this to evaluation mode (line 3). If we do
     not do this some model layers (e.g. dropout) will be used incorrectly for inference.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们看看这个模型的表现如何。我们从加载我们保存的模型开始（第2行）。切换到评估模式很重要（第3行）。如果我们不这样做，一些模型层（例如 dropout）在推理时会被不正确地使用。
 - en: '[PRE14]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: We load the images and target variables from the validation set (line 2). Remember,
     the target variables are tensors of dimension 2\. We get the second element for
     each of the tensors (line 4). This means we will now have a binary target variable
     — 1 for STOP and 0 for GO.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从验证集中加载图像和目标变量（第2行）。请记住，目标变量是维度为2的张量。我们获取每个张量的第二个元素（第4行）。这意味着我们现在将有一个二元目标变量——1表示STOP，0表示GO。
 - en: '[PRE15]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: We use our model to make predictions on the validation images (line 2). Again,
     the output will be tensors of dimension 2\. We consider the second element. If
     the probability is above 0.5 we predict STOP otherwise we predict GO.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用模型对验证图像进行预测（第2行）。同样，输出将是维度为2的张量。我们考虑第二个元素。如果概率超过0.5，我们预测STOP，否则预测GO。
 - en: '[PRE16]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Finally, we compare the **target** to the **prediction** using the same code
     we used to evaluate the benchmark. We now have an accuracy of 98.05%, a precision
     of 97.38% and a recall of 97.5%. A significant improvement over the benchmark!
     In the confusion matrix, you can see where the errors are coming from.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们使用与评估基准相同的代码将**目标**与**预测**进行比较。我们现在的准确率为98.05%，精确率为97.38%，召回率为97.5%。相比基准有了显著的提升！在混淆矩阵中，你可以看到错误的来源。
 - en: '![](../Images/9fb172362d143fa80c754290c5a933c3.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9fb172362d143fa80c754290c5a933c3.png)'
 - en: 'Figure 6: confusion matrix of the model on the validation set (source: author)'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6：模型在验证集上的混淆矩阵（来源：作者）
 - en: In Figure 7, we take a closer look at some of these errors. The top row gives
     some false positives. These are images predicted at STOP when the car should GO.
     Similarly, the bottom row gives false negatives.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图7中，我们更详细地查看了一些这些错误。第一行显示了一些假阳性。这些是当汽车应该GO时被预测为STOP的图像。类似地，底行显示了假阴性。
 - en: '![](../Images/fd3e9d6ed1c209a8a4160c1447cf7b39.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fd3e9d6ed1c209a8a4160c1447cf7b39.png)'
 - en: 'Figure 7: examples of prediction errors (source: author)'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7：预测错误的示例（来源：作者）
 - en: You may have noticed that all the obstacles are at a similar distance. When
     the images were labelled we used a cutoff distance. That is once the obstacle
     was closer than this cutoff it was labelled STOP. The above obstacles are all
     close to this **cutoff**. They could have been incorrectly labelled so the model
     may be “confused” when the obstacle is close to this cutoff.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能已经注意到所有障碍物都在相似的距离处。当标记图像时，我们使用了一个截止距离。即当障碍物距离小于这个截止距离时，它被标记为STOP。上述障碍物都接近这个**截止距离**。它们可能被错误标记，所以当障碍物接近这个截止距离时，模型可能会“困惑”。
 - en: Interpreting the model using SHAP
+  id: totrans-89
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用SHAP解释模型
 - en: Our model seems to be doing well. We can be even more certain by understanding
     how it makes these predictions. To do this we use SHAP. If you are new to SHAP,
     you may find the video below useful. Otherwise, check out my [**SHAP course**](https://adataodyssey.com/courses/shap-with-python/)**.**
     You can get free access if you sign up for my [**Newsletter**](https://mailchi.mp/aa82a5ce1dc0/signup)
     :)
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的模型似乎表现良好。通过了解它如何做出这些预测，我们可以更确定它的效果。为此，我们使用SHAP。如果你对SHAP不熟悉，你可能会发现下面的视频很有用。否则，查看我的[**SHAP课程**](https://adataodyssey.com/courses/shap-with-python/)**。**
+    如果你注册我的[**新闻通讯**](https://mailchi.mp/aa82a5ce1dc0/signup)，你可以获得免费访问权 :)
 - en: The code below calculates and displays the SHAP values for the 3 example images
     we saw in Figure 1\. If you want more detail on how this code works, then check
     out the article mentioned at the end.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的代码计算并显示了我们在图1中看到的3个示例图像的SHAP值。如果你想了解更多关于这段代码如何工作的细节，请查看文末提到的文章。
 - en: '[PRE17]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: You can see the output in Figure 8\. The first two rows are images labelled
     as GO and the third is labelled as STOP. We have SHAP values for each of the elements
     in the target tensors. The first column is for the GO prediction and the second
     is for the STOP prediction.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在图8中看到输出。前两行是标记为GO的图像，第三行为标记为STOP的图像。我们有目标张量中每个元素的SHAP值。第一列是GO预测的SHAP值，第二列是STOP预测的SHAP值。
 - en: The colours are important. Blue SHAP values tell us that those pixels have decreased
     the predicted value. In other words, they have made it less likely that the model
     predicts the given label. Similarly, Red SHAP values have increased the likelihood.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 颜色非常重要。蓝色SHAP值告诉我们这些像素减少了预测值。换句话说，它们使得模型预测给定标签的可能性降低。类似地，红色SHAP值则增加了这种可能性。
 - en: '![](../Images/bdc97c8e9bbca541d975b2bad66f29ae.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bdc97c8e9bbca541d975b2bad66f29ae.png)'
 - en: 'Figure 8: SHAP values for example images (source: author)'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8：示例图像的SHAP值（来源：作者）
 - en: To understand this, let’s focus on the top right corner of Figure 8\. In Figure
     9, we have the image labelled as GO and the SHAP values from the GO prediction.
     You can see that the majority of the pixels are red. These have increased the
     value for this prediction leading to a correct GO prediction. You can also see
     that the pixels are clusters around the obstacle cutoff — tin can location where
     the label changes from GO to STOP.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了理解这一点，让我们关注图8的右上角。在图9中，我们有标记为GO的图像以及GO预测的SHAP值。你可以看到大多数像素是红色的。这些像素增加了该预测的值，从而导致正确的GO预测。你还可以看到像素聚集在障碍物截止位置——罐头的位置，其中标签从GO更改为STOP。
 - en: '![](../Images/d0674f68a026332d803c1324d88dd886.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d0674f68a026332d803c1324d88dd886.png)'
 - en: 'Figure 9: SHAP values for GO prediction and GO label.'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9：GO预测和GO标签的SHAP值。
 - en: In Figure 10, we can see the SHAP values for the image labelled as STOP. The
     can is blue for the GO prediction and red for the STOP prediction. In other words,
     the model is using pixels from the can to decrease the GO value and increase the
     STOP value. That makes sense!
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图10中，我们可以看到标记为STOP的图像的SHAP值。罐头在GO预测中为蓝色，在STOP预测中为红色。换句话说，模型使用罐头中的像素来减少GO值并增加STOP值。这是有道理的！
 - en: '![](../Images/5bc3b6180af9d611d7118df9b7d5b1f4.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5bc3b6180af9d611d7118df9b7d5b1f4.png)'
 - en: 'Figure 10: SHAP values for STOP prediction'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10：STOP预测的SHAP值
 - en: The model is not only making predictions accurately but the way it is making
     those predictions seems logical. However, one thing you may have noticed is that
     some of the background pixels are highlighted. This doesn't make sense. Why would
     the background be important to a prediction? It could change when we remove objects
     or move to a new location.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个模型不仅能够准确地进行预测，而且它做出这些预测的方式似乎也很合逻辑。然而，你可能注意到一些背景像素被突出显示了。这没有意义。为什么背景对预测如此重要？当我们移除物体或移动到新位置时，背景可能会发生变化。
 - en: The reason is the model has become overfitted to the training data. These objects
     are present in many of the images. The result is the model associates them with
     the STOP/GO labels. In the article below, we do a similar analysis. We discuss
     ways how to prevent this type of overfitting. We also spend more time explaining
     the SHAP code.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 原因是模型对训练数据过拟合了。这些物体出现在许多图像中。结果是模型将它们与 STOP/GO 标签关联。在下面的文章中，我们进行类似的分析。我们讨论了如何防止这种过拟合的方法。我们还花更多时间解释
+    SHAP 代码。
 - en: '[](/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=post_page-----4d8d12714eea--------------------------------)
     [## Using SHAP to Debug a PyTorch Image Regression Model'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=post_page-----4d8d12714eea--------------------------------)
+    [## 使用 SHAP 调试 PyTorch 图像回归模型'
 - en: Using DeepShap to understand and improve the model powering an autonomous car
+  id: totrans-106
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 DeepShap 来理解和改进支持自动驾驶汽车的模型
 - en: towardsdatascience.com](/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=post_page-----4d8d12714eea--------------------------------)
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/using-shap-to-debug-a-pytorch-image-regression-model-4b562ddef30d?source=post_page-----4d8d12714eea--------------------------------)
 - en: I hope you enjoyed this article! You can support me by becoming one of my [**referred
     members**](https://conorosullyds.medium.com/membership) **:)**
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望你喜欢这篇文章！你可以通过成为我的 [**推荐会员**](https://conorosullyds.medium.com/membership)
+    **:)** 来支持我。
 - en: '[](https://conorosullyds.medium.com/membership?source=post_page-----4d8d12714eea--------------------------------)
     [## Join Medium with my referral link — Conor O’Sullivan'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://conorosullyds.medium.com/membership?source=post_page-----4d8d12714eea--------------------------------)
+    [## 使用我的推荐链接加入 Medium — Conor O’Sullivan'
 - en: As a Medium member, a portion of your membership fee goes to writers you read,
     and you get full access to every story…
+  id: totrans-110
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 作为 Medium 会员，你的一部分会员费会分配给你阅读的作者，你将可以完全访问所有故事…
 - en: conorosullyds.medium.com](https://conorosullyds.medium.com/membership?source=post_page-----4d8d12714eea--------------------------------)
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[conorosullyds.medium.com](https://conorosullyds.medium.com/membership?source=post_page-----4d8d12714eea--------------------------------)'
 - en: '| [Twitter](https://twitter.com/conorosullyDS) | [YouTube](https://www.youtube.com/channel/UChsoWqJbEjBwrn00Zvghi4w)
     | [Newsletter](https://mailchi.mp/aa82a5ce1dc0/signup) — sign up for FREE access
     to a [Python SHAP course](https://adataodyssey.com/courses/shap-with-python/)'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '| [Twitter](https://twitter.com/conorosullyDS) | [YouTube](https://www.youtube.com/channel/UChsoWqJbEjBwrn00Zvghi4w)
+    | [Newsletter](https://mailchi.mp/aa82a5ce1dc0/signup) — 免费注册以获取 [Python SHAP
+    课程](https://adataodyssey.com/courses/shap-with-python/)'
 - en: Dataset
+  id: totrans-113
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据集
 - en: '**JatRacer Images** (CC0: Public Domain) [https://www.kaggle.com/datasets/conorsully1/jatracer-images](https://www.kaggle.com/datasets/conorsully1/jatracer-images)'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '**JatRacer 图像** (CC0: 公共领域) [https://www.kaggle.com/datasets/conorsully1/jatracer-images](https://www.kaggle.com/datasets/conorsully1/jatracer-images)'
 - en: References
+  id: totrans-115
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考资料
 - en: stack overflow, **Why do we need to call zero_grad() in PyTorch?** [https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch](https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch)
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: stack overflow，**为什么我们需要在 PyTorch 中调用 zero_grad()？** [https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch](https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch)
 - en: '[Kenneth Leung](https://medium.com/u/dcd08e36f2d0?source=post_page-----4d8d12714eea--------------------------------),
     **How to Easily Draw Neural Network Architecture Diagrams**, [https://towardsdatascience.com/how-to-easily-draw-neural-network-architecture-diagrams-a6b6138ed875](/how-to-easily-draw-neural-network-architecture-diagrams-a6b6138ed875)'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Kenneth Leung](https://medium.com/u/dcd08e36f2d0?source=post_page-----4d8d12714eea--------------------------------)，**如何轻松绘制神经网络架构图**，[https://towardsdatascience.com/how-to-easily-draw-neural-network-architecture-diagrams-a6b6138ed875](/how-to-easily-draw-neural-network-architecture-diagrams-a6b6138ed875)'

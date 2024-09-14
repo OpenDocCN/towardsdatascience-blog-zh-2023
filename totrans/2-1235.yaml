@@ -1,288 +1,444 @@
 - en: How to Securely Connect Synapse Pipelines to Azure Functions
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何安全地将 Synapse Pipelines 连接到 Azure Functions
 - en: 原文：[https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150](https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150](https://towardsdatascience.com/how-to-securely-connect-synapse-pipelines-to-azure-functions-9bcdb176e150)
 - en: Learn to use Synapse exfiltration protection, private endpoints and Azure AD
     authentication to create a secure connection
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 学会使用 Synapse 外泄保护、私有端点和 Azure AD 认证来创建安全连接
 - en: '[](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[![René
     Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)
     [René Bremer](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[![René
+    Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)
+    [René Bremer](https://rebremer.medium.com/?source=post_page-----9bcdb176e150--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)
     ·4 min read·Jan 4, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9bcdb176e150--------------------------------)
+    ·4 分钟阅读·2023年1月4日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/0d78113d8329f6775a3e9d8a438128b5.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0d78113d8329f6775a3e9d8a438128b5.png)'
 - en: Photo by [Alina Grubnyak](https://unsplash.com/@alinnnaaaa) on [Unsplash](https://unsplash.com/)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Alina Grubnyak](https://unsplash.com/@alinnnaaaa) 在 [Unsplash](https://unsplash.com/)
+    上提供
 - en: 1\. Introduction
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 1. 介绍
 - en: 'Azure Functions is a popular tool to create REST APIs. Teams can use APIs to
     expose their applications, which can then be consumed by other teams. A common
     pattern is to connect Synapse pipelines to Azure Functions, for instance, to run
     small computations provided by other teams, create metadata or send notifications.
     In this blog, security aspects of connecting Synapse to Azure Functions are discussed
     as follows:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: Azure Functions 是一个流行的工具，用于创建 REST API。团队可以使用 API 暴露他们的应用程序，这些应用程序可以被其他团队使用。一个常见的模式是将
+    Synapse 管道连接到 Azure Functions，例如运行其他团队提供的小型计算、创建元数据或发送通知。在本博客中，连接 Synapse 到 Azure
+    Functions 的安全性方面讨论如下：
 - en: Synapse **data exfiltration protection** to prevent insider attacks
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse **数据外泄保护**以防止内部攻击
 - en: '**Private endpoints** to limit exposure of Azure Function to internal only'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**私有端点** 限制 Azure Function 仅对内部可见'
 - en: '**Azure AD authentication** using identity to access Azure Function'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**Azure AD 认证**使用身份访问 Azure Function'
 - en: Whitelisting **Synapse managed identity** as only allowed identity to access
     Azure Function
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将 **Synapse 托管身份** 白名单设置为唯一允许访问 Azure Function 的身份
 - en: In this blogpost and git repo `[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`,
     it is discussed how Synapse can be securely connected to Azure Functions, see
     also overview below.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本博客文章和 Git 仓库 `[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`
+    中，讨论了如何安全地将 Synapse 连接到 Azure Functions，另见下文概述。
 - en: '![](../Images/2444848155d3bf646f68b368594e0698.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2444848155d3bf646f68b368594e0698.png)'
 - en: 1\. Securely consume Azure Functions in Synapse Pipelines
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 1. 安全地在 Synapse Pipelines 中使用 Azure Functions
 - en: In the remaining of this blog, a project is deployed in which a Synapse pipeline
     is connected to an Azure Function. In the next chapter, the project is deployed
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本博客的其余部分中，将部署一个项目，在其中将 Synapse 管道连接到 Azure Function。在下一章中，将部署该项目
 - en: '2\. Deploy project: Securely connect Synapse to Azure Function'
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 2. 部署项目：安全地将 Synapse 连接到 Azure Function
 - en: 'In this chapter, the following steps are executed:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，执行以下步骤：
 - en: 2.0 Prerequisites
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 2.0 前提条件
 - en: 2.1 Deploy Synapse and Azure Functions
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 2.1 部署 Synapse 和 Azure Functions
 - en: 2.2 Setup private endpoints connections
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 2.2 设置私有端点连接
 - en: 2.3 Setup Azure AD authentication
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 2.3 设置 Azure AD 认证
 - en: 2.4 Deploy Synapse pipeline
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 2.4 部署 Synapse 管道
 - en: 2.0 Prerequisites
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.0 前提条件
 - en: 'The following resources are required in this tutorial:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 本教程中需要以下资源：
 - en: '[Azure Account](https://azure.microsoft.com/en-us/free/)'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Azure 账户](https://azure.microsoft.com/en-us/free/)'
 - en: '[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)'
 - en: '[Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-9.2.0)
     (only 2.3 needs Powershell, CLI commands of other paragraphs can easily modified
     to bash)'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-9.2.0)（仅
+    2.3 需要 Powershell，其他段落的 CLI 命令可以轻松修改为 bash）'
 - en: Finally, clone the git repo below to your local computer. In case you don’t
     have git installed, you can just download a zip file from the web page.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，将下面的 Git 仓库克隆到本地计算机。如果您尚未安装 git，您可以从网页下载一个 zip 文件。
 - en: '[PRE0]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 2.1 Deploy Synapse and Azure Functions
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.1 部署 Synapse 和 Azure Functions
 - en: 'In this part, a Synapse Workspace and Azure Functions are created with the
     following properties:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，创建了一个 Synapse 工作区和 Azure Functions，具有以下属性：
 - en: Synapse workspace is deployed with a managed VNET that enables a team to create
     private endpoints to other PaaS services in Azure (e.g storage, SQL, but also
     Azure Functions)
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse 工作区已部署具有管理的 VNET，允许团队创建指向 Azure 中其他 PaaS 服务（例如存储、SQL 以及 Azure Functions）的私有端点
 - en: Synapse workspace is deployed with data exfiltration protection enabled. This
     implies that that data can only flow through private endpoints that were approved
     beforehand (e.g. private endpoints to services in the same Azure AD tenant where
     Synapse is deployed)
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse 工作区已部署并启用了数据外流保护。这意味着数据只能通过事先批准的私有端点流动（例如，连接到 Synapse 部署所在的同一 Azure
+    AD 租户中的服务的私有端点）
 - en: Azure Function is created in Python and deployed on a basic SKU
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Azure Function 使用 Python 创建，并在基本 SKU 上部署
 - en: See `[Scripts/1_deploy_resources.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/1_deploy_resources.ps1)`
     for Azure CLI script this part
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 请参见 `[Scripts/1_deploy_resources.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/1_deploy_resources.ps1)`
+    以获取此部分的 Azure CLI 脚本
 - en: 2.2 Setup private endpoints connections
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.2 设置私有端点连接
 - en: 'In this part, a private link connection is setup between Synapse workspace
     and Azure Function with the following properties:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，设置了一个 Synapse 工作区与 Azure Function 之间的私有链接连接，具有以下属性：
 - en: Initiate private endpoint from Synapse Managed VNET to Azure Function
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从 Synapse 托管 VNET 启动到 Azure Function 的私有端点
 - en: Approve private endpoint in Azure Function. After approving private endpoint,
     Azure Function is not exposed to public internet anymore. The deployment scm interface
     is still open to internet, it can be decided to limit expose of this fqdn as well
     by adding this link, see [here](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/ADF/AzureFunction_private_endpoint.json#L4)
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批准 Azure Function 中的私有端点。批准私有端点后，Azure Function 不再暴露于公共互联网。部署 scm 接口仍然对互联网开放，也可以通过添加此链接来决定是否限制此
+    fqdn 的暴露，见 [这里](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/ADF/AzureFunction_private_endpoint.json#L4)
 - en: See `[Scripts/2_Setup_private_endpoint_Synapse_FunctionApp.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/2_setup_private_endpoint_Synapse_FunctionApp.ps1)`
     for Azure PowerShell script this part. After deployment, you will find an approved
     private endpoint in Synapse, see below.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 请参见 `[Scripts/2_Setup_private_endpoint_Synapse_FunctionApp.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/2_setup_private_endpoint_Synapse_FunctionApp.ps1)`
+    以获取此部分的 Azure PowerShell 脚本。部署后，您将在 Synapse 中找到一个已批准的私有端点，请参见下方。
 - en: '![](../Images/45d5c68756d424d9080966a664331498.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/45d5c68756d424d9080966a664331498.png)'
 - en: 2.2 Approved Managed Private endpoint in Synapse to Azure Function
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 2.2 批准 Synapse 到 Azure Function 的管理私有端点
 - en: 2.3 Setup Azure AD auth whitelisting Synapse Manged Identity
+  id: totrans-45
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.3 设置 Azure AD 认证白名单 Synapse 托管身份
 - en: 'In this part, authentication is setup between Synapse and the Azure Function
     with the following properties:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，设置了 Synapse 和 Azure Function 之间的认证，具有以下属性：
 - en: Azure AD authentication is setup for Azure Function
+  id: totrans-47
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Azure AD 认证已设置用于 Azure Function
 - en: Synapse managed identity is whitelisted as only Azure AD object ID allowed to
     trigger Azure Function
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse 托管身份被列入白名单，只有 Azure AD 对象 ID 被允许触发 Azure Function
 - en: See `[Scripts/3_Setup_AzureAD_auth_Synapse_FunctionApp.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/3_setup_AzureAD_auth_Synapse_FunctionApp.ps1)`
     for Azure CLI script this part. After deployment, you will find the Synapse managed
     identity as allowed user to access function, see also below.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 参见 `[Scripts/3_Setup_AzureAD_auth_Synapse_FunctionApp.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/3_setup_AzureAD_auth_Synapse_FunctionApp.ps1)`
+    获取 Azure CLI 脚本。部署后，你会发现 Synapse 管理的身份被允许访问功能，详见下文。
 - en: '![](../Images/672ed483f663e096f69730ffeea0699a.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/672ed483f663e096f69730ffeea0699a.png)'
 - en: 2.3 Azure AD authentication for Azure Function, only allows Synapse Managed
     Identity to access
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 2.3 Azure Function 的 Azure AD 认证，仅允许 Synapse 管理的身份访问
 - en: 2.4 Deploy Synapse pipeline
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.4 部署 Synapse 管道
 - en: 'In this part, a Synapse pipeline is deployed with the following properties:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，部署了具有以下属性的 Synapse 管道：
 - en: Synapse pipeline accesses Azure Function using a web activity.
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse 管道使用网络活动访问 Azure Function。
 - en: In web activity, the private endpoint is used to connect the function, hence,
     call is not blocked by Synapse data exfiltration protection
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在网络活动中，使用私有端点连接功能，因此调用不会被 Synapse 数据泄露保护阻止
 - en: In web activity, the system assigned managed identity is used to authenticate
     to Azure function
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在网络活动中，使用系统分配的管理身份进行 Azure Function 的身份验证
 - en: See `[Scripts/4_deploy_synapse_pipeline.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/4_deploy_synapse_pipeline.ps1)`
     for Azure CLI script this part. After deployment, Azure Function URL and Azure
     AD resource ID is filled in correctly, see also below.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 参见 `[Scripts/4_deploy_synapse_pipeline.ps1](https://github.com/rebremer/securely-connect-synapse-to-azure-functions/blob/main/Scripts/4_deploy_synapse_pipeline.ps1)`
+    获取 Azure CLI 脚本。部署后，确保 Azure Function URL 和 Azure AD 资源 ID 正确填写，详见下文。
 - en: '![](../Images/dab8ea661e6155679671cb74050628c7.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dab8ea661e6155679671cb74050628c7.png)'
 - en: 2.4 Synapse pipeline connecting to Azure Function using Azure AD authentication
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 2.4 Synapse 管道通过 Azure AD 认证连接到 Azure Function
 - en: 3\. Conclusion
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 3\. 结论
 - en: 'Azure Functions is a popular tool to create REST APIs to expose services, both
     internally and externally. Synapse workspace is an example where APIs from other
     teams can be leveraged. Data engineers can use Synapse pipelines to ingest metadata,
     send notifications and/or run small computations exposed by other teams. In this
     blog, security aspects of connecting Synapse to Functions are discussed as follows:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: Azure Functions 是创建 REST API 以暴露服务的热门工具，无论是内部还是外部。Synapse 工作区是一个可以利用其他团队 API
+    的示例。数据工程师可以使用 Synapse 管道来获取元数据、发送通知和/或运行其他团队暴露的小型计算。在本文中，连接 Synapse 到 Functions
+    的安全方面讨论如下：
 - en: Synapse **data exfiltration protection** to prevent insiders attacks
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse **数据泄露保护** 以防止内部攻击
 - en: '**Private endpoints** to limit exposure of Azure Function'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**私有端点** 限制 Azure Function 的暴露'
 - en: '**Azure AD authentication provider** to limit credentials management'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**Azure AD 认证提供者** 限制凭证管理'
 - en: Synapse **Managed Identity** whitelisted to access Azure Function
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Synapse **管理的身份** 被白名单列为访问 Azure Function 的权限
 - en: See also this git repo `[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`
     and architecture below.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 参见这个 Git 仓库 `[securely-connect-synapse-azure-function](https://github.com/rebremer/securely-connect-synapse-to-azure-functions)`
+    和下文的架构。
 - en: '![](../Images/2444848155d3bf646f68b368594e0698.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2444848155d3bf646f68b368594e0698.png)'
 - en: 3\. Securely consume Azure Functions in Synapse Pipelines
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. 安全地在 Synapse 管道中使用 Azure Functions

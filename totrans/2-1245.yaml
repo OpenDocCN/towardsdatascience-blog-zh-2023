@@ -1,96 +1,147 @@
 - en: How to Store Historical Data Much More Efficiently
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何更高效地存储历史数据
 - en: 原文：[https://towardsdatascience.com/how-to-store-historical-data-much-more-efficiently-78b0f2c8c811](https://towardsdatascience.com/how-to-store-historical-data-much-more-efficiently-78b0f2c8c811)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-store-historical-data-much-more-efficiently-78b0f2c8c811](https://towardsdatascience.com/how-to-store-historical-data-much-more-efficiently-78b0f2c8c811)
 - en: A hands-on tutorial using PySpark to store up to only 0.01% of a DataFrame’s
     rows without losing any information.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一个动手教程，使用 PySpark 存储最多仅 0.01% 的 DataFrame 行而不丢失任何信息。
 - en: '[](https://medium.com/@tomergabay?source=post_page-----78b0f2c8c811--------------------------------)[![Tomer
     Gabay](../Images/1fb1d408bc89415918c1aa6733df44e1.png)](https://medium.com/@tomergabay?source=post_page-----78b0f2c8c811--------------------------------)[](https://towardsdatascience.com/?source=post_page-----78b0f2c8c811--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----78b0f2c8c811--------------------------------)
     [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----78b0f2c8c811--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@tomergabay?source=post_page-----78b0f2c8c811--------------------------------)[![Tomer
+    Gabay](../Images/1fb1d408bc89415918c1aa6733df44e1.png)](https://medium.com/@tomergabay?source=post_page-----78b0f2c8c811--------------------------------)[](https://towardsdatascience.com/?source=post_page-----78b0f2c8c811--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----78b0f2c8c811--------------------------------)
+    [Tomer Gabay](https://medium.com/@tomergabay?source=post_page-----78b0f2c8c811--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----78b0f2c8c811--------------------------------)
     ·10 min read·Sep 10, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----78b0f2c8c811--------------------------------)
+    ·阅读时间 10 分钟·2023年9月10日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/e6a3ccf160e7ca3d2ab0eba9ba6199b7.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e6a3ccf160e7ca3d2ab0eba9ba6199b7.png)'
 - en: Photo by [Supratik Deshmukh](https://unsplash.com/@supratikdeshmukh?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由 [Supratik Deshmukh](https://unsplash.com/@supratikdeshmukh?utm_source=medium&utm_medium=referral)
+    提供，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: 'In an era where companies and organizations are collecting more data than ever
     before, datasets tend to accumulate millions of unnecessary rows that don’t contain
     any new or valuable information. In this article, we’ll focus on a critical aspect
     of data management: deleting rows in a dataset if they provide no added value,
     using PySpark*.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个公司和组织收集数据比以往任何时候都多的时代，数据集往往会积累数百万行不包含任何新信息或有价值信息的多余行。本文将重点关注数据管理的一个关键方面：使用
+    PySpark 删除数据集中没有附加价值的行。
 - en: '*[PySpark](https://spark.apache.org/docs/latest/api/python/index.html#:~:text=PySpark%20is%20the%20Python%20API,for%20interactively%20analyzing%20your%20data.)
     is used over pandas when dealing with very large datasets because it can process
     data across multiple computers, making it faster and more scalable. Pandas works
     well for smaller datasets that can fit in memory on a single machine but may become
     slow or even impractical for big data.'
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*[PySpark](https://spark.apache.org/docs/latest/api/python/index.html#:~:text=PySpark%20is%20the%20Python%20API,for%20interactively%20analyzing%20your%20data.)
+    比 pandas 更适合处理非常大的数据集，因为它可以在多台计算机上处理数据，从而提高处理速度和可扩展性。Pandas 适用于能够在单台机器内存中容纳的小型数据集，但对于大数据而言可能会变得缓慢甚至不切实际。*'
 - en: 'Let’s imagine the following situation: you work as a data engineer/scientist
     in the maintenance department of a real estate company. For the past ten years,
     your company has done a full load of all maintenance data from an external database
     containing the conditions of your buildings and stored it in the company’s cloud
     storage. The data could e.g. look like this:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 设想以下情境：你在一家房地产公司的维护部门担任数据工程师/科学家。在过去的十年里，你的公司从一个包含你建筑物条件的外部数据库中进行了所有维护数据的完整加载，并将其存储在公司的云存储中。这些数据可能例如如下所示：
 - en: '![](../Images/de618a13bba4b78438dde61c188f70b8.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de618a13bba4b78438dde61c188f70b8.png)'
 - en: '[image by Author]'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[图片来源：作者]'
 - en: 'Three columns are present in this dataset:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 该数据集中包含三个列：
 - en: '`id` -> for the ID of the building.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`id` -> 建筑物的 ID。'
 - en: '`condition` -> an integer between 1 (terrible) and 10 (excellent) that represents
     the condition of the building.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`condition` -> 一个介于 1（糟糕）和 10（优秀）之间的整数，表示建筑物的状况。'
 - en: '`import_date` -> a *datetime* column representing the day this row was imported
     from the external software.'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`import_date` -> 一个 *datetime* 列，表示这行数据从外部软件导入的日期。'
 - en: 'To create this dataset yourself please run the snippet below:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 若要自己创建此数据集，请运行下面的代码片段：
 - en: '[PRE0]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Let’s take a look at Building2:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看 Building2：
 - en: '![](../Images/b17e0710fd198f1566e579996ba467ad.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b17e0710fd198f1566e579996ba467ad.png)'
 - en: '[image by Author]'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者提供的图片]'
 - en: On the first and second of January, the condition of the building is 4\. On
     the third of January, the condition changed to 5\. We don’t actually need the
     middle row about the second of January. If we just look at which date a condition
@@ -99,289 +150,438 @@
     the third of January. We can simply omit the second row about the second of January
     by adding a `from` and `until` column which provides information on when the row’s
     values were encountered first and when one of the row’s values changed.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在1月的第一天和第二天，建筑物的状态是4。1月3日，状态变为5。实际上，我们不需要关于1月2日的中间行。如果我们只关注状态变化的日期，我们可以省略许多行。在这个数据集中，Building2的第一次出现是在1月1日，状态在1月3日发生了变化。我们可以通过添加`from`和`until`列来省略关于1月2日的第二行，这些列提供了行值第一次出现的时间以及行值发生变化的时间。
 - en: This artificial dataset is very small and contains only three different import
     dates. But let’s consider a more realistic situation. Your real-estate company
     owns thousands of buildings, and the imports span over 10 years. This would result
     in many million rows without actual information. In my own real-life situation
     working for a housing corporation, using this technique, we only had to save about
     ~0.2% of all rows to store all information.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个人工数据集非常小，仅包含三个不同的导入日期。但让我们考虑一个更现实的情况。你的房地产公司拥有数千栋建筑，导入数据跨度达10年。这将导致数百万行没有实际信息。在我为住房公司工作的实际情况中，使用这种技术，我们只需保存大约
+    ~0.2% 的所有行来存储所有信息。
 - en: '**Let’s take a look at the code to add the** `**from**` **and** `**until**`
     **columns.**'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**让我们看看添加** `**from**` **和** `**until**` **列的代码。**'
 - en: First of all, we have to specify the partition columns and the datetime column
     for the table. The partition column is similar to the column you’d like to group
     by when you’re using pandas.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们必须指定表中的分区列和日期时间列。分区列类似于你在使用 pandas 时想要分组的列。
 - en: '[PRE1]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Then we need to specify the columns on which we want to track any possible changes,
     in our case, that’s `condition`. However, to make the code more general and reusable
     we can specify that the columns we want to track the changes of are every column
     except the partition columns and the datetime column.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们需要指定我们希望跟踪任何可能变化的列，在我们的案例中，那就是`condition`。不过，为了使代码更加通用和可重用，我们可以指定我们希望跟踪变化的列是所有列，除了分区列和日期时间列。
 - en: '[PRE2]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Now we need to create a PySpark Window, which acts similarly to pandas’ `.groupby()`.
     In that Window, we need to specify that we want to sort the rows on the`datetime_column`:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们需要创建一个 PySpark 窗口，它类似于 pandas 的 `.groupby()`。在这个窗口中，我们需要指定我们希望按`datetime_column`排序行：
 - en: '[PRE3]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: To check whether the value of one of the `track_columns` has changed, we can
     add the value of the previous row to the current row, and check whether they’re
     identical.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 要检查一个`track_columns`的值是否发生了变化，我们可以将前一行的值加到当前行，并检查它们是否相同。
 - en: '[PRE4]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Running this code leads to the following DataFrame:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行这段代码会得到以下 DataFrame：
 - en: '![](../Images/4f3493f143637650a42cf27c0259d14c.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4f3493f143637650a42cf27c0259d14c.png)'
 - en: '[image by Author]'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者提供的图片]'
 - en: Here we can see, that based on whether `previous_condition` is equal to `condition`
     we can determine whether a value has changed, and we store this in `changed_condition`.
     Because of the specified `Window`, the values of `previous_condition` are only
     determined within the reach of each unique `id`.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们可以看到，根据`previous_condition`是否等于`condition`，我们可以确定值是否发生了变化，并将其存储在`changed_condition`中。由于指定的`Window`，`previous_condition`的值仅在每个唯一`id`的范围内确定。
 - en: However, we cannot only keep the rows when there’s a change in values because
     that would result in deleting all the first occurrences of a row for a given `id`.
     We also have to save all the first rows explicitly.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们不能只保留在值发生变化时的行，因为那样会导致删除所有给定`id`的第一次出现的行。我们还必须明确保存所有第一次出现的行。
 - en: To do this, we can use `row_number()*`.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 为此，我们可以使用 `row_number()*`。
 - en: '* In this situation, you could also determine the first row by looking at the
     *null* values in `previous_condition` and/or `changed_condition`, however, for
     illustration purposes, we’ll use `row_number()` here.'
+  id: totrans-39
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '* 在这种情况下，你也可以通过查看`previous_condition`和/或`changed_condition`中的*null*值来确定第一行，但为了说明起见，我们将在这里使用`row_number()`。'
 - en: '[PRE5]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/1afbc5c914fe7f8a4c1a9a0d1053170f.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1afbc5c914fe7f8a4c1a9a0d1053170f.png)'
 - en: '[image by Author]'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者提供的图像]'
 - en: 'Now there are two conditions for when we would like to keep a row:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在有两个条件可以决定是否保留一行数据：
 - en: When `changed_condition is True` in any of the `f"changed_{column}"` columns.
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当`changed_condition is True`出现在任何`f"changed_{column}"`列中。
 - en: When `row_num == 1`
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当`row_num == 1`
 - en: However, what if a row gets deleted? Because there is no next row, `changed_condition
     is False`, and `row_num != 1`.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，如果一行被删除了怎么办？因为没有下一行，`changed_condition is False`，而且`row_num != 1`。
 - en: Therefore, we need to make sure to check whether an `id` is still present in
     the last import.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们需要确保检查`id`在最后一次导入中是否仍然存在。
 - en: 'Let’s first determine what the last import date is:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先让我们确定最后的导入日期是什么：
 - en: '[PRE6]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Unfamiliar with the syntax `print(f"{variable = }")`? Read the article below
     for this and other useful Python tricks!
+  id: totrans-50
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对`print(f"{variable = }")`的语法不熟悉？阅读下面的文章，了解这些和其他有用的Python技巧！
 - en: '[](/5-python-tricks-that-distinguish-senior-developers-from-juniors-826d57ab3940?source=post_page-----78b0f2c8c811--------------------------------)
     [## 5 Python Tricks That Distinguish Senior Developers From Juniors'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/5-python-tricks-that-distinguish-senior-developers-from-juniors-826d57ab3940?source=post_page-----78b0f2c8c811--------------------------------)
+    [## 5个Python技巧，区分高级开发人员和初级开发人员'
 - en: Illustrated through differences in approaches to Advent of Code puzzles
+  id: totrans-52
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过Advent of Code谜题的不同方法进行说明
 - en: towardsdatascience.com](/5-python-tricks-that-distinguish-senior-developers-from-juniors-826d57ab3940?source=post_page-----78b0f2c8c811--------------------------------)
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5个Python技巧，区分高级开发人员和初级开发人员](https://towardsdatascience.com/5-python-tricks-that-distinguish-senior-developers-from-juniors-826d57ab3940?source=post_page-----78b0f2c8c811--------------------------------)'
 - en: 'Now let’s determine the latest import date of an `id`:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们确定一个`id`的最新导入日期：
 - en: '[PRE7]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/3845d7a52a0bd838198708cd16edbc12.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3845d7a52a0bd838198708cd16edbc12.png)'
 - en: '[image by Author]'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者提供的图像]'
 - en: In the image above you can see by looking at the `last_partition_import_date`
     that Building3 has disappeared from the data set on the third of January. This
     could e.g. mean that the building has been demolished. This would be very important
     information, which is why it is important to keep track of whether an `id` has
     been deleted or not.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的图像中，你可以通过查看`last_partition_import_date`看到Building3在1月3日从数据集中消失了。这可能意味着建筑物已经被拆除。这是非常重要的信息，因此跟踪`id`是否被删除非常重要。
 - en: Let’s now filter out all the rows that are irrelevant to keep. As we mentioned
     before, the rows we want to keep should have a changed `condition` value, or it
     should be the first occurrence of a building in the data set.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们过滤掉所有不相关的行。正如我们之前提到的，我们想保留的行应该具有变化的`condition`值，或者应该是数据集中某个建筑物的第一次出现。
 - en: '[PRE8]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![](../Images/1f575a8cb929186560fb6e6c584523c4.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1f575a8cb929186560fb6e6c584523c4.png)'
 - en: '[Image by Author]'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者提供的图像]'
 - en: 'Now, we have a DataFrame in which each row adds information! Let’s remove some
     columns that we don’t need anymore:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们有一个DataFrame，其中每一行都添加了信息！让我们删除一些不再需要的列：
 - en: '[PRE9]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Also, let’s add an `until` column which indicates until when the row’s values
     are valid. We can do this by shifting, the next row’s `import_date` one up using
     `f.lag`, as long as the next row’s `id` is still the same and as long as the rows
     are ordered by `import_date`. For that, we’ll reuse the earlier defined Window:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 同时，让我们添加一个`until`列，用于指示行的值有效的截止时间。我们可以通过使用`f.lag`将下一行的`import_date`上移一行来实现，只要下一行的`id`仍然相同，并且行按`import_date`排序。为此，我们将重用之前定义的Window：
 - en: '[PRE10]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '![](../Images/f5a465c83734fc9bde99f6c57f2d8ba3.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f5a465c83734fc9bde99f6c57f2d8ba3.png)'
 - en: '[Image by Author]'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '[作者提供的图像]'
 - en: As we can see e.g. for Building1 the `until` value of the first row is the `import_date`
     of the second row. The `until` value of the second row is the `import_date` of
     the third row. The `until` value of the third row is `null` because there is no
     fourth row.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，例如对于Building1，第一行的`until`值是第二行的`import_date`。第二行的`until`值是第三行的`import_date`。第三行的`until`值是`null`，因为没有第四行。
 - en: We’re almost done! As mentioned above, we still see some `null` values in the
     `until` column. This is not problematic for Building1, but it is problematic for
     Building3 because we can’t use the `until` column to detect that Building3 is
     no longer present on the third of January. This is where we’ll make use of the
     `last_partition_import_date` and the `latest_import` value.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们差不多完成了！如上所述，我们仍然在`until`列中看到一些`null`值。这对于Building1来说不成问题，但对于Building3来说则有问题，因为我们不能使用`until`列来检测Building3在1月3日是否不再存在。这时我们将使用`last_partition_import_date`和`latest_import`值。
 - en: If `until` is `null` and the `last_partition_import_date < latest_import`, then
     we add the `last_partition_import_date` plus one day to the `until` column of
     that row.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果`until`是`null`且`last_partition_import_date < latest_import`，则将`last_partition_import_date`加一天添加到该行的`until`列中。
 - en: '[PRE11]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![](../Images/ee77e422fb1ad2ab3c86fabcb9c1a920.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ee77e422fb1ad2ab3c86fabcb9c1a920.png)'
 - en: '[Image by Author]'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '[图片作者]'
 - en: Using this technique, we can see that Building3’s last seen day was on the second
     of January (we use a non-inclusive until here). If a row still has a `null` value
     in the `until` column, it means that that row is still valid.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用这种技术，我们可以看到Building3的最后一次观察日期是1月2日（我们在这里使用的是不包括的直到日期）。如果某一行在`until`列中仍有`null`值，则表示该行仍然有效。
 - en: 'The last thing we need to do is to drop the `last_partition_import_date` column
     and rename the `import_date` column to `from`:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要做的最后一件事是删除`last_partition_import_date`列，并将`import_date`列重命名为`from`：
 - en: '[PRE12]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '![](../Images/451c01e6eddc714ad4a2e5872a9cadfb.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/451c01e6eddc714ad4a2e5872a9cadfb.png)'
 - en: '[image by Author]'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '[图片作者]'
 - en: Here above you can see our final DataFrame! In real life, this technique can
     save you millions of rows that don’t carry any information, which saves money
     on storage and makes further processing a lot faster!
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面您可以看到我们的最终数据框！在现实生活中，这种技术可以节省数百万行不带信息的数据，从而节省存储费用并加快进一步处理的速度！
 - en: To conclude
+  id: totrans-81
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'In this article, we’ve learned how you can save millions of rows by only retaining
     the rows that actually carry information, by looking at changed values within
     each subset. To summarize what we did:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们学习了如何通过仅保留实际带有信息的行来节省数百万行数据，通过查看每个子集内的变化值。总结一下我们做了什么：
 - en: Grouped the DataFrame into partitions based on their IDs.
+  id: totrans-83
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 根据ID将数据框分组为多个分区。
 - en: For each partition, we determined the consecutive identical combination of values.
     Consecutive identical combinations of values are dropped.
+  id: totrans-84
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每个分区，我们确定了值的连续相同组合。连续相同的值组合会被删除。
 - en: We added `from` and `until` as new columns to the rows to determine the lifespan
     of a combination of consecutive values.
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们添加了`from`和`until`作为新列，以确定连续值组合的生命周期。
 - en: We checked whether the last `until` value of a partition is before the last
     `until` value of the entire DataFrame to add an `until` value for deleted partitions.
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们检查了一个分区的最后`until`值是否在整个数据框的最后`until`值之前，以便为删除的分区添加一个`until`值。
 - en: To make the code above reusable I’ve created a function for it which you can
     copy-paste into your own project and use there!
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使上面的代码可重用，我创建了一个函数，您可以将其复制粘贴到您的项目中使用！
 - en: '[PRE13]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: With this function, you can easily remove all uninformative rows!
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用这个函数，您可以轻松删除所有无信息的行！
 - en: '[PRE14]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: If you found this article informative, please take a look at my account to see
     more articles on Python and data science!
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您觉得这篇文章有用，请查看我的账户，查看更多关于Python和数据科学的文章！
 - en: '[](/how-to-extract-more-information-from-categorical-plots-8ffac1133eb0?source=post_page-----78b0f2c8c811--------------------------------)
     [## How to extract more information from categorical plots'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/how-to-extract-more-information-from-categorical-plots-8ffac1133eb0?source=post_page-----78b0f2c8c811--------------------------------)
+    [## 如何从分类图中提取更多信息'
 - en: Easily get deeper insights into your categorical data by using these two methods.
+  id: totrans-93
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过使用这两种方法，轻松深入了解您的分类数据。
 - en: towardsdatascience.com](/how-to-extract-more-information-from-categorical-plots-8ffac1133eb0?source=post_page-----78b0f2c8c811--------------------------------)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/how-to-extract-more-information-from-categorical-plots-8ffac1133eb0?source=post_page-----78b0f2c8c811--------------------------------)

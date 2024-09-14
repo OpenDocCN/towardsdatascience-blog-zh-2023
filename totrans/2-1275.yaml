@@ -1,71 +1,102 @@
 - en: How to write reproducible TensorFlow input pipelines
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何编写可重复的 TensorFlow 输入管道
 - en: 原文：[https://towardsdatascience.com/how-to-write-reproducible-tensorflow-input-pipelines-72d5e4b66932](https://towardsdatascience.com/how-to-write-reproducible-tensorflow-input-pipelines-72d5e4b66932)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-to-write-reproducible-tensorflow-input-pipelines-72d5e4b66932](https://towardsdatascience.com/how-to-write-reproducible-tensorflow-input-pipelines-72d5e4b66932)
 - en: Fix the input ordering by using seeds
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过使用种子来修复输入顺序
 - en: '[](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)[![Pascal
     Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)
     [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)[![Pascal
+    Janetzky](../Images/43d68509b63c5f9b3fc9cef3cbfc1a88.png)](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)[](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)
+    [Pascal Janetzky](https://pascaljanetzky.medium.com/?source=post_page-----72d5e4b66932--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)
     ·6 min read·Jan 9, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----72d5e4b66932--------------------------------)·阅读时间6分钟·2023年1月9日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: When preparing machine learning experiments, the input pipeline plays a critical
     role in data preparation. While they are often straightforward to construct —
     the machine learning frameworks make this relatively easy —, they lack reproducibility.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在准备机器学习实验时，输入管道在数据准备中起着关键作用。虽然构建它们通常很简单 - 机器学习框架使这相对容易 - 但它们缺乏可重复性。
 - en: '![](../Images/9f8ae83ad000df4f9014a188dab704b4.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9f8ae83ad000df4f9014a188dab704b4.png)'
 - en: Photo by [Quinten de Graaf](https://unsplash.com/@quinten149?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由[Quinten de Graaf](https://unsplash.com/@quinten149?utm_source=medium&utm_medium=referral)提供，来自[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)。
 - en: 'This is by default: randomness in the input data, such as applying shuffling
     after each epoch, has been shown to play an important role in neural network training.
     As such, it’s an obvious choice to “enable” randomness by default. However, when
     we want to gain a deeper understanding of our training, we want to keep as many
     influences/parameters fixed as possible. The input order is one of them.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是默认设置：输入数据中的随机性，例如在每个时期后应用洗牌，已被证明在神经网络训练中起着重要作用。因此，“启用”默认的随机性是一个明显的选择。然而，当我们想要更深入地了解我们的训练时，我们希望尽可能保持许多影响/参数固定。输入顺序就是其中之一。
 - en: 'Does fixing the input ordering mean we must forgo altogether shuffling or other
     randomization operations? No, thankfully not. Let me explain why. When dealing
     with randomness, we have one choice that we can make: setting the seed of the
     randomness-inducing operation. The machine learning frameworks deduce any other
     operations and their orders from this seed, usually an integer number such as
     42, 111, or 1337.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 修复输入顺序是否意味着我们必须完全放弃洗牌或其他随机化操作？不，幸运的是不必如此。让我解释一下为什么。在处理随机性时，我们有一个选择：设置引入随机性的操作的种子。机器学习框架从这个种子中推断出任何其他操作及其顺序，通常是一个整数，如42、111或1337。
 - en: Here, think about randomly selecting a number from a list. When this operation
     is not seeded, we will draw a different number every time we run the drawing.
     However, if we were to set a fixed seed, we would get reproducible results. This
     example is trivial, but behind the ML frameworks’ scenes, that’s what happens.
     So, when creating a reproducible input pipeline, we must focus on setting seeds.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，想象一下从列表中随机选择一个数字。当此操作未设置种子时，每次运行抽取时我们都会得到不同的数字。然而，如果我们设置一个固定的种子，我们将获得可重复的结果。这个例子很简单，但在机器学习框架的背后，这就是发生的事情。因此，在创建可重复的输入管道时，我们必须专注于设置种子。
 - en: Global seed
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 全局种子
 - en: In this article, I’ll use TensorFlow as the ML framework of choice, but the
     gist applies to any other packages, too. In TensorFlow, we have two places that
     we can customize. The first place is the global seed.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我将使用TensorFlow作为首选的机器学习框架，但这个要点也适用于其他任何包。在TensorFlow中，我们有两个可以自定义的地方。第一个地方是全局种子。
 - en: To set the global seed, TensorFlow offers two methods, [*set_seed*](https://www.tensorflow.org/api_docs/python/tf/random/set_seed),
     and [*set_random_seed*](https://www.tensorflow.org/api_docs/python/tf/keras/utils/set_random_seed),
     the latter of which I prefer using as it also sets the random seeds for other
@@ -75,12 +106,16 @@
     same version, this is reproducible. However, the derived seeds might differ across
     computing environments and TensorFlow versions. To change this, we need to set
     the operation-level seeds as well.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 要设置全局种子，TensorFlow提供了两种方法，[*set_seed*](https://www.tensorflow.org/api_docs/python/tf/random/set_seed)和[*set_random_seed*](https://www.tensorflow.org/api_docs/python/tf/keras/utils/set_random_seed)，我更喜欢使用后者，因为它还设置了其他标准包的随机种子。无论如何，如果我们只指定全局种子，每当调用一个基于随机性的操作（如shuffle）时，包都会从这个全局种子派生一个所谓的操作级种子。在相同的系统和相同的版本上，这是可重现的。然而，在不同的计算环境和TensorFlow版本中，派生的种子可能会有所不同。要改变这一点，我们还需要设置操作级种子。
 - en: Operation-level seeds
+  id: totrans-15
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 操作级种子
 - en: How do we do this? From my experience, the place where we need to pass a seed
     can be easily identified by reading the function documentation or the possible
     parameters of that function. Take [the shuffle operation](https://www.tensorflow.org/api_docs/python/tf/data/Dataset#shuffle),
@@ -89,14 +124,18 @@
     parameters), we’ll notice that it contains one called *seed;* that’s what we are
     looking for. Now, we just set an arbitrary integer number here and *keep it fixed*
     (that’s important!).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何做到这一点呢？根据我的经验，我们需要传递种子的地方可以通过阅读函数文档或该函数的可能参数来轻松识别。以[shuffle操作](https://www.tensorflow.org/api_docs/python/tf/data/Dataset#shuffle)为例。这个操作对一个TensorFlow数据集进行操作，并随机打乱其元素。如果我们阅读相应的文档（或检查函数的参数），我们会注意到它包含一个叫做*seed*的参数；这就是我们要找的。现在，我们只需在这里设置一个任意的整数，并*保持不变*（这很重要！）。
 - en: After setting this operation-level seed, we can do the same for all other operations
     that offer a *seed* parameter. After we’ve done so, the question is, how can we
     make sure that our seeding strategy works? For example, how can we know that we
     always get the same data samples in the same order?
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在设置了操作级种子之后，我们可以对所有其他提供*seed*参数的操作进行相同的设置。那么问题来了，我们如何确保我们的种子策略有效呢？例如，我们如何知道我们总是以相同的顺序获得相同的数据样本？
 - en: 'To answer this, I’ve prepared a simple python script. This script, which you
     can [find on GitHub here](https://github.com/phrasenmaeher/reproducible_pipelines),
     loads a dataset from TensorFlow’s collection of datasets, [TensorFlow Datasets](https://www.tensorflow.org/datasets/catalog/overview#all_datasets)
@@ -107,108 +146,156 @@
     not necessarily exist. However, that’s easy to add. For example, if you load NumPy
     arrays into a TF data pipeline, don’t pass tuple (x,y) but tuple (x, y, id), where
     the id column corresponds to the *x*’s identification number.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了回答这个问题，我准备了一个简单的Python脚本。这个脚本可以在[GitHub上找到](https://github.com/phrasenmaeher/reproducible_pipelines)，它从TensorFlow的数据集合[TensorFlow
+    Datasets](https://www.tensorflow.org/datasets/catalog/overview#all_datasets)（简称TFDS）中加载一个数据集，应用用户定义的预处理流程，并打印元素的顺序。这里有一个注意事项：对于从TFDS加载的所有数据集，我们可以使用样本的唯一ID（在其对应的数据集中）来跟踪其在多个流水线运行中的顺序。对于自定义数据集，这样的ID不一定存在。不过，这很容易添加。例如，如果你将NumPy数组加载到TF数据流水线中，不要传递元组（x，y），而是传递元组（x，y，id），其中id列对应于*x*的标识号。
 - en: Also, if, instead, you work with TFRecord files, the procedure is similar, too.
     Here, when creating a [*tf.train.Example*](https://www.tensorflow.org/api_docs/python/tf/train/Example),
     add an additional feature. In my [hands-on instruction to TFRecords](/a-practical-guide-to-tfrecords-584536bc786c),
     the place to do so is where we define an example’s dictionary. Head to the article
     to learn about this data structure and where to add user-defined ids.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，如果你使用TFRecord文件，过程也是类似的。在这里，当创建一个[*tf.train.Example*](https://www.tensorflow.org/api_docs/python/tf/train/Example)时，添加一个额外的特征。在我的[TFRecords实践指南](/a-practical-guide-to-tfrecords-584536bc786c)中，可以在定义示例字典的地方添加用户定义的ID。
 - en: 'After we’ve loaded a dataset containing sample-ids, we can print the ids to
     see the ordering. In TensorFlow, an ID looks like this: ‘mnist-train.tfrecord-00000-of-00001__209’.
     Without boring you with the implementational details, we can deduce the actual
     id from this string with the help of a small utility function [taken from the
     TensorFlow documentation](https://www.tensorflow.org/datasets/determinism#finding_the_dataset_examples_ids).'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们加载包含样本ID的数据集之后，我们可以打印ID来查看排序。在TensorFlow中，一个ID看起来像这样：‘mnist-train.tfrecord-00000-of-00001__209’。不想让你感到无聊的是，我们可以通过一个小的实用函数（[来自TensorFlow文档](https://www.tensorflow.org/datasets/determinism#finding_the_dataset_examples_ids)）来从这个字符串中推断出实际的ID。
 - en: Non-reproducible pipeline
+  id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 不可复现的流水线
 - en: 'For illustrational purposes, my script uses the small MNIST dataset by default.
     It loads the dataset four times, using a deliberately tiny batch size of four
     samples (this makes it easier to compare the sample ordering). The first two calls
     use no global and no operation-level seeds and illustrate what happens when we
     do not care about data ordering:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了说明目的，默认情况下，我的脚本使用了小的MNIST数据集。它四次加载数据集，使用了一个故意很小的批次大小为四个样本（这样可以更容易地比较样本的顺序）。前两次调用不使用全局和操作级别的种子，说明了当我们不关心数据顺序时会发生什么：
 - en: 'I have printed the truncated output below:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经打印了截断的输出如下：
 - en: '[PRE0]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Here, we can see that the ordering and the actually selected elements are different.
     Note: For readability reasons, I’ve printed the elements of 5 data batches only
     (=20 items; 4 [batch size] x 5 [num batches]). You can increase the count by passing
     any other positive integer in lines 5 and 13 in the previous code.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们可以看到排序和实际选择的元素是不同的。注意：出于可读性的原因，我只打印了5个数据批次的元素（=20个项目；4 [批次大小] x 5 [批次数]）。你可以通过在前面的代码的第5行和第13行传递任何其他正整数来增加计数。
 - en: Reproducible pipeline
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可复现的流水线
 - en: 'After the two previous runs, let’s see what happens when we use seeds. For
     this, we call *run_pipeline_reproducible*:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面两次运行之后，让我们看看在使用种子时会发生什么。为此，我们调用*run_pipeline_reproducible*：
 - en: 'Inside this function, we call the *seed_everything* method, which, well, seeds
     everything, making use of the previously mentioned *set_random_seed* method from
     TensorFlow:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个函数内部，我们调用*seed_everything*方法，这个方法会为所有引入随机性的包（如NumPy、random、TensorFlow本身）设置全局种子，利用了前面提到的*set_random_seed*方法：
 - en: After the seeding, which sets the global seeds for all randomness-inducing packages
     (e.g., NumPy, random, TensorFlow itself), we again call the data pipeline, this
     time passing *reproducible=True*.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 在设置了种子之后，我们再次调用数据流水线，这次传递*reproducible=True*。
 - en: This argument is passed through to all data-modifying methods, such as *load_data*
     (below) and “create_pipeline” (see addendum at the end of this blog).
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个参数会传递给所有的数据修改方法，比如下面的*load_data*和“create_pipeline”（请参阅博客末尾的附录）。
 - en: 'The “reproducible” flag sets the operation-level seeds wherever possible, using
     an arbitrarily chosen integer. In the script, the seed is used in the shuffle
     and the *.load()* operation from TFDS. After setting this number, the output demonstrates
     that we have indeed built a reproducible data pipeline:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: “可复现”标志在可能的情况下设置操作级别的种子，使用一个任意选择的整数。在脚本中，种子用于从TFDS中的shuffle和*.load()*操作。设置了这个数字之后，输出表明我们确实建立了一个可复现的数据流水线：
 - en: '[PRE1]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Crucially, the ordering stays consistent across multiple calls to the script.
     That is, even when we close our IDE/shell and run the script anew, the output
     order is the same.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键是，即使我们关闭IDE/shell并重新运行脚本，输出顺序也是相同的。
 - en: 'The summarization of this blog post is short: Set the global seed and the operation
     level seeds. For this, use the *seed_everything()* function shown previously and
     look for places where you can pass a seed. In those places, give an arbitrary
     integer number — my favorites are 42 and 1337 — and keep them. That’s it.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇博客文章的总结很简单：设置全局种子和操作级种子。为此，请使用之前展示的*seed_everything()*函数，并寻找可以传递种子的地方。在这些地方，给一个任意的整数
+    — 我最喜欢的是42和1337 — 然后保持它们。就是这样。
 - en: To run the pipeline yourself, head to GitHub [here](https://github.com/phrasenmaeher/reproducible_pipelines).
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 要自己运行流水线，请前往GitHub [这里](https://github.com/phrasenmaeher/reproducible_pipelines)。
 - en: Addendum
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 附录
 - en: 'If you’d like to play around with other data types, such as audio, you have
     to adopt lines 4 and 10 in the following function:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想尝试其他数据类型，比如音频，你需要采用以下函数中的第4行和第10行：
 - en: Similarly, if you’d like to add further data-processing operations, such as
     augmentations, equally modify the *create_pipeline* function. In those cases,
     just set a seed whenever one can be set. This guarantees, e.g., reproducible data
     augmentations.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，如果你想添加更多的数据处理操作，比如增强操作，同样修改*create_pipeline*函数。在这些情况下，只要可以设置种子就设置一个。这样可以保证，例如，数据增强是可重现的。
 - en: 'See the snippet below for an illustration:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 请看下面的片段以便理解：
 - en: The augmentation operations are, by default, unseeded (equal to passing *seed=None*).
     Thus, to achieve reproducibility, set a seed in these places.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，增强操作是没有种子的（等同于传递*seed=None*）。因此，为了实现可重现性，在这些地方设置一个种子。

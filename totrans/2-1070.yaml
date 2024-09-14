@@ -1,409 +1,621 @@
 - en: How Does XGBoost Handle Multiclass Classification?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: XGBoost 如何处理多类分类？
 - en: 原文：[https://towardsdatascience.com/how-does-xgboost-handle-multiclass-classification-6c76ba71f6f0](https://towardsdatascience.com/how-does-xgboost-handle-multiclass-classification-6c76ba71f6f0)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-does-xgboost-handle-multiclass-classification-6c76ba71f6f0](https://towardsdatascience.com/how-does-xgboost-handle-multiclass-classification-6c76ba71f6f0)
 - en: It’s crucial to understand the underlying workings of classification using this
     kind of model, as it impacts performance.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 理解使用这种模型的分类机制至关重要，因为它影响到性能。
 - en: '[](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)[![Saupin
     Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)
     [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)[![Saupin
+    Guillaume](../Images/d9112d3cdfe6f335b6ff2c875fba6bb5.png)](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)[![数据科学前沿](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)
+    [Saupin Guillaume](https://medium.com/@guillaume.saupin?source=post_page-----6c76ba71f6f0--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)
     ·7 min read·Jan 7, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [数据科学前沿](https://towardsdatascience.com/?source=post_page-----6c76ba71f6f0--------------------------------)
+    ·阅读时间 7 分钟·2023年1月7日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/23c7c84600c2af0aa36124702225ee8e.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/23c7c84600c2af0aa36124702225ee8e.png)'
 - en: Photo by [Andrew Coop](https://unsplash.com/@andrewcoop?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源于 [Andrew Coop](https://unsplash.com/@andrewcoop?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: In this article, we are going to see how the ensemble of decision trees trained
     using Gradient Boosting libraries like XGBoost, LightGBM and CatBoost performs
     multiclass classification.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将了解使用梯度提升库如 XGBoost、LightGBM 和 CatBoost 训练的决策树集成如何进行多类分类。
 - en: 'Indeed, an ensemble of decision trees associates a real value to a set of features,
     so the question is: how do decision tree ensembles transform a scalar value to
     a multiclass label?'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 确实，决策树的集成将一个实数值关联到一组特征，因此问题是：决策树集成如何将一个标量值转换为多类标签？
 - en: Understanding the underlying workings of classification using this kind of model
     is crucial, as it impacts performance.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 理解使用这种模型的分类机制至关重要，因为它影响到性能。
 - en: 'We will enter progressively into the subject following the plan below:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将按照以下计划逐步进入主题：
 - en: Reminder and toy example of binary classification in Python
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python 中二分类的提醒和示例
 - en: First binary classification using XGBoost as a regressor
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，使用 XGBoost 作为回归器进行二分类
 - en: Second binary classification using XGBoost as a classifier
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第二次，使用 XGBoost 作为分类器进行二分类
 - en: Multiclass classification using XGBoost
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用 XGBoost 进行多类分类
 - en: The versatility of Decision Tree based Ensemble Models
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于决策树的集成模型的多样性
 - en: 'XGBoost, LightGBM, or CatBoost are libraries that share (by default) the same
     kind of underlying model: decision trees.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: XGBoost、LightGBM 或 CatBoost 是共享（默认情况下）相同类型底层模型的库：决策树。
 - en: These decision trees are combined iteratively, using Gradient Boosting. *I.e.*
     the addition of new nodes to the current tree is done so that a non-linear objective,
     usually the squared error, is optimized. To handle the non-linearity, the objective
     is linearized using its Gradient and Hessian.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些决策树通过梯度提升迭代组合。*即* 向当前树中添加新节点，以便优化非线性目标，通常是平方误差。为了处理非线性，目标使用其梯度和海森矩阵进行线性化。
 - en: 'Hence the name Gradient Boosting. More detail in my previous paper:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此叫做梯度提升。更多细节请参见我之前的论文：
 - en: '[](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----6c76ba71f6f0--------------------------------)
     [## DIY XGBoost library in less than 200 lines of python'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----6c76ba71f6f0--------------------------------)
+    [## 在不到 200 行 Python 代码中实现 DIY XGBoost 库'
 - en: XGBoost explained as well as gradient boosting method and HP tuning by building
     your own gradient boosting library for…
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: XGBoost的解释以及梯度提升方法和超参数调优，通过构建自己的梯度提升库来实现……
 - en: towardsdatascience.com](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----6c76ba71f6f0--------------------------------)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/diy-xgboost-library-in-less-than-200-lines-of-python-69b6bf25e7d9?source=post_page-----6c76ba71f6f0--------------------------------)
 - en: Predicting with ensemble of decision trees
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用决策树集成进行预测
 - en: 'As a reminder, the prediction process is relatively simple: given a row of
     data, each decision tree of the ensemble is browsed.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 提醒一下，预测过程相对简单：给定一行数据，每棵决策树都会被遍历。
 - en: Depending on the value of features, each tree then associates a unique value,
     attached to the final leaf.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据特征的值，每棵树会将一个唯一值关联到最终的叶节点上。
 - en: The unique predictions of each tree are then simply summed up to give the overall
     prediction.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，每棵树的唯一预测值被简单地加总起来，得到总体预测结果。
 - en: 'The figure below illustrates this in a simple example, where an ensemble of
     decision trees models the identity function for an integer between 1 and 4:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的图例在一个简单的示例中说明了这一点，其中一个决策树的集成模型了一个在1到4之间的整数的身份函数：
 - en: '![](../Images/ba83d213afa3f8ccc3cfeff175032d65.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ba83d213afa3f8ccc3cfeff175032d65.png)'
 - en: A simple ensemble of decision trees. Schema from the author.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个简单的决策树集成。图示由作者提供。
 - en: For instance, when the input is 1, the first tree generates 8, the second tree
     -6, and the last one -1\. Summing these three values gives 1, which is the expected
     output.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，当输入为1时，第一个树生成8，第二个树生成-6，最后一个树生成-1。将这三个值加总得到1，这是期望的输出。
 - en: 'This example is extracted from my book, [Practical Gradient Boosting](https://amzn.to/3UVVVgw),
     on gradient boosting:'
+  id: totrans-31
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这个例子摘自我的书籍，[实用梯度提升](https://amzn.to/3UVVVgw)，关于梯度提升的内容：
 - en: '[](https://amzn.to/3QmRqtO?source=post_page-----6c76ba71f6f0--------------------------------)
     [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://amzn.to/3QmRqtO?source=post_page-----6c76ba71f6f0--------------------------------)
+    [## 实用梯度提升：深入研究Python中的梯度提升'
 - en: This book on Gradient Boosting methods is intended for students, academics,
     engineers, and data scientists who wish …](https://amzn.to/3QmRqtO?source=post_page-----6c76ba71f6f0--------------------------------)
+  id: totrans-33
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这本关于梯度提升方法的书籍是为那些希望……](https://amzn.to/3QmRqtO?source=post_page-----6c76ba71f6f0--------------------------------)
 - en: Using a single scalar value, the best we can do is perform a binary classification,
     labelling negative predictions with one class, and positive ones with the other
     one.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用单一标量值时，我们所能做的最好是进行二分类，将负预测标记为一个类别，将正预测标记为另一个类别。
 - en: Binary classification without XGBoost
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 没有XGBoost的二分类
 - en: Before discovering this first option, *i.e.* binary classification with XGBoost
     as a regressor, let’s show in detail how binary classification is done.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在发现第一个选项，即将XGBoost作为回归器进行二分类之前，让我们详细展示二分类是如何完成的。
 - en: 'The problem we are trying to solve here is simple: we want to establish a student''s
     probability of success depending on the number of hours he spends studying his
     subject.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在这里尝试解决的问题很简单：我们想要根据学生花费在学习科目上的小时数来确定其成功的概率。
 - en: 'The figure below shows the data collected, i.e. the number of hours of work
     and the results: ***pass*** or ***failed***.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的图展示了收集的数据，即工作小时数和结果：***通过*** 或 ***失败***。
 - en: '![](../Images/5f8fa9a1aa130304439e42a47c837ba8.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5f8fa9a1aa130304439e42a47c837ba8.png)'
 - en: The probability of success depends on study hours. Plot by the author.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 成功的概率取决于学习时间。图示由作者提供。
 - en: 'The standard model that is used for classification is the logistic function.
     This function is similar to linear regression, except that instead of taking a
     value in the range ℝ, it generates only values in the range [0, 1]. Its formula
     is worth being known:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于分类的标准模型是Logistic函数。该函数类似于线性回归，不同之处在于它生成的值仅在[0, 1]范围内，而不是ℝ范围内。其公式值得了解：
 - en: '![](../Images/fd395a8e9b470b506a04011e19e41523.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fd395a8e9b470b506a04011e19e41523.png)'
 - en: Logistic function. Formula by the author.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: Logistic函数。公式由作者提供。
 - en: 'As always in machine learning, finding the best parameters for a model, here
     the logistic function, is done by minimizing an error. Facing a binary problem,
     where the positive output can be modelled by a 1 and the negative output by a
     0, it’s possible to combine both errors in a single expression:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 和机器学习中的情况一样，为模型（这里是逻辑函数）找到最佳参数是通过最小化误差来完成的。面对一个二分类问题，其中正输出可以用1建模，负输出可以用0建模，可以将两种误差结合成一个单一的表达式：
 - en: '![](../Images/bca3e2741a00b9c3363e4c60fad3c14a.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bca3e2741a00b9c3363e4c60fad3c14a.png)'
 - en: Simple error function. Formula by the author.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单的误差函数。由作者提供的公式。
 - en: Where the `y_k` are the observed samples whereas `f(x_k)` are the prediction
     made by the model `f`.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中`y_k`是观察到的样本，而`f(x_k)`是模型`f`做出的预测。
 - en: 'The difficulty with this basic error is that, accordingly to the binary nature
     of the logistic function, which mainly takes only two values: zero and one, the
     error with respect to the model parameter `m`will also take mainly two values.
     Hence outside the vicinity of the optimal parameters, the error will be flat.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个基本误差的问题在于，根据逻辑函数的二元性质，它主要取两个值：零和一，因此相对于模型参数`m`的误差也主要取两个值。因此，在最佳参数的邻域之外，误差将是平坦的。
 - en: '![](../Images/fc65388bde9bfdc5c3f4fac1e6d0c772.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fc65388bde9bfdc5c3f4fac1e6d0c772.png)'
 - en: Saturation of the error when using directly the error. Plot by the author.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 直接使用误差时的饱和现象。由作者提供的图。
 - en: We could use this formula, and this would work, as long as we provide a pretty
     good estimate of the optimal parameter. If it’s not the case, we risk ending up
     in the flat zone where the error is almost constant. In this area, the gradient
     will be almost zero, and the convergence of the steepest descent will be agonizingly
     slow.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用这个公式，这样可以工作，只要我们提供一个相当好的最佳参数估计。如果不是这样，我们可能会陷入一个误差几乎恒定的平坦区域。在这个区域，梯度将几乎为零，最陡下降法的收敛速度将非常缓慢。
 - en: We need a way to process the error output, which is limited to the range [0,
     1] for a given sample to ℝ+ so that there is no more saturation.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要一种方法来处理误差输出，将其从给定样本的范围[0, 1]扩展到ℝ+，以避免饱和现象。
 - en: With the additional constraint that a null error must remain a null error after
     the transformation.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 额外的约束是零误差在变换后必须仍然是零误差。
 - en: The trick is to realize that log(1) is zero, whereas log(0) is -**∞.**
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 诀窍是认识到log(1)为零，而log(0)为-**∞**。
 - en: 'Therefore the log-loss is used:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此使用对数损失：
 - en: '![](../Images/cceada6be3af4ee683eaffcc264a3044.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cceada6be3af4ee683eaffcc264a3044.png)'
 - en: Log-loss. Formula by the author.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 对数损失。由作者提供的公式。
 - en: Where the `y_k` are the observed samples whereas `f(x_k)` are the prediction
     made by the model `f`. Note the minus sign in front of the addition operator and
     the inversion of `1-f(x_k)` with `f(x_k)`. This is because `log(1)=0`.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中`y_k`是观察到的样本，而`f(x_k)`是模型`f`做出的预测。注意加法运算符前的负号和`1-f(x_k)`的取反与`f(x_k)`的交换。这是因为`log(1)=0`。
 - en: 'Using the log loss, the error is no longer saturated:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用对数损失，误差不再饱和：
 - en: '![](../Images/7c4a33ea704ffa9529c15e89b3640304.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7c4a33ea704ffa9529c15e89b3640304.png)'
 - en: The plot of the error using the log loss. Plot by the author.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用对数损失的误差图。由作者提供的图。
 - en: 'The simplest way to minimize this error is to use the steepest descent, which
     only requires computing the gradient of the error. Many options are possible to
     do that. Here we are going to use symbolic differentiation using `sympy`:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 最简单的最小化这个误差的方法是使用最陡下降法，这只需要计算误差的梯度。可以有多种方法来实现这一点。这里我们将使用`sympy`进行符号微分：
 - en: Logistic regression. Code by the author.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 逻辑回归。由作者提供的代码。
 - en: The algorithm found the expected value, 14.77, which is very close to the theoretical
     one.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法找到了预期值14.77，这个值非常接近理论值。
 - en: Let’s now go back to our subject, binary classification with decision trees
     and gradient boosting.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们回到主题，使用决策树和梯度提升进行二分类。
 - en: Binary classification with XGBoost
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用XGBoost进行二分类
 - en: 'Let’s start with a simple example, using the [Cleveland Heart Disease Dataset](https://archive.ics.uci.edu/ml/datasets/heart+disease)
     (CC BY 4.0), where the classification is done using regression. As we are performing
     a binary classification, it is possible to use a simple regression, as we can
     attach a positive value, 1.0, to positive labels, and a negative value, -1, to
     negative labels:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从一个简单的例子开始，使用[Cleveland Heart Disease Dataset](https://archive.ics.uci.edu/ml/datasets/heart+disease)（CC
+    BY 4.0），其中分类是通过回归完成的。由于我们进行的是二分类，可以使用简单回归，因为我们可以将正标签附加一个正值1.0，将负标签附加一个负值-1：
 - en: Performing classification using a regressor. Code by the author.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用回归器进行分类。作者提供的代码。
 - en: The default error used by XGBoost is the squared error. The predictions are
     rounded to integers, and as you can see thanks to the confusion matrix, the model
     performs prediction without error.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: XGBoost 使用的默认错误是平方误差。预测被四舍五入为整数，正如混淆矩阵所示，模型的预测没有误差。
 - en: 'A similar result can be achieved using directly an XGBoost classifier:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 直接使用 XGBoost 分类器也能实现类似的结果：
 - en: Performing classification using a classifier. Code by the author.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用分类器进行分类。作者提供的代码。
 - en: In this case, there is no need to round predictions to get the corresponding
     class. All the job is done natively by the XGBClassifier. Let’s see how XGBoost
     handles that.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，无需将预测值四舍五入以获取相应的类别。所有的工作都是由 XGBClassifier 原生完成的。让我们看看 XGBoost 是如何处理的。
 - en: XGBClassifier trains multiple models
+  id: totrans-73
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: XGBClassifier 训练多个模型
 - en: In fact, when you are doing classification with XGBoost, using the XGBClassifier
     (or xgb.train with the right parameters for classification), XGBoost does in fact
     train multiple models, one for each class.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，当你使用 XGBoost 进行分类时，使用 XGBClassifier（或用适当参数进行分类的 xgb.train），XGBoost 实际上训练了多个模型，每个类别一个。
 - en: The snippet of code below shows how to get more insight into the internals of
     XGBoost.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的代码片段展示了如何深入了解 XGBoost 的内部实现。
 - en: Getting the individual probabilities for each class. Code by the author.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 获取每个类别的单独概率。作者提供的代码。
 - en: More specifically, the `predict_proba` the method allows getting access to the
     raw data generated by the internal models. This clearly reveals that when doing
     classification XGBoost makes a probability prediction for each class.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 更具体地说，`predict_proba` 方法允许访问内部模型生成的原始数据。这清楚地揭示了，在进行分类时，XGBoost 为每个类别做出概率预测。
 - en: The predicted class is then the one with the highest probability.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测的类别是具有最高概率的那个。
 - en: 'Looking at the code that is done to integrate XGBoost into `sklearn`, we have
     the confirmation that XGBoost makes multiple predictions:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看将 XGBoost 集成到 `sklearn` 的代码，我们确认 XGBoost 进行多个预测：
 - en: Extract from the open source code of XGBoost. See [https://github.com/dmlc/xgboost/blob/master/python-package/xgboost/sklearn.py#L1541](https://github.com/dmlc/xgboost/blob/master/python-package/xgboost/sklearn.py#L1541)
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 提取自 XGBoost 的开源代码。参见 [https://github.com/dmlc/xgboost/blob/master/python-package/xgboost/sklearn.py#L1541](https://github.com/dmlc/xgboost/blob/master/python-package/xgboost/sklearn.py#L1541)
 - en: As can be seen, line 25, `argmax` is used to retrieve the index of the class
     with the highest probability when `softprob` is used. In the case where the objective
     used is `softmax`, the prediction is simply cast into integers.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 如可见，第 25 行中使用了 `argmax` 来检索使用 `softprob` 时具有最高概率的类别索引。在使用 `softmax` 作为目标的情况下，预测值直接转换为整数。
 - en: How does XGBoost perform multiclass classification?
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: XGBoost 如何执行多类分类？
 - en: Usually, the explanations regarding how XGBoost handle multiclass classification
     state that it trains multiple trees, one for each class.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，关于 XGBoost 如何处理多类分类的解释说明它训练了多个树，每个类别一个。
 - en: This is not exactly the case. In fact, all the trees are constructed at the
     same time, using a vector objective function instead of a scalar one. *I.e.* there
     is an objective for each class.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际情况并非如此。事实上，所有的树是同时构建的，使用的是向量目标函数而不是标量目标函数。*即* 每个类别都有一个目标。
 - en: 'The XGBoost [documentation](https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html)
     gives an example of such an objective:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: XGBoost 的 [文档](https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html)
+    提供了这种目标的示例：
 - en: Extract from the XGBoost documentation. See [https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html](https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html)
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 提取自 XGBoost 文档。参见 [https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html](https://xgboost.readthedocs.io/en/stable/python/examples/custom_softmax.html)
 - en: 'There are two things very interesting in this snippet of code:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个代码片段中有两件非常有趣的事情：
 - en: 'The objective name is `multi:softprob` when using the integrated objective
     in XGBoost. This is quite confusing, as the aim is not really the `softprob` ,
     but the log loss of the `softmax`. This appears clearly in the code, as the gradient
     is directly the `softmax.` But `softmax` is not the gradient of `softmax` , but
     the gradient of its log loss:'
+  id: totrans-88
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当使用 XGBoost 中的集成目标时，目标名称是 `multi:softprob`。这很令人困惑，因为实际目标并非 `softprob`，而是 `softmax`
+    的对数损失。这在代码中表现得很清楚，因为梯度直接是 `softmax`。但 `softmax` 不是 `softmax` 的梯度，而是其对数损失的梯度：
 - en: '![](../Images/0eb5f103ba26452f16ba23cfde091843.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0eb5f103ba26452f16ba23cfde091843.png)'
 - en: The gradient of the log loss of softmax. Formulas by the author.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: softmax的对数损失的梯度。由作者提供的公式。
 - en: 2\. The other point is that the code uses a variable `hess` that stands for
     the hessian. However, this is not really the hessian that is used mathematically
     speaking, but the second derivative. Hence the right name for this would be a
     laplacian.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. 另一个点是代码使用了一个变量`hess`，代表海森矩阵。然而，从数学角度来看，这实际上不是海森矩阵，而是二阶导数。因此，这个变量的正确名称应该是拉普拉斯算子。
 - en: '[![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/646ded91846ff6aa7fa8814985c9837d.png)](https://www.buymeacoffee.com/guillaumes0)'
 - en: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.buymeacoffee.com/guillaumes0](https://www.buymeacoffee.com/guillaumes0)'
 - en: Conclusion
+  id: totrans-94
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: We have shown in this paper how classification is handled by XGBoost.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在这篇论文中展示了XGBoost如何处理分类问题。
 - en: It is crucial to understand that classifying `n` classes generate trees `n`
     times more complex.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 理解分类`n`个类别会生成`n`倍复杂的树是至关重要的。
 - en: It is also important to notice that the name of the objective functions exposed
     in the XGBoost API are not always very explicit. For instance, when doing classification,
     the objective optimized is not `softmax` or `softprob`, but their log loss.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样重要的是注意，XGBoost API中暴露的目标函数名称并不总是非常明确。例如，在进行分类时，优化的目标不是`softmax`或`softprob`，而是它们的对数损失。
 - en: 'If you want to get more detail on Gradient Boosting methods, please have a
     look at my book:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想了解更多关于梯度提升方法的详细信息，请查看我的书：
 - en: '[](https://amzn.to/3Zeq8tU?source=post_page-----6c76ba71f6f0--------------------------------)
     [## Practical Gradient Boosting: A deep dive into Gradient Boosting in Python'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://amzn.to/3Zeq8tU?source=post_page-----6c76ba71f6f0--------------------------------)
+    [## 实用梯度提升：深入探讨Python中的梯度提升'
 - en: This book on Gradient Boosting methods is intended for students, academics,
     engineers, and data scientists who wish to](https://amzn.to/3Zeq8tU?source=post_page-----6c76ba71f6f0--------------------------------)
+  id: totrans-100
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这本关于梯度提升方法的书籍是为希望深入了解该领域的学生、学者、工程师和数据科学家们准备的 [梯度提升方法](https://amzn.to/3Zeq8tU?source=post_page-----6c76ba71f6f0--------------------------------)。
