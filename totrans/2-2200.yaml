@@ -1,94 +1,138 @@
 - en: Understanding the Denoising Diffusion Probabilistic Model (DDPMs), the Socratic
     Way
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 以苏格拉底式的方法理解去噪扩散概率模型（DDPMs）
 - en: 原文：[https://towardsdatascience.com/understanding-the-denoising-diffusion-probabilistic-model-the-socratic-way-445c1bdc5756](https://towardsdatascience.com/understanding-the-denoising-diffusion-probabilistic-model-the-socratic-way-445c1bdc5756)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/understanding-the-denoising-diffusion-probabilistic-model-the-socratic-way-445c1bdc5756](https://towardsdatascience.com/understanding-the-denoising-diffusion-probabilistic-model-the-socratic-way-445c1bdc5756)
 - en: A deep dive into the motivation behind the denoising diffusion model and detailed
     derivations for the loss function
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 深入探讨去噪扩散模型背后的动机以及损失函数的详细推导
 - en: '[](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)[![Wei
     Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)[](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)
     [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)[![Wei
+    Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)[](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)
+    [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----445c1bdc5756--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)
     ·69 min read·Feb 25, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----445c1bdc5756--------------------------------)
+    ·69 分钟阅读·2023年2月25日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/207ffc71c7a7072f719d371f7f6f951f.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/207ffc71c7a7072f719d371f7f6f951f.png)'
 - en: Photo by [Chaozzy Lin](https://unsplash.com/@chaozzy?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 由 [Chaozzy Lin](https://unsplash.com/@chaozzy?utm_source=medium&utm_medium=referral)
+    拍摄的照片，来源于 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: 'The [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)
     by Jonathan Ho et. al. is a great paper. But I had difficulty understanding it.
     So I decided to dive into the model and worked out all the derivations. In this
     article, I will focus on the two main obstacles to understand the paper:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '[去噪扩散概率模型](https://arxiv.org/pdf/2006.11239.pdf)由 Jonathan Ho 等人提出，是一篇很棒的论文。但我在理解它时遇到了困难。因此，我决定深入研究这个模型，并完成所有的推导。在这篇文章中，我将重点关注理解论文的两个主要障碍：'
 - en: why is the denoising diffusion model designed in terms of the forward process,
     the forward process posteriors, and backward process. And what is the relationship
     among these processes? By the way, in this article I call the forward process
     posteriors “the reverse of the forward process” because I find the word “posteriors”
     confuses me, and/or subconsciously I want to avoid that word as it frightens me
     — every time it appears, things become complicated.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为什么去噪扩散模型的设计涉及前向过程、前向过程后验和反向过程。这些过程之间有什么关系？顺便提一下，在这篇文章中，我称前向过程后验为“前向过程的反向”，因为我发现“后验”这个词让我困惑，或者我潜意识中想要避免这个词，因为它让我感到恐惧——每次出现它的时候，事情就变得复杂起来。
 - en: how to derive the mysterious loss function. In the paper, there are many skipped
     steps in deriving the loss function *Lₛᵢₘₚₗₑ.* I went through all derivations
     to fill in the missing steps. Now I realize the derivation of the analytical formula
     for *Lₛᵢₘₚₗₑ* tells a truly beautiful Bayesian story. And after all the steps
     filled in, the whole story is easy to understand.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如何推导神秘的损失函数。在论文中，推导损失函数 *Lₛᵢₘₚₗₑ* 的过程中有很多省略步骤。我经过了所有的推导，填补了遗漏的步骤。现在我意识到，*Lₛᵢₘₚₗₑ*
+    的解析公式推导讲述了一个真正美丽的贝叶斯故事。在填补了所有步骤之后，整个故事变得容易理解。
 - en: Some notations
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一些符号
 - en: 'Medium supports Unicode in text. This allows me to write many math subscript
     notations such as *x₀* and *xₜ.* But I could not write down some other subscripts.
     For example:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: Medium 支持文本中的 Unicode，这使得我能够书写许多数学下标符号，比如 *x₀* 和 *xₜ*。但我无法书写其他一些下标。例如：
 - en: '![](../Images/e69161a9e9d5a0b5c88149d75511c267.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e69161a9e9d5a0b5c88149d75511c267.png)'
 - en: For those things, I will use an underscore “_” to lead the subscriptions, such
     as *x_T*, and *p(x_0:T)*.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这些内容，我将使用下划线“_”来引导下标，比如 *x_T* 和 *p(x_0:T)*。
 - en: If some math notations render as question marks on your phone, please try to
     read this article from a computer. This is a known Unicode rendering issue.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果某些数学符号在你的手机上显示为问号，请尝试在计算机上阅读本文。这是一个已知的Unicode渲染问题。
 - en: The task of generating natural images from noise
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 从噪声中生成自然图像的任务
 - en: Our goal is to use a neural network to generate natural images from noise. The
     input to the neural network is noise, and the output should be a natural image,
     such as a human face. Different noises will result in different natural images,
     for example, one noise may lead to a woman’s face, another noise to a man’s.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的目标是使用神经网络从噪声中生成自然图像。神经网络的输入是噪声，输出应该是自然图像，例如人脸。不同的噪声将产生不同的自然图像，例如，一种噪声可能会产生女性的面孔，另一种噪声可能会产生男性的面孔。
 - en: You may ask, what kind of noise? Without other constraints, a sensible researcher
     who is in love with Bayesian method will start with a Gaussian noise.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会问，什么样的噪声？在没有其他约束的情况下，热衷于贝叶斯方法的研究者会从高斯噪声开始。
 - en: What is the dimensionality of this noise? Well, the desirable output is a colorful
     2D image with red-green-blue (RGB) values. Let’s simplify it by first transform
     a colorful image into grayscales between [0, 255] and then scale the grayscales
@@ -97,149 +141,211 @@
     in the article. Let’s use the above as our easy definition of the image generation
     task. But please know that in reality, neural networks can generate colorful images
     directly.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种噪声的维度是多少呢？理想的输出是一个具有红绿蓝（RGB）值的彩色二维图像。我们先将彩色图像简化为[0, 255]之间的灰度值，然后将灰度值缩放到[0,
+    1]的范围内。接着将这个二维缩放后的灰度值数组重塑为一个长的一维向量，长度为*d*。我将在文章中多次提到名称*d*。我们就以上内容作为图像生成任务的简单定义。但请注意，实际上，神经网络可以直接生成彩色图像。
 - en: It is natural to assume the dimension and structure of the input noise is the
     same as the dimension and structure of the output image, which is a vector of
     length *d*. So the noise should be a *d*-dimensional multivariate standard Gaussian
     *N*(**0**, **1**) — that’s the academic default.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然的假设是输入噪声的维度和结构与输出图像的维度和结构相同，即长度为*d*的向量。因此，噪声应该是*d*维的多变量标准高斯分布*N*(**0**, **1**)，这是一种学术上的默认设置。
 - en: 'Now the task of generating images from noise is more concrete: design a neural
     network that takes a sample from a *d*-dimensional multivariate standard Gaussian
     and outputs a *d*-dimensional vector of scaled grayscale values. Turning the output
     vector into a 2D shape and RGB colors is something we all know [how](https://lukemelas.github.io/image-colorization.html)
     to do, and not of interest of this article.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，从噪声生成图像的任务变得更加具体：设计一个神经网络，该网络从*d*维的多变量标准高斯分布中获取一个样本，并输出一个*d*维的缩放灰度值向量。将输出向量转化为二维形状和RGB颜色是我们都知道的[如何](https://lukemelas.github.io/image-colorization.html)做到的，这不在本文讨论范围之内。
 - en: Generating an image iteratively
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 迭代生成图像
 - en: Generating an natural image from noise in one step is difficult. How about generating
     an image in many smaller steps? Sort of like to let an image emerge from a Kodak
     film in old fashion photography. This way, in each step, the neural network should
     have a simpler task, as the input and output in each step is more similar to each
     other than from pure noise to a final natural image.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 一步生成自然图像从噪声中是困难的。那么在多个较小步骤中生成图像怎么样呢？有点类似于让图像从老式摄影中的柯达胶卷中显现出来。这样，在每一步中，神经网络的任务应该更简单，因为每一步的输入和输出比从纯噪声到最终自然图像要更相似。
 - en: This iterative generating idea comes with its own problem. What should the in-between
     images look like? A person old enough (like me) to have experience with old fashion
     photography would suggest that the in-between images should be gradual — it should
     not be the case that during this iterative process, an image of a cat first appears,
     and then the cat turns into a human face.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种迭代生成的想法带来了一个自身的问题。那么中间图像应该是什么样的？有经验的老一辈（像我这样）可能会建议中间图像应该是渐进的——在这个迭代过程中，不应出现首先出现一只猫的图像，然后猫变成了一个人的脸的情况。
 - en: The “gradual-ness” constraint over in-between images is sensible. But how to
     formulate it mathematically?
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 对中间图像的“渐进性”约束是有道理的。但是如何将其数学化呢？
 - en: Forward process turns a natural image into noise
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 正向过程将自然图像转变为噪声
 - en: Even though it is not clear how to formulate the gradual-ness of the iterative
     generation process, it is easy to formulate the opposite process — the process
     that turns a natural image into pure noise by successively adding a little bit
     of Gaussian noise into it.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管尚不清楚如何定义迭代生成过程的逐步性，但定义相反的过程，即通过逐步添加一点高斯噪声将自然图像转变为纯噪声的过程却很简单。
 - en: The process of turning a natural image into pure noise by adding successive
     noise to it is called the *forward diffusion process*, or *forward process* in
     short.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 将自然图像通过逐步添加噪声转变为纯噪声的过程称为*前向扩散过程*，简称*前向过程*。
 - en: Reverse process turns noise into a natural image
+  id: totrans-29
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 反向过程将噪声转变为自然图像
 - en: On the other hand, we call the process of turning a Gaussian noise into a natural
     image *the reverse process*.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，将高斯噪声转变为自然图像的过程称为*反向过程*。
 - en: Illustration of forward and reverse process
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 前向和反向过程的示意图
 - en: The following figure from the paper depicts these two processes, with the forward
     process at the bottom, and the reverse process at the top.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的图来自论文，展示了这两个过程，前向过程在底部，反向过程在顶部。
 - en: '![](../Images/711f02e0c314ba040754b33d495c557e.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/711f02e0c314ba040754b33d495c557e.png)'
 - en: Image from paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf),
     page 2
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来自论文 [去噪扩散概率模型](https://arxiv.org/pdf/2006.11239.pdf)，第2页
 - en: In the figure *x₀, x₁*, *x₂,…, x_T* are *d*-dimensional multivariate Gaussian
     random variables. We use the random variable *x₀* to represent natural images.
     This means if we draw a sample, which is a *d*-dimensional vector, from *x₀’s*
     probability density function, the drawn sample vector, once re-arranged in 2D,
     should look like a grayscale natural image. We haven’t talked about how the probability
     density function for *x₀* looks like*.* I will get to that later.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图中，*x₀, x₁*，*x₂*、…、*x_T* 是*d*维多变量高斯随机变量。我们使用随机变量*x₀*来表示自然图像。这意味着如果我们从*x₀*的概率密度函数中抽取一个样本，这个样本向量一旦重新排列成2D图像，应该看起来像一幅灰度自然图像。我们还没有讨论*x₀*的概率密度函数的具体形式。我稍后会讲到。
 - en: In the figure, the random variables *x₁*, *x₂,…, x_T* correspond to the in-between
     images, that is, images with noise added to them (if we are looking at the forward
     process on the bottom) or with noise removed from them (if we are looking at the
     reverse process on the top). Later, I will also introduce the probability density
     functions for these random variables from both the forward process point of view
     and the reverse process point of view.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图中，随机变量*x₁*、*x₂*、…、*x_T*对应于中间图像，即添加了噪声的图像（如果我们看底部的前向过程），或者移除了噪声的图像（如果我们看顶部的反向过程）。稍后，我还会介绍这些随机变量的概率密度函数，分别从前向过程和反向过程的角度来看。
 - en: 'To remember that *x₀* is the natural image and *x_T* is pure noise, and not
     the other way round, please remember: small subscript, small noise, big subscript,
     big noise. I got this idea from [this video](https://www.youtube.com/watch?v=HoKDTa5jHvg).'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住*x₀*是自然图像，*x_T*是纯噪声，而不是反过来，请记住：小下标，小噪声，大下标，大噪声。这个想法来源于[这个视频](https://www.youtube.com/watch?v=HoKDTa5jHvg)。
 - en: Now there is a way to mathematically define the gradual-ness of in-between images.
     Every image *xₜ* generated from the reverse process must be close to (don’t worry,
     we will define what “close to” means later) the corresponding image diffused from
     the forward process.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在有一种方法可以数学地定义中间图像的逐步性。每个从反向过程中生成的图像*xₜ*必须接近（别担心，我们稍后会定义“接近”是什么意思）从前向过程中扩散得到的相应图像。
 - en: The forward process
+  id: totrans-39
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 前向过程
 - en: The forward process is a probabilistic model. Why? Because every step adds a
     Gaussian noise into an image. So the result is not deterministic — starting from
     the same natural image *x₀*, you may end up with different samples of standard
     multivariate Gaussian noise *x_T.* Just like dipping a drop of ink into a glass
     of water at different times will give you different diffusions each time.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程是一个概率模型。为什么？因为每一步都向图像中添加了高斯噪声。因此，结果不是确定性的——从相同的自然图像*x₀*开始，你可能会得到不同的标准多变量高斯噪声样本*x_T*。就像在不同时间将墨水滴入一杯水中，每次都会得到不同的扩散效果。
 - en: In this probabilistic model, *x₀, x₁*,… to *x_T* are random variables. Each
     of them is a *d*-dimensional random variable.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个概率模型中，*x₀, x₁*，… 到 *x_T* 是随机变量。每个都是*d*维随机变量。
 - en: Since the forward process is probabilistic, the appropriate mathematical tool
     to talk about it is probability density function and probability theory.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于前向过程是概率性的，因此讨论它的适当数学工具是概率密度函数和概率理论。
 - en: 'The above figure uses *q(xₜ|xₜ₋₁)* to denote the probability density function
     for a single step from image *xₜ* to image *xₜ₋₁* in the forward diffusion process.
     We define its probability density function as:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 上图使用 *q(xₜ|xₜ₋₁)* 来表示前向扩散过程中从图像 *xₜ* 到图像 *xₜ₋₁* 的单步概率密度函数。我们将其概率密度函数定义为：
 - en: '![](../Images/6d2e0601dedb499f2d8b51486a702141.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6d2e0601dedb499f2d8b51486a702141.png)'
 - en: Forward process conditional with fixed mean vector and covariance matrix
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程在固定均值向量和协方差矩阵的条件下
 - en: with *βₜ* being a value that changes over time, much like scheduling learning
     rate*.*
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '*βₜ* 是一个随时间变化的值，很像是调度学习率*。*'
 - en: 'Using the reparameterization trick (see derivation [here](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/))
     the random variable *xₜ* can be equivalently described as:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用重参数化技巧（参见推导 [这里](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)），随机变量
+    *xₜ* 可以等效地描述为：
 - en: '![](../Images/281094f86f87cba19525f7a68d27eb46.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/281094f86f87cba19525f7a68d27eb46.png)'
 - en: where *ϵₜ₋₁* is *d*-dimensional standard Gaussian noise. This formula reveals
     that the more noisier image *xₜ* is a weighted average between the less noisier
     image *xₜ₋₁ and* some noise *ϵₜ₋₁.* In other words, the forward process adds noise
@@ -247,39 +353,61 @@
     of noise to add on timestamp *t*. That’s why *βₜ* is scheduled to be really small
     values, from *β₁=10⁻⁴* to *β_T=10⁻²*. And *T* is set to 1000 — otherwise, noise
     will quickly dominate the forward process.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *ϵₜ₋₁* 是 *d*-维标准高斯噪声。这个公式揭示了更嘈杂的图像 *xₜ* 是较少噪声图像 *xₜ₋₁* 和某些噪声 *ϵₜ₋₁* 之间的加权平均。换句话说，前向过程将噪声
+    *ϵₜ₋₁* 添加到较少噪声的图像 *xₜ₋₁* 中。*βₜ* 的值控制了在时间戳 *t* 上添加的噪声量。这就是为什么 *βₜ* 被安排为非常小的值，从
+    *β₁=10⁻⁴* 到 *β_T=10⁻²*。而 *T* 被设置为1000——否则噪声将迅速主导前向过程。
 - en: '*q(xₜ|xₜ₋₁)* is the probability density function for the random variable *xₜ,*
     which describes a single step in the forward process. The following joint probability
     density function describes the full forward process:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '*q(xₜ|xₜ₋₁)* 是随机变量 *xₜ* 的概率密度函数，它描述了前向过程中的单一步骤。以下的联合概率密度函数描述了整个前向过程：'
 - en: '![](../Images/2f09e9229b294b8963a9491ff6a6cc26.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2f09e9229b294b8963a9491ff6a6cc26.png)'
 - en: This is the *first factorization* of the forward process *q(x_1:T|x₀).*
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是前向过程 *q(x_1:T|x₀)* 的*第一次分解*。
 - en: Why does the above joint probability density function of the forward process
     *q(x_1:T|x₀)* depend on the random variable *x₀*? This is because when *t=1*,
     *q(xₜ|xₜ₋₁)* turns into *q(x₁|x₀)*, which mentions *x₀.*
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么前向过程的联合概率密度函数 *q(x_1:T|x₀)* 会依赖于随机变量 *x₀*？这是因为当 *t=1* 时，*q(xₜ|xₜ₋₁)* 变成了
+    *q(x₁|x₀)*，其中提到了 *x₀*。
 - en: '**Random variable dependency**'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '**随机变量依赖性**'
 - en: Since this article will talk a lot about some random variable depends on some
     other random variables, let’s use *q(x₁|x₀)* as an example to clarify the meaning
     of **random variable *x₁* depends on random variable *x₀***. The following derivation
     shows the probability density function of *q(x₁|x₀).*
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于本文将讨论许多随机变量依赖于其他随机变量的情况，让我们以 *q(x₁|x₀)* 为例来阐明**随机变量 *x₁* 依赖于随机变量 *x₀* 的含义**。以下推导展示了
+    *q(x₁|x₀)* 的概率密度函数。
 - en: '![](../Images/494359b47e4bc16d0185bf36681e995f.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/494359b47e4bc16d0185bf36681e995f.png)'
 - en: Formula for probability density function of *q(x₁|x₀)*
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '*q(x₁|x₀)* 的概率密度函数公式'
 - en: We define *q(x₁|x₀)* as a multivariate Gaussian, sufficiently denoted in line
     (2) with the *N(x₁; mean vector, covariance matrix)* notation, because a multivariate
     Gaussian distribution is fully specified by its mean vector and covariance matrix.
@@ -287,220 +415,324 @@
     matrix, the multivariate Gaussian distribution is a fixed function, with the structure,
     such as the exponential function, the determinant, as in line (3) assumed by the
     letter *N*.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将 *q(x₁|x₀)* 定义为多元高斯，在线（2）中用 *N(x₁; mean vector, covariance matrix)* 符号表示，因为多元高斯分布完全由其均值向量和协方差矩阵指定。“完全指定”意味着在写下均值向量和协方差矩阵后，多元高斯分布是一个固定函数，其结构，如指数函数、行列式，如在（3）行中由字母
+    *N* 假定。
 - en: Then in line (3) we expand this notation to the mathematical formula for the
     probability density function of a multivariate Gaussian distribution. *d* is the
     dimension of the random variable *x₁,* that is, the number of pixels *height×width*
     in an image. [*det*](https://en.wikipedia.org/wiki/Determinant) is the determinant
     function.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，在第（3）行中，我们将此符号扩展为多变量高斯分布的概率密度函数的数学公式。*d* 是随机变量 *x₁* 的维度，即图像中的像素数量 *height×width*。[*det*](https://en.wikipedia.org/wiki/Determinant)
+    是行列式函数。
 - en: 'So it is clear that line (3) is the probability density function for the random
     variable *x₁*. From line (3), we also know the following things:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，很明显，第（3）行是随机变量 *x₁* 的概率密度函数。从第（3）行，我们还知道以下几点：
 - en: First, being a probability density function for the random variable *x₁*, the
     function at line (3) **integrates to 1** over the domain of*x₁.* This is because
     all proper probability density functions integrates to 1.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，作为随机变量 *x₁* 的概率密度函数，第（3）行的函数在 *x₁* 的定义域上 **积分为 1**。这是因为所有适当的概率密度函数都积分为 1。
 - en: '![](../Images/f49896c95df1089075fb2676e8adb999.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f49896c95df1089075fb2676e8adb999.png)'
 - en: '*q(x₁|x₀) integrates to 1 over the domain of* x₁'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '*q(x₁|x₀) 在 x₁ 的定义域上积分为 1*'
 - en: Second, line (3) is the probability density function for the random variable
     *x₁*, but it also mentions another random variable *x₀*. This is why the random
     variable *x₁* **depends** on the random variable *x₀ —* evaluating *q(x₁|x₀)*
     for some value of *x₁* requires a value for *x₀.*
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 其次，第（3）行是随机变量 *x₁* 的概率密度函数，但它也提到了另一个随机变量 *x₀*。这就是为什么随机变量 *x₁* **依赖于** 随机变量 *x₀*——评估
+    *q(x₁|x₀)* 对某个 *x₁* 的值需要一个 *x₀* 的值。
 - en: Now you may ask, can we view line (3) as the probability density function of
     the random variable *x₀* and say *x₀* depends on the random variable *x₁*?
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在你可能会问，我们能否将第（3）行视为随机变量 *x₀* 的概率密度函数，并说 *x₀* 依赖于随机变量 *x₁*？
 - en: The answer is no. Indeed, from the mathematical function point of view, we can
     interpret *q(x₁|x₀)*, line (3)*,* as either a single argument function of *x₁*
     or a single argument function of *x₀.* But line (3) is not a proper probability
     density function for the random variable *x₀* because it does not integrate to
     1 over the domain of *x₀.*
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案是否定的。确实，从数学函数的角度来看，我们可以将 *q(x₁|x₀)*，第（3）行*，* 解释为 *x₁* 的单一参数函数或 *x₀* 的单一参数函数。但是，第（3）行不是随机变量
+    *x₀* 的适当概率密度函数，因为它在 *x₀* 的定义域上不积分为 1。
 - en: '**Probability density function for the random variable *x₀?***'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '**随机变量 *x₀* 的概率密度函数？***'
 - en: 'After making it clear that line (3) cannot be interpreted as the probability
     density function of the random variable *x₀,* a natural follow up question is:
     do we know the probability density function *q(x₀)* for *x₀*?'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 在明确第（3）行不能被解释为随机变量 *x₀* 的概率密度函数后，一个自然的后续问题是：我们是否知道 *x₀* 的概率密度函数 *q(x₀)*？
 - en: 'No, we don’t. *q(x₀)* describes the probability of natural images. This means:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 不，我们不知道。*q(x₀)* 描述了自然图像的概率。这意味着：
 - en: given a natural image, say *X₀*, plugging *X₀* in *q(x₀=X₀)* should return a
     probability number between 0 and 1 to indicate how likely this natural image occurs
     in all natural images.
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 给定自然图像，假设 *X₀*，将 *X₀* 代入 *q(x₀=X₀)* 应返回一个介于 0 和 1 之间的概率值，以指示这个自然图像在所有自然图像中出现的可能性。
 - en: Summing up, or equivalently, integrating, the probability numbers from *q(x₀)*
     for all natural images gives us *1.*
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 总结起来，或者说，积分，所有自然图像的 *q(x₀)* 概率值给我们 *1*。
 - en: Obviously, as usual, we don’t know the analytical formula for *q(x₀)*. But this
     does not prevent us from writing its notation down, and from drawing samples for
     the random variable *x₀*— we just randomly pick an image from our training set
     of natural images.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，像往常一样，我们不知道 *q(x₀)* 的解析公式。但这并不妨碍我们写下其符号，并为随机变量 *x₀* 绘制样本——我们只是从自然图像的训练集中随机挑选一张图像。
 - en: 'The forward process consists of *T+1* random variables *x₀, x₁* to *x_T.* They
     form two groups:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 正向过程由 *T+1* 个随机变量 *x₀, x₁* 到 *x_T* 组成。它们形成了两组：
 - en: '*x₀*: there are observations to the random variable *x₀*. The observations
     are the actual images from the training dataset. We call *x₀ observational random
     variable*.'
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*x₀*：有关于随机变量 *x₀* 的观测。观测是来自训练数据集的实际图像。我们称 *x₀* 为观测随机变量。'
 - en: '*x₁* to *x_T:* there is no observation for them, hence they are *latent random
     variables*.'
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*x₁* 到 *x_T*：对它们没有观测，因此它们是 *潜在随机变量*。'
 - en: The definition of the forward process brings three important properties.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 正向过程的定义带来了三个重要属性。
 - en: '**Property 1: Fully joint probability density function *q(x_0:T)***'
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**属性 1：完全联合概率密度函数 *q(x_0:T)***'
 - en: '![](../Images/d4bbcb6e237b152b814b8c733a43738e.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d4bbcb6e237b152b814b8c733a43738e.png)'
 - en: Joint probability density function represents trajectories. Visually, the fully
     joint probability density function *q(x_0:T)* describes the set of possible trajectories
     of images. Each trajectory consists of *T+1* images with *x₀* representing a noise-free
     image, and *x_T* representing a pure noise image.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 联合概率密度函数表示轨迹。从视觉上看，完全的联合概率密度函数*q(x_0:T)*描述了图像的可能轨迹集合。每条轨迹由*T+1*幅图像组成，其中*x₀*表示无噪声图像，*x_T*表示纯噪声图像。
 - en: The following illustration shows some trajectories that start from two natural
     images *X₀* and *X₁.* These trajectories end at different pure noise images, indicating
     that the forward process is a probabilistic. It is an illustration because I hand-drew
     the picture — it is not necessary that the trajectories starting from *X₀* do
     not overlap with the trajectories starting from *X₁*.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下插图展示了从两个自然图像*X₀*和*X₁*开始的一些轨迹。这些轨迹以不同的纯噪声图像结束，表明前向过程具有概率性。这是插图，因为我手绘了这幅图——并不是说从*X₀*开始的轨迹与从*X₁*开始的轨迹没有重叠。
 - en: '![](../Images/5941d0a9b39ae7ef2a6878aa4cea9df5.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5941d0a9b39ae7ef2a6878aa4cea9df5.png)'
 - en: Hand drawn illustration by me
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 手绘插图，由我制作
 - en: The illustration also shows that at a timestamp *t*, the random variable *xₜ*
     is responsible to explain all possible images that could be generated by the forward
     process at this timestamp.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 插图还显示在时间戳*t*，随机变量*xₜ*负责解释前向过程在此时间戳生成的所有可能图像。
 - en: '**Property 2: Marginal probability density function *q(xₜ|x₀)***'
+  id: totrans-84
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**属性 2: 边际概率密度函数 *q(xₜ|x₀)***'
 - en: 'Using the reparameterization trick repeatedly (see derivation [here](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
     again) give us the probability density functions for only a single latent random
     variable without the dependence on another latent random variable, hence the resulting
     probability density is called marginal:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过重复使用重参数化技巧（见推导 [这里](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)）给我们每个潜在随机变量的概率密度函数，而无需依赖其他潜在随机变量，因此得到的概率密度称为边际：
 - en: '![](../Images/84b14f64658cf075986d5c8a18ce99f4.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/84b14f64658cf075986d5c8a18ce99f4.png)'
 - en: Forward process marginal
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程边际
 - en: with
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中
 - en: '![](../Images/55be80b21f8b578f5010295f51106eb0.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/55be80b21f8b578f5010295f51106eb0.png)'
 - en: This property reveals that given *x₀*, the latent random variable xₜ does not
     depend on the latent random variable *xₜ₋₁* anymore. In other words, given *x₀,*
     the latent random variables *x₁* to *x_T* are independent to each other.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个属性揭示了给定*x₀*时，潜在随机变量xₜ不再依赖于潜在随机变量*xₜ₋₁*。换句话说，给定*x₀*时，潜在随机变量*x₁*到*x_T*彼此独立。
 - en: 'For independent random variables *a* and *b*, the product rule in probability
     theory is *p(a, b) = p(a) p(b)*. Applying the product rule gives us the *second
     factorization* of *q(x_1:T|x₀)*:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于独立随机变量*a*和*b*，概率论中的乘积规则是*p(a, b) = p(a) p(b)*。应用乘积规则给我们*q(x_1:T|x₀)*的*第二个因式分解*：
 - en: '![](../Images/590832e17597156a510b43aa81aa0e8d.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/590832e17597156a510b43aa81aa0e8d.png)'
 - en: The two factorizations are equivalent, meaning they describe the same joint
     probability distribution for the same set of random variables. Sometimes we will
     choose one over the other to simplify formula derivations.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个因式分解是等效的，意味着它们描述了相同随机变量集合的联合概率分布。有时我们会选择其中一个以简化公式推导。
 - en: '**Property 3: The reverse of the forward process q(***xₜ₋₁|*xₜ, *x₀)*'
+  id: totrans-94
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**属性 3: 前向过程的逆过程 q(***xₜ₋₁|*xₜ, *x₀)*'
 - en: Using the Bayes rule, it is possible to derive the probability density function
     for the reverse of the forward process. In the paper, reverse of the forward process
     is called forward process posterior. But I found the word “posterior” leads to
     confusion in this article.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用贝叶斯规则，可以推导出前向过程的逆过程的概率密度函数。在论文中，前向过程的逆过程称为前向过程后验。但我发现“后验”这个词在这篇文章中容易引起混淆。
 - en: 'Let’s start from the forward process *q(xₜ|xₜ₋₁)* which is a probability density
     function for the random variable *xₜ*:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从前向过程*q(xₜ|xₜ₋₁)*开始，它是随机变量*xₜ*的概率密度函数：
 - en: '![](../Images/c7fd9822768908ca6990133d059acd77.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c7fd9822768908ca6990133d059acd77.png)'
 - en: Note that we can add the redundant conditioned random variable *x₀* into *q(xₜ|xₜ₋₁)*
     to turn it into *q(xₜ|xₜ₋₁, x₀)* because by definition, given *xₜ₋₁*, the random
     variable *xₜ* doesn’t depend on any other random variable. So adding *x₀* as a
     dependence doesn’t change the probability density for *xₜ*.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，我们可以将冗余的条件随机变量 *x₀* 加入到 *q(xₜ|xₜ₋₁)* 中，将其变成 *q(xₜ|xₜ₋₁, x₀)*，因为根据定义，给定 *xₜ₋₁*，随机变量
+    *xₜ* 不依赖于任何其他随机变量。因此，添加 *x₀* 作为依赖项不会改变 *xₜ* 的概率密度。
 - en: However, the random variable *xₜ* in *q(xₜ|x₀)* and the random variable *xₜ₋₁*
     in *q(xₜ₋₁|x₀)* are truly depend on *x₀.* We know the formula *q(xₜ|x₀)* and *q(xₜ₋₁|x₀)*
     from the above property 2 of the marginal probability density.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，*xₜ* 在 *q(xₜ|x₀)* 和 *xₜ₋₁* 在 *q(xₜ₋₁|x₀)* 中确实依赖于 *x₀*。我们知道 *q(xₜ|x₀)* 和 *q(xₜ₋₁|x₀)*
+    的公式来自于上述边际概率密度的属性 2。
 - en: 'By rearranging the terms, we can derive the probability density function for
     the reverse of the forward process:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过重新排列项，我们可以推导出前向过程逆过程的概率密度函数：
 - en: '![](../Images/a36c89f6a9104fef45832e49f40af3e8.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a36c89f6a9104fef45832e49f40af3e8.png)'
 - en: Bayes rule to derive conditional in the reverse of the forward process
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用贝叶斯规则推导前向过程逆过程中的条件
 - en: First, please notice that when *t=1, q(xₜ₋₁|xₜ, x₀)* turns into *q(x₀|x₁, x₀)*,
     with *x₀* appearing in both left and right of the bar *“|”.* The quantity *q(x₀|x₁,
     x₀)* always evaluates to *1* because given *x₀*, the probability of *x₀* is *1*.
     Why?Because *x₀* has already happened, there is no uncertainty about it anymore.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，请注意当 *t=1* 时，*q(xₜ₋₁|xₜ, x₀)* 变成 *q(x₀|x₁, x₀)*，其中 *x₀* 同时出现在“|”的左右两边。量 *q(x₀|x₁,
+    x₀)* 总是等于 *1*，因为在给定 *x₀* 的情况下，*x₀* 的概率是 *1*。为什么？因为 *x₀* 已经发生，对它没有不确定性了。
 - en: Bear this in mind, and you will smile when you see later that the first analytical
     loss function starts with *t=2*. And you will smile again at the end, when we
     expand the loss function to cover the case of *t=1*.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住这一点，当你看到第一个解析损失函数从 *t=2* 开始时，你会微笑。而当我们扩展损失函数以涵盖 *t=1* 的情况时，你将再次微笑。
 - en: The left hand side of the equation *q(xₜ₋₁|xₜ, x₀)* tells us this is a process
     that takes a noisier image *xₜ* and generates an less noisy image *xₜ₋₁ —* remember
     large subscript, more noise, small subscript, less noise. So *q(xₜ₋₁|xₜ, x₀)*
     describes the process that goes in the opposite direction as the forward process.
     We call it the reverse of the forward process.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 方程 *q(xₜ₋₁|xₜ, x₀)* 的左边告诉我们这是一个将更嘈杂的图像 *xₜ* 转换为较少噪声的图像 *xₜ₋₁ —* 的过程，请记住大下标表示更多噪声，小下标表示较少噪声。因此，*q(xₜ₋₁|xₜ,
+    x₀)* 描述了与前向过程相反的过程。我们称之为前向过程的逆过程。
 - en: 'The right hand side of the equation tells us that *q(xₜ₋₁|xₜ, x₀)* is defined
     by the forward process probability density *q(xₜ|xₜ₋₁)*, rescaled by *q(xₜ₋₁|x₀)/q(xₜ|x₀).*
     We have defined all these three components. If you plug them into the right hand
@@ -508,31 +740,46 @@
     *q(xₜ₋₁|xₜ, x₀)* is a multivariate Gaussian distribution, which is fully specified
     by its mean vector and covariance matrix. After an ignored amount of mathematical
     derivations, we arrived at:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 方程的右边告诉我们 *q(xₜ₋₁|xₜ, x₀)* 由前向过程概率密度 *q(xₜ|xₜ₋₁)* 定义，通过 *q(xₜ₋₁|x₀)/q(xₜ|x₀)*
+    进行缩放。我们已经定义了这三个组成部分。如果将它们代入方程的右边，并耐心简化公式，你将看到 *q(xₜ₋₁|xₜ, x₀)* 是一个多元高斯分布，它由其均值向量和协方差矩阵完全指定。经过忽略不计的数学推导后，我们得到：
 - en: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
 - en: Reverse of the forward process conditional
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程条件的逆过程
 - en: with
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 与
 - en: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
 - en: Fixed mean vector and covariance matrix for the reverse of the forward process
     conditional
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程条件的固定均值向量和协方差矩阵
 - en: We can see the mean vector for *xₜ* is a weighted sum between *x₀* and *xₜ*.
     And the weights in front of these two random variables depend on the timestamp
     *t*. The covariance matrix is a quantity that also depends on the timestamp *t*.
     Neither the mean vector or the covariance matrix mention trainable parameters
     (we will introduce trainable parameters in a bit later).
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到* xₜ *的均值向量是* x₀ *和* xₜ *之间的加权和。这两个随机变量前面的权重取决于时间戳*t*。协方差矩阵也是一个依赖于时间戳*t*的量。均值向量和协方差矩阵都没有提到可训练参数（我们稍后将介绍可训练参数）。
 - en: The reverse of the forward process is important because it describes the generation
     process that we exactly want — a process that gradually turns noise into a natural
     image, i.e. denoising. Of course, this is just the Bayes rule talking, we want
@@ -540,8 +787,10 @@
     this denoising capability. We can find the answer by investigating the sampled
     image from the start of the reverse of the forward process starts, and from the
     end of the process.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 反向过程很重要，因为它描述了我们确切想要的生成过程——一个将噪声逐渐转变为自然图像的过程，即去噪。当然，这只是贝叶斯规则在说话，我们想亲自看到反向过程是否真正能够提供这种去噪能力。我们可以通过研究反向过程开始时和结束时的采样图像来找到答案。
 - en: But there is still quite some math ahead to understand the denoising model as
     a whole, and I don’t want to exhaust you with every little details. So if you
     are willing to take my word for it, the reverse of the forward process starts
@@ -551,8 +800,10 @@
     denoises a noisy image into a natural image. If you still crave for more math,
     the derivations about where the reverse of the forward process starts and ends
     are in Appendix *“Where does the reverse of the forward process start and end”*.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 但要全面理解去噪模型还需要很多数学知识，我不想用每一个细节来折磨你。所以如果你愿意相信我的话，反向过程以**接近纯高斯噪声**的嘈杂图像开始，以**接近*x₀***的图像结束，即反向过程以此为条件的自然图像。换句话说，反向过程将嘈杂图像去噪成自然图像。如果你仍然渴望更多数学内容，关于反向过程开始和结束的推导在附录*“反向过程从哪里开始和结束”*中。
 - en: Pay attention to the wording “the reverse of the forward process starts with
     a noisy image **close to pure Gaussian noise**”. It is *close to* pure Gaussian
     noise, instead of *equal to* pure Gaussian noise because the reverse of the forward
@@ -560,30 +811,40 @@
     Appendix). It is this involvement of the initial image *x₀* makes it possible
     for the reverse of the forward process to generate an image that is very close
     to *x₀* at the end.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意“反向过程的开始是接近**纯高斯噪声**的嘈杂图像”这句话。它是*接近*纯高斯噪声，而不是*等于*纯高斯噪声，因为反向过程*q(xₜ₋₁|xₜ, x₀)*是以初始图像*x₀*为条件的（详细信息见附录）。正是这种初始图像*x₀*的参与使得反向过程能够在最后生成一个非常接近*x₀*的图像。
 - en: On one hand, the conditioning on the initial image *x₀* in the definition of
     the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is inevitable. This is because
     *q(xₜ₋₁|xₜ, x₀)* is derived by applying the Bayes rule on the forward process
     *q(xₜ|xₜ₋₁)*, which includes the random variable *x₀* when *t=1*. And the Bayes
     rule application doesn’t remove any random variable.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 一方面，在反向过程*q(xₜ₋₁|xₜ, x₀)*的定义中对初始图像*x₀*的条件是不可避免的。这是因为*q(xₜ₋₁|xₜ, x₀)*是通过对前向过程*q(xₜ|xₜ₋₁)*应用贝叶斯规则得到的，当*t=1*时包含了随机变量*x₀*。而贝叶斯规则的应用不会去除任何随机变量。
 - en: On the other hand, the conditioning on the initial image *x₀* in the reverse
     of the forward process has a clear intuition. This intuition will be clear after
     we introduce the reverse process.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，反向过程对初始图像*x₀*的条件有明确的直观。这种直观将在我们介绍反向过程后变得清晰。
 - en: The reverse process
+  id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 反向过程
 - en: At the top of the Figure is the reverse process *p(xₜ₋₁|xₜ)*. The reverse process
     takes a noisier image *xₜ* and generate a less noisy new image *xₜ₋₁*, same as
     the reverse of the forward process *q(xₜ₋₁|xₜ, x₀).* Note the figure uses notation
     *p_θ*, but I decided to use *p* because *p_θ* doesn’t look good in Medium.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 图顶端是反向过程*p(xₜ₋₁|xₜ)*。反向过程从更嘈杂的图像*xₜ*生成一个噪声较少的新图像*xₜ₋₁*，与反向过程*q(xₜ₋₁|xₜ, x₀)*相同。注意图中使用了符号*p_θ*，但我决定使用*p*，因为*p_θ*在Medium上不好看。
 - en: The reverse process must contain the same set of random variables *x₀, x₁* to
     *x_T* as in the reverse of the forward process because we want to establish the
     “gradual-ness” correspondence between variables between the reverse process and
@@ -593,38 +854,54 @@
     stepwise mimicking requirement is to require the random variable *xₜ* in the reverse
     process to behave like the corresponding random variable in the reverse of the
     forward process.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 逆过程必须包含与前向过程的逆过程相同的一组随机变量 *x₀, x₁* 到 *x_T*，因为我们希望在逆过程和前向过程的逆之间建立“逐步性”对应关系。换句话说，既然前向过程的逆过程已经告诉我们如何逐步去除图像中的噪声，我们希望我们的神经网络在每一步都模仿这一过程。我们传达逐步模仿要求的方式是要求逆过程中的随机变量
+    *xₜ* 行为类似于前向过程的逆过程中的对应随机变量。
 - en: 'Since the reverse of the forward process is defined using multivariate Gaussian
     distributions, it makes sense to also define the reverse process using multivariate
     Gaussian distributions:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于前向过程的逆过程是使用多元高斯分布定义的，因此使用多元高斯分布定义逆过程也是合理的：
 - en: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
+  id: totrans-122
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
 - en: Reverse process definition
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 逆过程定义
 - en: In the inductive formula, *p(xₜ₋₁|xₜ),* the mean vector *μₚ(xₜ, t)* and the
     covariance matrix *Σₚ(xₜ, t)* are actually two deep neural networks that predict
     the *d*-dimensional mean and the *d×d* dimensional covariance matrix for the multivariate
     Gaussian distribution.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 在归纳公式中，*p(xₜ₋₁|xₜ)*，均值向量 *μₚ(xₜ, t)* 和协方差矩阵 *Σₚ(xₜ, t)* 实际上是两个深度神经网络，预测多元高斯分布的
+    *d* 维均值和 *d×d* 维协方差矩阵。
 - en: In the base formula, *p(x_T)* is a standard multivariate Gaussian, which confirms
     that the reverse process starts from pure noise. Note, the starting point of the
     reverse process is not conditioned on any random variable, unlike the case of
     the reverse of the forward process.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 在基础公式中，*p(x_T)* 是标准的多元高斯分布，这确认了逆过程从纯噪声开始。请注意，逆过程的起始点不依赖于任何随机变量，这与前向过程的逆情况不同。
 - en: In the joint probability case, the notation *p(x_0:T)* is a shorthand for *p(x₀,
     x₁, …, x_T).* It represents a probability density function for *T+1* random variables.
     And the formula for the joint probability is a product of all the terms from the
     inductive case and the base case, following basic properties from the probability
     theory.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 在联合概率的情况下，符号*p(x_0:T)* 是*p(x₀, x₁, …, x_T)* 的简写。它表示了*T+1*个随机变量的概率密度函数。联合概率的公式是归纳情况和基础情况中所有项的乘积，遵循概率理论的基本性质。
 - en: Both neural networks *μₚ(xₜ, t)* and *Σₚ(xₜ, t)* takes two inputs, the first
     is the noiser image *xₜ*, and the second is the timestamp *t*. The noiser image
     *xₜ* makes sense. After all, we want to use the neural networks to denoise the
@@ -634,8 +911,11 @@
     and feeds the encoded position as additional input to the Transformer. Here we
     also want to encode where we are in the reverse process as additional input to
     the neural networks to give them a bit of positional context.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 神经网络 *μₚ(xₜ, t)* 和 *Σₚ(xₜ, t)* 接受两个输入，第一个是噪声图像 *xₜ*，第二个是时间戳 *t*。噪声图像 *xₜ* 是有意义的。毕竟，我们希望使用神经网络来去噪。但是如何理解时间戳
+    *t* 作为神经网络的输入？意图与自然语言处理中的Transformer模型类似，该模型使用余弦函数编码句子中词语的位置，并将编码的位置作为额外输入提供给Transformer。在这里，我们也希望将我们在逆过程中的位置编码作为额外输入，以便为神经网络提供一些位置信息。
 - en: How does a neural network predict a *d*-dimensional mean vector and the *d×d*
     covariance matrix? For the mean vector, the mean predicting neural network will
     have *d* output units, each predicting an entry in the *d*-dimensional mean vector.
@@ -644,12 +924,16 @@
     especially for the covariance predicting neural network, is huge. There are more
     concise ways for the covariance matrix, see the mean-field parameterization from
     [here](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 神经网络如何预测一个*d*维均值向量和*d×d*协方差矩阵？对于均值向量，均值预测神经网络将有*d*个输出单元，每个单元预测*d*维均值向量中的一个条目。协方差矩阵预测神经网络具有*d×d*个输出单元。这只是一个粗略的理解。对于较大的*d*，神经网络的输出数量，尤其是对于协方差预测神经网络，数量非常庞大。协方差矩阵有更简洁的方法，参见[这里](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4)的均值场参数化。
 - en: '*μₚ(xₜ, t) and Σₚ(xₜ, t) contain m*odel parameters'
+  id: totrans-129
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*μₚ(xₜ, t)* 和 *Σₚ(xₜ, t)* 包含模型参数。'
 - en: The weights inside the mean vector predicting *μₚ(xₜ, t)* network and the covariance
     matrix predicting network *Σₚ(xₜ, t)* are the model parameters in this machine
     learning task. We want to use optimization to find proper values for those model
@@ -657,51 +941,70 @@
     sample *xₜ₋₁* from the distribution *p(xₜ₋₁|xₜ)*, and when we retrieve a sample
     for *x₀* from the distribution *p(x₀|x₁)*, this sample of *x₀* is the scaled grayscale
     of a realistic looking natural image.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 均值向量预测网络*μₚ(xₜ, t)*和协方差矩阵预测网络*Σₚ(xₜ, t)*中的权重是这个机器学习任务中的模型参数。我们希望通过优化找到这些模型参数的适当值，以便当从*p(x_T)*的噪声样本开始，并迭代地从分布*p(xₜ₋₁|xₜ)*中采样*xₜ₋₁*，当我们从分布*p(x₀|x₁)*中检索一个*x₀*样本时，这个*x₀*样本就是一个现实自然图像的缩放灰度图。
 - en: Another question you may have is that should we use the same mean neural network
     to predict the mean vector for all timestamp? Same question for the covariance
     matrix prediction network. Well it is a design choice. At least one network is
     needed, and the authors experimentally showed one network is enough. You can have
     two or more, at the expense of more parameters to learn.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能还会有另一个问题，我们是否应该使用相同的均值神经网络来预测所有时间戳的均值向量？协方差矩阵预测网络也是同样的问题。这是一个设计选择。至少需要一个网络，作者通过实验表明一个网络就足够了。你可以有两个或更多网络，但这需要学习更多的参数。
 - en: Like the case in the forward process, the joint probability density function
     *p(x_0:T)* also represents the set of image trajectories that the reverse process
     can generate, by starting from some pure Gaussian noise.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 与正向过程中的情况类似，联合概率密度函数*p(x_0:T)*也表示反向过程可以生成的图像轨迹集，起始于某些纯高斯噪声。
 - en: Why do we need the reverse process *p(xₜ₋₁|xₜ)*? Isn’t the reverse of the forward
     process *q(xₜ₋₁|xₜ, x₀)* enough?
+  id: totrans-133
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么我们需要反向过程*p(xₜ₋₁|xₜ)*？难道反向过程*q(xₜ₋₁|xₜ, x₀)*不够吗？
 - en: Since we already know the distribution *q(xₜ₋₁|xₜ, x₀)* for the reverse of the
     forward process, which denoise images,you may wonder, why is the reverse process
     *p(xₜ₋₁|xₜ)* even needed? Why can’t we directly sample natural images from *q(xₜ₋₁|xₜ,
     x₀)*?
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们已经知道反向过程的分布*q(xₜ₋₁|xₜ, x₀)*，它用于去噪图像，你可能会问，为什么反向过程*p(xₜ₋₁|xₜ)*仍然是必要的？为什么我们不能直接从*q(xₜ₋₁|xₜ,
+    x₀)*中采样自然图像？
 - en: Of course we can. But please look at *q(xₜ₋₁|xₜ, x₀)* closely. *xₜ₋₁* not only
     dependson *xₜ*, it also depends on the initial image *x₀.* This means we have
     to know an initial image to start sampling and the reverse of the forward process
     will give you an image that is very close to the already known *x₀* (See Appendix
     *Where does the reverse of the forward process start and end?*)*.* This is not
     what we want. We want to be able to sample natural images freely!
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然可以。但请仔细看看*q(xₜ₋₁|xₜ, x₀)*。*xₜ₋₁*不仅依赖于*xₜ*，还依赖于初始图像*x₀*。这意味着我们需要知道初始图像才能开始采样，而正向过程的反向将给出一个非常接近已知*x₀*的图像（参见附录*反向过程从何开始和结束？*）。这不是我们想要的。我们希望能够自由地采样自然图像！
 - en: 'At this point, you don’t want to stop. You may ask, can we work out the analytical
     formula for *q(xₜ₋₁|xₜ)*, that is, the reverse of the forward process without
     the dependence on *x₀?* Let’s do it by using the Bayes rule again:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，你可能不想停下来。你可能会问，我们能否推导出*q(xₜ₋₁|xₜ)*的解析公式，即反向过程在不依赖于*x₀*的情况下？让我们再次使用贝叶斯规则来实现：
 - en: '![](../Images/933ea297747d1d086d22efbb512efa30.png)'
+  id: totrans-137
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/933ea297747d1d086d22efbb512efa30.png)'
 - en: 'Now we can spot the trouble: on the right hand side of the equation, *q(xₜ|xₜ₋₁)*
     is defined, but *q(xₜ₋₁)* and *q(xₜ)* are not defined. So it is a dead end.'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以发现问题：在方程的右侧，*q(xₜ|xₜ₋₁)* 已经被定义，但 *q(xₜ₋₁)* 和 *q(xₜ)* 还没有定义。因此，这是一条死路。
 - en: You still wouldn’t stop, and you ask, why can’t we define *q(xₜ)?* I hear you!
     Let’s try to define *q(xₜ)*. Conceptually, *q(xₜ)* represents the possible set
     of images the forward process can generate at timestamp *t*. Thinking about it
@@ -709,21 +1012,32 @@
     process can generate at time *t* depends on where the trajectories start (natural
     image *X₀, X₁*, etc.). So the probability density function of *q(xₜ)* will inevitably
     reference the probability density function of the starting point, that is *q(x₀).*
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 你仍然不会停下来，你会问，为什么不能定义 *q(xₜ)*？我听到了！让我们试着定义 *q(xₜ)*。从概念上讲，*q(xₜ)* 表示前向过程在时间戳 *t*
+    可以生成的可能图像集。从轨迹的角度来看，见下文，前向过程在时间 *t* 生成的图像取决于轨迹的起点（自然图像 *X₀, X₁* 等）。因此，*q(xₜ)*
+    的概率密度函数不可避免地参考起点的概率密度函数，即 *q(x₀)*。
 - en: '![](../Images/5941d0a9b39ae7ef2a6878aa4cea9df5.png)'
+  id: totrans-140
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5941d0a9b39ae7ef2a6878aa4cea9df5.png)'
 - en: Hand drawn illustration by me
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 由我手绘的插图
 - en: What is *q(x₀)?* It is the probability density of the training data. Unfortunately,
     previously we have already made it clear that *q(x₀)* is unknown. The best we
     can do is to sample from it by randomly picking natural images from our training
     set. Consequently, we will not be able to write down the analytical formula for
     *q(xₜ).*
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: '*q(x₀)* 是什么？它是训练数据的概率密度。不幸的是，我们之前已经明确了 *q(x₀)* 是未知的。我们能做的最好事情就是通过从我们的训练集中随机挑选自然图像来从中取样。因此，我们将无法写下
+    *q(xₜ)* 的解析公式。'
 - en: The reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* smartly defines the probability
     density function for the random variable *xₜ₋₁* to condition on *x₀.* Conditioning
     on *x₀* allows us to plug in a sample for *x₀* to reason about properties of *xₜ₋₁.*
@@ -731,12 +1045,17 @@
     expectation fashion with respect to the samples from *x₀,* we are good. For more
     details about “reasoning a random variable in an expectation fashion”, see sampling-averaging
     below.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程的反向过程 *q(xₜ₋₁|xₜ, x₀)* 智能地定义了随机变量 *xₜ₋₁* 在 *x₀* 条件下的概率密度函数。以 *x₀* 为条件使我们能够插入一个
+    *x₀* 的样本来推理 *xₜ₋₁* 的属性。只要我们能够从 *x₀* 中取样（我们可以），并以期望的方式推理 *xₜ₋₁*，我们就可以了。有关“以期望方式推理随机变量”的更多细节，请参见下文的取样平均。
 - en: '**Will mimicking the reverse of the forward process gives us a reverse process
     that can start from any multivariate Gaussian noise?**'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: '**模仿前向过程的反向过程能否给我们一个可以从任何多变量高斯噪声开始的反向过程？**'
 - en: We’ve established that the starting point of the reverse of the forward process
     are pure Gaussian noise already. By mimicking the the behavior of the reverse
     of the forward process that denoises **mainly** Gaussian noises into natural images
@@ -745,30 +1064,41 @@
     realistic looking natural images. Just like if a linearly regressed line path
     through many data points, we would expect the line to interpolate to other unseen
     data points along the same direction.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经确定，反向过程的起点已经是纯高斯噪声。通过模仿反向过程将**主要**的高斯噪声去噪到训练集中的自然图像，我们的无条件去噪模型，即反向过程 *p(xₜ₋₁|xₜ)*
+    应该能够将**纯**高斯噪声转化为逼真的自然图像。就像如果一条线性回归线穿过许多数据点，我们期望这条线能够在相同方向上插值到其他未见的数据点。
 - en: '**Why does the reverse process use neural networks to predict the mean vector
     and the covariance matrix?**'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: '**为什么反向过程使用神经网络来预测均值向量和协方差矩阵？**'
 - en: 'In probabilistic modelling, after you decided the distribution family to use,
     the most difficult task then is to decide what values to use to fully specify
     the distribution. In our case, we decided to use the multivariate Gaussian family.
     Then we need to decide the two quantities to fully specify a multivariate Gaussian,
     the mean vector and the covariance matrix. Let me show you the inductive case
     of the reverse process again here:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 在概率建模中，决定使用哪个分布族之后，最困难的任务就是决定使用什么值来完全指定分布。在我们的例子中，我们决定使用多变量高斯族。然后我们需要决定两个量来完全指定一个多变量高斯，即均值向量和协方差矩阵。让我在这里再次展示反向过程的归纳案例：
 - en: '![](../Images/ded4ea309ab1f57290026d7642d902ea.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ded4ea309ab1f57290026d7642d902ea.png)'
 - en: If you think about it, the mean vector predicting function *μₚ(xₜ, t)* and the
     covariance matrix predicting function *Σₚ(xₜ, t)* needs to do a difficult task
     — given an *arbitrary* noisier image *xₜ* and a timestamp *t* as inputs, they
     need to output two quantities (mean and covariance matrix) that describe the spectrum
     of images that are de-noised versions of *xₜ*.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你考虑一下，均值向量预测函数*μₚ(xₜ, t)*和协方差矩阵预测函数*Σₚ(xₜ, t)*需要完成一项困难的任务——给定一个*任意*的噪声图像*xₜ*和时间戳*t*作为输入，它们需要输出两个量（均值和协方差矩阵），这些量描述了去噪版本*xₜ*的图像的光谱。
 - en: Obviously these function *μₚ(xₜ, t)* and *Σₚ(xₜ, t)* cannot be too simple. A
     linear function with two parameters, a quadratic function with three parameters,
     or even a cubic function with four parameters won’t be capable enough for this
@@ -777,8 +1107,10 @@
     35.7 to 256 million parameters). Neural network is a convenient way to define
     functions with millions of parameters, and have a good tracking record of doing
     amazing things.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，这些函数*μₚ(xₜ, t)*和*Σₚ(xₜ, t)*不能太简单。具有两个参数的线性函数、具有三个参数的二次函数，甚至具有四个参数的三次函数都无法胜任这一任务。任务如此困难，只有具有数百万个参数的函数才能胜任（论文的附录B描述了从3570万到2.56亿参数的架构）。神经网络是定义具有数百万个参数的函数的便捷方式，并且在实现惊人功能方面有良好的记录。
 - en: The above inductive case also shows the most common way of incorporating deep
     neural network into a statistical model — use neural networks to predict probability
     distribution parameters which are otherwise difficult to specify. Together with
@@ -786,58 +1118,81 @@
     of our model for parameter learning, these three things (statistical model, neural
     network and variational inference) are BFFs (best friends forever) in modern machine
     learning. Sorry, I have young kids at home, some abbreviations are inevitable.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述归纳情况也展示了将深度神经网络纳入统计模型的最常见方式——使用神经网络预测难以指定的概率分布参数。结合变分推断（我稍后会介绍），它最大化我们模型的似然用于参数学习，这三者（统计模型、神经网络和变分推断）在现代机器学习中是**好朋友**（best
+    friends forever）。抱歉，我家有小孩，一些缩写不可避免。
 - en: '**Intuition of why the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* has
     to be conditioned on an initial image *x₀***'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '**为什么正向过程的反向过程*q(xₜ₋₁|xₜ, x₀)*必须以初始图像*x₀*为条件的直观解释**'
 - en: Our goal is to train the model defined as the reverse process to denoise noisy
     images into clear natural images in a gradual way. To train such a model, we need
     to have many many denoising trajectories as training data.
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的目标是训练一个定义为反向过程的模型，将噪声图像逐渐去噪成清晰的自然图像。为了训练这样的模型，我们需要大量的去噪轨迹作为训练数据。
 - en: Note only a collection of natural images is not sufficient to train such a model.
     Instead, we need full trajectories, with each trajectory consisting of images
     gradually changing from near noise to a clear natural image. Only in this way,
     the trained model, with a noiser image and the time step as its inputs, can denoise
     images gradually.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅仅拥有一组自然图像是不足以训练这样的模型的。相反，我们需要完整的轨迹，每个轨迹由图像组成，这些图像从接近噪声到清晰的自然图像逐渐变化。只有这样，训练好的模型才能以噪声图像和时间步作为输入，逐渐去噪图像。
 - en: The reverse of the forward process is the mechanism to give us those trajectories
     with gradually changing images. If the reverse of the forward process isn’t conditioned
     on an initial image *x₀*, how can we control which natural image it generates
     at the end? We need to have some way to plug in our request that we need this
     or that natural image to come out of the reverse of the forward process *q(xₜ₋₁|xₜ,
     x₀).*
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 正向过程的反向过程是提供这些逐渐变化的图像轨迹的机制。如果正向过程的反向过程不以初始图像*x₀*为条件，我们怎么能控制最终生成的自然图像呢？我们需要一种方法，将我们的请求插入到正向过程的反向过程*q(xₜ₋₁|xₜ,
+    x₀)*中，以便生成我们所需的自然图像。
 - en: Conditioning the reverse of the forward process the on a natural image *x₀*
     is a way to achieve that, let alone this conditioning happens automatically when
     we applied the Bayes rule to derive the probability density of the reverse of
     the forward process *q(xₜ₋₁|xₜ, x₀).*
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 对自然图像*x₀*的正向过程的反向过程进行条件化是一种实现目标的方法，更不用说，当我们应用贝叶斯规则推导正向过程的反向过程的概率密度*q(xₜ₋₁|xₜ,
+    x₀)*时，这种条件化会自动发生。
 - en: By the way, the reverse of the forward process can perform de-noising resulting
     in a single clear natural image without complicated neural network. This is because
     it has a head start by being conditioned on the target image to work with. This
     shows how important data is in statistical modelling.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 顺便说一下，前向过程的反向过程可以通过去噪得到一个清晰的自然图像，而无需复杂的神经网络。这是因为它有一个条件目标图像的优势。这显示了数据在统计建模中的重要性。
 - en: Processes recap ***q(xₜ|xₜ₋₁), q(xₜ₋₁|xₜ, x₀) and p(xₜ₋₁|xₜ)***
+  id: totrans-158
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 过程回顾 ***q(xₜ|xₜ₋₁), q(xₜ₋₁|xₜ, x₀) 和 p(xₜ₋₁|xₜ)***
 - en: 'As we will frequently reference the forward process, the reverse of the forward
     process and the reverse process later, let’s do a recap:'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们将频繁参考前向过程、前向过程的反向过程以及反向过程，让我们做一个回顾：
 - en: '**The forward process *q(xₜ|xₜ₋₁)*** turns a natural image into Gaussian noise
     by gradually adding Gaussian noise to it. The forward process is a fixed process
     without any model parameter.'
+  id: totrans-160
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**前向过程 *q(xₜ|xₜ₋₁)*** 通过逐渐添加高斯噪声将自然图像转换为高斯噪声。前向过程是一个没有任何模型参数的固定过程。'
 - en: '**The reverse of the forward process *q(xₜ₋₁|xₜ, x₀)***turns a noisier image
     into a less-noisy image by removing noise from it. The reverse of the forward
     process is also a fixed process without any model parameter. It is defined by
@@ -846,9 +1201,12 @@
     forward process, so the final samples from it are images that are very similar
     to *x₀.* In other words, we cannot use the reverse of the forward process to sample
     arbitrary natural images.'
+  id: totrans-161
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**前向过程的反向过程 *q(xₜ₋₁|xₜ, x₀)*** 通过去除噪声将噪声更大的图像转换为噪声较少的图像。前向过程的反向过程也是一个没有任何模型参数的固定过程。它通过对前向过程应用贝叶斯规则来交换随机变量的顺序。贝叶斯规则将对
+    *x₀* 的依赖性加入到前向过程的反向过程中，因此从中得到的最终样本是与 *x₀* 非常相似的图像。换句话说，我们不能使用前向过程的反向过程来采样任意自然图像。'
 - en: '**The reverse process *p(xₜ₋₁|xₜ)*** turns arbitrary Gaussian noise into natural
     images. This is the process we want to learn. The reverse process contains all
     our model parameters, which are the weights of the two neural networks inside
@@ -857,41 +1215,58 @@
     good values for the model parameters via gradient descent, which requires a loss
     function in analytical form, so the gradient descent algorithm can compute gradient
     of the loss.'
+  id: totrans-162
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**反向过程 *p(xₜ₋₁|xₜ)*** 将任意的高斯噪声转换为自然图像。这是我们想要学习的过程。反向过程包含了我们模型的所有参数，即概率密度 *p(xₜ₋₁|xₜ)*
+    内部两个神经网络的权重。由于不依赖于 *x₀*，反向过程允许我们采样任意自然图像。但我们首先需要通过梯度下降找到模型参数的良好值，这需要一个解析形式的损失函数，以便梯度下降算法可以计算损失的梯度。'
 - en: The objective function
+  id: totrans-163
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 目标函数
 - en: With the structure of the reverse process defined and its necessity explained,
     now it is time to think about the objective function we minimize to perform parameter
     learning for the mean vector predicting network *μₚ(xₜ, t)* and the covariance
     matrix predicting network *Σₚ(xₜ, t)*.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然反向过程的结构已经定义且其必要性已解释，现在是时候考虑我们要最小化的目标函数，以进行均值向量预测网络 *μₚ(xₜ, t)* 和协方差矩阵预测网络
+    *Σₚ(xₜ, t)* 的参数学习。
 - en: For a probabilistic model, the likelihood of the data is always a good starting
     point to think about the objective function. Let’s define what “ likelihood of
     the data” means for our model.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于一个概率模型，数据的似然性总是思考目标函数的良好起点。让我们定义一下“数据的似然性”在我们的模型中意味着什么。
 - en: The joint probability density function, with data plugged in
+  id: totrans-166
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 联合概率密度函数，已插入数据
 - en: The previously defined joint probability density function of the reverse process
     *p(x₀, x₁⋯, x_T)*, or shorthanded as *p(x_0:T)* is a function has *T+1* random
     variables as its arguments, namely *x₀, x₁* to *x_T*. Being a probability density
     function, it evaluates to a probability number between [0, 1] when concrete values
     are plugged into its arguments.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前定义的反向过程的联合概率密度函数 *p(x₀, x₁⋯, x_T)*，或简称为 *p(x_0:T)* 是一个以 *T+1* 个随机变量为自变量的函数，即
+    *x₀, x₁* 到 *x_T*。作为概率密度函数，当实际值代入其自变量时，其评估结果是介于 [0, 1] 之间的概率值。
 - en: The purpose of a probabilistic model is to explain training data well. “explaining
     the training data well” means images in the training dataset evaluate to a high
     probability number when they are plugged into the *x₀* argument, one image at
     a time.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 概率模型的目的是很好地解释训练数据。“很好地解释训练数据”意味着当将训练数据集中的图像逐一代入*x₀*参数时，它们会得到一个高概率值。
 - en: 'Plugging an image *X₀* into the argument *x₀* of the joint probability density
     function *p(x_0:T)*, which has *T+1* random variables*,* results in a new function
     with *T* random variables: *p(x₀=X₀, x₁⋯, x_T).* This function cannot be evaluated
@@ -900,12 +1275,17 @@
     is no observations for them, so we cannot find some meaningful concrete values
     (like the case for the observational random variable *x₀*) to plug in for them.
     They need to be removed, or more precisely, *integrated away*.'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 将图像*X₀*代入联合概率密度函数*p(x_0:T)*的参数*x₀*中，该函数有*T+1*个随机变量，结果是一个具有*T*个随机变量的新函数：*p(x₀=X₀,
+    x₁⋯, x_T)*。这个函数尚不能计算为概率值，因为它涉及随机变量*x₁*到*x_T*，这些不是具体值。*x₁*到*x_T*是潜在随机变量，没有观测值，因此我们无法找到一些有意义的具体值（如观测随机变量*x₀*的情况）来代入。它们需要被去除，或者更准确地说，*积分去除*。
 - en: The likelihood p(*x₀)*
+  id: totrans-170
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 似然*p(x₀)*
 - en: By definition, a random variable, say, *x₁*, describes a spectrum of possible
     values. The go-to way to remove a random variable from a probability density function
     is to compute the expected value of the density function with respect to that
@@ -914,78 +1294,113 @@
     function with respect to *x₁.* Essentially we are saying since we cannot observe
     concrete values for latent random variables, we have to reason about their average
     behavior.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据定义，随机变量，例如*x₁*，描述了一系列可能的值。去除概率密度函数中的随机变量的常用方法是计算相对于该随机变量的期望值。换句话说，要从*p(x₀,
+    x₁⋯, x_T)*中去除随机变量*x₁*，计算该函数相对于*x₁*的平均值，或称期望值。本质上，我们在说由于无法观测到潜在随机变量的具体值，我们必须推理它们的平均行为。
 - en: 'Let’s pick *x₁* to integrate away first. Since *x₁* is a continuous random
     variable, its expectation is defined by an integration, hence the name “integrating
     a random variable away”:'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们首先选择*x₁*来积分去除。由于*x₁*是一个连续随机变量，其期望值由积分定义，因此有“积分去除随机变量”之称：
 - en: '![](../Images/b6b86de3ff9d9619190755ea078c1133.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b6b86de3ff9d9619190755ea078c1133.png)'
 - en: 'The same “integrating away” approach, applied *T* times, can remove all latent
     random variables from *p(x₀, x₁⋯, x_T)*:'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 相同的“积分去除”方法，应用*T*次，可以将所有潜在随机变量从*p(x₀, x₁⋯, x_T)*中去除：
 - en: '![](../Images/b6a1d666977b2dc757f828ad304539a5.png)'
+  id: totrans-175
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b6a1d666977b2dc757f828ad304539a5.png)'
 - en: Likelihood of the data, with all latent random variables integrated out
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据的似然，所有潜在随机变量都被积分去除
 - en: '*p(x₀)* now only describes how likely actual images can be generated using
     our model, we call *p(x₀)* the likelihood of the data.'
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: '*p(x₀)*现在仅描述了使用我们的模型生成实际图像的可能性，我们称*p(x₀)*为数据的似然。'
 - en: Note the above equation is merely a notation to indicate that *p(x₀)* is *what*
     is left after all latent random variables are integrated away. It does not tell
     us *how* to integrate them away. This is because the integration symbol *“∫”*
     represents the result of the integration, without telling us how to do the integration.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，上述方程仅是一个符号，表示*p(x₀)*是在所有潜在随机变量被积分去除后剩下的部分。它并没有告诉我们*如何*去除这些变量。这是因为积分符号*“∫”*表示积分的结果，而没有告诉我们如何进行积分。
 - en: Why not integrate *x₀ away from the likelihood p(x₀) as well?*
+  id: totrans-179
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么不将*x₀*也从似然*p(x₀)*中积分去除呢？
 - en: 'The above *T-*dimensional integration only integrated away the latent random
     variables *x₁* to *x_T*, and left the observational random variable *x₀* in *p(x₀)*.Why?
     Because if *x₀* is integrated away as well, the whole joint probability density
     function becomes 1 since all probability density function when integrated over
     its full set of random variables, yields 1:'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述的*T-*维积分仅将潜在随机变量*x₁*到*x_T*积分去除，保留了观测随机变量*x₀*在*p(x₀)*中。为什么？因为如果*x₀*也被积分去除，整个联合概率密度函数会变为1，因为当所有概率密度函数在其完整的随机变量集上积分时，结果为1：
 - en: '![](../Images/9980dadc725d78cfe582ab58e8a7205e.png)'
+  id: totrans-181
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9980dadc725d78cfe582ab58e8a7205e.png)'
 - en: You see, there is no place to plug in actual images to this number 1 to evaluate
     how well it explains the training data. This prevents us from performing parameter
     learning.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 你看，这里没有地方插入实际图像以评估这个数字1对训练数据解释的效果。这阻止了我们进行参数学习。
 - en: That’s why we leave *x₀* unintegrated-away and work with *p(x₀)*, which is called
     *likelihood of the data*, or *likelihood* for short.
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是为什么我们将*x₀*保持未积分掉，使用*p(x₀)*，这称为*数据的似然*，或简称*似然*。
 - en: The likelihood *p*(*x₀)* mentions all model parameters
+  id: totrans-184
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 似然*p*（*x₀*）提到所有模型参数
 - en: 'Even though the likelihood *p*(*x₀)*, with an actual image plugged in, that
     is, *p*(*x₀=X₀),* is a function that doesn’t mention any random variable, it still
     mentions all model parameters, that is, weights in the two neural networks, via
     the probability density function *p(xₜ₋₁|xₜ)*, shown again here:'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使似然*p*（*x₀*），当插入实际图像时，即*p*（*x₀=X₀*），是一个不提及任何随机变量的函数，它仍然通过概率密度函数*p(xₜ₋₁|xₜ)*提到所有模型参数，即两个神经网络中的权重，如下所示：
 - en: '![](../Images/9fbc0110583377ce1f8ee4f996984c37.png)'
+  id: totrans-186
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9fbc0110583377ce1f8ee4f996984c37.png)'
 - en: The weights are in the mean predicting network *μₚ* and the covariance matrix
     predicting network *Σₚ*. The latent random variables *x₁* to *x_T* are integrated
     away, but their mean*,* and covariance matrix terms are left in the result of
     the integrations.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 权重存在于均值预测网络*μₚ*和协方差矩阵预测网络*Σₚ*中。潜在随机变量*x₁*到*x_T*已被积分掉，但它们的均值*和*协方差矩阵项保留在积分结果中。
 - en: 'You may ask, since we have not discussed how the latent random variables are
     integrated away, how do we know *μₚ* (*xₜ, t*) and *Σₚ(xₜ, t)* will survive the
     integrations? You will see for yourself later in the derivation for the analytical
@@ -996,8 +1411,12 @@
     in our model. This doesn’t make sense. So the two neural networks *μₚ* (*xₜ, t*)
     and *Σₚ(xₜ, t)* will survive the integrations. In other words *p(x₀)* mentions
     all model parameters in *μₚ* (*xₜ, t*) and *Σₚ(xₜ, t).*'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会问，既然我们没有讨论潜在随机变量是如何被积分掉的，我们怎么知道*μₚ*（*xₜ, t*）和*Σₚ(xₜ, t)*会在积分中保留？你稍后会在分析损失部分的推导中看到，但这里你必须相信我：如果在积分之后，那些高斯潜在随机变量消失了，而且描述它们的两个重要东西，即均值向量*μₚ*（*xₜ,
+    t*）和协方差矩阵*Σₚ(xₜ, t)*也消失了，那么似乎这些随机变量在我们的模型中从未存在过。这是不合理的。因此，这两个神经网络*μₚ*（*xₜ, t*）和*Σₚ(xₜ,
+    t)*将会在积分中保留。换句话说，*p(x₀)*提到所有在*μₚ*（*xₜ, t*）和*Σₚ(xₜ, t)*中的模型参数。
 - en: '*p(x₀)* mentions all model parameters, which are the weights in the two neural
     networks, but we don’t know the proper values for the model parameters yet. If
     we pretend to know all parameter values, then we can evaluate *p(x₀)* into a probability
@@ -1005,8 +1424,11 @@
     one image at a time. This results in many probability numbers. Averaging these
     probability numbers gives us a measurement of how well our model explains the
     training data.'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: '*p(x₀)*提到所有模型参数，即两个神经网络中的权重，但我们尚不知道模型参数的正确值。如果我们假装知道所有参数值，则可以通过逐个插入训练图像，从训练图像集中评估*p(x₀)*，将其转化为[0,
+    1]之间的概率值。这将产生许多概率值。对这些概率值取平均给我们提供了一个衡量我们模型解释训练数据的效果的指标。'
 - en: Of course, we don’t know the values for the neural network weights. We can set
     them to arbitrary values, but this will likely result in a poor model that doesn’t
     explain the training data well. i.e., this model with random neural network weights
@@ -1016,22 +1438,30 @@
     values to compare against yet. What you will know for sure, is that when you ask
     the model to de-noise a purely noisy image, it does not generate a realistic natural
     image at all.
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，我们不知道神经网络权重的值。我们可以将它们设置为任意值，但这可能导致一个解释训练数据效果不佳的模型。即，这个具有随机神经网络权重的模型对*p(x₀=X)*，其中*X*是从训练数据集中采样的自然图像，返回非常低的概率值。请注意，当你实际进行这个操作时，你不会知道返回的概率值是小还是大，因为你还没有基准值可以进行比较。你可以确定的是，当你要求模型去噪一个纯噪声图像时，它完全不会生成一个现实的自然图像。
 - en: In this case, it is not that our model structure is incapable of explaining
     the data, it is the model has not been calibrated the model correctly. By “model
     structure” I mean the reverse process with two deep neural networks predicting
     the mean vector and the covariance matrix of a denoised image.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，问题不是我们的模型结构无法解释数据，而是模型尚未正确校准。这里的“模型结构”指的是用两个深度神经网络预测去噪图像的均值向量和协方差矩阵的逆过程。
 - en: Optimization can find proper parameter values for those neural networks. And
     it needs a loss function to minimize.
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 优化可以找到这些神经网络的适当参数值。它需要一个损失函数来最小化。
 - en: The negative log likelihood of data as the loss function
+  id: totrans-193
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据的负对数似然作为损失函数
 - en: A loss function must mention all model parameters. The likelihood *p(x₀)* satisfies
     this requirement. A good model should let an actual image *X₀* evaluates to a
     high likelihood probability number *p(x₀=X₀)*. We want to minimize the loss function,
@@ -1042,281 +1472,414 @@
     that does not affect the optimal value for the loss function; we want to introduce
     the *log* function because it is the essential part in the KL-divergence that
     we will use below.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失函数必须提到所有模型参数。似然*p(x₀)* 满足这一要求。一个好的模型应该让实际图像*X₀*评估为一个高似然概率值*p(x₀=X₀)*。我们想要最小化损失函数，因此带有负号。一个好的模型不仅需要对训练集中的单个图像表现良好，还需要对训练集中的所有图像表现良好，因此需要对从训练集中采样的图像*x₀~q(x₀).*进行期望。我们可以取*p(x₀)*的*log*，因为*log*是一个单调函数，不会影响损失函数的最优值；我们引入*log*函数是因为它是我们下面将使用的KL散度的核心部分。
 - en: 'All the above thinking leads use to the famous negative expected log likelihood,
     denoted by *L*:'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述思路引导我们到著名的负期望对数似然，记作*L*：
 - en: '![](../Images/056c6d8e14660a2752d2eef6c5d78824.png)'
+  id: totrans-196
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/056c6d8e14660a2752d2eef6c5d78824.png)'
 - en: Definition of the negative log likelihood loss function
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 负对数似然损失函数的定义
 - en: Line (1) is the definition of the negative log likelihood of data.
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（一）行是数据的负对数似然的定义。
 - en: Line (2) plugs in the definition of *p(x₀)*, which integrates all latent random
     variables *x₁* to *x_T* out of the density function *p(x₀, ⋯, x_T)*.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（二）行代入了*p(x₀)*的定义，该定义将所有潜在随机变量*x₁*到*x_T*从密度函数*p(x₀, ⋯, x_T)*中积分出去。
 - en: The negative log likelihood loss function is not opitimizable
+  id: totrans-200
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 负对数似然损失函数是不可优化的
 - en: The standard way to perform parameter learning via optimization is to use gradient
     descent to minimize the loss function with respect to the model parameters. Gradient
     descent needs to know the analytical formula for the loss function to take the
     derivative of it. Unfortunately, the analytical formula for the negative log likelihood
     loss function is very difficult to derive.
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过优化执行参数学习的标准方法是使用梯度下降法来最小化相对于模型参数的损失函数。梯度下降法需要知道损失函数的解析公式以进行求导。不幸的是，负对数似然损失函数的解析公式非常难以推导。
 - en: 'To work out the analytical formula for the loss function *L*, let’s look at
     its definition again:'
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了求出损失函数*L*的解析公式，让我们再看一下它的定义：
 - en: '![](../Images/056c6d8e14660a2752d2eef6c5d78824.png)'
+  id: totrans-203
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/056c6d8e14660a2752d2eef6c5d78824.png)'
 - en: '*p(x_0:T)* is previously defined (shown again here) as:'
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: '*p(x_0:T)* 已经定义过（在此再次展示）为：'
 - en: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
+  id: totrans-205
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
 - en: It is easy to see that our model parameters — the weights in the mean vector
     predicting neural networks *μ*ₚ and the covariance matrix predicting neural network
     Σₚ — are mentioned in the loss function. But they are mentioned in the integration
     symbol *∫*.
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: 很容易看出我们的模型参数——预测神经网络*μ*ₚ的均值向量中的权重和预测神经网络Σₚ的协方差矩阵——在损失函数中提到。但它们是在积分符号*∫*中提到的。
 - en: Unlike things such as the exponential symbol *exp*, or the squared operator
     “²”, which represent computation that we immediately know how to do, the integration
     symbol represents the result of a computation, that is, it asks you to integrate
     a function, without telling you how to do the integration.
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 与指数符号*exp*或平方操作符“²”等代表我们立即知道如何计算的东西不同，积分符号代表计算的结果，即它要求你积分一个函数，而没有告诉你如何进行积分。
 - en: From our Calculus course, we all know that taking derivative is work, but performing
     integration is art — taking the derivative of a term is a mechanical procedure
     as long as you have the derivative cheat sheet. But integration requires creativity,
     and we have so many integrations that we just don’t know how to do.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 从我们的微积分课程中，我们都知道求导是工作，但执行积分是艺术——只要你有导数速查表，求导是机械的过程。然而，积分需要创造力，我们有这么多积分，简直不知道怎么做。
 - en: 'Unfortunately, the integration of *p(x_0:T)* inside the loss function *L* falls
     into the kind of integrations that are very hard to solve analytically. We call
     it an intractable integration. Let’s use a short reverse process where *T* is
     set to 1 to demonstrate this point. Our goal is to show that *L* is intractable:'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，损失函数 *L* 内的*p(x_0:T)*的积分属于非常难以解析求解的积分。我们称之为不可处理的积分。让我们使用设置*T*为1的短反向过程来演示这一点。我们的目标是展示
+    *L* 是不可处理的：
 - en: '![](../Images/d3180d6e2a66fc1d24d153f84b920799.png)'
+  id: totrans-210
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d3180d6e2a66fc1d24d153f84b920799.png)'
 - en: 'Since we know how to sample *x₀* from our training set of natural images, the
     outside expectation with respect to *x₀* can be dealt with using sample-averaging
     (see the next section about sample-averaging). So the only difficult term is the
     integration inside the log and we want to show that the integration is hard to
     solve:'
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们知道如何从自然图像的训练集中采样*x₀*，因此关于*x₀*的外部期望可以通过样本平均来处理（请参见下一节关于样本平均的内容）。所以唯一困难的项是对数内部的积分，我们希望证明这个积分很难求解：
 - en: '![](../Images/051ebfa7f19797f47a159cf42f9203a7.png)'
+  id: totrans-212
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/051ebfa7f19797f47a159cf42f9203a7.png)'
 - en: 'After setting *T* to 1, the above term turns into:'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 在将*T*设置为1之后，上述项变为：
 - en: '![](../Images/928e6f20207531c25d730f4c7ac15896.png)'
+  id: totrans-214
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/928e6f20207531c25d730f4c7ac15896.png)'
 - en: Derivation showing loss L is intractable
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: 显示损失 *L* 是不可处理的推导
 - en: Line (1) shows the the shortened joint probability density function for the
     reverse process when *T=1*.
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（1）显示了当*T=1*时反向过程的缩短联合概率密度函数。
 - en: Line (2) factorizes the joint into product of probability density functions,
     each for a single random variable, *x₁* and *x₀* respectively.
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（2）将联合概率密度函数分解为概率密度函数的乘积，每个函数分别对应一个随机变量*x₁*和*x₀*。
 - en: Line (3) plugs in the names of those single probability density functions.
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（3）插入了这些单一概率密度函数的名称。
 - en: Line (4) plugs in the actual probability density functions, which are multivariate
     Gaussians. The first *exp* is for the random variable *x₁* from the standard Gaussian,
     and the second *exp* is for the random variable *x₀* conditioned on *x₁*. I used
     the proportional symbol “∝” to ignore the normalization terms in front of each
     multivariate Gaussian.
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（4）插入了实际的概率密度函数，它们是多元高斯分布。第一个*exp*是标准高斯分布中随机变量*x₁*的部分，第二个*exp*是条件在*x₁*上的随机变量*x₀*。我使用了比例符号“∝”来忽略每个多元高斯分布前面的归一化项。
 - en: The integration at line (4) is hard to solve analytically. Note, in this case,
     we know how to compute the integration analytically by using the product rule
     of integration, it is just hard and messy, especially when *T=1000*. The variational
     method (explained later) that the authors of the paper proposed is more elegant.
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（4）中的积分在解析上很难解决。请注意，在这种情况下，我们知道如何使用积分的乘积法则来计算积分，但这只是困难且麻烦，特别是当*T=1000*时。论文作者提出的变分方法（稍后解释）更为优雅。
 - en: This little exercise also reveals that we may be able to use a technique called
     sample-averaging to approximate the integration analytically. This is because
     in line (4) the probability density function of each random variable is mentioned
     only once, and this single mention of the density function is computing the expected
     value with respect to that random variable. Sample-average approximates such expectations.
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个小练习还揭示了我们可以使用一种称为样本平均的技术来解析地近似积分。这是因为在行（4）中，每个随机变量的概率密度函数只出现了一次，这次对密度函数的提及是在计算相对于该随机变量的期望值。样本平均可以近似这些期望。
 - en: Use sample-averaging to derive the analytical form for the loss?
+  id: totrans-222
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用样本平均来推导损失的解析形式？
 - en: The loss function *L* contains an intractable integration. There are multiple
     ways to approximate an intractable integration, such as sample-averaging, importance
     sampling and Gaussian quadrature. Let’s look at the simplest of them all, sample-averaging.
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失函数 *L* 包含一个不可处理的积分。近似不可处理积分的方式有很多种，例如样本平均、重要性采样和高斯求积。让我们来看一下其中最简单的方法——样本平均。
 - en: '**What is sample-averaging?**'
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: '**什么是样本平均？**'
 - en: Sample-averaging is simple —average function evaluations based on samples of
     a random variable to approximate an expectation.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本平均是简单的——基于随机变量样本的函数评估来近似期望。
 - en: 'Formally, let *x* be a continuous random variable from the distribution *h(x)*,
     and we want to compute the expectation of a function *f(x)* with x coming from
     the *h(x)* distribution. Sample-averaging approximates this expectation in the
     following way:'
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: 正式地，设*x*是来自分布*h(x)*的连续随机变量，我们想计算函数*f(x)*的期望，样本平均通过以下方式近似该期望：
 - en: then sample-average approximate the to compute the expectation of a function
     *f(x)* with the following integration on function *f(x)* with respect to *x* can
     be approximated by the averaging the evaluation of *f(x)* with samples of *x*
     from the distribution *h(x)* plugged in.
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后样本平均方法用于计算函数*f(x)*的期望，通过对函数*f(x)*进行以下关于*x*的积分的近似，方法是将来自分布*h(x)*的*x*样本代入进行*f(x)*的评估平均。
 - en: '![](../Images/8c404e72fcd98614641cb5278139b2c1.png)'
+  id: totrans-228
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8c404e72fcd98614641cb5278139b2c1.png)'
 - en: Sample-averaging definition
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本平均的定义
 - en: Line (1) is the notation for the expectation of *f(x)* with respect to *x* coming
     from the probability density function *h(x)*.
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（1）是关于*x*来自概率密度函数*h(x)*的*f(x)*期望的符号表示。
 - en: Line (2) since we assume *x* is a continuous random variable, the above expectation
     is mathematically defined by the integration shown in this line. This is the formula
     pattern to look out to identify if sample-averaging is applicable. Let’s call
     it the *sample-averaging template*.
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（2）由于我们假设*x*是一个连续随机变量，上述期望在数学上由这一行所示的积分定义。这是识别样本平均是否适用的公式模式。我们称之为*样本平均模板*。
 - en: Line (3) is the sample-averaging step. It approximates the integration by averaging
     the evaluations of *f(x)* with samples *S₁, S₂, …, Sₙ* of *x* from the distribution
     *h(x)* plugged into the function *f*.
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（3）是样本平均步骤。它通过对函数*f*进行从分布*h(x)*中抽取的样本*S₁, S₂, …, Sₙ*的评估进行平均，来近似积分。
 - en: In other words, as long as *f(x)* is evaluable when samples for *x* is plugged-in,
     sample-averaging approximates the integration.
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，只要在插入样本*x*时函数*f(x)*是可评估的，样本平均就能近似积分。
 - en: We have a intractable integration
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个难以处理的积分
 - en: '**Approximating an integration analytically using sampling-averaging**'
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: '**通过采样平均进行积分的解析近似**'
 - en: 'As you can see, sample-averaging approximates an integration with a sum of
     the integral function. This sum of terms is analytically with respect to our model
     parameters. A simple example shows this point: we want to write down the analytical
     formula for the loss function of some model, written as the the following integration.
     In this integration, let’s say *x* is a random variable that can be sampled from
     *h(x)* and *μ* is our model parameter to optimize.'
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你所见，样本平均通过积分函数的总和来近似积分。这个项的总和在分析上与我们的模型参数有关。一个简单的例子说明了这一点：我们想写下某个模型的损失函数的解析公式，写成以下积分形式。在这个积分中，假设*x*是可以从*h(x)*中抽取的随机变量，*μ*是我们需要优化的模型参数。
 - en: '![](../Images/c5d296f547f5f7836d7d92392d638297.png)'
+  id: totrans-237
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c5d296f547f5f7836d7d92392d638297.png)'
 - en: 'After drawing two samples *S₁* and *S₂* of *x* from *h(x)*, and applying sample-averaging
     to approximate this integration results in an analytical expression for *μ* at
     the right hand side of the following approximation equation:'
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: 在从*h(x)*中抽取两个样本*S₁*和*S₂*后，应用样本平均来近似该积分，这会得到一个关于*μ*的解析表达式，位于以下近似方程的右侧：
 - en: '![](../Images/c745c64436098f4f1f4ff2d71088ae7d.png)'
+  id: totrans-239
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c745c64436098f4f1f4ff2d71088ae7d.png)'
 - en: The right hand side of the approximation is an expression that mentions the
     model parameter *μ*. This expression is analytical — it does not mention symbols
     that represents results of computation, such as the integration *∫*, it only mentions
     symbols that represents computation, such as the exponential function *exp*, and
     the squared operator “²”, for which we know how to compute gradients.
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: 近似的右侧是一个提到模型参数*μ*的表达式。这个表达式是解析的——它不涉及代表计算结果的符号，如积分*∫*，它只涉及代表计算的符号，如指数函数*exp*和平方运算符“²”，我们知道如何计算梯度。
 - en: We use sample-averaging all the time. For example, to compute the expected height
     from students in a school, we don’t know the distribution of student’s height,
     but we have samples of measured students’ heights. Then compute the expectation
     by doing the averaging.
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们一直使用样本平均法。例如，为了计算学校中学生的期望身高，我们不知道学生身高的分布，但我们有测量的学生身高样本。然后通过做平均来计算期望。
 - en: '**Counter-example that makes sample-averaging inapplicable**'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使样本平均法不可用的反例**'
 - en: 'As long as *p(x)* does not appear in the function *f(x)* to be integrated over,
     and *p(x)* is easy to sample, we can use sample-averaging. Here is a counterexample:'
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: 只要 *p(x)* 不出现在需要积分的函数 *f(x)* 中，并且 *p(x)* 易于采样，我们就可以使用样本平均法。这里是一个反例：
 - en: '![](../Images/22c216b7e8f1167163baaed9d03daa22.png)'
+  id: totrans-244
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/22c216b7e8f1167163baaed9d03daa22.png)'
 - en: Sample-averaging counterexample
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本平均法反例
 - en: In this case, *q(xₒ)* is the data distribution, whose probability density formula
     is unknown. Still we can sample from it by randomly picking images from the training
     set. Sample-averaging can remove the right *q(xₒ)* But note *q(xₒ)* also appears
     in the *g* function being integrated. This left *q(xₒ)* cannot be removed by sample-averaging.
     *g(1+q(xₒ=Xₒ))* remains an un-evaluable function even with the sample *Xₒ* plugged-in.
     So in this case, sample-averaging cannot solve the integration.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，*q(xₒ)* 是数据分布，其概率密度公式未知。但我们仍然可以通过随机从训练集中挑选图像来进行采样。样本平均法可以去掉右侧的 *q(xₒ)*，但注意
+    *q(xₒ)* 也出现在被积分的 *g* 函数中。这个剩余的 *q(xₒ)* 不能通过样本平均法去除。即使插入样本 *Xₒ*，*g(1+q(xₒ=Xₒ))*
+    仍然是一个不可评估的函数。因此，在这种情况下，样本平均法无法解决积分问题。
 - en: Luckly, our loss function *L* doesn’t fall into this category, so we can use
     sample-averaging to approximate *L* analytically.
+  id: totrans-247
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，我们的损失函数 *L* 不属于这种情况，因此我们可以使用样本平均法来解析地近似 *L*。
 - en: '**Deriving L’s analytical formula via sample-averaging**'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: '**通过样本平均法推导 L 的解析公式**'
 - en: 'To derive the analytical formula for the loss function L, rewrite *L* as follows:'
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了推导损失函数 L 的解析公式，将 *L* 重写如下：
 - en: '![](../Images/b55137a4b0d93797c989c8add878ad6a.png)'
+  id: totrans-250
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b55137a4b0d93797c989c8add878ad6a.png)'
 - en: Manipulation of L for sample-averaging
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本平均法对 L 的操作
 - en: 'Line (3) reveals that inside the *log*, the inner integration matches our sample-averaging
     template, with the matched parts highlighted in different colours:'
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（3）显示，在*log*内，内部积分符合我们的样本平均模板，其中匹配的部分用不同的颜色突出显示：
 - en: '![](../Images/f711e16c75dc9fc8dee91c779323e058.png)'
+  id: totrans-253
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f711e16c75dc9fc8dee91c779323e058.png)'
 - en: 'To apply sample-averaging to approximate this inner integration, sample latent
     random variable *x₁* to *x_T* from the definition of the reverse process:'
+  id: totrans-254
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了应用样本平均法来近似这个内部积分，从逆过程的定义中采样潜在随机变量 *x₁* 到 *x_T*：
 - en: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
+  id: totrans-255
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8078d8e247c5a2625af839e8ac927021.png)'
 - en: 'Explicitly, the sampling process goes like this:'
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: 明确地说，采样过程如下：
 - en: First a sample for *x_T* from the standard multivariate Gaussian distribution
     using the base case to remove the integration with respect to *x_T.*
+  id: totrans-257
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先从标准多元高斯分布中对 *x_T* 进行采样，使用基本情况去除关于 *x_T* 的积分。
 - en: With a sample *Sₜ* for the random variable *xₜ* at hand, plug *Sₜ* into *p(xₜ₋₁|xₜ=Sₜ)*,
     then sample *xₜ₋₁*, using the inductive case.
+  id: totrans-258
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 有了随机变量 *xₜ* 的样本 *Sₜ*，将 *Sₜ* 插入 *p(xₜ₋₁|xₜ=Sₜ)*，然后采样 *xₜ₋₁*，使用归纳情况。
 - en: As long as we don’t lose model parameters during this process, we will end up
     with an analytical formula for the loss function *L*. Losing model parameters
     during sample-averaging means that it is possible that sample-averaging results
@@ -1326,46 +1889,69 @@
     worry about losing model parameters when applying sample-averaging. Appendix *“Why
     we won’t loss model parameters when applying sample-averaging to derive the analytical
     formula for the loss function L?”* explains why.
+  id: totrans-259
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 只要在这个过程中我们不丢失模型参数，我们将得到损失函数 *L* 的解析公式。在样本平均法中丢失模型参数意味着样本平均法可能会导致一个不再提及模型参数的公式。这是不好，因为一个不提及模型参数的损失函数是无用的。重参数化技巧被用来防止这种情况发生。但在我们的情况下，当应用样本平均法时，我们不需要担心丢失模型参数。附录
+    *“为什么在应用样本平均法推导损失函数 L 的解析公式时不会丢失模型参数？”* 解释了原因。
 - en: Once all samples for *x₁* to *x_T* are available, let’s call them a sample trajectory.
     Plug this trajectory into the joint probability density *p(x_0:T)* to get the
     analytical expression for *p(x₀)* under this trajectory.
+  id: totrans-260
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一旦所有 *x₁* 到 *x_T* 的样本可用，将其称为一个样本轨迹。将此轨迹代入联合概率密度 *p(x_0:T)* 中以获得此轨迹下的 *p(x₀)*
+    的解析表达式。
 - en: 'Repeat steps 1~4 to get analytical expression for *p(x₀)* under different trajectories
     and average them to approximate the inner integration. Say there are *m* sample
     trajectories, each trajectory *i* gives an analytical formula *pᵢ(x₀)*, then the
     analytical formula for the average is, which is the approximated inner integration:'
+  id: totrans-261
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复步骤 1~4 来获得不同轨迹下的 *p(x₀)* 的解析表达式，并对其进行平均以近似内部积分。假设有 *m* 个样本轨迹，每个轨迹 *i* 给出一个解析公式
+    *pᵢ(x₀)*，则平均的解析公式是，即近似的内部积分：
 - en: '![](../Images/fa55e17175d129179620055d02a2aad1.png)'
+  id: totrans-262
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa55e17175d129179620055d02a2aad1.png)'
 - en: 'Now the approximated analytical formula for the loss *L* is:'
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，损失 *L* 的近似解析公式是：
 - en: '![](../Images/5511c918c4278e7ab174f859dd8ba301.png)'
+  id: totrans-264
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5511c918c4278e7ab174f859dd8ba301.png)'
 - en: Approximated loss L by sample-averaging
+  id: totrans-265
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过样本平均近似的损失 L
 - en: Line (1) is the loss *L* with the inner expectation approximated. This leaves
     us with an expectation that matches the sample-averaging template again.
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（1）是带有内部期望值近似的损失 *L*。这让我们得到一个与样本平均模板相匹配的期望。
 - en: Line (2) applies sample-averaging to approximate the outer expectation, by averaging
     the *logs* with sample images *Sⱼ* drawn from *q(x₀)*. This results in an analytical
     expression from which we can take gradient.
+  id: totrans-267
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（2）应用样本平均来近似外部期望，通过与从 *q(x₀)* 中绘制的样本图像 *Sⱼ* 平均 *logs*。这产生了一个解析表达式，我们可以从中计算梯度。
 - en: '**Analytical formula for *L* via sample-averaging is expensive to compute**'
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
+  zh: '**通过样本平均得到的 *L* 的解析公式计算代价高昂**'
 - en: The above sample-averaging requires a lot of computation, this is because each
     trajectory requires *T* samples, one for each latent random variable. Common sense
     tells us drawing a single sample for a random variable is not enough — for example,
@@ -1373,23 +1959,32 @@
     the height of a single student. Why that’s bad? Because small sample size gives
     us an estimate, in this example, the expected height, with high variance. Every
     time you draw a single sample, you get a different expectation — that’s variance.
+  id: totrans-269
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述样本平均需要大量计算，因为每个轨迹需要 *T* 个样本，每个潜在随机变量一个。常识告诉我们，仅为随机变量绘制一个样本是不够的——例如，你不应该仅通过测量一个学生的身高来计算学校的平均学生身高。这有什么不好？因为小样本量给出的估计（在此例中是期望身高）具有高方差。每次绘制一个样本时，你会得到不同的期望——这就是方差。
 - en: 'We want to draw many samples for each random variable because more samples
     means the average more closely approximates the original integration. In other
     words, less variance. But drawing more samples requires a lot of computation:
     drawing two samples for each latent random variable and set *T=1000*, results
     in *m=2¹⁰⁰⁰* trajectories to average over. That’s very expensive.'
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望为每个随机变量绘制更多样本，因为更多样本意味着平均值更接近原始积分。换句话说，方差更小。但绘制更多样本需要大量计算：为每个潜在随机变量绘制两个样本并设定
+    *T=1000*，结果是 *m=2¹⁰⁰⁰* 个轨迹需要平均。这是非常昂贵的。
 - en: Practically, we can only afford to draw a single sample for each latent random
     variable. But this brings the high variance problem back.
+  id: totrans-271
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我们只能为每个潜在随机变量绘制一个样本。但这会带来高方差问题。
 - en: '**Analytical formula for *L* via sample-averaging using small number of samples
     has high variance**'
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用少量样本进行样本平均得到的 *L* 的解析公式具有高方差**'
 - en: The problem with drawing only a very small number of samples (for example, a
     single sample per latent random variable) for each latent random variable is that
     the probability number computed for an actual image *X₀*, that is, *p(x₀=X₀)*
@@ -1398,16 +1993,22 @@
     time you compute *p(x₀=X₀)* for the same image *X₀*, this probability number is
     different. Since there are *T* concrete sampled values in a sample trajectory,
     the variance is likely to be quite high.
+  id: totrans-273
   prefs: []
   type: TYPE_NORMAL
+  zh: 对每个潜在随机变量仅绘制少量样本（例如，每个潜在随机变量一个样本）的问题在于，对于实际图像 *X₀* 计算得到的概率数 *p(x₀=X₀)* 具有高方差。这是因为概率数
+    *p(x₀=X₀)* 依赖于潜在随机变量 *x₁* 到 *x_T* 的具体采样值。每次计算相同图像 *X₀* 的 *p(x₀=X₀)* 时，这个概率数都会不同。由于每个样本轨迹中有
+    *T* 个具体采样值，方差可能会非常高。
 - en: To make things worse, at the beginning of the parameter learning process, the
     weights in the mean vector and variance matrix predicting neural networks are
     randomly initialised. So the sampled images through those neural networks may
     be of very bad quality — in the sense that they don’t look like a denoised version
     of the previous image at all. Even though this doesn’t contribute to a higher
     variance, but low quality samples makes the parameter learning harder.
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
+  zh: 更糟的是，在参数学习过程的开始，预测神经网络的均值向量和方差矩阵中的权重是随机初始化的。因此，通过这些神经网络采样的图像可能质量非常差——在某种程度上，它们根本不像之前图像的去噪版本。即使这并不会导致方差增加，但低质量的样本使参数学习变得更加困难。
 - en: Why a high variance to *p(x₀=X₀)* is bad? Because *p(x₀=X₀)* is our measurement
     of how well our model explains the training data, in this case, how well it explains
     the training image *X₀*. If for the same image, our measurement sometimes reports
@@ -1415,299 +2016,436 @@
     number, then the optimizer, for example the Adam optimizer, is uncertain whether
     our current model can explain the training data well or not. This uncertainty
     is usually reflected by a very slow and even diverging training process.
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么对 *p(x₀=X₀)* 的高方差不好？因为 *p(x₀=X₀)* 是我们衡量模型解释训练数据的效果的指标，在这种情况下，就是衡量模型对训练图像
+    *X₀* 的解释效果。如果对于同一图像，我们的测量有时报告一个大的 *p(x₀=X₀)* 概率值，有时又报告一个小的概率值，那么优化器，例如 Adam 优化器，就不确定我们当前的模型是否能很好地解释训练数据。这种不确定性通常表现为非常慢甚至发散的训练过程。
 - en: Since sample-averaging is not a good way to to derive the analytical formula
     for the loss function *L*. Is there a better way? Once again, variational inference
     comes to the rescue.
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于样本平均法不是推导损失函数 *L* 的解析公式的好方法。是否有更好的方法？再次，变分推断提供了帮助。
 - en: 'To shorten the current article, I decided not to introduce variational inference
     and use it as known knowledge. For its introduction and two applications, please
     see: [Demystifying Tensorflow Time Series: Local Linear Trend](https://medium.com/towards-data-science/demystifying-tensorflow-time-series-local-linear-trend-9bec0802b24a)
     and [Variational Gaussian Process (VGP) — What To Do When Things Are Not Gaussian](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).'
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了缩短当前文章，我决定不介绍变分推断，而是将其作为已知知识使用。有关变分推断及其两个应用的介绍，请参见：[解密 Tensorflow 时间序列：局部线性趋势](https://medium.com/towards-data-science/demystifying-tensorflow-time-series-local-linear-trend-9bec0802b24a)
+    和 [变分高斯过程 (VGP) — 当事物不是高斯时该怎么做](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4)。
 - en: Variational inference to derive the analytical formula for the loss function
     L
+  id: totrans-278
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 变分推断用于推导损失函数 L 的解析公式
 - en: The key idea is to use another distribution to ***compute*** an otherwise intractable
     integration in an analytical way. I’ll use importance sampling inside the loss
     function to introduce the new distribution. Note the word “compute”, not “approximate”.
     So when I introduce the new distribution via importance sampling, it is an equal
     sign “=”, not an approximated sign “≈”.
+  id: totrans-279
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键思想是使用另一个分布来***计算***否则无法解析的积分。我将通过在损失函数中使用重要性采样来引入这个新分布。请注意“计算”一词，而不是“近似”。因此，当我通过重要性采样引入新分布时，它是一个等号“=”，而不是一个近似号“≈”。
 - en: '**Derivation by importance sampling**'
+  id: totrans-280
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**通过重要性采样推导**'
 - en: Importance sampling introduces a distribution that is easy to sample from to
     help solve an otherwise intractable integration.In our case, the intractable integration
     is with respect to the random variables *x₁* to *x_T* from the joint reverse process
     distribution *p(x₀, …, x_T)*.
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: 重要性采样引入了一个易于采样的分布，以帮助解决否则无法解析的积分。在我们的例子中，这个不可解析的积分是关于联合逆过程分布 *p(x₀, …, x_T)*
+    中的随机变量 *x₁* 到 *x_T*。
 - en: Note that in our case, *p(x₀, …, x_T)* is sample-able. As we described previously,
     sample-averaging is applicable to approximate the loss function analytically.
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，在我们的例子中，*p(x₀, …, x_T)* 是可以采样的。正如我们之前所描述的，样本平均法适用于在解析上近似损失函数。
 - en: The true motivation to introduce a new distribution, which is the joint forward
     process *q(x_1:T|x₀)* in our case is that it helps derive the analytical formula
     for *L.* And it encodes the “gradual-ness” requirements for in-between images
     from the reverse process. You won’t know what I’m talking about here. Both points
     will be clear later after we finished deriving the analytical formula of the loss
     function using importance sampling.
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: 引入新分布的真正动机，在我们的案例中是联合前向过程*q(x_1:T|x₀)*，是它有助于推导*L*的分析公式。它编码了反向过程中的“渐进性”要求。你可能不知道我在说什么。这两点将在我们完成使用重要性采样推导损失函数的分析公式后变得清晰。
 - en: In the loss *L*, the integration is with respect to the latent random variables
     *x₁* to *x_T*, shown again in line (2) below, so the new distribution we introduce
     must be over the same set of random variables. The distribution *q(x_1:T|x₀)*
     that we defined for the forward process fits this requirement. Line (3) introduces
     it into the formula of *L*.
+  id: totrans-284
   prefs: []
   type: TYPE_NORMAL
+  zh: 在损失*L*中，积分是相对于潜在随机变量*x₁*到*x_T*，如下方行（2）所示，因此我们引入的新分布必须覆盖相同的随机变量集。我们为前向过程定义的*q(x_1:T|x₀)*分布符合这一要求。行（3）将其引入到*L*的公式中。
 - en: '![](../Images/05f6c0b953758246a524699322e54093.png)'
+  id: totrans-285
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/05f6c0b953758246a524699322e54093.png)'
 - en: Derivation of the variational loss L*ᵥ*
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
+  zh: 变分损失L*ᵥ*的推导。
 - en: I would like to point out the the above derivation is valid for any probabilistic
     model with random variables *x₀* to *x_T* because it only uses properties from
     the probability theory. This properties are true for any valid probability distributions.
     Only starting from the next derivation over *Lᵥ*, when we start to factorize joint
     probabilities using our definition of the forward process and the reverse process,
     we start to rely on the specific model structures.
+  id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想指出，上述推导对任何具有随机变量*x₀*到*x_T*的概率模型都是有效的，因为它仅使用了概率理论中的属性。这些属性对任何有效的概率分布都成立。只有从接下来的对*Lᵥ*的推导开始，当我们开始使用前向过程和反向过程的定义来分解联合概率时，我们才开始依赖具体的模型结构。
 - en: Line (3) introduces the *q(x_1:T|x₀)/q(x_1:T|x₀)* quantify. This quantity evaluates
     to 1, so its addition does not change the integration. Note the equal sign in
     front of this line. The introduction of the *q(x_1:T|x₀)* distribution doesn’t
     change the value of *L* in anyway.
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（3）引入了*q(x_1:T|x₀)/q(x_1:T|x₀)*量。这个量的值为1，因此其添加不会改变积分。注意这一行前面的等号。引入*q(x_1:T|x₀)*分布不会以任何方式改变*L*的值。
 - en: Line (4) re-organizes the terms, turning the old integration into a new one
     with respect to *q(x_1:T|x₀).*
+  id: totrans-289
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（4）重新组织项，将旧的积分转变为相对于*q(x_1:T|x₀)*的新积分。
 - en: Line (5) represents the integration using the equivalent expectation notation.
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（5）表示使用等效期望符号的积分。
 - en: Line (6) uses Jensen’s inequality to push the log function into the inner expectation
     because expectation of logs is easier to compute than the log of expectations.
     Jensen’s inequality also turns the result we will eventually minimize into a new
     function that is larger than the original loss *L*. Importantly, this new function
     has its minima at the same location as the original *L*. So we can minimize the
     new loss instead of the old loss.
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（6）使用詹森不等式将对数函数推入内期望，因为对数的期望比期望的对数更易于计算。詹森不等式还将我们最终将最小化的结果转化为一个比原始损失*L*大的新函数。重要的是，这个新函数的最小值与原始*L*的最小值在同一位置。因此，我们可以最小化新损失而不是旧损失。
 - en: Line (7) replaces the expectation notations into their definitions, that is,
     integrations. And line (8) re-arranges terms.
+  id: totrans-292
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（7）将期望符号替换为其定义，即积分。行（8）重新排列项。
 - en: Line (9) applies the reverse chain rule in probability theory to derive the
     joint probability *q(x_0:T)*.
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（9）应用概率理论中的反向链式法则推导联合概率*q(x_0:T)*。
 - en: Line (10) represents the integration using the equivalent expectation notation.
     Note that we started with introducing the *q* distribution over the random variables
     *x₁* to *x_T*, and arrived at an expectation with respect to the random variables
     *x₀* to *x_T*. We give this new quantity the name *Lᵥ*, standing for *variational
     loss*.
+  id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: 行（10）表示使用等效期望符号的积分。注意我们从引入*q*分布在随机变量*x₁*到*x_T*的过程中开始，最终得到相对于随机变量*x₀*到*x_T*的期望。我们将这个新量命名为*Lᵥ*，代表*变分损失*。
 - en: New loss *Lᵥ* to derive analytical formula for, and to minimize
+  id: totrans-295
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 新的损失 *Lᵥ* 用于推导分析公式并进行最小化。
 - en: From now on, *Lᵥ* is the quantity to minimize. Our goal is updated to derive
     the analytical formula for the new loss *Lᵥ*. Looking at line (10) it is hard
     to believe that it is analytical. But in math, amazing things do happen. Please
     read on.
+  id: totrans-296
   prefs: []
   type: TYPE_NORMAL
+  zh: 从现在开始，*Lᵥ*是需要最小化的量。我们的目标是推导新损失*Lᵥ*的解析公式。查看第（10）行，很难相信它是解析的。但在数学中，惊人的事情确实会发生。请继续阅读。
 - en: Rewriting L*ᵥ* to get the important *Lₜ₋₁ terms*
+  id: totrans-297
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 重新编写*Lᵥ*以获得重要的*Lₜ₋₁*项
 - en: This is an important derivation, please pay attention.
+  id: totrans-298
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个重要的推导，请注意。
 - en: '![](../Images/1a38f78770800f30e91c9c5237ccb01b.png)'
+  id: totrans-299
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1a38f78770800f30e91c9c5237ccb01b.png)'
 - en: Manipulation of the variational loss *Lᵥ to expose the* Lₜ₋₁ terms
+  id: totrans-300
   prefs: []
   type: TYPE_NORMAL
+  zh: 操作变分损失*Lᵥ*以揭示*Lₜ₋₁*项
 - en: Line (1) shows the derivation of the new loss *Lᵥ*. *Lᵥ* mentions the joint
     probability density of the reverse process *p(x_0:T)* and the forward process
     *q(x_1:T|xₒ)* that we defined previously.
+  id: totrans-301
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（1）行展示了新损失*Lᵥ*的推导。*Lᵥ*提到我们之前定义的逆过程*p(x_0:T)*和正向过程*q(x_1:T|xₒ)*的联合概率密度。
 - en: Line (2) factorizes these two joint probability densities. It factorizes *p(x_0:T)*
     using the definition of the reverse process. And it factorizes *q(x_1:T|x₀)* using
     the first factorization of *q*.
+  id: totrans-302
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（2）行将这两个联合概率密度进行因式分解。它使用逆过程的定义对*p(x_0:T)*进行因式分解，并使用*q*的第一次因式分解对*q(x_1:T|x₀)*进行因式分解。
 - en: Starting from this line, we are relying on the model structure that we defined,
     that is, the structure in which random variable *xₜ₋₁* depends on *xₜ* in the
     reverse process *p*, and *xₜ* depends on *xₜ₋₁* in the forward process. This is
     not true for arbitrary probabilistic models.
+  id: totrans-303
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这一行开始，我们依赖于我们定义的模型结构，即在逆过程*p*中随机变量*xₜ₋₁*依赖于*xₜ*，在正向过程*中*xₜ*依赖于*xₜ₋₁*。这对于任意的概率模型不一定成立。
 - en: Line (3) again performs factorization. Note that the products start with *t=2*
     instead of *t=1* because of the factorization at this line.
+  id: totrans-304
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（3）行再次进行因式分解。注意，由于这一行的因式分解，乘积从*t=2*开始，而不是*t=1*。
 - en: Line (4) pushes the minus sign from outside of the expectation to inside of
     the expectation, and it uses the property that *log(a×b) = log(a) + log(b)*.
+  id: totrans-305
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（4）行将期望值外的减号移到期望值内，并使用*log(a×b) = log(a) + log(b)*的性质。
 - en: Line (5) introduces name *F_T* to represent the first term and *Fₒ* for the
     third term inside the expectation to shorten the derivations so they fit in one
     line.
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（5）行引入了名称*F_T*来表示第一个项，*Fₒ*表示期望值内的第三项，以缩短推导，使其适合一行。
 - en: 'Line (6) is the key line, it uses the Bayes rule to replace *q(xₜ₋₁|xₜ)*:'
+  id: totrans-307
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（6）行是关键行，它使用贝叶斯规则替换*q(xₜ₋₁|xₜ)*：
 - en: '![](../Images/c7fd9822768908ca6990133d059acd77.png)'
+  id: totrans-308
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c7fd9822768908ca6990133d059acd77.png)'
 - en: Note the addition of the dependency on *x₀* to turn *q(xₜ|xₜ₋₁)* into *q(xₜ|xₜ₋₁,
     x₀)*. This addition is redundant, it does not change the conditional probability
     because by definition, the random variable *xₜ* only depends on *xₜ₋₁.* See the
     definition for *xₜ*, shown again below. It only mentions *xₜ₋₁* and not *x₀*.
+  id: totrans-309
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意对*x₀*的依赖性，旨在将*q(xₜ|xₜ₋₁)*转变为*q(xₜ|xₜ₋₁, x₀)*。这个附加项是多余的，它不会改变条件概率，因为根据定义，随机变量*xₜ*仅依赖于*xₜ₋₁*。请参见下面重新显示的*xₜ*的定义。它仅提到*xₜ₋₁*而不是*x₀*。
 - en: '![](../Images/2ffc4fef46dab23ae953929b911b71fd.png)'
+  id: totrans-310
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2ffc4fef46dab23ae953929b911b71fd.png)'
 - en: The addition makes it easier for us to apply the Bayes rule because the Bayes
     rule mentions *q(xₜ|x₀)* and *q(xₜ₋₁|x₀)* which explicitly depends on *x₀.*
+  id: totrans-311
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个附加项使我们更容易应用贝叶斯规则，因为贝叶斯规则提到了*q(xₜ|x₀)*和*q(xₜ₋₁|x₀)*，这些都明确依赖于*x₀*。
 - en: Note the dependency on *x₀* in *q(xₜ₋₁|xₜ, x₀)* is not redundant. *x₀* appears
     here because of the Bayes rule.
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意在*q(xₜ₋₁|xₜ, x₀)*中对*x₀*的依赖不是多余的。*x₀*出现在这里是由于贝叶斯规则。
 - en: 'The reason for using the Bayes rule is to make the term *q(xₜ₋₁|xₜ, x₀)* popup.
     *q(xₜ₋₁|xₜ, x₀)* is a term from the reverse of the forward process.We now have
     a probability ratio between *p(xₜ₋₁|xₜ)* and *q(xₜ₋₁|xₜ, x₀)*, seen at line (6).
     *p(xₜ₋₁|xₜ)* and *q(xₜ₋₁|xₜ, x₀)* are both:'
+  id: totrans-313
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用贝叶斯规则的原因是为了使项*q(xₜ₋₁|xₜ, x₀)*弹出。*q(xₜ₋₁|xₜ, x₀)*是正向过程逆向过程中的一个项。我们现在有了*p(xₜ₋₁|xₜ)*和*q(xₜ₋₁|xₜ,
+    x₀)*之间的概率比，在第（6）行看到。*p(xₜ₋₁|xₜ)*和*q(xₜ₋₁|xₜ, x₀)*都是：
 - en: probability density function for the **same** random variable *xₜ₋₁* and
+  id: totrans-314
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**相同**随机变量*xₜ₋₁*的概率密度函数和'
 - en: they are **both multivariate Gaussian distributions** **with their analytical
     probability density available** — previously we have defined the analytical form
     for both *p(xₜ₋₁|xₜ)* in the reverse process, and *q(xₜ₋₁|xₜ, x₀)* in the reverse
     of the forward process.
+  id: totrans-315
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们是**多元高斯分布**，**其解析概率密度已知**——我们之前定义了逆过程中的*p(xₜ₋₁|xₜ)*和正向过程中的*q(xₜ₋₁|xₜ, x₀)*的解析形式。
 - en: These two properties make it possible to derive the KL-divergence between *p(xₜ₋₁|xₜ)*
     and *q(xₜ₋₁|xₜ, x₀)* analytically, detailed later.
+  id: totrans-316
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个性质使得可以从分析上推导 *p(xₜ₋₁|xₜ)* 和 *q(xₜ₋₁|xₜ, x₀)* 之间的 KL 散度，具体细节稍后说明。
 - en: Line (7) uses the property of log to split terms.
+  id: totrans-317
   prefs: []
   type: TYPE_NORMAL
+  zh: （7）行使用对数的性质来拆分项。
 - en: Line (8) uses the property of log to term to turn sum of logs into log of products.
+  id: totrans-318
   prefs: []
   type: TYPE_NORMAL
+  zh: （8）行使用对数的性质将对数的和转换为对数的乘积。
 - en: Line (9) realizes that in the log of products, the numerator and the denominator
     shares many terms, which can cancel, leaving just one term in the numerator and
     one term in the denominator.
+  id: totrans-319
   prefs: []
   type: TYPE_NORMAL
+  zh: （9）行意识到在乘积对数中，分子和分母共享许多项，这些项可以相互抵消，只剩下一个分子项和一个分母项。
 - en: 'Line (10) introduces the name *F₀* to denote the last term inside the expectation.
     And it introduces the name *Lₜ₋₁* for each of the negative log terms in the summation
     to make the derivations shorter. That is:'
+  id: totrans-320
   prefs: []
   type: TYPE_NORMAL
+  zh: （10）行引入了名称 *F₀* 来表示期望值内部的最后一项。并且引入了名称 *Lₜ₋₁* 来表示求和中的每个负对数项，以使推导更简短。即：
 - en: '![](../Images/b0c843d19c14557b5cb4c2b8a5091fc9.png)'
+  id: totrans-321
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b0c843d19c14557b5cb4c2b8a5091fc9.png)'
 - en: Obviously the *Lₜ₋₁* for *t=[2, T]* terms are important. Note that for *Lₜ₋₁,
     t* starts from 2 instead of 1 because of the split in line (3)*.* These *T-1*
     terms constitute most part in the whole loss function, leaving only other three
     terms behind. Let’s worry about those three terms later and focus on the *Lₜ₋₁*
     terms, as it will be the core for the final loss function that we minimize.
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，*t=[2, T]* 范围内的 *Lₜ₋₁* 项是重要的。注意，*Lₜ₋₁, t* 从 2 开始而不是 1，因为在（3）行中有拆分。这些 *T-1*
+    项构成了整个损失函数的大部分，只剩下另外三个项。我们稍后再担心这三个项，首先关注 *Lₜ₋₁* 项，因为它将成为我们最小化的最终损失函数的核心。
 - en: Deriving the analytical formula for *Lₜ₋₁*
+  id: totrans-323
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 推导 *Lₜ₋₁* 的解析公式
 - en: 'Let’s keep manipulating *Lₜ₋₁* for *t=[2, T]*:'
+  id: totrans-324
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们继续处理 *t=[2, T]* 的 *Lₜ₋₁*：
 - en: '![](../Images/c12812e911c2ac86b39d54d6945bdb82.png)'
+  id: totrans-325
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c12812e911c2ac86b39d54d6945bdb82.png)'
 - en: Manipulation of the *Lₜ₋₁ terms to expose their KL-divergence nature*
+  id: totrans-326
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理 *Lₜ₋₁* 项以揭示它们的 KL 散度性质
 - en: Line (1) is the definition of the *Lₜ₋₁* term. Line (2) pushed the minus sign
     into the *log*. The expectation is with respect to the random variable *x₀* to
     *x_T* from the *q* distribution.
+  id: totrans-327
   prefs: []
   type: TYPE_NORMAL
+  zh: （1）行是 *Lₜ₋₁* 项的定义。（2）行将负号推入了 *log* 中。期望值是相对于从 *q* 分布中得到的随机变量 *x₀* 到 *x_T*。
 - en: Line (3) replaces the expectation notation with its mathematical definition,
     which is an integration over the random variables *x₀* to *x_T*.
+  id: totrans-328
   prefs: []
   type: TYPE_NORMAL
+  zh: （3）行用其数学定义替代期望符号，这是一种对随机变量 *x₀* 到 *x_T* 的积分。
 - en: Line (4) factorizes the joint probability density *q* using the second factorization
     of the forward process.
+  id: totrans-329
   prefs: []
   type: TYPE_NORMAL
+  zh: （4）行通过使用前向过程的第二次分解来分解联合概率密度 *q*。
 - en: Note the second factorization is a product of many distributions, each mentions
     a single latent random variable. This is correct because given the observational
     random variable *x₀*, all latent random variable *x₁* to *x_T* are independent
     to each other.
+  id: totrans-330
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意第二次分解是许多分布的乘积，每个分布提及单个潜在随机变量。这是正确的，因为在给定观察随机变量 *x₀* 的情况下，所有潜在随机变量 *x₁* 到 *x_T*
+    彼此独立。
 - en: 'Line (5) organizes all the factors from the *q* distribution into four parts:'
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: （5）行将 *q* 分布中的所有因子组织成四部分：
 - en: '*q(x₀)*, which is a distribution about *x₀*, and its formula is unknown*.*'
+  id: totrans-332
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*q(x₀)*，这是关于 *x₀* 的分布，其公式未知。'
 - en: '*q(xₜ₋₁|x₀)*, which is a distribution about *xₜ₋₁.*'
+  id: totrans-333
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*q(xₜ₋₁|x₀)*，这是关于 *xₜ₋₁* 的分布。'
 - en: '*q(xₜ|x₀)*, which is a distribution about *xₜ*.'
+  id: totrans-334
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*q(xₜ|x₀)*，这是关于 *xₜ* 的分布。'
 - en: '*q(xₒₜₕₑᵣ)*, which is a distribution about the latent random variables other
     than *xₜ₋₁* and *xₜ.*'
+  id: totrans-335
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*q(xₒₜₕₑᵣ)*，这是关于除 *xₜ₋₁* 和 *xₜ* 外的其他潜在随机变量的分布。'
 - en: The reason for line(5)’s factorization is that the log function only mentions
     *x₀, xₜ₋₁* and *xₜ*.
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
+  zh: （5）行的分解原因是对数函数仅提及了 *x₀, xₜ₋₁* 和 *xₜ*。
 - en: Line (6) applies the chain rule to derive the joint probability *q(xₜ₋₁, xₜ|x₀)*.
+  id: totrans-337
   prefs: []
   type: TYPE_NORMAL
+  zh: （6）行应用链式法则推导联合概率 *q(xₜ₋₁, xₜ|x₀)*。
 - en: Line (7) is a key line. Using the reverse chain rule (which is applicable for
     any joint probability density), it replaces *q(xₜ₋₁, xₜ|x₀)* with two factors
     multiplied together *q*(*xₜ₋₁|xₜ, x₀)q(xₜ|x₀)* because
+  id: totrans-338
   prefs: []
   type: TYPE_NORMAL
+  zh: （7）行是关键行。使用反向链式法则（适用于任何联合概率密度），它将 *q(xₜ₋₁, xₜ|x₀)* 替换为两个相乘的因子 *q*(*xₜ₋₁|xₜ,
+    x₀)q(xₜ|x₀)*，因为
 - en: '![](../Images/72af7983d7061dcb6b69cc2061f0f2d4.png)'
+  id: totrans-339
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/72af7983d7061dcb6b69cc2061f0f2d4.png)'
 - en: 'Line (8) splits the integrating variables into 4 parts, corresponding to *x₀,
     xₜ₋₁, xₜ* and *xₒₜₕₑᵣ*. And it re-orders the terms so the inner integration is
     over the single random variable *xₜ₋₁*, and the outer integration is over the
@@ -1715,166 +2453,241 @@
     the original integration *dx_0:T* is just a shorthand for *dx₀ dx₁, … dx_T*. This
     line also uses Property 2 of the forward process that we derived earlier and the
     conditional rule in probability theory:'
+  id: totrans-340
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (8) 行将积分变量拆分为 4 部分，对应于 *x₀, xₜ₋₁, xₜ* 和 *xₒₜₕₑᵣ*。并且重新排列项，使得内部积分在单个随机变量 *xₜ₋₁*
+    上进行，外部积分在其余随机变量 *x₀, xₜ* 和 *xₒₜₕₑᵣ* 上进行。这一步是有效的，因为原始积分 *dx_0:T* 只是 *dx₀ dx₁, …
+    dx_T* 的简写。这一行还使用了我们之前推导出的前向过程的属性 2 以及概率论中的条件规则：
 - en: '![](../Images/c75b6f1da9a6acf42299c55174a80474.png)'
+  id: totrans-341
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c75b6f1da9a6acf42299c55174a80474.png)'
 - en: Line (9) recognizes that the inner integration is the KL-divergence between
     *q(xₜ₋₁|xₜ, x₀)* and *p*(*xₜ₋₁|xₜ)*. This KL-divergence is between two multivariate
     Gaussian distributions, whose analytical probability density functions are known.
     So we can write down the formula for this KL-divergence analytically. It is a
     function that mentions the random variable *xₜ* and *x₀* (note, it does not mention
     *xₜ₋₁*), as well as all model parameters.
+  id: totrans-342
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (9) 行认识到内部积分是 *q(xₜ₋₁|xₜ, x₀)* 和 *p*(*xₜ₋₁|xₜ)* 之间的 KL 散度。这个 KL 散度是在两个多变量高斯分布之间，其解析概率密度函数是已知的。因此，我们可以解析地写出这个
+    KL 散度的公式。它是一个涉及随机变量 *xₜ* 和 *x₀*（注意，它不涉及 *xₜ₋₁*）以及所有模型参数的函数。
 - en: Line (10) factorizes q(*xₜ, xₒₜₕₑᵣ, x₀)* into conditionals.
+  id: totrans-343
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (10) 行将 *q(xₜ, xₒₜₕₑᵣ, x₀)* 分解为条件分布。
 - en: Now we have the analytical expression for the KL-divergence between *q(xₜ₋₁|xₜ,
     x₀)* and *p*(*xₜ₋₁|xₜ)*, but this KL-divergence is inside an integration. How
     do we solve the integration analytically?
+  id: totrans-344
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们得到了 *q(xₜ₋₁|xₜ, x₀)* 和 *p*(*xₜ₋₁|xₜ)* 之间 KL 散度的解析表达式，但这个 KL 散度在一个积分中。我们如何用解析方法解决这个积分呢？
 - en: 'That’s right, we can use sample-averaging to approximate the expectation with
     respect to *x₀, xₜ* and *xₒₜₕₑᵣ*:'
+  id: totrans-345
   prefs: []
   type: TYPE_NORMAL
+  zh: 没错，我们可以使用样本平均法来近似 *x₀, xₜ* 和 *xₒₜₕₑᵣ* 的期望值：
 - en: Sample *x₀* by randomly picking natural images from the training set.
+  id: totrans-346
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从训练集中随机挑选自然图像来抽样 *x₀*。
 - en: Sample *xₜ* from the marginal *q(xₜ|x₀)* after plugging the sample for *x₀.*
+  id: totrans-347
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从边际分布 *q(xₜ|x₀)* 中抽取样本 *xₜ*，在插入 *x₀* 的样本之后。
 - en: No need to sample *xₒₜₕₑᵣ* as line(10) reveals that *xₒₜₕₑᵣ* is not mentioned
     in the KL-divergence. The values for random variables inside *xₒₜₕₑᵣ* won’t change
     the computed result of the KL-divergence.
+  id: totrans-348
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不需要抽取 *xₒₜₕₑᵣ*，因为第 (10) 行显示 *xₒₜₕₑᵣ* 在 KL 散度中没有提及。*xₒₜₕₑᵣ* 中的随机变量值不会改变 KL 散度的计算结果。
 - en: Phew, after so many steps, we finally arrived at the analytical expression for
     the *Lₜ₋₁* terms for *t* in *[2, T]* in our new loss function *Lᵥ* to minimize.
+  id: totrans-349
   prefs: []
   type: TYPE_NORMAL
+  zh: 唷，经过这么多步骤，我们终于得到了新损失函数 *Lᵥ* 中 *[2, T]* 范围内 *Lₜ₋₁* 项的解析表达式。
 - en: '**Sample-averaging to solve the integration**'
+  id: totrans-350
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**使用样本平均法解决积分问题**'
 - en: Let me paste the analytical formula for *Lₜ₋₁* here, and add the steps that
     use sample-averaging to approximate the integration analytically.
+  id: totrans-351
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我在这里粘贴 *Lₜ₋₁* 的解析公式，并添加使用样本平均法近似解析积分的步骤。
 - en: '![](../Images/a42c34d754c97e99401e238bd7b1ab2b.png)'
+  id: totrans-352
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a42c34d754c97e99401e238bd7b1ab2b.png)'
 - en: 'Line (1) is the analytical formula we derived just now for *Lₜ₋₁*. It has a
     multiple integration over the random variable *x₀,* x*ₜ* and x*ₒₜₕₑᵣ.* All three
     kinds are easy to deal with because:'
+  id: totrans-353
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (1) 行是我们刚才推导出的 *Lₜ₋₁* 的解析公式。它对随机变量 *x₀,* *xₜ* 和 *xₒₜₕₑᵣ* 进行了多重积分。这三种变量都很容易处理，因为：
 - en: First, sample *x₀* from our training set. Let’s call *x₀’s* sample *S₀*.
+  id: totrans-354
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，从我们的训练集中抽样 *x₀*。我们将 *x₀* 的样本称为 *S₀*。
 - en: Plug *S₀* in *q(xₜ|x₀)* to get *q(xₜ|x₀=S₀)*, which is now a fully specified
     multivariate Gaussian distribution ready to be sampled. Let’s call a x*ₜ*’s sample
     *Sₜ.*
+  id: totrans-355
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 *S₀* 代入 *q(xₜ|x₀)* 中，得到 *q(xₜ|x₀=S₀)*，这是一个完全指定的多变量高斯分布，准备进行抽样。我们将一个 *xₜ* 的样本称为
+    *Sₜ*。
 - en: Ignore the integration over x*ₒₜₕₑᵣ* because x*ₒₜₕₑᵣ* does not appear in the
     KL-divergence, their samples do not change the analytical form for the integration
     result.
+  id: totrans-356
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 忽略对 *xₒₜₕₑᵣ* 的积分，因为 *xₒₜₕₑᵣ* 不出现在 KL 散度中，它们的样本不会改变积分结果的解析形式。
 - en: Line (2) uses the above sampling scheme to sample *n* pair of (*S₀, Sₜ)*; plugs
     each pair into the KL-divergence formula to get a analytical term, and then averages
     these analytical terms.
+  id: totrans-357
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (2) 行使用上述抽样方案抽取 *n* 对 (*S₀, Sₜ*)；将每对样本代入 KL 散度公式中得到一个解析项，然后对这些解析项取平均。
 - en: You may ask, how many pair *n* we should sample? The more the better, but empirically,
     a single pair already gives us good results, so *n=1*.
+  id: totrans-358
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会问，我们应该采样多少对 *n*？越多越好，但根据经验，单对样本已经给我们带来了良好的结果，所以 *n=1*。
 - en: 'So line (3) uses the fact *n=1* to remove the summation from line (2) to arrive
     at this simple formula:'
+  id: totrans-359
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，行 (3) 使用了 *n=1* 的事实，从行 (2) 中去掉求和，以得出这个简单公式：
 - en: '![](../Images/74c9995b9ea731acd4807587e7899795.png)'
+  id: totrans-360
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/74c9995b9ea731acd4807587e7899795.png)'
 - en: '**Interpretation of the KL-divergence**'
+  id: totrans-361
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**KL 散度的解释**'
 - en: KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ)) establishes the regression target for the neural
     network
+  id: totrans-362
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ)) 为神经网络建立了回归目标。
 - en: After so much effort to derive the analytical formula for this KL-divergence,
     it is wise to look at it closely.
+  id: totrans-363
   prefs: []
   type: TYPE_NORMAL
+  zh: 在经过如此多的努力推导出这个 KL 散度的解析公式之后，仔细查看它是明智的。
 - en: 'For each time step *t* in *[2, T]*, this KL-divergence quantifies the distance
     between two distributions:'
+  id: totrans-364
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于时间步 *t* 在 *[2, T]* 中，这个 KL 散度量化了两个分布之间的距离：
 - en: '*q(xₜ₋₁|xₜ, x₀)* — the reverse of the forward process that we derived from
     the forward process by using the Bayes rule.'
+  id: totrans-365
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*q(xₜ₋₁|xₜ, x₀)* — 通过使用贝叶斯规则从前向过程推导出的反向过程。'
 - en: '*p(xₜ₋₁|xₜ)* — the reverse process that we used deep neural network to implement.'
+  id: totrans-366
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*p(xₜ₋₁|xₜ)* — 我们使用深度神经网络实现的反向过程。'
 - en: We are minimizing the KL-divergence between these two distributions. That is,
     we require these two distributions to be similar at each time step from *t=[2,T]*.
     Two distributions being similar makes sure that the images sampled from them are
     similar at corresponding time stamps.
+  id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在最小化这两个分布之间的 KL 散度。也就是说，我们要求这两个分布在每个时间步 *t=[2,T]* 上都相似。两个分布相似确保了从中采样的图像在对应时间戳上也相似。
 - en: 'Please note:'
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意：
 - en: the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is derived from the forward
     process, which has no trainable parameter, via the Bayes rule (Property 3 above).
     The Bayes rule does not introduce any trainable parameters, so the resulting reverse
     of the forward process does not have trainable parameters either.
+  id: totrans-369
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 反向过程 *q(xₜ₋₁|xₜ, x₀)* 是从前向过程推导出来的，前向过程没有可训练的参数，通过贝叶斯规则（上面属性 3）推导。贝叶斯规则没有引入任何可训练的参数，因此得到的反向过程也没有可训练的参数。
 - en: The reverse process *p(xₜ₋₁|xₜ)* is defined via neural networks, it contains
     all the trainable parameters, which are the weights in the networks, in our model.
+  id: totrans-370
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 反向过程 *p(xₜ₋₁|xₜ)* 是通过神经网络定义的，它包含了我们模型中的所有可训练参数，即网络中的权重。
 - en: So the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is static. By minimizing
     the KL-divergence, the stochastic gradient descent optimization algorithm adjusts
     the parameter values in the neural networks to change the reverse process *p(xₜ₋₁|xₜ)*
     to be as close as the *q(xₜ₋₁|xₜ, x₀)* as possible, so that the images the reverse
     process *p(xₜ₋₁|xₜ)* generates are similar to the images from the static forward
     process *q(xₜ₋₁|xₜ, x₀).*
+  id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，反向过程 *q(xₜ₋₁|xₜ, x₀)* 是静态的。通过最小化 KL 散度，随机梯度下降优化算法调整神经网络中的参数值，使得反向过程 *p(xₜ₋₁|xₜ)*
+    尽可能接近 *q(xₜ₋₁|xₜ, x₀)*，以便反向过程 *p(xₜ₋₁|xₜ)* 生成的图像与静态前向过程 *q(xₜ₋₁|xₜ, x₀)* 的图像相似。
 - en: In other words, the static reverse of the forward process provides ground truth
     images, or regression target, for the reverse process to regress its generated
     images to, at time steps *t=[2, T]*.
+  id: totrans-372
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，前向过程的静态反向过程为反向过程提供了真实图像或回归目标，以便在时间步 *t=[2, T]* 时，反向过程将生成的图像回归到这些真实图像。
 - en: 'Please appreciate a subtlety when interpreting the reverse of the forward process’s
     role as ground truth image, or regression target, provider:'
+  id: totrans-373
   prefs: []
   type: TYPE_NORMAL
+  zh: 在解释反向过程的角色作为真实图像或回归目标提供者时，请注意一个细微之处：
 - en: In a traditional regression model, such as linear regression, we minimize the
     distance between the model’s prediction and ground truth.
+  id: totrans-374
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在传统回归模型中，如线性回归，我们最小化模型预测与真实值之间的距离。
 - en: But here in the reverse process *p(xₜ₋₁|xₜ),* which is a probabilistic model,
     we don’t directly minimize the distance between the images generated from our
     model (the reverse process), and the images from the ground truth generator (the
@@ -1882,9 +2695,11 @@
     that mentions model’s prediction. Instead, we minimize the two mechanisms, namely,
     the reverse process and the reverse of the forward process, so the images generated
     from them are similar at each time step.
+  id: totrans-375
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 但在这里，逆过程 *p(xₜ₋₁|xₜ)*，作为一个概率模型，我们并不会直接最小化由我们的模型（逆过程）生成的图像与来自真实生成器（正向过程的逆）的图像之间的距离。KL散度损失函数中没有提到模型的预测部分。相反，我们最小化两个机制，即逆过程和正向过程的逆过程，以便在每个时间步生成的图像相似。
 - en: It is this per-step similarity requirement between *p(xₜ₋₁|xₜ)* and *q(xₜ₋₁|xₜ,
     x₀)* establishes the “gradual-ness” change of the images that are generated from
     the reverse process *p(xₜ₋₁|xₜ).* This is because the static reverse of the forward
@@ -1893,43 +2708,62 @@
     — they become clearer and clearer. By regressing to these clearer and clearer
     images, the learnt reverse process, with the time stamp *t* as its input, is forced
     to generate gradually changing images.
+  id: totrans-376
   prefs: []
   type: TYPE_NORMAL
+  zh: 正是这种每步相似性要求在 *p(xₜ₋₁|xₜ)* 和 *q(xₜ₋₁|xₜ, x₀)* 之间建立了由逆过程 *p(xₜ₋₁|xₜ)* 生成的图像的“渐变”变化。这是因为正向过程的静态逆过程逐步去除图像中的噪声，因此根据定义，正向过程的逆过程生成的图像具有逐渐去噪的效果——它们变得越来越清晰。通过回归到这些越来越清晰的图像，学习到的逆过程以时间戳
+    *t* 作为输入，被迫生成逐渐变化的图像。
 - en: This per-step similarity requirement restricts the neural network based reverse
     process to behave according to an already known and much simpler process — the
     reverse of the forward process. The per-step KL-divergence prevents the learnt
     neural network to do weird things, such as first generates an image of a cat at
     an early step, and then morphs the cat into human face.
+  id: totrans-377
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种每步相似性要求限制了基于神经网络的逆过程按照已知且更简单的过程——正向过程的逆过程行为。每步的KL散度防止了学习到的神经网络做出奇怪的行为，例如在早期步骤中首先生成一只猫的图像，然后将猫变成人的脸。
 - en: Pay attention to the timestamp range *t=[2, T]* here. This range means that
     the *Lₜ₋₁* terms only covers the timestamps from 2 to *T*, leaving the first step
     *t=1* unformulated. The timestamp *t=1*, being the step that finally generates
     the natural image, is of course important. Remember we left three terms from *Lᵥ*
     unanalyzed? Later we will see that the left terms covers the first timestamp.
+  id: totrans-378
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意这里的时间戳范围 *t=[2, T]*。这个范围意味着 *Lₜ₋₁* 项只覆盖时间戳从 2 到 *T*，将第一步 *t=1* 排除在外。时间戳 *t=1*
+    作为最终生成自然图像的步骤，当然是重要的。记得我们留下了三个 *Lᵥ* 项没有分析吗？稍后我们将看到这些留下的项涵盖了第一个时间戳。
 - en: Trajectory viewpoint
+  id: totrans-379
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 轨迹视角
 - en: Let’s use the illustration below to reveal what *KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ))*
     is trying to do from the trajectory point of view.
+  id: totrans-380
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用下面的插图揭示 *KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ))* 从轨迹角度上试图做什么。
 - en: '![](../Images/966f80abf799b2c9cf0bca152239f4be.png)'
+  id: totrans-381
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/966f80abf799b2c9cf0bca152239f4be.png)'
 - en: Hand drawn illustration by me
+  id: totrans-382
   prefs: []
   type: TYPE_NORMAL
+  zh: 手绘插图由我制作
 - en: The left subplot shows two natural images *X****₀*** and *X₁*. Starting from
     each natural image, if we apply the forward process multiple times, we get multiple
     trajectories. The black curves starting from *X****₀*** or *X₁* represent these
     trajectories. Timestamps go from left to right, so the images at the end of each
     trajectory are pure Gaussian noise already.
+  id: totrans-383
   prefs: []
   type: TYPE_NORMAL
+  zh: 左侧子图展示了两个自然图像 *X****₀*** 和 *X₁*。从每个自然图像出发，如果我们多次应用正向过程，我们会得到多个轨迹。起始于 *X****₀***
+    或 *X₁* 的黑色曲线代表了这些轨迹。时间戳从左到右，因此每条轨迹末尾的图像已经是纯高斯噪声。
 - en: In this completely unconditioned setting, at timestamp *t-1*, the random variable
     *xₜ₋₁* in our model can take values from any trajectory, no matter a trajectory
     starts from *X₀* or *X₁*. In other words, at timestamp *t-1*, our model needs
@@ -1937,8 +2771,10 @@
     process, starting from any natural image. Our model can do that by giving the
     random variable x*ₜ₋₁* a mean that is in the middle of all the trajectories and
     a large variance.
+  id: totrans-384
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种完全无条件的设置下，在时间戳*t-1*，我们模型中的随机变量*xₜ₋₁*可以取自任何轨迹，无论轨迹是从*X₀*还是*X₁*开始。换句话说，在时间戳*t-1*，我们的模型需要能够解释所有可能由前向过程生成的图像，这些图像可以从任何自然图像开始。我们的模型可以通过给随机变量*xₜ₋₁*一个在所有轨迹中间的均值和一个较大的方差来做到这一点。
 - en: The middle subplot shows the situation when *x₀* is given, which sets the random
     variable *x₀* to the natural image *X₀.* This setting restricts the model to only
     explain the trajectories that start from the natural image *X₀.* They are the
@@ -1947,185 +2783,265 @@
     can do that by offering a more precise mean and a smaller variance, since it does
     not need to cover the black trajectories starting from the natural images *X₁*
     anymore.
+  id: totrans-385
   prefs: []
   type: TYPE_NORMAL
+  zh: 中间的子图展示了当*x₀*给定时的情况，这将随机变量*x₀*设置为自然图像*X₀*。这种设置限制了模型仅需解释从自然图像*X₀*开始的轨迹。它们是中间子图中的红色轨迹。换句话说，我们的模型现在只需解释在时间戳*t-1*上的红色曲线中的可能值。模型可以通过提供更精确的均值和更小的方差来做到这一点，因为它不再需要覆盖从自然图像*X₁*开始的黑色轨迹。
 - en: The right subplot shows the situation when *x₀* is still conditioned to *X₀*,
     and additionally, *xₜ* is conditioned on a particular image *Sₜ*, which is sampled
     from the distribution *q(xₜ|x₀=X₀).* This second conditioning further restricts
     the model to only need to explain trajectories that go through *Sₜ* at timestamp
     *t.* These are the blue trajectories, which are all start from *X₁* and pass through
     *Sₜ.*
+  id: totrans-386
   prefs: []
   type: TYPE_NORMAL
+  zh: 右侧的子图展示了当*x₀*仍然被条件化为*X₀*时的情况，并且*xₜ*还受到特定图像*Sₜ*的条件限制，而该图像是从分布*q(xₜ|x₀=X₀)*中抽样得到的。这种第二次条件限制进一步约束了模型，只需解释在时间戳*t*通过*Sₜ*的轨迹。这些是蓝色轨迹，它们都从*X₁*开始，并经过*Sₜ*。
 - en: Under this condition, the possible values that the random variable *xₜ₋₁* can
     take at timestamp *t-1* is further restricted. This means that our model needs
     to predict a mean that is around middle of the blue trajectories, and predicts
     an even smaller covariance for *xₜ₋₁.*
+  id: totrans-387
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种条件下，随机变量*xₜ₋₁*在时间戳*t-1*上可以取的可能值被进一步限制。这意味着我们的模型需要预测一个接近蓝色轨迹中间的均值，并预测一个更小的*xₜ₋₁*的协方差。
 - en: 'But how “around the middle of the blue trajectories” should the predicted mean
     be, and how “even smaller” should the predicted covariance be for the random variable
     *xₜ₋₁*? These two target quantities are defined by the reverse of the forward
     process *q(xₜ₋₁|xₜ, x₀)*, with its definition shown here again:'
+  id: totrans-388
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，“接近蓝色轨迹中间”的预测均值应该是多少，以及“更小的”预测协方差应该是多少？这两个目标量由前向过程*q(xₜ₋₁|xₜ, x₀)*的反向定义决定，其定义在这里再次展示：
 - en: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
+  id: totrans-389
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
 - en: with
+  id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: with
 - en: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
+  id: totrans-391
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
 - en: By conditioning the model on *xₜ* and *x₀*, we are giving the model an easier
     task to learn at each training step because at each step, the model only needs
     to explain a single time step at a relatively small amount of trajectories.
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过对模型进行*xₜ*和*x₀*的条件化，我们使模型在每一步训练中都能更容易学习，因为每一步，模型只需要解释一个相对较少的轨迹中的单一时间步。
 - en: Optimization forces p to change by fixing q
+  id: totrans-393
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 优化通过固定q来迫使p发生变化
 - en: Since the the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* is fixed, that
     is, there is no trainable parameters in *q(xₜ₋₁|xₜ, x₀)*, the only way the optimization
     can do to make *q(xₜ₋₁|xₜ, x₀)* and the reverse process *p(xₜ₋₁|xₜ)* similar to
     each is to change the model parameters’ values to move *p* closer to *q*.
+  id: totrans-394
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于前向过程*q(xₜ₋₁|xₜ, x₀)*的反向是固定的，即*q(xₜ₋₁|xₜ, x₀)*中没有可训练的参数，优化的唯一方法是改变模型参数的值，使*p*更接近*q*。
 - en: One thing to note is that many other papers introduce a learnable *q* and move
     *q* closer to *p*. Not in this paper. In this paper, the *q* distribution introduced
     in importance sampling is fixed, and minimizing the KL-divergence between *q*
     and *p* moves *p*.
+  id: totrans-395
   prefs: []
   type: TYPE_NORMAL
+  zh: 值得注意的是，许多其他论文介绍了一个可学习的*q*并将*q*移近*p*。但在这篇论文中没有。在这篇论文中，在重要性采样中引入的*q*分布是固定的，最小化*q*和*p*之间的KL散度会移动*p*。
 - en: From *Lₜ₋₁* to the mean vector distance formula LMₜ₋₁
+  id: totrans-396
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 从*Lₜ₋₁*到均值向量距离公式LMₜ₋₁
 - en: 'Since the KL-divergence *Lₜ₋₁=KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ))* is analytical,
     let’s write it down. Recap the probability density functions for the two mentioned
     distributions in the KL-divergence are both multivariate Gausisans:'
+  id: totrans-397
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于KL散度 *Lₜ₋₁=KL(q(xₜ₋₁|xₜ, x₀) || p(xₜ₋₁|xₜ))* 是解析的，我们来写下来。回顾KL散度中提到的两个分布的概率密度函数都是多变量高斯分布：
 - en: '![](../Images/c0482e68220202fe6a630ea9de1b1089.png)'
+  id: totrans-398
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c0482e68220202fe6a630ea9de1b1089.png)'
 - en: 'The analytical formula for the KL-divergence between two multivariate Gaussians
     is:'
+  id: totrans-399
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个多变量高斯分布之间KL散度的解析公式是：
 - en: '![](../Images/fb444c7b909d27f2fd8ae2f7379d804c.png)'
+  id: totrans-400
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fb444c7b909d27f2fd8ae2f7379d804c.png)'
 - en: Analytical expression for the *Lₜ₋₁ term KL-divergence*
+  id: totrans-401
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Lₜ₋₁*项KL散度的解析表达式。'
 - en: The above formula has 4 terms.
+  id: totrans-402
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述公式有4项。
 - en: The first term at line (1) computes the log ratio between two covariance [matrix
     determinant](https://en.wikipedia.org/wiki/Determinant), denoted by the name “det”.
     This term mentions model parameters.
+  id: totrans-403
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一项在第（1）行计算两个协方差[矩阵行列式](https://en.wikipedia.org/wiki/Determinant)之间的对数比率，表示为“det”。此项提到模型参数。
 - en: The second term at line (2) reference *d*, the dimension of the random variable
     *xₜ₋₁*, which is the number of pixels in the images that we are working with.
     This term does not mention any model parameter.
+  id: totrans-404
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二项在第（2）行涉及* d*，即随机变量*xₜ₋₁*的维度，这也是我们处理的图像的像素数量。此项未提及任何模型参数。
 - en: The third term at line (3) computes the [trace](https://en.wikipedia.org/wiki/Trace_(linear_algebra)),
     denoted by the name “tr”, of two matrix product. This term mentions model parameters.
+  id: totrans-405
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三项在第（3）行计算两个矩阵乘积的[迹](https://en.wikipedia.org/wiki/Trace_(linear_algebra))，表示为“tr”。此项提到模型参数。
 - en: The fourth term at line (4) is the square of the vector *μₚ(xₜ, t)-μₜ(xₜ, x₀)*,
     scaled by the covariance matrix *Σₚ(xₜ, t)⁻¹*.
+  id: totrans-406
   prefs: []
   type: TYPE_NORMAL
+  zh: 第四项在第（4）行是向量*μₚ(xₜ, t)-μₜ(xₜ, x₀)*的平方，由协方差矩阵*Σₚ(xₜ, t)⁻¹*缩放。
 - en: I know, this formula is intimidating. It sucks to write it down as well. But
     my suggestion is to try to lean into the suck because the formula for the KL-divergence
     between two Gaussians will most certainly occur in variational machine learning,
     such as in [Variational Gaussian Process](/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4).
+  id: totrans-407
   prefs: []
   type: TYPE_NORMAL
+  zh: 我知道，这个公式看起来很吓人。写下来也很麻烦。但我的建议是尝试接受这种困难，因为两个高斯分布之间的KL散度公式很可能会出现在变分机器学习中，例如在[变分高斯过程](/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4)中。
 - en: 'Please remind ourselves that we need to minimize this term with respect to
     the model parameters, which appears in:'
+  id: totrans-408
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，我们需要最小化此项相对于模型参数的值，该项出现在：
 - en: '*μₚ(xₜ, t)*, the neural network that is responsible to predict the mean of
     the mean vector for the *p(xₜ₋₁|xₜ)* multivariate Gaussian distribution*.*'
+  id: totrans-409
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*μₚ(xₜ, t)*，负责预测* p(xₜ₋₁|xₜ)* 多变量高斯分布的均值向量的神经网络。'
 - en: '*Σₚ(xₜ, t)*, a second neural network that is responsible to predict the covariance
     matrix for the *p(xₜ₋₁|xₜ)* multivariate Gaussian distribution*.*'
+  id: totrans-410
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*Σₚ(xₜ, t)*，第二个神经网络负责预测*p(xₜ₋₁|xₜ)* 多变量高斯分布的协方差矩阵。'
 - en: Simplifying the model by setting the reverse process covariance matrix to constant
+  id: totrans-411
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过将反向过程协方差矩阵设置为常数来简化模型。
 - en: let’s simplify the model by removing the second neural network that predicts
     the covariance matrix. Mathematically, we set *Σₚ(xₜ, t)=*σ*ₜ²***I**, where one
     of the obvious choice for σ*ₜ² is:*
+  id: totrans-412
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过移除第二个预测协方差矩阵的神经网络来简化模型。数学上，我们设置*Σₚ(xₜ, t)=*σ*ₜ²***I**，其中σ*ₜ²的一个明显选择是：
 - en: '![](../Images/e0e4683ee82d733c3399139b49535ea6.png)'
+  id: totrans-413
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e0e4683ee82d733c3399139b49535ea6.png)'
 - en: The above makes the covariance matrix from the reverse process *p(xₜ₋₁|xₜ)*
     the same as the covariance matrix of the reverse of the forward process.
+  id: totrans-414
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述公式使反向过程*p(xₜ₋₁|xₜ)*的协方差矩阵与前向过程的反向协方差矩阵相同。
 - en: 'With this simplification, the first three terms become constants, let’s name
     their sum *C. C* does not mention model parameters anymore. They can be ignored
     during optimization. This left us with only the fourth term, let’s call it *LMₜ₋₁.*
     So we have:'
+  id: totrans-415
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过这种简化，前三项变成常数，我们称它们的和为*C。C*不再涉及模型参数。它们在优化过程中可以忽略。这使我们只剩下第四项，称为*LMₜ₋₁*。所以我们有：
 - en: '![](../Images/5652e6c1d7d3334d08510c19f54af2cb.png)'
+  id: totrans-416
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5652e6c1d7d3334d08510c19f54af2cb.png)'
 - en: 'with *LMₜ₋₁* being:'
+  id: totrans-417
   prefs: []
   type: TYPE_NORMAL
+  zh: '*LMₜ₋₁*定义为：'
 - en: '![](../Images/ab80f4f21169972269c7bfa11ca44dd9.png)'
+  id: totrans-418
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab80f4f21169972269c7bfa11ca44dd9.png)'
 - en: Moment matching to derive *LMₜ₋₁ terms, showing the target for neural network’s
     prediction*
+  id: totrans-419
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过矩匹配推导*LMₜ₋₁*项，展示神经网络预测的目标
 - en: Line (1) is the fourth term. Line(2) plugs in the simplified covariance matrix.
     The ||…||² in line (3) is the vector square operation, that is, vector dot product
     with itself. Line(4) swaps the two components in the square, which does not make
     a difference in result, just to be more consistent with the order of terms in
     the paper.
+  id: totrans-420
   prefs: []
   type: TYPE_NORMAL
+  zh: 第(1)行是第四项。第(2)行代入了简化的协方差矩阵。第(3)行中的||…||²是向量平方操作，即向量与自身的点积。第(4)行交换了平方中的两个分量，这对结果没有影响，仅仅是为了与论文中的项的顺序保持一致。
 - en: Note that I dropped the expectation with respect to *x₀* and *xₜ* in *LMₜ₋₁*
     to make the formula concise. But the computation is the same as before, we need
     to sample *x₀* and *xₜ*, plug the samples in *LSₜ₋₁* to approximate the integration
     analytically.
+  id: totrans-421
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，我省略了关于*x₀*和*xₜ*的期望，以使公式更简洁。但计算方法与之前相同，我们需要对*x₀*和*xₜ*进行采样，将样本代入*LSₜ₋₁*中，以便在分析上近似积分。
 - en: Interpreting the meaning of *LMₜ₋₁*
+  id: totrans-422
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 解释*LMₜ₋₁*的含义
 - en: '*LMₜ₋₁* quantifies the distance between the two vector *μₜ(xₜ, x₀)* and *μₚ(xₜ,
     t)*. This makes a lot of sense now:'
+  id: totrans-423
   prefs: []
   type: TYPE_NORMAL
+  zh: '*LMₜ₋₁*量化了两个向量*μₜ(xₜ, x₀)*和*μₚ(xₜ, t)*之间的距离。这现在非常有意义：'
 - en: Originally we want to minimize the distance between *q(xₜ₋₁|xₜ, x₀)* the reverse
     of the forward process and *p(xₜ₋₁|xₜ)*, which is our neural network implementation
     of the reverse process, at every time step *t* from 2 to *T*. In other words,
     we want to find a configuration (model parameter values) for the *p(xₜ₋₁|xₜ)*
     distribution such that these two distributions are similar to each other.
+  id: totrans-424
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们最初希望最小化逆向过程的*q(xₜ₋₁|xₜ, x₀)*与*p(xₜ₋₁|xₜ)*之间的距离，这就是我们神经网络实现的逆向过程，针对每个时间步*t*从2到*T*。换句话说，我们希望为*p(xₜ₋₁|xₜ)*分布找到一个配置（模型参数值），使得这两个分布相似。
 - en: These two distributions for the random variable *xₜ₋₁* are both multivariate
     Gaussian. A multivariate distribution is fully specified by it mean vector and
     covariance matrix. If *p(xₜ₋₁|xₜ)* needs to be similar to *q(xₜ₋₁|xₜ, x₀)*, their
@@ -2133,238 +3049,368 @@
     [moment matching](https://en.wikipedia.org/wiki/Method_of_moments_(statistics)),
     with the mean being the first momentum, and the covariance being the second. The
     letter “*M*” in *LMₜ₋₁* stands for moment matching.
+  id: totrans-425
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于随机变量*xₜ₋₁*，这两个分布都是多元高斯分布。多元分布完全由其均值向量和协方差矩阵指定。如果*p(xₜ₋₁|xₜ)*需要与*q(xₜ₋₁|xₜ,
+    x₀)*相似，它们的均值向量和协方差矩阵必须彼此相似。这被称为[矩匹配](https://en.wikipedia.org/wiki/Method_of_moments_(statistics))，其中均值是第一个矩，而协方差是第二个。*LMₜ₋₁*中的字母“M”代表矩匹配。
 - en: After we simplified the covariance matrix from the *p(xₜ₋₁|xₜ)* distribution
     to a quantity that is equal to the covariance matrix from the reverse of the forward
     process, the only thing that we can still change to make these two distributions
     similar or different is the mean vector. So we want to minimize the distance between
     the mean vectors from the *p(xₜ₋₁|xₜ)* and the *q(xₜ₋₁|xₜ, x₀)* distribution*.*
+  id: totrans-426
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在我们将*p(xₜ₋₁|xₜ)*分布的协方差矩阵简化为与正向过程的逆过程中的协方差矩阵相等的量后，唯一可以改变的以使这两个分布相似或不同的是均值向量。因此，我们希望最小化*p(xₜ₋₁|xₜ)*和*q(xₜ₋₁|xₜ,
+    x₀)*分布的均值向量之间的距离。
 - en: Since the mean vector from the *p(xₜ₋₁|xₜ)* distribution is predicted by our
     neural network, we can use optimization to move the values of the neural network
     weights around by minimizing *LMₜ₋₁*.
+  id: totrans-427
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于*p(xₜ₋₁|xₜ)*分布的均值向量是由我们的神经网络预测的，我们可以通过优化来调整神经网络权重的值，从而最小化*LMₜ₋₁*。
 - en: Simplifying LMₜ₋₁
+  id: totrans-428
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 简化LMₜ₋₁
 - en: 'It is possible to simplify *LMₜ₋₁*, a lot. In *LMₜ₋₁’s* formula, the *μₚ(xₜ,
     t)* part is from the neural network, it’s like a black box, there is little we
     can simplify. So let’s try to simplify the other term *μₜ(xₜ, x₀)*, which is the
     mean vector of the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)*, whose analytical
     probability density function is already derived:'
+  id: totrans-429
   prefs: []
   type: TYPE_NORMAL
+  zh: 对 *LMₜ₋₁* 可以进行大量简化。在 *LMₜ₋₁* 的公式中，*μₚ(xₜ, t)* 部分来自神经网络，像一个黑箱，我们几乎无法简化。因此，让我们尝试简化另一个项
+    *μₜ(xₜ, x₀)*，这是反向过程 *q(xₜ₋₁|xₜ, x₀)* 的均值向量，其解析概率密度函数已经推导出来：
 - en: '![](../Images/cda1013775bf0f7f06f7c1de795869ca.png)'
+  id: totrans-430
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cda1013775bf0f7f06f7c1de795869ca.png)'
 - en: 'with the covariance matrix:'
+  id: totrans-431
   prefs: []
   type: TYPE_NORMAL
+  zh: 与协方差矩阵：
 - en: '![](../Images/b0ee1dd80dc276c2815012bf46830be1.png)'
+  id: totrans-432
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b0ee1dd80dc276c2815012bf46830be1.png)'
 - en: 'and the mean vector:'
+  id: totrans-433
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及均值向量：
 - en: '![](../Images/bed207a2c2fdd4cd366d9101f8edc3c5.png)'
+  id: totrans-434
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bed207a2c2fdd4cd366d9101f8edc3c5.png)'
 - en: We only need to look at the mean vector *μₜ(xₜ, x₀)* because previous derivation
     of *LMₜ₋₁* reveals that we only need to use our neural network to predict a mean
     vector that is close to, or alternatively, match, *μₜ(xₜ, x₀).*
+  id: totrans-435
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只需要关注均值向量 *μₜ(xₜ, x₀)*，因为之前对 *LMₜ₋₁* 的推导揭示了我们只需要用我们的神经网络来预测接近或匹配 *μₜ(xₜ, x₀)*
+    的均值向量。
 - en: 'We also have the analytical probability density function for *q(xₜ|x₀)*:'
+  id: totrans-436
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们也有 *q(xₜ|x₀)* 的解析概率密度函数：
 - en: '![](../Images/35e662195db8c3e384a5da7bbf210edf.png)'
+  id: totrans-437
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/35e662195db8c3e384a5da7bbf210edf.png)'
 - en: 'Using the reparameterization trick, we can rewrite the above into:'
+  id: totrans-438
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用重参数化技巧，我们可以将上述内容重写为：
 - en: '![](../Images/3adf2b518341df7b5402099a17c7f0e4.png)'
+  id: totrans-439
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3adf2b518341df7b5402099a17c7f0e4.png)'
 - en: 'Re-organize the terms in the above equation to get the expression for *x₀*:'
+  id: totrans-440
   prefs: []
   type: TYPE_NORMAL
+  zh: 重新整理上述方程中的项以获得 *x₀* 的表达式：
 - en: '![](../Images/d4848794c2afa9179141f8eb3860616e.png)'
+  id: totrans-441
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d4848794c2afa9179141f8eb3860616e.png)'
 - en: 'Now plug in this expression of *x₀* into the formula for *μₜ(xₜ, x₀)*:'
+  id: totrans-442
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在将 *x₀* 的表达式代入 *μₜ(xₜ, x₀)* 的公式中：
 - en: '![](../Images/74fd7a4be0fbfe1f6e8f658bc148e959.png)'
+  id: totrans-443
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/74fd7a4be0fbfe1f6e8f658bc148e959.png)'
 - en: Derivation for the mean vector target
+  id: totrans-444
   prefs: []
   type: TYPE_NORMAL
+  zh: 均值向量目标的推导
 - en: Line (1) is a horrible formula, and line (2) introduces name *A* to represents
     the coefficient in front of *xₜ,* and the name *B* for *ϵₜ.* We will simplify
     *A* and *B* separately.
+  id: totrans-445
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（1）行是一个糟糕的公式，第（2）行引入了名称 *A* 来表示 *xₜ* 前的系数，名称 *B* 表示 *ϵₜ*。我们将分别简化 *A* 和 *B*。
 - en: '**Simplifying A**'
+  id: totrans-446
   prefs: []
   type: TYPE_NORMAL
+  zh: '**简化 A**'
 - en: '![](../Images/c21b238fe0e56f3302935170d05adeaf.png)'
+  id: totrans-447
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c21b238fe0e56f3302935170d05adeaf.png)'
 - en: '**Simplifying B**'
+  id: totrans-448
   prefs: []
   type: TYPE_NORMAL
+  zh: '**简化 B**'
 - en: '![](../Images/5ecdf2b090b6181887e3e10a0ee3f05b.png)'
+  id: totrans-449
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5ecdf2b090b6181887e3e10a0ee3f05b.png)'
 - en: 'Wow, what an amazing simplification! It gives us:'
+  id: totrans-450
   prefs: []
   type: TYPE_NORMAL
+  zh: 哇，多么惊人的简化！它给我们：
 - en: '![](../Images/ca3d8a2ccdf734a44cb48b31d8c0340b.png)'
+  id: totrans-451
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ca3d8a2ccdf734a44cb48b31d8c0340b.png)'
 - en: Simplified mean vector target for neural network to predict
+  id: totrans-452
   prefs: []
   type: TYPE_NORMAL
+  zh: 神经网络预测的简化均值向量目标
 - en: Repurposing neural network to predict noise for t≥2
+  id: totrans-453
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 神经网络重新利用预测噪声以适应 t≥2
 - en: 'Don’t panic, our goal has not changed — we still want our neural network to
     predict the mean vector of the *p(xₜ₋₁|xₜ)* distribution and the predicted mean
     vector should be as close to *μₜ(xₜ, x₀)* as possible. But upon seeing the simplified
     formula for *μₜ(xₜ, x₀)*, we realize:'
+  id: totrans-454
   prefs: []
   type: TYPE_NORMAL
+  zh: 不要惊慌，我们的目标没有改变——我们仍然希望我们的神经网络预测 *p(xₜ₋₁|xₜ)* 分布的均值向量，并且预测的均值向量应该尽可能接近 *μₜ(xₜ,
+    x₀)*。但看到 *μₜ(xₜ, x₀)* 的简化公式后，我们意识到：
 - en: '*xₜ* is known via sampling, there is no need to predict it.'
+  id: totrans-455
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*xₜ* 通过采样已知，不需要预测它。'
 - en: Given timestamp *t*, *βₜ* is constant, and so all the other quantities derived
     from *βₜ*, namely *αₜ* and *αₜ* bar*.*
+  id: totrans-456
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 给定时间戳 *t*，*βₜ* 是常数，因此所有从 *βₜ* 推导出的其他量，即 *αₜ* 和 *αₜ* bar* 也是常数。
 - en: The only part that needs predicting is the noise *ϵₜ.*
+  id: totrans-457
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 唯一需要预测的部分是噪声 *ϵₜ*。
 - en: 'We can drop the original neural network, and design a new one *ϵₚ(xₜ, t)* that
     predicts the noise *ϵₜ.* Then we can construct the desirable mean vector *μₚ(xₜ,
     t)* by:'
+  id: totrans-458
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以去掉原始神经网络，设计一个新的 *ϵₚ(xₜ, t)* 来预测噪声 *ϵₜ*。然后我们可以通过以下方式构造期望的均值向量 *μₚ(xₜ, t)*：
 - en: '![](../Images/472fca87a845bfa02b9af369d528a4d7.png)'
+  id: totrans-459
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/472fca87a845bfa02b9af369d528a4d7.png)'
 - en: Reconstruct mean prediction from noise prediction
+  id: totrans-460
   prefs: []
   type: TYPE_NORMAL
+  zh: 从噪声预测中重建均值预测
 - en: 'Plug this formulation into the definition of *LMₜ₋₁* give us:'
+  id: totrans-461
   prefs: []
   type: TYPE_NORMAL
+  zh: 将这个公式代入 *LMₜ₋₁* 的定义给我们：
 - en: '![](../Images/b539daa523fb57bc5f99b2cd5dfabc50.png)'
+  id: totrans-462
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b539daa523fb57bc5f99b2cd5dfabc50.png)'
 - en: Manipulation of *LMₜ₋₁ after neural network repurposed to predict noise*
+  id: totrans-463
   prefs: []
   type: TYPE_NORMAL
+  zh: '*LMₜ₋₁ 在神经网络重新利用预测噪声后的操作*'
 - en: Line (7) is the simplified objective function to minimize.
+  id: totrans-464
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（7）行是简化后的目标函数。
 - en: 'Note that this objective function mentions the noise *ϵₜ* twice. They are the
     same random variable, not two different noises. This is because they both come
     from the same source:'
+  id: totrans-465
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，这个目标函数提到了噪声 *ϵₜ* 两次。它们是相同的随机变量，而不是两个不同的噪声。这是因为它们都来自相同的源：
 - en: '![](../Images/3adf2b518341df7b5402099a17c7f0e4.png)'
+  id: totrans-466
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3adf2b518341df7b5402099a17c7f0e4.png)'
 - en: The first time we use the above to get *x₀* as an expression of *xₜ* and *ϵₜ.*
     The second time we use get *xₜ* as an expression of *x₀* and *ϵₜ.*
+  id: totrans-467
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一次我们使用上述方法将 *x₀* 表达为 *xₜ* 和 *ϵₜ* 的函数。第二次我们使用该方法将 *xₜ* 表达为 *x₀* 和 *ϵₜ* 的函数。
 - en: Is this objective function still analytical?
+  id: totrans-468
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 这个目标函数仍然是解析的吗？
 - en: Remember previously we drop the expectation with respect to *xₜ* and *x₀* for
     *LMₜ₋₁* to shorten our derivations*?* To answer the question if *LMₜ₋₁* is still
     analytical, we have to add them back, because only with those expectations, we
     are computing the correct *LMₜ₋₁*.
+  id: totrans-469
   prefs: []
   type: TYPE_NORMAL
+  zh: 还记得我们之前为了简化推导而省略了相对于 *xₜ* 和 *x₀* 的期望*吗*？为了回答 *LMₜ₋₁* 是否仍然是解析的，我们必须将它们添加回去，因为只有有了这些期望，我们才能计算正确的
+    *LMₜ₋₁*。
 - en: 'Note:'
+  id: totrans-470
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意：
 - en: In the final formula for *LMₜ₋₁,* there is no mention of *xₜ* anymore, x*ₜ*
     is expressed via *x₀* and the noise *ϵₜ.* So we don’t need to add the expectation
     with respect to *xₜ*. Instead, we need to add the expectation with respect to
     *ϵₜ*, which is a standard multivariate Gaussian, that is *ϵₜ~N(***0***,* **1***)*.
+  id: totrans-471
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 *LMₜ₋₁* 的最终公式中，不再提及 *xₜ*，*xₜ* 通过 *x₀* 和噪声 *ϵₜ* 表达。因此，我们不需要添加相对于 *xₜ* 的期望。而是需要添加相对于
+    *ϵₜ* 的期望，它是一个标准的多变量高斯分布，即 *ϵₜ~N(***0***, **1**)*。
 - en: There is the mention of timestamp *t*, which represents an integer between *2*
     and *T.* We need to add an expectation with respect to *t*, which comes from a
     uniform distribution*.*
+  id: totrans-472
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 提到了时间戳 *t*，它表示 *2* 和 *T* 之间的整数。我们需要添加相对于 *t* 的期望，它来自均匀分布*。*
 - en: There is the mention of *x₀*, which comes from the unknown data distribution
     *q(x₀).*
+  id: totrans-473
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 提到了 *x₀*，它来自未知的数据分布 *q(x₀)*。
 - en: 'So, the complete formula for *LMₜ₋₁* is:'
+  id: totrans-474
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，*LMₜ₋₁* 的完整公式是：
 - en: '![](../Images/2664c8c597f951f702b71fc19e1fe7ce.png)'
+  id: totrans-475
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2664c8c597f951f702b71fc19e1fe7ce.png)'
 - en: Complete loss *LMₜ₋₁ in expectation form, for t≥2*
+  id: totrans-476
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整的损失 *LMₜ₋₁* 的期望形式，对于 t≥2
 - en: where *Uni(2,T)* denotes the uniform distribution between 2 and *T*.
+  id: totrans-477
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *Uni(2,T)* 表示 2 和 *T* 之间的均匀分布。
 - en: This formula is analytical with sample-averaging. When we plug in the samples
     for *x₀, ϵₜ* and *t* into the above formula, we have an analytical expression,
     from which we can take gradient to perform stochastic gradient descent.
+  id: totrans-478
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个公式在样本平均的情况下是解析的。当我们将 *x₀*、*ϵₜ* 和 *t* 的样本代入上述公式时，我们会得到一个解析表达式，从中可以计算梯度以进行随机梯度下降。
 - en: 'The authors found by ignoring the constants in front of the vector distance
     erm, the results is better:'
+  id: totrans-479
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者发现通过忽略向量距离项前的常数，结果会更好：
 - en: '![](../Images/978439447861d772a8776f1e6bb08ab6.png)'
+  id: totrans-480
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/978439447861d772a8776f1e6bb08ab6.png)'
 - en: Simplfied *LMₜ₋₁ loss in expectation form, for t≥2*
+  id: totrans-481
   prefs: []
   type: TYPE_NORMAL
+  zh: 简化的 *LMₜ₋₁* 损失的期望形式，对于 t≥2
 - en: 'The following **Algorithm 0** minimizes the above loss:'
+  id: totrans-482
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下 **算法 0** 最小化上述损失：
 - en: '![](../Images/a010e852fc69b6b35060b6260ac59dc4.png)'
+  id: totrans-483
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a010e852fc69b6b35060b6260ac59dc4.png)'
 - en: From paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf),
     page 4
+  id: totrans-484
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源于论文 [去噪扩散概率模型](https://arxiv.org/pdf/2006.11239.pdf)，第 4 页
 - en: '**Algorithm 0** evaluates the expectation with respect to *x₀*, *xₜ* and *t*
     by sample-averaging. Note at line (3), the timestamp *t* is sampled from the uniform
     distribution *Uni(2, T)*.'
+  id: totrans-485
   prefs: []
   type: TYPE_NORMAL
+  zh: '**算法 0** 通过样本平均来评估相对于 *x₀*、*xₜ* 和 *t* 的期望。注意在第 (3) 行，时间戳 *t* 是从均匀分布 *Uni(2,
+    T)* 中抽样的。'
 - en: One notational difference between the paper and this article is that in the
     paper, the authors use *ϵ_θ* to denote the neural network, and I use *ϵₚ*. The
     authors used *ϵ_θ* to highlight that the neural network has parameter set *θ.*
@@ -2372,138 +3418,216 @@
     (notice the ▽ symbol that denotes derivative over vector) is computed on the loss
     function with respect to *θ.* I use *ϵₚ*, because there is no subscript *θ* in
     Unicode, and I don’t want to write two many *ϵ_θ* as they don’t look good.
+  id: totrans-486
   prefs: []
   type: TYPE_NORMAL
+  zh: 论文和这篇文章之间的一个符号差异是，在论文中，作者使用 *ϵ_θ* 来表示神经网络，而我使用 *ϵₚ*。作者使用 *ϵ_θ* 来强调神经网络具有参数集
+    *θ*。这在上述算法的第 (5) 行也明确显示，当计算相对于 *θ* 的损失函数的梯度时（注意 ▽ 符号表示对向量的导数）。我使用 *ϵₚ*，因为 Unicode
+    中没有下标 *θ*，我不想写太多 *ϵ_θ*，因为它们看起来不好。
 - en: Another notational difference is the paper uses *ϵ* to denote standard Gaussian
     noise, and I used *ϵₜ.* I use *ϵₜ* because I derived my formulas this way. But
     I think *ϵ* is better because the standard Gaussian noise does not depend on the
     timestamp *t.*
+  id: totrans-487
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个符号差异是论文中使用 *ϵ* 表示标准高斯噪声，而我使用了 *ϵₜ*。我使用 *ϵₜ* 是因为我以这种方式推导了我的公式。但我认为 *ϵ* 更好，因为标准高斯噪声不依赖于时间戳
+    *t*。
 - en: Remaining terms in Lᵥ
+  id: totrans-488
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '*Lᵥ* 中的剩余项'
 - en: 'The derivation for *Lᵥ* shows that it is an expectation with respect to *q(x_0:T)*
     and inside the expectation there are multiple terms, shown below:'
+  id: totrans-489
   prefs: []
   type: TYPE_NORMAL
+  zh: 对 *Lᵥ* 的推导表明，它是一个相对于 *q(x_0:T)* 的期望，并且在期望内部有多个项，如下所示：
 - en: '![](../Images/def6bb0d21928ea47be6838e0246fdcc.png)'
+  id: totrans-490
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/def6bb0d21928ea47be6838e0246fdcc.png)'
 - en: Variational loss *Lᵥ again*
+  id: totrans-491
   prefs: []
   type: TYPE_NORMAL
+  zh: 变分损失 *Lᵥ* 再次
 - en: 'Previously we only focused on the *Lₜ₋₁* terms for *t=[2, T]*. Now let’s talk
     about the remaining terms, which I extracted into the first expectation at line
     (2) using the linearity of expectation property: *E[a + b] = E[a] + E[b]*.'
+  id: totrans-492
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前我们只关注 *t=[2, T]* 的 *Lₜ₋₁* 项。现在让我们讨论其余的项，我使用期望的线性特性将其提取到第 (2) 行的第一个期望中：*E[a
+    + b] = E[a] + E[b]*。
 - en: '![](../Images/253a10912ecf6e20cd63ccc895a78225.png)'
+  id: totrans-493
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/253a10912ecf6e20cd63ccc895a78225.png)'
 - en: Manipulation of terms in *Lᵥ, excluding the Lₜ₋₁* terms
+  id: totrans-494
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 *Lᵥ* 中操作项，排除 *Lₜ₋₁* 项
 - en: Line (2) replaces the names *F_T* and *F₀* with their actual formula.
+  id: totrans-495
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (2) 行用实际公式替代了名称 *F_T* 和 *F₀*。
 - en: Line (3) and (4) re-writes the terms using the properties of *log*.
+  id: totrans-496
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (3) 行和 (4) 行利用 *log* 的属性重写了这些项。
 - en: Line (5) simplifies the second *log*.
+  id: totrans-497
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (5) 行简化了第二个 *log*。
 - en: Line (6) splits the expectation into 2 using the linearity of expectation property.
+  id: totrans-498
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (6) 行利用期望的线性特性将期望拆分为两个部分。
 - en: Line (7) gives the first expectation the name *L_T*, same as the paper.
+  id: totrans-499
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (7) 行将第一个期望命名为 *L_T*，与论文中的命名一致。
 - en: Line (8) gives the negative of the second expectation the name *L₀*, same as
     the paper.
+  id: totrans-500
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (8) 行将第二个期望的负值命名为 *L₀*，与论文中的命名一致。
 - en: The L_T term can be ignored in optimization, while the *L₀* needs special treatment.
     We will see why.
+  id: totrans-501
   prefs: []
   type: TYPE_NORMAL
+  zh: 在优化中可以忽略 *L_T* 项，而 *L₀* 需要特别处理。我们将会看到原因。
 - en: Ignoring the L_T term
+  id: totrans-502
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 忽略 *L_T* 项
 - en: 'Here is the formula for the L_T term again:'
+  id: totrans-503
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是 *L_T* 项的公式：
 - en: '![](../Images/f67eb4ef0bc161f62b0d31930c9d042e.png)'
+  id: totrans-504
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f67eb4ef0bc161f62b0d31930c9d042e.png)'
 - en: It mentions *q(X_T|x₀)*, which is the marginal probability density for the random
     variable *X_T*. The forward process doesn’t include any model parameters.
+  id: totrans-505
   prefs: []
   type: TYPE_NORMAL
+  zh: 它提到 *q(X_T|x₀)*，即随机变量 *X_T* 的边际概率密度。前向过程不包括任何模型参数。
 - en: It also mentions *p(X_T)* which is the reverse process at timestamp *T*. We
     defined *p(X_T) = N(***0***,* **1***).* So *p(X_T)* doesn’t mention model parameters
     either.
+  id: totrans-506
   prefs: []
   type: TYPE_NORMAL
+  zh: 它还提到 *p(X_T)*，即时间戳 *T* 的逆向过程。我们定义了 *p(X_T) = N(***0***,**1**)*。所以 *p(X_T)* 也不涉及模型参数。
 - en: This means the whole *L_T* term doesn’t mention model parameters, thus it can
     be ignored during parameter learning.
+  id: totrans-507
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着整个 *L_T* 项不提及模型参数，因此在参数学习过程中可以忽略。
 - en: Approximating the L₀ term
+  id: totrans-508
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 近似 *L₀* 项
 - en: 'The *L₀* term is:'
+  id: totrans-509
   prefs: []
   type: TYPE_NORMAL
+  zh: '*L₀* 项是：'
 - en: '![](../Images/43d0eef9fc3f11c17bfe8ac839029ecc.png)'
+  id: totrans-510
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/43d0eef9fc3f11c17bfe8ac839029ecc.png)'
 - en: This term is for the timestamp *t=1.* Let’s understand what this term is saying.
     We want to minimize this term, which translates to finding model parameters that
     maximize the log likelihood *log(p(x₀|x₁))*. In other words, we want *p(x₀|x₁)*
     to evaluate to a high probability number when a natural image is plugged into
     *x₀.*
+  id: totrans-511
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个项是针对时间戳 *t=1* 的。让我们理解一下这个项的含义。我们希望最小化这个项，这意味着找到使对数似然 *log(p(x₀|x₁))* 最大化的模型参数。换句话说，我们希望
+    *p(x₀|x₁)* 在自然图像插入 *x₀* 时评估为高概率值。
 - en: 'Alternatively, we can understand it by using the formula from *Lₜ₋₁*:'
+  id: totrans-512
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种理解方法是使用 *Lₜ₋₁* 的公式：
 - en: '![](../Images/e2bc68c81b4671ff5e77c07b0bb2b97c.png)'
+  id: totrans-513
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e2bc68c81b4671ff5e77c07b0bb2b97c.png)'
 - en: Line (1) is the definition of *Lₜ₋₁* that we derived previously. Note that when
     we derived it, *t* starts from 2 because when t≥2, all *Lₜ₋₁* terms are KL-divergences
     between two proper Gaussian distributions. This is not true for *t=1* as you will
     see at line (4).
+  id: totrans-514
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (1) 行是我们之前推导出的 *Lₜ₋₁* 的定义。注意，当我们推导它时，*t* 从 2 开始，因为当 t≥2 时，所有 *Lₜ₋₁* 项都是两个合适的高斯分布之间的
+    KL 散度。对于 *t=1*，这不成立，如第 (4) 行所示。
 - en: Line (2) sets *t=1* to derive *L₀*. And line (3) expands the KL notation to
     its mathematical definition.
+  id: totrans-515
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 (2) 行设置 *t=1* 以推导 *L₀*。第 (3) 行将 KL 符号展开为其数学定义。
 - en: Line (4) uses the property that *q(x₀|xₜ, x₀) = 1.* This line also reveals that
     when *t=1,* there is no KL anymore. The formula degrades to an integration of
     a *log*. That’s why we cannot handle *t=1* in *Lₜ₋₁.*
+  id: totrans-516
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（4）行使用了 *q(x₀|xₜ, x₀) = 1* 的性质。这一行还揭示了当 *t=1* 时，不再有 KL 散度。公式退化为一个 *log* 的积分。这就是为什么我们不能在
+    *Lₜ₋₁* 中处理 *t=1* 的原因。
 - en: Line (5) uses the property of log to simplify the formula.
+  id: totrans-517
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（5）行利用对数的性质简化了公式。
 - en: Line (6) replaces the integration using the expectation notation.
+  id: totrans-518
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（6）行用期望符号替代了积分。
 - en: Line (7) simplifies the two expectations over *x₀* into one expectation over
     *x₀ s*ince one expectation already removes the random variable *x₀.* The second
     expectation over *x₀* doesn’t change the result anymore. This line also reveals
     that the resulting quantity is indeed the *L₀* term*.*
+  id: totrans-519
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（7）行将两个关于 *x₀* 的期望简化为一个关于 *x₀* 的期望，因为一个期望已经去掉了随机变量 *x₀*。第二个关于 *x₀* 的期望不再改变结果。这一行还揭示了得到的量确实是
+    *L₀* 项。
 - en: '***L₀* needs to be minimized differently, it can’t fit into Algorithm 0**'
+  id: totrans-520
   prefs: []
   type: TYPE_NORMAL
+  zh: '***L₀* 需要以不同的方式最小化，它不能适应算法 0**'
 - en: Now we should understand that it is not that we cannot derive *L₀* from the
     *Lₜ₋₁* point of view. We can, but the derivation of *L₀* is not a KL-divergence
     between two proper multivariate Gaussian distributions, which means the analytical
@@ -2511,107 +3635,166 @@
     This means we need a different way to minimize *L₀*. In other words, the minimization
     of *L₀* doesn’t fit into Algorithm 0*.* Well, it doesn’t fit yet, later we will
     introduce an approximation to make it fit.
+  id: totrans-521
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们应该理解，并不是说我们不能从 *Lₜ₋₁* 的角度推导 *L₀*。我们可以，但 *L₀* 的推导不是两个适当的多元高斯分布之间的 KL 散度，这意味着
+    *L₀* 的解析公式不同于 *t≥2* 的 *Lₜ₋₁* 的解析公式。这意味着我们需要一种不同的方法来最小化 *L₀*。换句话说，*L₀* 的最小化不适合算法
+    0*。好吧，它还不适合，稍后我们将引入一个近似方法使其适合。
 - en: '***L₀* is optimizable**'
+  id: totrans-522
   prefs: []
   type: TYPE_NORMAL
+  zh: '***L₀* 是可优化的**'
 - en: 'Since we want to minimize*L₀***,** it is important that either:'
+  id: totrans-523
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们希望最小化 *L₀*，所以重要的是：
 - en: '*L₀* does not mention any model parameters so it can be ignored during the
     optimization. Or'
+  id: totrans-524
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*L₀* 没有提及任何模型参数，因此在优化过程中可以忽略。或者'
 - en: '*L₀* mentions model parameters and is analytical so its gradient can be taken
     for gradient descent.'
+  id: totrans-525
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*L₀* 提及了模型参数，并且是解析的，因此可以用于梯度下降的梯度计算。'
 - en: 'Since the previous loss function *LMₜ₋₁* only handles the case when *t≥2*,
     we hope that *L₀* falls into the second category above so some part of our loss
     function covers the case *t=1.* Indeed that’s the case:'
+  id: totrans-526
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于之前的损失函数 *LMₜ₋₁* 仅处理 *t≥2* 的情况，我们希望 *L₀* 落入上述第二类，以便我们损失函数的某部分涵盖 *t=1* 的情况。确实如此：
 - en: '![](../Images/39f23273319efb5f17788ee0e6e74c3a.png)'
+  id: totrans-527
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/39f23273319efb5f17788ee0e6e74c3a.png)'
 - en: Derivation showing *L₀ is analytical*
+  id: totrans-528
   prefs: []
   type: TYPE_NORMAL
+  zh: 显示 *L₀ 是解析的* 推导
 - en: Line (1) is the definition of *L₀.*
+  id: totrans-529
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（1）行是 *L₀* 的定义。
 - en: Line (2) plugs in the definition of *p(x₀|x₁)*, which is a multivariate Gaussian
     distribution with the neural network *µₚ(x₁, 1)* predicting its mean vector, and
     with its covariance matrix set to the constant 𝛼₁² **I**. I ignored the normalization
     term in front of the exponential, and used the proportional symbol “∝”.
+  id: totrans-530
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（2）行代入了 *p(x₀|x₁)* 的定义，它是一个多元高斯分布，神经网络 *µₚ(x₁, 1)* 预测其均值向量，协方差矩阵设置为常数 𝛼₁² **I**。我忽略了指数前的归一化项，并使用了比例符号
+    “∝”。
 - en: Line (3) and line (4) simplifies the formula.
+  id: totrans-531
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（3）行和第（4）行简化了公式。
 - en: Line (4) reveals that *L₀* mentions all the model parameters in *µₚ(x₁, 1)*
     and it is analytical after we sample *x₀* and *xₜ*. So *L₀* is optimizable.
+  id: totrans-532
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（4）行揭示了 *L₀* 提及了 *µₚ(x₁, 1)* 中的所有模型参数，并且在我们采样 *x₀* 和 *xₜ* 后是解析的。因此 *L₀* 是可优化的。
 - en: '**Minimizing an approximation of *L₀* inside Algorithm 0**'
+  id: totrans-533
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在算法 0 中最小化 *L₀* 的近似值**'
 - en: Line (4) from above also shows that to minimize *L₀*, the neural network *µₚ(x₁,
     1)* needs to predict a mean vector that is close to a natural image, say *X₀,*
     sampled for *x₀.*
+  id: totrans-534
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的第（4）行还表明，为了最小化 *L₀*，神经网络 *µₚ(x₁, 1)* 需要预测一个接近自然图像的均值向量，比如说 *X₀*，这是为 *x₀*
+    采样得到的。
 - en: Previously when we derive the analytical formula of *Lₜ₋₁* for *t≥2*, we arrived
     at the realization that we want our neural network *µₚ(xₜ, t)* to predict mean
     vectors that are close to the mean of the reverse of the forward process *µₜ(xₜ,
     x*₀*).*
+  id: totrans-535
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前当我们推导 *Lₜ₋₁* 的解析公式时，对于 *t≥2*，我们意识到我们希望神经网络 *µₚ(xₜ, t)* 预测接近于反向过程 *µₜ(xₜ, x*₀*)
+    的均值向量。
 - en: 'If we can:'
+  id: totrans-536
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们可以：
 - en: write down *µₜ(xₜ, x*₀*)* for *t=1*, that is *µ₁(x₁, x₀)* and,
+  id: totrans-537
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 写下 *µₜ(xₜ, x*₀*)* 对于 *t=1*，即 *µ₁(x₁, x₀)*，并且，
 - en: if *µ₁(x₁, x₀)* is close to the natural image sample *X₀*
+  id: totrans-538
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果 *µ₁(x₁, x₀)* 接近自然图像样本 *X₀*
 - en: then we can turn the original task of “minimizing the distance between between
     *µₚ(x₁, 1)* and *X₀*” to an approximation task of “minimizing the distance between
     between *µₚ(x₁, 1)* and *µ₁(x₁, x₀)*”. The benefit of the latter is that we can
     handle the case of *t=1* using Algorithm 0, the same way as for the cases of *t≥2*.
+  id: totrans-539
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们可以将“最小化 *µₚ(x₁, 1)* 和 *X₀* 之间的距离”这一原始任务转换为“最小化 *µₚ(x₁, 1)* 和 *µ₁(x₁, x₀)*
+    之间的距离”的近似任务。后者的好处是我们可以使用算法 0 处理 *t=1* 的情况，方式与 *t≥2* 的情况相同。
 - en: '**We can write down *µ₁(x₁, x₀)***'
+  id: totrans-540
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们可以写出 *µ₁(x₁, x₀)***'
 - en: '![](../Images/59adb39f6cefb7b8a443e9e48e962523.png)'
+  id: totrans-541
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/59adb39f6cefb7b8a443e9e48e962523.png)'
 - en: Note that we cannot set *t=1* into the first line above. This is because when
     *t=1*, quantities such as 𝛼*ₜ₋₁* bar is not defined. But we can set *t=1* into
     the second line. This is because the second line replaces *x₀* in the first line
     with an expression that only mentions *x₁*. And all quantities involving 𝛼*₁ and
     β₁* are defined.
+  id: totrans-542
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，我们不能将 *t=1* 代入上述第一行。这是因为当 *t=1* 时，如 𝛼*ₜ₋₁* bar 等量没有定义。但我们可以将 *t=1* 代入第二行。这是因为第二行将第一行中的
+    *x₀* 替换为仅提到 *x₁* 的表达式。而且所有涉及 𝛼*₁ 和 β₁* 的量都已定义。
 - en: 'Set *t=1* to derive:'
+  id: totrans-543
   prefs: []
   type: TYPE_NORMAL
+  zh: 设 *t=1* 推导：
 - en: '![](../Images/68db58f65ec8d51716fca74d16f41b66.png)'
+  id: totrans-544
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/68db58f65ec8d51716fca74d16f41b66.png)'
 - en: After plugging sample for *x₁* and *ϵ₁*, the above is a constant.
+  id: totrans-545
   prefs: []
   type: TYPE_NORMAL
+  zh: 在插入 *x₁* 和 *ϵ₁* 的样本后，上述为常数。
 - en: '**We know *µ₁(x₁, x₀)* must be close to the natural image *X₀***'
+  id: totrans-546
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们知道*µ₁(x₁, x₀)* 必须接近自然图像 *X₀***'
 - en: This is because *µ₁(x₁, x₀)* is the mean vector for the ending random variable
     *x₀* from the reverse of the forward process. So if we draw a sample for *x₀*
     from the reverse of the forward process, we should get an image that is close
@@ -2622,86 +3805,129 @@
     the exact starting image *in expectation*. But if we only sample a single image
     for *x₀* from the reverse of the forward process, that sample is not equal to
     *X₀.* That’s why we are approximating the *L₀* term*.*
+  id: totrans-547
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是因为 *µ₁(x₁, x₀)* 是反向过程中的结束随机变量 *x₀* 的均值向量。因此，如果我们从反向过程抽取 *x₀* 的样本，我们应该得到一个接近自然图像
+    *X₀* 的图像。这是反向过程定义的结果。实际上，如果我们从反向过程抽取许多 *x₀* 的图像并对所有这些采样图像取平均，则平均值应该恰好等于 *X₀*。换句话说，反向过程可以“期望”生成精确的起始图像。但如果我们仅从反向过程抽取一个
+    *x₀* 的样本，该样本不等于 *X₀*。这就是为什么我们对 *L₀* 项进行近似的原因。
 - en: 'Now we can use Algorithm 0 to handle all timestamps starting from *t=1*. Mathematically,
     we expand *LMₜ₋₁* which only covers the cases for *t≥2,* see the *t~Uni(2,T)*
     part under the expectation:'
+  id: totrans-548
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以使用算法 0 处理从 *t=1* 开始的所有时间戳。从数学上讲，我们扩展了 *LMₜ₋₁*，它仅涵盖 *t≥2* 的情况，请参见期望下的 *t~Uni(2,T)*
+    部分：
 - en: '![](../Images/d28699510c2428896f236f2489794134.png)'
+  id: totrans-549
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d28699510c2428896f236f2489794134.png)'
 - en: Simplified loss function, for t≥2
+  id: totrans-550
   prefs: []
   type: TYPE_NORMAL
+  zh: 简化的损失函数，对于 *t≥2*
 - en: 'to cover the case for *t=1* as well, see the *t~Uni(1,T)* part under the expectation:'
+  id: totrans-551
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了涵盖 *t=1* 的情况，请参见期望下的 *t~Uni(1,T)* 部分：
 - en: '![](../Images/e5792b681092927433b69d91d83da940.png)'
+  id: totrans-552
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e5792b681092927433b69d91d83da940.png)'
 - en: Simplified loss function, for t≥1
+  id: totrans-553
   prefs: []
   type: TYPE_NORMAL
+  zh: 简化的损失函数，对于 *t≥1*
 - en: Final loss and algorithm 1 from the paper
+  id: totrans-554
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 最终损失和论文中的算法 1
 - en: '*Lₛᵢₘₚₗₑ* is the final loss function, and it covers all timestamps from *1*
     to *T.* Algorithm 1 from the paper, copied below, minimizes *Lₛᵢₘₚₗₑ*:'
+  id: totrans-555
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Lₛᵢₘₚₗₑ* 是最终的损失函数，它涵盖了从 *1* 到 *T* 的所有时间戳。下文中复制的论文算法 1 最小化 *Lₛᵢₘₚₗₑ*：'
 - en: '![](../Images/36974a4c9c548c21cf9bfb45cf81f5cb.png)'
+  id: totrans-556
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/36974a4c9c548c21cf9bfb45cf81f5cb.png)'
 - en: From paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf),
     page 4
+  id: totrans-557
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自论文 [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)，第
+    4 页
 - en: We happily notice that at line (3), the timestamp *t* is sampled from the uniform
     distribution *Uni(1, T)* covering all cases *t≥1* because of the approximation
     for the *L*₀ term.
+  id: totrans-558
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们高兴地注意到，在第（3）行中，时间戳 *t* 是从均匀分布 *Uni(1, T)* 中采样的，这覆盖了所有 *t≥1* 的情况，这是因为对 *L*₀
+    项的近似。
 - en: No concern on high variance in sample-averaging Lₛᵢₘₚₗₑ?
+  id: totrans-559
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对于样本平均的 Lₛᵢₘₚₗₑ 高方差没有问题吗？
 - en: Previously I said that we can use sample-averaging to compute the analytical
     formula for expectation of the negative log likelihood *L* with respect to all
     the latent random variable *x₁* to *x_T*. But this results in high variance in
     the computed expectation if we can only afford to draw one sample per random variable
     for practical computation reason.
+  id: totrans-560
   prefs: []
   type: TYPE_NORMAL
+  zh: 我之前提到，我们可以使用样本平均来计算负对数似然 *L* 相对于所有潜在随机变量 *x₁* 到 *x_T* 的解析公式。但如果我们在实际计算中只能为每个随机变量绘制一个样本，那么计算出的期望会有很高的方差。
 - en: Why we have no problem to use sample-averaging to compute the analytical formula
     *Lₛᵢₘₚₗₑ* and drawing a single sample per random variable?
+  id: totrans-561
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么我们可以毫无问题地使用样本平均来计算解析公式 *Lₛᵢₘₚₗₑ* 并且每个随机变量只绘制一个样本？
 - en: The main reason is that in the final loss function *Lₛᵢₘₚₗₑ*, there are only
     3 random variables to sample, compared to the *T+1=1000+1* random variables to
     sample in the case of expectation of the negative log likelihood. So the variance
     in the final loss function’s case should be much smaller than the case of expected
     negative log likelihood.
+  id: totrans-562
   prefs: []
   type: TYPE_NORMAL
+  zh: 主要原因是，在最终的损失函数 *Lₛᵢₘₚₗₑ* 中，只有 3 个随机变量需要采样，而在负对数似然的期望情况下则需要采样 *T+1=1000+1* 个随机变量。因此，最终损失函数的方差应该比负对数似然期望情况中的方差小得多。
 - en: To make things even better, now the samples are not drawn through uncalibrated
     neural networks any more, they all come from standard distributions whose behaviours
     do not depend on how much we’ve trained our neural networks. This results in a
     more predictable parameter learning experience.
+  id: totrans-563
   prefs: []
   type: TYPE_NORMAL
+  zh: 更进一步，现在样本不再通过未经校准的神经网络绘制，它们都来自标准分布，其行为不依赖于我们训练神经网络的程度。这使得参数学习过程更加可预测。
 - en: 'But just for fun, let’s consider the alternative to sample-averaging. That
     is, to compute the expectation in the final loss function *Lₛᵢₘₚₗₑ* analytically:'
+  id: totrans-564
   prefs: []
   type: TYPE_NORMAL
+  zh: 但为了有趣的考虑，咱们来看看样本平均的替代方法。也就是，解析计算最终损失函数 *Lₛᵢₘₚₗₑ* 的期望：
 - en: For the random variable *x₀*, there is no way to compute the expectation with
     respect to it analytically because the data distribution *q(x₀)* is unknown. So
     sample-averaging is the only option.
+  id: totrans-565
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于随机变量 *x₀*，由于数据分布 *q(x₀)* 是未知的，因此没有办法从解析上计算其期望。因此，样本平均是唯一的选择。
 - en: For the random variable *t* that comes from an uniform distribution. It’s expectation
     is just take all possible values of *t*, compute the formula inside the expectation
     and average them. This is equivalent to sample-averaging in our context of stochastic
@@ -2711,9 +3937,13 @@
     to computing the expectation over *t* asymptotically. For more details, please
     see the proof in [Can We Use Stochastic Gradient Descent (SGD) on a Linear Regression
     Model?](https://medium.com/towards-data-science/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33)
+  id: totrans-566
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于来自均匀分布的随机变量 *t*，它的期望就是取所有可能的 *t* 值，计算期望内的公式并求平均。在我们随机梯度下降的上下文中，这等同于样本平均。尽管在随机梯度下降中，算法
+    1 只处理一个项，而不是将所有这些项相加然后除以 *T*，该算法会重复进行直到收敛。这相当于在 *t* 上逐渐计算期望。更多细节，请参见 [我们能在线性回归模型上使用随机梯度下降
+    (SGD) 吗？](https://medium.com/towards-data-science/can-we-use-stochastic-gradient-descent-sgd-on-a-linear-regression-model-e50327b07d33)
 - en: For the standard multivariate Gaussian random variable *ϵₜ*, we can use Gaussian
     quadrature to approximate the expectation analytically. For more details about
     Gaussian quadrature, please see [Variational Gaussian Process (VGP) — What To
@@ -2723,164 +3953,245 @@
     in the images that we want to generation, so *d* is a large integer. And applying
     Gaussian quadrature is not practical. For more details about why it is not practical,
     please see the Appendix of the above link.
+  id: totrans-567
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于标准的多元高斯随机变量 *ϵₜ*，我们可以使用高斯求积法对期望进行解析近似。有关高斯求积法的更多详细信息，请参见 [变分高斯过程（VGP）——当事情不是高斯时该怎么办](https://medium.com/towards-data-science/variational-gaussian-process-what-to-do-when-things-are-not-gaussian-41197039f3d4)。但高斯求积法在低维情况下效果更好。在我们的情况下，*ϵₜ*
+    是一个 *d* 维随机变量，其中 *d* 是我们想要生成的图像的像素数量，因此 *d* 是一个大整数。应用高斯求积法并不实际。有关为什么不实际的更多详细信息，请参见上述链接的附录。
 - en: Given the above, using sample-averaging to approximate the expectation in *Lₛᵢₘₚₗₑ*
     is a sensible choice.
+  id: totrans-568
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于以上情况，使用样本平均法来近似 *Lₛᵢₘₚₗₑ* 中的期望是一个明智的选择。
 - en: Conclusions
+  id: totrans-569
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: This article established clear motivation why the denoising diffusion probabilistic
     model is designed in that way by reasoning about the relationships among the forward
     process *q(xₜ|xₜ₋₁)*, the reverse of the forward process *q(xₜ₋₁|xₜ, x₀)* and
     the reverse process *p(xₜ₋₁|xₜ)*. It also provides detailed derivation of the
     loss function used for model parameter learning.
+  id: totrans-570
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章通过推理*q(xₜ|xₜ₋₁)*、*q(xₜ₋₁|xₜ, x₀)*和*p(xₜ₋₁|xₜ)*之间的关系，明确了去噪扩散概率模型设计的动机。它还提供了用于模型参数学习的损失函数的详细推导。
 - en: Support me
+  id: totrans-571
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 支持我
 - en: If you like my story, please consider becoming my referred member. I receive
     a small fraction of your subscription fee, that supports me greatly.
+  id: totrans-572
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你喜欢我的故事，请考虑成为我的推荐会员。我将收到你订阅费用的一小部分，这对我帮助很大。
 - en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----445c1bdc5756--------------------------------)
     [## Join Medium with my referral link - Wei Yi'
+  id: totrans-573
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----445c1bdc5756--------------------------------)
+    [## 使用我的推荐链接加入 Medium - Wei Yi'
 - en: Read every story from Wei Yi (and thousands of other writers on Medium). I have
     fun spending thousands of hours writing…
+  id: totrans-574
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读 Wei Yi 的每一个故事（以及 Medium 上成千上万其他作家的作品）。我很享受花费数千小时来写作...
 - en: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----445c1bdc5756--------------------------------)
+  id: totrans-575
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----445c1bdc5756--------------------------------)
 - en: Appendix
+  id: totrans-576
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 附录
 - en: Where does the reverse of the forward process start and end?
+  id: totrans-577
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 前向过程的反向过程从哪里开始和结束？
 - en: '**Where does the reverse of the forward process start?** To ask the question
     differently: if we sample an image a the beginning of the reverse of the forward
     process *q(xₜ₋₁|xₜ, x₀)*, that is, when *t* is a large number, say *t=T*, where
     *T=1000*, what does the image look like? Does it look like pure noise, or a natural
     image?'
+  id: totrans-578
   prefs: []
   type: TYPE_NORMAL
+  zh: '**前向过程的反向过程从哪里开始？** 换句话说，如果我们在前向过程的反向过程 *q(xₜ₋₁|xₜ, x₀)* 开始时取样，例如当 *t* 是一个大数，比如
+    *t=T*，其中 *T=1000*，那么图像是什么样的？它看起来像纯噪声，还是自然图像？'
 - en: 'To see how a sample looks like, we need the probability density function of
     the reverse of the forward process. We’ve defined the analytical expression of
     that probability density function shown here again:'
+  id: totrans-579
   prefs: []
   type: TYPE_NORMAL
+  zh: 要查看样本的样子，我们需要前向过程反向的概率密度函数。我们再次定义了该概率密度函数的解析表达式：
 - en: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
+  id: totrans-580
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/009a4a36a95c74fd81560877b47787f9.png)'
 - en: Reverse of the forward process conditional
+  id: totrans-581
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向过程条件的反向过程
 - en: with
+  id: totrans-582
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过
 - en: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
+  id: totrans-583
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8929bf8b65d95e17f5177e5681cbc653.png)'
 - en: Fixed mean vector and covariance matrix for the reverse of the forward process
     conditional
+  id: totrans-584
   prefs: []
   type: TYPE_NORMAL
+  zh: 固定前向过程条件的均值向量和协方差矩阵
 - en: To reason about how a sample *xₜ₋₁* at timestamp *t=T* looks like, it is sufficient
     to work out what the mean vector and the covariance matrix of *q(xₜ₋₁|xₜ, x₀)*
     looks like at timestamp *t=T*. This is because the mean vector and the covariance
     matrix fully determines the shape of a multivariate Gaussian distribution, and
     the shape of the distribution governs how a sample from it looks like.
+  id: totrans-585
   prefs: []
   type: TYPE_NORMAL
+  zh: 要推断时间戳*t=T*时样本*xₜ₋₁*的情况，只需计算在时间戳*t=T*时*q(xₜ₋₁|xₜ, x₀)*的均值向量和协方差矩阵。这是因为均值向量和协方差矩阵完全决定了多元高斯分布的形状，而分布的形状决定了从中抽取的样本的样貌。
 - en: Let’s work out the covariance matrix first because that’s easier.
+  id: totrans-586
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先计算协方差矩阵，因为这更简单。
 - en: '![](../Images/f48a1e889ed1c2a2cbb4bbc8e08af991.png)'
+  id: totrans-587
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f48a1e889ed1c2a2cbb4bbc8e08af991.png)'
 - en: Covariance matrix of the reverse of the forward process at timestamp t=T
+  id: totrans-588
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间戳*t=T*时前向过程反向的协方差矩阵
 - en: Line (1) is the covariance matrix term in the definition of the reverse of the
     forward process *q(xₜ₋₁|xₜ, x₀).*
+  id: totrans-589
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（1）行是前向过程反向定义中协方差矩阵的项*q(xₜ₋₁|xₜ, x₀)*。
 - en: Line (2) sets the timestamp *t=T*, representing the starting point of the reverse
     of the forward process.
+  id: totrans-590
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（2）行设置时间戳*t=T*，代表前向过程反向的起始点。
 - en: 'Line (3) plugs in approximate values in the fraction. To see why, we need to
     remind ourselves with the following definitions and also note that the schedule
     of *βₜ’s* confines its values from *β₁=10⁻⁴* to *β_T=10⁻²* :'
+  id: totrans-591
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（3）行将近似值代入分数中。要理解原因，我们需要回顾以下定义，并注意到*βₜ*的调度限制了其值在*β₁=10⁻⁴*到*β_T=10⁻²*之间：
 - en: '![](../Images/55be80b21f8b578f5010295f51106eb0.png)'
+  id: totrans-592
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/55be80b21f8b578f5010295f51106eb0.png)'
 - en: So when *t=T* and *T* is large, *α_T* bar is very small, close to 0 (well not
     too close, *α_T* bar is 0.0060 and *α_T-1* bar is 0.0063).
+  id: totrans-593
   prefs: []
   type: TYPE_NORMAL
+  zh: 当*t=T*且*T*较大时，*α_T*的平均值非常小，接近0（实际上并不太接近，*α_T*的平均值是0.0060，而*α_T-1*的平均值是0.0063）。
 - en: Line (4) simplifies the fraction to 1.
+  id: totrans-594
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（4）行将分数简化为1。
 - en: Line (5) plugs in the scheduled value for *β_T.*
+  id: totrans-595
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（5）行代入了*β_T*的计划值。
 - en: From line (5) we see that the covariance matrix of the probability density function
     for the reverse of the forward process at timestamp *t=T* is the diagonal matrix
     *0.01****I*** , indicating that that variance of the sample is not big, but not
     too small either.
+  id: totrans-596
   prefs: []
   type: TYPE_NORMAL
+  zh: 从第（5）行我们看到，时间戳*t=T*时前向过程反向概率密度函数的协方差矩阵是对角矩阵*0.01****I***，这表明样本的方差不大，但也不小。
 - en: Now let’s look at the mean vector of the probability density function.
+  id: totrans-597
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们看一下概率密度函数的均值向量。
 - en: '![](../Images/e6b09747a9faa70236e1d0255b9681e8.png)'
+  id: totrans-598
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e6b09747a9faa70236e1d0255b9681e8.png)'
 - en: Mean vector of the reverse of the forward process at timestamp t=T
+  id: totrans-599
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间戳*t=T*时前向过程反向的均值向量
 - en: If we ignore the very small contribution from *0.0008x₀*, the mean vector of
     the reverse of the forward process’ Gaussian probability density function at timestamp
     *t=T* is almost *x_T*. But what does *x_T* look like?
+  id: totrans-600
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果忽略*0.0008x₀*的微小贡献，则时间戳*t=T*时前向过程高斯概率密度函数的反向均值向量几乎是*x_T*。但*x_T*的样子是什么呢？
 - en: 'Well, we can sample from the marginal probability density function *q(x_T|x₀),*
     which is defined in Property 2 of the forward process. Looking at the definition
     of *q(xₜ|x₀)*, shown here again:'
+  id: totrans-601
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，我们可以从边际概率密度函数*q(x_T|x₀)*中抽样，该函数在前向过程的性质2中定义。再次查看*q(xₜ|x₀)*的定义：
 - en: '![](../Images/84b14f64658cf075986d5c8a18ce99f4.png)'
+  id: totrans-602
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/84b14f64658cf075986d5c8a18ce99f4.png)'
 - en: 'And we can work out what this distribution is when *t=T*:'
+  id: totrans-603
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以计算当*t=T*时这个分布的情况：
 - en: '![](../Images/ead8a0cb177e65394fcc0214d8ad4789.png)'
+  id: totrans-604
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ead8a0cb177e65394fcc0214d8ad4789.png)'
 - en: Aha. The marginal distribution *q(x_T|x₀)* has mean *0.07x₀* and almost an identify
     covariance matrix. Given that *x₀* is a concrete image with values between *0*
     and *1, 0.07x₀* is close to the zero vector. In other words, a sample for *x_T*
     from this marginal probability density function will look quite noisy because
     its mean is close to the zero, and covariance is close to identify — that is pure
     Gaussian noise.
+  id: totrans-605
   prefs: []
   type: TYPE_NORMAL
+  zh: 噢，边际分布*q(x_T|x₀)*的均值是*0.07x₀*，协方差矩阵几乎是单位矩阵。由于*x₀*是一个值在*0*和*1*之间的具体图像，因此*0.07x₀*接近于零向量。换句话说，从这个边际概率密度函数中得到的*x_T*样本会显得非常嘈杂，因为其均值接近零，而协方差接近单位矩阵——也就是纯高斯噪声。
 - en: With the above, we can conclude that the reverse of the forward process starts
     with a noisy image that is close to pure Gaussian noise. Note, the “close to pure
     Gaussian noise” phrase. The starting image is not pure Gaussian noise, there is
@@ -2889,41 +4200,63 @@
     *x₀* that makes it possible for the reverse of the forward process to denoise
     the starting image *x_T* into, well, hopefully an image that is very close to
     *x₀*, which we will see this for ourselves now by answering the following question.
+  id: totrans-606
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据以上信息，我们可以得出结论，前向过程的逆过程以一个接近纯高斯噪声的嘈杂图像开始。注意，“接近纯高斯噪声”这个短语。起始图像不是纯高斯噪声，在这个0.07*x₀*均值向量和之前忽略的0.0008*x₀*项中，仍然包含关于条件图像*x₀*的信息。正是关于*x₀*的信息使得前向过程的逆过程能够将起始图像*x_T*去噪为一个接近*x₀*的图像，我们现在将通过回答以下问题来验证这一点。
 - en: '**Where does the reverse of the forward process end?**'
+  id: totrans-607
   prefs: []
   type: TYPE_NORMAL
+  zh: '**前向过程的逆过程在哪里结束？**'
 - en: 'We know the drill now. We need to look at the mean vector and the covariance
     matrix of the probability density function *q(xₜ₋₁|xₜ, x₀)* when *t=2,* so *t-1*
     is 1*.* When *t=2*:'
+  id: totrans-608
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在知道该做什么了。我们需要查看概率密度函数*q(xₜ₋₁|xₜ, x₀)*在*t=2*时的均值向量和协方差矩阵，所以*t-1*是1。当*t=2*时：
 - en: '![](../Images/c514d7582e7e51786253577ff82777c7.png)'
+  id: totrans-609
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c514d7582e7e51786253577ff82777c7.png)'
 - en: 'Let’s look at the covariance matrix:'
+  id: totrans-610
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们来看一下协方差矩阵：
 - en: '![](../Images/19d11e6d8d05cf42238fe0f348f3a63d.png)'
+  id: totrans-611
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/19d11e6d8d05cf42238fe0f348f3a63d.png)'
 - en: Covariance matrix of the reverse of the forward process at timestamp t=2
+  id: totrans-612
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间戳 t=2 时前向过程逆向的协方差矩阵
 - en: So we know that the covariance for probability density function *q(xₜ₋₁|xₜ,
     x₀)* when *t=2* is a small*, 0.0001****I****.*
+  id: totrans-613
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们知道，当*t=2*时，概率密度函数*q(xₜ₋₁|xₜ, x₀)*的协方差是一个很小的*0.0001**I****。
 - en: 'Now let’s look at the mean vector:'
+  id: totrans-614
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们来看均值向量：
 - en: '![](../Images/722cfbf96e67b5604f2a376372d8da98.png)'
+  id: totrans-615
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/722cfbf96e67b5604f2a376372d8da98.png)'
 - en: Mean vector of the reverse of the forward process at timestamp t=2
+  id: totrans-616
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间戳 t=2 时前向过程逆向的均值向量
 - en: 'Now we see the mean vector has half of the contribution coming from the concrete
     image *x₀*, and half of the contribution coming from the denosied image *x₂*.
     Note that the image *x₂*, being close to the end of the reverse of the forward
@@ -2932,82 +4265,118 @@
     matrix is small *0.0001****I***, we can deduce that a sample for the random variable
     *x₁*, which is at the end of the reverse of the forward process is coming from
     the distribution:'
+  id: totrans-617
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们看到均值向量有一半的贡献来自具体图像*x₀*，另一半的贡献来自去噪图像*x₂*。注意到图像*x₂*由于接近前向过程逆向的终点，已经与*x₀*相似。因此，上述均值大致导致了一个非常接近*x₀*的均值向量。加上协方差矩阵很小*0.0001**I***，我们可以推断随机变量*x₁*，即前向过程逆向的终点，来自于以下分布：
 - en: '![](../Images/6609df0db8cd7d342131da432cc4672f.png)'
+  id: totrans-618
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6609df0db8cd7d342131da432cc4672f.png)'
 - en: This suggests the sampled image is very close to the image *x₀* with very small
     variation, because the covariance matrix is small.
+  id: totrans-619
   prefs: []
   type: TYPE_NORMAL
+  zh: 这表明采样图像非常接近图像*x₀*，变化非常小，因为协方差矩阵很小。
 - en: So now we see for ourselves that when conditioned on a concrete image *x₀*,
     the reverse of the forward process starts with a very noisy version of *x₀*, and
     ends with an image that is very close to *x₀*, demonstrating the ability to denoise
     an image.
+  id: totrans-620
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以看到，当条件图像为*x₀*时，前向过程的逆过程开始于一个非常嘈杂的*x₀*版本，并以一个非常接近*x₀*的图像结束，展示了去噪图像的能力。
 - en: Why we won’t loss model parameters when applying sample-averaging to derive
     the analytical formula for the loss function L
+  id: totrans-621
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么在应用样本平均来推导损失函数L的解析公式时不会丢失模型参数
 - en: A typical problem applying sample-averaging to approximate integrations in a
     loss function is that the resulting formula does not mention model parameters
     anymore. The reparameterization trick (see [here](https://medium.com/towards-data-science/demystifying-tensorflow-time-series-local-linear-trend-9bec0802b24a))
     is the go-to recipe to prevent this from happening.
+  id: totrans-622
   prefs: []
   type: TYPE_NORMAL
+  zh: 应用样本平均来近似损失函数中的积分时，一个典型的问题是结果公式不再提及模型参数。重新参数化技巧（见[这里](https://medium.com/towards-data-science/demystifying-tensorflow-time-series-local-linear-trend-9bec0802b24a)）是防止这种情况发生的最佳方法。
 - en: Our case of using sample-averaging to derive the analytical approximation for
     the loss function *L* does not have the losing model parameter problem, let’s
     use an example with a short reverse process (*T=1*) to see why.
+  id: totrans-623
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用样本平均来推导损失函数*L*的解析近似的情况没有丢失模型参数的问题，让我们用一个短反向过程（*T=1*）的例子来看看原因。
 - en: 'Let’s show the loss function *L* together with some manipulations to demonstrate
     sample-averaging:'
+  id: totrans-624
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们展示损失函数*L*及其一些操作，以演示样本平均：
 - en: '![](../Images/8d5bd6200f6164cc9248db80b9af6f01.png)'
+  id: totrans-625
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8d5bd6200f6164cc9248db80b9af6f01.png)'
 - en: Derivation showing sample-averaging approximation of loss L retains model parameters
+  id: totrans-626
   prefs: []
   type: TYPE_NORMAL
+  zh: 推导显示样本平均近似的损失L保留模型参数
 - en: Line (1) is the loss L, and line(2) replaces the expectation notation with its
     mathematical definition.
+  id: totrans-627
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（1）行是损失L，第（2）行用数学定义替换了期望符号。
 - en: Line (3) set *T=1* to demonstrate following derivations on a short reverse trajectory.
+  id: totrans-628
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（3）行设定*T=1*来演示在短反向轨迹上的后续推导。
 - en: Line (4) factorizes the joint probability inside the inner integration using
     the definition of the reverse process.
+  id: totrans-629
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（4）行利用反向过程的定义对内积分中的联合概率进行因式分解。
 - en: Line (5) replaces all probability density function notation with the actual
     probability density distribution names. It also reveals that the random variable
     *x₁* is sample-able from the standard multivariate Gaussian distribution *N(***0***,*
     **1***)*. Let’s denote *S₁* as the sample for *x₁*.
+  id: totrans-630
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（5）行将所有概率密度函数符号替换为实际的概率密度分布名称。它还显示随机变量*x₁*可以从标准多变量高斯分布*N(**0**, **1**)*中抽取样本。我们用*S₁*表示*x₁*的样本。
 - en: Line (6) plugs in the sample *S₁*, removing the inner integration by doing sample-averaging
     using only one sample, for demonstration purpose. Sample-averaging is an approximation,
     which is reflected by the approximation sign “≈” in front of the line.
+  id: totrans-631
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（6）行插入了样本*S₁*，通过仅用一个样本进行样本平均来去除内积分，目的是为了演示。样本平均是一种近似，这在该行前面的近似符号“≈”中得以体现。
 - en: Line (7) draws the sample *S₀* for the random variable *x₀* from the unknown
     distribution *q(x₀)*; practically just randomly pick an natural image from the
     training set. It then uses sample-averaging again to remove the integration over
     *x₀*.
+  id: totrans-632
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（7）行从未知分布*q(x₀)*中抽取随机变量*x₀*的样本*S₀*；实际上就是从训练集中随机挑选一张自然图像。然后再次使用样本平均来去除对*x₀*的积分。
 - en: Line (8) plugs in the formula for the multivariate Gaussian probability density
     function. The proportional symbol “∝” allows me to drop the normalization terms
     in front of the exponential function.
+  id: totrans-633
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（8）行插入了多变量高斯概率密度函数的公式。比例符号“∝”允许我省略指数函数前的归一化项。
 - en: Line (9) simplifies the formula. It reveals after sample-averaging, the analytical
     loss is still a function that mentions all model parameters. So no need for the
     reparameterization trick.
+  id: totrans-634
   prefs: []
   type: TYPE_NORMAL
+  zh: 第（9）行简化了公式。它表明在样本平均后，解析损失仍然是一个提到所有模型参数的函数。因此不需要重新参数化技巧。
