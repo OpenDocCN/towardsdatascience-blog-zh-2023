@@ -1,98 +1,142 @@
 - en: Speeding up vision transformer prediction by 9 times with PyTorch, ONNX and
     TensorRT
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用PyTorch、ONNX和TensorRT将视觉变换器的预测速度提高9倍
 - en: 原文：[https://towardsdatascience.com/making-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814](https://towardsdatascience.com/making-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/making-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814](https://towardsdatascience.com/making-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814)
 - en: How to use 16bit float, TensorRT, network rewriting and multi-threading to dramatically
     speed up deep learning model prediction
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何使用16位浮点数、TensorRT、网络重写和多线程来显著加速深度学习模型预测
 - en: '[](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)[![Wei
     Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)
     [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)[![Wei
+    Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)
+    [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)
     ·11 min read·Jun 4, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)
+    ·阅读时间11分钟·2023年6月4日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/8072ede2bfa4cf3d5e55d53741fc8600.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8072ede2bfa4cf3d5e55d53741fc8600.png)'
 - en: Photo by [Sanjeevan SatheesKumar](https://unsplash.com/@sanjeevan_s?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Sanjeevan SatheesKumar](https://unsplash.com/@sanjeevan_s?utm_source=medium&utm_medium=referral)拍摄于[Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
 - en: Vision transformer such as [UNET](https://en.wikipedia.org/wiki/U-Net), [SwinUNETR](https://openaccess.thecvf.com/content/CVPR2022/html/Tang_Self-Supervised_Pre-Training_of_Swin_Transformers_for_3D_Medical_Image_Analysis_CVPR_2022_paper.html)
     are state-of-the-art in computer vision tasks, such as semantic segmentation.
     But it takes a lot of time for such models to make a prediction. This article
     shows how to speed up such model’s prediction by 9 times. This improvement paves
     the way for many real-time or near real-time applications.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 诸如[UNET](https://en.wikipedia.org/wiki/U-Net)、[SwinUNETR](https://openaccess.thecvf.com/content/CVPR2022/html/Tang_Self-Supervised_Pre-Training_of_Swin_Transformers_for_3D_Medical_Image_Analysis_CVPR_2022_paper.html)这样的视觉变换器在计算机视觉任务中，如语义分割，都是最先进的。然而，这些模型进行预测需要大量时间。本文展示了如何将这种模型的预测速度提高9倍。这一改进为许多实时或接近实时的应用铺平了道路。
 - en: The tumours segmentation task
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 肿瘤分割任务
 - en: 'To set the scene, I’m using the SwinUNETR model to segment lung tumours from
     chest CT scan images, which are single channel grayscale 3D images. Here is an
     example:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了设置场景，我使用SwinUNETR模型从胸部CT扫描图像中分割肺肿瘤，这些图像是单通道灰度3D图像。以下是一个示例：
 - en: '![](../Images/4b7a6181e9ed9bc45a923632e2cc2783.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4b7a6181e9ed9bc45a923632e2cc2783.png)'
 - en: Images from the public [NSCLC-Radiomics dataset](https://wiki.cancerimagingarchive.net/display/Public/NSCLC-Radiomics)
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自公共[NSCLC-Radiomics数据集](https://wiki.cancerimagingarchive.net/display/Public/NSCLC-Radiomics)
 - en: Left column shows a few 2D slices from a 3D CT scan image, at the axial plane.
     The two crescent black areas are lungs.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 左侧列展示了来自3D CT扫描图像的几幅2D切片，处于轴向平面。两个弯月形的黑色区域是肺部。
 - en: Right column shows the manual annotation of lung tumours.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 右侧列显示了肺肿瘤的手动标注。
 - en: Chest CT scans are typically sized 512×512×300, taking roughly 60 to 90 megabytes
     to store in disk. They are not small images.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 胸部CT扫描通常尺寸为512×512×300，存储在磁盘上大约需要60到90兆字节。它们不是小图像。
 - en: I use PyTorch to train a SwinUNETR model to segment lung tumours. It takes around
     10 seconds for a trained model to make a prediction on a chest CT scan. So 10
     second per image is my starting point.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用PyTorch训练了一个SwinUNETR模型来分割肺肿瘤。经过训练的模型对胸部CT扫描进行预测大约需要10秒。因此，每张图像10秒是我的起点。
 - en: Before we go into speed optimization, let’s look at the model’s input and output,
     and how it makes predictions.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
 - en: Model input and output shapes
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: '![](../Images/48537d9d15553ca7beda4b1b64bbf528.png)'
+  id: totrans-19
   prefs: []
   type: TYPE_IMG
 - en: Model input and output, by author
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: The input is a 3D numpy array representing a chest CT scan.
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: The SwinUNETR model couldn’t hold the whole image; it’s too big. A solution
     is to cut the image into smaller chunks, called Region of Interest (ROIs). In
     my setup, a region of interest is sized 96×96×96.
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -102,6 +146,7 @@
     SwinUNETR outputs two unnormalized class probability masks. In a later step, these
     unnormalized masks are normalized into proper probabilities between 0 and 1 via
     *softmax*, and then *argmax*-ed into binary masks.
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -110,29 +155,36 @@
     background mask — each mask has the size of the whole chest CT scan. Note that
     even though the model returns two segmentation masks, we are only interested in
     the tumour mask, and will ignore the background mask.
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: The input and output arrays, and the model, uses 32 bit floats.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Sliding window inference
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The following pseudo code implements the above prediction idea.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/18531397de70df9796e605ac3f62ad42.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
 - en: Sliding window inference, image by author
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: Note code snippets in this article are pseudo code to keeps them succinct. Following
     the same argument, methods whose implementation is obvious, such as *split_image*,
     are left to your imagination.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: The *sliding_window_inference* method accepts the full CT scan *image* and a
@@ -140,6 +192,7 @@
     small, and a GPU can hold multiple of them at a time for prediction. *batch_size*
     specifies how many regions of interest to send to the GPU. *sliding_window_inference*
     returns the binary tumour segmentation and background mask.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -147,39 +200,48 @@
     them into *batches* with each group containing *batch_size* regions of interest.
     Here I assume the number of regions of interest is dividable by *batch_size* for
     code simplicity.
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Each *batch* is sent to the *model* to make a batch of predictions. Each prediction
     is for a single region of interest.
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Finally predictions for all regions of interest are merged to form two full
     sized segmentation masks. The merging also includes *softmax* and *argmax*.
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Snippet to make prediction for an image
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The following snippets calls the *sliding_window_inference* method to make
     a prediction for an image file loaded into the the first GPU “cuda:0” as a PyTorch
     tensor:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/a60ac783a75437bfa02bdf1dff114420.png)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
 - en: Snippets to invoke model prediction, by author
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: With the above setup, I now introduce a set of tactics to make the model predict
     faster.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: 'Tactic 1: making prediction in 16bit floats'
+  id: totrans-40
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -187,18 +249,23 @@
     often a 16bit float precision is enough to deliver very similar segmentation result.
     It is easy to turn a 32bit model into a 16bit one using just a single PyTorch
     API *half*:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d7c347ea885b00b36a32fb87f9ab3ba9.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
 - en: Prediction in 16bit float precision, image by author
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: This tactic reduces the prediction time from 10 second to **7.7 second**.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: 'Tactic 2: converting model to TensorRT'
+  id: totrans-45
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -208,40 +275,49 @@
     which runs in many hardware into a TensorRT model that only runs in one particular
     hardware — the hardware that you ran the model conversion on. During the conversion,
     TensorRT also performs many speed optimizations.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: The *trtexec* executable from the TensorRT installation performs the conversion.
     The problem is, sometimes, the conversion from a PyTorch model to a TensorRT model
     fails. It fails for me on the PyTorch SwinUNETR model. The particular failure
     message is not important, you will encounter your own errors.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: The important thing is to know there is a walk-around. The walk-around is to
     first convert a PyTorch model into an intermediate format, [ONNX](https://onnx.ai/),
     and then convert the ONNX model into a TensorRT model.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: ONNX is an open format built to represent machine learning models. ONNX defines
     a common set of operators — the building blocks of machine learning and deep learning
     models — and a common file format to enable AI developers to use models with a
     variety of frameworks, tools, runtimes, and compilers.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: The good news is that the support to convert an ONNX model into a TensorRT model
     is better than converting a PyTorch model into a TensorRT model.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: Converting a PyTorch model to an ONNX model
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The following snippet converts a PyTorch model into an ONNX model:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/b0d23d3bf9d72cedbfbd246d6745644f.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
 - en: Converting a PyTorch model to an ONNX model, by author
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: It first creates random input for a single region of interest. Then uses the
@@ -249,39 +325,48 @@
     This conversion outputs a file called *swinunetr.onnx*. The argument *dynamic_axes*
     specifies that the TensorRT model should support dynamic size at the 0th dimension
     of the input, that is, the batch dimension.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: Converting a n ONNX model to a TensorRT model
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Now we can invoke the *trtexec* command line tool to convert the ONNX model
     to a TensorRT model:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/6412837fffb97b1533641a0719dedaba.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
 - en: trtexec command line to convert an ONNX model to TensorRT model, by author
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: the *onnx=swinunetr.onnx* command line option specifies the location of the
     onnx model.
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: the *saveEngine=swinunetr_1_8_16.plan* option specifies the file name for the
     resulting TensorRT model, called a plan.
+  id: totrans-61
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: the *fp16* option requires that the converted model runs at 16 bit floating
     point precision.
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: the *minShapes=modelInput:1×1×96×96×96* specifies the minimal input size to
     the resulting TensorRT model.
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -291,50 +376,62 @@
     size, here in minShapes and maxShapes, only the first number can change. Together
     they tells the *trtexec* tool to output a model that can be used for an input
     with the batch size between 1 and 16.
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: the *optShapes=modelInput:8×1×96×96×96* specifies that the resulting TensorRT
     model should run the fastest with a batch size of 8.
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: the *workspace=10240* option gives *trtexec* 10G of GPU memory to work on the
     model conversion.
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '*trtexec* will run for 10 to 20 minutes, and outputs the generated TensorRT
     plan file.'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: Making prediction using the TensorRT model
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The following snippet loads the TensorRT model plan file and uses the TrtModel
     that is adapted from [stackoverflow](https://stackoverflow.com/questions/59280745/inference-with-tensorrt-engine-file-on-python):'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/cb36cff770fc2bf922e5e7d45f344327.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
 - en: Making prediction with a TensorRT model, by author
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: Note that even though in the *trtexec* command line, we specified the *fp16*
     option, here when loading the plan, we still need to specify the 32 bit floating
     point. Strange.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
 - en: Minor adaptations are needed in the TrtModel you got from stackoverflow, but
     you will work it out. It is not that difficult.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: With this tactic, the prediction time is **2.89 second**!
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: 'Tactic 3: Wrapping model to return one mask'
+  id: totrans-75
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -343,60 +440,75 @@
     transferred from GPU back to CPU. Then in CPU, these unnormalized probabilities
     are *softmax*-ed to proper probabilities between 0 and 1, and finally *argmax*-ed
     to generate binary masks.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: Since we only use the tumour mask, there is no need for the model to return
     the background mask. Transferring data between GPU and CPU takes time, and computations
     such as *softmax* takes time.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
 - en: 'To have a model that only returns a single mask, we can create a new class
     that wrappers the SwinUNETR model:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d17758563e34fc125eca6f3c4cc99c54.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
 - en: SwinUNETR wrapper to return a single mask, by author
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: 'The following figure illustrates the new model input output:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/c6bfb66e608282bc7a1e2a0730d9e02c.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
 - en: SwinWrapper input and output, by author
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
 - en: 'The forward method pushes a batch of input regions of interest through the
     forward pass of the neural network to make prediction. In this method:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: the original model is first called on the passed-in input regions of interest
     to get the predictions of the two segmentation classes. The output is of shape
     Batch×2×Width×Height×Depth because in the current tumour segmentation task, there
     are two classes — tumour and background. Result is stored in the *out* variable.
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Then *softmax* is applied to the two unnormalized segmentation masks to turn
     them into normalized probabilities between 0 and 1.
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Then only the tumour class, that is, class 1, is selected to return to the caller.
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'So, actually, this wrapper implements two optimizations:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
 - en: only returns a single segmentation mask, instead of two.
+  id: totrans-89
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: moves the *softmax* operation from CPU into GPU.
+  id: totrans-90
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -404,63 +516,79 @@
     there is no need for *argmax.* Instead, to create the original binary segmentation
     mask, we will do *tumour_segmentation_probability ≥ 0.5*, with *tumour_segmentation_probability*
     being the result from the *forward* method in SwinWrapper.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: Since SwinWrapper is a PyTorch model, we need to do the PyTorch to ONNX, and
     ONNX to TensorRT conversion steps again.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: 'When converting the SwinWapper model to an ONNX model, it only change needed
     is to use wrapped model:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/92fe03e45b2eec9f1413d361f917f822.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
 - en: Converting wrapped SwinUNETR model to ONNX, by author
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: And the *trtexec* command line to convert an ONNX model to a TensorRT plan stay
     unchanged. So I won’t repeat it here.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: This tactic reduced the prediction time from 2.89 second to **2.42 second**.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: 'Tactic 4: distributing regions of interest to multiple GPUs'
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: All the above tactics uses only one GPU, but sometimes we want to use a more
     expensive multiple GPUs machine to deliver even faster predictions.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
 - en: The idea is to load the same TensorRT model into *n* GPUs, and inside *sliding_window_inference*,
     we further split a batch of ROIs to *n* parts, and send each part to a different
     GPU. This way, the time-consuming forward pass of the SwinWrapper network can
     run concurrently for different parts.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: 'We need to change the *sliding_window_inference* method into the following
     *sliding_window_inference_multi_gpu*:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/942a38c35422ec4e60f95b4ab53d8ef7.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
 - en: Multiple GPU sliding window inference, by author
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
 - en: Same as before, we group regions of interest in different batches.
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: We split each batch into parts, depending on how many GPUs are given.
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: For each part *batch_per_gpu*, we submit a task to into a ThreadPoolExecutor.
     The task performs model inference on the passed-in part.
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -468,100 +596,124 @@
     result of the task when it finishes. It is crucial for the *submit* method to
     return immediately before the task finishes, so we can post other tasks to different
     threads without waiting, achieving parallelism.
+  id: totrans-107
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: After all tasks submittedin the inner *for loop*, wait for all future objects
     to complete.
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: After the tasks’ completion, read results from the futures and merge results.
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'To invoke this new version of *sliding_window_inference_multi_gpu*, use the
     following snippet:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/8b12d02411051657b2bff4b34aecd886.png)'
+  id: totrans-111
   prefs: []
   type: TYPE_IMG
 - en: Model prediction with multiple GPUs, by author
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
 - en: Here I used two GPUs, so I created two TensorRT models, each into a different
     GPU, “cuda:0” and “cuda:1”.
+  id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Then I created a ThreadPoolExecutor with two threads.
+  id: totrans-114
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: I passed the models and the executor into the *sliding_window_inference_multi_gpu*
     method, similar to the case of a single GPU, to get the tumour class segmentation
     mask.
+  id: totrans-115
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: This tactic reduces the prediction time from 2.42 second to **1.38 second**!
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
 - en: Now we have four tactics that improved the prediction speed of the SwinUNETR
     model by 9 times. That’s not too bad. But are we sacrificing prediction precision
     for speed?
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
 - en: Are we sacrificing prediction precision for speed?
+  id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Note here the word “precision” means how well the final model segment tumours,
     it does not mean the floating point prediction, for example, 16bit, 32bit precision.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
 - en: To answer this question, we need to look at the DICE metric that measures the
     performance of a segmentation model.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
 - en: 'A DICE score is calculated as the proportion of overlapping between the predicted
     tumour and the ground truth tumour. DICE score is between 0 and 1; a larger DICE
     score means a better model prediction:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
 - en: DICE 1 is perfect prediction,
+  id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: DICE 0 is completely wrong prediction, or no prediction at all.
+  id: totrans-123
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'Let’s look at the DICE score for a test image:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/3619d69241e9d1feed45b76533760191.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
 - en: Dice score achieved by different tactics, by author
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
 - en: We can see that only when we turned a 32bit PyTorch model to a 16bit model in
     tactic 1, the DICE score slightly decreased from 0.93 to 0.91\. Other tactics
     don’t decrease the DICE score. This shows that the tactics can achieve much faster
     prediction speed with only a tiny bit of precision loss.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
 - en: Conclusions
+  id: totrans-128
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: This article introduces four tactics that can make vision transformer predict
     at a much faster speed by using tools such as ONNX, TensorRT and multi-threading.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
 - en: Acknowledgement
+  id: totrans-130
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -569,17 +721,21 @@
     me to the possibilities of fast deep learning model inferences. He made the first
     running TensorRT SwinUNETR model for me and suggested many of the tactics that
     I tried out here.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----dc1f09b6814--------------------------------)
     [## Join Medium with my referral link - Wei Yi'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
 - en: Read every story from Wei Yi (and thousands of other writers on Medium). If
     you like my stories, please consider…
+  id: totrans-133
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----dc1f09b6814--------------------------------)
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
