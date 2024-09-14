@@ -1,331 +1,513 @@
 - en: Understanding Intersection Over Union for Object Detection (Code)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 理解目标检测中的交并比（代码）
 - en: 原文：[https://towardsdatascience.com/understanding-intersection-over-union-for-object-detection-code-9a691c72d83a](https://towardsdatascience.com/understanding-intersection-over-union-for-object-detection-code-9a691c72d83a)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/understanding-intersection-over-union-for-object-detection-code-9a691c72d83a](https://towardsdatascience.com/understanding-intersection-over-union-for-object-detection-code-9a691c72d83a)
 - en: 'Evaluation of object detection models boils down to one thing: determining
     if a detection is valid or not'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 目标检测模型的评估归结为一个问题：确定检测结果是否有效。
 - en: '[](https://medium.com/@kiprono_65591?source=post_page-----9a691c72d83a--------------------------------)[![Kiprono
     Elijah Koech](../Images/b0b5a59f8cb25a721c7565b6426288fe.png)](https://medium.com/@kiprono_65591?source=post_page-----9a691c72d83a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a691c72d83a--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a691c72d83a--------------------------------)
     [Kiprono Elijah Koech](https://medium.com/@kiprono_65591?source=post_page-----9a691c72d83a--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@kiprono_65591?source=post_page-----9a691c72d83a--------------------------------)[![Kiprono
+    Elijah Koech](../Images/b0b5a59f8cb25a721c7565b6426288fe.png)](https://medium.com/@kiprono_65591?source=post_page-----9a691c72d83a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a691c72d83a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a691c72d83a--------------------------------)
+    [Kiprono Elijah Koech](https://medium.com/@kiprono_65591?source=post_page-----9a691c72d83a--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a691c72d83a--------------------------------)
     ·7 min read·Oct 7, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a691c72d83a--------------------------------)
+    ·阅读时间 7 分钟·2023年10月7日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/96c9fc1ed064608c5a9f4def1073800c.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/96c9fc1ed064608c5a9f4def1073800c.png)'
 - en: Photo by [Vardan Papikyan](https://unsplash.com/@varpap?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片来自 [Vardan Papikyan](https://unsplash.com/@varpap?utm_source=medium&utm_medium=referral)
+    在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: Determining whether detection is valid requires understanding the **Intersection
     over Union metric (IoU)**.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 确定检测是否有效需要理解 **交并比指标（IoU）**。
 - en: 'This article covers the following:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文涵盖以下内容：
 - en: Basics of IoU — **What is IoU**?
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: IoU 基础——**什么是 IoU**？
 - en: '**How to compute (theoretically and in Python code) IoU for a single pair**
     of detection and ground truth bounding boxes'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**如何计算（理论上和 Python 代码中）单对检测和地面真实边界框的 IoU**'
 - en: '**Computing IoU for multiple sets** of predicted and ground truth bounding
     boxes.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**计算多个预测和地面真实边界框的 IoU**。'
 - en: How **to interpret IoU value**?
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如何 **解读 IoU 值**？
 - en: What is Intersection over Union (IoU)?
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是交并比（IoU）？
 - en: IoU is a core metric for the evaluation of object detection models. It measures
     the accuracy of the object detector by evaluating the degree of overlap between
     the detection box and the ground truth box.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: IoU 是评估目标检测模型的核心指标。它通过评估检测框和地面真实框之间的重叠程度来衡量对象检测器的准确性。
 - en: A **ground truth box** or **label** is an annotated box showing where the object
     is (the annotation is often done by hand, and the ground truth box is considered
     the object's actual position).
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**地面真实框** 或 **标签** 是一个标注框，显示了对象的位置（标注通常是手工完成的，地面真实框被认为是对象的实际位置）。'
 - en: The **detection box** or **predicted bounding box** is the prediction from the
     object detector.
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**检测框** 或 **预测边界框** 是来自对象检测器的预测。'
 - en: Formally, **IoU** is the area of intersection between the ground truth (*gt*)
     and predicted box (*pd*) divided by the union of the two boxes.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 从形式上讲，**IoU** 是地面真实框（*gt*）和预测框（*pd*）的交集面积除以两个框的并集面积。
 - en: '![](../Images/1778fb071c4b2768007bc323908dce10.png)'
+  id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1778fb071c4b2768007bc323908dce10.png)'
 - en: Definition of IoU (Image by Author).
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: IoU 定义（作者提供的图像）。
 - en: 'Example 1: Computing IoU for a Single Pair of Detection and Ground Truth'
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 示例 1：计算单对检测和地面真实的 IoU
 - en: Let's start off with a simple example. Computing IoU for one detection and a
     ground truth.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从一个简单的例子开始。计算一个检测和一个地面真实的 IoU。
 - en: To do that, we will need the top-left (x1, y1) and bottom-right (x2, y2) coordinates
     of the two boxes.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 为此，我们需要两个框的左上角（x1, y1）和右下角（x2, y2）坐标。
 - en: 'In the Figure below (right), we have two bounding boxes:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下图（右）中，我们有两个边界框：
 - en: '**Predicted bounding box (p-box):** (px1, py1, px2, py2) = (859, 31, 1002,
     176)'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预测边界框 (p-box)：** (px1, py1, px2, py2) = (859, 31, 1002, 176)'
 - en: '**Ground truth bounding box (t-box):** (tx1, ty1, tx2, ty2) = (860, 68, 976,
     184)'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '**真实边界框 (t-box)：** (tx1, ty1, tx2, ty2) = (860, 68, 976, 184)'
 - en: '![](../Images/26ad71d5e6c7d8c6dd89e1c1ef09d5fa.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/26ad71d5e6c7d8c6dd89e1c1ef09d5fa.png)'
 - en: 'Left: Image with 14 ground truths (blue boxes) and 12 predictions (red boxes).
     Right: a zoom-in to a single pair of ground truth and predicted box (Annotations
     done by author and the orchard image sourced from [https://zenodo.org/record/3712808](https://zenodo.org/record/3712808)).'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 左：包含 14 个真实值（蓝色框）和 12 个预测值（红色框）的图像。右：单个真实框和预测框的放大视图（标注由作者完成，果园图像来源于 [https://zenodo.org/record/3712808](https://zenodo.org/record/3712808)）。
 - en: '**Important:** In computer vision, the convention is that:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '**重要：** 在计算机视觉中，惯例是：'
 - en: The **x-axis** is the horizontal dimension of an image, with *increasing values
     from left to right* and
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**x轴** 是图像的水平维度，*从左到右值逐渐增大*。'
 - en: The **y-axis** is the vertical dimension of an image with *increasing values
     from top to bottom* (this is not the case for a standard Cartesian system)
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**y轴** 是图像的垂直维度，*从上到下值逐渐增大*（这与标准的笛卡尔坐标系统不同）。'
 - en: 'Step 1: Calculating the area of the two boxes'
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 步骤 1：计算两个盒子的面积
 - en: This Step calculates the area of the predicted box and ground truth. It is just
     the length multiplied by the width.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个步骤计算预测框和真实框的面积。它仅是长度乘以宽度。
 - en: '***predicted_area*** *= (1002–859) * (176–31) = 20735* ***ground_truth_area***
     *= (976–860) * (184–68) = 13456*'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '***predicted_area*** *= (1002–859) * (176–31) = 20735* ***ground_truth_area***
+    *= (976–860) * (184–68) = 13456*'
 - en: 'Step 2: Find the intersection points'
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 步骤 2：找到交集点
 - en: This Step is for finding the top-left(A) and bottom-right(B) coordinates for
     the intersection area.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个步骤用于找到交集区域的 top-left(A) 和 bottom-right(B) 坐标。
 - en: 'That can be found by:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过以下方法找到：
 - en: top_left = max(px1, tx1), max(py1, ty2)
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: top_left = max(px1, tx1), max(py1, ty2)
 - en: bottom_right = min(px2, tx2), min(py2, ty2)
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: bottom_right = min(px2, tx2), min(py2, ty2)
 - en: In our case,
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的案例中，
 - en: '***top_left (A)*** *= max(859, 860), max(31, 68) = (860, 68)* ***bottom_right
     (B)*** *= min(1002, 976), min(176, 184) = (976, 176)*'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '***top_left (A)*** *= max(859, 860), max(31, 68) = (860, 68)* ***bottom_right
+    (B)*** *= min(1002, 976), min(176, 184) = (976, 176)*'
 - en: '![](../Images/bcd4457113e113023ada5650e86ca180.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bcd4457113e113023ada5650e86ca180.png)'
 - en: Showing the intersection region between two boxes (Image by Author).
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 显示两个盒子之间的交集区域（图片作者提供）。
 - en: 'Step 3: Compute Intersection Area'
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 步骤 3：计算交集面积
 - en: Since we have the intersection points, we can easily compute the area of the
     intersection rectangle as follows.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们有交集点，我们可以轻松地计算交集矩形的面积。
 - en: '***intersection_area*** *= (976–860) * (176–68) = 12528*'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '***intersection_area*** *= (976–860) * (176–68) = 12528*'
 - en: 'Step 4: Calculate the IoU value'
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 步骤 4：计算 IoU 值
 - en: IoU = intersection_area / union_area,
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: IoU = 交集面积 / 并集面积，
 - en: where *union_area* is the sum of the areas of the two boxes subtract the intersection
     area. That is,
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *union_area* 是两个盒子面积的总和减去交集面积。即，
 - en: '***union_area = (area of ground truth + area of predicted box)-intersection_area***
     *= (20735+13456) — 12528 = 21663*'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '***union_area = (真实边界框面积 + 预测框面积) - 交集面积*** *= (20735+13456) — 12528 = 21663*'
 - en: Therefore,
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，
 - en: '***IoU = 12528/21664 = 0.578286558***'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '***IoU = 12528/21664 = 0.578286558***'
 - en: Let's put that into Python code
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 让我们将其转换为 Python 代码
 - en: The following code can be used to compute IoU for a single pair of ground truth
     and predicted box. After the code snippet, let's break down the ideas used.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码可用于计算单对真实框和预测框的 IoU。代码片段之后，让我们深入探讨所使用的思路。
 - en: '[PRE0]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Output:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出：
 - en: '[PRE1]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Let's call the compute_iou() function the second time with non-overlapping boxes.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们第二次调用 compute_iou() 函数，使用不重叠的盒子。
 - en: '[PRE2]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Output:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出：
 - en: '[PRE3]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Breaking down the code:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码分解：
 - en: '[NumPy Vectorization](https://www.programiz.com/python-programming/numpy/vectorization)
     allows us to implement operations like `np.prod()`, `np.maximum()`, `np.minimum()`,
     `np.clip()`, `addition` and `subtraction` on the arrays without the need to loop
     through the array elements or index to a single element.'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[NumPy 向量化](https://www.programiz.com/python-programming/numpy/vectorization)
+    使我们能够对数组执行 `np.prod()`, `np.maximum()`, `np.minimum()`, `np.clip()`, `addition`
+    和 `subtraction` 等操作，而无需循环遍历数组元素或索引单个元素。'
 - en: '`np.clip()` function limits or "clips" the values in an array within a specified
     range. In our case, `np.clip(bottom_right — top_left, a_min=0, a_max=None)` ensures
     that the resulting width and height values of the intersection are non-negative
     by setting negative values to 0.'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`np.clip()` 函数限制或“剪切”数组中的值在指定范围内。在我们的案例中，`np.clip(bottom_right — top_left,
+    a_min=0, a_max=None)` 通过将负值设为 0 来确保交集的宽度和高度值为非负数。'
 - en: 'Example 2: Computing IoU for Multiple Pairs of Ground Truth and Predicted Boxes'
+  id: totrans-65
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 示例 2：计算多个真实值和预测框对的 IoU
 - en: In this example, we want to calculate IoU values for all ground-truth and predicted
     box pairs in the Figure below (far left).
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们想要计算下图中所有真实值和预测框对的 IoU 值（最左侧）。
 - en: The image contains 12 predictions (red boxes) and 14 ground truths (blue boxes)
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像包含 12 个预测（红色框）和 14 个真实值（蓝色框）。
 - en: '![](../Images/a89060008a87ea1d83729bcfa05c8a9c.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a89060008a87ea1d83729bcfa05c8a9c.png)'
 - en: 'Left: An image with ground truths and detections plotted, Middle: Predictions
     and Right: Ground truths (Annotations done by author and the orchard image sourced
     from [https://zenodo.org/record/3712808](https://zenodo.org/record/3712808)).'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 左：包含真实值和检测的图像，中间：预测，右：真实值（作者标注，果园图像来源于 [https://zenodo.org/record/3712808](https://zenodo.org/record/3712808)）。
 - en: Computing IoUs for all pairs of detections and ground truths can be done easily
     by modifying the initial code, as shown below.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过修改初始代码，可以轻松计算所有检测和真实值对的 IoU，如下所示。
 - en: '[PRE4]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '**Output (formatted for better viewing):**'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '**输出（为更好地查看而格式化）：**'
 - en: '![](../Images/cc93e4054584356fabcfecec4beda629.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cc93e4054584356fabcfecec4beda629.png)'
 - en: Output of compute_ious() function (Image by Author)
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: compute_ious() 函数的输出（图像由作者提供）
 - en: 'The output shows that:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出显示：
 - en: One detection (Index 12) did not overlap any ground truth.
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个检测（索引 12）没有与任何真实值重叠。
 - en: 3 ground truths with no overlap with any detection — ground truths at indices
     7, 11 and 13.
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 3 个真实值与任何检测没有重叠——位于索引 7、11 和 13 的真实值。
 - en: There are 11 detections with IoU>50% with ground truths.
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有 11 个检测的 IoU > 50% 与真实值。
 - en: 'Let''s also break down a piece of the code that may not be super clear:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们详细分析一段可能不太清楚的代码：
 - en: In the code above, the use of `None` in the indexing operations is a technique
     in NumPy to introduce new axes or dimensions to the array. It is often used to
     broadcast arrays of different shapes together to perform element-wise operations
     or to enable certain calculations.
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在上述代码中，`None` 在索引操作中的使用是 NumPy 的一种技术，用于在数组中引入新的轴或维度。它通常用于广播不同形状的数组，以执行逐元素操作或启用某些计算。
 - en: Interpretation of IoU Values
+  id: totrans-81
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: IoU 值的解释
 - en: IoU value lies in the range [0, 1] where 0 means no overlap between two boxes
     being checked and 1 indicates a perfect overlap.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: IoU 值范围在 [0, 1] 之间，其中 0 表示两个框之间没有重叠，而 1 表示完全重叠。
 - en: Based on your application, you can set an IoU threshold to determine what good
     detection means.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据你的应用，你可以设置一个 IoU 阈值来确定什么是好的检测。
 - en: I hope this article made the concept IoU concept clearer.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望这篇文章能让 IoU 概念更清晰。
 - en: All the best!
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 祝好运！
