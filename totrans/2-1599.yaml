@@ -1,46 +1,68 @@
 - en: 'Operator Learning via Physics-Informed DeepONet: Let’s Implement It From Scratch'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 通过物理启发的 DeepONet 进行算子学习：从头开始实现
 - en: 原文：[https://towardsdatascience.com/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887](https://towardsdatascience.com/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887](https://towardsdatascience.com/operator-learning-via-physics-informed-deeponet-lets-implement-it-from-scratch-6659f3179887)
 - en: A deep dive into the DeepONets, physics-informed neural networks, and physics-informed
     DeepONets
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 深入探讨 DeepONets、物理启发的神经网络以及物理启发的 DeepONets
 - en: '[](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)[![Shuai
     Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)
     [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)[![Shuai
+    Guo](../Images/d673c066f8006079be5bf92757e73a59.png)](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)
+    [Shuai Guo](https://shuaiguo.medium.com/?source=post_page-----6659f3179887--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)
     ·23 min read·Jul 7, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6659f3179887--------------------------------)
+    ·阅读时间23分钟·2023年7月7日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/e58768fda61ec2f49710623f6f30cdc2.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e58768fda61ec2f49710623f6f30cdc2.png)'
 - en: Figure 1\. ODE/PDEs are widely used to describe the system processes. In many
     scenarios, those ODE/PDEs accept a function (e.g., the forcing function u(t))
     as input and output another function (e.g., s(t)). Traditionally, numerical solvers
     are used to connect the input and output. More recently, **neural operators**
     are developed to address the same problem but with much higher efficiency. (Image
     by Author)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1\. ODE/PDEs 广泛用于描述系统过程。在许多情况下，这些 ODE/PDEs 接受一个函数（例如，强迫函数 u(t)）作为输入，并输出另一个函数（例如，s(t)）。传统上，数值求解器用于连接输入和输出。最近，**神经算子**的开发大大提高了处理效率。（图像由作者提供）
 - en: Ordinary and partial differential equations (ODEs/PDEs) are the backbone of
     many disciplines in science and engineering, from physics and biology to economics
     and climate science. They are fundamental tools used to describe physical systems
     and processes, capturing the continuous change of quantities over time and space.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 常微分方程（ODEs）和偏微分方程（PDEs）是许多科学和工程学科的基础，从物理学和生物学到经济学和气候科学。它们是描述物理系统和过程的基本工具，捕捉了数量随时间和空间的连续变化。
 - en: Yet, a unique trait of many of these equations is that they don’t just take
     single values as inputs, they take functions. For example, consider the case of
     predicting vibrations in a building due to an earthquake. The shaking of the ground,
@@ -50,269 +72,400 @@
     a musical instrument can be an input function with varying volume and pitch over
     time. These varying input functions fundamentally influence the resulting output
     functions — the building’s vibrations and the acoustic field in the hall, respectively.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这些方程的一个独特特点是它们不仅接受单一数值作为输入，还接受函数。例如，考虑预测建筑物因地震而产生的振动。地面的震动随时间变化，可以表示为一个函数，该函数作为描述建筑物运动的微分方程的输入。同样，在音乐厅中声波传播的情况下，乐器产生的声波可以是一个随时间变化的音量和音调的输入函数。这些变化的输入函数从根本上影响了结果输出函数——建筑物的振动和音乐厅的声学场。
 - en: 'Traditionally, these ODEs/PDEs are tackled using numerical solvers like finite
     difference or finite element methods. However, these methods come with a bottleneck:
     for every new input function, the solver must be run all over again. This process
     can be computationally intensive and slow, particularly for intricate systems
     or high-dimensional inputs.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 传统上，这些ODEs/PDEs通常使用有限差分或有限元方法等数值求解器来解决。然而，这些方法存在一个瓶颈：每当有新的输入函数时，求解器必须重新运行一次。这个过程可能计算密集且缓慢，尤其是在复杂系统或高维输入情况下。
 - en: 'To address this challenge, a novel framework was introduced by [Lu et al.](https://arxiv.org/abs/1910.03193)
     in 2019: the **Deep Operator Network**, or **DeepONet**. DeepONets aim to learn
     the **operator** that maps input functions to output functions, essentially learning
     to predict the output of these ODEs/PDEs for any given input function without
     having to re-run a numerical solver each time.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了应对这一挑战，**Deep Operator Network**（简称**DeepONet**）的创新框架由[Lu et al.](https://arxiv.org/abs/1910.03193)于2019年提出。DeepONets旨在学习将输入函数映射到输出函数的**算子**，本质上是学习预测这些ODEs/PDEs在任意给定输入函数下的输出，而不需要每次都重新运行数值求解器。
 - en: 'But DeepONets, though powerful, inherited the common problems faced by data-driven
     methods: How can we ensure that the predictions of the network are in line with
     the known laws of physics encapsulated in the governing equations?'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 DeepONets 很强大，但它们继承了数据驱动方法面临的共同问题：我们如何确保网络的预测与包含在控制方程中的已知物理定律一致？
 - en: Enter **physics-informed learning**.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 进入**物理信息化学习**领域。
 - en: Physics-informed learning is a rapidly evolving branch of machine learning that
     combines physical principles with data science to enhance the modeling and understanding
     of complex physical systems. It involves leveraging domain-specific knowledge
     and physical laws to guide the learning process and improve the accuracy, generalization,
     and interpretability of machine learning models.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 物理信息化学习是一个迅速发展的机器学习分支，它将物理原理与数据科学结合起来，以增强对复杂物理系统的建模和理解。它涉及利用特定领域的知识和物理定律来指导学习过程，提高机器学习模型的准确性、泛化能力和可解释性。
 - en: 'Under this framework, in 2021, [Wang et al.](https://arxiv.org/abs/2103.10974)
     introduced a new variant of DeepONets: the **Physics-Informed DeepONet.** This
     innovative approach builds on the foundation of DeepONets by incorporating our
     understanding of physical laws into the learning process. We’re no longer just
     asking our model to learn from data; we’re guiding it with principles derived
     from centuries of scientific inquiry.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个框架下，2021年，[Wang et al.](https://arxiv.org/abs/2103.10974)提出了DeepONets的新变种：**物理信息化
+    DeepONet**。这种创新方法在DeepONets的基础上，通过将我们对物理定律的理解融入学习过程中，进行改进。我们不再只是让模型从数据中学习，而是用源于几个世纪科学探究的原理来指导它。
 - en: This seems to be quite a promising approach! But how should we implement it
     in practice? That’s precisely what we’re going to explore today 🤗
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来是一个非常有前景的方法！但是我们应该如何在实践中实现它？这正是我们今天要探讨的内容🤗
 - en: In this blog, we’ll discuss the theory behind Physics-Informed DeepONet, and
     walk through how to implement it from scratch. We’ll also put our developed model
     into action and demonstrate its power through a hands-on case study.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇博客中，我们将讨论物理信息化 DeepONet 背后的理论，并逐步讲解如何从零开始实现它。我们还将把我们开发的模型付诸实践，通过实际案例展示其强大能力。
 - en: 'If you are also interested in using physics-informed DeepONet to solve inverse
     problems, feel free to check out my new blog here: [Solving Inverse Problems With
     Physics-Informed DeepONet: A Practical Guide With Code Implementation](/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)'
+  id: totrans-18
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果你也有兴趣使用物理信息化 DeepONet 解决逆问题，可以查看我的新博客：[利用物理信息化 DeepONet 解决逆问题：带代码实现的实用指南](/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)
 - en: Let’s get started!
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧！
 - en: '**Table of Content**'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**内容表**'
 - en: · [1\. Case study](#8d5d)
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: · [1\. 案例研究](#8d5d)
 - en: · [2\. Physics-informed DeepONet](#ef0e)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: · [2\. 物理信息化 DeepONet](#ef0e)
 - en: '∘ [2.1 DeepONet: An overview](#5221)'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [2.1 DeepONet：概述](#5221)
 - en: ∘ [2.2 Physics-informed Neural Networks (PINNs)](#eda1)
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [2.2 物理信息化神经网络（PINNs）](#eda1)
 - en: ∘ [2.3 Physics-informed DeepONet](#0fe9)
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [2.3 物理信息化 DeepONet](#0fe9)
 - en: · [3\. Implementation of Physics-informed DeepONet](#8657)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: · [3\. 物理信息化 DeepONet 的实现](#8657)
 - en: ∘ [3.1 Define the Architecture](#4f1e)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [3.1 定义架构](#4f1e)
 - en: ∘ [3.2 Define ODE loss](#524a)
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [3.2 定义 ODE 损失](#524a)
 - en: ∘ [3.3 Define gradient descent step](#8cf2)
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [3.3 定义梯度下降步骤](#8cf2)
 - en: · [4\. Data Generation and Organization](#0096)
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: · [4. 数据生成与组织](#0096)
 - en: ∘ [4.1 Generation of u(·) profiles](#f5af)
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [4.1 u(·) 轮廓生成](#f5af)
 - en: ∘ [4.2 Generation of Dataset](#5751)
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [4.2 数据集生成](#5751)
 - en: ∘ [4.3 Dataset Organization](#51a4)
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: ∘ [4.3 数据集组织](#51a4)
 - en: · [5\. Training Physics-informed DeepONet](#9df7)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: · [5. 训练物理信息深度运算网络](#9df7)
 - en: · [6\. Results Discussion](#9dbe)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: · [6. 结果讨论](#9dbe)
 - en: · [7\. Take-away](#ed8c)
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: · [7. 重点总结](#ed8c)
 - en: · [Reference](#3c52)
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: · [参考文献](#3c52)
 - en: 1\. Case study
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 1. 案例研究
 - en: 'Let’s ground our discussion in a concrete example. In this blog, we will reproduce
     the first case study considered in [Wang et al.](https://arxiv.org/abs/2103.10974)’s
     original paper, i.e., an initial value problem described by the following ordinary
     differential equation (ODE):'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们在一个具体的例子中扎根讨论。在这篇博客中，我们将重现 [Wang et al.](https://arxiv.org/abs/2103.10974)
+    原论文中考虑的第一个案例研究，即由以下常微分方程（ODE）描述的初值问题：
 - en: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
 - en: with an initial condition s(0) = 0.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 具有初始条件 s(0) = 0。
 - en: In this equation, u(*t*) is the input function that varies over time, and s(*t*)
     is the state of the system at time *t* that we are interested in predicting. In
     a physical scenario, u(*t*) could represent a force applied to a system, and s(*t*)
     might represent the system's response, like its displacement or velocity, depending
     on the context. **Our goal here is to learn the mapping between the forcing term
     u(*t*) and the ODE solution s(*t*).**
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个方程中，u(*t*) 是随时间变化的输入函数，而 s(*t*) 是我们感兴趣的在时间 *t* 的系统状态。在物理场景中，u(*t*) 可能代表施加在系统上的力，而
+    s(*t*) 可能代表系统的响应，比如位移或速度，具体取决于上下文。**我们这里的最终目标是学习强迫项 u(*t*) 与 ODE 解 s(*t*) 之间的映射关系。**
 - en: 'Traditional numerical methods such as Euler’s method or Runge-Kutta methods
     can solve this equation effectively. However, notice that the forcing term u(*t*)
     can take various profiles, as shown by the following figure:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 传统的数值方法，如欧拉方法或龙格-库塔方法，可以有效地求解此方程。然而，请注意，强迫项 u(*t*) 可以采取各种轮廓，如下图所示：
 - en: '![](../Images/8d8e59e7ea3b0943a06cc633a209a04a.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8d8e59e7ea3b0943a06cc633a209a04a.png)'
 - en: Figure 2\. Example profiles of u(t). (Image by author)
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 2. u(t) 的示例轮廓。 （作者提供的图片）
 - en: Consequently, every time u(*t*) changes, we would need to re-run the entire
     simulation to get the corresponding s(*t*) (as shown in Figure 3), which can be
     computationally intensive and inefficient.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，每当 u(*t*) 变化时，我们需要重新运行整个模拟以获取相应的 s(*t*)（如图 3 所示），这可能会计算密集且效率低下。
 - en: '![](../Images/9ce7ea3610ea7a93e9691b5640a150a5.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ce7ea3610ea7a93e9691b5640a150a5.png)'
 - en: Figure 3\. Corresponding profiles of s(t). They are calculated by using the
     RK45 algorithm to solve the ODE. (Image by author)
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3. s(t) 的相应轮廓。它们是通过使用 RK45 算法求解 ODE 计算得出的。 （作者提供的图片）
 - en: So, how can we address this type of problem more efficiently?
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，我们如何更高效地解决这种问题呢？
 - en: 2\. Physics-informed DeepONet
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 2. 物理信息深度运算网络
 - en: As mentioned in the introduction, the physics-informed DeepONet constitutes
     a promising solution to our target problem. In this section, we’ll break down
     its fundamental concepts to make them more comprehensible.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 如介绍中所述，物理信息 DeepONet 是解决我们目标问题的有前途的解决方案。在这一部分，我们将详细解析其基本概念，使其更易于理解。
 - en: We’ll first discuss the principles underpinning the original DeepONet. Following
     that, we’ll explore the concept of physics-informed neural networks and how it
     brings an added dimension to the problem-solving table. Finally, we’ll demonstrate
     how we can seamlessly integrate these two ideas to construct the physics-informed
     DeepONets.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将首先讨论原始 DeepONet 的基础原则。接着，我们将探索物理信息神经网络的概念及其如何为问题解决提供额外的维度。最后，我们将展示如何将这两个想法无缝集成以构建物理信息
+    DeepONet。
 - en: '2.1 DeepONet: An overview'
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.1 DeepONet：概述
 - en: DeepONet, short for Deep Operator Network, represents a new frontier in deep
     learning. Unlike traditional machine learning methods that map a set of input
     values to output values, DeepONet is designed to map entire functions to other
     functions. This makes DeepONet particularly powerful when dealing with problems
     that naturally involve functional inputs and outputs. So how exactly it achieves
     that goal?
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: DeepONet，简而言之就是深度运算网络，代表了深度学习的新前沿。与传统的机器学习方法将一组输入值映射到输出值不同，DeepONet 旨在将整个函数映射到其他函数。这使得
+    DeepONet 在处理自然涉及函数输入和输出的问题时特别强大。那么它是如何实现这一目标的呢？
 - en: 'To formulate what we want to achieve symbolically:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了符号化我们想要实现的目标：
 - en: '![](../Images/5ab62e562bcb715899129c87ad34411b.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5ab62e562bcb715899129c87ad34411b.png)'
 - en: Figure 4\. Our goal is to train a neural network to approximate the operator
     that maps the forcing term u(·) to the target output s(·), which are both a function
     of t. (Image by author)
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. 我们的目标是训练一个神经网络，以近似将强迫项u(·)映射到目标输出s(·)的算子，这两者都是时间的函数。（图片由作者提供）
 - en: On the left, we have the *operator* G that maps from an input function u(·)
     to an output function s(·). On the right, we would like to use a neural network
     to *approximate* the operatorG. Once this can be achieved, we could use the trained
     neural network to perform a fast calculation of s(·) given any u(·).
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 左边是将输入函数u(·)映射到输出函数s(·)的*算子*G。右边，我们希望使用神经网络来*近似*算子G。一旦实现了这一点，我们可以利用训练好的神经网络在给定任何u(·)的情况下快速计算s(·)。
 - en: 'For the current case study, both the input function u(·) and the output function
     s(·) take time coordinate *t* as the sole argument. Therefore, the “input” and
     “output” of the neural network we aim to build should look like this:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于当前的案例研究，输入函数u(·)和输出函数s(·)都将时间坐标*t*作为唯一参数。因此，我们希望构建的神经网络的“输入”和“输出”应如下所示：
 - en: '![](../Images/1388bbbd27f57b93e2790a6bdad90f3a.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1388bbbd27f57b93e2790a6bdad90f3a.png)'
 - en: Figure 5\. The input and output for the neural network model we aim to train.
     (Image by author)
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5\. 我们希望训练的神经网络模型的输入和输出。（图片由作者提供）
 - en: Essentially, our neural network should accept the **entire profile** of u(*t*)
     as the first input, as well as a specific time instance *t* as the second input*.*
     Subsequently, it should output the target output function s(·) evaluated at time
     instance *t,* i.e., s(*t*).
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 实质上，我们的神经网络应接受u(*t*)的**整个轮廓**作为第一个输入，以及一个特定时间点*t*作为第二个输入。随后，它应输出在时间点*t*评估的目标输出函数s(·)，即s(*t*)。
 - en: To better understand this setup, we recognize that the value of s(*t*) firstly
     depends on the profile of s(·), which in turn depends on u(·), and secondly depends
     on at which time instance the s(·) is evaluated. This is also why time coordinate
     *t* is necessary to be among the inputs.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地理解这一设置，我们认识到s(*t*)的值首先依赖于s(·)的轮廓，而s(·)的轮廓又依赖于u(·)，其次依赖于s(·)被评估的时间点。这也是时间坐标*t*需要作为输入之一的原因。
 - en: 'There are two questions we need to clear at the moment: first of all, how should
     we input a continuous profile of u(·) to the network? And secondly, how should
     we concatenate the two inputs, i.e., *t* and u(·).'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前我们需要弄清楚两个问题：首先，我们应该如何将u(·)的连续轮廓输入网络？其次，我们应该如何拼接这两个输入，即*t*和u(·)。
 - en: 1️⃣ How should we input a *continuous* profile of u(·)?
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 1️⃣ 我们应该如何输入u(·)的*连续*轮廓？
 - en: 'Well, we don’t actually. A straightforward solution is to represent the function
     u(·) discretely. More specifically, we simply evaluate u(·) values at sufficient
     but finite many locations and subsequently feed those discrete u(·) values into
     the neural network:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我们并不这样做。一种直接的解决方案是离散表示函数u(·)。更具体地说，我们只是评估u(·)在足够但有限的多个位置的值，然后将这些离散的u(·)值输入到神经网络中：
 - en: '![](../Images/ae58b8b3d7bc0cd4b59923193cc0cea7.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ae58b8b3d7bc0cd4b59923193cc0cea7.png)'
 - en: Figure 6\. The u(·) profile is discretized before being fed into the neural
     network. (Image by author)
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\. 在被输入到神经网络之前，u(·)轮廓被离散化。（图片由作者提供）
 - en: Those locations are referred to as **sensors** in the original DeepONet paper.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些位置在原始DeepONet论文中被称为**传感器**。
 - en: 2️⃣ How should we concatenate the input *t* and u(·)?
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 2️⃣ 我们应该如何将输入*t*和u(·)拼接在一起？
 - en: At first sight, we might want to concatenate them directly at the input layer.
     However, it turns out that this naive approach will not only put a constraint
     on what types of neural networks we can use, but also lead to suboptimal prediction
     accuracy in practice. There is a better way though. Time to introduce **DeepONet**.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 初看之下，我们可能会想直接在输入层将它们拼接起来。然而，事实证明，这种简单的方法不仅会限制我们可以使用的神经网络类型，而且在实践中会导致次优的预测准确度。不过，还有更好的方法。现在是介绍**DeepONet**的时候了。
 - en: 'In a nutshell, DeepONet proposed a new network architecture for performing
     operator learning: it consists of two main components: **a branch network** and
     **a trunk network**. The branch network takes the discrete function values as
@@ -322,45 +475,59 @@
     it/them into a feature vector with the same dimensions. These two feature vectors
     are then merged by a dot product, and the end result is used as the prediction
     of s(·) evaluated at the input coordinate.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，DeepONet提出了一种用于算子学习的新网络架构：它由两个主要组件组成：**分支网络**和**主干网络**。分支网络将离散函数值作为输入，并将其转换为特征向量。同时，主干网络将坐标（在我们当前的案例研究中，坐标仅为*t*。对于PDE，将包括时间和空间坐标）作为输入，并将其也转换为相同维度的特征向量。这两个特征向量然后通过点积进行合并，最终结果用作在输入坐标处评估s(·)的预测值。
 - en: '![](../Images/a38b151038114d79d87742355a9461fd.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a38b151038114d79d87742355a9461fd.png)'
 - en: Figure 7\. A DeepONet consists of a **branch net** to handle the input function
     u(·) and a **trunk net** to handle the temporal/spatial coordinates. The outputs
     of two nets have the same dimensions and are merged via a dot product. Optionally,
     a bias term can be added after the dot product to further improve the model's
     expressibility. (Image by author)
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7\. DeepONet包括一个**分支网络**来处理输入函数u(·)和一个**主干网络**来处理时间/空间坐标。两个网络的输出具有相同的维度，并通过点积进行合并。可选地，可以在点积后添加一个偏置项以进一步提高模型的表达能力。（图片由作者提供）
 - en: In the original DeepONet paper, the authors stated that this “divide-and-conquer”
     strategy, exemplified in separate “branch” and “trunk” networks, is inspired by
     the *universal approximation theorem for operator*, and serves to introduce a
     strong inductive bias specifically for operator learning. This is also the key
     point that makes DeepONet an effective solution, as claimed by the authors.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在原始DeepONet论文中，作者指出，这种在“分支”和“主干”网络中体现的“分而治之”策略受到*算子通用逼近定理*的启发，旨在为算子学习引入强的归纳偏置。这也是作者声称使DeepONet成为有效解决方案的关键点。
 - en: If you are curious to learn more about theoritical basis of DeepONet, please
     refer to Appendix A in the original paper.
+  id: totrans-76
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果你想了解更多关于DeepONet理论基础的内容，请参考原始论文的附录A。
 - en: One of the main strengths of DeepONet is its efficiency. Once trained, a DeepONet
     can infer the output function for a new input function in real-time, without the
     need for further training, as long as the new input function is within the range
     of input functions it was trained on. This makes DeepONet a powerful tool in applications
     that require real-time inference.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: DeepONet的主要优势之一是其效率。一旦训练完成，DeepONet可以实时推断新的输入函数的输出函数，无需进一步训练，只要新的输入函数在其训练过的输入函数范围内。这使DeepONet成为需要实时推断的应用中的强大工具。
 - en: Another notable strength of DeepONet lies in its flexibility and versatility.
     While the most common choice for the trunk and branch networks might be fully-connected
     layers, the DeepONet framework permits a high level of architecture customization.
     Depending on the characteristics of the input function u(·) and the coordinates,
     a variety of neural network architectures such as CNN, RNN, etc. can also be employed.
     This adaptability makes DeepONet a highly versatile tool.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: DeepONet的另一个显著优势在于其灵活性和多功能性。虽然主干网络和分支网络最常见的选择是全连接层，但DeepONet框架允许高度的架构自定义。根据输入函数u(·)和坐标的特征，可以采用各种神经网络架构，如CNN、RNN等。这种适应性使DeepONet成为一个高度多功能的工具。
 - en: 'However, despite these strengths, the limitations of DeepONet are also prominent:
     as a purely data-driven method, DeepONet cannot guarantee that its predictions
     will follow prior knowledge or governing equations that describe the physical
@@ -370,16 +537,23 @@
     is simply preparing a large amount of data for training, which might not always
     be feasible in practice, especially in scientific and engineering fields where
     data collection can be expensive or time-consuming.'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，尽管存在这些优势，DeepONet 的局限性也很明显：作为一种纯数据驱动的方法，DeepONet 不能保证其预测结果会遵循描述所考虑物理系统的先验知识或控制方程。因此，DeepONet
+    可能无法很好地泛化，尤其是当面对位于训练数据分布之外的输入函数，即*分布外*（OOD）输入时。对此的一个常见解决方案是准备大量训练数据，但在实际中这可能并不总是可行，特别是在数据收集可能昂贵或耗时的科学和工程领域。
 - en: So how should we address these limitations? Time to talk about *physics-informed
     learning*, and more specifically, *physics-informed neural networks* (PINNs).
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们应该如何解决这些局限性呢？是时候讨论*物理信息学习*，更具体地说，是*物理信息神经网络*（PINNs）了。
 - en: 2.2 Physics-informed Neural Networks (PINNs)
+  id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.2 物理信息神经网络（PINNs）
 - en: In traditional machine learning models, we rely primarily on data to learn the
     underlying patterns. However, in many scientific and engineering fields, governing
     equations (ODE/PDEs) that captured our prior knowledge about the dynamical system
@@ -388,152 +562,215 @@
     could potentially improve the model’s performance and generalization ability,
     especially when dealing with limited or noisy data. This is where **physics-informed
     learning** comes into play.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 在传统的机器学习模型中，我们主要依赖数据来学习潜在的模式。然而，在许多科学和工程领域，捕捉我们对动态系统的先验知识的控制方程（ODE/PDE）是可用的，它们提供了除了观察数据之外的另一种信息来源。如果正确地将这一额外的知识源纳入模型中，它可能会改善模型的性能和泛化能力，特别是在处理有限或噪声数据时。这就是**物理信息学习**的作用所在。
 - en: When we merge the concept of physics-informed learning and neural networks,
     we would then arrive at **physics-informed neural networks** (PINNs).
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们将物理信息学习与神经网络的概念结合时，我们将得到**物理信息神经网络**（PINNs）。
 - en: PINNs are a type of neural network where the network is trained to not only
     fit the data but also respect the known physical laws described by differential
     equations. This is achieved by introducing a **ODE/PDE loss**, which measures
     the degree of violation of the governing differential equations. This way, we
     inject the physical laws into the network training process and make it *physically
     informed*.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: PINNs 是一种神经网络，其中网络不仅仅是拟合数据，还要尊重由微分方程描述的已知物理定律。这是通过引入**ODE/PDE 损失**来实现的，它测量了控制微分方程的违反程度。通过这种方式，我们将物理定律注入网络训练过程，使其*物理信息化*。
 - en: '![](../Images/12cd012d9a10794979e59e1e28cfddaf.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12cd012d9a10794979e59e1e28cfddaf.png)'
 - en: Figure 8\. The loss function of a physics-informed neural network includes a
     contribution term of PDE loss, which effectively measures if the predicted solution
     satisfies the governing differential equation. Note that the derivative of the
     output with respect to the inputs can be easily calculated thanks to **automatic
     differentiation**. (Image by author)
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8\. 物理信息神经网络的损失函数包括 PDE 损失的贡献项，这有效地测量了预测解是否满足控制微分方程。注意，由于**自动微分**的存在，相对于输入的输出的导数可以很容易地计算出来。（图片来源：作者）
 - en: Though PINNs have proven to be effective in many applications, they are not
     without limitations. PINNs are typically trained for specific input parameters
     (e.g., boundary and initial conditions, external forcing, etc.). Consequently,
     whenever the input parameters have changed, we would need to retrain the PINN.
     Therefore, they are not particularly effective for real-time inference under different
     operating conditions.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 PINNs 在许多应用中已被证明有效，但它们也不是没有局限性。PINNs 通常是针对特定的输入参数（例如边界和初始条件、外部强迫等）进行训练的。因此，每当输入参数发生变化时，我们就需要重新训练
+    PINN。因此，它们在不同操作条件下的实时推断效果不是特别好。
 - en: Still remember which method is specifically designed for handling varying input
     parameters? That’s right, it’s the DeepONet! Time to combine the idea of physical-informed
     learning with DeepONet.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 还记得哪个方法是专门用于处理变化的输入参数的吗？没错，就是DeepONet！现在是将物理信息学习的理念与DeepONet结合的时候了。
 - en: 2.3 Physics-informed DeepONet
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2.3 物理信息DeepONet
 - en: The main idea behind the *Physics-informed DeepONet* is to combine the strengths
     of both DeepONets and PINNs. Just like a DeepONet, a Physics-informed DeepONet
     is capable of taking a function as an input and producing a function as an output.
     This makes it highly efficient for real-time inference of new input functions,
     without the need for retraining.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '*物理信息DeepONet*的主要思想是结合DeepONets和PINNs的优点。就像DeepONet一样，物理信息DeepONet能够将一个函数作为输入，并产生一个函数作为输出。这使得它在实时推断新输入函数时非常高效，无需重新训练。'
 - en: On the other hand, like a PINN, a Physics-informed DeepONet incorporates known
     physical laws into its learning process. These laws are introduced as additional
     constraints in the loss function during training. This approach allows the model
     to make physically consistent predictions, even when dealing with limited or noisy
     data.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，像PINN一样，物理信息DeepONet在学习过程中融入了已知的物理定律。这些定律作为额外的约束引入到训练过程中的损失函数中。这种方法使得模型即使在处理有限或嘈杂数据时，也能做出物理一致的预测。
 - en: How do we achieve this integration? Similar to the PINNs, we add an extra loss
     contribution to measure how well the predictions of the model adhere to the known
     differential equation. By optimizing this loss function, the model learns to make
     predictions that are both data-consistent (if measurement data is provided during
     training) and physics-consistent.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何实现这种整合呢？类似于PINNs，我们增加一个额外的损失项，以衡量模型的预测如何符合已知的微分方程。通过优化这个损失函数，模型学会进行数据一致（如果在训练过程中提供了测量数据）和物理一致的预测。
 - en: '![](../Images/fd4998e3fb37d406d81d4671f96e3588.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fd4998e3fb37d406d81d4671f96e3588.png)'
 - en: Figure 10\. Physics-informed DeepONet uses DeepONet as the backbone architecture
     while leveraging the concept of physics-informed learning to train the model.
     This way, the trained physics-informed DeepONet is both data and physics-consistent.
     (Image by author)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10\. 物理信息DeepONet使用DeepONet作为骨干架构，同时利用物理信息学习的概念来训练模型。这样，训练后的物理信息DeepONet既数据一致又物理一致。（图像由作者提供）
 - en: 'In summary, the Physics-informed DeepONet is a powerful tool that combines
     the best of both worlds: the efficiency of the DeepONet and the accuracy of physics-informed
     learning. It represents a promising approach to solving complex problems in fields
     where both real-time inference and physical consistency are crucial.'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，物理信息DeepONet是一个强大的工具，结合了两者的优势：DeepONet的高效性和物理信息学习的准确性。它代表了一种有前景的方法，用于解决那些实时推断和物理一致性都至关重要的复杂问题。
 - en: In the next section, we will start working on our case study and turn theory
     into actual code.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一部分，我们将开始进行案例研究，并将理论转化为实际代码。
 - en: 3\. Implementation of Physics-informed DeepONet
+  id: totrans-97
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 3\. 物理信息DeepONet的实现
 - en: 'In this section, we will walk through how to define a Physics-informed DeepONet
     model to address our target case study. We will implement it in TensorFlow. Let’s
     start with importing the necessary libraries:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一部分，我们将详细讲解如何定义一个物理信息DeepONet模型，以解决我们的目标案例研究。我们将使用TensorFlow来实现它。让我们先导入必要的库：
 - en: '[PRE0]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 3.1 Define the Architecture
+  id: totrans-100
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.1 定义架构
 - en: 'As discussed previously, physics-informed DeepONet shares the same architecture
     as the original DeepONet. The following function defines the architecture for
     DeepONet:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，物理信息DeepONet与原始DeepONet具有相同的架构。以下函数定义了DeepONet的架构：
 - en: '[PRE1]'
+  id: totrans-102
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'In the code above:'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码中：
 - en: We assume that both the trunk and branch networks are fully connected networks,
     with 3 hidden layers, each containing 50 neurons and with tanh activation function.
     This architecture is chosen based on preliminary tests and should serve as a good
     starting point for this problem. Nevertheless, it is straightforward to replace
     it with other architectures (e.g., CNN, RNN, etc.) and other layer hyperparameters.
+  id: totrans-104
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们假设主干网络和分支网络都是完全连接的网络，每个网络有3个隐藏层，每层包含50个神经元，并且使用tanh激活函数。这个架构是基于初步测试选择的，并且应该作为这个问题的一个良好的起点。然而，可以很容易地用其他架构（例如CNN、RNN等）和其他层超参数进行替换。
 - en: 'The outputs of trunk and branch networks are merged via a dot product. As suggested
     in the [original DeepONet paper](https://arxiv.org/abs/1910.03193), we add a bias
     term to improve the prediction accuracy. The `BiasLayer()` is a custom-defined
     class to achieve that goal:'
+  id: totrans-105
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 主干网络和分支网络的输出通过点积合并。正如[原始 DeepONet 论文](https://arxiv.org/abs/1910.03193)中建议的，我们添加了一个偏置项以提高预测准确性。`BiasLayer()`是一个自定义定义的类，用于实现这个目标：
 - en: '[PRE2]'
+  id: totrans-106
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 3.2 Define ODE loss
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.2 定义ODE损失
 - en: 'Next, we define a function to compute the ODE loss. Recall that our target
     ODE is:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们定义一个函数来计算ODE损失。回顾一下我们的目标ODE是：
 - en: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
+  id: totrans-109
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a2965a8118cbca756dc4b2c9fbbb113a.png)'
 - en: 'Therefore, we can define the function as follows:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们可以按如下方式定义该函数：
 - en: '[PRE3]'
+  id: totrans-111
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'In the code above:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码中：
 - en: We used `tf.GradientTape()` to calculate the gradient of s(·) with respect to
     *t*. Note that in TensorFlow, `tf.GradientTape()` is used as a context manager,
     and any operations executed within the tape’s context will be recorded by the
@@ -541,129 +778,181 @@
     track all operations that involve *t*,which in this case, it’s a forward running
     of the DeepONet model. Afterward, we use tape’s `gradient()` method to calculate
     the gradient of s(·) with respect to *t*.
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们使用`tf.GradientTape()`来计算s(·)相对于*t*的梯度。请注意，在TensorFlow中，`tf.GradientTape()`作为上下文管理器使用，任何在tape上下文中执行的操作都会被tape记录。在这里，我们显式地观察变量*t*。因此，TensorFlow会自动跟踪涉及*t*的所有操作，在这种情况下，它是DeepONet模型的前向传播。之后，我们使用tape的`gradient()`方法来计算s(·)相对于*t*的梯度。
 - en: We included an extra input argument `u_t`, which denotes the value of the input
     function u(·) evaluated at *t*. This constitutes the right-hand-side term of our
     target ODE, and it is needed for calculating the ODE residual loss.
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们包括了一个额外的输入参数`u_t`，它表示在*t*时刻评估的输入函数u(·)的值。这构成了我们目标ODE的右侧项，并且它是计算ODE残差损失所需的。
 - en: We used `@tf.function` decorator to convert the regular Python function we just
     defined into a TensorFlow graph. It is useful to do that as gradient calculation
     can be quite expensive and executing it in Graph mode can significantly accelerate
     the computations.
+  id: totrans-115
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们使用`@tf.function`装饰器将我们刚刚定义的常规Python函数转换为TensorFlow图。这是有用的，因为梯度计算可能非常昂贵，并且在图模式下执行可以显著加速计算。
 - en: 3.3 Define gradient descent step
+  id: totrans-116
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.3 定义梯度下降步骤
 - en: 'Next, we define the function to compile the total loss function and calculate
     the gradients of total loss with respect to the network model parameters:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们定义一个函数来编译总损失函数并计算总损失相对于网络模型参数的梯度：
 - en: '[PRE4]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'In the code above:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码中：
 - en: 'We only consider two loss terms: the loss associated with the initial condition
     `IC_loss`, and the ODE residual loss `ODE_loss`. The `IC_loss` is calculated by
     comparing the model-predicted s(*t*=0) with the known initial value of 0, and
     the `ODE_loss` is calculated by calling our previously defined `ODE_residual_calculator`
     function. Data loss can also be calculated and added to the total loss if the
     measured s(*t*) values are available (not implemented in the code above).'
+  id: totrans-120
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们只考虑两个损失项：与初始条件相关的损失`IC_loss`和ODE残差损失`ODE_loss`。`IC_loss`通过将模型预测的s(*t*=0)与已知的初始值0进行比较来计算，`ODE_loss`通过调用我们之前定义的`ODE_residual_calculator`函数来计算。如果有可用的测量s(*t*)值（在上面的代码中未实现），数据损失也可以计算并添加到总损失中。
 - en: In general, the total loss is a weighted sum of `IC_loss` and `ODE_loss`, where
     the weights control how much emphasis or priority is given to that individual
     loss terms during the training process. In our case study, it is sufficient to
     simply set both `IC_weight` and `ODE_weight` as 1.
+  id: totrans-121
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通常，总损失是`IC_loss`和`ODE_loss`的加权和，其中权重控制在训练过程中对这些单独损失项的重视程度或优先级。在我们的案例研究中，将`IC_weight`和`ODE_weight`都设置为1就足够了。
 - en: Similar to how we compute the `ODE_loss`, we also adopted `tf.GradientTape()`
     as the context manager to calculate the gradients. However, here we calculate
     the gradients of the total loss with respect to the network model parameters,
     which are necessary to perform gradient descent.
+  id: totrans-122
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 类似于我们计算`ODE_loss`的方式，我们也采用了`tf.GradientTape()`作为上下文管理器来计算梯度。然而，这里我们计算的是总损失相对于网络模型参数的梯度，这对于执行梯度下降是必要的。
 - en: 'Before we proceed, let’s quickly summarize what we have developed so far:'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 在继续之前，让我们快速总结一下我们到目前为止所开发的内容：
 - en: 1️⃣ We can initialize a DeepONet model with `create_model()` function.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 1️⃣ 我们可以使用`create_model()`函数初始化一个DeepONet模型。
 - en: 2️⃣ We can calculate ODE residuals to assess how well the model predictions
     stick to the governing ODE. This is achieved with `ODE_residual_calculator` function.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 2️⃣ 我们可以计算ODE残差，以评估模型预测与所治理ODE的契合程度。这是通过`ODE_residual_calculator`函数实现的。
 - en: 3️⃣ We can calculate the total loss as well as its gradients with respect to
     the network model parameters with `train_step`.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 3️⃣ 我们可以使用`train_step`计算总损失及其相对于网络模型参数的梯度。
 - en: Now the preparation work is half done 🚀 In the next section, we will discuss
     data generation and data organization issues (the strange `X[:, :1]`in the code
     above will hopefully become clear then). After that, we can finally train the
     model and see how it performs.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在准备工作完成了一半🚀 在下一节中，我们将讨论数据生成和数据组织的问题（上述代码中的奇怪`X[:, :1]`会在那时变得清晰）。之后，我们终于可以训练模型并查看其表现。
 - en: 4\. Data Generation and Organization
+  id: totrans-128
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 4\. 数据生成和组织
 - en: In this section, we discuss the generation of synthetic data and how to organize
     it for training the Physics-informed DeepONet model.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我们讨论合成数据的生成及其在训练Physics-informed DeepONet模型中的组织方式。
 - en: 4.1 Generation of u(·) profiles
+  id: totrans-130
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 4.1 生成u(·)特征
 - en: 'The data used for training, validation, and testing will be synthetically generated.
     The rationale behind this approach is twofold: it’s not only convenient but also
     allows for full control over the data’s characteristics.'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于训练、验证和测试的数据将是合成生成的。这样做的理由有两个：不仅方便，而且可以完全控制数据的特征。
 - en: In the context of our case study, we will generate the input function `u(·)`using
     a zero-mean **Gaussian Process**, with a radial basis function (RBF) kernel.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的案例研究中，我们将使用零均值的**高斯过程**生成输入函数u(·)，并使用径向基函数（RBF）核。
 - en: A Gaussian Process is a powerful mathematical framework commonly used in machine
     learning to model functions. The RBF kernel is a popular choice for capturing
     the similarity between input points. By using the RBF kernel within the Gaussian
     Process, we ensure that the generated synthetic data exhibits a smooth and continuous
     pattern, which is often desirable in various applications. To learn more about
     Gaussian Process, feel free to checkout my previous [blog](https://medium.com/towards-data-science/implement-a-gaussian-process-from-scratch-2a074a470bce).
+  id: totrans-133
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 高斯过程是一种强大的数学框架，常用于机器学习中建模函数。RBF核是捕捉输入点之间相似性的热门选择。通过在高斯过程中使用RBF核，我们确保生成的合成数据表现出平滑和连续的模式，这在各种应用中通常是有利的。如需了解更多关于高斯过程的内容，请随时查看我之前的[博客](https://medium.com/towards-data-science/implement-a-gaussian-process-from-scratch-2a074a470bce)。
 - en: 'In scikit-learn, this can be achieved in just a few lines of code:'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 在scikit-learn中，这可以通过几行代码实现：
 - en: '[PRE5]'
+  id: totrans-135
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'In the code above:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码中：
 - en: We use `length_scale`to control the shape of the generated function. For a RBF
     kernel, the Figure 11 shows the u(·) profile given different kernel length scales.
+  id: totrans-137
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们使用`length_scale`来控制生成函数的形状。对于RBF核，图11展示了不同核长度尺度下的u(·)特征。
 - en: Recall that we need to discretize u(·) before feeding it to the DeepONet. This
     is done by specifying a`X_sample` variable, which allocates 100 uniformly distributed
     points within our interested temporal domain.
+  id: totrans-138
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 请记住，我们需要在将u(·)输入DeepONet之前对其进行离散化。这是通过指定`X_sample`变量来完成的，该变量在我们感兴趣的时间域内分配100个均匀分布的点。
 - en: In scikit-learn, the `GaussianProcessRegressor` object exposes a `sample_y`
     method to allow drawing random samples from the Gaussian process with the length-scale-specified
     kernel. Note that we didn’t call `.fit()` before using the `GaussianProcessRegressor`
@@ -671,58 +960,84 @@
     This is intentional as we want `GaussianProcessRegressor` to use the **exact**
     `length_scale` we provided. If you call `.fit()` , the `length_scale`will be optimized
     to another value to better fit whatever data is given.
+  id: totrans-139
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在scikit-learn中，`GaussianProcessRegressor`对象提供了一个`sample_y`方法，用于从具有长度尺度指定核的高斯过程抽取随机样本。注意，我们在使用`GaussianProcessRegressor`对象之前并没有调用`.fit()`，这与我们通常对其他scikit-learn回归器的做法不同。这是故意的，因为我们希望`GaussianProcessRegressor`使用我们提供的**精确**`length_scale`。如果你调用`.fit()`，`length_scale`将被优化为另一个值以更好地拟合给定的数据。
 - en: The output `u_sample` is a matrix with a dimension of sample_num * 100\. Each
     row of `u_sample`represents one profile of u(·), which consists of 100 discrete
     values.
+  id: totrans-140
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 输出`u_sample`是一个维度为sample_num * 100的矩阵。`u_sample`的每一行表示一个u(·)的特征，其中包含100个离散值。
 - en: '![](../Images/c2ac5842757f39f116035a152bcba09c.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c2ac5842757f39f116035a152bcba09c.png)'
 - en: Figure 11\. Synthetic u(·) profiles under different kernel length scales. (Image
     by author)
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11\. 在不同核长度尺度下的合成 u(·) 轮廓。（图片来源：作者）
 - en: 4.2 Generation of Dataset
+  id: totrans-143
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 4.2 数据集生成
 - en: Now we have generated the u(·) profiles, let’s focus on how to get the dataset
     organized such that it can be fed into the DeepONet model.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经生成了 u(·) 轮廓，让我们关注如何组织数据集，以便它可以输入到 DeepONet 模型中。
 - en: 'Recall that the DeepONet model we developed in the last section requires 3
     inputs:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，我们在上一节中开发的 DeepONet 模型需要 3 个输入：
 - en: the time coordinate *t*, which is a scalar between 0 and 1 (let’s not consider
     batch size for the moment);
+  id: totrans-146
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 时间坐标 *t*，这是介于 0 和 1 之间的标量（暂时不考虑批量大小）；
 - en: the profile of u(·), which is a vector that consists of u(·) values evaluated
     at pre-defined, fixed time coordinates between 0 and 1;
+  id: totrans-147
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: u(·) 的轮廓，这是一个由在预定义的、固定的时间坐标（介于 0 和 1 之间）下评估的 u(·) 值组成的向量；
 - en: the value of u(*t*), which is again a scalar. This u(*t*) value is used for
     calculating the ODE loss at time coordinate *t*.
+  id: totrans-148
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: u(*t*) 的值，这也是一个标量。这个 u(*t*) 值用于在时间坐标 *t* 下计算 ODE 损失。
 - en: 'Therefore, we can formulate a single sample like this:'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们可以这样构建一个单一的样本：
 - en: '![](../Images/9e06a941b6ccf75fa9eea11abc4f72ec.png)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9e06a941b6ccf75fa9eea11abc4f72ec.png)'
 - en: (Image by author)
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片来源：作者）
 - en: 'Of course, for each u(·) profile (marked as green in the above illustration),
     we should consider multiple *t*’s (and the corresponding u(*t*)’s) to evaluate
     the ODE loss to better impose the physical constraints. In theory, *t* can take
@@ -730,275 +1045,404 @@
     case study). However, to simplify things, we will just consider *t* at the same
     temporal locations where u(·) profile is discretized. As a result, our updated
     dataset will be like this:'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，对于每个 u(·) 轮廓（在上图中标记为绿色），我们应考虑多个 *t*（及其对应的 u(*t*)）来评估 ODE 损失，以更好地施加物理约束。理论上，*t*
+    可以取考虑的时间域内的任何值（即在我们案例研究中为 0 和 1 之间）。然而，为了简化，我们只考虑在 u(·) 轮廓离散化的相同时间位置的 *t*。因此，我们更新后的数据集将如下所示：
 - en: '![](../Images/c89b66eaa705cd09390e8d33454a29a5.png)'
+  id: totrans-153
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c89b66eaa705cd09390e8d33454a29a5.png)'
 - en: (Image by author)
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片来源：作者）
 - en: 'Note that the above discussion only considers a single u(·) profile. If we
     take into account all the u(·) profiles, our final dataset would look like this:'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，上述讨论仅考虑了单一的 u(·) 轮廓。如果我们考虑所有的 u(·) 轮廓，我们的最终数据集将如下所示：
 - en: '![](../Images/965b81f6b516c9f31326541d2de87f7e.png)'
+  id: totrans-156
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/965b81f6b516c9f31326541d2de87f7e.png)'
 - en: (Image by author)
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片来源：作者）
 - en: 'where N stands for the number of u(·) profiles. Now with that in mind, let’s
     see some code:'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 N 代表 u(·) 轮廓的数量。现在有了这个前提，让我们看看一些代码：
 - en: '[PRE6]'
+  id: totrans-159
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: In the code above, we add one option of computing the corresponding s(·) for
     a given u(·) profile. **Although we won’t use s(·) values in training, we would
     still need them for testing the model performance.** The calculation of s(·) is
     achieved by using `scipy.integrate.solve_ivp`, which is an ODE solver from SciPy
     that is specifically designed to solve initial value problems.
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述代码中，我们添加了一个选项，用于计算给定 u(·) 轮廓的相应 s(·)。**虽然我们在训练中不会使用 s(·) 值，但我们仍然需要它们来测试模型性能。**
+    s(·) 的计算是通过使用 `scipy.integrate.solve_ivp` 实现的，这是一个来自 SciPy 的 ODE 求解器，专门设计用于解决初值问题。
 - en: Now we can generate the training, validation, and testing dataset. Note that
     for this case study, we will use a length scale of 0.4 to generate the u(·) profiles
     and train the physics-informed DeepONet.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以生成训练、验证和测试数据集。请注意，对于本案例研究，我们将使用 0.4 的长度尺度生成 u(·) 轮廓，并训练物理信息 DeepONet。
 - en: '[PRE7]'
+  id: totrans-162
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 4.3 Dataset Organization
+  id: totrans-163
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 4.3 数据集组织
 - en: Finally, we convert the NumPy array into the TensorFlow dataset objects to facilitate
     data ingestion.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们将 NumPy 数组转换为 TensorFlow 数据集对象，以便于数据输入。
 - en: '[PRE8]'
+  id: totrans-165
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'In the code above, we create two distinct datasets: one for evaluating the
     ODE loss (`train_ds`), and the other for evaluating the initial condition loss
     (`ini_ds`). We have also pre-calculated the mean and variance values for *t* and
     u(·). Those values will be used to standardize the inputs.'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码中，我们创建了两个不同的数据集：一个用于评估 ODE 损失（`train_ds`），另一个用于评估初始条件损失（`ini_ds`）。我们还预先计算了
+    *t* 和 u(·) 的均值和方差。这些值将用于标准化输入。
 - en: That’s it for data generation and organization. Next up, we will kick off the
     model training and see how it performs.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据生成和组织的部分就到这里。接下来，我们将启动模型训练并查看其表现。
 - en: 5\. Training Physics-informed DeepONet
+  id: totrans-168
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 5\. 训练物理信息 DeepONet
 - en: 'As a first step, let’s create a custom class to track loss evolutions:'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为第一步，让我们创建一个自定义类来跟踪损失演变：
 - en: '[PRE9]'
+  id: totrans-170
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Then, we define the main training/validation logic:'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们定义了主要的训练/验证逻辑：
 - en: '[PRE10]'
+  id: totrans-172
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: It’s a rather long chunk of code, but it should be self-explanatory as we have
     already covered all the important pieces.
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一段相当长的代码，但它应该是自解释的，因为我们已经覆盖了所有重要部分。
 - en: 'To visualize the training performance, we can plot the loss convergence curves:'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了可视化训练性能，我们可以绘制损失收敛曲线：
 - en: '[PRE11]'
+  id: totrans-175
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'The training results look like this:'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练结果如下所示：
 - en: '![](../Images/847a256dd8a4e962b37c4816d044ab61.png)'
+  id: totrans-177
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/847a256dd8a4e962b37c4816d044ab61.png)'
 - en: Figure 12\. Loss convergence plot. (Image by author)
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12\. 损失收敛图。（图像由作者提供）
 - en: 'In addition, we can also see how the prediction accuracy for one specific target
     s(·) evolves during the training:'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们还可以看到在训练过程中某一特定目标s(·)的预测准确性如何变化：
 - en: At the beginning of the training, we can see a visible discrepancy between the
     model prediction and ground truth. However, toward the end of the training, the
     predicted s(·) converged to the ground truth. This indicates that our physics-informed
     DeepONet learns properly.
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练开始时，我们可以看到模型预测与真实值之间存在明显的差异。然而，到训练结束时，预测的s(·)已经收敛到真实值。这表明我们的物理信息深度网络学习得很充分。
 - en: 6\. Results Discussion
+  id: totrans-181
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 6\. 结果讨论
 - en: Once the training is completed, we can reload the saved weights and assess the
     performance.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦训练完成，我们可以重新加载保存的权重并评估性能。
 - en: Here we randomly picked three u(·) profiles from the testing dataset and compare
     the corresponding s(·) predicted by our physics-informed DeepONet as well as calculated
     by the numerical ODE solver. We can see that the predictions and ground truth
     are almost indistinguishable.
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们随机挑选了三个u(·)轮廓从测试数据集中，并将其对应的s(·)与我们的物理信息深度网络预测的结果以及由数值ODE求解器计算的真实值进行了比较。我们可以看到，预测结果与真实值几乎无法区分。
 - en: '![](../Images/f153e6df9a94a771c940ed219fafc0da.png)'
+  id: totrans-184
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f153e6df9a94a771c940ed219fafc0da.png)'
 - en: Figure 13\. Three u(·) profiles are randomly selected from the testing dataset,
     which are shown on the upper row. The lower row displays the corresponding s(·)
     profiles. We can see that the results predicted by the physics-informed DeepONet
     are indistinguishable from the ground truth, which is calculated by numerical
     ODE solvers. (Image by author)
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13\. 从测试数据集中随机选择了三个u(·)轮廓，这些轮廓显示在上排。下排显示了对应的s(·)轮廓。我们可以看到，物理信息深度网络预测的结果与由数值ODE求解器计算的真实值几乎无法区分。（图像由作者提供）
 - en: These results are quite incredible, considering the fact that we didn’t even
     use any observational data of s(·) (except the initial condition) to train the
     DeepONet. This shows that the governing ODE itself has provided sufficient “supervision”
     signal for the model to make accurate predictions.
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些结果相当令人惊讶，考虑到我们甚至没有使用任何s(·)的观测数据（除了初始条件）来训练DeepONet。这表明控制ODE本身为模型提供了足够的“监督”信号，以做出准确的预测。
 - en: Another interesting thing to assess is the so-called “out-of-distribution” prediction
     capability. Since we enforced the governing equation when training the DeepONet,
     we can expect the trained physics-informed DeepONet to still be able to make decent
     predictions when the u(·) profiles lie outside the distribution of the training
     u(·)’s.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个有趣的评估点是所谓的“分布外”预测能力。由于我们在训练DeepONet时强制执行了控制方程，我们可以预期训练得到的物理信息深度网络在u(·)轮廓超出训练u(·)分布时仍能做出不错的预测。
 - en: To test that, we can generate u(·) profiles using a different length scale.
     The following results showed three u(·) profiles generated with a length scale
     of 0.6, as well as the predicted s(·)’s. These results are quite nice, considering
     that the physics-informed DeepONet is trained with a length scale of 0.4.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了测试这一点，我们可以使用不同的长度尺度生成u(·)轮廓。以下结果显示了使用0.6长度尺度生成的三个u(·)轮廓，以及预测的s(·)。这些结果相当不错，考虑到物理信息深度网络是用0.4的长度尺度训练的。
 - en: '![](../Images/8366942ba5deba3bcf17ad845f2af6ba.png)'
+  id: totrans-189
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8366942ba5deba3bcf17ad845f2af6ba.png)'
 - en: Figure 14\. The trained physics-informed DeepONet displayed a certain level
     of out-of-distribution prediction capability. (Image by author)
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14\. 训练得到的物理信息深度网络显示了一定程度的分布外预测能力。（图像由作者提供）
 - en: However, if we keep reducing the length scale to 0.2, we would notice that visible
     discrepancies start to appear. This indicates that there is a limit on the generalization
     capability of the trained physics-informed DeepONet.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，如果我们继续将长度尺度减小到0.2，我们会注意到明显的差异开始出现。这表明训练得到的物理信息深度网络（DeepONet）在泛化能力上存在限制。
 - en: '![](../Images/9632515eaf22aa6a345dbb0c574bbf0e.png)'
+  id: totrans-192
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9632515eaf22aa6a345dbb0c574bbf0e.png)'
 - en: Figure 15\. There is a limit on how far can physics-informed DeepONet generalize.
     (Image by author)
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15\. 物理信息深度ONet的泛化能力是有限的。（作者提供的图像）
 - en: Smaller length scales in general lead to more complex u(·) profiles, which would
     be quite different than the u(·) profiles used for training. This could explain
     why the trained model encountered challenges in making accurate predictions in
     smaller length-scale regions.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 较小的长度尺度通常会导致更复杂的u(·)轮廓，这与用于训练的u(·)轮廓可能有很大不同。这可以解释为何训练后的模型在较小长度尺度区域预测准确性遇到挑战。
 - en: '![](../Images/15e2cac7a0a905f565b4bfc01a6d2102.png)'
+  id: totrans-195
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/15e2cac7a0a905f565b4bfc01a6d2102.png)'
 - en: Figure 16\. It’s challenging for our trained model to generalize to smaller
     length-scale regions, as the u(·) profiles are more complex and distinct from
     the training data. (Image by author)
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 图16\. 我们训练的模型在泛化到较小长度尺度区域时面临挑战，因为u(·)轮廓更复杂，与训练数据有较大区别。（作者提供的图像）
 - en: Overall, we could say that the developed physics-informed DeepONet can properly
     learn the system dynamics and map from input function to output function given
     only the ODE constraints. In addition, physics-informed DeepONet displays a certain
     level of capability to handle “out-of-distribution” predictions, indicating that
     training the model to align with the governing ODE improves the model’s generalization
     capability.
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，我们可以说开发的物理信息深度ONet能够在仅有ODE约束的情况下正确学习系统动态和从输入函数到输出函数的映射。此外，物理信息深度ONet在处理“超分布”预测方面显示出一定的能力，这表明训练模型与控制ODE对齐可以提高模型的泛化能力。
 - en: 7\. Take-away
+  id: totrans-198
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 7\. 收获
 - en: We’ve come a long way on our exploration of Physics-Informed DeepONet. From
     understanding the fundamental concepts of DeepONet and physics-informed learning,
     to seeing them in action through code implementation, we’ve covered a lot about
     this powerful method of solving differential equations.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在探索物理信息深度ONet的过程中走了很长一段路。从理解深度ONet和物理信息学习的基本概念，到通过代码实现看到它们的实际应用，我们已经详细讲解了这一强大方法在求解微分方程中的应用。
 - en: 'Here are a few key take-aways:'
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有几点关键的收获：
 - en: 1️⃣ **DeepONet** is a powerful framework to perform operator learning, thanks
     to its novel architecture of branch and trunk networks.
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 1️⃣ **深度ONet**是一个强大的操作符学习框架，得益于其创新的分支和主干网络架构。
 - en: 2️⃣ **Physics-Informed Learning** explicitly incorporates governing differential
     equations of the dynamical system into the learning process, thus possessing the
     potential of improving the model’s interpretability and generalization ability.
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: 2️⃣ **物理信息学习**明确地将动态系统的控制微分方程纳入学习过程，从而具有提高模型解释性和泛化能力的潜力。
 - en: 3️⃣ **Physics-Informed DeepONet** combines the strengths of DeepONet and physics-informed
     learning, and presents itself as a promising tool for learning functional mappings
     while adhering to the associated governing equations.
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 3️⃣ **物理信息深度ONet**结合了深度ONet和物理信息学习的优势，呈现出作为学习功能映射的有前景工具，同时遵循相关的控制方程。
 - en: Hope you have enjoyed this deep dive into Physics-Informed DeepONet. Next up,
     we will shift our gears toward solving inverse problems with physics-informed
     DeepONet. Stay tuned!
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望你喜欢这次对**物理信息深度ONet**的深入探讨。接下来，我们将转向使用物理信息深度ONet解决逆问题。敬请关注！
 - en: If you find my content useful, you could buy me a coffee [here](https://www.buymeacoffee.com/Shuaiguo09f)
     🤗 Thank you very much for your support!
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你觉得我的内容有用，可以在[这里](https://www.buymeacoffee.com/Shuaiguo09f)请我喝杯咖啡🤗 非常感谢你的支持！
 - en: You can find the companion notebook with full code [here](https://github.com/ShuaiGuo16/PI-DeepONet/tree/main)
     *💻*
+  id: totrans-206
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 你可以在[这里](https://github.com/ShuaiGuo16/PI-DeepONet/tree/main)找到包含完整代码的辅助笔记本
+    *💻*
 - en: ''
+  id: totrans-207
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'If you are also interested in using physics-informed DeepONet to solve inverse
     problems, feel free to check out my new blog here: [Solving Inverse Problems With
     Physics-Informed DeepONet: A Practical Guide With Code Implementation](/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)'
+  id: totrans-208
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果你也对使用物理信息深度ONet解决逆问题感兴趣，请随时查看我的新博客：[使用物理信息深度ONet解决逆问题：带代码实现的实用指南](/solving-inverse-problems-with-physics-informed-deeponet-a-practical-guide-with-code-implementation-27795eb4f502)
 - en: ''
+  id: totrans-209
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'If you would like to keep up to date with the best practices of physics-informed
     learning, please take a look at the design pattern series I am currently running:
     [Unraveling the Design Pattern of Physics-Informed Neural Networks](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)'
+  id: totrans-210
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果你想了解最新的物理知识学习最佳实践，请查看我目前正在进行的设计模式系列：[揭示物理知识驱动神经网络的设计模式](https://medium.com/towards-data-science/unraveling-the-design-pattern-of-physics-informed-neural-networks-series-01-8190df459527)
 - en: ''
+  id: totrans-211
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: You can also subscribe to my [newsletter](https://shuaiguo.medium.com/subscribe)
     or follow me on [Medium](https://shuaiguo.medium.com/).
+  id: totrans-212
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 你也可以订阅我的[通讯](https://shuaiguo.medium.com/subscribe)或者在[Medium](https://shuaiguo.medium.com/)上关注我。
 - en: Reference
+  id: totrans-213
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Lu et al., DeepONet: Learning nonlinear operators for identifying differential
     equations based on the universal approximation theorem of operators. arXiv, 2019.'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Lu等人，DeepONet：基于算子通用近似定理的非线性算子学习，用于识别微分方程。arXiv, 2019。'
 - en: '[2] Wang et al., Learning the solution operator of parametric partial differential
     equations with physics-informed DeepOnets. arXiv, 2021.'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Wang等人，学习参数偏微分方程的解算符，基于物理知识的DeepOnets。arXiv, 2021。'
